@@ -1,0 +1,148 @@
+generation:
+  shared:
+    cluster_count_min: 4
+    cluster_count_max: 7
+    points_per_cluster_min: 8
+    points_per_cluster_max: 12
+    trend_target_abs_slope_min: 1.2
+    trend_target_abs_slope_max: 1.7
+    trend_slope_margin_min: 0.35
+    trend_slope_margin_max: 0.85
+    trend_same_direction_abs_slope_floor: 0.18
+    trend_opposite_abs_slope_min: 0.25
+    trend_opposite_abs_slope_max: 1.05
+    trend_answer_x_jitter: 0.4
+    trend_answer_y_jitter: 0.48
+    trend_answer_y_jitter_scale: 0.14
+    trend_distractor_x_jitter: 0.58
+    trend_distractor_y_jitter: 0.66
+    trend_distractor_y_jitter_scale: 0.18
+    x_value_min: 0
+    x_value_max: 100
+    y_value_min: 0
+    y_value_max: 100
+    query_variant_weights:
+      cluster_trend_direction_label: 1.0
+      cluster_separation_extremum_label: 1.0
+      cluster_spread_extremum_label: 1.0
+    trend_direction_weights:
+      upward: 1.0
+      downward: 1.0
+    separation_extremum_weights:
+      closest: 1.0
+      farthest: 1.0
+    spread_axis_weights:
+      horizontal: 1.0
+      vertical: 1.0
+      overall: 1.0
+    spread_extremum_weights:
+      largest: 1.0
+      smallest: 1.0
+    balanced_query_variant_sampling: true
+    balanced_trend_direction_sampling: true
+    balanced_separation_extremum_sampling: true
+    balanced_spread_axis_sampling: true
+    balanced_spread_extremum_sampling: true
+  task_overrides:
+    charts_scatter_series_readout_base:
+      readout_series_count_min: 5
+      readout_series_count_max: 5
+      readout_x_count_min: 9
+      readout_x_count_max: 10
+      readout_y_value_min: 10
+      readout_y_value_max: 90
+      readout_min_series_gap_at_x: 4
+      query_variant_weights:
+        series_highest_x_label: 1.0
+        series_lowest_x_label: 1.0
+        series_pair_value_gap_at_x: 1.0
+        series_y_anchor_other_series_value: 1.0
+      balanced_query_variant_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 1280
+    canvas_height: 820
+    plot_margin_left_px: 110
+    plot_margin_right_px: 260
+    plot_margin_top_px: 72
+    plot_margin_bottom_px: 112
+    axis_line_width_px: 2
+    grid_line_width_px: 1
+    tick_length_px: 8
+    point_radius_px: 7
+    tick_font_size_px: 17
+    legend_font_size_px: 22
+    title_font_size_px: 26
+    cluster_hull_padding_px: 14
+    cluster_palette_rgb:
+      - [38, 101, 176]
+      - [218, 91, 75]
+      - [56, 150, 96]
+      - [142, 92, 188]
+      - [218, 145, 46]
+      - [78, 159, 191]
+      - [188, 87, 132]
+      - [109, 125, 55]
+  task_overrides:
+    charts_scatter_series_readout_base:
+      readout_canvas_width: 1280
+      readout_canvas_height: 820
+      readout_plot_margin_left_px: 112
+      readout_plot_margin_right_px: 250
+      readout_plot_margin_top_px: 78
+      readout_plot_margin_bottom_px: 126
+      readout_point_radius_px: 8
+      readout_tick_font_size_px: 17
+      readout_axis_label_font_size_px: 19
+      readout_value_font_size_px: 16
+      readout_legend_font_size_px: 21
+      readout_title_font_size_px: 26
+      series_palette_rgb:
+        - [45, 103, 178]
+        - [211, 86, 70]
+        - [55, 145, 92]
+        - [133, 86, 175]
+        - [213, 136, 41]
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.50
+      reasoning_load: 0.35
+      scene_variant_load: 0.15
+  task_overrides:
+    charts_scatter_series_readout_base:
+      criteria_weights:
+        visual_scan: 0.48
+        reasoning_load: 0.37
+        scene_variant_load: 0.15
+
+prompt:
+  shared:
+    bundle_id: charts_scatter_v0
+    scene_key: scatter_cluster
+    task_key: scatter_cluster_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint: set "answer" to the requested cluster label as a string
+    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes surrounding the supporting cluster or cluster pair
+    json_example: '{"evidence":[[220,360,340,455]],"answer":"K"}'
+    json_example_answer_only: '{"answer":"K"}'
+    object_description_single_scatter: a scatter plot with several colored point clusters and a matching legend
+  task_overrides:
+    charts_scatter_series_readout_base:
+      bundle_id: charts_scatter_v0
+      scene_key: scatter_series_readout
+      task_key: scatter_series_readout_query
+      json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      answer_hint_x_label: set "answer" to the requested x-axis label as a string
+      answer_hint_y_value: set "answer" to the requested integer value
+      unanswerable_instruction: If the requested series is not shown in the legend, answer exactly "unanswerable".
+      evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around the supporting point/value labels and shared x-axis label
+      json_example_x_label: '{"evidence":[[420,250,458,284],[398,692,444,713]],"answer":"2016"}'
+      json_example_y_value: '{"evidence":[[420,250,458,284]],"answer":63}'
+      json_example_answer_only_x_label: '{"answer":"2016"}'
+      json_example_answer_only_y_value: '{"answer":63}'
+      object_description_scatter_series_readout: a multi-series scatter plot with labeled points and a legend

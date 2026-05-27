@@ -1,0 +1,166 @@
+{
+  "bundle_id": "physics_mechanics_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "lever_balance_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "spring_extension_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pulley_mechanical_advantage_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "sticky_collision_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:paired_spring_diagram": [
+      "object_description"
+    ],
+    "scene:pulley_system_diagram": [
+      "object_description"
+    ],
+    "scene:sticky_collision_diagram": [
+      "object_description"
+    ],
+    "query:side_torque": [
+      "torque_side"
+    ],
+    "query:missing_value": [
+      "solve_for"
+    ],
+    "query:force_relation": [
+      "solve_for"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ],
+    "scene:lever_balance_diagram": [
+      "object_description"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "lever_balance_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "paired_spring_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "pulley_system_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "sticky_collision_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "side_torque": [
+      "What is the total torque from the weights on the {torque_side} side of the fulcrum?",
+      "Using the shown {torque_side}-side weights and their distances from the fulcrum, what torque is produced?",
+      "Determine the torque contributed by the weights on the {torque_side} side of the lever.",
+      "What total {torque_side}-side torque is implied by the lever diagram?",
+      "Read the {torque_side}-side weights and distance marks. What torque do they produce about the fulcrum?"
+    ],
+    "missing_weight_to_balance": [
+      "What weight should replace the marked `?` block so the lever balances?",
+      "A missing weight is marked with `?`. What value would balance the lever?",
+      "How large should the marked `?` weight be so the torques on both sides match?",
+      "Use the shown weights and distances. What value must the marked `?` weight have for the lever to balance?",
+      "What integer weight is required in the marked `?` block so the beam is balanced about the fulcrum?"
+    ],
+    "missing_value": [
+      "What {solve_for} should replace the marked red `?` on the right spring?",
+      "The two springs are identical. What integer {solve_for} belongs at the marked red `?` on the right spring?",
+      "Use the reference spring and the shown right-side measurement. What {solve_for} should the red `?` mark have?",
+      "The right spring is missing its {solve_for}. What integer value should replace the red `?` mark?",
+      "Determine the missing right-side {solve_for} from the identical-spring diagram."
+    ],
+    "extension_difference": [
+      "What is the absolute difference between the two shown spring extensions?",
+      "Using the two ruler markers, what integer difference in extension do the springs show?",
+      "How many extension units apart are the two shown spring markers?",
+      "Read the two spring-extension markers. What is their absolute difference?",
+      "Determine the difference in extension between the two identical springs."
+    ],
+    "force_relation": [
+      "What {solve_for} should replace the marked `?` label?",
+      "Using only the full supporting rope strands, what integer {solve_for} is implied?",
+      "One force is shown and the {solve_for} is marked `?`. What value is required?",
+      "For this ideal pulley system, what {solve_for} corresponds to the shown force?",
+      "Determine the missing {solve_for} from the full supporting rope strands."
+    ],
+    "direction_choice": [
+      "After the two pucks collide and stick together, which candidate arrow A-F shows their combined direction of motion?",
+      "Using the shown masses, speeds, and approach directions, which option arrow matches the stuck pucks' final direction?",
+      "The pucks stick at the center. Which labeled candidate arrow shows the direction they move afterward?",
+      "Conserve horizontal and vertical momentum for the sticky collision. Which option arrow gives the final direction?",
+      "Which candidate arrow A-F points in the direction of the combined puck after the collision?"
+    ],
+    "velocity_component": [
+      "After the pucks stick together, what is the final {component_axis} velocity component in m/s? Use {positive_direction} as positive and {negative_direction} as negative.",
+      "What signed velocity component along the {component_axis} axis does the combined puck have after the sticky collision?",
+      "Conserve {component_axis} momentum. What integer {component_axis} velocity component results after the pucks stick?",
+      "Using the shown puck data and combined mass, what is the final signed {component_axis} component?",
+      "What is the stuck pucks' final velocity component along the {component_axis} axis in m/s?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

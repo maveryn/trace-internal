@@ -10,6 +10,7 @@ import pytest
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.nine_mens_morris.pieces_in_mill_count import GamesNineMensMorrisPiecesInMillCountTask
+from trace.tasks.games.shared.style import SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
 
@@ -18,24 +19,10 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "white_pieces_in_mill_count",
-                "target_answer": 5,
-            },
-            5,
-        ),
-        (
-            {
-                "task_variant": "black_pieces_in_mill_count",
-                "target_answer": 6,
-            },
-            6,
-        ),
-        (
-            {
                 "query_variant": "all_pieces_in_mill_count",
-                "target_answer": 11,
+                "target_answer": 9,
             },
-            11,
+            9,
         ),
     ),
 )
@@ -50,17 +37,39 @@ def test_games_nine_mens_morris_pieces_in_mill_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
+    assert len(execution["all_piece_ids_in_mill"]) == int(expected_answer)
 
-    if str(out.task_variant) == "white_pieces_in_mill_count":
-        assert len(execution["white_piece_ids_in_mill"]) == int(expected_answer)
-    elif str(out.task_variant) == "black_pieces_in_mill_count":
-        assert len(execution["black_piece_ids_in_mill"]) == int(expected_answer)
-    else:
-        assert len(execution["all_piece_ids_in_mill"]) == int(expected_answer)
+
+def test_games_nine_mens_morris_pieces_in_mill_count_query_cycle_covers_answer_and_style_support() -> None:
+    task = GamesNineMensMorrisPiecesInMillCountTask()
+    answers_by_variant: dict[str, set[int]] = {
+        "all_pieces_in_mill_count": set(),
+    }
+    styles_by_variant: dict[str, set[str]] = {
+        "all_pieces_in_mill_count": set(),
+    }
+
+    for sampling_index in range(42):
+        out = task.generate(
+            29201 + int(sampling_index),
+            params={},
+            max_attempts=192,
+        )
+        execution = out.trace_payload["execution_trace"]
+        query_variant = str(out.query_id or out.query_variant)
+        answers_by_variant[query_variant].add(int(out.answer_gt.value))
+        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+
+    assert answers_by_variant == {
+        "all_pieces_in_mill_count": {0, 3, 5, 6, 7, 8, 9},
+    }
+    assert styles_by_variant == {
+        "all_pieces_in_mill_count": set(SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS),
+    }
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evidence() -> None:
@@ -77,26 +86,10 @@ def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evi
     assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == []
 
 
-def test_games_nine_mens_morris_pieces_in_mill_count_counts_overlapping_pieces_once() -> None:
-    out = GamesNineMensMorrisPiecesInMillCountTask().generate(
-        29121,
-        params={
-            "query_variant": "white_pieces_in_mill_count",
-            "target_answer": 5,
-        },
-        max_attempts=64,
-    )
-    execution = out.trace_payload["execution_trace"]
-    overlapping = set(str(value) for value in execution["overlapping_piece_ids"])
-    evidence_ids = set(str(value) for value in execution["evidence_entity_ids"])
-    assert overlapping <= evidence_ids or not overlapping
-    assert len(evidence_ids) == len(execution["white_piece_ids_in_mill"])
-
-
 def test_games_nine_mens_morris_pieces_in_mill_count_is_deterministic() -> None:
     params = {
         "query_variant": "all_pieces_in_mill_count",
-        "target_answer": 12,
+        "target_answer": 9,
     }
     task = GamesNineMensMorrisPiecesInMillCountTask()
     out_a = task.generate(29131, params=params, max_attempts=64)
@@ -110,23 +103,21 @@ def test_games_nine_mens_morris_pieces_in_mill_count_is_deterministic() -> None:
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_prompt_bundle_requires_rule_text() -> None:
-    bundle = json.loads(Path("prompts/games/nine_mens_morris/games_nine_mens_morris_v1.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/nine_mens_morris/games_nine_mens_morris_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
-    assert required["task_variant:white_pieces_in_mill_count"] == ["mill_rule_text"]
-    assert required["task_variant:black_pieces_in_mill_count"] == ["mill_rule_text"]
-    assert required["task_variant:all_pieces_in_mill_count"] == ["mill_rule_text"]
+    assert required["query:all_pieces_in_mill_count"] == ["mill_rule_text"]
 
 
 def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games_nine_mens_morris_pieces_in_mill_count"
+    output_root = tmp_path / "task_games__nine_mens_morris__pieces_in_mill_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games_nine_mens_morris_pieces_in_mill_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_games__nine_mens_morris__pieces_in_mill_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games_nine_mens_morris_pieces_in_mill_count",
+                task_id="task_games__nine_mens_morris__pieces_in_mill_count",
                 count=4,
                 params={},
             )
@@ -143,7 +134,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_build_smoke(tmp_path: Path)
     assert all(record["task_group"] == "nine_mens_morris" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games_nine_mens_morris_pieces_in_mill_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__nine_mens_morris__pieces_in_mill_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

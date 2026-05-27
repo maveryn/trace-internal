@@ -1,0 +1,19 @@
+{
+  "type_registry_version": "v0",
+  "answer_types": [
+    "integer",
+    "number",
+    "string",
+    "pi_expression",
+    "option_letter",
+    "index_list",
+    "matrix"
+  ],
+  "evidence_types": [
+    "bbox_sequence",
+    "bbox_set",
+    "point_pair_set",
+    "point_sequence",
+    "point_set"
+  ]
+}

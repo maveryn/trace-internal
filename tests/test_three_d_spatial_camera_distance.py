@@ -1,0 +1,121 @@
+"""Tests for the synthetic lettered 3D object camera-distance task."""
+
+from __future__ import annotations
+
+import pytest
+
+import trace.tasks  # noqa: F401 - registers tasks.
+from trace.core.seed import spawn_rng
+from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks import create_task
+from trace.tasks.three_d.spatial.camera_distance import (
+    CAMERA_YAW_BANDS_DEGREES,
+    LARGE_CONTEXT_SHAPE_TYPES,
+    NAMEABLE_CONTEXT_SHAPE_TYPES,
+    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    OBJECT_NAME_BY_SHAPE_TYPE,
+    SMALL_OBJECT_SHAPE_TYPES,
+    _camera_yaw_band_for_instance,
+    _sample_camera,
+)
+from trace.tasks.registry import list_default_task_ids
+
+
+TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
+
+
+@pytest.mark.parametrize("query_variant", ["closest_to_camera", "farthest_from_camera"])
+def test_camera_distance_extremum_answer_and_evidence(query_variant: str) -> None:
+    task = create_task(TASK_ID)
+    output = task.generate(
+        20260521,
+        params={
+            "query_variant": query_variant,
+            "scene_variant": "floor_grid_room",
+            "point_count": 6,
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=120,
+    )
+
+    point_specs = list(output.trace_payload["execution_trace"]["point_specs"])
+    context_specs = list(output.trace_payload["execution_trace"]["context_object_specs"])
+    object_specs = list(output.trace_payload["execution_trace"]["object_specs"])
+    entities = list(output.trace_payload["scene_ir"]["entities"])
+    sorted_specs = sorted(point_specs, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
+    expected = sorted_specs[0] if query_variant == "closest_to_camera" else sorted_specs[-1]
+    expected_label = str(expected["point_label"])
+
+    assert output.query_variant == "default"
+    assert output.scene_id == "object_scene"
+    assert output.query_id == query_variant
+    assert output.answer_gt.type == "option_letter"
+    assert output.answer_gt.value == expected_label
+    assert len(point_specs) == 6
+    assert len(context_specs) == 2
+    assert len(object_specs) == 8
+    assert {str(spec["shape_type"]) for spec in point_specs} <= set(SMALL_OBJECT_SHAPE_TYPES)
+    assert {str(spec["shape_type"]) for spec in context_specs} <= set(LARGE_CONTEXT_SHAPE_TYPES)
+    assert all(spec["is_answer_candidate"] for spec in point_specs)
+    assert not any(spec["is_answer_candidate"] for spec in context_specs)
+    assert all(spec["object_name"] == OBJECT_NAME_BY_SHAPE_TYPE[spec["shape_type"]] for spec in object_specs)
+    assert all(spec["prompt_name"] == spec["object_name"] for spec in object_specs)
+    assert {spec["object_name"] for spec in object_specs}.isdisjoint({"L-block", "T-block", "cross-block", "l-block", "t-block"})
+    assert {
+        spec["shape_type"] for spec in point_specs if bool(spec["nameable_for_prompt"])
+    } <= set(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+    assert {
+        spec["shape_type"] for spec in context_specs if bool(spec["nameable_for_prompt"])
+    } <= set(NAMEABLE_CONTEXT_SHAPE_TYPES)
+    assert any(entity["entity_id"] == "open_floor_stage" for entity in entities)
+    stage_entity = next(entity for entity in entities if entity["entity_id"] == "open_floor_stage")
+    assert stage_entity["attrs"]["full_bleed_floor"] is True
+    assert stage_entity["attrs"]["grid_mode"] == "screen_ray_floor_plane"
+    assert isinstance(stage_entity["attrs"]["grid_world_bbox"], list)
+    assert output.trace_payload["render_map"]["room_bbox_px"] == [0.0, 0.0, 1180.0, 900.0]
+    assert not any(entity["entity_id"] == "room_shell" for entity in entities)
+    assert all(0.86 <= float(spec["dimension_scale"]) <= 1.16 for spec in point_specs)
+    assert all(0.96 <= float(spec["dimension_scale"]) <= 1.20 for spec in context_specs)
+    assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
+    assert any(max(spec["dimensions_xyz"][:2]) > 1.35 for spec in context_specs)
+    assert output.evidence_gt.type == "bbox_set"
+    assert output.evidence_gt.value == [
+        output.trace_payload["render_map"]["point_bboxes_px"][expected_label]
+    ]
+    assert set(output.trace_payload["render_map"]["context_object_bboxes_px"]) == {
+        str(spec["object_id"]) for spec in context_specs
+    }
+    assert output.image.size == (1180, 900)
+
+
+def test_camera_distance_task_registered_in_three_d_taxonomy() -> None:
+    taxonomy = resolve_task_taxonomy(TASK_ID)
+
+    assert TASK_ID in list_default_task_ids()
+    assert taxonomy.domain == "three_d"
+    assert taxonomy.scene_id == "object_scene"
+    assert taxonomy.source_task_group == "spatial"
+
+
+def test_three_d_camera_sampler_uses_multiple_orbit_families() -> None:
+    yaws = [
+        float(_sample_camera(spawn_rng(20260521, f"three_d_camera_yaw_test.{index}")).yaw_degrees)
+        for index in range(120)
+    ]
+
+    assert min(yaws) < -100.0
+    assert max(yaws) > 100.0
+    assert any(48.0 <= abs(yaw) <= 82.0 for yaw in yaws)
+    assert any(20.0 <= abs(yaw) <= 42.0 for yaw in yaws)
+    assert set(CAMERA_YAW_BANDS_DEGREES) == {
+        (-145.0, -108.0),
+        (-82.0, -48.0),
+        (-42.0, -20.0),
+        (20.0, 42.0),
+        (48.0, 82.0),
+        (108.0, 145.0),
+    }
+    assert {
+        _camera_yaw_band_for_instance(20260521 + index)
+        for index in range(len(CAMERA_YAW_BANDS_DEGREES))
+    } == set(CAMERA_YAW_BANDS_DEGREES)

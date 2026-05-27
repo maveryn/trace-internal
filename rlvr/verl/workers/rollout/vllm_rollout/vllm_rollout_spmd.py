@@ -376,6 +376,9 @@ class vLLMRollout(BaseRollout):
                 "temperature": self.config.val_kwargs.temperature,
                 "n": 1,  # if validate, already repeat in ray_trainer
             }
+            max_tokens = prompts.meta_info.get("max_tokens", self.config.val_kwargs.max_tokens)
+            if max_tokens is not None:
+                kwargs["max_tokens"] = int(max_tokens)
 
         lora_requests = None
         if self.lora_kwargs:

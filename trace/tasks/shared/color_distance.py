@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Iterable, Tuple
+from typing import Any, Iterable, Sequence, Tuple
 
 Color = Tuple[int, int, int]
 DEFAULT_COLOR_DISTANCE_SPACE = "lab"
@@ -95,6 +95,22 @@ def _sample_random_color(rng, *, channel_min: int, channel_max: int) -> Color:
 def _normalize_color(color: Color) -> Color:
     """Clamp one RGB triplet into a normalized integer color tuple."""
     return (_clamp_channel(int(color[0])), _clamp_channel(int(color[1])), _clamp_channel(int(color[2])))
+
+
+def normalize_rgb(color: Sequence[int]) -> Color:
+    """Return one clamped RGB tuple from a sequence with at least three channels."""
+
+    if len(color) < 3:
+        raise ValueError("normalize_rgb requires at least three channels")
+    return (_clamp_channel(int(color[0])), _clamp_channel(int(color[1])), _clamp_channel(int(color[2])))
+
+
+def coerce_rgb(value: Any, fallback: Sequence[int]) -> Color:
+    """Return a clamped RGB tuple from ``value`` or a trusted fallback RGB tuple."""
+
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and len(value) >= 3:
+        return normalize_rgb(value[:3])
+    return (int(fallback[0]), int(fallback[1]), int(fallback[2]))
 
 
 def _normalize_colors(colors: Iterable[Color]) -> tuple[Color, ...]:

@@ -27,6 +27,7 @@ def _build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str
         "domain": train_instance.get("domain"),
         "task_group": train_instance.get("task_group"),
         "task": train_instance.get("task"),
+        "scene_id": train_instance.get("scene_id"),
         "prompt": train_instance.get("prompt"),
         "prompt_variants": dict(train_instance.get("prompt_variants", {})),
         "images": images,

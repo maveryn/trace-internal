@@ -1,0 +1,1 @@
+"""Table statistics task group."""

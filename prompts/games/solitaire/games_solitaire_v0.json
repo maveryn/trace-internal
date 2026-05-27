@@ -1,0 +1,88 @@
+{
+  "bundle_id": "games_solitaire_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "solitaire_tableau_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:solitaire_tableau": [
+      "object_description"
+    ],
+    "query:move_legality_label": [
+      "tableau_rule_text",
+      "foundation_rule_text"
+    ],
+    "query:foundation_ready_count": [
+      "foundation_rule_text"
+    ],
+    "query:tableau_sequence_count": [
+      "tableau_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "solitaire_tableau": [
+      "The image shows {object_description}.",
+      "The solitaire layout shows {object_description}.",
+      "This tableau shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "move_legality_label": [
+      "{tableau_rule_text} {foundation_rule_text} Which visible move option letter is legal?",
+      "{tableau_rule_text} {foundation_rule_text} Select the option letter for the legal move.",
+      "{tableau_rule_text} {foundation_rule_text} Which move option can be made now?",
+      "{tableau_rule_text} {foundation_rule_text} Identify the only legal source-to-target option.",
+      "{tableau_rule_text} {foundation_rule_text} Which option letter shows a legal solitaire move?"
+    ],
+    "foundation_ready_count": [
+      "{foundation_rule_text} How many labeled exposed tableau cards can move to a foundation pile now?",
+      "{foundation_rule_text} Count the labeled exposed tableau cards that are ready for a foundation.",
+      "{foundation_rule_text} What is the number of exposed tableau cards that can be moved to a foundation now?",
+      "{foundation_rule_text} How many labeled exposed cards are legal foundation moves?",
+      "{foundation_rule_text} Count the exposed tableau cards whose suit and rank match a foundation move."
+    ],
+    "tableau_sequence_count": [
+      "{tableau_rule_text} Count adjacent visible card pairs in the same column where the lower card can legally sit on the card directly above it.",
+      "{tableau_rule_text} How many directly stacked visible pairs in the columns are descending by one rank and alternate color?",
+      "{tableau_rule_text} What is the number of adjacent same-column visible pairs where the lower card is exactly one rank lower than the card above and opposite color?",
+      "{tableau_rule_text} How many neighboring visible cards within columns already form a legal tableau sequence from upper card to lower card?",
+      "{tableau_rule_text} Count the adjacent same-column pairs where the lower card can sit on the card immediately above it."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

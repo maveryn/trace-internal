@@ -1,0 +1,89 @@
+{
+  "bundle_id": "three_d_warehouse_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "warehouse_robot_forward_path_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "warehouse_robot_nearest_object_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:warehouse": [
+      "object_description"
+    ],
+    "query:closest_robot_to_reference": [
+      "reference_object_name"
+    ],
+    "query:closest_object_to_robot": [],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "warehouse": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This 3D view shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The rendered scene shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "first_object_ahead": [
+      "Which lettered object will the red-boxed robot reach first if it moves straight ahead along the red arrow?",
+      "Choose the letter for the first object in the red-boxed robot's forward path.",
+      "If the red-boxed robot continues straight along the red arrow, which lettered object comes first?",
+      "Which letter marks the first warehouse object the red-boxed robot would encounter by moving straight forward?",
+      "Following the red-boxed robot's forward direction, which lettered object is reached first?"
+    ],
+    "closest_robot_to_reference": [
+      "Which lettered robot is closest to the {reference_object_name}?",
+      "Choose the letter for the robot nearest to the {reference_object_name}.",
+      "Which robot letter marks the robot closest to the {reference_object_name}?",
+      "Among the lettered robots, which one is nearest to the {reference_object_name}?",
+      "Which lettered robot has the smallest distance to the {reference_object_name}?"
+    ],
+    "closest_object_to_robot": [
+      "Which lettered warehouse object is closest to the robot?",
+      "Choose the letter for the object nearest to the robot.",
+      "Which object letter marks the warehouse object closest to the robot?",
+      "Among the lettered warehouse objects, which one is nearest to the robot?",
+      "Which lettered object has the smallest distance to the robot?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,162 @@
+{
+  "bundle_id": "three_d_spatial_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "camera_distance_extremum_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "object_relation_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "reference_nearest_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "between_references_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "occlusion_order_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "height_extremum_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:object_scene": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "object_scene": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This 3D view shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The rendered scene shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "closest_to_camera": [
+      "Which small lettered 3D object is closest to the camera?",
+      "From the camera view, which small lettered object is nearest?",
+      "Using the perspective depth cues, choose the small object letter closest to the camera.",
+      "Which small lettered shape is closest to the viewer?",
+      "Among the small lettered 3D objects, which one is nearest to the camera?"
+    ],
+    "farthest_from_camera": [
+      "Which small lettered 3D object is farthest from the camera?",
+      "From the camera view, which small lettered object is farthest away?",
+      "Using the perspective depth cues, choose the small object letter farthest from the camera.",
+      "Which small lettered shape is farthest from the viewer?",
+      "Among the small lettered 3D objects, which one is farthest from the camera?"
+    ],
+    "on_top_of_prop": [
+      "Which small lettered 3D object is on top of the {reference_name}?",
+      "Choose the small object letter for the object sitting on the {reference_name}.",
+      "Which lettered small object is placed on top of the {reference_name}?",
+      "Find the small lettered object resting on the {reference_name}.",
+      "Which small lettered object is directly on the {reference_name}?"
+    ],
+    "under_prop": [
+      "Which small lettered 3D object is under the {reference_name}?",
+      "Choose the small object letter for the object beneath the {reference_name}.",
+      "Which lettered small object is placed under the {reference_name}?",
+      "Find the small lettered object below the {reference_name}.",
+      "Which small lettered object is directly underneath the {reference_name}?"
+    ],
+    "inside_prop": [
+      "Which small lettered 3D object is inside the {reference_name}?",
+      "Choose the small object letter for the object inside the {reference_name}.",
+      "Which lettered small object is placed within the {reference_name}?",
+      "Find the small lettered object contained by the {reference_name}.",
+      "Which small lettered object is in the {reference_name}?"
+    ],
+    "closest_to_reference": [
+      "Which lettered object is closest to the {reference_name}?",
+      "Use the {reference_name} as the reference. Which lettered object is nearest to it?",
+      "Among the lettered objects, which one is closest to the {reference_name}?",
+      "Looking at the {reference_name}, choose the nearest lettered object.",
+      "Which option letter is on the object closest to the {reference_name}?"
+    ],
+    "between_references": [
+      "Which lettered object is between the {reference_a_name} and the {reference_b_name}?",
+      "Looking at the two named reference objects, which lettered object lies between the {reference_a_name} and the {reference_b_name}?",
+      "Which option letter marks the object positioned between the {reference_a_name} and the {reference_b_name}?",
+      "Among the lettered objects, choose the one in the space between the {reference_a_name} and the {reference_b_name}.",
+      "Which lettered object sits along the gap between the {reference_a_name} and the {reference_b_name}?"
+    ],
+    "in_front_of_reference": [
+      "Which lettered object appears in front of the {reference_name}?",
+      "Looking at the {reference_name}, which lettered object is visually in front of it?",
+      "Which option letter marks the object that occludes the front of the {reference_name}?",
+      "Among the lettered objects, which one overlaps the {reference_name} from closer to the camera?",
+      "Choose the lettered object that appears closer than, and overlaps, the {reference_name}."
+    ],
+    "highest_above_floor": [
+      "Which lettered object is sitting highest above the floor?",
+      "Among the lettered objects, which one is placed highest above the floor?",
+      "Which option letter marks the object at the greatest height above the floor?",
+      "Using the 3D height cues, choose the lettered object highest above the floor.",
+      "Which lettered object is raised the highest from the floor?"
+    ],
+    "lowest_above_floor": [
+      "Which lettered object is sitting lowest above the floor?",
+      "Among the lettered objects, which one is closest to the floor?",
+      "Which option letter marks the object at the lowest height above the floor?",
+      "Using the 3D height cues, choose the lettered object lowest above the floor.",
+      "Which lettered object is raised the least from the floor?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

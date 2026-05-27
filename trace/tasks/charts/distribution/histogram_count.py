@@ -17,7 +17,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.chart_scene import render_histogram_scene
+from ..shared.chart_scene import render_histogram_scene, value_axis_render_metadata
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
@@ -32,17 +32,25 @@ from ..shared.distribution_chart_common import (
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
+from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
-TaskVariant = str
+QueryVariant = str
 
-TASK_ID = "task_charts_distribution_histogram_count"
+TASK_ID = "charts_distribution_histogram_count_base"
 SCENE_VARIANT = "histogram"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
-    "modal_bin_count",
+_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
     "interval_mass",
-    "cumulative_count_to_bin",
+    "bin_count_between_values",
+    "rank_item_bin_label",
+)
+_SUPPORTED_INTERVAL_RELATIONS: Tuple[str, ...] = (
+    "inside",
+    "outside",
+)
+_CUMULATIVE_RANK_QUERY_VARIANTS: Tuple[str, ...] = (
+    "rank_item_bin_label",
 )
 
 _DEFAULTS = DistributionChartDefaults()
@@ -56,29 +64,134 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="dist
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="distribution", apply_prob=0.0)
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
-    "modal_bin_count": 0.0,
     "interval_mass": 0.55,
-    "cumulative_count_to_bin": 1.0,
+    "bin_count_between_values": 0.75,
+    "rank_item_bin_label": 0.80,
+}
+
+_QUERY_TRACE_KEYS = {
+    "interval_relation",
+    "query_interval_label",
+    "query_interval_start_value",
+    "query_interval_end_value",
+    "interval_bin_span",
+    "excluded_interval_bin_span",
+    "outside_bin_count",
+    "outside_left_bin_count",
+    "outside_right_bin_count",
+    "target_rank",
+    "total_count",
+    "rank_fraction_numerator",
+    "rank_fraction_denominator",
+    "answer_bin_index",
+    "answer_bin_label",
+    "answer_bin_value",
+    "answer_prefix_bin_count",
+    "cumulative_count_before_answer_bin",
+    "answer_bin_count",
+    "cumulative_count_through_answer_bin",
 }
 
 
-def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the histogram query variant."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_TASK_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_VARIANTS,
         task_id=TASK_ID,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        axis_namespace="task_variant",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        axis_namespace="query_variant",
     )
 
 
-@register_task
+def _resolve_interval_relation(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    """Resolve whether interval-mass evidence is inside or outside the queried interval."""
+
+    return resolve_chart_axis_variant(
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        instance_seed=int(instance_seed),
+        supported_variants=_SUPPORTED_INTERVAL_RELATIONS,
+        task_id=TASK_ID,
+        explicit_key="interval_relation",
+        weights_key="interval_relation_weights",
+        balance_flag_key="balanced_interval_relation_sampling",
+        axis_namespace="interval_relation",
+    )
+
+
+def _internal_histogram_variant(query_variant: str, *, interval_relation: str | None) -> str:
+    """Map the public histogram variant plus relation parameter to the construction variant."""
+
+    if str(query_variant) == "interval_mass":
+        if interval_relation is None:
+            return "interval_mass"
+        if str(interval_relation) == "inside":
+            return "interval_mass"
+        if str(interval_relation) == "outside":
+            return "outside_interval_mass"
+        raise ValueError(f"unsupported interval_relation: {interval_relation}")
+    return str(query_variant)
+
+
+def _interval_relation_phrase(interval_relation: str) -> str:
+    """Return prompt wording for one interval relation."""
+
+    if str(interval_relation) == "inside":
+        return "inside"
+    if str(interval_relation) == "outside":
+        return "outside"
+    raise ValueError(f"unsupported interval_relation: {interval_relation}")
+
+
+def _histogram_reasoning_load(query_variant: str, *, interval_relation: str | None) -> float:
+    """Return a calibrated reasoning load for the public histogram variant."""
+
+    if str(query_variant) == "interval_mass" and str(interval_relation) == "outside":
+        return 0.85
+    return float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])
+
+
+def _uses_uniform_query_variant_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+) -> bool:
+    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+
+    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+        return False
+    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    if not bool(enabled):
+        return False
+    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _support_params_for_query_variant_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    """Use a per-variant occurrence index for balanced support cycling."""
+
+    support_params = dict(params)
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is None:
+        return support_params
+    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+        return support_params
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    return support_params
+
+
 class ChartsDistributionHistogramCountTask:
     """Answer integer-count questions over one rendered histogram."""
 
@@ -88,9 +201,24 @@ class ChartsDistributionHistogramCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
-        mark_style = resolve_chart_mark_colors(
+        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        support_params = _support_params_for_query_variant_cycle(
             params,
+            query_variant_probabilities=query_variant_probabilities,
+        )
+        interval_relation = None
+        interval_relation_probabilities: Dict[str, float] = {}
+        if str(query_variant) == "interval_mass":
+            interval_relation, interval_relation_probabilities = _resolve_interval_relation(
+                support_params,
+                instance_seed=int(instance_seed),
+            )
+        histogram_variant = _internal_histogram_variant(
+            str(query_variant),
+            interval_relation=interval_relation,
+        )
+        mark_style = resolve_chart_mark_colors(
+            support_params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
             instance_seed=int(instance_seed),
@@ -98,8 +226,8 @@ class ChartsDistributionHistogramCountTask:
             mark_count=1,
         )
         bins, answer_value, evidence_labels, trace_extras = build_histogram_dataset_for_variant(
-            task_variant=str(task_variant),
-            params=params,
+            query_variant=str(histogram_variant),
+            params=support_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
             defaults=_DEFAULTS,
@@ -107,9 +235,10 @@ class ChartsDistributionHistogramCountTask:
             mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
-            {**dict(params), **mark_style},
+            {**dict(support_params), **mark_style},
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
+            instance_seed=int(instance_seed),
         )
 
         background, background_meta = make_background_canvas(
@@ -135,50 +264,63 @@ class ChartsDistributionHistogramCountTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
+                "answer_hint_cumulative_rank",
                 "object_description_histogram",
-                "evidence_hint_modal_bin_count",
                 "evidence_hint_interval_mass",
-                "evidence_hint_cumulative_count_to_bin",
-                "json_example_modal_bin_count",
+                "evidence_hint_bin_count_between_values",
+                "evidence_hint_rank_item_bin_label",
                 "json_example_interval_mass",
-                "json_example_cumulative_count_to_bin",
-                "json_example_answer_only_modal_bin_count",
+                "json_example_bin_count_between_values",
+                "json_example_rank_item_bin_label",
                 "json_example_answer_only_interval_mass",
-                "json_example_answer_only_cumulative_count_to_bin",
+                "json_example_answer_only_bin_count_between_values",
+                "json_example_answer_only_rank_item_bin_label",
             ),
             context=f"prompt defaults for {self.task_id}",
+        )
+        if interval_relation is not None:
+            trace_extras["interval_relation"] = str(interval_relation)
+        answer_hint_key = (
+            "answer_hint_cumulative_rank"
+            if str(query_variant) in _CUMULATIVE_RANK_QUERY_VARIANTS
+            else "answer_hint"
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            task_variant_key=str(task_variant),
+            query_key=str(query_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_histogram"]),
                 "query_interval_label": str(trace_extras.get("query_interval_label", "")),
                 "query_bin_label": str(trace_extras.get("query_bin_label", "")),
+                "target_rank": str(trace_extras.get("target_rank", "")),
+                "interval_relation_phrase": (
+                    _interval_relation_phrase(str(interval_relation)) if interval_relation is not None else ""
+                ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(task_variant)}"]),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults[f"json_example_{str(task_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "answer_hint": str(prompt_defaults[answer_hint_key]),
+                "json_example": str(prompt_defaults[f"json_example_{str(query_variant)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
         evidence_projection = projected_mark_evidence(rendered_scene, evidence_labels)
+        evidence_bboxes = [list(bbox) for bbox in evidence_projection["bbox_set"]]
+        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -193,33 +335,43 @@ class ChartsDistributionHistogramCountTask:
                 "scene_kind": "chart_histogram_distribution",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "scene_variant": SCENE_VARIANT,
                     "evidence_labels": list(evidence_labels),
+                    **(
+                        {"interval_relation_probabilities": dict(interval_relation_probabilities)}
+                        if interval_relation_probabilities
+                        else {}
+                    ),
                     **{
                         str(key): value
                         for key, value in trace_extras.items()
-                        if key in {"query_interval_label", "query_bin_label", "modal_bin_label", "interval_bin_span", "prefix_bin_count"}
+                        if key in _QUERY_TRACE_KEYS
                     },
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "scene_variant": SCENE_VARIANT,
-                    "task_variant_probabilities": dict(task_variant_probabilities),
+                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    **(
+                        {"interval_relation_probabilities": dict(interval_relation_probabilities)}
+                        if interval_relation_probabilities
+                        else {}
+                    ),
                     "bin_count": int(trace_extras["bin_count"]),
                     "target_answer": int(trace_extras["target_answer"]),
                     "target_answer_range": list(trace_extras["target_answer_range"]),
                     **{
                         str(key): value
                         for key, value in trace_extras.items()
-                        if key in {"query_interval_label", "query_bin_label", "modal_bin_label", "interval_bin_span", "prefix_bin_count"}
+                        if key in _QUERY_TRACE_KEYS
                     },
                 },
             },
@@ -230,6 +382,7 @@ class ChartsDistributionHistogramCountTask:
                 "scene_variant": SCENE_VARIANT,
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "tick_font_size_px": int(render_params.tick_font_size_px),
@@ -253,6 +406,7 @@ class ChartsDistributionHistogramCountTask:
                 "plot_bbox_px": list(rendered_scene.plot_bbox_px),
                 "y_axis_max": int(rendered_scene.y_axis_max),
                 "y_ticks": [int(value) for value in rendered_scene.y_ticks],
+                **value_axis_render_metadata(rendered_scene),
             },
             "render_map": {
                 "image_id": "img0",
@@ -260,7 +414,7 @@ class ChartsDistributionHistogramCountTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "scene_variant": SCENE_VARIANT,
                 "answer_value": int(answer_value),
                 "evidence_labels": list(evidence_labels),
@@ -276,7 +430,12 @@ class ChartsDistributionHistogramCountTask:
                 "bin_frequency_range": list(trace_extras["bin_frequency_range"]),
                 "target_answer": int(trace_extras["target_answer"]),
                 "target_answer_range": list(trace_extras["target_answer_range"]),
-                "task_variant_probabilities": dict(task_variant_probabilities),
+                "query_variant_probabilities": dict(query_variant_probabilities),
+                **(
+                    {"interval_relation_probabilities": dict(interval_relation_probabilities)}
+                    if interval_relation_probabilities
+                    else {}
+                ),
                 "question_format": "numeric_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
                 "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),
@@ -307,11 +466,11 @@ class ChartsDistributionHistogramCountTask:
                 },
             },
             "witness_symbolic": {
-                "type": "label_set",
+                "type": "object_set",
                 "value": list(evidence_labels),
             },
             "projected_evidence": {
-                "label_set": list(evidence_labels),
+                "bbox_set": list(evidence_bboxes),
                 **dict(evidence_projection),
             },
         }
@@ -323,7 +482,10 @@ class ChartsDistributionHistogramCountTask:
                     int(trace_extras["bin_count"]),
                     trace_extras["bin_count_range"],
                 ),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "reasoning_load": _histogram_reasoning_load(
+                    str(query_variant),
+                    interval_relation=interval_relation,
+                ),
                 "scene_variant_load": 0.55,
             },
         )
@@ -336,9 +498,37 @@ class ChartsDistributionHistogramCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["ChartsDistributionHistogramCountTask"]
+@register_task
+class ChartsDistributionHistogramIntervalValueTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionHistogramCountTask,
+):
+    """Return one sampled integer value over a histogram interval."""
+
+    task_id = "task_charts__histogram__interval_value"
+    allowed_query_variants = ("interval_mass", "bin_count_between_values")
+
+
+@register_task
+class ChartsDistributionHistogramCumulativeRankLabelTask(
+    MergedChartQueryVariantTaskMixin,
+    ChartsDistributionHistogramCountTask,
+):
+    """Return the x-axis value containing a cumulative rank in the histogram."""
+
+    task_id = "task_charts__histogram__cumulative_rank_bin_label"
+    allowed_query_variants = (
+        "rank_item_bin_label",
+    )
+
+
+__all__ = [
+    "ChartsDistributionHistogramCumulativeRankLabelTask",
+    "ChartsDistributionHistogramCountTask",
+    "ChartsDistributionHistogramIntervalValueTask",
+]

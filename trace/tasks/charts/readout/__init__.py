@@ -1,2 +1,0 @@
-"""Chart readout task family."""
-

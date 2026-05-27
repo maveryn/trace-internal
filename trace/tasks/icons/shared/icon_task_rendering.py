@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import hash64, spawn_rng
 from ....core.visual.noise import TRACE_DEFAULT_NOISE_VALUE_RANGES
 from ...shared.config_defaults import group_default
+from ...shared.render_variation import resolve_render_rgb
 from .icon_noise import NoiseEdit, sample_icon_noise_edits
 
 
@@ -33,11 +34,32 @@ def _normalize_noise_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, 
     return normalized
 
 
+def resolve_icon_rgb_param(
+    *,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    key: str,
+    fallback: Sequence[int],
+    instance_seed: int | None,
+) -> Tuple[int, int, int]:
+    """Resolve one icon chrome RGB value with optional deterministic palettes."""
+
+    return resolve_render_rgb(
+        params,
+        render_defaults,
+        str(key),
+        tuple(int(value) for value in fallback),
+        instance_seed=instance_seed,
+        namespace="icons.render",
+    )
+
+
 def resolve_icon_render_params(
     *,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     fallback_defaults: Any,
+    instance_seed: int | None = None,
 ) -> Dict[str, Any]:
     """Resolve common rendering params for icon task groups."""
 
@@ -191,17 +213,33 @@ def resolve_icon_render_params(
                 group_default(render_defaults, "panel_title_font_size_px", fallback_defaults.panel_title_font_size_px),
             )
         ),
-        "background_color_rgb": tuple(
-            params.get("background_color_rgb", group_default(render_defaults, "background_color_rgb", fallback_defaults.background_color_rgb))
+        "background_color_rgb": resolve_icon_rgb_param(
+            params=params,
+            render_defaults=render_defaults,
+            key="background_color_rgb",
+            fallback=fallback_defaults.background_color_rgb,
+            instance_seed=instance_seed,
         ),
-        "panel_fill_rgb": tuple(
-            params.get("panel_fill_rgb", group_default(render_defaults, "panel_fill_rgb", fallback_defaults.panel_fill_rgb))
+        "panel_fill_rgb": resolve_icon_rgb_param(
+            params=params,
+            render_defaults=render_defaults,
+            key="panel_fill_rgb",
+            fallback=fallback_defaults.panel_fill_rgb,
+            instance_seed=instance_seed,
         ),
-        "panel_border_rgb": tuple(
-            params.get("panel_border_rgb", group_default(render_defaults, "panel_border_rgb", fallback_defaults.panel_border_rgb))
+        "panel_border_rgb": resolve_icon_rgb_param(
+            params=params,
+            render_defaults=render_defaults,
+            key="panel_border_rgb",
+            fallback=fallback_defaults.panel_border_rgb,
+            instance_seed=instance_seed,
         ),
-        "header_text_rgb": tuple(
-            params.get("header_text_rgb", group_default(render_defaults, "header_text_rgb", fallback_defaults.header_text_rgb))
+        "header_text_rgb": resolve_icon_rgb_param(
+            params=params,
+            render_defaults=render_defaults,
+            key="header_text_rgb",
+            fallback=fallback_defaults.header_text_rgb,
+            instance_seed=instance_seed,
         ),
         "icon_noise_edit_types": tuple(
             str(value).strip().lower()
@@ -257,6 +295,7 @@ def resolve_icon_cell_render_params(
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     fallback_defaults: Any,
+    instance_seed: int | None = None,
 ) -> Dict[str, Any]:
     """Resolve shared render params for icon tasks built from labeled cells."""
 
@@ -264,6 +303,7 @@ def resolve_icon_cell_render_params(
         params=params,
         render_defaults=render_defaults,
         fallback_defaults=fallback_defaults,
+        instance_seed=instance_seed,
     )
     render_params["cell_padding_px"] = int(
         params.get(
@@ -331,15 +371,12 @@ def resolve_icon_cell_render_params(
             ),
         )
     )
-    render_params["cell_border_rgb"] = tuple(
-        params.get(
-            "cell_border_rgb",
-            group_default(
-                render_defaults,
-                "cell_border_rgb",
-                getattr(fallback_defaults, "cell_border_rgb", (218, 223, 233)),
-            ),
-        )
+    render_params["cell_border_rgb"] = resolve_icon_rgb_param(
+        params=params,
+        render_defaults=render_defaults,
+        key="cell_border_rgb",
+        fallback=getattr(fallback_defaults, "cell_border_rgb", (218, 223, 233)),
+        instance_seed=instance_seed,
     )
     render_params["cell_label_font_size_px"] = int(
         params.get(
@@ -351,15 +388,12 @@ def resolve_icon_cell_render_params(
             ),
         )
     )
-    render_params["cell_label_color_rgb"] = tuple(
-        params.get(
-            "cell_label_color_rgb",
-            group_default(
-                render_defaults,
-                "cell_label_color_rgb",
-                getattr(fallback_defaults, "cell_label_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
-            ),
-        )
+    render_params["cell_label_color_rgb"] = resolve_icon_rgb_param(
+        params=params,
+        render_defaults=render_defaults,
+        key="cell_label_color_rgb",
+        fallback=getattr(fallback_defaults, "cell_label_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
+        instance_seed=instance_seed,
     )
     render_params["scene_content_side_padding_px"] = int(
         params.get(
@@ -401,15 +435,12 @@ def resolve_icon_cell_render_params(
             ),
         )
     )
-    render_params["missing_mark_color_rgb"] = tuple(
-        params.get(
-            "missing_mark_color_rgb",
-            group_default(
-                render_defaults,
-                "missing_mark_color_rgb",
-                getattr(fallback_defaults, "missing_mark_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
-            ),
-        )
+    render_params["missing_mark_color_rgb"] = resolve_icon_rgb_param(
+        params=params,
+        render_defaults=render_defaults,
+        key="missing_mark_color_rgb",
+        fallback=getattr(fallback_defaults, "missing_mark_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
+        instance_seed=instance_seed,
     )
     return render_params
 
@@ -480,5 +511,6 @@ __all__ = [
     "icon_render_style_trace",
     "resolve_icon_cell_render_params",
     "resolve_icon_render_params",
+    "resolve_icon_rgb_param",
     "sample_icon_instance_noise",
 ]

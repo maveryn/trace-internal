@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from .layout import apply_games_layout_jitter_to_bbox
 from .style import CardTheme, build_games_card_theme, suit_color
 
 
@@ -29,6 +30,18 @@ class CardInstance:
     rank_value: int
     suit_name: str
     is_reference: bool = False
+    badge_text: str | None = None
+    group_label: str | None = None
+
+
+@dataclass(frozen=True)
+class CardMoveOption:
+    """One visible directed card-move option before rendering."""
+
+    label: str
+    source_label: str
+    target_label: str
+    is_answer: bool
 
 
 @dataclass(frozen=True)
@@ -41,6 +54,8 @@ class RenderedCardSpec:
     suit_name: str
     suit_symbol: str
     is_reference: bool
+    badge_text: str | None
+    group_label: str | None
     bbox_px: Tuple[float, float, float, float]
     row_index: int
     order_index: int
@@ -64,6 +79,10 @@ class CardRenderParams:
     reference_font_size_px: int
     continuation_font_size_px: int
     continuation_gap_px: int
+    max_cards_per_row: int
+    center_label_mode: str = "suit_symbol"
+    layout_jitter_meta: Dict[str, Any] | None = None
+    group_label_font_size_px: int = 22
 
 
 @dataclass(frozen=True)
@@ -120,8 +139,9 @@ def _draw_card_face(
         width=int(theme.card_border_width_px),
     )
 
-    banner_height_px = int(params.reference_banner_height_px) if bool(card.is_reference) else 0
-    if bool(card.is_reference):
+    badge_text = str(card.badge_text) if card.badge_text is not None else ("REF" if bool(card.is_reference) else "")
+    banner_height_px = int(params.reference_banner_height_px) if str(badge_text).strip() else 0
+    if str(badge_text).strip():
         banner_bottom = float(top + params.reference_banner_height_px)
         draw.rounded_rectangle(
             [left, top, right, banner_bottom],
@@ -129,7 +149,7 @@ def _draw_card_face(
             fill=tuple(int(value) for value in theme.reference_fill_rgb),
         )
         banner_font = load_font(int(params.reference_font_size_px), bold=True)
-        banner_text = "REF"
+        banner_text = str(badge_text)
         banner_bbox = draw.textbbox((0, 0), banner_text, font=banner_font, stroke_width=1)
         banner_width = float(banner_bbox[2] - banner_bbox[0])
         banner_height = float(banner_bbox[3] - banner_bbox[1])
@@ -154,7 +174,6 @@ def _draw_card_face(
         else tuple(int(value) for value in theme.rank_rgb_black)
     )
     small_font = load_font(int(params.rank_font_size_px), bold=True)
-    center_font = load_font(int(params.center_symbol_font_size_px), bold=True)
     label = f"{card.rank_label}{suit_symbol}"
     label_stroke = resolve_text_stroke_fill(rank_rgb)
     top_label_inset_px = 10
@@ -185,7 +204,15 @@ def _draw_card_face(
         stroke_fill=tuple(int(value) for value in label_stroke),
     )
 
-    center_bbox = draw.textbbox((0, 0), suit_symbol, font=center_font, stroke_width=1)
+    center_text = suit_symbol
+    center_rgb = pip_rgb
+    center_font_size_px = int(params.center_symbol_font_size_px)
+    if str(params.center_label_mode) == "rank_suit":
+        center_text = str(label)
+        center_rgb = rank_rgb
+        center_font_size_px = max(int(params.rank_font_size_px) + 8, int(0.78 * float(params.center_symbol_font_size_px)))
+    center_font = load_font(int(center_font_size_px), bold=True)
+    center_bbox = draw.textbbox((0, 0), center_text, font=center_font, stroke_width=1)
     center_vertical_nudge_px = float(max(6, int(0.05 * float(bottom - top))))
     center_origin = (
         float(left + (0.5 * ((right - left) - (center_bbox[2] - center_bbox[0])))),
@@ -199,11 +226,11 @@ def _draw_card_face(
     )
     draw.text(
         center_origin,
-        suit_symbol,
+        center_text,
         font=center_font,
-        fill=pip_rgb,
+        fill=center_rgb,
         stroke_width=1,
-        stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(pip_rgb)),
+        stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(center_rgb)),
     )
 
 
@@ -221,6 +248,62 @@ def _row_card_positions(
     return [
         float(start_x + (index * (int(card_width_px) + int(card_gap_px))))
         for index in range(int(row_card_count))
+    ]
+
+
+def _row_groups_for_cards(
+    cards: Sequence[CardInstance],
+    *,
+    max_cards_per_row: int,
+) -> List[List[CardInstance]]:
+    """Split cards into balanced reading-order rows with a fixed row maximum."""
+
+    max_per_row = int(max_cards_per_row)
+    if max_per_row <= 0:
+        raise ValueError("max_cards_per_row must be positive")
+    row_count = int(math.ceil(float(len(cards)) / float(max_per_row)))
+    base_count = int(len(cards) // row_count)
+    extra_count = int(len(cards) % row_count)
+    row_sizes = [
+        int(base_count + (1 if row_index < extra_count else 0))
+        for row_index in range(row_count)
+    ]
+
+    rows: List[List[CardInstance]] = []
+    cursor = 0
+    ordered_cards = [card for card in cards]
+    for row_size in row_sizes:
+        rows.append(ordered_cards[cursor : cursor + int(row_size)])
+        cursor += int(row_size)
+    return rows
+
+
+def _row_y_positions(
+    *,
+    row_count: int,
+    canvas_height: int,
+    card_height_px: int,
+    panel_margin_px: int,
+    row_gap_px: int,
+) -> List[float]:
+    """Return top-edge positions that keep all card rows inside the canvas."""
+
+    if int(row_count) <= 1:
+        return [float(0.5 * (int(canvas_height) - int(card_height_px)))]
+    available_gap = (
+        float(canvas_height)
+        - (2.0 * float(panel_margin_px))
+        - (float(row_count) * float(card_height_px))
+    ) / float(max(1, int(row_count) - 1))
+    gap_px = min(float(row_gap_px), max(0.0, float(available_gap)))
+    total_height = (
+        (float(row_count) * float(card_height_px))
+        + ((float(row_count) - 1.0) * float(gap_px))
+    )
+    start_y = max(0.0, 0.5 * (float(canvas_height) - float(total_height)))
+    return [
+        float(start_y + (row_index * (float(card_height_px) + float(gap_px))))
+        for row_index in range(int(row_count))
     ]
 
 
@@ -253,6 +336,86 @@ def _continuation_bbox(
     )
 
 
+def _draw_centered_text(
+    draw: ImageDraw.ImageDraw,
+    xy: Tuple[float, float],
+    text: str,
+    *,
+    font,
+    fill: Tuple[int, int, int],
+    stroke_fill: Tuple[int, int, int] | None = None,
+    stroke_width: int = 0,
+) -> None:
+    """Draw one text string centered on a point."""
+
+    bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
+    width = float(bbox[2] - bbox[0])
+    height = float(bbox[3] - bbox[1])
+    draw.text(
+        (float(xy[0]) - (0.5 * width), float(xy[1]) - (0.5 * height)),
+        str(text),
+        font=font,
+        fill=fill,
+        stroke_width=int(stroke_width),
+        stroke_fill=stroke_fill,
+    )
+
+
+def _draw_move_options(
+    image: Image.Image,
+    *,
+    move_options: Sequence[CardMoveOption],
+    params: CardRenderParams,
+    theme: CardTheme,
+) -> Dict[str, Any]:
+    """Draw a five-option directed-move panel and return option metadata."""
+
+    if not move_options:
+        return {}
+
+    draw = ImageDraw.Draw(image)
+    option_font = load_font(25, bold=True)
+    panel_y0 = float(params.canvas_height - 112)
+    panel_y1 = float(params.canvas_height - 34)
+    left = 82.0
+    gap = 18.0
+    option_width = (float(params.canvas_width) - (2.0 * left) - (float(len(move_options) - 1) * gap)) / float(
+        len(move_options)
+    )
+    option_bboxes: Dict[str, List[float]] = {}
+    option_values: Dict[str, str] = {}
+    answer_label = ""
+    for index, option in enumerate(move_options):
+        x0 = float(left + float(index) * (option_width + gap))
+        x1 = float(x0 + option_width)
+        bbox = [round(x0, 3), round(panel_y0, 3), round(x1, 3), round(panel_y1, 3)]
+        option_bboxes[str(option.label)] = [float(v) for v in bbox]
+        option_values[str(option.label)] = f"{str(option.source_label)}->{str(option.target_label)}"
+        if bool(option.is_answer):
+            answer_label = str(option.label)
+        draw.rounded_rectangle(
+            bbox,
+            radius=12,
+            fill=(28, 31, 35, 235),
+            outline=tuple(int(v) for v in theme.reference_fill_rgb),
+            width=3,
+        )
+        _draw_centered_text(
+            draw,
+            ((x0 + x1) * 0.5, (panel_y0 + panel_y1) * 0.5),
+            f"{str(option.label)}: {str(option.source_label)}->{str(option.target_label)}",
+            font=option_font,
+            fill=(255, 255, 255),
+            stroke_fill=(20, 24, 28),
+            stroke_width=2,
+        )
+    return {
+        "move_option_bboxes_px": option_bboxes,
+        "move_option_values": option_values,
+        "move_option_answer_label": str(answer_label),
+    }
+
+
 def render_cards_hand_scene(
     *,
     cards: Sequence[CardInstance],
@@ -261,6 +424,7 @@ def render_cards_hand_scene(
     style_variant: str,
     params: CardRenderParams,
     show_continuation_cue: bool,
+    move_options: Sequence[CardMoveOption] = (),
 ) -> RenderedCardHandScene:
     """Render one visible card hand and return card-level trace metadata."""
 
@@ -271,13 +435,10 @@ def render_cards_hand_scene(
     theme = build_games_card_theme(style_variant=str(style_variant))
     draw = ImageDraw.Draw(image)
 
-    ordered_cards = [card for card in cards]
-    if str(scene_variant) == "two_row":
-        top_count = int(math.ceil(float(len(ordered_cards)) / 2.0))
-        bottom_count = int(len(ordered_cards) - top_count)
-        row_groups = [ordered_cards[:top_count], ordered_cards[top_count:]]
-    else:
-        row_groups = [ordered_cards]
+    row_groups = _row_groups_for_cards(
+        cards=cards,
+        max_cards_per_row=int(params.max_cards_per_row),
+    )
 
     row_left_positions = [
         _row_card_positions(
@@ -290,13 +451,54 @@ def render_cards_hand_scene(
     ]
 
     card_specs: List[RenderedCardSpec] = []
-    top_y = float(params.panel_margin_px)
-    second_row_y = float(top_y + params.card_height_px + params.row_gap_px)
-    row_ys = [top_y] if len(row_groups) == 1 else [top_y, second_row_y]
+    row_ys = _row_y_positions(
+        row_count=len(row_groups),
+        canvas_height=int(params.canvas_height),
+        card_height_px=int(params.card_height_px),
+        panel_margin_px=int(params.panel_margin_px),
+        row_gap_px=int(params.row_gap_px),
+    )
+    group_left = min(float(left) for row_lefts in row_left_positions for left in row_lefts)
+    group_right = max(float(left + params.card_width_px) for row_lefts in row_left_positions for left in row_lefts)
+    group_top = min(float(row_y) for row_y in row_ys)
+    group_bottom = max(float(row_y + params.card_height_px) for row_y in row_ys)
+    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=(group_left, group_top, group_right, group_bottom),
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    row_left_positions = [
+        [float(left + dx) for left in row_lefts]
+        for row_lefts in row_left_positions
+    ]
+    row_ys = [float(row_y + dy) for row_y in row_ys]
 
     order_index = 0
     for row_index, row_cards in enumerate(row_groups):
         row_y = float(row_ys[row_index])
+        row_group_label = next(
+            (str(card.group_label) for card in row_cards if card.group_label is not None and str(card.group_label).strip()),
+            "",
+        )
+        if row_group_label:
+            label_font = load_font(int(params.group_label_font_size_px), bold=True)
+            label_bbox = draw.textbbox((0, 0), row_group_label, font=label_font, stroke_width=1)
+            label_width = float(label_bbox[2] - label_bbox[0])
+            label_height = float(label_bbox[3] - label_bbox[1])
+            first_left = float(row_left_positions[row_index][0])
+            label_origin = (
+                max(8.0, float(first_left - label_width - 18.0)),
+                float(row_y + (0.5 * (float(params.card_height_px) - label_height))),
+            )
+            draw.text(
+                label_origin,
+                row_group_label,
+                font=label_font,
+                fill=tuple(int(value) for value in theme.continuation_rgb),
+                stroke_width=1,
+                stroke_fill=(255, 255, 255),
+            )
         for local_index, card in enumerate(row_cards):
             left = float(row_left_positions[row_index][local_index])
             bbox_px = (
@@ -328,6 +530,8 @@ def render_cards_hand_scene(
                     suit_name=str(card.suit_name),
                     suit_symbol=str(SUIT_SYMBOLS[str(card.suit_name)]),
                     is_reference=bool(card.is_reference),
+                    badge_text=None if card.badge_text is None else str(card.badge_text),
+                    group_label=None if card.group_label is None else str(card.group_label),
                     bbox_px=bbox_px,
                     row_index=int(row_index),
                     order_index=int(order_index),
@@ -335,30 +539,36 @@ def render_cards_hand_scene(
             )
             order_index += 1
 
-    continuation_bbox_px: List[float] | None = None
-    if bool(show_continuation_cue) and len(row_groups) == 2:
-        continuation_text = "continue ↘"
-        cue_anchor = (
-            float(params.canvas_width - params.panel_margin_px - 112),
-            float(top_y + params.card_height_px + (0.5 * params.continuation_gap_px)),
-        )
-        cue_origin, cue_bbox_px, cue_font = _continuation_bbox(
-            draw,
-            text=continuation_text,
-            font_size_px=int(params.continuation_font_size_px),
-            anchor_xy=cue_anchor,
-        )
-        draw.text(
-            cue_origin,
-            continuation_text,
-            font=cue_font,
-            fill=tuple(int(value) for value in theme.continuation_rgb),
-            stroke_width=1,
-            stroke_fill=(255, 255, 255),
-        )
-        continuation_bbox_px = [float(value) for value in cue_bbox_px]
+    continuation_bboxes_px: List[List[float]] = []
+    if bool(show_continuation_cue) and len(row_groups) > 1:
+        continuation_text = "continue"
+        for row_index in range(len(row_groups) - 1):
+            gap_center_y = float(
+                row_ys[row_index]
+                + params.card_height_px
+                + (0.5 * (row_ys[row_index + 1] - row_ys[row_index] - params.card_height_px))
+            )
+            cue_anchor = (
+                float(params.canvas_width - params.panel_margin_px - 92 + dx),
+                float(gap_center_y),
+            )
+            cue_origin, cue_bbox_px, cue_font = _continuation_bbox(
+                draw,
+                text=continuation_text,
+                font_size_px=int(params.continuation_font_size_px),
+                anchor_xy=cue_anchor,
+            )
+            draw.text(
+                cue_origin,
+                continuation_text,
+                font=cue_font,
+                fill=tuple(int(value) for value in theme.continuation_rgb),
+                stroke_width=1,
+                stroke_fill=(255, 255, 255),
+            )
+            continuation_bboxes_px.append([float(value) for value in cue_bbox_px])
 
-    scene_entities = tuple(
+    scene_entities_list: List[Dict[str, Any]] = [
         {
             "entity_id": str(spec.card_id),
             "entity_type": "playing_card",
@@ -370,31 +580,75 @@ def render_cards_hand_scene(
                 "is_reference": bool(spec.is_reference),
                 "row_index": int(spec.row_index),
                 "order_index": int(spec.order_index),
+                "badge_text": None if spec.badge_text is None else str(spec.badge_text),
+                "group_label": None if spec.group_label is None else str(spec.group_label),
             },
         }
         for spec in card_specs
+    ]
+    option_map = _draw_move_options(
+        image,
+        move_options=tuple(move_options),
+        params=params,
+        theme=theme,
     )
+    for option in move_options:
+        option_bbox = option_map.get("move_option_bboxes_px", {}).get(str(option.label))
+        if option_bbox is None:
+            continue
+        scene_entities_list.append(
+            {
+                "entity_id": f"move_option_{str(option.label)}",
+                "entity_type": "card_move_option",
+                "bbox_px": [float(v) for v in option_bbox],
+                "meta": {
+                    "label": str(option.label),
+                    "source_label": str(option.source_label),
+                    "target_label": str(option.target_label),
+                    "move": f"{str(option.source_label)}->{str(option.target_label)}",
+                    "is_answer": bool(option.is_answer),
+                },
+            }
+        )
+
     render_map = {
         "scene_variant": str(scene_variant),
         "style_variant": str(style_variant),
         "card_bboxes_px": {str(spec.card_id): [float(value) for value in spec.bbox_px] for spec in card_specs},
         "reference_card_ids": [str(spec.card_id) for spec in card_specs if bool(spec.is_reference)],
+        "card_badges": {
+            str(spec.card_id): str(spec.badge_text)
+            for spec in card_specs
+            if spec.badge_text is not None and str(spec.badge_text).strip()
+        },
+        "card_group_labels": {
+            str(spec.card_id): str(spec.group_label)
+            for spec in card_specs
+            if spec.group_label is not None and str(spec.group_label).strip()
+        },
+        "row_count": int(len(row_groups)),
+        "max_cards_per_row": int(params.max_cards_per_row),
         "row_card_ids": [
             [str(spec.card_id) for spec in card_specs if int(spec.row_index) == int(row_index)]
             for row_index in range(len(row_groups))
         ],
-        "continuation_cue_bbox_px": None if continuation_bbox_px is None else list(continuation_bbox_px),
+        "continuation_cue_bbox_px": None if not continuation_bboxes_px else list(continuation_bboxes_px[0]),
+        "continuation_cue_bboxes_px": [list(bbox_px) for bbox_px in continuation_bboxes_px],
+        "center_label_mode": str(params.center_label_mode),
+        "layout_jitter": dict(layout_jitter),
+        **dict(option_map),
     }
     return RenderedCardHandScene(
         image=image.convert("RGB"),
         card_specs=tuple(card_specs),
-        scene_entities=scene_entities,
+        scene_entities=tuple(scene_entities_list),
         render_map=render_map,
     )
 
 
 __all__ = [
     "CardInstance",
+    "CardMoveOption",
     "CardRenderParams",
     "RenderedCardHandScene",
     "RenderedCardSpec",

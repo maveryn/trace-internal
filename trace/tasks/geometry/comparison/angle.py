@@ -1,17 +1,12 @@
 """Graph-paper geometry comparison task over multiple labeled angles."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from PIL import ImageDraw
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.comparison_sampling import (
     ComparisonGapMetrics,
     comparison_gap_is_valid,
@@ -66,11 +61,9 @@ from .shared import (
     slot_centers_graph_units,
 )
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for angle-comparison generation."""
-
     canvas_size_min: int = COMPARISON_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COMPARISON_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = COMPARISON_SHARED_DEFAULTS.graph_cells_min
@@ -92,11 +85,9 @@ class _TaskDefaults:
     min_absolute_gap_degrees: float = 10.0
     object_label_offset_px: float = COMPARISON_SHARED_DEFAULTS.object_label_offset_px
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-angle comparison instance."""
-
     query_type: str
     object_count: int
     objects: Tuple[AngleSceneObject, ...]
@@ -106,14 +97,12 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "comparison")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_comparison_angle",
+    task_id="source_geometry_comparison_angle",
 )
-
 
 def _sample_target_angles(
     rng,
@@ -125,7 +114,6 @@ def _sample_target_angles(
     min_absolute_gap_degrees: float,
 ) -> List[int]:
     """Sample distinct target angles whose winner gap is visually meaningful."""
-
     candidates = [int(value) for value in candidate_angles]
     if len(candidates) < int(object_count):
         raise ValueError("not enough feasible angle candidates for requested object_count")
@@ -162,7 +150,6 @@ def _sample_scene(
     shape_style: GeometryShapeStyle,
 ) -> _ScenePayload:
     """Sample and draw one multi-angle comparison scene."""
-
     catalog = primitive_angle_pair_catalog(
         angle_step=int(angle_step),
         min_angle=int(min_angle),
@@ -173,7 +160,6 @@ def _sample_scene(
     )
     candidate_angles = [int(value) for value in sorted(catalog.keys())]
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
-
     last_error: Exception | None = None
     for _ in range(700):
         labels = [str(label) for label in COMPARISON_ANSWER_LABEL_POOL if str(label) != str(winner_label)]
@@ -204,7 +190,6 @@ def _sample_scene(
             if int(value) != int(winner_target_angle)
         ]
         rng.shuffle(other_target_angles)
-
         objects: Tuple[AngleSceneObject, ...] | None = None
         try:
             target_angles = [
@@ -226,7 +211,6 @@ def _sample_scene(
         except Exception as exc:
             last_error = exc
             continue
-
         raw_values = [float(obj.raw_angle_degrees) for obj in objects]
         metrics = compute_comparison_gap_metrics(raw_values, query_type=str(query_type))
         if str(objects[int(metrics.winner_index)].label) != str(winner_label):
@@ -238,7 +222,6 @@ def _sample_scene(
             min_absolute_gap=float(min_absolute_gap_degrees),
         ):
             continue
-
         label_centers = draw_angle_objects(
             draw,
             objects=objects,
@@ -268,23 +251,16 @@ def _sample_scene(
                 "winner_vertex": [float(winner.vertex[0]), float(winner.vertex[1])],
             },
         )
-
     raise RuntimeError("failed to sample angle-comparison scene") from last_error
 
-
-@register_task
 class GeometryComparisonAngleTask:
     """Compare multiple labeled angles and choose the largest/smallest one."""
-
-    task_id = "task_geometry_comparison_angle"
+    task_id = "source_geometry_comparison_angle"
     domain = "geometry"
     task_group = "comparison"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic multi-angle comparison instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
-
         query_type, query_type_probabilities = resolve_comparison_query_type(
             scene_rng,
             params=params,
@@ -313,7 +289,6 @@ class GeometryComparisonAngleTask:
             object_count_probabilities=object_count_probabilities,
             query_types=COMPARISON_QUERY_TYPES,
         )
-
         min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
         max_angle = int(params.get("max_angle", group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
         angle_step = int(params.get("angle_step", group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
@@ -361,7 +336,6 @@ class GeometryComparisonAngleTask:
             raise ValueError("min_normalized_gap must be >= 0")
         if float(min_absolute_gap_degrees) < 0.0:
             raise ValueError("min_absolute_gap_degrees must be >= 0")
-
         context_params = dict(params)
         context = None
         image = None
@@ -375,6 +349,7 @@ class GeometryComparisonAngleTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -479,7 +454,6 @@ class GeometryComparisonAngleTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -490,8 +464,7 @@ class GeometryComparisonAngleTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_comparison_angle instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_comparison_angle instance") from last_error
         evidence = graph_point_set_evidence_artifacts(
             points_by_label=scene_payload.evidence_points_by_label,
             graph_origin=context.graph_origin,
@@ -504,10 +477,9 @@ class GeometryComparisonAngleTask:
             not isinstance(evidence_value, list)
             or len(evidence_value) != 3
             or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, int) for point in evidence_value for coord in point)
+            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("comparison-angle evidence must include three integer graph-lattice points")
-
+            raise RuntimeError("comparison-angle evidence must include three pixel points")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -515,12 +487,11 @@ class GeometryComparisonAngleTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -542,7 +513,7 @@ class GeometryComparisonAngleTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -558,11 +529,9 @@ class GeometryComparisonAngleTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         winner_label = str(scene_payload.winner_label)
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
-        evidence_gt = TypedValue(type="graph_point_set", value=list(evidence_value))
-
+        evidence_gt = TypedValue(type=str(evidence["evidence_type"]), value=list(evidence_value))
         values_by_label = {
             str(obj.label): round(float(obj.raw_angle_degrees), 6)
             for obj in scene_payload.objects
@@ -618,7 +587,7 @@ class GeometryComparisonAngleTask:
                 },
             },
             "query_spec": {
-                "task_variant": "primitive_angle_set",
+                "query_variant": "primitive_angle_set",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -637,6 +606,7 @@ class GeometryComparisonAngleTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -667,7 +637,6 @@ class GeometryComparisonAngleTask:
             },
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
-
         complexity = build_geometry_comparison_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
@@ -688,6 +657,6 @@ class GeometryComparisonAngleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="primitive_angle_set",
+            query_variant="primitive_angle_set",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

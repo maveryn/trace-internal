@@ -1,15 +1,11 @@
 """Non-grid geometry counting task over multiple labeled angles."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -44,17 +40,13 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
-    resolve_counting_object_count,
-    resolve_counting_target_count,
+    resolve_counting_cardinality_pair,
 )
-
 _SUPPORTED_VARIANTS: Tuple[str, ...] = ("acute_angle", "right_angle", "obtuse_angle")
-
 
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for angle-counting generation."""
-
     canvas_size_min: int = COUNTING_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COUNTING_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = COUNTING_SHARED_DEFAULTS.graph_cells_min
@@ -74,12 +66,10 @@ class _TaskDefaults:
     min_ray_length_units: float = 2.0
     boundary_margin_degrees: float = 10.0
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-angle counting instance."""
-
-    task_variant: str
+    query_variant: str
     object_count: int
     target_count: int
     objects: Tuple[AngleSceneObject, ...]
@@ -87,64 +77,59 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_counting_angle",
+    task_id="source_geometry_counting_angle",
 )
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="counting")
 _NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="counting")
 
-
 def _angle_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:
-    """Return a roomier hidden-grid slot bank for 6-10 angle objects."""
-
-    half_span = max(10, int(graph_cells // 2))
-    outer_x = max(5, min(int(round(float(half_span) * 0.72)), int(half_span - 3)))
-    inner_x = max(2, min(int(round(float(half_span) * 0.36)), max(2, int(outer_x - 2))))
-    row_y = max(4, min(int(round(float(half_span) * 0.45)), int(half_span - 3)))
+    """Return a roomier hidden-grid slot bank for 6-12 angle objects."""
+    half_span = max(12, int(graph_cells // 2))
+    outer_x = max(7, min(int(round(float(half_span) * 0.78)), int(half_span - 3)))
+    inner_x = max(3, min(int(round(float(half_span) * 0.28)), max(3, int(outer_x - 4))))
+    row_y = max(5, min(int(round(float(half_span) * 0.48)), int(half_span - 3)))
     base_slots = [
         (-int(outer_x), int(row_y)),
         (-int(inner_x), int(row_y)),
-        (0, int(row_y)),
         (int(inner_x), int(row_y)),
         (int(outer_x), int(row_y)),
+        (-int(outer_x), 0),
+        (-int(inner_x), 0),
+        (int(inner_x), 0),
+        (int(outer_x), 0),
         (-int(outer_x), -int(row_y)),
         (-int(inner_x), -int(row_y)),
-        (0, -int(row_y)),
         (int(inner_x), -int(row_y)),
         (int(outer_x), -int(row_y)),
     ]
     rng.shuffle(base_slots)
     return list(base_slots[: int(object_count)])
 
-
 def _variant_candidate_angles(
     *,
     candidate_angles: Sequence[int],
-    task_variant: str,
+    query_variant: str,
     boundary_margin_degrees: float,
 ) -> Tuple[List[int], List[int]]:
     """Return positive and negative angle targets for one queried class."""
-
     margin = float(boundary_margin_degrees)
     acute = [int(value) for value in candidate_angles if float(value) <= 90.0 - float(margin)]
     right = [int(value) for value in candidate_angles if int(value) == 90]
     obtuse = [int(value) for value in candidate_angles if float(value) >= 90.0 + float(margin)]
-    if str(task_variant) == "acute_angle":
+    if str(query_variant) == "acute_angle":
         return acute, [*right, *obtuse]
-    if str(task_variant) == "right_angle":
+    if str(query_variant) == "right_angle":
         return right, [*acute, *obtuse]
-    if str(task_variant) == "obtuse_angle":
+    if str(query_variant) == "obtuse_angle":
         return obtuse, [*acute, *right]
-    raise ValueError(f"unsupported task_variant: {task_variant}")
-
+    raise ValueError(f"unsupported query_variant: {query_variant}")
 
 def _sample_angle_targets(rng, *, candidates: Sequence[int], count: int) -> List[int]:
     """Sample one deterministic multiset of angle targets."""
-
     if int(count) < 0:
         raise ValueError("count must be >= 0")
     values = [int(value) for value in candidates]
@@ -156,22 +141,19 @@ def _sample_angle_targets(rng, *, candidates: Sequence[int], count: int) -> List
         return [int(value) for value in rng.sample(values, int(count))]
     return [int(rng.choice(values)) for _ in range(int(count))]
 
-
-def _variant_class_label(task_variant: str) -> str:
+def _variant_class_label(query_variant: str) -> str:
     """Return one normalized human-readable class label."""
-
     mapping = {
         "acute_angle": "acute",
         "right_angle": "right",
         "obtuse_angle": "obtuse",
     }
-    return str(mapping[str(task_variant)])
-
+    return str(mapping[str(query_variant)])
 
 def _sample_scene(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -188,9 +170,9 @@ def _sample_scene(
     object_label_offset_px: float,
     draw,
     shape_style,
+    draw_object_labels: bool = True,
 ) -> _ScenePayload:
     """Sample and draw one multi-angle counting scene."""
-
     catalog = primitive_angle_pair_catalog(
         angle_step=int(angle_step),
         min_angle=int(min_angle),
@@ -202,14 +184,13 @@ def _sample_scene(
     candidate_angles = [int(value) for value in sorted(catalog.keys())]
     positive_angles, negative_angles = _variant_candidate_angles(
         candidate_angles=candidate_angles,
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         boundary_margin_degrees=float(boundary_margin_degrees),
     )
     if not positive_angles:
-        raise ValueError(f"no positive angle targets available for {task_variant}")
+        raise ValueError(f"no positive angle targets available for {query_variant}")
     if not negative_angles:
-        raise ValueError(f"no negative angle targets available for {task_variant}")
-
+        raise ValueError(f"no negative angle targets available for {query_variant}")
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     last_error: Exception | None = None
     for _ in range(700):
@@ -246,7 +227,6 @@ def _sample_scene(
         except Exception as exc:
             last_error = exc
             continue
-
         label_centers = draw_angle_objects(
             draw,
             objects=objects,
@@ -257,10 +237,11 @@ def _sample_scene(
             object_label_offset_px=float(object_label_offset_px),
             render_canvas_size=int(render_canvas_size),
             shape_style=shape_style,
+            draw_object_labels=bool(draw_object_labels),
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=objects,
@@ -268,34 +249,28 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
             },
         )
-
     raise RuntimeError("failed to sample angle-counting scene") from last_error
 
-
-@register_task
 class GeometryCountingAngleTask:
     """Count how many labeled angles belong to one requested class."""
-
-    task_id = "task_geometry_counting_angle"
+    task_id = "source_geometry_counting_angle"
     domain = "geometry"
     task_group = "counting"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic multi-angle counting instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
         selected_variant, variant_probabilities = resolve_variant(
             scene_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
-        task_variant = apply_balanced_variant_sampling(
+        query_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -303,25 +278,17 @@ class GeometryCountingAngleTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
-        object_count, object_count_probabilities = resolve_counting_object_count(
+        object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
             scene_rng,
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
-            fallback_min=_DEFAULTS.object_count_min,
-            fallback_max=_DEFAULTS.object_count_max,
+            fallback_object_min=_DEFAULTS.object_count_min,
+            fallback_object_max=_DEFAULTS.object_count_max,
         )
-        target_count, target_count_probabilities = resolve_counting_target_count(
-            scene_rng,
-            instance_seed=int(instance_seed),
-            params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            object_count=int(object_count),
-        )
-
         min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
         max_angle = int(params.get("max_angle", group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
         angle_step = int(params.get("angle_step", group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
@@ -361,7 +328,6 @@ class GeometryCountingAngleTask:
             raise ValueError("min_ray_length_units must be > 0")
         if float(boundary_margin_degrees) < 0.0:
             raise ValueError("boundary_margin_degrees must be >= 0")
-
         context_params = dict(params)
         context = None
         image = None
@@ -375,6 +341,7 @@ class GeometryCountingAngleTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=_BACKGROUND_DEFAULTS,
@@ -450,7 +417,7 @@ class GeometryCountingAngleTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -467,6 +434,7 @@ class GeometryCountingAngleTask:
                     object_label_offset_px=float(object_label_offset_px),
                     draw=draw_attempt,
                     shape_style=shape_style_attempt,
+                    draw_object_labels=bool(context_params.get("draw_object_labels", True)),
                 )
                 context = context_attempt
                 image = image_attempt
@@ -480,7 +448,6 @@ class GeometryCountingAngleTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -491,8 +458,7 @@ class GeometryCountingAngleTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_counting_angle instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_counting_angle instance") from last_error
         evidence_value = list(scene_payload.matching_labels)
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -501,12 +467,11 @@ class GeometryCountingAngleTask:
             background_meta=background_meta,
             noise_defaults=_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -521,14 +486,14 @@ class GeometryCountingAngleTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(task_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
         json_example = str(prompt_defaults["json_example"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -544,12 +509,10 @@ class GeometryCountingAngleTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         answer_value = int(scene_payload.target_count)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="label_set", value=list(evidence_value))
-
-        angle_class = _variant_class_label(str(task_variant))
+        angle_class = _variant_class_label(str(query_variant))
         class_by_label = {
             str(obj.label): (
                 "right"
@@ -583,7 +546,7 @@ class GeometryCountingAngleTask:
                 ],
                 "relations": {
                     "counting_target": "angle_class",
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
                 "frames": {
@@ -597,13 +560,13 @@ class GeometryCountingAngleTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -624,8 +587,10 @@ class GeometryCountingAngleTask:
                 "text_style": {
                     "font_size_px": int(label_font_size_px),
                     "stroke_width_px": int(label_stroke_width_scene),
+                    "draw_object_labels": bool(context_params.get("draw_object_labels", True)),
                 },
                 "layout_coordinate_frame": dict(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -633,8 +598,8 @@ class GeometryCountingAngleTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(task_variant),
-                "task_variant": str(task_variant),
+                "scene_variant": str(query_variant),
+                "query_variant": str(query_variant),
                 "counting_class": str(angle_class),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -650,10 +615,9 @@ class GeometryCountingAngleTask:
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
-                "label_set": list(scene_payload.matching_labels),
+                "labels": list(scene_payload.matching_labels),
             },
         }
-
         complexity = build_geometry_counting_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
@@ -662,7 +626,7 @@ class GeometryCountingAngleTask:
             object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
             target_count=int(target_count),
             task_kind="angle",
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -673,6 +637,6 @@ class GeometryCountingAngleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

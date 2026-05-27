@@ -4,68 +4,57 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.seed import spawn_rng
+from ....core.seed import hash64, spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
-from ..shared.consolidated_legacy import (
-    normalize_legacy_geometry_output,
+from ..shared.consolidated_source import (
+    normalize_source_geometry_output,
     strip_consolidated_params,
-    unregister_legacy_tasks,
+    unregister_source_tasks,
 )
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from .angle import GeometryAngleMeasure2DTask
 from .area import GeometryAreaMeasure2DTask
-from .length import GeometryLengthMeasure2DTask
 from .perimeter import GeometryPerimeterMeasure2DTask
 from .slope import GeometrySlopeMeasureTask
 
-LEGACY_TASK_IDS: Tuple[str, ...] = (
-    "task_geometry_measurement_angle",
-    "task_geometry_measurement_area",
-    "task_geometry_measurement_length",
-    "task_geometry_measurement_perimeter",
-    "task_geometry_measurement_slope",
+SOURCE_TASK_IDS: Tuple[str, ...] = (
+    "source_geometry_measurement_angle",
+    "source_geometry_measurement_area",
+    "source_geometry_measurement_length",
+    "source_geometry_measurement_perimeter",
+    "source_geometry_measurement_slope",
 )
-unregister_legacy_tasks(LEGACY_TASK_IDS)
+unregister_source_tasks(SOURCE_TASK_IDS)
 
-TASK_ID = "task_geometry_measurement_value"
+TASK_ID = "geometry_measurement_value_base"
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "angle",
-    "segment",
     "triangle",
     "quadrilateral",
-    "pentagon",
     "circle",
     "ellipse",
     "line",
 )
 _SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
     "angle",
-    "length",
     "area",
     "perimeter",
     "slope",
 )
 _COMPATIBILITY: Dict[str, Sequence[str]] = {
     "angle": ("angle",),
-    "segment": ("length",),
-    "triangle": ("length", "area", "perimeter"),
-    "quadrilateral": ("length", "area", "perimeter"),
-    "pentagon": ("length",),
-    "circle": ("length", "perimeter"),
-    "ellipse": ("length", "area"),
+    "triangle": ("area", "perimeter"),
+    "quadrilateral": ("area", "perimeter"),
+    "circle": ("perimeter",),
+    "ellipse": ("area",),
     "line": ("slope",),
 }
-_LEGACY_BUILDERS: Dict[Tuple[str, str], Tuple[object, Dict[str, Any]]] = {
+_SOURCE_BUILDERS: Dict[Tuple[str, str], Tuple[object, Dict[str, Any]]] = {
     ("angle", "angle"): (GeometryAngleMeasure2DTask, {}),
-    ("segment", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "segment"}),
-    ("triangle", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "triangle"}),
-    ("quadrilateral", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "quadrilateral"}),
-    ("pentagon", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "pentagon"}),
-    ("circle", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "circle_radius"}),
-    ("ellipse", "length"): (GeometryLengthMeasure2DTask, {"shape_variant": "ellipse_major_axis"}),
     ("triangle", "area"): (GeometryAreaMeasure2DTask, {"shape_variant": "triangle"}),
     ("quadrilateral", "area"): (GeometryAreaMeasure2DTask, {"shape_variant": "quadrilateral"}),
     ("ellipse", "area"): (GeometryAreaMeasure2DTask, {"shape_variant": "ellipse"}),
@@ -80,9 +69,22 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
+_SOURCE_SAMPLING_SALT = 440
 
 
-@register_task
+def _source_sampling_params(
+    params: Mapping[str, Any],
+    *,
+    scene_variant: str,
+    query_variant: str,
+) -> Dict[str, Any]:
+    """Return source params for the shared renderer."""
+
+    source_params = strip_consolidated_params(params)
+    _ = scene_variant, query_variant
+    return source_params
+
+
 class GeometryMeasurementValueTask:
     """Unified geometry measurement task spanning shape scenes and query types."""
 
@@ -103,19 +105,83 @@ class GeometryMeasurementValueTask:
             scene_sampling_namespace=f"{self.task_id}.scene_variant",
             query_sampling_namespace=f"{self.task_id}.query_variant",
         )
-        legacy_task_cls, legacy_overrides = _LEGACY_BUILDERS[(str(scene_variant), str(query_variant))]
-        legacy_task = legacy_task_cls()
-        legacy_params = strip_consolidated_params(params)
-        legacy_params.update(dict(legacy_overrides))
-        output = legacy_task.generate(int(instance_seed), params=legacy_params, max_attempts=int(max_attempts))
-        legacy_trace = dict(output.trace_payload.get("execution_trace") or {})
-        return normalize_legacy_geometry_output(
+        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(query_variant))]
+        source_task = source_task_cls()
+        source_params = _source_sampling_params(
+            params,
+            scene_variant=str(scene_variant),
+            query_variant=str(query_variant),
+        )
+        source_params.update(dict(source_overrides))
+        output = source_task.generate(int(instance_seed), params=source_params, max_attempts=int(max_attempts))
+        source_trace = dict(output.trace_payload.get("execution_trace") or {})
+        return normalize_source_geometry_output(
             output,
             scene_variant=str(scene_variant),
             query_variant=str(query_variant),
-            legacy_task_id=str(legacy_task.task_id),
+            source_task_id=str(source_task.task_id),
             scene_variant_probabilities=scene_probs,
             query_variant_probabilities=query_probs,
-            legacy_scene_variant=str(legacy_trace.get("scene_variant", scene_variant)),
-            legacy_query_variant=str(output.task_variant),
+            source_scene_variant=str(source_trace.get("scene_variant", scene_variant)),
+            source_query_variant=str(output.query_variant),
         )
+
+
+@register_task
+class GeometryMeasurementAngleValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public geometry angle-measurement task."""
+
+    task_id = "task_geometry__graph_paper__angle_value"
+    fixed_query_variant = "angle"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("angle",)
+
+
+@register_task
+class GeometryMeasurementPolygonAreaValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public polygon-area measurement task."""
+
+    task_id = "task_geometry__graph_paper__polygon_area_value"
+    fixed_query_variant = "area"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("triangle", "quadrilateral")
+
+
+@register_task
+class GeometryMeasurementEllipseAreaValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public ellipse-area measurement task."""
+
+    task_id = "task_geometry__graph_paper__ellipse_area_value"
+    fixed_query_variant = "area"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("ellipse",)
+
+
+@register_task
+class GeometryMeasurementPolygonPerimeterValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public polygon-perimeter measurement task."""
+
+    task_id = "task_geometry__graph_paper__polygon_perimeter_value"
+    fixed_query_variant = "perimeter"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("triangle", "quadrilateral")
+
+
+@register_task
+class GeometryMeasurementCircleCircumferenceValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public circle-circumference measurement task."""
+
+    task_id = "task_geometry__graph_paper__circle_circumference_value"
+    fixed_query_variant = "perimeter"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("circle",)
+
+
+@register_task
+class GeometryMeasurementLineSlopeValueTask(FixedGeometryQueryTaskMixin, GeometryMeasurementValueTask):
+    """Public line-slope measurement task."""
+
+    task_id = "task_geometry__graph_paper__line_slope_value"
+    fixed_query_variant = "slope"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("line",)

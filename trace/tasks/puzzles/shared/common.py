@@ -5,7 +5,65 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from .complexity import resolve_puzzle_complexity_weights
+
+
+def get_int_param(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
+    """Resolve one integer parameter with task params overriding group defaults."""
+
+    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
+
+
+def get_int_range(
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+    *,
+    min_key: str,
+    max_key: str,
+    fallback_min: int,
+    fallback_max: int,
+) -> Tuple[int, int]:
+    """Resolve and validate one inclusive integer range from params/defaults."""
+
+    low = get_int_param(params, defaults, str(min_key), int(fallback_min))
+    high = get_int_param(params, defaults, str(max_key), int(fallback_max))
+    if int(low) > int(high):
+        raise ValueError(f"{min_key} must be <= {max_key}")
+    return int(low), int(high)
+
+
+def load_puzzle_task_defaults(
+    task_group_defaults: Mapping[str, Any],
+    *,
+    task_id: str,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
+    """Resolve generation/rendering/prompt defaults plus puzzle complexity weights."""
+
+    defaults = task_group_defaults if isinstance(task_group_defaults, Mapping) else {}
+    gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        defaults,
+        task_id=str(task_id),
+    )
+    complexity_weights = resolve_puzzle_complexity_weights(
+        defaults,
+        task_id=str(task_id),
+    )
+    return gen_defaults, render_defaults, prompt_defaults, complexity_weights
+
+
+def decouple_axis_sampling(
+    params: Mapping[str, Any],
+    *,
+    preceding_axis_size: int,
+    explicit_key: str,
+) -> Mapping[str, Any]:
+    """No-op hook for puzzle helper call sites."""
+
+    _ = int(preceding_axis_size)
+    _ = str(explicit_key)
+    return params
 
 
 def resolve_puzzle_axis_variant(
@@ -62,6 +120,10 @@ def projected_puzzle_bbox_evidence(
 
 
 __all__ = [
+    "decouple_axis_sampling",
+    "get_int_param",
+    "get_int_range",
+    "load_puzzle_task_defaults",
     "projected_puzzle_bbox_evidence",
     "resolve_puzzle_axis_variant",
 ]

@@ -9,7 +9,9 @@ from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.mcq import option_label_for_index
+from ...shared.render_variation import resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
+from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 
 
 Cells = Tuple[Tuple[int, int], ...]
@@ -19,7 +21,7 @@ SUPPORTED_PUZZLE_ASSEMBLY_SCENE_VARIANTS: Tuple[str, ...] = (
     "assembly_card",
     "assembly_outline",
 )
-SUPPORTED_PUZZLE_ASSEMBLY_TASK_VARIANTS: Tuple[str, ...] = ("can_be_built",)
+SUPPORTED_PUZZLE_ASSEMBLY_QUERY_VARIANTS: Tuple[str, ...] = ("can_be_built",)
 
 
 @dataclass(frozen=True)
@@ -28,7 +30,7 @@ class PuzzleAssemblyDefaults:
 
     piece_count_min: int = 2
     piece_count_max: int = 4
-    option_count_min: int = 5
+    option_count_min: int = 4
     option_count_max: int = 6
     target_cell_count_min: int = 8
     target_cell_count_max: int = 11
@@ -92,6 +94,7 @@ class PuzzleAssemblyRenderParams:
     border_color_rgb: Tuple[int, int, int]
     text_color_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
+    unit_size_jitter: Dict[str, Any]
 
 
 _PIECE_LIBRARY: Tuple[Cells, ...] = (
@@ -104,6 +107,7 @@ _PIECE_LIBRARY: Tuple[Cells, ...] = (
     ((0, 0), (0, 1), (0, 2), (1, 2)),
     ((1, 0), (2, 0), (0, 1), (1, 1)),
 )
+PUZZLE_POLYOMINO_PIECE_LIBRARY: Tuple[Cells, ...] = _PIECE_LIBRARY
 
 
 def _resolve_int_param(
@@ -139,7 +143,7 @@ def resolve_assembly_scene_variant(
     )
 
 
-def resolve_assembly_task_variant(
+def resolve_assembly_query_variant(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -152,12 +156,12 @@ def resolve_assembly_task_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_ASSEMBLY_TASK_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_ASSEMBLY_QUERY_VARIANTS,
         task_id=str(task_id),
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        axis_namespace="task_variant",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        axis_namespace="query_variant",
     )
 
 
@@ -166,38 +170,60 @@ def resolve_assembly_render_params(
     *,
     render_defaults: Mapping[str, Any],
     defaults: PuzzleAssemblyDefaults,
+    instance_seed: int | None = None,
 ) -> PuzzleAssemblyRenderParams:
     """Resolve rendering params for spatial assembly scenes."""
 
+    def _int(key: str, fallback: int) -> int:
+        return resolve_render_int(
+            params,
+            render_defaults,
+            str(key),
+            int(fallback),
+            instance_seed=instance_seed,
+            namespace="puzzle_assembly_render",
+        )
+
     def _triple(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        raw = params.get(str(key), group_default(render_defaults, str(key), list(fallback)))
-        if not isinstance(raw, Sequence) or len(raw) != 3:
-            raise ValueError(f"{key} must be a length-3 RGB sequence")
-        return tuple(int(value) for value in raw)
+        return resolve_render_rgb(
+            params,
+            render_defaults,
+            str(key),
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzle_assembly_render",
+        )
+
+    unit_scale, unit_meta = resolve_puzzle_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=instance_seed,
+        namespace="puzzles.polyomino.unit_size",
+    )
 
     return PuzzleAssemblyRenderParams(
-        canvas_width=int(_resolve_int_param(params, render_defaults, "canvas_width", defaults.canvas_width)),
-        canvas_height=int(_resolve_int_param(params, render_defaults, "canvas_height", defaults.canvas_height)),
-        scene_margin_left_px=int(_resolve_int_param(params, render_defaults, "scene_margin_left_px", defaults.scene_margin_left_px)),
-        scene_margin_right_px=int(_resolve_int_param(params, render_defaults, "scene_margin_right_px", defaults.scene_margin_right_px)),
-        scene_margin_top_px=int(_resolve_int_param(params, render_defaults, "scene_margin_top_px", defaults.scene_margin_top_px)),
-        scene_margin_bottom_px=int(_resolve_int_param(params, render_defaults, "scene_margin_bottom_px", defaults.scene_margin_bottom_px)),
-        piece_card_size_px=int(_resolve_int_param(params, render_defaults, "piece_card_size_px", defaults.piece_card_size_px)),
-        piece_gap_px=int(_resolve_int_param(params, render_defaults, "piece_gap_px", defaults.piece_gap_px)),
-        piece_panel_padding_px=int(_resolve_int_param(params, render_defaults, "piece_panel_padding_px", defaults.piece_panel_padding_px)),
-        piece_to_options_gap_px=int(_resolve_int_param(params, render_defaults, "piece_to_options_gap_px", defaults.piece_to_options_gap_px)),
-        option_panel_width_px=int(_resolve_int_param(params, render_defaults, "option_panel_width_px", defaults.option_panel_width_px)),
-        option_panel_height_px=int(_resolve_int_param(params, render_defaults, "option_panel_height_px", defaults.option_panel_height_px)),
-        option_gap_px=int(_resolve_int_param(params, render_defaults, "option_gap_px", defaults.option_gap_px)),
-        option_row_gap_px=int(_resolve_int_param(params, render_defaults, "option_row_gap_px", defaults.option_row_gap_px)),
-        option_shape_box_size_px=int(_resolve_int_param(params, render_defaults, "option_shape_box_size_px", defaults.option_shape_box_size_px)),
-        option_label_gap_px=int(_resolve_int_param(params, render_defaults, "option_label_gap_px", defaults.option_label_gap_px)),
-        shape_cell_size_px=int(_resolve_int_param(params, render_defaults, "shape_cell_size_px", defaults.shape_cell_size_px)),
-        shape_cell_gap_px=int(_resolve_int_param(params, render_defaults, "shape_cell_gap_px", defaults.shape_cell_gap_px)),
-        panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", defaults.panel_corner_radius_px)),
-        cell_corner_radius_px=int(_resolve_int_param(params, render_defaults, "cell_corner_radius_px", defaults.cell_corner_radius_px)),
-        border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", defaults.border_width_px)),
-        option_label_font_size_px=int(_resolve_int_param(params, render_defaults, "option_label_font_size_px", defaults.option_label_font_size_px)),
+        canvas_width=int(_int("canvas_width", defaults.canvas_width)),
+        canvas_height=int(_int("canvas_height", defaults.canvas_height)),
+        scene_margin_left_px=int(_int("scene_margin_left_px", defaults.scene_margin_left_px)),
+        scene_margin_right_px=int(_int("scene_margin_right_px", defaults.scene_margin_right_px)),
+        scene_margin_top_px=int(_int("scene_margin_top_px", defaults.scene_margin_top_px)),
+        scene_margin_bottom_px=int(_int("scene_margin_bottom_px", defaults.scene_margin_bottom_px)),
+        piece_card_size_px=scale_puzzle_px(_int("piece_card_size_px", defaults.piece_card_size_px), unit_scale, min_px=76),
+        piece_gap_px=scale_puzzle_px(_int("piece_gap_px", defaults.piece_gap_px), unit_scale, min_px=10),
+        piece_panel_padding_px=scale_puzzle_px(_int("piece_panel_padding_px", defaults.piece_panel_padding_px), unit_scale, min_px=10),
+        piece_to_options_gap_px=scale_puzzle_px(_int("piece_to_options_gap_px", defaults.piece_to_options_gap_px), unit_scale, min_px=24),
+        option_panel_width_px=int(_int("option_panel_width_px", defaults.option_panel_width_px)),
+        option_panel_height_px=int(_int("option_panel_height_px", defaults.option_panel_height_px)),
+        option_gap_px=scale_puzzle_px(_int("option_gap_px", defaults.option_gap_px), unit_scale, min_px=9),
+        option_row_gap_px=scale_puzzle_px(_int("option_row_gap_px", defaults.option_row_gap_px), unit_scale, min_px=9),
+        option_shape_box_size_px=scale_puzzle_px(_int("option_shape_box_size_px", defaults.option_shape_box_size_px), unit_scale, min_px=64),
+        option_label_gap_px=scale_puzzle_px(_int("option_label_gap_px", defaults.option_label_gap_px), unit_scale, min_px=7),
+        shape_cell_size_px=scale_puzzle_px(_int("shape_cell_size_px", defaults.shape_cell_size_px), unit_scale, min_px=10),
+        shape_cell_gap_px=scale_puzzle_px(_int("shape_cell_gap_px", defaults.shape_cell_gap_px), unit_scale, min_px=1),
+        panel_corner_radius_px=scale_puzzle_px(_int("panel_corner_radius_px", defaults.panel_corner_radius_px), unit_scale, min_px=9),
+        cell_corner_radius_px=scale_puzzle_px(_int("cell_corner_radius_px", defaults.cell_corner_radius_px), unit_scale, min_px=3),
+        border_width_px=scale_puzzle_px(_int("border_width_px", defaults.border_width_px), unit_scale, min_px=1),
+        option_label_font_size_px=int(_int("option_label_font_size_px", defaults.option_label_font_size_px)),
         panel_fill_rgb=_triple("panel_fill_rgb", (248, 249, 252)),
         piece_card_fill_rgb=_triple("piece_card_fill_rgb", (252, 252, 255)),
         option_panel_fill_rgb=_triple("option_panel_fill_rgb", (251, 251, 255)),
@@ -206,6 +232,7 @@ def resolve_assembly_render_params(
         border_color_rgb=_triple("border_color_rgb", (86, 94, 108)),
         text_color_rgb=_triple("text_color_rgb", (30, 34, 40)),
         text_stroke_rgb=_triple("text_stroke_rgb", (255, 255, 255)),
+        unit_size_jitter=dict(unit_meta),
     )
 
 
@@ -218,6 +245,12 @@ def _canonicalize_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
     min_x = min(x for x, _ in sorted_cells)
     min_y = min(y for _, y in sorted_cells)
     return tuple(sorted((int(x - min_x), int(y - min_y)) for x, y in sorted_cells))
+
+
+def canonicalize_polyomino_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
+    """Return a canonical polyomino cell tuple for cross-task reuse."""
+
+    return _canonicalize_cells(cells)
 
 
 def _rotate_cells_90(cells: Cells) -> Cells:
@@ -246,10 +279,22 @@ def _translate_cells(cells: Cells, dx: int, dy: int) -> Cells:
     return tuple(sorted((int(x + dx), int(y + dy)) for x, y in cells))
 
 
+def translate_polyomino_cells(cells: Cells, dx: int, dy: int) -> Cells:
+    """Translate one polyomino by integer offsets."""
+
+    return _translate_cells(cells, int(dx), int(dy))
+
+
 def _cell_count(cells: Cells) -> int:
     """Return the number of occupied cells in one polyomino."""
 
     return int(len(cells))
+
+
+def polyomino_cell_count(cells: Cells) -> int:
+    """Return the number of occupied cells in one polyomino."""
+
+    return _cell_count(cells)
 
 
 def polyomino_bbox_dims(cells: Cells) -> Tuple[int, int]:
@@ -468,9 +513,37 @@ def _resolve_option_count(
     return int(chosen), (int(lower), int(upper))
 
 
+def _resolve_correct_option_index(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    task_id: str,
+    option_count: int,
+    option_count_range: Sequence[int],
+) -> int:
+    """Resolve the correct option index with balanced calibration label cycling."""
+
+    explicit = params.get("correct_option_index")
+    if explicit is not None:
+        index = int(explicit)
+        if not 0 <= int(index) < int(option_count):
+            raise ValueError("correct_option_index must fall inside the option-count range")
+        return int(index)
+
+    _ = option_count_range
+    selection = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:correct_option_index",
+        )
+    )
+    return int(selection % int(option_count))
+
+
 def build_assembly_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -479,8 +552,8 @@ def build_assembly_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic assembly puzzle dataset."""
 
-    if str(task_variant) not in set(SUPPORTED_PUZZLE_ASSEMBLY_TASK_VARIANTS):
-        raise ValueError(f"unsupported spatial assembly variant: {task_variant}")
+    if str(query_variant) not in set(SUPPORTED_PUZZLE_ASSEMBLY_QUERY_VARIANTS):
+        raise ValueError(f"unsupported spatial assembly variant: {query_variant}")
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     piece_count, piece_count_range = _resolve_piece_count(
         params,
@@ -560,13 +633,13 @@ def build_assembly_dataset_for_variant(
     else:
         raise RuntimeError("failed to construct a complete assembly option set")
 
-    correct_option_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}:correct_option_index",
-        )
-    ) % int(option_count)
+    correct_option_index = _resolve_correct_option_index(
+        params,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        option_count=int(option_count),
+        option_count_range=option_count_range,
+    )
     answer_option_label = option_label_for_index(int(correct_option_index))
     correct_option_panel_id = f"option_panel_{int(correct_option_index + 1)}"
 
@@ -599,7 +672,7 @@ def build_assembly_dataset_for_variant(
     ]
 
     return {
-        "task_variant": str(task_variant),
+        "query_variant": str(query_variant),
         "piece_specs": list(piece_specs),
         "piece_shapes": [tuple(shape) for shape in piece_shapes],
         "piece_count": int(piece_count),
@@ -616,7 +689,7 @@ def build_assembly_dataset_for_variant(
         "correct_option_panel_id": str(correct_option_panel_id),
         "valid_option_panel_ids": [str(correct_option_panel_id)],
         "solver_trace": {
-            "task_variant": str(task_variant),
+            "query_variant": str(query_variant),
             "piece_shapes": [
                 [[int(cell_x), int(cell_y)] for cell_x, cell_y in shape]
                 for shape in piece_shapes
@@ -638,15 +711,19 @@ def build_assembly_dataset_for_variant(
 
 
 __all__ = [
+    "PUZZLE_POLYOMINO_PIECE_LIBRARY",
     "PuzzleAssemblyDefaults",
     "PuzzleAssemblyRenderParams",
     "SUPPORTED_PUZZLE_ASSEMBLY_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_ASSEMBLY_TASK_VARIANTS",
+    "SUPPORTED_PUZZLE_ASSEMBLY_QUERY_VARIANTS",
     "build_assembly_dataset_for_variant",
+    "canonicalize_polyomino_cells",
     "can_tile_polyomino_with_pieces",
+    "polyomino_cell_count",
     "polyomino_bbox_dims",
     "resolve_assembly_render_params",
     "resolve_assembly_scene_variant",
-    "resolve_assembly_task_variant",
+    "resolve_assembly_query_variant",
+    "translate_polyomino_cells",
     "unique_rotations",
 ]

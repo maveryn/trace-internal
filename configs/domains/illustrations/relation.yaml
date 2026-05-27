@@ -1,0 +1,97 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    task_illustrations__object_field__named_object_side_count:
+      object_count_min: 8
+      object_count_max: 14
+      target_count_min: 1
+      target_count_max: 9
+      relation_support:
+        - left
+        - right
+        - above
+        - below
+    task_illustrations__indoor_room__furniture_side_count:
+      object_count_min: 8
+      object_count_max: 14
+      target_count_min: 1
+      target_count_max: 6
+      furniture_type_support:
+        - table
+        - sofa
+        - cabinet
+      relation_support:
+        - left
+        - right
+        - above
+        - below
+      indoor_object_type_support:
+        - apple
+        - egg
+        - spoon
+        - plate
+        - book
+        - remote
+        - pencil
+        - ruler
+        - clock
+        - vase
+        - bowl
+        - candle
+        - mug
+        - bottle
+        - key
+        - scissors
+        - lamp
+        - potted_plant
+        - flower
+        - mushroom
+
+rendering:
+  shared:
+    canvas_width: 1280
+    canvas_height: 840
+    outer_margin_px: 42
+    object_size_min_px: 74
+    object_size_max_px: 128
+    object_min_gap_px: 8
+    max_overlap_fraction: 0.02
+    placement_max_attempts: 180
+    render_scale: 2
+    indoor_canvas_width: 1280
+    indoor_canvas_height: 840
+    indoor_object_size_min_px: 52
+    indoor_object_size_max_px: 86
+    indoor_render_scale: 2
+    style_weights:
+      flat_vector: 1.0
+      outlined_cartoon: 1.0
+      paper_cutout: 1.0
+      soft_shadow: 1.0
+    background_weights:
+      studio: 1.0
+      meadow: 1.0
+      sky_ground: 1.0
+      tabletop: 1.0
+      paper: 1.0
+      shelf: 1.0
+
+prompt:
+  task_overrides:
+    task_illustrations__object_field__named_object_side_count:
+      bundle_id: illustrations_relation_v0
+      scene_key: mixed_object_canvas
+      task_key: named_object_side_count_task
+      answer_hint_named_side: set "answer" to the count of objects {relation_word} the only {reference_object_name} as an integer
+      evidence_hint_named_side: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted object {relation_word} the only {reference_object_name}
+      json_example_named_side: '{"evidence":[[146,208,236,310],[506,418,598,524],[864,164,950,260]],"answer":3}'
+      json_example_answer_only_named_side: '{"answer":3}'
+    task_illustrations__indoor_room__furniture_side_count:
+      bundle_id: illustrations_relation_v0
+      scene_key: indoor_room_canvas
+      task_key: furniture_side_count_task
+      answer_hint_furniture_side: set "answer" to the count of {object_name} objects {relation_word} the {furniture_name} as an integer
+      evidence_hint_furniture_side: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {object_name} object {relation_word} the {furniture_name}
+      json_example_furniture_side: '{"evidence":[[144,454,210,528],[252,498,316,570],[330,424,392,498]],"answer":3}'
+      json_example_answer_only_furniture_side: '{"answer":3}'

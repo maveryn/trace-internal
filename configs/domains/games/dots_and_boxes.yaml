@@ -1,29 +1,68 @@
 generation:
   shared:
-    box_rows: 3
-    box_cols: 4
-  task_overrides:
-    task_games_dots_and_boxes_capture_count:
-      scene_variant_weights:
-        single_board: 1.0
-      query_variant_weights:
-        forced_turn_capture_count: 1.0
-      style_variant_weights:
-        classic: 1.0
-        soft: 1.0
-        outlined: 1.0
-      balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
-      balanced_style_variant_sampling: true
-      balanced_target_answer_sampling: true
-      capture_count_support: [1, 2, 3, 4, 5, 6]
-
+    box_rows_support:
+    - 3
+    - 4
+    box_cols_support:
+    - 3
+    - 4
+    scene_variant_weights:
+      single_board: 1.0
+    query_variant_weights:
+      three_sided_box_count: 1.0
+      capture_move_count: 1.0
+      highlighted_candidate_capture_count: 1.0
+    capture_move_query_variant_weights:
+      capture_move_count: 1.0
+      highlighted_candidate_capture_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      soft: 1.0
+      outlined: 1.0
+      notebook: 1.0
+      slate: 1.0
+      wood_panel: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_capture_move_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_board_shape_sampling: true
+    balanced_candidate_edge_count_sampling: true
+    three_sided_box_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    capture_move_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    highlighted_candidate_capture_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    candidate_edge_count_support:
+    - 5
+    - 6
+    - 7
+    - 8
 rendering:
   shared:
     canvas_width: 1180
     canvas_height: 820
     board_width_px: 880
     board_height_px: 640
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
     board_corner_radius_px: 24
     panel_margin_px: 56
     title_font_size_px: 34
@@ -32,25 +71,31 @@ rendering:
     dot_radius_px: 7
     dash_length_px: 30
     dash_gap_px: 18
-
 complexity:
-  shared: {}
-  task_overrides:
-    task_games_dots_and_boxes_capture_count:
-      criteria_weights:
-        visual_scan: 0.24
-        state_reasoning: 0.46
-        ambiguity: 0.12
-        output_burden: 0.18
-
+  shared:
+    criteria_weights:
+      visual_scan: 0.24
+      state_reasoning: 0.46
+      ambiguity: 0.12
+      output_burden: 0.18
 prompt:
   shared:
-    bundle_id: games_dots_and_boxes_v1
-  task_overrides:
-    task_games_dots_and_boxes_capture_count:
-      task_family_key: visible_dots_and_boxes_board
-      task_key: dots_and_boxes_capture_query
-      object_description_single_board: one visible dots-and-boxes board with some edges already drawn and one missing edge highlighted on a green table
-      forced_turn_rule_text: If drawing an edge completes a box, the player captures that box and keeps the turn. Continue following the forced box-completing move each time until no more boxes can be completed.
-      evidence_hint_forced_turn_capture_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every box that will be captured during that turn
-      answer_hint_forced_turn_capture_count: set "answer" to the total number of boxes captured during that turn
+    bundle_id: games_dots_and_boxes_v0
+    scene_key: visible_dots_and_boxes_board
+    task_key: dots_and_boxes_capture_query
+    object_description_single_board: a dots-and-boxes grid with some edges already
+      drawn
+    evidence_hint_three_sided_box_count: set "evidence" to bounding boxes
+      [x0, y0, x1, y1] for every box with exactly three drawn sides
+    answer_hint_three_sided_box_count: set "answer" to the number of boxes with exactly
+      three drawn sides
+    evidence_hint_capture_move_count: set "evidence" to bounding boxes
+      [x0, y0, x1, y1] for every missing edge that would complete at least one box
+      if drawn
+    answer_hint_capture_move_count: set "answer" to the number of missing edges that
+      would complete at least one box if drawn
+    evidence_hint_highlighted_candidate_capture_count: set "evidence" to bounding
+      boxes [x0, y0, x1, y1] for every highlighted missing edge that would
+      complete at least one box if drawn
+    answer_hint_highlighted_candidate_capture_count: set "answer" to the number of
+      highlighted missing edges that would complete at least one box if drawn

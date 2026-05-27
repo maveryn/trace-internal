@@ -1,6 +1,6 @@
 ---
 name: task-design
-description: Use when designing or reshaping a TRACE task contract, choosing answer and evidence types, deciding family or variant placement, or planning sampling and balancing before implementation.
+description: Use when designing or reshaping a TRACE task contract, choosing answer and evidence types, deciding task versus query_id placement, or planning sampling and balancing before implementation.
 ---
 
 # Task Design
@@ -10,7 +10,7 @@ Use this before writing code for a new task or before changing a task's contract
 ## Read first
 1. `docs/core/BLUEPRINT.md`
 2. `docs/workflows/TASK_AUTHORING.md`
-3. `docs/domains/TASK_FAMILY_VARIANTS.md`
+3. `docs/domains/SCENE_TASK_QUERY_GUIDE.md`
 4. `docs/project/STATUS.md`
 
 If the task is domain-specific, also open the matching `docs/domains/*_TASK_SETUP.md` file and `skills/domain-<domain>/SKILL.md`.
@@ -19,8 +19,8 @@ If the task needs a new or revised difficulty policy, also open:
 - `skills/task-complexity/SKILL.md`
 
 ## Design workflow
-1. Confirm `domain`, `task_group`, `task_id`, and whether the task should be a new task vs a `task_variant` of an existing task.
-2. Check `docs/project/STATUS.md` and `docs/tasks/README.md` so you do not create a near-duplicate task family.
+1. Confirm `domain`, `scene_id`, `task_group`, `task_id`, and whether the idea should be a new public task or a `query_id` inside an existing task.
+2. Check `docs/project/STATUS.md` and `docs/tasks/README.md` so you do not create a near-duplicate scene.
 3. Freeze the public contract before coding:
    - scene and query structure,
    - answer type,
@@ -30,14 +30,14 @@ If the task needs a new or revised difficulty policy, also open:
 4. Decide whether answer support depends on layout or board size.
    - If yes, prefer target-first sampling from feasible support instead of naive board-first sampling.
 5. Decide what prompt bundle layers are needed:
-   - family,
+   - scene,
    - task,
-   - optional variant,
+   - optional query,
    - output mode.
 6. Decide which docs must change in the same patch:
    - task doc,
    - `docs/project/STATUS.md`,
-   - `docs/project/TODO.md`,
+   - `docs/TODO.md`,
    - domain/workflow docs if the new task changes reusable policy.
 
 ## Design checks

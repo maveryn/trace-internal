@@ -1,16 +1,12 @@
 """Single-object geometry slope measurement task."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -41,11 +37,9 @@ from ..shared.slope_geometry import (
 )
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable defaults for graph-paper slope measurement."""
-
     canvas_size_min: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = MEASUREMENT_SHARED_DEFAULTS.graph_cells_min
@@ -54,14 +48,12 @@ class _TaskDefaults:
     slope_tenths_min: int = -40
     slope_tenths_max: int = 40
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_measurement_slope",
+    task_id="source_geometry_measurement_slope",
 )
-
 
 def _slope_candidates(*, slope_tenths_min: int, slope_tenths_max: int) -> List[int]:
     """Return sorted non-zero slope candidates in tenths."""
@@ -74,14 +66,12 @@ def _slope_candidates(*, slope_tenths_min: int, slope_tenths_max: int) -> List[i
         raise ValueError("slope candidate range must include at least one non-zero value")
     return candidates
 
-
 def _is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
     """Return true when all positive probabilities are approximately equal."""
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
     if not positives:
         return False
     return max(positives) - min(positives) <= float(tol)
-
 
 def _resolve_slope_tenths(
     rng,
@@ -97,7 +87,6 @@ def _resolve_slope_tenths(
         if int(selected) not in set(slope_values):
             raise ValueError("target_slope_tenths is outside configured slope range")
         return int(selected), {str(value): (1.0 if int(value) == int(selected) else 0.0) for value in slope_values}
-
     raw_weights = params.get(
         "target_slope_tenths_weights",
         group_default(_GEN_DEFAULTS, "target_slope_tenths_weights", {str(value): 1.0 for value in slope_values}),
@@ -115,7 +104,6 @@ def _resolve_slope_tenths(
     probabilities = normalize_positive_weights(weights, default_keys=[str(value) for value in slope_values])
     selected_key = weighted_choice(rng, probabilities, sort_keys=True)
     return int(selected_key), {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))}
-
 
 def _resolve_balanced_slope_tenths(
     *,
@@ -138,14 +126,11 @@ def _resolve_balanced_slope_tenths(
     ordered = [int(value) for value in sorted({int(value) for value in candidates})]
     if not ordered:
         return int(selected_slope_tenths)
-    sampling_index = params.get("_sampling_index", instance_seed)
-    selected = int(ordered[abs(int(sampling_index)) % len(ordered)])
+    selected = int(ordered[abs(int(instance_seed)) % len(ordered)])
     return int(selected)
-
 
 def _measurement_complexity_components(slope_value: float) -> Dict[str, float]:
     """Return normalized measurement complexity components for slope measurement."""
-
     normalized_abs = min(1.0, abs(float(slope_value)) / 4.0)
     near_horizontal = 1.0 - float(normalized_abs)
     return {
@@ -154,15 +139,11 @@ def _measurement_complexity_components(slope_value: float) -> Dict[str, float]:
         "ambiguity": min(1.0, 0.24 + (0.30 * float(near_horizontal))),
     }
 
-
-@register_task
 class GeometrySlopeMeasureTask:
     """Measure one line slope on graph paper."""
-
-    task_id = "task_geometry_measurement_slope"
+    task_id = "source_geometry_measurement_slope"
     domain = "geometry"
     task_group = "measurement"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic slope-measurement instance."""
         scene_rng = spawn_rng(instance_seed, "scene")
@@ -185,7 +166,6 @@ class GeometrySlopeMeasureTask:
         explicit_target_slope = params.get("target_slope_tenths")
         if explicit_target_slope is not None and int(explicit_target_slope) not in set(slope_candidates):
             raise ValueError("target_slope_tenths is outside configured slope range")
-
         line_width = sample_int_render_param(
             scene_rng,
             params=params,
@@ -196,9 +176,7 @@ class GeometrySlopeMeasureTask:
             max_key="line_width_max",
             minimum_value=1,
         )
-
         context_params = dict(params)
-
         context = None
         image = None
         background_meta = None
@@ -211,6 +189,7 @@ class GeometrySlopeMeasureTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -247,7 +226,6 @@ class GeometrySlopeMeasureTask:
                 ]
                 if not feasible_for_context:
                     raise ValueError("no feasible slope candidates for current graph-paper bounds")
-
                 slope_tenths_attempt, slope_probabilities_attempt = _resolve_slope_tenths(
                     scene_rng,
                     params=params,
@@ -300,8 +278,7 @@ class GeometrySlopeMeasureTask:
             or selected_slope_tenths is None
             or not slope_tenths_probabilities
         ):
-            raise RuntimeError("failed to generate task_geometry_measurement_slope instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_measurement_slope instance") from last_error
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -309,7 +286,6 @@ class GeometrySlopeMeasureTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-
         axis_label = "X"
         evidence = graph_point_evidence_artifacts(
             points_by_label={str(axis_label): sample.axis_crossing_pixel},
@@ -321,18 +297,20 @@ class GeometrySlopeMeasureTask:
         evidence_value = evidence.get("evidence_value", [])
         if (
             not isinstance(evidence_value, list)
-            or len(evidence_value) != 2
-            or any(not isinstance(coord, int) for coord in evidence_value)
+            or len(evidence_value) != 1
+            or not isinstance(evidence_value[0], list)
+            or len(evidence_value[0]) != 2
+            or any(not isinstance(coord, (int, float)) for coord in evidence_value[0])
         ):
-            raise RuntimeError("slope evidence must be one integer graph coordinate")
-        if int(evidence_value[1]) != 0:
+            raise RuntimeError("slope evidence must be one pixel point")
+        original_evidence_value = [int(sample.axis_crossing_graph[0]), int(sample.axis_crossing_graph[1])]
+        if int(original_evidence_value[1]) != 0:
             raise RuntimeError("x-axis crossing evidence must have y=0 in graph units")
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -346,7 +324,7 @@ class GeometrySlopeMeasureTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_scene_key = str(prompt_defaults["scene_key"])
         prompt_task_key = str(prompt_defaults["task_key"])
         question_text = str(prompt_defaults["question_text"])
         object_description = str(prompt_defaults["object_description"])
@@ -360,7 +338,7 @@ class GeometrySlopeMeasureTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_family_key=prompt_task_family_key,
+            scene_key=prompt_scene_key,
             task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -376,7 +354,6 @@ class GeometrySlopeMeasureTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         slope_value = float(int(sample.slope_tenths) / 10.0)
         x_min, x_max, y_min, y_max = graph_unit_bounds_for_canvas(
             canvas_size=int(context.canvas_size),
@@ -384,7 +361,6 @@ class GeometrySlopeMeasureTask:
             graph_spacing=int(context.graph_spacing),
             outer_margin_px=int(context.graph_frame.get("outer_margin_px", 0)),
         )
-
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "geometry_2d_slope_measurement",
@@ -421,7 +397,7 @@ class GeometrySlopeMeasureTask:
                 },
             },
             "query_spec": {
-                "task_variant": "line_slope",
+                "query_variant": "line_slope",
                 "template_id": str(prompt_bundle_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -445,6 +421,7 @@ class GeometrySlopeMeasureTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -460,7 +437,7 @@ class GeometrySlopeMeasureTask:
                 },
             },
             "execution_trace": {
-                "task_variant": "line_slope",
+                "query_variant": "line_slope",
                 "answer_value": float(slope_value),
                 "slope_tenths": int(sample.slope_tenths),
                 "slope_value": float(sample.slope_value),
@@ -469,7 +446,7 @@ class GeometrySlopeMeasureTask:
                 "required_evidence_labels": [str(axis_label)],
                 "question_format": "numeric_open",
                 "feasible_answer_values": [float(int(value) / 10.0) for value in feasible_slope_candidates],
-                "task_variant_probabilities": {"line_slope": 1.0},
+                "query_variant_probabilities": {"line_slope": 1.0},
                 "graph_unit_bounds": {
                     "x_min": int(x_min),
                     "x_max": int(x_max),
@@ -480,9 +457,7 @@ class GeometrySlopeMeasureTask:
             "witness_symbolic": dict(evidence["witness_symbolic"]),
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
-
         complexity_components = _measurement_complexity_components(float(slope_value))
-
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="number", value=float(slope_value)),
@@ -502,6 +477,6 @@ class GeometrySlopeMeasureTask:
                 ),
             ),
             task_versions=default_task_versions(),
-            task_variant="line_slope",
+            query_variant="line_slope",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

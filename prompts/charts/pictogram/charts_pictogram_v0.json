@@ -1,0 +1,88 @@
+{
+  "bundle_id": "charts_pictogram_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pictogram_quantity_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:pictogram_scene": [
+      "object_description"
+    ],
+    "query:category_total_value": [
+      "category_label"
+    ],
+    "query:group_difference_value": [
+      "category_label_a",
+      "category_label_b"
+    ],
+    "query:threshold_count": [
+      "threshold_phrase"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "pictogram_scene": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "category_total_value": [
+      "Using the unit scale, what is the total for category {category_label}?",
+      "Read category {category_label}. What total value do its repeated marks represent?",
+      "For {category_label}, compute the total from its marks and the unit scale.",
+      "What integer total is represented by the marks in category {category_label}?",
+      "Use the legend scale to find the total for category {category_label}."
+    ],
+    "group_difference_value": [
+      "Using the unit scale, what is the absolute difference between categories {category_label_a} and {category_label_b}?",
+      "Compare {category_label_a} and {category_label_b}. What is the absolute difference in their totals?",
+      "From the repeated marks, compute the total difference between {category_label_a} and {category_label_b}.",
+      "How much larger is one of {category_label_a} and {category_label_b} than the other, in total value?",
+      "Use the legend scale to calculate the absolute total gap between {category_label_a} and {category_label_b}."
+    ],
+    "threshold_count": [
+      "Using the unit scale, how many categories have totals {threshold_phrase}?",
+      "Count the categories whose total value is {threshold_phrase}.",
+      "How many category rows represent a total {threshold_phrase}?",
+      "From the repeated marks, count categories with totals {threshold_phrase}.",
+      "Use the legend scale to count the categories whose totals are {threshold_phrase}."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

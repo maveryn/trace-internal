@@ -8,17 +8,14 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.text_rendering import load_font
 from .drawing import draw_centered_text, draw_rounded_rect
-from .bead_loop_common import PuzzleBeadLoopRenderParams
+from .bead_loop_common import PuzzleBeadLoopRenderParams, SUPPORTED_PUZZLE_CYCLIC_ORDER_SCENE_VARIANTS
 from .symbol_rendering import draw_puzzle_shape_icon
 
 
-SUPPORTED_PUZZLE_BEAD_LOOP_SCENE_VARIANTS: Tuple[str, ...] = (
-    "loop_strip",
-    "loop_card",
-    "loop_outline",
-)
+SUPPORTED_PUZZLE_BEAD_LOOP_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_PUZZLE_CYCLIC_ORDER_SCENE_VARIANTS
 
 
 @dataclass(frozen=True)
@@ -39,17 +36,11 @@ def _scene_panel_style(
 ) -> Tuple[Tuple[int, int, int] | None, Tuple[int, int, int] | None]:
     """Resolve outer reference-panel styling."""
 
-    if str(scene_variant) == "loop_outline":
+    if str(scene_variant) == "token_ring_outline":
         return None, render_params.border_color_rgb
-    if str(scene_variant) == "loop_strip":
+    if str(scene_variant) in {"necklace_board", "route_loop_diagram"}:
         return render_params.instruction_fill_rgb, None
     return render_params.panel_fill_rgb, render_params.border_color_rgb
-
-
-def _round_bbox(bbox: Sequence[float]) -> List[float]:
-    """Round one bbox to standard trace precision."""
-
-    return [round(float(value), 3) for value in bbox]
 
 
 def _loop_bbox_within_image(
@@ -85,9 +76,11 @@ def _bead_center_points(
     *,
     bead_count: int,
     start_angle_deg: int,
+    loop_path_style: str,
 ) -> List[Tuple[float, float]]:
     """Return bead centers in clockwise order around the loop."""
 
+    path_style = str(loop_path_style)
     left, top, right, bottom = [float(value) for value in loop_bbox]
     cx = float(0.5 * (left + right))
     cy = float(0.5 * (top + bottom))
@@ -96,8 +89,96 @@ def _bead_center_points(
     points: List[Tuple[float, float]] = []
     for index in range(int(bead_count)):
         angle = math.radians(float(start_angle_deg) - (360.0 * float(index) / float(bead_count)))
-        points.append((float(cx + rx * math.cos(angle)), float(cy + ry * math.sin(angle))))
+        if path_style == "rounded_rect":
+            cos_v = math.cos(angle)
+            sin_v = math.sin(angle)
+            power = 0.5
+            x = cx + rx * (1.0 if cos_v >= 0.0 else -1.0) * (abs(cos_v) ** power)
+            y = cy + ry * (1.0 if sin_v >= 0.0 else -1.0) * (abs(sin_v) ** power)
+        elif path_style == "polygon_loop":
+            sides = 8
+            vertex_angle = (2.0 * math.pi / float(sides)) * round(float(sides) * angle / (2.0 * math.pi))
+            blend = 0.72
+            x = cx + rx * ((blend * math.cos(angle)) + ((1.0 - blend) * math.cos(vertex_angle)))
+            y = cy + ry * ((blend * math.sin(angle)) + ((1.0 - blend) * math.sin(vertex_angle)))
+        elif path_style == "wavy_loop":
+            wave = 1.0 + (0.08 * math.sin((3.0 * angle) + 0.6))
+            x = cx + rx * wave * math.cos(angle)
+            y = cy + ry * wave * math.sin(angle)
+        else:
+            x = cx + rx * math.cos(angle)
+            y = cy + ry * math.sin(angle)
+        points.append((float(x), float(y)))
     return points
+
+
+def _sample_loop_path_points(
+    loop_bbox: Sequence[float],
+    *,
+    loop_path_style: str,
+    point_count: int = 96,
+) -> List[Tuple[float, float]]:
+    """Return closed loop path points for non-ellipse loop styles."""
+
+    left, top, right, bottom = [float(value) for value in loop_bbox]
+    cx = float(0.5 * (left + right))
+    cy = float(0.5 * (top + bottom))
+    rx = float(0.5 * (right - left))
+    ry = float(0.5 * (bottom - top))
+    style = str(loop_path_style)
+    points: List[Tuple[float, float]] = []
+    count = max(8, int(point_count))
+    if style == "polygon_loop":
+        sides = 8
+        count = sides
+    for index in range(count):
+        angle = (2.0 * math.pi * float(index)) / float(count)
+        if style == "rounded_rect":
+            cos_v = math.cos(angle)
+            sin_v = math.sin(angle)
+            power = 0.5
+            x = cx + rx * (1.0 if cos_v >= 0.0 else -1.0) * (abs(cos_v) ** power)
+            y = cy + ry * (1.0 if sin_v >= 0.0 else -1.0) * (abs(sin_v) ** power)
+        elif style == "wavy_loop":
+            wave = 1.0 + (0.08 * math.sin((3.0 * angle) + 0.6))
+            x = cx + rx * wave * math.cos(angle)
+            y = cy + ry * wave * math.sin(angle)
+        else:
+            x = cx + rx * math.cos(angle)
+            y = cy + ry * math.sin(angle)
+        points.append((float(x), float(y)))
+    return points
+
+
+def _draw_loop_path(
+    draw: ImageDraw.ImageDraw,
+    *,
+    loop_bbox: Sequence[float],
+    loop_path_style: str,
+    render_params: PuzzleBeadLoopRenderParams,
+) -> None:
+    """Draw the closed path that carries the ordered tokens."""
+
+    style = str(loop_path_style)
+    line_width = max(2, int(render_params.loop_stroke_width_px))
+    if style in {"ellipse", "beaded_string"}:
+        draw.ellipse(
+            tuple(float(value) for value in loop_bbox),
+            outline=render_params.loop_color_rgb,
+            width=line_width,
+        )
+        if style == "beaded_string":
+            inner_bbox = (
+                float(loop_bbox[0]) + 4.0,
+                float(loop_bbox[1]) + 4.0,
+                float(loop_bbox[2]) - 4.0,
+                float(loop_bbox[3]) - 4.0,
+            )
+            draw.ellipse(inner_bbox, outline=render_params.border_color_rgb, width=max(1, line_width // 2))
+        return
+    points = _sample_loop_path_points(loop_bbox, loop_path_style=style)
+    if len(points) >= 3:
+        draw.line(points + [points[0]], fill=render_params.loop_color_rgb, width=line_width, joint="curve")
 
 
 def _draw_bead(
@@ -128,12 +209,29 @@ def _draw_bead(
             outline=outline_rgb,
             width=max(2, int(render_params.border_width_px)),
         )
-    else:
+    elif render_mode == "symbol_badge":
+        draw.ellipse(
+            bead_bbox,
+            fill=tuple(render_params.panel_fill_rgb),
+            outline=outline_rgb,
+            width=max(1, int(render_params.border_width_px)),
+        )
         draw_puzzle_shape_icon(
             draw,
             bbox=bead_bbox,
             object_type=str(bead_spec["object_type"]),
             fill_rgb=fill_rgb,
+            outline_rgb=outline_rgb,
+            width=max(1, int(render_params.border_width_px) - 1),
+            inset_px=float(max(4.0, render_params.shape_bead_inset_px + 5.0)),
+        )
+    else:
+        icon_fill = tuple(render_params.panel_fill_rgb) if render_mode == "outline_shape" else fill_rgb
+        draw_puzzle_shape_icon(
+            draw,
+            bbox=bead_bbox,
+            object_type=str(bead_spec["object_type"]),
+            fill_rgb=icon_fill,
             outline_rgb=outline_rgb,
             width=max(2, int(render_params.border_width_px)),
             inset_px=float(max(0.0, render_params.shape_bead_inset_px)),
@@ -147,6 +245,7 @@ def _draw_loop_image(
     image_bbox: Sequence[float],
     loop_id: str,
     loop_shape_variant: str,
+    loop_path_style: str,
     start_angle_deg: int,
     bead_specs: Sequence[Mapping[str, Any]],
     render_params: PuzzleBeadLoopRenderParams,
@@ -156,10 +255,11 @@ def _draw_loop_image(
     """Draw one bead loop and return traced entities."""
 
     loop_bbox = _loop_bbox_within_image(image_bbox, loop_shape_variant=str(loop_shape_variant))
-    draw.ellipse(
-        loop_bbox,
-        outline=render_params.loop_color_rgb,
-        width=max(2, int(render_params.loop_stroke_width_px)),
+    _draw_loop_path(
+        draw,
+        loop_bbox=loop_bbox,
+        loop_path_style=str(loop_path_style),
+        render_params=render_params,
     )
     entities: List[Dict[str, Any]] = [
         {
@@ -168,12 +268,18 @@ def _draw_loop_image(
             "bbox_px": _round_bbox(loop_bbox),
             "attrs": {
                 "loop_shape_variant": str(loop_shape_variant),
+                "loop_path_style": str(loop_path_style),
                 "start_angle_deg": int(start_angle_deg),
                 "bead_count": int(len(bead_specs)),
             },
         }
     ]
-    centers = _bead_center_points(loop_bbox, bead_count=int(len(bead_specs)), start_angle_deg=int(start_angle_deg))
+    centers = _bead_center_points(
+        loop_bbox,
+        bead_count=int(len(bead_specs)),
+        start_angle_deg=int(start_angle_deg),
+        loop_path_style=str(loop_path_style),
+    )
     for bead_index, (center, bead_spec) in enumerate(zip(centers, bead_specs), start=1):
         bead_bbox = _draw_bead(
             draw,
@@ -203,11 +309,12 @@ def render_puzzle_bead_loop_scene(
     scene_variant: str,
     reference_bead_specs: Sequence[Mapping[str, Any]],
     reference_loop_shape_variant: str,
+    reference_loop_path_style: str,
     reference_start_angle_deg: int,
     option_specs: Sequence[Mapping[str, Any]],
     render_params: PuzzleBeadLoopRenderParams,
 ) -> RenderedPuzzleBeadLoopScene:
-    """Render one topology bead-loop equivalence-count scene."""
+    """Render one topology bead-loop equivalence scene."""
 
     selected_variant = str(scene_variant)
     if selected_variant not in set(SUPPORTED_PUZZLE_BEAD_LOOP_SCENE_VARIANTS):
@@ -277,6 +384,7 @@ def render_puzzle_bead_loop_scene(
         image_bbox=reference_image_bbox,
         loop_id="reference_loop",
         loop_shape_variant=str(reference_loop_shape_variant),
+        loop_path_style=str(reference_loop_path_style),
         start_angle_deg=int(reference_start_angle_deg),
         bead_specs=reference_bead_specs,
         render_params=render_params,
@@ -332,6 +440,7 @@ def render_puzzle_bead_loop_scene(
                 image_bbox=image_bbox,
                 loop_id=f"{option_choice_id}_loop",
                 loop_shape_variant=str(option_spec["loop_shape_variant"]),
+                loop_path_style=str(option_spec.get("loop_path_style", reference_loop_path_style)),
                 start_angle_deg=int(option_spec["start_angle_deg"]),
                 bead_specs=list(option_spec["bead_specs"]),
                 render_params=render_params,

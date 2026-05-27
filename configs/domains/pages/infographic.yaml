@@ -1,0 +1,72 @@
+generation:
+  shared:
+    card_count_min: 20
+    card_count_max: 30
+    section_count_min: 4
+    section_count_max: 6
+    value_min: 10
+    value_max: 99
+    sum_operand_count_min: 4
+    sum_operand_count_max: 6
+    excluded_metric_count_min: 2
+    excluded_metric_count_max: 2
+    section_except_included_count_min: 3
+    balanced_query_variant_sampling: true
+    balanced_count_sampling: true
+    query_variant_weights:
+      sum_named_metrics: 1.0
+      section_extrema_arithmetic: 1.0
+      section_total_extrema_difference: 1.0
+      section_total_except_named: 1.0
+
+rendering:
+  shared:
+    canvas_width: 912
+    canvas_height: 1416
+    page_margin_x_px: 34
+    page_margin_top_px: 30
+    page_margin_bottom_px: 30
+    header_height_px: 62
+    section_gap_px: 14
+    card_gap_px: 12
+    section_padding_px: 14
+    section_header_height_px: 34
+    title_font_size_px: 30
+    subtitle_font_size_px: 16
+    section_font_size_px: 20
+    label_font_size_px: 18
+    caption_font_size_px: 13
+
+complexity:
+  task_overrides:
+    pages_infographic_metric_arithmetic_value_base:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.45
+        scene_variant_load: 0.15
+
+prompt:
+  shared:
+    bundle_id: pages_infographic_v0
+    scene_key: infographic_metric_arithmetic
+    task_key: metric_arithmetic_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint: set "answer" to the requested integer
+    answer_hint_label: set "answer" to the exact section label as a string
+    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the labels and printed values used in the arithmetic
+    evidence_hint_label: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the labels and printed values supporting the answer section
+
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.05, 0.2]
+      downsample:
+        scale: [0.95, 0.99]
+      jpeg:
+        quality: [88.0, 96.0]
+      noise:
+        alpha: [0.005, 0.015]

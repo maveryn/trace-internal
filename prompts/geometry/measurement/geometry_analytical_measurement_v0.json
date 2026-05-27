@@ -1,0 +1,267 @@
+{
+  "bundle_id": "geometry_analytical_measurement_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "analytical_measurement_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:angle_relation_scene": [
+      "object_description"
+    ],
+    "scene:parallel_section_scene": [
+      "object_description"
+    ],
+    "scene:pythagorean_length_scene": [
+      "object_description"
+    ],
+    "scene:triangle_special_segment_scene": [
+      "object_description"
+    ],
+    "scene:rectilinear_composite_scene": [
+      "object_description"
+    ],
+    "query:triangle_exterior_angle": [
+      "question_text"
+    ],
+    "query:parallel_supplement_angle": [
+      "question_text"
+    ],
+    "query:triangle_single_extension_expression": [
+      "question_text"
+    ],
+    "query:triangle_double_extension_expression": [
+      "question_text"
+    ],
+    "query:similar_triangles_side_length": [
+      "question_text"
+    ],
+    "query:parallel_section_cross_length": [
+      "question_text"
+    ],
+    "query:parallel_section_base_length": [
+      "question_text"
+    ],
+    "query:chained_rectangle_diagonal_length": [
+      "question_text"
+    ],
+    "query:rectangle_triangle_shared_height_length": [
+      "question_text"
+    ],
+    "query:angle_bisector_split_length": [
+      "question_text"
+    ],
+    "query:angle_bisector_base_length": [
+      "question_text"
+    ],
+    "query:centroid_vertex_segment_length": [
+      "question_text"
+    ],
+    "query:centroid_whole_median_length": [
+      "question_text"
+    ],
+    "query:rectangle_minus_triangle_area": [
+      "question_text"
+    ],
+    "query:l_shape_area": [
+      "question_text"
+    ],
+    "query:house_outline_perimeter": [
+      "question_text"
+    ],
+    "query:tabbed_rectilinear_perimeter": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "angle_relation_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ],
+    "parallel_section_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ],
+    "pythagorean_length_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ],
+    "triangle_special_segment_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ],
+    "rectilinear_composite_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The image shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "This figure shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "triangle_exterior_angle": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "parallel_supplement_angle": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "triangle_single_extension_expression": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "triangle_double_extension_expression": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "similar_triangles_side_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "parallel_section_cross_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "parallel_section_base_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "chained_rectangle_diagonal_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "rectangle_triangle_shared_height_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "angle_bisector_split_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "angle_bisector_base_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "centroid_vertex_segment_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "centroid_whole_median_length": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "rectangle_minus_triangle_area": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "l_shape_area": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "house_outline_perimeter": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ],
+    "tabbed_rectilinear_perimeter": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

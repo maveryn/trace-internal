@@ -1,36 +1,98 @@
 generation:
   shared:
-    bin_count_min: 4
-    bin_count_max: 7
-    bin_width_min: 2
-    bin_width_max: 4
-    bin_start_min: 0
-    bin_start_max: 12
+    bin_count_min: 12
+    bin_count_max: 20
+    bin_width_min: 1
+    bin_width_max: 2
+    bin_start_min: 1
+    bin_start_max: 99
     bin_frequency_min: 1
-    bin_frequency_max: 12
-    category_count_min: 4
-    category_count_max: 7
-    violin_category_count_min: 4
-    violin_category_count_max: 7
+    bin_frequency_max: 24
+    interval_bin_span_min: 8
+    interval_bin_span_max: 16
+    outside_interval_bin_count_min: 6
+    outside_interval_bin_count_max: 12
+    category_count_min: 6
+    category_count_max: 15
     value_min: 1
     value_max: 20
-    balanced_task_variant_sampling: true
+    balanced_query_variant_sampling: true
   task_overrides:
-    task_charts_distribution_histogram_count:
-      task_variant_weights:
-        cumulative_count_to_bin: 1.0
+    charts_distribution_histogram_count_base:
+      bin_width_min: 1
+      bin_width_max: 1
+      query_variant_weights:
         interval_mass: 1.0
-        modal_bin_count: 1.0
-    task_charts_distribution_boxplot_label:
-      task_variant_weights:
-        median_above_reference_q3: 1.0
-        largest_iqr: 1.0
-        smallest_iqr: 1.0
-    task_charts_distribution_density_label:
-      task_variant_weights:
-        bimodal_label: 1.0
+        bin_count_between_values: 1.0
+        rank_item_bin_label: 1.0
+      interval_relation_weights:
+        inside: 1.0
+        outside: 1.0
+    charts_distribution_boxplot_label_base:
+      value_max: 99
+      value_window_span_min: 25
+      value_window_span_max: 25
+      query_variant_weights:
+        median_reference_label: 1.0
+        iqr_extremum_label: 1.0
+      median_reference_direction_weights:
+        above_reference_q3: 1.0
+        below_reference_q1: 1.0
+      extremum_direction_weights:
+        largest: 1.0
+        smallest: 1.0
+      query_variant_overrides:
+        iqr_extremum_label:
+          iqr_winner_gap_min: 1
+          iqr_winner_gap_max: 1
+    charts_distribution_violin_label_base:
+      value_window_enabled: false
+      value_min: 1
+      value_max: 40
+      violin_category_count_min: 5
+      violin_category_count_max: 8
+      mode_window_size_min: 8
+      mode_window_size_max: 15
+      extreme_winner_gap_min: 1
+      extreme_winner_gap_max: 1
+      bimodal_mode_separation_min: 6
+      bimodal_mode_separation_max: 12
+      bimodal_distractor_clearance_min: 2
+      bimodal_distractor_clearance_max: 4
+      support_span_min: 7
+      support_span_max: 22
+      support_winner_gap_min: 2
+      support_winner_gap_max: 5
+      query_variant_weights:
         highest_mode: 1.0
         lowest_mode: 1.0
+        bimodal_label: 1.0
+        widest_support: 1.0
+        narrowest_support: 1.0
+    task_charts__boxplot__median_rank_difference_value:
+      value_max: 99
+      value_window_span_min: 25
+      value_window_span_max: 25
+      category_count_min: 6
+      category_count_max: 12
+      query_variant_weights:
+        median_top_second_difference_value: 1.0
+        median_top_third_difference_value: 1.0
+        median_top_bottom_difference_value: 1.0
+      median_rank_difference_min: 2
+      median_rank_difference_max: 18
+    task_charts__boxplot__paired_median_shift_label:
+      value_max: 99
+      value_window_span_min: 25
+      value_window_span_max: 25
+      category_count_min: 4
+      category_count_max: 6
+      paired_median_shift_min: 2
+      paired_median_shift_max: 10
+      query_variant_weights:
+        paired_median_greatest_increase_label: 1.0
+        paired_median_greatest_decrease_label: 1.0
+        paired_median_greatest_absolute_change_label: 1.0
 
 rendering:
   shared:
@@ -54,72 +116,122 @@ rendering:
     mark_color_channel_max: 220
     mark_color_min_distance: 40.0
     mark_color_distance_space: lab
-    axis_color_rgb: [74, 78, 86]
-    grid_color_rgb: [224, 227, 232]
-    text_color_rgb: [38, 41, 48]
-    text_stroke_rgb: [255, 255, 255]
-    plot_fill_rgb: [255, 255, 255]
+  task_overrides:
+    charts_distribution_histogram_count_base:
+      value_axis_allow_nonzero_min: false
+      guide_line_mode: always
+    charts_distribution_boxplot_label_base:
+      guide_line_mode: variant
+      guide_line_prob: 0.5
+    charts_distribution_violin_label_base:
+      canvas_width: 900
+      canvas_height: 640
+      plot_margin_left_px: 108
+      plot_margin_right_px: 58
+      plot_margin_top_px: 48
+      plot_margin_bottom_px: 116
+      guide_line_mode: "off"
+      violin_mode_line_style_options:
+        - none
+        - short
+        - dot
+      violin_fill_style_options:
+        - solid
+        - light
+        - outline
+        - hatch
+      violin_width_scale_min: 0.90
+      violin_width_scale_max: 1.10
+      violin_smoothing_scale_min: 0.88
+      violin_smoothing_scale_max: 1.12
+      violin_palette_mode_options:
+        - single
+        - per_violin_muted
+      violin_palette_offset_min: 0
+      violin_palette_offset_max: 7
+    task_charts__boxplot__median_rank_difference_value:
+      guide_line_mode: variant
+      guide_line_prob: 0.5
+    task_charts__boxplot__paired_median_shift_label:
+      canvas_width: 920
+      guide_line_mode: variant
+      guide_line_prob: 0.5
 
 complexity:
   task_overrides:
-    task_charts_distribution_histogram_count:
+    charts_distribution_histogram_count_base:
       criteria_weights:
         visual_scan: 0.55
         reasoning_load: 0.45
         scene_variant_load: 0.0
-    task_charts_distribution_boxplot_label:
+    charts_distribution_boxplot_label_base:
       criteria_weights:
         visual_scan: 0.40
         reasoning_load: 0.60
         scene_variant_load: 0.0
-    task_charts_distribution_density_label:
+    charts_distribution_violin_label_base:
       criteria_weights:
-        visual_scan: 0.30
-        reasoning_load: 0.70
+        visual_scan: 0.45
+        reasoning_load: 0.55
+        scene_variant_load: 0.0
+    task_charts__boxplot__median_rank_difference_value:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.65
+        scene_variant_load: 0.0
+    task_charts__boxplot__paired_median_shift_label:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
         scene_variant_load: 0.0
 
 prompt:
   shared:
-    bundle_id: charts_distribution_v1
-    task_family_key: distribution_chart
+    bundle_id: charts_distribution_v0
+    scene_key: distribution_chart
     task_key: histogram_count_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested count as an integer
-    object_description_histogram: a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval
-    object_description_boxplot: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown
-    object_description_violin: a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values
-    evidence_hint_modal_bin_count: set "evidence" to an array containing the label of the unique highest-count bin
-    evidence_hint_interval_mass: set "evidence" to an array containing the labels of all bins included in the queried interval
-    evidence_hint_cumulative_count_to_bin: set "evidence" to an array containing the labels of all bins from the first bin through the queried bin
-    json_example_modal_bin_count: '{"evidence":["6-8"],"answer":9}'
-    json_example_interval_mass: '{"evidence":["6-8","9-11"],"answer":15}'
-    json_example_cumulative_count_to_bin: '{"evidence":["0-2","3-5","6-8"],"answer":18}'
-    json_example_answer_only_modal_bin_count: '{"answer":9}'
+    answer_hint_cumulative_rank: set "answer" to the requested x-axis value as an integer
+    object_description_histogram: a histogram with integer value labels on the horizontal axis. Each bar height gives the count for that value
+    object_description_boxplot: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum values shown
+    object_description_paired_boxplot: two side-by-side boxplot panels with matching labels. The left panel is Before and the right panel is After
+    object_description_violin: a set of labeled violin plots. Wider parts of each shape show where that label's values are denser on the vertical axis
+    evidence_hint_interval_mass: set "evidence" to an array of [x0, y0, x1, y1] pixel boxes for all bars matching the requested interval relation
+    evidence_hint_bin_count_between_values: set "evidence" to an array of [x0, y0, x1, y1] pixel boxes for all bars inside the queried value interval
+    evidence_hint_rank_item_bin_label: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box for the answer bar
+    json_example_interval_mass: '{"evidence":[[160,260,204,520],[212,300,256,520],[264,240,308,520]],"answer":15}'
+    json_example_bin_count_between_values: '{"evidence":[[160,260,204,520],[212,300,256,520],[264,240,308,520]],"answer":3}'
+    json_example_rank_item_bin_label: '{"evidence":[[264,240,308,520]],"answer":18}'
     json_example_answer_only_interval_mass: '{"answer":15}'
-    json_example_answer_only_cumulative_count_to_bin: '{"answer":18}'
+    json_example_answer_only_bin_count_between_values: '{"answer":3}'
+    json_example_answer_only_rank_item_bin_label: '{"answer":18}'
   task_overrides:
-    task_charts_distribution_boxplot_label:
+    charts_distribution_boxplot_label_base:
       task_key: boxplot_label_query
       answer_hint: set "answer" to the single uppercase label of the requested boxplot
-      evidence_hint_median_above_reference_q3: set "evidence" to the winning margin above the reference label's upper quartile as an integer
-      evidence_hint_largest_iqr: set "evidence" to the largest interquartile range as an integer
-      evidence_hint_smallest_iqr: set "evidence" to the smallest interquartile range as an integer
-      json_example_median_above_reference_q3: '{"evidence":2,"answer":"M"}'
-      json_example_largest_iqr: '{"evidence":6,"answer":"Q"}'
-      json_example_smallest_iqr: '{"evidence":2,"answer":"B"}'
-      json_example_answer_only_median_above_reference_q3: '{"answer":"M"}'
-      json_example_answer_only_largest_iqr: '{"answer":"Q"}'
-      json_example_answer_only_smallest_iqr: '{"answer":"B"}'
-    task_charts_distribution_density_label:
-      task_key: density_label_query
+      evidence_hint_median_reference_label: set "evidence" to an array of [x, y] pixel points at the centers of the reference boxplot and the winning boxplot
+      evidence_hint_iqr_extremum_label: set "evidence" to an array of [x, y] pixel points at the center of the winning boxplot
+      json_example_median_reference_label: '{"evidence":[[240,300],[430,250]],"answer":"M"}'
+      json_example_iqr_extremum_label: '{"evidence":[[430,250]],"answer":"Q"}'
+      json_example_answer_only_median_reference_label: '{"answer":"M"}'
+      json_example_answer_only_iqr_extremum_label: '{"answer":"Q"}'
+    charts_distribution_violin_label_base:
+      task_key: violin_label_query
       answer_hint: set "answer" to the single uppercase label of the requested violin plot
-      evidence_hint_highest_mode: set "evidence" to an array containing the winning modal value as one integer
-      evidence_hint_lowest_mode: set "evidence" to an array containing the winning modal value as one integer
-      evidence_hint_bimodal_label: set "evidence" to an array containing the two modal values of the bimodal violin in ascending order
-      json_example_highest_mode: '{"evidence":[14],"answer":"Q"}'
-      json_example_lowest_mode: '{"evidence":[5],"answer":"B"}'
-      json_example_bimodal_label: '{"evidence":[6,12],"answer":"M"}'
-      json_example_answer_only_highest_mode: '{"answer":"Q"}'
-      json_example_answer_only_lowest_mode: '{"answer":"B"}'
-      json_example_answer_only_bimodal_label: '{"answer":"M"}'
+      evidence_hint: set "evidence" to an array containing one [x0, y0, x1, y1] pixel box around the winning violin plot
+      json_example: '{"evidence":[[240,140,330,520]],"answer":"Q"}'
+      json_example_answer_only: '{"answer":"Q"}'
+    task_charts__boxplot__median_rank_difference_value:
+      task_key: boxplot_median_rank_difference_query
+      answer_hint: set "answer" to the median difference as an integer
+      evidence_hint: set "evidence" to an array of [x, y] pixel points at the centers of the two boxplots used in the difference, ordered higher-rank then lower-rank
+      json_example: '{"evidence":[[240,300],[430,250]],"answer":7}'
+      json_example_answer_only: '{"answer":7}'
+    task_charts__boxplot__paired_median_shift_label:
+      task_key: boxplot_paired_median_shift_query
+      answer_hint: set "answer" to the single uppercase label
+      evidence_hint: set "evidence" to an array of [x, y] pixel points at the centers of the before and after boxplots for the winning label
+      json_example: '{"evidence":[[240,300],[305,250]],"answer":"M"}'
+      json_example_answer_only: '{"answer":"M"}'

@@ -1,14 +1,10 @@
 generation:
   shared:
-    task_variant_weights:
-      shortest_path_length: 1.0
-      directed_shortest_path_length: 1.0
-    balanced_task_variant_sampling: true
     node_count_min: 5
-    node_count_max: 10
-    directed_node_count_max: 9
-    target_shortest_path_length_min: 1
-    target_shortest_path_length_max: 5
+    node_count_max: 15
+    directed_node_count_max: 15
+    target_shortest_path_length_min: 3
+    target_shortest_path_length_max: 7
     topology_profile_weights:
       balanced: 1.0
       low_degree: 1.0
@@ -16,10 +12,16 @@ generation:
     label_variant_weights:
       letters: 1.0
       numbers: 1.0
+      named: 2.0
     layout_variant_weights:
       circular: 1.0
       shell: 1.0
       spring: 1.0
+      grid_jitter: 1.0
+      layered: 1.0
+      component_clustered: 1.0
+      path_spine: 1.0
+      radial_tree: 1.0
     node_shape_variant_weights:
       circle: 1.0
       rounded_square: 1.0
@@ -48,6 +50,76 @@ generation:
     balanced_node_shape_variant_sampling: true
     balanced_layout_transform_variant_sampling: true
     balanced_node_color_name_sampling: true
+  task_overrides:
+    task_graph__node_link__shortest_path_length:
+      query_variant_weights:
+        shortest_path_length: 1.0
+        directed_shortest_path_length: 1.0
+      layout_variant_weights:
+        circular: 1.0
+        shell: 1.0
+        spring: 1.0
+        grid_jitter: 1.0
+        layered: 1.0
+        component_clustered: 1.0
+        path_spine: 1.0
+        radial_tree: 1.0
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 2.0
+      edge_routing_variant_weights:
+        straight: 1.0
+        mixed_arc: 1.0
+      balanced_query_variant_sampling: true
+      balanced_label_variant_sampling: true
+      balanced_edge_routing_variant_sampling: true
+    task_graph__node_link__longest_path_length:
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 2.0
+      edge_routing_variant_weights:
+        straight: 1.0
+        mixed_arc: 1.0
+      balanced_target_longest_path_length_sampling: true
+      balanced_label_variant_sampling: true
+      balanced_edge_routing_variant_sampling: true
+      node_count_min: 5
+      directed_node_count_max: 10
+      target_longest_path_length_min: 2
+      target_longest_path_length_max: 6
+    task_graph__pipe_network__shortest_path_length:
+      node_count_min: 6
+      node_count_max: 13
+      target_shortest_path_length_min: 2
+      target_shortest_path_length_max: 6
+      grid_shape_variant_weights:
+        3x4: 1.0
+        3x5: 1.0
+        4x4: 1.0
+        4x5: 1.0
+      balanced_grid_shape_variant_sampling: true
+    task_graph__metro__shortest_path_length:
+      route_count_min: 3
+      route_count_max: 5
+      target_shortest_path_length_min: 2
+      target_shortest_path_length_max: 6
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 2.0
+      balanced_label_variant_sampling: true
+    task_graph__metro__transfer_count:
+      route_count_min: 3
+      route_count_max: 5
+      target_count_min: 0
+      target_count_max: 4
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 1.0
+      balanced_label_variant_sampling: true
 
 rendering:
   shared:
@@ -75,16 +147,50 @@ complexity:
 
 prompt:
   shared:
-    bundle_id: graph_path_v1
-    task_family_key: single_graph_path
+    bundle_id: graph_path_v0
+    scene_key: single_graph_path
     task_key: shortest_path_length_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description: a labeled undirected graph
     object_description_directed: a labeled directed graph
     question_text_shortest_path_length: The graph has a unique shortest path from node {source_label} to node {goal_label}. How many edges are in that path?
-    question_text_directed_shortest_path_length: The directed graph has a unique shortest path from node {source_label} to node {goal_label}, following the direction of the arrows. How many edges are in that path?
-    evidence_hint: set "evidence" to an array of the node labels along that unique shortest path in order from node {source_label} to node {goal_label}, including both endpoints
+    question_text_directed_shortest_path_length: There is a unique shortest path from node {source_label} to node {goal_label} when following the direction of the arrows. How many edges are in that path?
+    evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at node centers along that unique shortest path from node {source_label} to node {goal_label}, including both endpoints
     answer_hint: set "answer" to the number of edges in that path as an integer
-    json_example: '{"evidence":["B","D","H"],"answer":2}'
+    json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
     json_example_answer_only: '{"answer":2}'
+  task_overrides:
+    task_graph__node_link__longest_path_length:
+      task_key: longest_path_length_query
+      object_description_directed: a labeled directed acyclic graph
+      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at node centers along the unique longest directed path, from its start node to its end node
+      answer_hint: set "answer" to the number of directed edges in that path as an integer
+      json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_graph__pipe_network__shortest_path_length:
+      task_key: shortest_path_length_query
+      object_description: a labeled pipe-junction network with open pipes and blocked pipes
+      question_text_shortest_path_length: The pipe network has a unique shortest open route from junction {source_label} to junction {goal_label}. Ignoring blocked pipes, how many open pipe segments are in that route?
+      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at junction centers along the unique shortest open route from {source_label} to {goal_label}, including both endpoints
+      answer_hint: set "answer" to the number of open pipe segments in that route as an integer
+      json_example: '{"evidence":[[180,220],[310,220],[430,300]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_graph__metro__shortest_path_length:
+      scene_key: metro_route_path
+      task_key: shortest_path_length_query
+      object_description: a labeled metro route map with colored routes and stations
+      question_text_shortest_path_length: The metro map has a unique shortest station path from station {source_label} to station {goal_label}. How many route segments are in that path?
+      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at station centers along the unique shortest path from station {source_label} to station {goal_label}, including both endpoints
+      answer_hint: set "answer" to the number of route segments in that path as an integer
+      json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_graph__metro__transfer_count:
+      scene_key: metro_route_path
+      task_key: metro_transfer_count_query
+      object_description: a labeled metro route map with colored routes and stations
+      question_text_metro_transfer_count: Travel from station {source_label} to station {goal_label}, stopping at station {via_label}. What is the fewest number of colored-route changes needed?
+      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at station centers along the chosen minimum-transfer path from station {source_label} through station {via_label} to station {goal_label}, including the start, via, and end stations
+      answer_hint: set "answer" to the fewest route-change count as an integer; travel only along drawn route segments, and one route change means switching from one colored route to another at a station
+      json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

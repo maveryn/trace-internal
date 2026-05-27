@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 from functools import lru_cache
+from itertools import combinations_with_replacement, product
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
@@ -12,7 +13,6 @@ from PIL import ImageDraw
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -20,16 +20,19 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.circuit_scene import RenderedCircuitScene, render_resistor_network_scene
 from ..shared.complexity import build_physics_circuit_resistance_complexity
+from ..shared.diagram_style import prepare_physics_diagram_style_and_background
+from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ..shared.visual_defaults import load_physics_background_defaults, load_physics_noise_defaults
+from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "task_physics_circuits_equivalent_resistance"
+TASK_ID = "physics_circuits_resistance_family"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "parallel",
     "simple_series_parallel",
@@ -79,11 +82,24 @@ class _TaskDefaults:
     pair_parallel_branch_bottom_y_px: int = 306
     pair_series_parallel_branch_left_x_px: int = 152
     pair_equals_font_size_px: int = 48
+    pair_resistor_box_width_px: int = 56
+    pair_resistor_box_height_px: int = 34
+    pair_resistor_font_size_px: int = 18
+    parallel_total_branch_count_options: Tuple[int, ...] = (4, 5)
+    series_parallel_total_count_pairs: Tuple[Tuple[int, int], ...] = ((1, 4), (2, 3), (2, 4))
+    parallel_missing_left_branch_count_options: Tuple[int, ...] = (3, 4)
+    parallel_missing_right_branch_count_options: Tuple[int, ...] = (3, 4)
+    series_parallel_missing_left_count_pairs: Tuple[Tuple[int, int], ...] = ((1, 3),)
+    series_parallel_missing_right_count_pairs: Tuple[Tuple[int, int], ...] = ((1, 3),)
+    compound_parallel_block_count_options: Tuple[int, ...] = (1, 2, 3)
+    compound_missing_parallel_block_count_options: Tuple[int, ...] = (2, 3)
+    compound_parallel_branch_count_options: Tuple[int, ...] = (2, 3)
+    balanced_compound_block_count_sampling: bool = True
 
 
 @dataclass(frozen=True)
 class _ResolvedAxes:
-    """Resolved scene/query axes and answer support for one instance."""
+    """Resolved scene/task axes and answer support for one instance."""
 
     scene_variant: str
     query_variant: str
@@ -105,6 +121,9 @@ class _CircuitLayout:
     parallel_values: Tuple[int, ...]
     target_answer: int
     series_parallel_orientation: str | None
+    parallel_blocks: Tuple[Tuple[int, ...], ...] = tuple()
+    inter_block_series_values: Tuple[int, ...] = tuple()
+    outer_series_values: Tuple[int, int] = (0, 0)
 
 
 @dataclass(frozen=True)
@@ -122,6 +141,12 @@ class _MissingCircuitPairLayout:
     missing_component_group: str
     target_answer: int
     paired_total_resistance: int
+    left_parallel_blocks: Tuple[Tuple[int, ...], ...] = tuple()
+    left_inter_block_series_values: Tuple[int, ...] = tuple()
+    left_outer_series_values: Tuple[int, int] = (0, 0)
+    right_parallel_blocks: Tuple[Tuple[int, ...], ...] = tuple()
+    right_inter_block_series_values: Tuple[int, ...] = tuple()
+    right_outer_series_values: Tuple[int, int] = (0, 0)
 
 
 _DEFAULTS = _TaskDefaults()
@@ -130,8 +155,151 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_physics_background_defaults(task_group="circuits")
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="circuits", apply_prob=0.5)
+
+
+def _secondary_axis_params(params: Mapping[str, Any]) -> Mapping[str, Any]:
+    """No-op hook for axis-local balancing call sites."""
+
+    return params
+
+
+def _resolve_int_options(params: Mapping[str, Any], *, key: str, fallback: Sequence[int]) -> Tuple[int, ...]:
+    """Resolve a positive integer option list from task params/config defaults."""
+
+    raw = params.get(str(key), group_default(_GEN_DEFAULTS, str(key), fallback))
+    if isinstance(raw, (str, bytes)) or not isinstance(raw, Sequence):
+        raise ValueError(f"{key} must be a sequence of positive integers")
+    values = tuple(int(value) for value in raw)
+    if not values or any(int(value) < 1 for value in values):
+        raise ValueError(f"{key} must contain at least one positive integer")
+    return tuple(dict.fromkeys(values))
+
+
+def _resolve_count_pairs(
+    params: Mapping[str, Any],
+    *,
+    key: str,
+    fallback: Sequence[Tuple[int, int]],
+) -> Tuple[Tuple[int, int], ...]:
+    """Resolve `(series_count, parallel_count)` options from params/config."""
+
+    raw = params.get(str(key), group_default(_GEN_DEFAULTS, str(key), fallback))
+    if isinstance(raw, (str, bytes)) or not isinstance(raw, Sequence):
+        raise ValueError(f"{key} must be a sequence of two-integer pairs")
+    pairs: List[Tuple[int, int]] = []
+    for item in raw:
+        if isinstance(item, (str, bytes)) or not isinstance(item, Sequence) or len(item) != 2:
+            raise ValueError(f"{key} entries must be two-integer pairs")
+        series_count, parallel_count = int(item[0]), int(item[1])
+        if int(series_count) < 0 or int(parallel_count) < 1:
+            raise ValueError(f"{key} entries must have series_count >= 0 and parallel_count >= 1")
+        pairs.append((int(series_count), int(parallel_count)))
+    if not pairs:
+        raise ValueError(f"{key} must contain at least one count pair")
+    return tuple(dict.fromkeys(pairs))
+
+
+def _parallel_total_branch_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="parallel_total_branch_count_options",
+        fallback=_DEFAULTS.parallel_total_branch_count_options,
+    )
+
+
+def _series_parallel_total_count_pairs(params: Mapping[str, Any]) -> Tuple[Tuple[int, int], ...]:
+    return _resolve_count_pairs(
+        params,
+        key="series_parallel_total_count_pairs",
+        fallback=_DEFAULTS.series_parallel_total_count_pairs,
+    )
+
+
+def _parallel_missing_left_branch_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="parallel_missing_left_branch_count_options",
+        fallback=_DEFAULTS.parallel_missing_left_branch_count_options,
+    )
+
+
+def _parallel_missing_right_branch_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="parallel_missing_right_branch_count_options",
+        fallback=_DEFAULTS.parallel_missing_right_branch_count_options,
+    )
+
+
+def _series_parallel_missing_left_count_pairs(params: Mapping[str, Any]) -> Tuple[Tuple[int, int], ...]:
+    pairs = _resolve_count_pairs(
+        params,
+        key="series_parallel_missing_left_count_pairs",
+        fallback=_DEFAULTS.series_parallel_missing_left_count_pairs,
+    )
+    if any(series_count != 1 for series_count, _ in pairs):
+        raise ValueError("series_parallel_missing_left_count_pairs currently require series_count == 1")
+    return pairs
+
+
+def _series_parallel_missing_right_count_pairs(params: Mapping[str, Any]) -> Tuple[Tuple[int, int], ...]:
+    return _resolve_count_pairs(
+        params,
+        key="series_parallel_missing_right_count_pairs",
+        fallback=_DEFAULTS.series_parallel_missing_right_count_pairs,
+    )
+
+
+def _compound_parallel_block_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="compound_parallel_block_count_options",
+        fallback=_DEFAULTS.compound_parallel_block_count_options,
+    )
+
+
+def _compound_missing_parallel_block_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="compound_missing_parallel_block_count_options",
+        fallback=_DEFAULTS.compound_missing_parallel_block_count_options,
+    )
+
+
+def _compound_parallel_branch_count_options(params: Mapping[str, Any]) -> Tuple[int, ...]:
+    return _resolve_int_options(
+        params,
+        key="compound_parallel_branch_count_options",
+        fallback=_DEFAULTS.compound_parallel_branch_count_options,
+    )
+
+
+def _select_compound_block_count(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    available_block_counts: Sequence[int],
+) -> int:
+    """Select a compound block count with the same seeded sampler used in builds."""
+
+    available = tuple(int(value) for value in available_block_counts)
+    if not available:
+        raise ValueError("available_block_counts must not be empty")
+    enabled = bool(
+        params.get(
+            "balanced_compound_block_count_sampling",
+            group_default(
+                _GEN_DEFAULTS,
+                "balanced_compound_block_count_sampling",
+                _DEFAULTS.balanced_compound_block_count_sampling,
+            ),
+        )
+    )
+    if not bool(enabled):
+        return int(available[int(rng.randrange(len(available)))])
+    return int(available[abs(int(instance_seed)) % len(available)])
 
 
 def _target_support_key(*, scene_variant: str, query_variant: str) -> str:
@@ -174,6 +342,7 @@ def _resolve_target_answer(
         raw_support=raw_support,
         resistor_value_min=int(resistor_value_min),
         resistor_value_max=int(resistor_value_max),
+        params=params,
     )
     if not feasible_support:
         raise ValueError(f"no feasible target_answer values remain for {scene_variant}/{query_variant}")
@@ -188,7 +357,7 @@ def _resolve_target_answer(
         fallback_support=feasible_support,
         namespace=f"{TASK_ID}.target_answer.{str(scene_variant)}",
         balanced_flag_key="balanced_target_answer_sampling",
-        namespace_explicit_sampling_index=True,
+        namespace_support_permutation=True,
     )
     return int(target_answer), tuple(int(value) for value in feasible_support), dict(probabilities)
 
@@ -201,6 +370,15 @@ def _is_feasible_target_answer(
     target_answer: int,
     resistor_value_min: int,
     resistor_value_max: int,
+    parallel_total_branch_count_options: Tuple[int, ...],
+    series_parallel_total_count_pairs: Tuple[Tuple[int, int], ...],
+    parallel_missing_left_branch_count_options: Tuple[int, ...],
+    parallel_missing_right_branch_count_options: Tuple[int, ...],
+    series_parallel_missing_left_count_pairs: Tuple[Tuple[int, int], ...],
+    series_parallel_missing_right_count_pairs: Tuple[Tuple[int, int], ...],
+    compound_parallel_block_count_options: Tuple[int, ...],
+    compound_missing_parallel_block_count_options: Tuple[int, ...],
+    compound_parallel_branch_count_options: Tuple[int, ...],
 ) -> bool:
     """Return whether one scene/query pair can realize the requested target answer."""
 
@@ -211,13 +389,18 @@ def _is_feasible_target_answer(
                     target_answer=int(target_answer),
                     resistor_value_min=int(resistor_value_min),
                     resistor_value_max=int(resistor_value_max),
+                    left_branch_count_options=parallel_missing_left_branch_count_options,
+                    right_branch_count_options=parallel_missing_right_branch_count_options,
                 )
             )
         return bool(
-            _simple_series_parallel_missing_pair_candidates(
+            _compound_missing_pair_candidates(
                 target_answer=int(target_answer),
                 resistor_value_min=int(resistor_value_min),
                 resistor_value_max=int(resistor_value_max),
+                block_count_options=compound_missing_parallel_block_count_options,
+                branch_count_options=compound_parallel_branch_count_options,
+                max_candidates=1,
             )
         )
 
@@ -231,13 +414,16 @@ def _is_feasible_target_answer(
                     resistor_value_max=int(resistor_value_max),
                 )
             )
-            for branch_count in (3, 4)
+            for branch_count in parallel_total_branch_count_options
         )
     return bool(
-        _series_parallel_candidates_for_total(
+        _compound_candidates_for_total(
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
+            block_count_options=compound_parallel_block_count_options,
+            branch_count_options=compound_parallel_branch_count_options,
+            max_candidates=1,
         )
     )
 
@@ -249,6 +435,7 @@ def _feasible_target_support(
     raw_support: Sequence[int],
     resistor_value_min: int,
     resistor_value_max: int,
+    params: Mapping[str, Any],
 ) -> Tuple[int, ...]:
     """Return the subset of one configured support that is constructively feasible."""
 
@@ -261,16 +448,26 @@ def _feasible_target_support(
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
+            parallel_total_branch_count_options=_parallel_total_branch_count_options(params),
+            series_parallel_total_count_pairs=_series_parallel_total_count_pairs(params),
+            parallel_missing_left_branch_count_options=_parallel_missing_left_branch_count_options(params),
+            parallel_missing_right_branch_count_options=_parallel_missing_right_branch_count_options(params),
+            series_parallel_missing_left_count_pairs=_series_parallel_missing_left_count_pairs(params),
+            series_parallel_missing_right_count_pairs=_series_parallel_missing_right_count_pairs(params),
+            compound_parallel_block_count_options=_compound_parallel_block_count_options(params),
+            compound_missing_parallel_block_count_options=_compound_missing_parallel_block_count_options(params),
+            compound_parallel_branch_count_options=_compound_parallel_branch_count_options(params),
         ):
             feasible.append(int(target_answer))
     return tuple(int(value) for value in feasible)
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
-    """Resolve one compatible scene/query pair plus answer support."""
+    """Resolve one compatible scene/query-variant pair plus answer support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    query_variant, query_probs = _resolve_query_variant(
+    secondary_params = _secondary_axis_params(params)
+    query_variant, task_probs = _resolve_query_variant(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
@@ -279,24 +476,24 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     if str(query_variant) == "total_resistance" and explicit_scene is None:
         target_answer, target_answer_support, target_answer_probabilities = _resolve_total_resistance_target_answer(
             instance_seed=int(instance_seed),
-            params=params,
+            params=secondary_params,
         )
         scene_variant, scene_probs = _resolve_scene_variant_for_total_resistance(
             axis_rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=secondary_params,
             target_answer=int(target_answer),
         )
     else:
         scene_variant, scene_probs = _resolve_scene_variant(
             axis_rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=secondary_params,
             query_variant=str(query_variant),
         )
         target_answer, target_answer_support, target_answer_probabilities = _resolve_target_answer(
             instance_seed=int(instance_seed),
-            params=params,
+            params=secondary_params,
             scene_variant=str(scene_variant),
             query_variant=str(query_variant),
         )
@@ -328,7 +525,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_variant_probabilities=dict(task_probs),
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
@@ -340,69 +537,78 @@ def _resolve_query_variant(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the query variant, respecting any explicit scene compatibility."""
+    """Resolve the public query variant, respecting any explicit scene compatibility."""
 
-    query_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
+    task_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
     compatibility_map = {
         str(scene): tuple(str(query) for query in queries)
         for scene, queries in COMPATIBILITY.items()
     }
-    query_set = set(query_supported)
+    task_set = set(task_supported)
 
-    explicit_query = params.get("query_variant", params.get("task_variant"))
-    if explicit_query is not None and str(explicit_query) not in query_set:
-        raise ValueError(f"unsupported query_variant: {explicit_query}")
+    query_variant = params.get("query_variant")
+    explicit_task = params.get("query_variant")
+    if query_variant is not None:
+        if str(query_variant) not in task_set:
+            raise ValueError(f"unsupported query_variant: {query_variant}")
+        if explicit_task is not None and str(explicit_task) != str(query_variant):
+            raise ValueError("circuit resistance family query_variant must match query_variant")
+        params = dict(params)
+        params["query_variant"] = str(query_variant)
+        explicit_task = str(query_variant)
+    if explicit_task is not None and str(explicit_task) not in task_set:
+        raise ValueError(f"unsupported query_variant: {explicit_task}")
     explicit_scene = params.get("scene_variant")
     if explicit_scene is not None:
         if str(explicit_scene) not in set(str(value) for value in SUPPORTED_SCENE_VARIANTS):
             raise ValueError(f"unsupported scene_variant: {explicit_scene}")
-        allowed_queries = list(compatibility_map.get(str(explicit_scene), ()))
-        selected_query, restricted_query_probs = resolve_variant(
+        allowed_tasks = list(compatibility_map.get(str(explicit_scene), ()))
+        selected_task, restricted_task_probs = resolve_variant(
             rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
-            supported_variants=allowed_queries,
+            supported_variants=allowed_tasks,
             explicit_key="query_variant",
             weights_key="query_variant_weights",
         )
-        selected_query = apply_balanced_variant_sampling(
+        selected_task = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
-            selected_variant=str(selected_query),
-            variant_probabilities=restricted_query_probs,
-            supported_variants=allowed_queries,
+            selected_variant=str(selected_task),
+            variant_probabilities=restricted_task_probs,
+            supported_variants=allowed_tasks,
             balance_flag_key="balanced_query_variant_sampling",
             explicit_key="query_variant",
             weights_key="query_variant_weights",
             sampling_namespace=f"{TASK_ID}.query_variant",
         )
-        return str(selected_query), {
-            query: float(restricted_query_probs.get(query, 0.0)) for query in query_supported
+        return str(selected_task), {
+            query_variant: float(restricted_task_probs.get(query_variant, 0.0)) for query_variant in task_supported
         }
 
-    selected_query, restricted_query_probs = resolve_variant(
+    selected_task, restricted_task_probs = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=query_supported,
+        supported_variants=task_supported,
         explicit_key="query_variant",
         weights_key="query_variant_weights",
     )
-    selected_query = apply_balanced_variant_sampling(
+    selected_task = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(selected_query),
-        variant_probabilities=restricted_query_probs,
-        supported_variants=query_supported,
+        selected_variant=str(selected_task),
+        variant_probabilities=restricted_task_probs,
+        supported_variants=task_supported,
         balance_flag_key="balanced_query_variant_sampling",
         explicit_key="query_variant",
         weights_key="query_variant_weights",
         sampling_namespace=f"{TASK_ID}.query_variant",
     )
-    return str(selected_query), {
-        query: float(restricted_query_probs.get(query, 0.0)) for query in query_supported
+    return str(selected_task), {
+        query_variant: float(restricted_task_probs.get(query_variant, 0.0)) for query_variant in task_supported
     }
 
 
@@ -483,6 +689,15 @@ def _resolve_total_resistance_target_answer(
                 target_answer=int(value),
                 resistor_value_min=int(resistor_value_min),
                 resistor_value_max=int(resistor_value_max),
+                parallel_total_branch_count_options=_parallel_total_branch_count_options(params),
+                series_parallel_total_count_pairs=_series_parallel_total_count_pairs(params),
+                parallel_missing_left_branch_count_options=_parallel_missing_left_branch_count_options(params),
+                parallel_missing_right_branch_count_options=_parallel_missing_right_branch_count_options(params),
+                series_parallel_missing_left_count_pairs=_series_parallel_missing_left_count_pairs(params),
+                series_parallel_missing_right_count_pairs=_series_parallel_missing_right_count_pairs(params),
+                compound_parallel_block_count_options=_compound_parallel_block_count_options(params),
+                compound_missing_parallel_block_count_options=_compound_missing_parallel_block_count_options(params),
+                compound_parallel_branch_count_options=_compound_parallel_branch_count_options(params),
             )
             for scene_variant in SUPPORTED_SCENE_VARIANTS
         )
@@ -500,7 +715,7 @@ def _resolve_total_resistance_target_answer(
         fallback_support=feasible_support,
         namespace=f"{TASK_ID}.target_answer.total_resistance",
         balanced_flag_key="balanced_target_answer_sampling",
-        namespace_explicit_sampling_index=True,
+        namespace_support_permutation=True,
     )
     return int(target_answer), tuple(int(value) for value in feasible_support), dict(probabilities)
 
@@ -529,6 +744,15 @@ def _resolve_scene_variant_for_total_resistance(
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
+            parallel_total_branch_count_options=_parallel_total_branch_count_options(params),
+            series_parallel_total_count_pairs=_series_parallel_total_count_pairs(params),
+            parallel_missing_left_branch_count_options=_parallel_missing_left_branch_count_options(params),
+            parallel_missing_right_branch_count_options=_parallel_missing_right_branch_count_options(params),
+            series_parallel_missing_left_count_pairs=_series_parallel_missing_left_count_pairs(params),
+            series_parallel_missing_right_count_pairs=_series_parallel_missing_right_count_pairs(params),
+            compound_parallel_block_count_options=_compound_parallel_block_count_options(params),
+            compound_missing_parallel_block_count_options=_compound_missing_parallel_block_count_options(params),
+            compound_parallel_branch_count_options=_compound_parallel_branch_count_options(params),
         )
     ]
     if not allowed_scenes:
@@ -588,6 +812,161 @@ def _equivalent_resistance_fraction(
     if str(scene_variant) == "parallel":
         return _parallel_equivalent_fraction(parallel_values)
     return Fraction(sum(int(value) for value in series_values), 1) + _parallel_equivalent_fraction(parallel_values)
+
+
+def _compound_equivalent_fraction(
+    *,
+    parallel_blocks: Sequence[Sequence[int]],
+    inter_block_series_values: Sequence[int],
+    outer_series_values: Sequence[int] = (),
+) -> Fraction:
+    """Return the exact equivalent resistance of series-connected parallel banks."""
+
+    blocks = tuple(tuple(int(value) for value in block) for block in parallel_blocks)
+    gaps = tuple(int(value) for value in inter_block_series_values)
+    outer = tuple(int(value) for value in outer_series_values)
+    if not blocks:
+        raise ValueError("compound circuit requires at least one parallel block")
+    if len(gaps) != max(0, len(blocks) - 1):
+        raise ValueError("compound circuit gap count must equal block_count - 1")
+    if outer and len(outer) != 2:
+        raise ValueError("compound circuit outer series count must equal 2")
+    total = sum((_parallel_equivalent_fraction(block) for block in blocks), Fraction(0, 1))
+    return total + Fraction(sum(int(value) for value in gaps) + sum(int(value) for value in outer), 1)
+
+
+@lru_cache(maxsize=None)
+def _integer_parallel_block_candidates(
+    *,
+    resistor_value_min: int,
+    resistor_value_max: int,
+    branch_count_options: Tuple[int, ...],
+) -> Tuple[Tuple[int, Tuple[int, ...]], ...]:
+    """Return parallel-bank value tuples with integral equivalent resistance."""
+
+    candidates: List[Tuple[int, Tuple[int, ...]]] = []
+    for branch_count in branch_count_options:
+        if int(branch_count) < 2:
+            raise ValueError("compound parallel blocks require at least two branches")
+        for values in combinations_with_replacement(
+            range(int(resistor_value_min), int(resistor_value_max) + 1),
+            int(branch_count),
+        ):
+            equivalent = _parallel_equivalent_fraction(values)
+            if int(equivalent.denominator) != 1:
+                continue
+            candidates.append((int(equivalent.numerator), tuple(int(value) for value in values)))
+    if not candidates:
+        raise ValueError("no integral parallel-block candidates remain")
+    return tuple(candidates)
+
+
+def _gap_value_tuples(
+    *,
+    gap_count: int,
+    target_sum: int,
+    resistor_value_min: int,
+    resistor_value_max: int,
+) -> Tuple[Tuple[int, ...], ...]:
+    """Enumerate optional inter-block series resistor values for one sum."""
+
+    if int(gap_count) == 0:
+        return (tuple(),) if int(target_sum) == 0 else tuple()
+    if int(target_sum) < 0:
+        return tuple()
+    options = (0,) + tuple(range(int(resistor_value_min), int(resistor_value_max) + 1))
+    return tuple(
+        tuple(int(value) for value in values)
+        for values in product(options, repeat=int(gap_count))
+        if sum(int(value) for value in values) == int(target_sum)
+    )
+
+
+@lru_cache(maxsize=None)
+def _compound_candidates_for_total(
+    *,
+    target_answer: int,
+    resistor_value_min: int,
+    resistor_value_max: int,
+    block_count_options: Tuple[int, ...],
+    branch_count_options: Tuple[int, ...],
+    max_candidates: int = 20000,
+) -> Tuple[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]], ...]:
+    """Enumerate compound circuits with integral parallel blocks and optional series resistors."""
+
+    block_options = _integer_parallel_block_candidates(
+        resistor_value_min=int(resistor_value_min),
+        resistor_value_max=int(resistor_value_max),
+        branch_count_options=tuple(int(value) for value in branch_count_options),
+    )
+    candidates: List[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]]] = []
+    seen: set[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]]] = set()
+    block_counts = tuple(int(value) for value in block_count_options if int(value) >= 1)
+    per_block_count_limit = max(1, int(max_candidates) // max(1, len(block_counts)))
+
+    class _BlockCountFilled(Exception):
+        pass
+
+    for block_count in block_counts:
+        if int(block_count) < 1:
+            continue
+        added_for_block_count = 0
+        gap_count = int(block_count) - 1
+        try:
+            for block_combo in product(block_options, repeat=int(block_count)):
+                block_total = sum(int(item[0]) for item in block_combo)
+                remaining = int(target_answer) - int(block_total)
+                series_tuples = _gap_value_tuples(
+                    gap_count=int(gap_count) + 2,
+                    target_sum=int(remaining),
+                    resistor_value_min=int(resistor_value_min),
+                    resistor_value_max=int(resistor_value_max),
+                )
+                if not series_tuples:
+                    continue
+                blocks = tuple(tuple(int(value) for value in item[1]) for item in block_combo)
+                for series_values in series_tuples:
+                    gaps = tuple(int(value) for value in series_values[1:-1])
+                    outer = (int(series_values[0]), int(series_values[-1]))
+                    candidate = (blocks, gaps, outer)
+                    if candidate in seen:
+                        continue
+                    seen.add(candidate)
+                    candidates.append(candidate)
+                    added_for_block_count += 1
+                    if added_for_block_count >= int(per_block_count_limit):
+                        raise _BlockCountFilled
+                    if len(candidates) >= int(max_candidates):
+                        return tuple(candidates)
+        except _BlockCountFilled:
+            continue
+    return tuple(candidates)
+
+
+def _compound_missing_resistor_index(
+    *,
+    parallel_blocks: Sequence[Sequence[int]],
+    inter_block_series_values: Sequence[int],
+    outer_series_values: Sequence[int] = (),
+    missing_gap_index: int,
+) -> int:
+    """Return the renderer-order resistor index for a missing inter-block series resistor."""
+
+    outer = tuple(int(value) for value in outer_series_values)
+    if outer and len(outer) != 2:
+        raise ValueError("compound outer series values must contain left and right slots")
+    index = 0
+    if outer and int(outer[0]) > 0:
+        index += 1
+    for block_index, block in enumerate(parallel_blocks):
+        index += len(block)
+        if block_index >= len(inter_block_series_values):
+            continue
+        if int(block_index) == int(missing_gap_index):
+            return int(index + 1)
+        if int(inter_block_series_values[block_index]) > 0:
+            index += 1
+    raise ValueError("missing gap index is out of range")
 
 
 def _series_chain_candidates_for_total(
@@ -710,6 +1089,7 @@ def _series_parallel_candidates_for_total(
 def _sample_layout(
     rng,
     *,
+    instance_seed: int,
     scene_variant: str,
     target_answer: int,
     params: Mapping[str, Any],
@@ -723,7 +1103,7 @@ def _sample_layout(
         params.get("resistor_value_max", group_default(_GEN_DEFAULTS, "resistor_value_max", _DEFAULTS.resistor_value_max))
     )
     if str(scene_variant) == "parallel":
-        branch_counts = [3, 4]
+        branch_counts = list(_parallel_total_branch_count_options(params))
         rng.shuffle(branch_counts)
         candidates: List[Tuple[int, ...]] = []
         for branch_count in branch_counts:
@@ -746,25 +1126,59 @@ def _sample_layout(
             target_answer=int(target_answer),
             series_parallel_orientation=None,
         )
-    candidates = _series_parallel_candidates_for_total(
-        target_answer=int(target_answer),
-        resistor_value_min=int(resistor_value_min),
-        resistor_value_max=int(resistor_value_max),
+    candidates_by_block_count: Dict[int, Tuple[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]], ...]] = {}
+    for block_count in _compound_parallel_block_count_options(params):
+        block_count_candidates = _compound_candidates_for_total(
+            target_answer=int(target_answer),
+            resistor_value_min=int(resistor_value_min),
+            resistor_value_max=int(resistor_value_max),
+            block_count_options=(int(block_count),),
+            branch_count_options=_compound_parallel_branch_count_options(params),
+        )
+        if block_count_candidates:
+            candidates_by_block_count[int(block_count)] = block_count_candidates
+    if not candidates_by_block_count:
+        raise ValueError(f"no compound series-parallel candidates for target {target_answer}")
+    available_block_counts = sorted(candidates_by_block_count)
+    chosen_block_count = _select_compound_block_count(
+        rng,
+        instance_seed=int(instance_seed),
+        params=params,
+        available_block_counts=available_block_counts,
     )
-    if not candidates:
-        raise ValueError(f"no series_parallel candidates for target {target_answer}")
-    chosen = list(candidates[int(rng.randrange(len(candidates)))])
-    series_values = list(chosen[0])
-    branch_values = list(chosen[1])
-    rng.shuffle(series_values)
-    rng.shuffle(branch_values)
-    orientation = "series_then_parallel" if rng.random() < 0.5 else "parallel_then_series"
+    block_count_candidates = list(candidates_by_block_count[int(chosen_block_count)])
+    candidates_by_outer_mask: Dict[
+        Tuple[bool, bool],
+        List[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]]],
+    ] = {}
+    for candidate in block_count_candidates:
+        candidate_outer = candidate[2]
+        candidates_by_outer_mask.setdefault(
+            (int(candidate_outer[0]) > 0, int(candidate_outer[1]) > 0),
+            [],
+        ).append(candidate)
+    available_outer_masks = sorted(candidates_by_outer_mask)
+    chosen_outer_mask = available_outer_masks[int(rng.randrange(len(available_outer_masks)))]
+    chosen_blocks, chosen_gaps, chosen_outer = candidates_by_outer_mask[chosen_outer_mask][
+        int(rng.randrange(len(candidates_by_outer_mask[chosen_outer_mask])))
+    ]
+    branch_blocks = [list(block) for block in chosen_blocks]
+    for block in branch_blocks:
+        rng.shuffle(block)
+    series_values = tuple(
+        int(value)
+        for value in (int(chosen_outer[0]), *tuple(int(value) for value in chosen_gaps), int(chosen_outer[1]))
+        if int(value) > 0
+    )
     return _CircuitLayout(
         scene_variant=str(scene_variant),
-        series_values=tuple(int(value) for value in series_values),
-        parallel_values=tuple(int(value) for value in branch_values),
+        series_values=series_values,
+        parallel_values=tuple(int(value) for block in branch_blocks for value in block),
         target_answer=int(target_answer),
-        series_parallel_orientation=str(orientation),
+        series_parallel_orientation="compound_parallel_chain",
+        parallel_blocks=tuple(tuple(int(value) for value in block) for block in branch_blocks),
+        inter_block_series_values=tuple(int(value) for value in chosen_gaps),
+        outer_series_values=(int(chosen_outer[0]), int(chosen_outer[1])),
     )
 
 
@@ -773,6 +1187,8 @@ def _parallel_missing_pair_candidates(
     target_answer: int,
     resistor_value_min: int,
     resistor_value_max: int,
+    left_branch_count_options: Sequence[int],
+    right_branch_count_options: Sequence[int],
 ) -> List[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
     """Enumerate feasible paired parallel circuits for the missing-resistor query."""
 
@@ -786,7 +1202,7 @@ def _parallel_missing_pair_candidates(
             out.extend(enumerate_known_values(int(count) - 1, int(value), prefix + (int(value),)))
         return out
 
-    for left_branch_count in (2, 3):
+    for left_branch_count in left_branch_count_options:
         known_count = int(left_branch_count) - 1
         known_candidates = enumerate_known_values(int(known_count), int(resistor_value_min), tuple())
         for known_values in known_candidates:
@@ -796,7 +1212,7 @@ def _parallel_missing_pair_candidates(
             if int(total_fraction.denominator) != 1:
                 continue
             total_equivalent = int(total_fraction.numerator)
-            for right_branch_count in (2, 3):
+            for right_branch_count in right_branch_count_options:
                 right_candidates = _parallel_bank_candidates_for_total(
                     target_answer=int(total_equivalent),
                     resistor_count=int(right_branch_count),
@@ -816,49 +1232,175 @@ def _simple_series_parallel_missing_pair_candidates(
     target_answer: int,
     resistor_value_min: int,
     resistor_value_max: int,
+    left_count_pairs: Sequence[Tuple[int, int]],
+    right_count_pairs: Sequence[Tuple[int, int]],
 ) -> List[Tuple[Tuple[int, ...], Tuple[int, ...], Tuple[int, ...], Tuple[int, ...], int]]:
     """Enumerate feasible paired mixed circuits with one missing left-series resistor."""
 
     candidates: List[Tuple[Tuple[int, ...], Tuple[int, ...], Tuple[int, ...], Tuple[int, ...], int]] = []
-    for parallel_total in range(1, int(resistor_value_max) + 1):
-        left_parallel_candidates = _parallel_bank_candidates_for_total(
-            target_answer=int(parallel_total),
-            resistor_count=2,
-            resistor_value_min=int(resistor_value_min),
-            resistor_value_max=int(resistor_value_max),
-        )
-        if not left_parallel_candidates:
-            continue
-        paired_total = int(target_answer) + int(parallel_total)
-        right_candidates = _series_parallel_candidates_for_total(
-            target_answer=int(paired_total),
-            resistor_value_min=int(resistor_value_min),
-            resistor_value_max=int(resistor_value_max),
-            allowed_count_pairs=((1, 2),),
-        )
-        if not right_candidates:
-            continue
-        for left_parallel in left_parallel_candidates:
-            for right_series, right_parallel in right_candidates:
-                if tuple(int(value) for value in right_series) == (int(target_answer),) and tuple(
-                    int(value) for value in right_parallel
-                ) == tuple(int(value) for value in left_parallel):
-                    continue
-                candidates.append(
-                    (
-                        (int(target_answer),),
-                        tuple(int(value) for value in left_parallel),
-                        tuple(int(value) for value in right_series),
-                        tuple(int(value) for value in right_parallel),
-                        int(paired_total),
+    for left_series_count, left_parallel_count in left_count_pairs:
+        if int(left_series_count) != 1:
+            raise ValueError("missing series-parallel left layouts require exactly one missing series resistor")
+        for parallel_total in range(1, int(resistor_value_max) + 1):
+            left_parallel_candidates = _parallel_bank_candidates_for_total(
+                target_answer=int(parallel_total),
+                resistor_count=int(left_parallel_count),
+                resistor_value_min=int(resistor_value_min),
+                resistor_value_max=int(resistor_value_max),
+            )
+            if not left_parallel_candidates:
+                continue
+            paired_total = int(target_answer) + int(parallel_total)
+            right_candidates = _series_parallel_candidates_for_total(
+                target_answer=int(paired_total),
+                resistor_value_min=int(resistor_value_min),
+                resistor_value_max=int(resistor_value_max),
+                allowed_count_pairs=right_count_pairs,
+            )
+            if not right_candidates:
+                continue
+            for left_parallel in left_parallel_candidates:
+                for right_series, right_parallel in right_candidates:
+                    if tuple(int(value) for value in right_series) == (int(target_answer),) and tuple(
+                        int(value) for value in right_parallel
+                    ) == tuple(int(value) for value in left_parallel):
+                        continue
+                    candidates.append(
+                        (
+                            (int(target_answer),),
+                            tuple(int(value) for value in left_parallel),
+                            tuple(int(value) for value in right_series),
+                            tuple(int(value) for value in right_parallel),
+                            int(paired_total),
+                        )
                     )
-                )
     return candidates
+
+
+@lru_cache(maxsize=None)
+def _compound_missing_pair_candidates(
+    *,
+    target_answer: int,
+    resistor_value_min: int,
+    resistor_value_max: int,
+    block_count_options: Tuple[int, ...],
+    branch_count_options: Tuple[int, ...],
+    max_candidates: int = 20000,
+) -> Tuple[
+    Tuple[
+        Tuple[Tuple[int, ...], ...],
+        Tuple[int, ...],
+        Tuple[int, int],
+        int,
+        Tuple[Tuple[int, ...], ...],
+        Tuple[int, ...],
+        Tuple[int, int],
+        int,
+    ],
+    ...,
+]:
+    """Enumerate paired compound circuits with the missing resistor in a left gap."""
+
+    block_options = _integer_parallel_block_candidates(
+        resistor_value_min=int(resistor_value_min),
+        resistor_value_max=int(resistor_value_max),
+        branch_count_options=tuple(int(value) for value in branch_count_options),
+    )
+    gap_options = (0,) + tuple(range(int(resistor_value_min), int(resistor_value_max) + 1))
+    candidates: List[
+        Tuple[
+            Tuple[Tuple[int, ...], ...],
+            Tuple[int, ...],
+            Tuple[int, int],
+            int,
+            Tuple[Tuple[int, ...], ...],
+            Tuple[int, ...],
+            Tuple[int, int],
+            int,
+        ]
+    ] = []
+    seen: set[
+        Tuple[
+            Tuple[Tuple[int, ...], ...],
+            Tuple[int, ...],
+            Tuple[int, int],
+            int,
+            Tuple[Tuple[int, ...], ...],
+            Tuple[int, ...],
+            Tuple[int, int],
+            int,
+        ]
+    ] = set()
+    right_cache: Dict[int, Tuple[Tuple[Tuple[Tuple[int, ...], ...], Tuple[int, ...], Tuple[int, int]], ...]] = {}
+    block_counts = tuple(int(value) for value in block_count_options if int(value) >= 2)
+    per_block_count_limit = max(1, int(max_candidates) // max(1, len(block_counts)))
+
+    class _BlockCountFilled(Exception):
+        pass
+
+    for block_count in block_counts:
+        added_for_block_count = 0
+        gap_count = int(block_count) - 1
+        try:
+            for block_combo in product(block_options, repeat=int(block_count)):
+                block_total = sum(int(item[0]) for item in block_combo)
+                left_blocks = tuple(tuple(int(value) for value in item[1]) for item in block_combo)
+                for missing_gap_index in range(int(gap_count)):
+                    other_gap_indices = [index for index in range(int(gap_count)) if index != int(missing_gap_index)]
+                    for other_gap_values in product(gap_options, repeat=len(other_gap_indices)):
+                        gaps = [0 for _ in range(int(gap_count))]
+                        gaps[int(missing_gap_index)] = int(target_answer)
+                        for gap_index, gap_value in zip(other_gap_indices, other_gap_values, strict=True):
+                            gaps[int(gap_index)] = int(gap_value)
+                        for left_outer_values in product(gap_options, repeat=2):
+                            left_outer = (int(left_outer_values[0]), int(left_outer_values[1]))
+                            paired_total = int(block_total) + sum(int(value) for value in gaps) + sum(
+                                int(value) for value in left_outer
+                            )
+                            if int(paired_total) not in right_cache:
+                                right_cache[int(paired_total)] = _compound_candidates_for_total(
+                                    target_answer=int(paired_total),
+                                    resistor_value_min=int(resistor_value_min),
+                                    resistor_value_max=int(resistor_value_max),
+                                    block_count_options=tuple(int(value) for value in block_count_options),
+                                    branch_count_options=tuple(int(value) for value in branch_count_options),
+                                    max_candidates=256,
+                                )
+                            for right_blocks, right_gaps, right_outer in right_cache[int(paired_total)]:
+                                if (
+                                    tuple(right_blocks) == tuple(left_blocks)
+                                    and tuple(right_gaps) == tuple(gaps)
+                                    and tuple(right_outer) == tuple(left_outer)
+                                ):
+                                    continue
+                                candidate = (
+                                    tuple(left_blocks),
+                                    tuple(int(value) for value in gaps),
+                                    left_outer,
+                                    int(missing_gap_index),
+                                    tuple(tuple(int(value) for value in block) for block in right_blocks),
+                                    tuple(int(value) for value in right_gaps),
+                                    (int(right_outer[0]), int(right_outer[1])),
+                                    int(paired_total),
+                                )
+                                if candidate in seen:
+                                    continue
+                                seen.add(candidate)
+                                candidates.append(candidate)
+                                added_for_block_count += 1
+                                if added_for_block_count >= int(per_block_count_limit):
+                                    raise _BlockCountFilled
+                                if len(candidates) >= int(max_candidates):
+                                    return tuple(candidates)
+        except _BlockCountFilled:
+            continue
+    return tuple(candidates)
 
 
 def _sample_missing_pair_layout(
     rng,
     *,
+    instance_seed: int,
     scene_variant: str,
     target_answer: int,
     params: Mapping[str, Any],
@@ -876,6 +1418,8 @@ def _sample_missing_pair_layout(
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
+            left_branch_count_options=_parallel_missing_left_branch_count_options(params),
+            right_branch_count_options=_parallel_missing_right_branch_count_options(params),
         )
         if not candidates:
             raise ValueError(f"no paired parallel candidates for missing resistor {target_answer}")
@@ -907,33 +1451,127 @@ def _sample_missing_pair_layout(
             paired_total_resistance=int(paired_total.numerator),
         )
 
-    candidates = _simple_series_parallel_missing_pair_candidates(
+    candidates = _compound_missing_pair_candidates(
         target_answer=int(target_answer),
         resistor_value_min=int(resistor_value_min),
         resistor_value_max=int(resistor_value_max),
+        block_count_options=_compound_missing_parallel_block_count_options(params),
+        branch_count_options=_compound_parallel_branch_count_options(params),
     )
     if not candidates:
-        raise ValueError(f"no paired series-parallel candidates for missing resistor {target_answer}")
-    left_series, left_parallel, right_series, right_parallel, paired_total = candidates[int(rng.randrange(len(candidates)))]
-    left_orientation = "series_then_parallel" if rng.random() < 0.5 else "parallel_then_series"
-    right_orientation = "series_then_parallel" if rng.random() < 0.5 else "parallel_then_series"
-    right_series_list = list(right_series)
-    right_parallel_list = list(right_parallel)
-    rng.shuffle(right_series_list)
-    rng.shuffle(right_parallel_list)
-    missing_resistor_index = 1 if str(left_orientation) == "series_then_parallel" else int(len(left_parallel) + 1)
+        raise ValueError(f"no paired compound candidates for missing resistor {target_answer}")
+    candidates_by_block_count: Dict[
+        int,
+        List[
+            Tuple[
+                Tuple[Tuple[int, ...], ...],
+                Tuple[int, ...],
+                Tuple[int, int],
+                int,
+                Tuple[Tuple[int, ...], ...],
+                Tuple[int, ...],
+                Tuple[int, int],
+                int,
+            ]
+        ],
+    ] = {}
+    for candidate in candidates:
+        candidates_by_block_count.setdefault(len(candidate[0]), []).append(candidate)
+    available_block_counts = sorted(candidates_by_block_count)
+    chosen_block_count = _select_compound_block_count(
+        rng,
+        instance_seed=int(instance_seed),
+        params=params,
+        available_block_counts=available_block_counts,
+    )
+    block_count_candidates = candidates_by_block_count[int(chosen_block_count)]
+    candidates_by_outer_mask: Dict[
+        Tuple[bool, bool, bool, bool],
+        List[
+            Tuple[
+                Tuple[Tuple[int, ...], ...],
+                Tuple[int, ...],
+                Tuple[int, int],
+                int,
+                Tuple[Tuple[int, ...], ...],
+                Tuple[int, ...],
+                Tuple[int, int],
+                int,
+            ]
+        ],
+    ] = {}
+    for candidate in block_count_candidates:
+        left_outer = candidate[2]
+        right_outer = candidate[6]
+        candidates_by_outer_mask.setdefault(
+            (
+                int(left_outer[0]) > 0,
+                int(left_outer[1]) > 0,
+                int(right_outer[0]) > 0,
+                int(right_outer[1]) > 0,
+            ),
+            [],
+        ).append(candidate)
+    available_outer_masks = sorted(candidates_by_outer_mask)
+    chosen_outer_mask = available_outer_masks[int(rng.randrange(len(available_outer_masks)))]
+    (
+        left_parallel_blocks,
+        left_inter_block_series_values,
+        left_outer_series_values,
+        missing_gap_index,
+        right_parallel_blocks,
+        right_inter_block_series_values,
+        right_outer_series_values,
+        paired_total,
+    ) = candidates_by_outer_mask[chosen_outer_mask][int(rng.randrange(len(candidates_by_outer_mask[chosen_outer_mask])))]
+    left_blocks = [list(block) for block in left_parallel_blocks]
+    right_blocks = [list(block) for block in right_parallel_blocks]
+    for block in left_blocks:
+        rng.shuffle(block)
+    for block in right_blocks:
+        rng.shuffle(block)
+    missing_resistor_index = _compound_missing_resistor_index(
+        parallel_blocks=left_blocks,
+        inter_block_series_values=left_inter_block_series_values,
+        outer_series_values=left_outer_series_values,
+        missing_gap_index=int(missing_gap_index),
+    )
+    left_series_values = tuple(
+        int(value)
+        for value in (
+            int(left_outer_series_values[0]),
+            *tuple(int(value) for value in left_inter_block_series_values),
+            int(left_outer_series_values[1]),
+        )
+        if int(value) > 0
+    )
+    right_series_values = tuple(
+        int(value)
+        for value in (
+            int(right_outer_series_values[0]),
+            *tuple(int(value) for value in right_inter_block_series_values),
+            int(right_outer_series_values[1]),
+        )
+        if int(value) > 0
+    )
     return _MissingCircuitPairLayout(
         scene_variant=str(scene_variant),
-        left_series_values=tuple(int(value) for value in left_series),
-        left_parallel_values=tuple(int(value) for value in left_parallel),
-        left_orientation=str(left_orientation),
-        right_series_values=tuple(int(value) for value in right_series_list),
-        right_parallel_values=tuple(int(value) for value in right_parallel_list),
-        right_orientation=str(right_orientation),
+        left_series_values=left_series_values,
+        left_parallel_values=tuple(int(value) for block in left_blocks for value in block),
+        left_orientation="compound_parallel_chain",
+        right_series_values=right_series_values,
+        right_parallel_values=tuple(int(value) for block in right_blocks for value in block),
+        right_orientation="compound_parallel_chain",
         missing_resistor_index=int(missing_resistor_index),
-        missing_component_group="series",
+        missing_component_group="inter_block_series",
         target_answer=int(target_answer),
         paired_total_resistance=int(paired_total),
+        left_parallel_blocks=tuple(tuple(int(value) for value in block) for block in left_blocks),
+        left_inter_block_series_values=tuple(int(value) for value in left_inter_block_series_values),
+        left_outer_series_values=(int(left_outer_series_values[0]), int(left_outer_series_values[1])),
+        right_parallel_blocks=tuple(tuple(int(value) for value in block) for block in right_blocks),
+        right_inter_block_series_values=tuple(int(value) for value in right_inter_block_series_values),
+        right_outer_series_values=(int(right_outer_series_values[0]), int(right_outer_series_values[1])),
     )
 
 
@@ -952,7 +1590,7 @@ def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
     return build_prompt_json_examples(evidence_value=evidence_value, answer_type="integer")
 
 
-def _pair_render_defaults(params: Mapping[str, Any]) -> Dict[str, Any]:
+def _pair_render_defaults(params: Mapping[str, Any], *, instance_seed: int | None = None) -> Dict[str, Any]:
     """Return local render defaults for one sub-circuit in the paired missing-resistor scene."""
 
     return {
@@ -972,18 +1610,39 @@ def _pair_render_defaults(params: Mapping[str, Any]) -> Dict[str, Any]:
         "terminal_font_size_px": int(
             params.get("terminal_font_size_px", group_default(_RENDER_DEFAULTS, "terminal_font_size_px", _DEFAULTS.terminal_font_size_px))
         ),
-        "wire_width_px": int(params.get("wire_width_px", group_default(_RENDER_DEFAULTS, "wire_width_px", _DEFAULTS.wire_width_px))),
+        "wire_width_px": resolve_render_int(
+            params,
+            _RENDER_DEFAULTS,
+            "wire_width_px",
+            _DEFAULTS.wire_width_px,
+            instance_seed=instance_seed,
+            namespace=TASK_ID,
+        ),
         "resistor_box_width_px": int(
-            params.get("resistor_box_width_px", group_default(_RENDER_DEFAULTS, "resistor_box_width_px", _DEFAULTS.resistor_box_width_px))
+            params.get(
+                "pair_resistor_box_width_px",
+                group_default(_RENDER_DEFAULTS, "pair_resistor_box_width_px", _DEFAULTS.pair_resistor_box_width_px),
+            )
         ),
         "resistor_box_height_px": int(
-            params.get("resistor_box_height_px", group_default(_RENDER_DEFAULTS, "resistor_box_height_px", _DEFAULTS.resistor_box_height_px))
+            params.get(
+                "pair_resistor_box_height_px",
+                group_default(_RENDER_DEFAULTS, "pair_resistor_box_height_px", _DEFAULTS.pair_resistor_box_height_px),
+            )
         ),
         "resistor_font_size_px": int(
-            params.get("resistor_font_size_px", group_default(_RENDER_DEFAULTS, "resistor_font_size_px", _DEFAULTS.resistor_font_size_px))
+            params.get(
+                "pair_resistor_font_size_px",
+                group_default(_RENDER_DEFAULTS, "pair_resistor_font_size_px", _DEFAULTS.pair_resistor_font_size_px),
+            )
         ),
-        "label_stroke_width_px": int(
-            params.get("label_stroke_width_px", group_default(_RENDER_DEFAULTS, "label_stroke_width_px", _DEFAULTS.label_stroke_width_px))
+        "label_stroke_width_px": resolve_render_int(
+            params,
+            _RENDER_DEFAULTS,
+            "label_stroke_width_px",
+            _DEFAULTS.label_stroke_width_px,
+            instance_seed=instance_seed,
+            namespace=TASK_ID,
         ),
         "parallel_rail_left_x_px": int(
             params.get(
@@ -1038,8 +1697,33 @@ def _draw_equals_sign(image, *, center_xy: Tuple[float, float], font_size_px: in
     ]
 
 
-@register_task
-class PhysicsCircuitsEquivalentResistanceTask:
+def _draw_resistance_label(image, *, center_xy: Tuple[float, float], text: str) -> List[float]:
+    """Draw one resistance helper label for a paired circuit."""
+
+    draw = ImageDraw.Draw(image)
+    font = load_font(22, bold=True)
+    text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    text_width = float(text_bbox[2] - text_bbox[0])
+    text_height = float(text_bbox[3] - text_bbox[1])
+    pad_x = 14.0
+    pad_y = 8.0
+    rect = [
+        float(center_xy[0] - (0.5 * text_width) - pad_x),
+        float(center_xy[1] - (0.5 * text_height) - pad_y),
+        float(center_xy[0] + (0.5 * text_width) + pad_x),
+        float(center_xy[1] + (0.5 * text_height) + pad_y),
+    ]
+    draw.rounded_rectangle(rect, radius=8, fill=(255, 255, 255), outline=(72, 76, 82), width=2)
+    text_xy = (
+        float(center_xy[0] - (0.5 * text_width) - text_bbox[0]),
+        float(center_xy[1] - (0.5 * text_height) - text_bbox[1]),
+    )
+    stroke_fill = resolve_text_stroke_fill((255, 255, 255))
+    draw.text(text_xy, text, font=font, fill=(42, 46, 52), stroke_width=1, stroke_fill=tuple(int(v) for v in stroke_fill))
+    return [round(float(value), 3) for value in rect]
+
+
+class _PhysicsCircuitsEquivalentResistanceBaseTask:
     """Return one simple equivalent-resistance question from a resistor diagram."""
 
     task_id = TASK_ID
@@ -1056,16 +1740,20 @@ class PhysicsCircuitsEquivalentResistanceTask:
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             try:
                 if str(axes.query_variant) == "missing_resistor_value":
+                    public_scene_id = "paired_resistor"
                     pair_layout = _sample_missing_pair_layout(
                         attempt_rng,
+                        instance_seed=int(instance_seed),
                         scene_variant=str(axes.scene_variant),
                         target_answer=int(axes.target_answer),
                         params=params,
                     )
                     layout = None
                 else:
+                    public_scene_id = "resistor"
                     layout = _sample_layout(
                         attempt_rng,
+                        instance_seed=int(instance_seed),
                         scene_variant=str(axes.scene_variant),
                         target_answer=int(axes.target_answer),
                         params=params,
@@ -1074,15 +1762,16 @@ class PhysicsCircuitsEquivalentResistanceTask:
             except ValueError:
                 continue
 
-            background, background_meta = make_background_canvas(
+            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
+                scene_id="resistor_network",
+                task_group=self.task_group,
                 canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
                 canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
                 instance_seed=int(instance_seed),
                 params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
             )
             if str(axes.query_variant) == "missing_resistor_value":
-                pair_defaults = _pair_render_defaults(params)
+                pair_defaults = _pair_render_defaults(params, instance_seed=int(instance_seed))
                 left_origin = (
                     float(
                         params.get(
@@ -1115,6 +1804,9 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     scene_variant=str(pair_layout.scene_variant),
                     series_values=list(pair_layout.left_series_values),
                     parallel_values=list(pair_layout.left_parallel_values),
+                    parallel_blocks=list(pair_layout.left_parallel_blocks) or None,
+                    inter_block_series_values=list(pair_layout.left_inter_block_series_values) or None,
+                    outer_series_values=list(pair_layout.left_outer_series_values),
                     background=background,
                     render_defaults=pair_defaults,
                     accent_color_name=str(axes.accent_color_name),
@@ -1122,17 +1814,22 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     missing_resistor_indices=[int(pair_layout.missing_resistor_index)],
                     origin_offset_px=left_origin,
                     entity_id_prefix="left_",
+                    diagram_style=diagram_style,
                 )
                 rendered_scene = render_resistor_network_scene(
                     scene_variant=str(pair_layout.scene_variant),
                     series_values=list(pair_layout.right_series_values),
                     parallel_values=list(pair_layout.right_parallel_values),
+                    parallel_blocks=list(pair_layout.right_parallel_blocks) or None,
+                    inter_block_series_values=list(pair_layout.right_inter_block_series_values) or None,
+                    outer_series_values=list(pair_layout.right_outer_series_values),
                     background=left_scene.image,
                     render_defaults=pair_defaults,
                     accent_color_name=str(axes.accent_color_name),
                     series_parallel_orientation=str(pair_layout.right_orientation or "series_then_parallel"),
                     origin_offset_px=right_origin,
                     entity_id_prefix="right_",
+                    diagram_style=diagram_style,
                 )
                 equals_bbox = _draw_equals_sign(
                     rendered_scene.image,
@@ -1147,14 +1844,47 @@ class PhysicsCircuitsEquivalentResistanceTask:
                         )
                     ),
                 )
+                common_total_bbox = _draw_resistance_label(
+                    rendered_scene.image,
+                    center_xy=(
+                        float(0.5 * ((left_origin[0] + pair_defaults["canvas_width"]) + right_origin[0])),
+                        float(left_origin[1] + 40.0),
+                    ),
+                    text=f"R_total = {int(pair_layout.paired_total_resistance)} ohms",
+                )
+                known_left_bbox = _draw_resistance_label(
+                    rendered_scene.image,
+                    center_xy=(
+                        float(0.5 * ((left_origin[0] + pair_defaults["canvas_width"]) + right_origin[0])),
+                        float(left_origin[1] + 82.0),
+                    ),
+                    text=f"Left known = {int(pair_layout.paired_total_resistance) - int(pair_layout.target_answer)} ohms",
+                )
                 missing_specs = [spec for spec in left_scene.resistor_specs if bool(spec.missing)]
                 if len(missing_specs) != 1:
                     continue
                 missing_spec = missing_specs[0]
                 combined_entities = list(left_scene.scene_entities) + list(rendered_scene.scene_entities)
+                combined_entities.append(
+                    {
+                        "entity_id": "common_total_resistance_label",
+                        "entity_type": "physics_circuit_total_resistance_label",
+                        "bbox_px": list(common_total_bbox),
+                        "meta": {"total_resistance": int(pair_layout.paired_total_resistance)},
+                    }
+                )
+                combined_entities.append(
+                    {
+                        "entity_id": "left_known_resistance_label",
+                        "entity_type": "physics_circuit_known_resistance_label",
+                        "bbox_px": list(known_left_bbox),
+                        "meta": {"known_resistance": int(pair_layout.paired_total_resistance) - int(pair_layout.target_answer)},
+                    }
+                )
                 resistor_specs = list(left_scene.resistor_specs) + list(rendered_scene.resistor_specs)
                 render_map = {
                     "accent_color_name": str(axes.accent_color_name),
+                    "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
                     "left_scene": dict(left_scene.render_map),
                     "right_scene": dict(rendered_scene.render_map),
                     "resistor_bboxes_px": {
@@ -1176,6 +1906,8 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "missing_resistor_entity_ids": [str(missing_spec.resistor_id)],
                     "evidence_entity_ids": [str(missing_spec.resistor_id)],
                     "equals_sign_bbox_px": list(equals_bbox),
+                    "common_total_resistance_label_bbox_px": list(common_total_bbox),
+                    "left_known_resistance_label_bbox_px": list(known_left_bbox),
                 }
                 rendered_scene = RenderedCircuitScene(
                     image=rendered_scene.image,
@@ -1190,9 +1922,19 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     scene_variant=str(layout.scene_variant),
                     series_values=list(layout.series_values),
                     parallel_values=list(layout.parallel_values),
+                    parallel_blocks=list(layout.parallel_blocks) or None,
+                    inter_block_series_values=list(layout.inter_block_series_values) or None,
+                    outer_series_values=list(layout.outer_series_values),
                     background=background,
                     render_defaults={
-                        key: params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key)))
+                        key: resolve_render_int(
+                            params,
+                            _RENDER_DEFAULTS,
+                            key,
+                            int(getattr(_DEFAULTS, key)),
+                            instance_seed=int(instance_seed),
+                            namespace=TASK_ID,
+                        )
                         for key in (
                             "canvas_width",
                             "canvas_height",
@@ -1216,6 +1958,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                         if layout.series_parallel_orientation is not None
                         else "series_then_parallel"
                     ),
+                    diagram_style=diagram_style,
                 )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1228,7 +1971,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                 _PROMPT_DEFAULTS,
                 (
                     "bundle_id",
-                    "task_family_key",
+                    "scene_key",
                     "task_key",
                     "json_output_contract",
                     "json_output_contract_answer_only",
@@ -1248,9 +1991,9 @@ class PhysicsCircuitsEquivalentResistanceTask:
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
-                task_family_key=str(prompt_defaults["task_family_key"]),
+                scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                task_variant_key=str(axes.query_variant),
+                query_key=str(axes.query_variant),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(
@@ -1271,7 +2014,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
             evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
             complexity = build_physics_circuit_resistance_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=self.task_id,
+                task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
                 query_variant=str(axes.query_variant),
                 resistor_count=len(rendered_scene.resistor_specs),
@@ -1288,7 +2031,6 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
                         "query_variant": str(axes.query_variant),
-                        "task_variant": str(axes.query_variant),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
@@ -1298,7 +2040,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     },
                 },
                 "query_spec": {
-                    "task_variant": str(axes.query_variant),
+                    "query_variant": str(axes.query_variant),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1306,11 +2048,9 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "params": {
                         "scene_variant": str(axes.scene_variant),
                         "query_variant": str(axes.query_variant),
-                        "task_variant": str(axes.query_variant),
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "task_variant_probabilities": dict(axes.query_variant_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
                         "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -1322,18 +2062,35 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "technical_diagram_style": dict(diagram_style_meta),
+                    "background_style": background_meta,
+                    "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
                     "query_variant": str(axes.query_variant),
-                    "task_variant": str(axes.query_variant),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "series_parallel_orientation": None if layout is None else layout.series_parallel_orientation,
                     "series_values": [] if layout is None else [int(value) for value in layout.series_values],
                     "parallel_values": [] if layout is None else [int(value) for value in layout.parallel_values],
+                    "parallel_blocks": (
+                        []
+                        if layout is None
+                        else [[int(value) for value in block] for block in layout.parallel_blocks]
+                    ),
+                    "inter_block_series_values": (
+                        []
+                        if layout is None
+                        else [int(value) for value in layout.inter_block_series_values]
+                    ),
+                    "outer_series_values": (
+                        []
+                        if layout is None
+                        else [int(value) for value in layout.outer_series_values]
+                    ),
                     "paired_total_resistance": None if pair_layout is None else int(pair_layout.paired_total_resistance),
                     "missing_resistor_index": None if pair_layout is None else int(pair_layout.missing_resistor_index),
                     "missing_component_group": None if pair_layout is None else str(pair_layout.missing_component_group),
@@ -1341,6 +2098,36 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "left_parallel_values": [] if pair_layout is None else [int(value) for value in pair_layout.left_parallel_values],
                     "right_series_values": [] if pair_layout is None else [int(value) for value in pair_layout.right_series_values],
                     "right_parallel_values": [] if pair_layout is None else [int(value) for value in pair_layout.right_parallel_values],
+                    "left_parallel_blocks": (
+                        []
+                        if pair_layout is None
+                        else [[int(value) for value in block] for block in pair_layout.left_parallel_blocks]
+                    ),
+                    "left_inter_block_series_values": (
+                        []
+                        if pair_layout is None
+                        else [int(value) for value in pair_layout.left_inter_block_series_values]
+                    ),
+                    "left_outer_series_values": (
+                        []
+                        if pair_layout is None
+                        else [int(value) for value in pair_layout.left_outer_series_values]
+                    ),
+                    "right_parallel_blocks": (
+                        []
+                        if pair_layout is None
+                        else [[int(value) for value in block] for block in pair_layout.right_parallel_blocks]
+                    ),
+                    "right_inter_block_series_values": (
+                        []
+                        if pair_layout is None
+                        else [int(value) for value in pair_layout.right_inter_block_series_values]
+                    ),
+                    "right_outer_series_values": (
+                        []
+                        if pair_layout is None
+                        else [int(value) for value in pair_layout.right_outer_series_values]
+                    ),
                     "left_orientation": None if pair_layout is None else pair_layout.left_orientation,
                     "right_orientation": None if pair_layout is None else pair_layout.right_orientation,
                     "resistor_specs": [
@@ -1354,7 +2141,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                 },
                 "witness_symbolic": {
-                    "type": "id_set",
+                    "type": "object_set",
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
                 },
                 "projected_evidence": {
@@ -1373,10 +2160,36 @@ class PhysicsCircuitsEquivalentResistanceTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                task_variant=str(axes.query_variant),
+                query_variant=str(axes.query_variant),
+                scene_id=public_scene_id,
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
 
-__all__ = ["PhysicsCircuitsEquivalentResistanceTask"]
+@register_task
+class PhysicsCircuitsTotalResistanceValueTask(
+    FixedPhysicsQueryVariantTaskMixin,
+    _PhysicsCircuitsEquivalentResistanceBaseTask,
+):
+    """Return the total equivalent resistance of one visible resistor network."""
+
+    task_id = "task_physics__resistor__total_resistance_value"
+    fixed_query_variant = "total_resistance"
+
+
+@register_task
+class PhysicsCircuitsMissingResistorValueTask(
+    FixedPhysicsQueryVariantTaskMixin,
+    _PhysicsCircuitsEquivalentResistanceBaseTask,
+):
+    """Return the red missing resistor value that balances paired circuits."""
+
+    task_id = "task_physics__paired_resistor__missing_resistor_value"
+    fixed_query_variant = "missing_resistor_value"
+
+
+__all__ = [
+    "PhysicsCircuitsMissingResistorValueTask",
+    "PhysicsCircuitsTotalResistanceValueTask",
+]

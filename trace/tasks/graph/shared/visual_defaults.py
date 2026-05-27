@@ -16,9 +16,31 @@ def solid_light_background_fallback() -> Dict[str, Any]:
             "solid_light": {
                 "kind": "solid",
                 "color": [248, 248, 248],
+            },
+            "solid_cool": {
+                "kind": "solid",
+                "color": [243, 246, 252],
+            },
+            "solid_warm": {
+                "kind": "solid",
+                "color": [250, 247, 242],
+            },
+            "solid_mint": {
+                "kind": "solid",
+                "color": [244, 249, 246],
+            },
+            "solid_lavender": {
+                "kind": "solid",
+                "color": [248, 246, 253],
             }
         },
-        "weights": {"solid_light": 1.0},
+        "weights": {
+            "solid_light": 1.0,
+            "solid_cool": 1.0,
+            "solid_warm": 1.0,
+            "solid_mint": 1.0,
+            "solid_lavender": 1.0,
+        },
     }
 
 

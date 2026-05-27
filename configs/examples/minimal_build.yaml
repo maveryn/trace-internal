@@ -1,15 +1,16 @@
 output_root: ./out
 
-dataset_name: demo_task_tile_path_shortest_path
-instance_version: v1
+dataset_name: demo_puzzles_cell_board_path_distance
+instance_version: v0
 image_format: png
 strict_repro: false
 max_attempts_per_instance: 100
 sampling_seed: 0
 tasks:
-  - task_id: task_tile_path_shortest_path
+  - task_id: task_puzzles__cell_board__path_distance
     count: 10
     params:
+      query_id: shortest_path
       rows: 7
       cols: 7
       target_shortest_len_min: 4

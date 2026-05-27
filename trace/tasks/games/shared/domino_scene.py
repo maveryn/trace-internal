@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .style import DominoTheme, build_games_domino_theme
 
 
@@ -40,6 +41,7 @@ class DominoTileInstance:
     role: str
     is_reference: bool = False
     highlight_right_half: bool = False
+    option_label: str | None = None
 
 
 @dataclass(frozen=True)
@@ -51,6 +53,7 @@ class RenderedDominoSpec:
     right_value: int
     role: str
     is_reference: bool
+    option_label: str | None
     bbox_px: Tuple[float, float, float, float]
     row_index: int
     order_index: int
@@ -74,6 +77,9 @@ class DominoRenderParams:
     divider_width_px: int
     reference_tag_font_size_px: int
     reference_tag_gap_px: int
+    section_label_font_size_px: int
+    section_separator_width_px: int
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -119,6 +125,7 @@ def _draw_pips(
     value: int,
     pip_radius_px: int,
     pip_rgb: Tuple[int, int, int],
+    pip_rendering: str = "flat",
 ) -> None:
     """Draw one pip pattern inside a domino half."""
 
@@ -126,10 +133,73 @@ def _draw_pips(
     for x_frac, y_frac in _PIP_LAYOUTS[int(value)]:
         cx = float(left + (x_frac * (right - left)))
         cy = float(top + (y_frac * (bottom - top)))
+        if str(pip_rendering) == "engraved":
+            draw.ellipse(
+                [
+                    cx - pip_radius_px - 1,
+                    cy - pip_radius_px - 1,
+                    cx + pip_radius_px + 1,
+                    cy + pip_radius_px + 1,
+                ],
+                fill=(255, 255, 255),
+            )
+        elif str(pip_rendering) == "ring":
+            draw.ellipse(
+                [
+                    cx - pip_radius_px - 1,
+                    cy - pip_radius_px - 1,
+                    cx + pip_radius_px + 1,
+                    cy + pip_radius_px + 1,
+                ],
+                fill=tuple(int(v) for v in pip_rgb),
+            )
+            draw.ellipse(
+                [
+                    cx - max(1, pip_radius_px - 2),
+                    cy - max(1, pip_radius_px - 2),
+                    cx + max(1, pip_radius_px - 2),
+                    cy + max(1, pip_radius_px - 2),
+                ],
+                fill=(255, 255, 255),
+            )
+            continue
         draw.ellipse(
             [cx - pip_radius_px, cy - pip_radius_px, cx + pip_radius_px, cy + pip_radius_px],
             fill=tuple(int(v) for v in pip_rgb),
         )
+
+
+def _draw_divider(
+    draw: ImageDraw.ImageDraw,
+    *,
+    divider_x: float,
+    top: float,
+    bottom: float,
+    theme: DominoTheme,
+    params: DominoRenderParams,
+) -> None:
+    """Draw one domino divider using the active theme treatment."""
+
+    color = tuple(int(value) for value in theme.divider_rgb)
+    width = int(params.divider_width_px)
+    if str(theme.divider_rendering) == "notch":
+        notch_w = max(2.0, 0.55 * float(width))
+        draw.rounded_rectangle(
+            [
+                float(divider_x - notch_w),
+                float(top + 7.0),
+                float(divider_x + notch_w),
+                float(bottom - 7.0),
+            ],
+            radius=max(2, int(width)),
+            fill=color,
+        )
+        return
+    draw.line(
+        [(divider_x, top + 6), (divider_x, bottom - 6)],
+        fill=color,
+        width=width,
+    )
 
 
 def _draw_reference_tag(
@@ -175,6 +245,56 @@ def _draw_reference_tag(
     return tag_bbox
 
 
+def _draw_option_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    tile_bbox_px: Tuple[float, float, float, float],
+    label: str,
+    params: DominoRenderParams,
+    theme: DominoTheme,
+) -> Tuple[float, float, float, float]:
+    """Draw a compact option label above one loose domino."""
+
+    font = load_font(max(14, int(params.reference_tag_font_size_px)), bold=True)
+    text = str(label)
+    text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    text_width = float(text_bbox[2] - text_bbox[0])
+    text_height = float(text_bbox[3] - text_bbox[1])
+    pad_x = 8.0
+    pad_y = 3.0
+    width = max(24.0, text_width + (2.0 * pad_x))
+    height = text_height + (2.0 * pad_y)
+    left, top, right, _ = tile_bbox_px
+    label_left = float(left + (0.5 * ((right - left) - width)))
+    label_top = max(2.0, float(top - height - 4.0))
+    label_bbox = (
+        round(float(label_left), 3),
+        round(float(label_top), 3),
+        round(float(label_left + width), 3),
+        round(float(label_top + height), 3),
+    )
+    fill = tuple(int(value) for value in theme.reference_tag_fill_rgb)
+    draw.rounded_rectangle(
+        label_bbox,
+        radius=int(0.5 * height),
+        fill=fill,
+        outline=tuple(int(value) for value in theme.reference_outline_rgb),
+        width=1,
+    )
+    draw.text(
+        (
+            float(label_left + (0.5 * (width - text_width)) - text_bbox[0]),
+            float(label_top + pad_y - text_bbox[1]),
+        ),
+        text,
+        font=font,
+        fill=tuple(int(value) for value in theme.reference_tag_text_rgb),
+        stroke_width=1,
+        stroke_fill=(0, 0, 0),
+    )
+    return label_bbox
+
+
 def _draw_domino_tile(
     image: Image.Image,
     *,
@@ -197,12 +317,22 @@ def _draw_domino_tile(
         outline=tuple(int(value) for value in outline_rgb),
         width=outline_width,
     )
+    if str(theme.tile_rendering) == "inset" and theme.tile_inner_fill_rgb is not None:
+        inset = max(4.0, float(outline_width) + 1.0)
+        draw.rounded_rectangle(
+            [left + inset, top + inset, right - inset, bottom - inset],
+            radius=max(4, radius - 4),
+            fill=tuple(int(value) for value in theme.tile_inner_fill_rgb),
+        )
 
     divider_x = float(left + (0.5 * (right - left)))
-    draw.line(
-        [(divider_x, top + 6), (divider_x, bottom - 6)],
-        fill=tuple(int(value) for value in theme.divider_rgb),
-        width=int(params.divider_width_px),
+    _draw_divider(
+        draw,
+        divider_x=divider_x,
+        top=top,
+        bottom=bottom,
+        theme=theme,
+        params=params,
     )
 
     left_half = (left + 6, top + 6, divider_x - 6, bottom - 6)
@@ -213,6 +343,7 @@ def _draw_domino_tile(
         value=int(tile.left_value),
         pip_radius_px=int(params.pip_radius_px),
         pip_rgb=tuple(int(value) for value in theme.pip_rgb),
+        pip_rendering=str(theme.pip_rendering),
     )
     _draw_pips(
         draw,
@@ -220,6 +351,7 @@ def _draw_domino_tile(
         value=int(tile.right_value),
         pip_radius_px=int(params.pip_radius_px),
         pip_rgb=tuple(int(value) for value in theme.pip_rgb),
+        pip_rendering=str(theme.pip_rendering),
     )
 
     if bool(tile.highlight_right_half):
@@ -246,12 +378,126 @@ def _draw_domino_tile(
     return None
 
 
-def _centered_positions(*, item_count: int, item_width_px: int, gap_px: int, canvas_width: int) -> List[float]:
-    """Return centered left-edge positions for a row of fixed-width items."""
+def _draw_section_chrome(
+    image: Image.Image,
+    *,
+    chain_bboxes: Sequence[Tuple[float, float, float, float]],
+    candidate_bboxes: Sequence[Tuple[float, float, float, float]],
+    params: DominoRenderParams,
+    theme: DominoTheme,
+) -> Dict[str, Any]:
+    """Draw light chain/candidate separation chrome and return render metadata."""
 
-    total_width = (int(item_count) * int(item_width_px)) + (max(0, int(item_count) - 1) * int(gap_px))
-    start_x = float(0.5 * (int(canvas_width) - total_width))
-    return [float(start_x + (index * (int(item_width_px) + int(gap_px)))) for index in range(int(item_count))]
+    if not chain_bboxes or not candidate_bboxes:
+        return {}
+
+    chain_top = min(float(bbox[1]) for bbox in chain_bboxes)
+    chain_bottom = max(float(bbox[3]) for bbox in chain_bboxes)
+    candidate_top = min(float(bbox[1]) for bbox in candidate_bboxes)
+    separator_y = round(float(chain_bottom + (0.5 * (candidate_top - chain_bottom))), 3)
+    line_left = float(params.panel_margin_px)
+    line_right = float(params.canvas_width - params.panel_margin_px)
+    line_width = max(1, int(params.section_separator_width_px))
+
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    draw.line(
+        [(line_left, float(separator_y)), (line_right, float(separator_y))],
+        fill=(255, 255, 255, 92),
+        width=int(line_width),
+    )
+
+    font = load_font(int(params.section_label_font_size_px), bold=True)
+    text_fill = (255, 255, 255)
+    text_stroke = resolve_text_stroke_fill(text_fill)
+    label_fill = (
+        int(theme.shadow_rgb[0]),
+        int(theme.shadow_rgb[1]),
+        int(theme.shadow_rgb[2]),
+        142,
+    )
+    pad_x = 10.0
+    pad_y = 5.0
+    label_bboxes: Dict[str, List[float]] = {}
+
+    def draw_label(key: str, text: str, x: float, y: float) -> None:
+        lines = [line for line in str(text).split("\n") if line]
+        if not lines:
+            return
+        line_bboxes = [draw.textbbox((0, 0), line, font=font, stroke_width=1) for line in lines]
+        line_widths = [float(bbox[2] - bbox[0]) for bbox in line_bboxes]
+        line_heights = [float(bbox[3] - bbox[1]) for bbox in line_bboxes]
+        line_gap = 2.0
+        text_width = max(line_widths)
+        text_height = sum(line_heights) + (line_gap * float(max(0, len(lines) - 1)))
+        label_bbox = (
+            round(float(x), 3),
+            round(float(y), 3),
+            round(float(x + text_width + (2.0 * pad_x)), 3),
+            round(float(y + text_height + (2.0 * pad_y)), 3),
+        )
+        draw.rounded_rectangle(
+            label_bbox,
+            radius=round(float(label_bbox[3] - label_bbox[1]) / 2.0),
+            fill=label_fill,
+        )
+        text_y = float(y + pad_y)
+        for line, line_width, line_height in zip(lines, line_widths, line_heights):
+            text_x = float(x + pad_x + (0.5 * (text_width - line_width)))
+            draw.text(
+                (text_x, text_y),
+                line,
+                font=font,
+                fill=text_fill,
+                stroke_width=1,
+                stroke_fill=text_stroke,
+            )
+            text_y += float(line_height + line_gap)
+        label_bboxes[str(key)] = [float(value) for value in label_bbox]
+
+    chain_label_y = max(14.0, float(chain_top - 50.0))
+    candidate_label_y = float(separator_y + 8.0)
+    draw_label("chain", "CHAIN", line_left, chain_label_y)
+    draw_label("candidates", "LOOSE DOMINOES", line_left, candidate_label_y)
+
+    image.alpha_composite(overlay)
+    return {
+        "section_separator_bbox_px": [
+            float(line_left),
+            float(separator_y - max(1.0, line_width / 2.0)),
+            float(line_right),
+            float(separator_y + max(1.0, line_width / 2.0)),
+        ],
+        "section_label_bboxes_px": label_bboxes,
+    }
+
+
+def _centered_row_layout(
+    *,
+    item_count: int,
+    item_width_px: int,
+    gap_px: int,
+    canvas_width: int,
+    panel_margin_px: int,
+) -> Tuple[List[float], float]:
+    """Return centered row positions and a fitted item width that stays on-canvas."""
+
+    count = max(0, int(item_count))
+    if count <= 0:
+        return [], float(item_width_px)
+    available_width = max(1.0, float(canvas_width) - (2.0 * float(panel_margin_px)))
+    effective_gap = float(max(0, int(gap_px)))
+    min_item_width = min(float(item_width_px), 48.0)
+    if count > 1 and (float(count) * min_item_width) + (float(count - 1) * effective_gap) > available_width:
+        effective_gap = max(6.0, math.floor((available_width - (float(count) * min_item_width)) / float(count - 1)))
+    fitted_width = min(
+        float(item_width_px),
+        math.floor((available_width - (float(max(0, count - 1)) * effective_gap)) / float(count)),
+    )
+    fitted_width = max(1.0, float(fitted_width))
+    total_width = (float(count) * fitted_width) + (float(max(0, count - 1)) * effective_gap)
+    start_x = float(0.5 * (float(canvas_width) - total_width))
+    return [float(start_x + (index * (fitted_width + effective_gap))) for index in range(count)], float(fitted_width)
 
 
 def render_domino_chain_scene(
@@ -270,11 +516,12 @@ def render_domino_chain_scene(
     image = background.convert("RGBA")
     theme = build_games_domino_theme(style_variant=str(style_variant))
 
-    chain_lefts = _centered_positions(
+    chain_lefts, chain_tile_width = _centered_row_layout(
         item_count=len(chain_tiles),
         item_width_px=int(params.tile_width_px),
         gap_px=int(params.chain_gap_px),
         canvas_width=int(params.canvas_width),
+        panel_margin_px=int(params.panel_margin_px),
     )
     chain_top = float(params.chain_top_px)
     chain_bboxes: List[Tuple[float, float, float, float]] = []
@@ -283,7 +530,7 @@ def render_domino_chain_scene(
             (
                 round(float(left), 3),
                 round(float(chain_top), 3),
-                round(float(left + params.tile_width_px), 3),
+                round(float(left + chain_tile_width), 3),
                 round(float(chain_top + params.tile_height_px), 3),
             )
         )
@@ -294,7 +541,7 @@ def render_domino_chain_scene(
         candidate_row_groups = [candidate_tiles[:top_count], candidate_tiles[top_count:]]
     else:
         candidate_row_groups = [candidate_tiles]
-    candidate_top = float(chain_top + params.tile_height_px + params.reference_tag_gap_px + 40)
+    candidate_top = float(chain_top + params.tile_height_px + params.reference_tag_gap_px + 122)
 
     candidate_bboxes: List[Tuple[float, float, float, float]] = []
     candidate_row_ids: List[List[str]] = []
@@ -302,21 +549,23 @@ def render_domino_chain_scene(
     scene_entities: List[Dict[str, Any]] = []
     domino_specs: List[RenderedDominoSpec] = []
     reference_tag_bboxes: Dict[str, List[float]] = {}
+    option_label_bboxes: Dict[str, List[float]] = {}
 
     for row_index, row_tiles in enumerate(candidate_row_groups):
         row_y = float(candidate_top + (row_index * (params.tile_height_px + params.row_gap_px)))
-        row_lefts = _centered_positions(
+        row_lefts, candidate_tile_width = _centered_row_layout(
             item_count=len(row_tiles),
             item_width_px=int(params.tile_width_px),
             gap_px=int(params.candidate_gap_px),
             canvas_width=int(params.canvas_width),
+            panel_margin_px=int(params.panel_margin_px),
         )
         row_ids: List[str] = []
         for local_index, tile in enumerate(row_tiles):
             bbox_px = (
                 round(float(row_lefts[local_index]), 3),
                 round(float(row_y), 3),
-                round(float(row_lefts[local_index] + params.tile_width_px), 3),
+                round(float(row_lefts[local_index] + candidate_tile_width), 3),
                 round(float(row_y + params.tile_height_px), 3),
             )
             candidate_bboxes.append(bbox_px)
@@ -330,6 +579,29 @@ def render_domino_chain_scene(
         for row_index, row_tiles in enumerate(candidate_row_groups)
         for _ in row_tiles
     ]
+    group_bbox = (
+        min(float(bbox[0]) for bbox in all_bboxes),
+        min(float(bbox[1]) for bbox in all_bboxes),
+        max(float(bbox[2]) for bbox in all_bboxes),
+        max(float(bbox[3]) for bbox in all_bboxes),
+    )
+    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=group_bbox,
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    all_bboxes = [offset_bbox(bbox_px, dx=dx, dy=dy) for bbox_px in all_bboxes]
+    chain_bboxes = list(all_bboxes[: len(chain_tiles)])
+    candidate_bboxes = list(all_bboxes[len(chain_tiles) :])
+
+    section_chrome = _draw_section_chrome(
+        image,
+        chain_bboxes=chain_bboxes,
+        candidate_bboxes=candidate_bboxes,
+        params=params,
+        theme=theme,
+    )
 
     for tile, bbox_px, row_index in zip(all_tiles, all_bboxes, row_indices):
         _draw_shadow(
@@ -347,6 +619,15 @@ def render_domino_chain_scene(
         )
         if reference_tag_bbox is not None:
             reference_tag_bboxes[str(tile.tile_id)] = [float(value) for value in reference_tag_bbox]
+        if tile.option_label:
+            label_bbox = _draw_option_label(
+                ImageDraw.Draw(image),
+                tile_bbox_px=bbox_px,
+                label=str(tile.option_label),
+                params=params,
+                theme=theme,
+            )
+            option_label_bboxes[str(tile.tile_id)] = [float(value) for value in label_bbox]
         domino_specs.append(
             RenderedDominoSpec(
                 tile_id=str(tile.tile_id),
@@ -354,6 +635,7 @@ def render_domino_chain_scene(
                 right_value=int(tile.right_value),
                 role=str(tile.role),
                 is_reference=bool(tile.is_reference),
+                option_label=None if tile.option_label is None else str(tile.option_label),
                 bbox_px=bbox_px,
                 row_index=int(row_index),
                 order_index=int(order_index),
@@ -369,6 +651,7 @@ def render_domino_chain_scene(
                     "right_value": int(tile.right_value),
                     "role": str(tile.role),
                     "is_reference": bool(tile.is_reference),
+                    "option_label": None if tile.option_label is None else str(tile.option_label),
                     "row_index": int(row_index),
                     "order_index": int(order_index),
                 },
@@ -384,7 +667,10 @@ def render_domino_chain_scene(
         "candidate_tile_ids": [str(tile.tile_id) for tile in candidate_tiles],
         "candidate_row_ids": candidate_row_ids,
         "reference_tag_bboxes_px": reference_tag_bboxes,
+        "option_label_bboxes_px": option_label_bboxes,
+        "layout_jitter": dict(layout_jitter),
     }
+    render_map.update(section_chrome)
     return RenderedDominoScene(
         image=image.convert("RGB"),
         domino_specs=tuple(domino_specs),

@@ -1,0 +1,98 @@
+generation:
+  task_overrides:
+    task_puzzles__word_search__search_location_label:
+      grid_size_min: 5
+      grid_size_max: 8
+      word_length_min: 3
+      word_length_max: 4
+      option_count_min: 6
+      option_count_max: 8
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        word_search_classic: 1.0
+        word_search_notebook: 1.0
+        word_search_card: 1.0
+    task_puzzles__word_search__search_letter_count_value:
+      grid_size_min: 5
+      grid_size_max: 8
+      target_count_min: 1
+      target_count_max: 8
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        word_search_classic: 1.0
+        word_search_notebook: 1.0
+        word_search_card: 1.0
+    task_puzzles__word_search__search_present_word_count:
+      grid_size_min: 5
+      grid_size_max: 8
+      word_length_min: 3
+      word_length_max: 4
+      word_bank_size: 5
+      present_count_min: 1
+      present_count_max: 5
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        word_search_classic: 1.0
+        word_search_notebook: 1.0
+        word_search_card: 1.0
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 880
+    cell_size_px: 58
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    header_size_px: 46
+    panel_padding_px: 28
+    panel_corner_radius_px: 18
+    grid_line_width_px: 2
+    grid_origin_x_px: 90
+    grid_origin_y_px: 150
+    option_panel_width_px: 270
+    option_panel_height_px: 58
+    option_gap_px: 12
+    option_font_size_px: 20
+    word_chip_height_px: 44
+    word_chip_gap_px: 10
+    letter_font_size_px: 24
+    index_font_size_px: 17
+    title_font_size_px: 24
+    panel_fill_rgb: [250, 251, 253]
+    grid_fill_rgb: [255, 255, 255]
+    header_fill_rgb: [239, 243, 248]
+    grid_line_rgb: [93, 102, 116]
+    text_rgb: [26, 31, 39]
+    text_stroke_rgb: [255, 255, 255]
+    option_fill_rgb: [255, 250, 224]
+    option_border_rgb: [54, 96, 168]
+    chip_fill_rgb: [234, 245, 239]
+    chip_border_rgb: [68, 122, 103]
+    highlight_rgb: [255, 241, 142]
+
+prompt:
+  shared:
+    bundle_id: puzzles_word_v0
+    scene_key: word_search
+    task_key: word_search_query
+    object_description_word_search_classic: a row-and-column labeled word-search grid
+    object_description_word_search_notebook: a notebook-style row-and-column labeled word-search grid
+    object_description_word_search_card: a card-style row-and-column labeled word-search grid
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    evidence_hint_word_location_label: set "evidence" to an array containing the selected option bounding box followed by the ordered grid-cell bounding boxes for the found word, each as [x0,y0,x1,y1] in pixels
+    answer_hint_word_location_label: set "answer" to the single capital-letter option label
+    json_example_word_location_label: '{"evidence":[[720,130,990,188],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":"C"}'
+    json_example_answer_only_word_location_label: '{"answer":"C"}'
+    evidence_hint_letter_count_value: set "evidence" to an array containing every grid-cell bounding box where the target letter appears, each as [x0,y0,x1,y1] in pixels
+    answer_hint_letter_count_value: set "answer" to the integer count of matching letters
+    json_example_letter_count_value: '{"evidence":[[194,222,252,280],[426,338,484,396]],"answer":2}'
+    json_example_answer_only_letter_count_value: '{"answer":2}'
+    evidence_hint_present_word_count: set "evidence" to an array containing each present word-chip bounding box followed by the ordered grid-cell bounding boxes for those present words, each as [x0,y0,x1,y1] in pixels
+    answer_hint_present_word_count: set "answer" to the integer number of word-bank words that appear in the grid
+    json_example_present_word_count: '{"evidence":[[720,130,990,174],[194,222,252,280],[252,222,310,280],[310,222,368,280]],"answer":1}'
+    json_example_answer_only_present_word_count: '{"answer":1}'
+
+visual:
+  noise:
+    apply_prob: 0.0

@@ -28,8 +28,22 @@ generation:
     quadrant_candidate_labels: ["B", "C", "D", "E", "F", "G", "H", "I"]
     same_quadrant_target_support: [0, 1, 2, 3, 4, 5, 6]
     point_in_shape_target_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    completion_graph_abs_max: 7
+    completion_candidate_count: 6
+    completion_candidate_labels: ["A", "B", "C", "D", "E", "F"]
+    panel_graph_abs_max: 4
+    panel_count: 6
+    panel_labels: ["A", "B", "C", "D", "E", "F"]
+    algebra_graph_abs_max: 7
+    algebra_candidate_count: 6
+    algebra_candidate_labels: ["A", "B", "C", "D", "E", "F"]
+    locus_graph_abs_max: 6
+    locus_candidate_count: 6
+    locus_candidate_labels: ["A", "B", "C", "D", "E", "F"]
+    locus_panel_count: 6
+    locus_panel_labels: ["A", "B", "C", "D", "E", "F"]
   task_overrides:
-    task_geometry_coordinate_relation:
+    geometry_coordinate_relation_base:
       scene_variant_weights:
         segment_set: 1.0
         line_points: 1.0
@@ -83,21 +97,102 @@ rendering:
     label_stroke_width_min: 1
     label_stroke_width_max: 2
     label_offset_px: 14
+    completion_canvas_size_min: 660
+    completion_canvas_size_max: 740
+    completion_graph_cells_min: 18
+    completion_graph_cells_max: 20
+    marker_radius_px: 7
+    marker_radius_px_min: 6
+    marker_radius_px_max: 9
+    panel_canvas_width: 1024
+    panel_canvas_height: 720
+    panel_grid_min: -6
+    panel_grid_max: 6
+    panel_marker_radius_px: 5
+    panel_marker_radius_px_min: 4
+    panel_marker_radius_px_max: 6
+    algebra_canvas_size_min: 680
+    algebra_canvas_size_max: 760
+    algebra_graph_cells_min: 18
+    algebra_graph_cells_max: 20
+    transform_label_font_size: 20
+    locus_canvas_size_min: 680
+    locus_canvas_size_max: 760
+    locus_graph_cells_min: 18
+    locus_graph_cells_max: 20
+    locus_panel_canvas_width: 1040
+    locus_panel_canvas_height: 760
+    locus_panel_grid_min: -6
+    locus_panel_grid_max: 6
+    locus_panel_top_reserved_px: 58
+    locus_condition_label_font_size: 18
 
 prompt:
   shared:
-    bundle_id: geometry_coordinate_v1
-    task_family_key: coordinate_graph_scene
+    bundle_id: geometry_coordinate_v0
+    scene_key: coordinate_graph_scene
     task_key: coordinate_query
-    object_description_segment_set: target segment AB and six other unlabeled segments
+    object_description_segment_set: reference segment AB and six other unlabeled segments
     object_description_line_points: labeled points A and B plus unlabeled dot points
     object_description_quadrant_points: one X-marked reference point and unlabeled dot points
     object_description_polygon_lattice: one polygon drawn on graph paper
-    evidence_hint_segment_endpoints: 'set "evidence" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question'
-    evidence_hint_collinear_graph_point_set: 'set "evidence" to an array of every graph-paper point coordinate [x, y] for the dot points that lie on the same line as A and B'
-    evidence_hint_quadrant_graph_point_set: 'set "evidence" to an array of every graph-paper point coordinate [x, y] that lies in the same quadrant as the marked point'
-    evidence_hint_graph_point_set: 'set "evidence" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon'
+    evidence_hint_segment_endpoints: 'set "evidence" to an array containing both endpoint pixel points [x,y] for each non-AB segment satisfying the question'
+    evidence_hint_collinear_pixel_point_set: 'set "evidence" to an array of every pixel point [x,y] for the dot points that lie on the same line as A and B'
+    evidence_hint_quadrant_pixel_point_set: 'set "evidence" to an array of every pixel point [x,y] that lies in the same quadrant as the marked point'
+    evidence_hint_pixel_point_set: 'set "evidence" to an array containing every pixel point [x,y] for each integer lattice point that lies strictly inside the polygon'
     answer_hint_integer: 'set "answer" to the integer count requested by the question'
+    json_example_segment_count: '{"evidence":[[120,120],[180,120],[240,180],[300,180]],"answer":2}'
+    json_example_segment_count_answer_only: '{"answer":2}'
+  task_overrides:
+    task_geometry__coordinate_plane__quadrilateral_completion_label:
+      bundle_id: geometry_coordinate_quadrilateral_v0
+      scene_key: coordinate_quadrilateral_candidate_scene
+      task_key: coordinate_quadrilateral_query
+      object_description: a coordinate grid with three unlabeled points and lettered candidate points
+      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+    task_geometry__coordinate_panels__quadrilateral_shape_match_label:
+      bundle_id: geometry_coordinate_quadrilateral_v0
+      scene_key: coordinate_panels_scene
+      task_key: coordinate_quadrilateral_query
+      object_description: six labeled coordinate panels, each containing four unlabeled points
+      evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
+      answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
+    task_geometry__coordinate_plane__missing_endpoint_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_midpoint_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with a labeled endpoint, labeled midpoint, and lettered candidate points
+      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+    task_geometry__coordinate_plane__section_point_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_section_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with segment PQ and lettered candidate section points
+      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+    task_geometry__coordinate_plane__transformed_point_label:
+      bundle_id: geometry_coordinate_algebra_v0
+      scene_key: coordinate_algebra_transform_scene
+      task_key: coordinate_algebra_query
+      object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
+      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+    task_geometry__coordinate_plane__locus_point_label:
+      bundle_id: geometry_coordinate_locus_v0
+      scene_key: coordinate_locus_candidate_scene
+      task_key: coordinate_locus_query
+      object_description: a coordinate grid with one shaded locus region and lettered candidate points
+      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+    task_geometry__coordinate_plane__locus_panel_match_label:
+      bundle_id: geometry_coordinate_locus_v0
+      scene_key: coordinate_locus_panel_grid_scene
+      task_key: coordinate_locus_query
+      object_description: six labeled coordinate panels with shaded locus regions and a condition box
+      evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
+      answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
 
 complexity:
   shared:

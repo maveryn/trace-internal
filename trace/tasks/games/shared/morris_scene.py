@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from .layout import apply_games_layout_jitter_to_bbox
 from .morris_common import NineMensMorrisBoardState, NineMensMorrisPieceInstance, POSITION_LAYOUT
 from .style import NineMensMorrisTheme, build_games_nine_mens_morris_theme
 
@@ -27,6 +28,7 @@ class NineMensMorrisRenderParams:
     board_padding_px: int
     piece_radius_px: int
     node_radius_px: int
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -114,7 +116,13 @@ def render_nine_mens_morris_scene(
     board_top = float((int(params.canvas_height) - int(params.board_height_px)) / 2)
     board_right = float(board_left + int(params.board_width_px))
     board_bottom = float(board_top + int(params.board_height_px))
-    panel_bbox = (round(board_left, 3), round(board_top, 3), round(board_right, 3), round(board_bottom, 3))
+    panel_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=(board_left, board_top, board_right, board_bottom),
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    board_left, board_top, board_right, board_bottom = [float(value) for value in panel_bbox]
 
     _draw_shadow(
         image,
@@ -225,6 +233,7 @@ def render_nine_mens_morris_scene(
             "board_bbox_px": [float(value) for value in panel_bbox],
             "piece_bboxes_px": piece_bboxes_px,
             "node_centers_px": node_centers_px,
+            "layout_jitter": dict(layout_jitter),
         },
     )
 

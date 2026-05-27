@@ -24,6 +24,7 @@ PUZZLE_OBJECT_COLOR_BY_TYPE: Dict[str, Tuple[int, int, int]] = {
     "square": (196, 90, 100),
     "hexagon": (136, 100, 196),
     "star": (205, 162, 62),
+    "pentagon": (80, 150, 150),
 }
 
 
@@ -59,6 +60,16 @@ def draw_puzzle_shape_icon(
         return
     if kind == "triangle":
         points = [(cx, y0), (x1, y1), (x0, y1)]
+    elif kind == "pentagon":
+        points = []
+        for index in range(5):
+            angle = -math.pi / 2.0 + (index * 2.0 * math.pi / 5.0)
+            points.append(
+                (
+                    cx + 0.5 * w * math.cos(angle),
+                    cy + 0.5 * h * math.sin(angle),
+                )
+            )
     elif kind == "diamond":
         points = [(cx, y0), (x1, cy), (cx, y1), (x0, cy)]
     elif kind == "hexagon":

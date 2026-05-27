@@ -1,63 +1,103 @@
 generation:
-  shared: {}
-  task_overrides:
-    task_games_go_group_liberty_count:
-      scene_variant_weights:
-        open_board: 1.0
-        crowded_board: 1.0
-      query_variant_weights:
-        marked_black_group_liberty_count: 1.0
-        marked_white_group_liberty_count: 1.0
-      style_variant_weights:
-        classic: 1.0
-        soft: 1.0
-        outlined: 1.0
-      balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
-      balanced_style_variant_sampling: true
-      balanced_target_answer_sampling: true
-      liberty_count_support: [1, 2, 3, 4, 5, 6, 7, 8]
-      board_size: 7
-
+  shared:
+    scene_variant_weights:
+      open_board: 1.0
+      crowded_board: 1.0
+    query_variant_weights:
+      marked_group_liberty_count: 1.0
+      marked_group_adjacent_enemy_count: 1.0
+      marked_group_shared_liberty_count: 1.0
+    player_color_weights:
+      black: 1.0
+      white: 1.0
+    style_variant_weights:
+      classic: 1.0
+      soft: 1.0
+      outlined: 1.0
+      wood_board: 1.0
+      slate_board: 1.0
+      paper_board: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_player_color_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_board_size_sampling: true
+    liberty_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 6
+    adjacent_enemy_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    shared_liberty_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    board_size_support:
+    - 6
+    - 7
+    - 8
 rendering:
   shared:
     canvas_width: 920
     canvas_height: 920
     panel_margin_px: 48
     max_board_size_px: 760
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
     board_padding_px: 78
     board_corner_radius_px: 24
     board_frame_width_px: 12
     line_width_px: 4
     point_radius_px: 4
     stone_radius_fraction: 0.34
-    highlight_outline_width_px: 6
+    highlight_outline_width_px: 10
     liberty_bbox_fraction: 0.72
-
 complexity:
-  shared: {}
-  task_overrides:
-    task_games_go_group_liberty_count:
-      criteria_weights:
-        visual_scan: 0.30
-        state_reasoning: 0.42
-        ambiguity: 0.14
-        output_burden: 0.14
-
+  shared:
+    criteria_weights:
+      visual_scan: 0.3
+      state_reasoning: 0.42
+      ambiguity: 0.14
+      output_burden: 0.14
 prompt:
   shared:
-    bundle_id: games_go_v1
-  task_overrides:
-    task_games_go_group_liberty_count:
-      task_family_key: visible_go_board
-      task_key: go_group_liberty_query
-      object_description_open_board: a 7 by 7 Go board with a highlighted connected stone group and many open intersections
-      object_description_crowded_board: a 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones
-      group_rule_text: Stones of the same color that touch edge to edge form one group.
-      liberty_rule_text: A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count.
-      marked_group_rule_text_marked_black_group_liberty_count: The blue outlined black stones are the marked group.
-      marked_group_rule_text_marked_white_group_liberty_count: The blue outlined white stones are the marked group.
-      evidence_hint_marked_black_group_liberty_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked black group
-      evidence_hint_marked_white_group_liberty_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group
-      answer_hint_marked_black_group_liberty_count: set "answer" to the number of liberties of the marked black group
-      answer_hint_marked_white_group_liberty_count: set "answer" to the number of liberties of the marked white group
+    bundle_id: games_go_v0
+    scene_key: visible_go_board
+    task_key: go_group_property_query
+    object_description_open_board: a Go board with a highlighted connected stone group
+      and many open intersections
+    object_description_crowded_board: a Go board with a highlighted connected stone
+      group and many surrounding black and white stones
+    group_rule_text: Same-color stones connected edge to edge form one group.
+    liberty_rule_text: A liberty is an empty orthogonal neighbor of the group; diagonals
+      do not count.
+    adjacent_enemy_rule_text: Count only opponent stones touching the marked group
+      edge to edge; diagonals do not count.
+    shared_liberty_rule_text: A shared liberty also touches at least one opponent
+      stone edge to edge.
+    marked_group_rule_text: The blue outlined {player_color} stones are the marked
+      group.
+    evidence_hint_marked_group_liberty_count: set "evidence" to bounding boxes [x0,
+      y0, x1, y1] for every liberty of the marked {player_color} group
+    answer_hint_marked_group_liberty_count: set "answer" to the number of liberties
+      of the marked {player_color} group
+    evidence_hint_marked_group_adjacent_enemy_count: set "evidence" to bounding boxes
+      [x0, y0, x1, y1] for every opponent stone directly adjacent to the marked
+      {player_color} group
+    answer_hint_marked_group_adjacent_enemy_count: set "answer" to the number of opponent
+      stones directly adjacent to the marked {player_color} group
+    evidence_hint_marked_group_shared_liberty_count: set "evidence" to bounding boxes
+      [x0, y0, x1, y1] for every shared liberty of the marked {player_color}
+      group
+    answer_hint_marked_group_shared_liberty_count: set "answer" to the number of shared
+      liberties of the marked {player_color} group

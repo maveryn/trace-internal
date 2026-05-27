@@ -7,6 +7,8 @@ from typing import List, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from .text_rendering import resolve_text_stroke_fill
+
 
 def draw_rounded_rect(
     draw: ImageDraw.ImageDraw,
@@ -59,6 +61,28 @@ def draw_centered_text(
         round(float(tx + right), 3),
         round(float(ty + bottom), 3),
     ]
+
+
+def draw_centered_text_with_auto_stroke(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    center_xy: Tuple[float, float],
+    font,
+    fill: Sequence[int],
+    stroke_width_px: int,
+) -> List[float]:
+    """Draw centered text using the standard contrast stroke for the fill color."""
+
+    return draw_centered_text(
+        draw,
+        text=str(text),
+        center=(float(center_xy[0]), float(center_xy[1])),
+        font=font,
+        fill=fill,
+        stroke_fill=resolve_text_stroke_fill(fill),
+        stroke_width=max(0, int(stroke_width_px)),
+    )
 
 
 def draw_dashed_line(
@@ -158,6 +182,7 @@ def draw_arrow(
 __all__ = [
     "draw_arrow",
     "draw_centered_text",
+    "draw_centered_text_with_auto_stroke",
     "draw_dashed_line",
     "draw_rounded_rect",
 ]

@@ -1,2 +1,2 @@
-"""Geometry coordinate-relation task family."""
+"""Geometry coordinate-relation task group."""
 

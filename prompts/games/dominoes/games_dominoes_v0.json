@@ -1,0 +1,109 @@
+{
+  "bundle_id": "games_dominoes_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "domino_chain_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_domino_chain": [
+      "object_description"
+    ],
+    "query:matching_end_count": [
+      "connection_rule_text"
+    ],
+    "query:higher_sum_than_reference_count": [
+      "pip_sum_rule_text"
+    ],
+    "query:sum_to_target_count": [
+      "pip_sum_rule_text",
+      "target_total_text"
+    ],
+    "query:double_count": [
+      "double_rule_text"
+    ],
+    "query:two_step_extension_label": [
+      "connection_rule_text",
+      "two_step_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_domino_chain": [
+      "The image shows {object_description}.",
+      "The layout shows {object_description}.",
+      "This layout shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "matching_end_count": [
+      "The top chain ends with a tile marked `REF`. {connection_rule_text} How many loose dominoes below can connect to that open right end?",
+      "Focus on the tile marked `REF` at the end of the top chain. {connection_rule_text} Count the loose dominoes below that could connect to its open right end.",
+      "The chain's last tile is marked `REF`. {connection_rule_text} How many loose dominoes shown below match that open right end?",
+      "Use the `REF` tile at the end of the chain. {connection_rule_text} How many loose dominoes below could be attached to the open right end?",
+      "The right end of the `REF` tile is open. {connection_rule_text} How many loose dominoes below could legally connect there?"
+    ],
+    "higher_sum_than_reference_count": [
+      "The tile marked `REF` is part of the top chain. {pip_sum_rule_text} How many loose dominoes below have a larger pip sum than `REF`?",
+      "{pip_sum_rule_text} Count the loose dominoes below whose pip sum is greater than the `REF` tile in the top chain.",
+      "Using the `REF` tile in the chain as the reference, {pip_sum_rule_text} how many loose dominoes below have a higher total?",
+      "{pip_sum_rule_text} What is the number of loose dominoes below whose pip sum exceeds the `REF` tile's pip sum?",
+      "Compare the loose dominoes below against the chain tile marked `REF`. {pip_sum_rule_text} How many loose dominoes below have a larger total?"
+    ],
+    "sum_to_target_count": [
+      "{pip_sum_rule_text} How many loose dominoes below have pip sum equal to {target_total_text}?",
+      "Count the loose dominoes below whose pip sum is {target_total_text}. {pip_sum_rule_text}",
+      "{pip_sum_rule_text} What is the number of loose dominoes below with total {target_total_text}?",
+      "Looking only at the loose dominoes below the chain, {pip_sum_rule_text} how many have pip sum {target_total_text}?",
+      "{pip_sum_rule_text} Determine how many loose dominoes below add up to {target_total_text}."
+    ],
+    "double_count": [
+      "{double_rule_text} How many loose dominoes below are doubles?",
+      "Count the loose dominoes below that are doubles. {double_rule_text}",
+      "Looking only at the loose dominoes below the top chain, how many are doubles? {double_rule_text}",
+      "{double_rule_text} What is the number of loose dominoes below whose two halves match?",
+      "Among the loose dominoes below, how many are doubles? {double_rule_text}"
+    ],
+    "two_step_extension_label": [
+      "The top chain ends with a tile marked `REF`. {connection_rule_text} {two_step_rule_text} Which loose domino label is the unique second play?",
+      "Use the open right end of the `REF` tile. {connection_rule_text} {two_step_rule_text} Which labeled loose domino can be played second?",
+      "A first loose domino must connect to the open right end of `REF`, then one labeled loose domino can connect next. Which label is that second domino?",
+      "{connection_rule_text} {two_step_rule_text} Give the label of the loose domino that works as the second step.",
+      "Find the two-step extension from the `REF` tile's open right end. Which labeled loose domino is the second domino?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

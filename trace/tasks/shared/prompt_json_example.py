@@ -37,6 +37,9 @@ def _canonical_point_examples(count: int) -> List[List[int]] | None:
         3: [[0, 0], [4, 0], [0, 3]],
         4: [[0, 0], [4, 0], [4, 2], [0, 2]],
         5: [[0, 0], [4, 0], [5, 2], [2, 4], [-1, 2]],
+        6: [[0, 0], [3, 0], [6, 0], [0, 3], [3, 3], [6, 3]],
+        7: [[0, 0], [3, 0], [6, 0], [0, 3], [3, 3], [6, 3], [0, 6]],
+        8: [[0, 0], [3, 0], [6, 0], [0, 3], [3, 3], [6, 3], [0, 6], [3, 6]],
     }
     return layouts.get(int(count))
 
@@ -107,7 +110,7 @@ def _example_like(value: Any, *, index: int) -> Any:
         start = 1 if count > 1 else 0
         return [str(alphabet[(start + index) % len(alphabet)]) for index in range(count)]
     if _is_point_pair(value):
-        return [int(index), int(-index)]
+        return [int(120 + 30 * index), int(140 + 30 * index)]
     if isinstance(value, bool):
         return bool(value)
     if isinstance(value, int):

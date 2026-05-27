@@ -1,4 +1,4 @@
-"""Shared deterministic task-variant and scene/query-axis sampling helpers."""
+"""Shared deterministic query-variant and scene/query-axis sampling helpers."""
 
 from __future__ import annotations
 
@@ -81,17 +81,20 @@ def apply_balanced_variant_sampling(
     overridden = any(has_non_null_param(params, key) for key in (str(explicit_key), str(weights_key)))
     if overridden or (not is_uniform_probability_map(variant_probabilities)):
         return str(selected_variant)
-    values = [str(item) for item in supported_variants]
+    positive_variants = {
+        str(key)
+        for key, value in variant_probabilities.items()
+        if float(value) > 0.0
+    }
+    values = [str(item) for item in supported_variants if str(item) in positive_variants]
     if not values:
         return str(selected_variant)
-    if sampling_namespace is not None:
-        sampling_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(sampling_namespace),
-        )
-    else:
-        sampling_index = params.get("_sampling_index", instance_seed)
+    namespace = str(sampling_namespace) if sampling_namespace is not None else "variant"
+    sampling_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=namespace,
+    )
     return str(values[abs(int(sampling_index)) % len(values)])
 
 
@@ -116,16 +119,17 @@ def resolve_compatible_scene_query_variants(
     compatibility: Mapping[str, Sequence[str]],
     scene_sampling_namespace: str,
     query_sampling_namespace: str,
+    decouple_scene_sampling: bool = False,
 ) -> Tuple[str, Dict[str, float], str, Dict[str, float]]:
     """Resolve one compatible `(scene_variant, query_variant)` pair.
 
     Policy:
-    - explicit `scene_variant` and `query_variant` (or `task_variant`) are both
+    - explicit `scene_variant` and `query_variant` (or `query_variant`) are both
       honored when compatible;
     - otherwise the explicit axis is fixed and the other axis is sampled from the
       compatible subset;
-    - with neither axis fixed, `query_variant` is balanced first, then one
-      compatible `scene_variant` is resolved and balanced within its feasible set.
+    - with neither axis fixed, `query_variant` is selected first, then one
+      compatible `scene_variant` is resolved within its feasible set.
     """
 
     scene_supported = [str(value) for value in supported_scene_variants]
@@ -138,7 +142,7 @@ def resolve_compatible_scene_query_variants(
     query_set = set(query_supported)
 
     explicit_scene = params.get("scene_variant")
-    explicit_query = params.get("query_variant", params.get("task_variant"))
+    explicit_query = params.get("query_variant", params.get("query_variant"))
     if explicit_scene is not None and str(explicit_scene) not in scene_set:
         raise ValueError(f"unsupported scene_variant: {explicit_scene}")
     if explicit_query is not None and str(explicit_query) not in query_set:
@@ -214,9 +218,11 @@ def resolve_compatible_scene_query_variants(
         scene for scene in scene_supported
         if str(selected_query) in set(compatibility_map.get(scene, ()))
     ]
+    _ = bool(decouple_scene_sampling)
+    scene_params = params
     selected_scene, restricted_scene_probs = resolve_variant(
         rng,
-        params=params,
+        params=scene_params,
         gen_defaults=gen_defaults,
         supported_variants=allowed_scenes,
         explicit_key="scene_variant",
@@ -224,7 +230,7 @@ def resolve_compatible_scene_query_variants(
     )
     selected_scene = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
-        params=params,
+        params=scene_params,
         gen_defaults=gen_defaults,
         selected_variant=str(selected_scene),
         variant_probabilities=restricted_scene_probs,

@@ -27,6 +27,7 @@ from verl.utils.trace_mode import (
     resolve_trace_prompt_key,
     resolve_trace_system_prompt,
 )
+from .rl_dataset import PerBatchDomainSampler, _parse_per_batch_domain_weights
 
 
 def _stable_hash(payload: dict[str, Any]) -> str:
@@ -136,6 +137,12 @@ class TraceRLHFDataset(Dataset):
         self.filter_overlong_prompts_workers = int(config.get("filter_overlong_prompts_workers", 1))
         self.log_dataset_download_status = bool(config.get("log_dataset_download_status", True))
         self.default_data_source = str(config.get("default_data_source", "trace"))
+        self.domain_sampling_key = str(config.get("domain_sampling_key", "domain") or "domain")
+        self.per_batch_domain_weights = self._resolve_per_batch_domain_weights(
+            config.get("per_batch_domain_weights", None)
+        )
+        self.domain2indices: dict[str, np.ndarray] | None = None
+        self.domain_weights: dict[str, float] | None = None
         self.model_type = self._load_model_type_from_candidate(getattr(tokenizer, "name_or_path", None))
 
         if bool(config.get("disable_system_prompt", False)):
@@ -171,6 +178,75 @@ class TraceRLHFDataset(Dataset):
                 f"kept={total_after}/{total_before} dropped={total_before - total_after} "
                 f"max_prompt_length={self.max_prompt_length}"
             )
+
+        self._prepare_domain_sampling()
+
+    def _resolve_per_batch_domain_weights(self, raw_value: Any) -> dict[str, float] | str | None:
+        if raw_value is None:
+            return None
+        if isinstance(raw_value, str):
+            normalized = raw_value.strip()
+            if not normalized or normalized.lower() in {"none", "null", "false", "off"}:
+                return None
+            if normalized.lower() in {"auto", "uniform", "__auto__", "__uniform__"}:
+                return "auto"
+            return _parse_per_batch_domain_weights(normalized)
+        return _parse_per_batch_domain_weights(raw_value)
+
+    def _prepare_domain_sampling(self) -> None:
+        if not self.per_batch_domain_weights:
+            return
+        if self.domain_sampling_key not in self.dataset.column_names:
+            raise KeyError(
+                "per_batch_domain_weights requires column "
+                f"{self.domain_sampling_key!r}; available columns: {sorted(self.dataset.column_names)}"
+            )
+
+        values = np.asarray([str(value) for value in self.dataset[self.domain_sampling_key]], dtype=object)
+        if values.size == 0:
+            raise ValueError("Dataset is empty; cannot build TRACE per-batch domain sampler")
+
+        available_domains = sorted(str(value) for value in np.unique(values) if str(value))
+        if not available_domains:
+            raise ValueError(f"Column {self.domain_sampling_key!r} contains no usable domain values")
+
+        if self.per_batch_domain_weights == "auto":
+            domain_weights = {domain: 1.0 / len(available_domains) for domain in available_domains}
+        else:
+            filtered_weights = {
+                domain: weight
+                for domain, weight in self.per_batch_domain_weights.items()
+                if domain in set(available_domains)
+            }
+            if not filtered_weights:
+                raise ValueError(
+                    "No per_batch_domain_weights entries matched TRACE "
+                    f"{self.domain_sampling_key!r} values: {available_domains}"
+                )
+            total = float(sum(filtered_weights.values()))
+            domain_weights = {domain: float(weight) / total for domain, weight in filtered_weights.items()}
+
+        self.domain_weights = domain_weights
+        self.domain2indices = {
+            domain: np.where(values == domain)[0]
+            for domain in domain_weights
+        }
+        print(
+            "[dataset] per_batch_domain_sampling "
+            f"key={self.domain_sampling_key} weights={json.dumps(self.domain_weights, sort_keys=True)}"
+        )
+
+    def build_domain_sampler(self, batch_size: int, seed: int = 18, shuffle: bool = True) -> PerBatchDomainSampler:
+        if self.domain2indices is None or self.domain_weights is None:
+            raise RuntimeError("per_batch_domain_weights is not configured for this TRACE dataset")
+        return PerBatchDomainSampler(
+            domain2indices=self.domain2indices,
+            domain_weights=self.domain_weights,
+            batch_size=batch_size,
+            total_size=len(self.dataset),
+            seed=seed,
+            shuffle=shuffle,
+        )
 
     def _load_prompt_text(self, configured_value: Optional[str]) -> Optional[str]:
         if not configured_value:
@@ -496,6 +572,15 @@ class TraceRLHFDataset(Dataset):
         if self.image_key in example:
             prompt = self._apply_chat_template(messages)
             images = self._normalize_image_entries(list(example.pop(self.image_key)))
+            source_image_sizes: list[tuple[int, int]] = []
+            for image in images:
+                image_hw = self._get_image_hw(image)
+                if image_hw is None:
+                    continue
+                height, width = image_hw
+                source_image_sizes.append((int(width), int(height)))
+            if source_image_sizes:
+                example["image_sizes"] = source_image_sizes
             processed_images = [] if len(images) != 0 else None
             for image in images:
                 processed_images.append(process_image(image, self.min_pixels, self.max_pixels))
@@ -600,7 +685,23 @@ class TraceRLHFDataset(Dataset):
         existing_extra_info = example.get("extra_info")
         extra_info = dict(existing_extra_info) if isinstance(existing_extra_info, dict) else {}
         extra_info.setdefault("prompt", prompt)
-        for key in ("answer_gt", "evidence_gt", "reward_contract", "trace_ref", "metadata", "benchmark_id", "parser_family"):
+        for key in (
+            "answer_gt",
+            "evidence_gt",
+            "reward_contract",
+            "trace_ref",
+            "metadata",
+            "query_variant",
+            "scene_variant",
+            "source_dataset_index",
+            "curriculum_probe_rollout_count",
+            "curriculum_probe_positive_rollout_count",
+            "curriculum_probe_solve_rate",
+            "image_size",
+            "image_sizes",
+            "benchmark_id",
+            "parser_family",
+        ):
             if key in example:
                 extra_info[key] = example[key]
         example["extra_info"] = extra_info

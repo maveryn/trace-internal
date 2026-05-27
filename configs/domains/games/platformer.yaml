@@ -1,0 +1,90 @@
+generation:
+  shared:
+    scene_variant_weights:
+      side_scroller: 1.0
+    query_variant_weights:
+      jump_landing_label: 1.0
+      collectible_count: 1.0
+    style_variant_weights:
+      day: 1.0
+      cave: 1.0
+      neon: 1.0
+      snow: 1.0
+      sunset: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_platform_count_sampling: true
+    balanced_hazard_count_sampling: true
+    balanced_distractor_collectible_count_sampling: true
+    balanced_target_platform_label_sampling: true
+    balanced_target_collectible_count_sampling: true
+    platform_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+    hazard_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    distractor_collectible_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    target_platform_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      - G
+      - H
+    target_collectible_count_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 740
+    level_width_px: 860
+    level_height_px: 610
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    level_border_width_px: 5
+    platform_height_px: 34
+    player_width_px: 38
+    player_height_px: 58
+    hazard_width_px: 54
+    hazard_height_px: 54
+    collectible_radius_px: 18
+    path_width_px: 6
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      motion_reasoning: 0.34
+      path_reasoning: 0.24
+      output_burden: 0.12
+prompt:
+  shared:
+    bundle_id: games_platformer_v0
+    scene_key: visible_platformer_level
+    task_key: platformer_level_query
+    object_description_side_scroller: a side-scroller platformer level with a player character, platforms, hazards, coins, and a dashed jump arc
+    platformer_short_arc_rule_text: The dashed arc shows only the start of the jump; extend the same smooth arc forward.
+    platformer_full_arc_rule_text: The dashed arc shows the jump path to follow.
+    evidence_hint_jump_landing_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the labeled platform where the jump lands
+    answer_hint_jump_landing_label: set "answer" to the selected platform label as a string
+    evidence_hint_collectible_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around each coin lying on the dashed jump arc
+    answer_hint_collectible_count: set "answer" to the number of coins lying on the dashed jump arc as an integer

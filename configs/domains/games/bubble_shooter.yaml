@@ -1,0 +1,93 @@
+generation:
+  shared:
+    scene_variant_weights:
+      open_pack: 1.0
+      dense_pack: 1.0
+    query_variant_weights:
+      pop_count: 1.0
+      drop_count: 1.0
+      pop_color_label: 1.0
+    style_variant_weights:
+      classic: 1.0
+      pastel: 1.0
+      neon: 1.0
+      paper: 1.0
+      arcade: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_row_count_sampling: true
+    balanced_col_count_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_target_label_sampling: true
+    balanced_option_count_sampling: true
+    row_count_support:
+      - 7
+      - 8
+      - 9
+    col_count_support:
+      - 8
+      - 9
+      - 10
+    pop_count_support:
+      - 0
+      - 2
+      - 3
+      - 4
+      - 5
+    drop_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+    count_query_max_row_count: 7
+    option_count_support:
+      - 4
+      - 5
+      - 6
+    pop_color_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 820
+    panel_margin_px: 42
+    playfield_width_px: 860
+    playfield_height_px: 720
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    playfield_border_width_px: 5
+    board_top_px: 38
+    board_height_px: 500
+    bubble_gap_px: 2
+    path_width_px: 5
+    shooter_radius_px: 22
+    option_radius_px: 17
+    option_label_font_size_px: 22
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      state_reasoning: 0.38
+      ambiguity: 0.14
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_bubble_shooter_v0
+    scene_key: visible_bubble_shooter_board
+    task_key: bubble_shooter_query
+    object_description_open_pack: a close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
+    object_description_dense_pack: a dense close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
+    bubble_shooter_rule_text: A shot bubble attaches at the marked landing target; a same-color connected group pops when the placed bubble makes the group size at least three. After popped bubbles are removed, bubbles not connected to the top drop.
+    evidence_hint_pop_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the existing board bubbles that pop; do not include the shot bubble
+    answer_hint_pop_count: set "answer" to the number of existing board bubbles that pop, excluding the shot bubble
+    evidence_hint_drop_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the bubbles that drop after the popped group is removed; do not include popped bubbles
+    answer_hint_drop_count: set "answer" to the number of bubbles that drop after the shot, excluding popped bubbles
+    evidence_hint_pop_color_label: set "evidence" to bounding boxes [x0, y0, x1, y1] around the chosen color option, the marked landing target, and the existing board bubbles that would pop
+    answer_hint_pop_color_label: set "answer" to the single option letter whose color would make bubbles pop

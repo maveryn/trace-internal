@@ -1,1 +1,1 @@
-"""Composition-family chart tasks."""
+"""Composition chart tasks."""

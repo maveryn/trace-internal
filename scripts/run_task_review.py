@@ -9,6 +9,7 @@ import os
 import json
 from pathlib import Path
 import re
+import shutil
 from typing import Any, Dict, List, Mapping, Sequence
 
 from openpyxl import Workbook
@@ -19,23 +20,28 @@ from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
 from trace.core.answer_distribution import evaluate_answer_distribution
+from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_evidence
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
-from trace.core.task_review_sampling import collect_variant_samples, generate_random_samples
+from trace.core.seed import hash64
+from trace.core.taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
+from trace.core.task_review_sampling import collect_variant_samples, generate_random_samples, resolve_review_variant_key
 from trace.tasks import TASK_REGISTRY, create_task
 
 
 _PREVIEW_MAX_SIDE = 384
+_SCENE_PREVIEW_ROWS_PER_TASK = 100
 _EXCEL_HEADERS: List[str] = [
     "image",
     "evidence_image",
     "task",
-    "task_variant",
-    "prompt",
+    "query_variant",
+    "scene_id",
+    "query_id",
     "prompt_answer",
-    "prompt_answer_only",
-    "answer",
-    "answer_evidence",
+    "ground_truth_answer",
+    "prompt_answer_and_evidence",
+    "ground_truth_answer_and_evidence",
     "answer_type",
     "evidence_type",
     "instance_seed",
@@ -48,23 +54,87 @@ _EXCEL_COLUMN_WIDTHS: Dict[str, float] = {
     "B": 54,
     "C": 28,
     "D": 24,
-    "E": 40,
-    "F": 34,
-    "G": 20,
-    "H": 20,
-    "I": 14,
-    "J": 16,
-    "K": 16,
-    "L": 24,
-    "M": 28,
+    "E": 24,
+    "F": 24,
+    "G": 34,
+    "H": 22,
+    "I": 40,
+    "J": 24,
+    "K": 14,
+    "L": 16,
+    "M": 24,
+    "N": 28,
+    "O": 28,
 }
 
-_WRAP_COLUMNS = {"C", "D", "E", "F", "G", "H", "L", "M"}
+_WRAP_COLUMNS = {"C", "D", "E", "F", "G", "H", "I", "J", "M", "N", "O"}
+
+_MODEL_STATS_HEADERS: List[str] = [
+    "task",
+    "combined_status",
+    "model",
+    "reasons",
+    "hard_frac",
+    "easy_frac",
+    "band_frac",
+    "mean_solve_rate",
+    "response_cap_rate",
+    "prompt_max",
+    "prompt_over_limit_count",
+    "rollout_count",
+    "prompt_count",
+    "max_response_length",
+    "solve_workbook",
+    "calibration_stats",
+    "output_dir",
+]
+_MODEL_STATS_WIDTHS: Dict[str, float] = {
+    "A": 56,
+    "B": 20,
+    "C": 16,
+    "D": 34,
+    "E": 12,
+    "F": 12,
+    "G": 12,
+    "H": 16,
+    "I": 18,
+    "J": 12,
+    "K": 22,
+    "L": 14,
+    "M": 14,
+    "N": 20,
+    "O": 72,
+    "P": 72,
+    "Q": 72,
+}
+_MODEL_IDS: Dict[str, str] = {
+    "qwen25vl7b": "Qwen/Qwen2.5-VL-7B-Instruct",
+    "qwen3vl8b": "Qwen/Qwen3-VL-8B-Instruct",
+    "qwen3vl4b": "Qwen/Qwen3-VL-4B-Instruct",
+}
+_MODEL_RESPONSE_CAP_THRESHOLDS: Dict[str, float] = {
+    "qwen25vl7b": 0.25,
+    "qwen3vl8b": 0.25,
+    "qwen3vl4b": 0.25,
+}
+_CURRENT_CALIBRATION_MODEL_SLUGS = {"qwen25vl7b"}
+_CURRENT_CALIBRATION_BASELINE = "v0"
+_DIFFICULTY_TAIL_THRESHOLD = 0.50
 
 
 def _infer_task_domain(task_id: str, *, task_obj: Any | None = None) -> str:
     """Infer one task domain for review-artifact routing."""
 
+    if task_obj is not None:
+        taxonomy = resolve_task_taxonomy(
+            str(task_id),
+            source_domain=str(getattr(task_obj, "domain", "")),
+            source_task_group=str(getattr(task_obj, "task_group", "")),
+        )
+        return str(taxonomy.domain)
+    taxonomy = resolve_task_taxonomy(str(task_id))
+    if taxonomy.domain != "unknown":
+        return str(taxonomy.domain)
     if task_obj is not None:
         domain = getattr(task_obj, "domain", None)
         if str(domain or "").strip():
@@ -78,7 +148,12 @@ def _infer_task_domain(task_id: str, *, task_obj: Any | None = None) -> str:
 def _resolve_task_review_dir(*, out_root: Path, task_id: str, task_obj: Any | None = None) -> Path:
     """Return the canonical domain-scoped review directory for one task."""
 
-    return Path(out_root) / _infer_task_domain(str(task_id), task_obj=task_obj) / str(task_id)
+    taxonomy = resolve_task_taxonomy(
+        str(task_id),
+        source_domain=str(getattr(task_obj, "domain", "")) if task_obj is not None else "",
+        source_task_group=str(getattr(task_obj, "task_group", "")) if task_obj is not None else "",
+    )
+    return Path(out_root) / str(taxonomy.domain) / str(taxonomy.scene_id) / str(task_id)
 
 
 def _resolve_task_ids(raw_tasks: str) -> List[str]:
@@ -97,7 +172,8 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
 def _task_review_dir(*, out_root: Path, task_id: str, domain: str) -> Path:
     """Return the domain-scoped review directory for one task."""
 
-    return Path(out_root) / str(domain) / str(task_id)
+    taxonomy = resolve_task_taxonomy(str(task_id), source_domain=str(domain))
+    return Path(out_root) / str(taxonomy.domain) / str(taxonomy.scene_id) / str(task_id)
 
 
 def _parse_cli() -> argparse.Namespace:
@@ -113,8 +189,18 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0, help="Base seed")
     parser.add_argument("--out-root", default="task-reviews", help="Output root for task review artifacts")
     parser.add_argument("--random-count", type=int, default=100, help="Random sample count per task")
-    parser.add_argument("--count-per-variant", type=int, default=100, help="Target samples per task variant")
-    parser.add_argument("--inspection-count-per-variant", type=int, default=25, help="Samples per variant for inspection")
+    parser.add_argument("--count-per-variant", type=int, default=100, help="Target samples per query variant")
+    parser.add_argument(
+        "--inspection-count-per-variant",
+        type=int,
+        default=25,
+        help="Source balanced inspection samples per query; used only with --balanced-inspection-by-query",
+    )
+    parser.add_argument(
+        "--balanced-inspection-by-query",
+        action="store_true",
+        help="Generate inspection workbooks with a fixed sample count per query id instead of --random-count total samples per task",
+    )
     parser.add_argument("--max-attempts-per-instance", type=int, default=200, help="Max attempts per instance generation")
     parser.add_argument(
         "--max-total-samples-per-task",
@@ -132,6 +218,11 @@ def _parse_cli() -> argparse.Namespace:
         "--allow-fail",
         action="store_true",
         help="Exit 0 even when one or more distribution checks fail",
+    )
+    parser.add_argument(
+        "--skip-scene-workbooks",
+        action="store_true",
+        help="Do not refresh per-scene combined inspection workbooks after inspection export",
     )
     return parser.parse_args()
 
@@ -223,15 +314,27 @@ def _extract_sampling_axes(output: Any) -> Dict[str, Dict[str, Any]]:
             if not probs:
                 continue
             observed = None
-            if str(axis) == "task_variant":
-                observed = getattr(output, "task_variant", "")
+            if str(axis) == "query_variant":
+                observed = getattr(output, "query_variant", "")
+            elif str(axis) == "query_id":
+                observed = str(getattr(output, "query_id", "") or "")
             else:
                 observed = execution_trace.get(str(axis), query_params.get(str(axis), ""))
             _set_axis(str(axis), observed=observed, expected=probs, source=str(source_name))
 
-    if "task_variant" not in axes:
-        axes["task_variant"] = {
-            "observed": str(getattr(output, "task_variant", "") or ""),
+    if str(getattr(output, "query_variant", "") or "").strip() in {"", "default"}:
+        query_axis = axes.get("query_variant", {})
+        if isinstance(query_axis, Mapping) and query_axis.get("expected_probabilities"):
+            axes["query_variant"] = {
+                "observed": str(getattr(output, "query_id", "") or query_axis.get("observed", "")),
+                "expected_probabilities": dict(query_axis.get("expected_probabilities", {})),
+                "expected_source": str(query_axis.get("expected_source", "")),
+                "expected_conflict": bool(query_axis.get("expected_conflict", False)),
+            }
+
+    if "query_variant" not in axes:
+        axes["query_variant"] = {
+            "observed": str(getattr(output, "query_variant", "") or ""),
             "expected_probabilities": {},
             "expected_source": "",
             "expected_conflict": False,
@@ -239,24 +342,75 @@ def _extract_sampling_axes(output: Any) -> Dict[str, Dict[str, Any]]:
     return axes
 
 
+def _extract_replay_generation_params(output: Any) -> Dict[str, Any]:
+    """Extract explicit generation params that can replay one sampled inspection row."""
+    trace_payload = getattr(output, "trace_payload", {})
+    if not isinstance(trace_payload, Mapping):
+        return {}
+    query_spec = trace_payload.get("query_spec", {})
+    if not isinstance(query_spec, Mapping):
+        return {}
+    execution_trace = trace_payload.get("execution_trace", {})
+    if not isinstance(execution_trace, Mapping):
+        execution_trace = {}
+    query_params = query_spec.get("params", {})
+    if not isinstance(query_params, Mapping):
+        return {}
+
+    replay: Dict[str, Any] = {}
+    for key, value in query_params.items():
+        key_text = str(key)
+        if key_text.endswith("_probabilities") or key_text.endswith("_support"):
+            continue
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            replay[key_text] = value
+        elif isinstance(value, (list, tuple)):
+            replay[key_text] = list(value)
+        elif isinstance(value, Mapping):
+            replay[key_text] = dict(value)
+    query_variant = str(getattr(output, "query_variant", "") or "")
+    review_variant = resolve_review_variant_key(output)
+    if review_variant:
+        if query_variant.strip() in {"", "default"}:
+            internal_query_variant = str(execution_trace.get("internal_query_variant", "") or "").strip()
+            if internal_query_variant and internal_query_variant != "default":
+                replay["query_variant"] = str(internal_query_variant)
+            else:
+                replay["query_variant"] = str(review_variant)
+            replay["query_id"] = str(review_variant)
+        else:
+            replay.setdefault("query_variant", query_variant)
+    return replay
+
+
 def _random_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     """Collect task-review fields from one generated output."""
+    query_variant = str(getattr(output, "query_variant", "") or "")
     return {
         "instance_seed": int(instance_seed),
-        "task_variant": str(getattr(output, "task_variant", "") or ""),
+        "query_variant": query_variant,
+        "review_variant": resolve_review_variant_key(output),
+        "scene_id": str(getattr(output, "scene_id", "") or ""),
+        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_variant=query_variant, trace_payload=getattr(output, "trace_payload", {}))),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
         "sampling_axes": _extract_sampling_axes(output),
+        "generation_params": _extract_replay_generation_params(output),
     }
 
 
 def _answer_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     """Collect answer-only fields for distribution checks."""
+    query_variant = str(getattr(output, "query_variant", "") or "")
     return {
         "instance_seed": int(instance_seed),
-        "task_variant": str(getattr(output, "task_variant", "") or ""),
+        "query_variant": query_variant,
+        "review_variant": resolve_review_variant_key(output),
+        "scene_id": str(getattr(output, "scene_id", "") or ""),
+        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_variant=query_variant, trace_payload=getattr(output, "trace_payload", {}))),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
+        "generation_params": _extract_replay_generation_params(output),
     }
 
 
@@ -289,8 +443,8 @@ def _build_sampling_axis_reports(rows: Sequence[Mapping[str, Any]]) -> Dict[str,
             axis_entry = axes.get(axis, {}) if isinstance(axes, Mapping) else {}
             observed = axis_entry.get("observed")
             observed_label = str(observed) if observed is not None else ""
-            if str(axis) == "task_variant" and not observed_label:
-                observed_label = str(row.get("task_variant", "") or "")
+            if str(axis) == "query_variant" and not observed_label:
+                observed_label = str(row.get("review_variant", "") or row.get("query_variant", "") or "")
             observed_counts[observed_label] = int(observed_counts.get(observed_label, 0) + 1)
 
             raw_expected = axis_entry.get("expected_probabilities", {}) if isinstance(axis_entry, Mapping) else {}
@@ -329,7 +483,7 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
     ]
     answer_report = evaluate_answer_distribution(answer_rows)
     sampling_axes = _build_sampling_axis_reports(rows)
-    variant_axis = sampling_axes.get("task_variant", {})
+    variant_axis = sampling_axes.get("query_variant", {})
     variant_counts = variant_axis.get("observed_counts", {}) if isinstance(variant_axis, Mapping) else {}
     variant_expected = variant_axis.get("expected_probabilities", {}) if isinstance(variant_axis, Mapping) else {}
     has_variants = _has_true_variants(variant_counts, variant_expected)
@@ -339,7 +493,7 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
         "sample_count": int(len(rows)),
         "answer_distribution": answer_report,
         "sampling_axes": sampling_axes,
-        "task_variant_distribution": {
+        "query_variant_distribution": {
             "has_variants": bool(has_variants),
             "status": "reported" if bool(has_variants) else "skipped_no_variants",
             "observed_counts": dict(variant_counts),
@@ -380,13 +534,14 @@ def _build_distribution_review_report(
     task_id: str,
     task_group: str,
     domain: str,
+    scene_id: str,
     random_rows: Sequence[Mapping[str, Any]],
     random_report: Mapping[str, Any],
     variant_rows: Mapping[str, List[Dict[str, Any]]] | None,
     variant_collection_meta: Mapping[str, Any] | None,
 ) -> Dict[str, Any]:
     """Build distribution review report from random and per-variant samples."""
-    variant_distribution = random_report.get("task_variant_distribution", {})
+    variant_distribution = random_report.get("query_variant_distribution", {})
     has_variants = bool(variant_distribution.get("has_variants", False))
 
     if not has_variants:
@@ -395,14 +550,15 @@ def _build_distribution_review_report(
             "task_id": str(task_id),
             "domain": str(domain),
             "task_group": str(task_group),
+            "scene_id": str(scene_id),
             "mode": "single_sample",
-            "has_task_variants": False,
+            "has_query_variants": False,
             "overall": dict(single_report),
-            "per_task_variant": {"": dict(single_report)},
+            "per_query_variant": {"": dict(single_report)},
             "failed_variants": [""] if not bool(single_report.get("pass", False)) else [],
             "incomplete_variants": [],
             "pass": bool(single_report.get("pass", False)),
-            "task_variant_distribution": dict(variant_distribution),
+            "query_variant_distribution": dict(variant_distribution),
             "sampling_axes": dict(random_report.get("sampling_axes", {})),
         }
 
@@ -414,16 +570,16 @@ def _build_distribution_review_report(
     per_variant: Dict[str, Any] = {}
     combined_rows: List[Dict[str, Any]] = []
 
-    for task_variant in expected_variants:
-        rows = list(variant_rows.get(str(task_variant), []))
+    for query_variant in expected_variants:
+        rows = list(variant_rows.get(str(query_variant), []))
         combined_rows.extend(rows)
         if rows:
-            per_variant[str(task_variant)] = _evaluate_rows(rows)
+            per_variant[str(query_variant)] = _evaluate_rows(rows)
 
     overall = _evaluate_rows(combined_rows)
     failed_variants = [
-        str(task_variant)
-        for task_variant, result in per_variant.items()
+        str(query_variant)
+        for query_variant, result in per_variant.items()
         if not bool(result.get("pass", False))
     ]
     incomplete_variants = list(variant_collection_meta.get("incomplete_variants", []))
@@ -434,15 +590,16 @@ def _build_distribution_review_report(
         "task_id": str(task_id),
         "domain": str(domain),
         "task_group": str(task_group),
+        "scene_id": str(scene_id),
         "mode": "per_variant",
-        "has_task_variants": True,
+        "has_query_variants": True,
         "overall": overall,
-        "per_task_variant": per_variant,
+        "per_query_variant": per_variant,
         "failed_variants": failed_variants,
         "incomplete_variants": incomplete_variants,
         "no_samples_collected": bool(no_samples_collected),
         "pass": bool(task_pass),
-        "task_variant_distribution": dict(variant_distribution),
+        "query_variant_distribution": dict(variant_distribution),
         "sampling_axes": dict(random_report.get("sampling_axes", {})),
         "collection": {
             "target_count_per_variant": int(variant_collection_meta.get("target_count_per_variant", 0)),
@@ -554,11 +711,13 @@ def _populate_inspection_sheet(
 
         values = [
             row.get("task", ""),
-            row.get("task_variant", ""),
-            row.get("prompt", ""),
+            row.get("query_variant", ""),
+            row.get("scene_id", ""),
+            row.get("query_id", ""),
             row.get("prompt_answer", row.get("prompt_answer_only", "")),
-            _json_cell(row.get("answer")),
-            _json_cell(row.get("answer_evidence")),
+            _json_cell(row.get("ground_truth_answer", row.get("answer_only"))),
+            row.get("prompt_answer_and_evidence", row.get("prompt", "")),
+            _json_cell(row.get("ground_truth_answer_and_evidence", row.get("answer"))),
             row.get("answer_type", ""),
             row.get("evidence_type", ""),
             int(row.get("instance_seed", 0)),
@@ -579,7 +738,7 @@ def _write_inspection_excel(
     *,
     out_root: Path,
 ) -> Dict[str, str]:
-    """Write one inspection workbook with one sheet per task variant."""
+    """Write one inspection workbook with one sheet per query variant."""
     workbook = Workbook()
     image_buffers: List[io.BytesIO] = []
     used_titles: set[str] = set()
@@ -589,18 +748,18 @@ def _write_inspection_excel(
     if not sorted_variants:
         sorted_variants = [""]
 
-    for index, task_variant in enumerate(sorted_variants):
-        base_title = str(task_variant).strip() or "default"
+    for index, query_variant in enumerate(sorted_variants):
+        base_title = str(query_variant).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if int(index) == 0:
             sheet = workbook.active
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(task_variant)] = str(sheet_title)
+        variant_to_sheet[str(query_variant)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
-            rows=list(rows_by_variant.get(str(task_variant), [])),
+            rows=list(rows_by_variant.get(str(query_variant), [])),
             out_root=out_root,
             image_buffers=image_buffers,
         )
@@ -610,9 +769,627 @@ def _write_inspection_excel(
     return variant_to_sheet
 
 
-def _safe_variant_dir_name(task_variant: str) -> str:
+def _task_sheet_title(task_id: str, *, domain: str) -> str:
+    """Return a compact human-readable sheet title for one task id."""
+
+    task_text = str(task_id).strip()
+    prefix = f"task_{str(domain).strip()}_"
+    if task_text.startswith(prefix):
+        return task_text[len(prefix) :]
+    if task_text.startswith("task_"):
+        return task_text[len("task_") :]
+    return task_text
+
+
+def _scene_status_candidates(out_root: Path) -> List[Path]:
+    """Return candidate calibration status files for one review root."""
+
+    root = Path(out_root)
+    candidates = [
+        root.parent / "calibration_sweep_status.json",
+        Path("plans/calibration_sweep_status.json"),
+    ]
+    unique: List[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate.resolve()) if candidate.exists() else str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(candidate)
+    return unique
+
+
+def _status_reasons_from_stats(stats: Mapping[str, Any], *, model_slug: str) -> tuple[str, List[str]]:
+    """Return calibration status/reasons from stats using current gates."""
+
+    overall = stats.get("overall", {})
+    if not isinstance(overall, Mapping):
+        overall = {}
+    prompt_stats = stats.get("prompt_token_stats", {})
+    if not isinstance(prompt_stats, Mapping):
+        prompt_stats = {}
+    response_stats = stats.get("response_token_stats", {})
+    if not isinstance(response_stats, Mapping):
+        response_stats = {}
+
+    blocked_reasons: List[str] = []
+    if int(prompt_stats.get("over_limit_count") or 0) > 0:
+        blocked_reasons.append("prompt_over_limit")
+    cap_threshold = float(_MODEL_RESPONSE_CAP_THRESHOLDS.get(str(model_slug), 0.25))
+    if float(response_stats.get("cap_rate") or 0.0) > cap_threshold:
+        blocked_reasons.append("response_cap_rate")
+    if not overall:
+        blocked_reasons.append("missing_overall_stats")
+    if blocked_reasons:
+        return "blocked", blocked_reasons
+
+    tuning_reasons: List[str] = []
+    if float(overall.get("hard_frac") or 0.0) >= _DIFFICULTY_TAIL_THRESHOLD:
+        tuning_reasons.append("hard_frac")
+    if float(overall.get("easy_frac") or 0.0) >= _DIFFICULTY_TAIL_THRESHOLD:
+        tuning_reasons.append("easy_frac")
+    mean = float(overall.get("mean_solve_rate") or 0.0)
+    if mean < 0.10 or mean > 0.75:
+        tuning_reasons.append("mean_solve_rate")
+    if tuning_reasons:
+        return "needs_manual_tuning", tuning_reasons
+    return "accepted", []
+
+
+def _model_stats_row_from_record(
+    *,
+    task_id: str,
+    scene_id: str,
+    combined_status: str,
+    model_slug: str,
+    model_record: Mapping[str, Any],
+) -> Dict[str, Any] | None:
+    """Build one model stats row from a calibration sweep model record."""
+
+    stats = model_record.get("stats", {})
+    if not isinstance(stats, Mapping):
+        return None
+    overall = stats.get("overall", {})
+    if not isinstance(overall, Mapping):
+        overall = {}
+    prompt_stats = stats.get("prompt_token_stats", {})
+    if not isinstance(prompt_stats, Mapping):
+        prompt_stats = {}
+    response_stats = stats.get("response_token_stats", {})
+    if not isinstance(response_stats, Mapping):
+        response_stats = {}
+    reasons = model_record.get("reasons", [])
+    if isinstance(reasons, str):
+        reason_text = reasons
+    elif isinstance(reasons, Sequence):
+        reason_text = ", ".join(str(item) for item in reasons)
+    else:
+        reason_text = ""
+
+    return {
+        "task": str(task_id),
+        "scene_id": str(scene_id),
+        "combined_status": str(combined_status),
+        "model": str(model_slug),
+        "model_id": str(model_record.get("model_id", _MODEL_IDS.get(str(model_slug), ""))),
+        "model_status": str(model_record.get("status", "")),
+        "reasons": reason_text,
+        "hard_frac": overall.get("hard_frac"),
+        "easy_frac": overall.get("easy_frac"),
+        "band_frac": overall.get("band_frac"),
+        "mean_solve_rate": overall.get("mean_solve_rate"),
+        "response_cap_rate": response_stats.get("cap_rate"),
+        "prompt_max": prompt_stats.get("max"),
+        "prompt_over_limit_count": prompt_stats.get("over_limit_count"),
+        "rollout_count": overall.get("rollout_count"),
+        "prompt_count": overall.get("prompt_count"),
+        "max_response_length": model_record.get("max_response_length"),
+        "solve_workbook": str(model_record.get("solve_workbook", "")),
+        "calibration_stats": str(model_record.get("calibration_stats", "")),
+        "output_dir": str(model_record.get("output_dir", "")),
+    }
+
+
+def _model_stats_row_from_stats_file(
+    *,
+    stats_path: Path,
+    model_slug: str,
+    task_id: str,
+    scene_id: str,
+    combined_status: str,
+) -> Dict[str, Any] | None:
+    """Build one model stats row from a calibration_stats.json file."""
+
+    try:
+        stats = json.loads(Path(stats_path).read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(stats, Mapping):
+        return None
+    config = stats.get("config", {})
+    if not isinstance(config, Mapping):
+        config = {}
+    if str(config.get("calibration_baseline", "")).strip() != _CURRENT_CALIBRATION_BASELINE:
+        return None
+    artifacts = stats.get("artifacts", {})
+    if not isinstance(artifacts, Mapping):
+        artifacts = {}
+    status, reasons = _status_reasons_from_stats(stats, model_slug=str(model_slug))
+    record = {
+        "model_id": _MODEL_IDS.get(str(model_slug), str(model_slug)),
+        "status": status,
+        "reasons": reasons,
+        "stats": stats,
+        "max_response_length": config.get("max_response_length"),
+        "solve_workbook": artifacts.get("solve_workbook", ""),
+        "calibration_stats": artifacts.get("calibration_stats", str(stats_path)),
+        "output_dir": config.get("probe_output_dir", str(stats_path.parent)),
+    }
+    return _model_stats_row_from_record(
+        task_id=str(task_id),
+        scene_id=str(scene_id),
+        combined_status=str(combined_status or status),
+        model_slug=str(model_slug),
+        model_record=record,
+    )
+
+
+def _latest_stats_files_by_task_model(
+    *,
+    domain: str,
+    scene_id: str,
+    task_ids: Sequence[str],
+) -> Dict[tuple[str, str], Path]:
+    """Return latest calibration stats files keyed by (task_id, model_slug)."""
+
+    task_set = {str(task_id) for task_id in task_ids}
+    probe_root = Path("rlvr/outputs/calibration/current")
+    if not probe_root.exists():
+        return {}
+    selected: Dict[tuple[str, str], Path] = {}
+    priorities: Dict[tuple[str, str], tuple[bool, int, float]] = {}
+    pattern = f"*/{str(domain)}/{str(scene_id)}/task_*/100x*_seed*/calibration_stats.json"
+    for stats_path in probe_root.glob(pattern):
+        try:
+            rel = stats_path.relative_to(probe_root)
+        except ValueError:
+            continue
+        if len(rel.parts) < 6:
+            continue
+        model_slug = str(rel.parts[0])
+        task_id = str(rel.parts[3])
+        if task_id not in task_set:
+            continue
+        rollout_match = re.match(r"100x(?P<rollouts>\d+)_seed", str(rel.parts[4]))
+        if rollout_match is None:
+            continue
+        rollout_count = int(rollout_match.group("rollouts"))
+        key = (task_id, model_slug)
+        mtime = float(stats_path.stat().st_mtime)
+        priority = (int(rollout_count) == 24, int(rollout_count), mtime)
+        if key not in selected or priority >= priorities.get(key, (False, -1, 0.0)):
+            selected[key] = stats_path
+            priorities[key] = priority
+    return selected
+
+
+def _load_scene_model_stats_rows(
+    *,
+    out_root: Path,
+    domain: str,
+    scene_id: str,
+    task_ids: Sequence[str],
+) -> List[Dict[str, Any]]:
+    """Load per-task/model calibration stats for one scene when available."""
+
+    status: Dict[str, Any] = {}
+    for candidate in _scene_status_candidates(Path(out_root)):
+        if not candidate.exists():
+            continue
+        try:
+            loaded = json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(loaded, Mapping):
+            status = dict(loaded)
+            break
+    status_config = status.get("config", {}) if isinstance(status.get("config"), Mapping) else {}
+    if str(status_config.get("calibration_baseline", "")).strip() != _CURRENT_CALIBRATION_BASELINE:
+        status = {}
+    records = status.get("tasks", {})
+    if not isinstance(records, Mapping):
+        records = {}
+
+    row_map: Dict[tuple[str, str], Dict[str, Any]] = {}
+    combined_status_by_task: Dict[str, str] = {}
+    reviewer_override_tasks: set[str] = set()
+    reviewer_override_models: set[tuple[str, str]] = set()
+    suppress_stats_fallback_tasks: set[str] = set()
+    for task_id in sorted(str(item) for item in task_ids):
+        record = records.get(task_id, {})
+        if not isinstance(record, Mapping):
+            continue
+        if str(record.get("domain", domain)) != str(domain):
+            continue
+        if str(record.get("scene_id", scene_id)) != str(scene_id):
+            continue
+
+        combined_status_by_task[task_id] = str(record.get("status", ""))
+        if str(record.get("status", "")).strip() in {"dry_run", "reviewed_pending_probe"}:
+            suppress_stats_fallback_tasks.add(task_id)
+        record_has_reviewer_override = bool(record.get("reviewer_override"))
+        if record_has_reviewer_override:
+            reviewer_override_tasks.add(task_id)
+        models = record.get("models", {})
+        if not isinstance(models, Mapping):
+            continue
+        for model_slug in sorted(str(key) for key in models.keys()):
+            if model_slug not in _CURRENT_CALIBRATION_MODEL_SLUGS:
+                continue
+            model_record = models.get(model_slug, {})
+            if not isinstance(model_record, Mapping):
+                continue
+            row = _model_stats_row_from_record(
+                task_id=task_id,
+                scene_id=str(record.get("scene_id", scene_id)),
+                combined_status=str(record.get("status", "")),
+                model_slug=model_slug,
+                model_record=model_record,
+            )
+            if row is not None:
+                row_map[(task_id, model_slug)] = row
+                if record_has_reviewer_override or bool(model_record.get("reviewer_override")):
+                    reviewer_override_models.add((task_id, model_slug))
+
+    for (task_id, model_slug), stats_path in _latest_stats_files_by_task_model(
+        domain=str(domain),
+        scene_id=str(scene_id),
+        task_ids=task_ids,
+    ).items():
+        if model_slug not in _CURRENT_CALIBRATION_MODEL_SLUGS:
+            continue
+        if task_id in suppress_stats_fallback_tasks:
+            continue
+        if (task_id, model_slug) in reviewer_override_models:
+            continue
+        row = _model_stats_row_from_stats_file(
+            stats_path=stats_path,
+            model_slug=model_slug,
+            task_id=task_id,
+            scene_id=str(scene_id),
+            combined_status=combined_status_by_task.get(task_id, ""),
+        )
+        if row is not None:
+            row_map[(task_id, model_slug)] = row
+
+    statuses_by_task: Dict[str, List[str]] = {}
+    for (task_id, _model_slug), row in row_map.items():
+        status_text = str(row.get("model_status", "")).strip()
+        if status_text:
+            statuses_by_task.setdefault(task_id, []).append(status_text)
+    combined_by_task: Dict[str, str] = {}
+    for task_id, statuses in statuses_by_task.items():
+        if any(status == "blocked" for status in statuses):
+            combined_by_task[task_id] = "blocked"
+        elif statuses and all(status == "accepted" for status in statuses):
+            combined_by_task[task_id] = "accepted"
+        elif statuses:
+            combined_by_task[task_id] = "needs_manual_tuning"
+    for (task_id, _model_slug), row in row_map.items():
+        if task_id in combined_by_task:
+            row["combined_status"] = combined_by_task[task_id]
+        if task_id in reviewer_override_tasks:
+            row["combined_status"] = combined_status_by_task.get(task_id, row.get("combined_status", ""))
+
+    return [row_map[key] for key in sorted(row_map.keys())]
+
+
+def _populate_model_stats_sheet(sheet: Any, rows: Sequence[Mapping[str, Any]]) -> None:
+    """Populate the scene-level model stats sheet."""
+
+    sheet.append(list(_MODEL_STATS_HEADERS))
+    bold = Font(bold=True)
+    for column in range(1, len(_MODEL_STATS_HEADERS) + 1):
+        sheet.cell(row=1, column=column).font = bold
+    for letter, width in _MODEL_STATS_WIDTHS.items():
+        sheet.column_dimensions[str(letter)].width = float(width)
+
+    wrap_top = Alignment(wrap_text=True, vertical="top")
+    wrap_columns = {"A", "E", "G", "R", "S", "T"}
+    for row_idx, row in enumerate(rows, start=2):
+        for column_idx, header in enumerate(_MODEL_STATS_HEADERS, start=1):
+            value = row.get(header, "")
+            cell = sheet.cell(row=row_idx, column=column_idx, value=value)
+            if get_column_letter(column_idx) in wrap_columns:
+                cell.alignment = wrap_top
+    sheet.freeze_panes = "A2"
+
+
+def _write_scene_inspection_excel(
+    rows_by_task: Mapping[str, Sequence[Mapping[str, Any]]],
+    path: Path,
+    *,
+    out_root: Path,
+    domain: str,
+) -> tuple[Dict[str, str], str, int]:
+    """Write one scene-level workbook with one sheet per task."""
+
+    workbook = Workbook()
+    image_buffers: List[io.BytesIO] = []
+    used_titles: set[str] = set()
+    task_to_sheet: Dict[str, str] = {}
+
+    sorted_tasks = sorted(str(task_id) for task_id in rows_by_task.keys())
+    if not sorted_tasks:
+        sorted_tasks = ["empty"]
+
+    model_stats_rows = _load_scene_model_stats_rows(
+        out_root=out_root,
+        domain=str(domain),
+        scene_id=str(path.parent.name),
+        task_ids=sorted_tasks,
+    )
+    model_stats_sheet = _dedupe_sheet_title("model_stats", used_titles)
+    sheet = workbook.active
+    sheet.title = model_stats_sheet
+    _populate_model_stats_sheet(sheet, rows=model_stats_rows)
+
+    for task_id in sorted_tasks:
+        sheet_title = _dedupe_sheet_title(_task_sheet_title(str(task_id), domain=str(domain)), used_titles)
+        sheet = workbook.create_sheet(title=sheet_title)
+        task_to_sheet[str(task_id)] = str(sheet_title)
+        _populate_inspection_sheet(
+            sheet,
+            rows=list(rows_by_task.get(str(task_id), [])),
+            out_root=out_root,
+            image_buffers=image_buffers,
+        )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    workbook.save(path)
+    return task_to_sheet, model_stats_sheet, int(len(model_stats_rows))
+
+
+
+def _inspection_rows_from_task_dir(*, out_root: Path, task_dir: Path) -> List[Dict[str, Any]]:
+    """Load inspection workbook rows from one task's JSON sidecars."""
+
+    data_root = task_dir / "data"
+    if not data_root.exists():
+        return []
+
+    rows: List[Dict[str, Any]] = []
+    for data_path in sorted(data_root.rglob("*.json")):
+        try:
+            payload = json.loads(data_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(payload, Mapping):
+            continue
+
+        answer_gt = payload.get("answer_gt", {})
+        if not isinstance(answer_gt, Mapping):
+            answer_gt = {}
+        evidence_gt = payload.get("evidence_gt", {})
+        if not isinstance(evidence_gt, Mapping):
+            evidence_gt = {}
+        image_payload = payload.get("image", {})
+        if not isinstance(image_payload, Mapping):
+            image_payload = {}
+        prompt_variants = payload.get("prompt_variants", {})
+        if not isinstance(prompt_variants, Mapping):
+            prompt_variants = {}
+        trace_payload = payload.get("trace_payload", {})
+        if not isinstance(trace_payload, Mapping):
+            trace_payload = {}
+
+        evidence_type = str(evidence_gt.get("type", ""))
+        evidence_value = evidence_gt.get("value")
+        overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
+            evidence_type=evidence_type,
+            evidence_value=evidence_value,
+            trace_payload=trace_payload,
+        )
+
+        prompt = str(payload.get("prompt", ""))
+        prompt_answer = str(prompt_variants.get("answer_only", prompt))
+        prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", prompt))
+        image_path = str(image_payload.get("path", ""))
+        try:
+            rel_data_path = data_path.relative_to(out_root).as_posix()
+        except ValueError:
+            rel_data_path = data_path.as_posix()
+
+        rows.append(
+            {
+                "task": str(payload.get("task", task_dir.name)),
+                "query_variant": str(payload.get("query_variant", "")),
+                "scene_id": str(payload.get("scene_id", task_dir.parent.name)),
+                "query_id": str(payload.get("query_id", "")),
+                "prompt": prompt,
+                "prompt_answer": prompt_answer,
+                "prompt_answer_only": prompt_answer,
+                "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                "ground_truth_answer": {
+                    "answer": answer_gt.get("value"),
+                },
+                "ground_truth_answer_and_evidence": {
+                    "evidence": evidence_value,
+                    "answer": answer_gt.get("value"),
+                },
+                "answer": {
+                    "evidence": evidence_value,
+                    "answer": answer_gt.get("value"),
+                },
+                "answer_evidence": evidence_value,
+                "answer_type": str(answer_gt.get("type", "")),
+                "evidence_type": evidence_type,
+                "instance_seed": int(payload.get("instance_seed", 0)),
+                "image_path": image_path,
+                "data_path": str(rel_data_path),
+                "overlay_evidence_type": str(overlay_evidence_type),
+                "overlay_evidence_value": overlay_evidence_value,
+            }
+        )
+
+    return sorted(
+        rows,
+        key=lambda item: (
+            str(item.get("query_id", "")),
+            int(item.get("instance_seed", 0)),
+            str(item.get("data_path", "")),
+        ),
+    )
+
+
+def _scene_preview_rows(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    domain: str,
+    scene_id: str,
+    task_id: str,
+) -> List[Dict[str, Any]]:
+    """Return the deterministic 100-row human-preview sample for a scene sheet."""
+
+    resolved = [dict(row) for row in rows]
+    if len(resolved) <= _SCENE_PREVIEW_ROWS_PER_TASK:
+        return list(resolved)
+
+    ranked = sorted(
+        resolved,
+        key=lambda row: hash64(
+            20260518,
+            f"{domain}/{scene_id}/{task_id}/{row.get('data_path', '')}",
+            0,
+        ),
+    )[:_SCENE_PREVIEW_ROWS_PER_TASK]
+    return sorted(
+        ranked,
+        key=lambda item: (
+            str(item.get("query_id", "")),
+            int(item.get("instance_seed", 0)),
+            str(item.get("data_path", "")),
+        ),
+    )
+
+
+def build_scene_review_workbook(*, out_root: Path, domain: str, scene_id: str) -> Dict[str, Any]:
+    """Build one combined scene workbook with one sheet per task."""
+
+    scene_dir = Path(out_root) / str(domain) / str(scene_id)
+    rows_by_task: Dict[str, List[Dict[str, Any]]] = {}
+    task_entries: Dict[str, Dict[str, Any]] = {}
+
+    if not scene_dir.exists():
+        return {
+            "domain": str(domain),
+            "scene_id": str(scene_id),
+            "task_count": 0,
+            "inspection_count": 0,
+            "workbook": "",
+            "tasks": {},
+        }
+
+    for task_dir in sorted(path for path in scene_dir.iterdir() if path.is_dir() and path.name.startswith("task_")):
+        task_id = str(task_dir.name)
+        if task_id not in TASK_REGISTRY:
+            continue
+        task = create_task(task_id)
+        taxonomy = resolve_task_taxonomy(
+            task_id,
+            source_domain=str(getattr(task, "domain", "")),
+            source_task_group=str(getattr(task, "task_group", "")),
+        )
+        if str(taxonomy.domain) != str(domain) or str(taxonomy.scene_id) != str(scene_id):
+            continue
+        all_rows = _inspection_rows_from_task_dir(out_root=Path(out_root), task_dir=task_dir)
+        if not all_rows:
+            continue
+        rows = _scene_preview_rows(
+            all_rows,
+            domain=str(domain),
+            scene_id=str(scene_id),
+            task_id=str(task_id),
+        )
+        rows_by_task[task_id] = rows
+        manifest_path = task_dir / "manifest.json"
+        task_entries[task_id] = {
+            "inspection_count": int(len(rows)),
+            "source_inspection_count": int(len(all_rows)),
+            "scene_preview_rows_per_task": int(_SCENE_PREVIEW_ROWS_PER_TASK),
+            "task_manifest": str(manifest_path.relative_to(out_root).as_posix()) if manifest_path.exists() else "",
+            "task_workbook": str((task_dir / f"{task_id}.xlsx").relative_to(out_root).as_posix())
+            if (task_dir / f"{task_id}.xlsx").exists()
+            else "",
+        }
+
+    workbook_path = scene_dir / "scene_review.xlsx"
+    if not rows_by_task:
+        if workbook_path.exists():
+            workbook_path.unlink()
+        manifest = {
+            "domain": str(domain),
+            "scene_id": str(scene_id),
+            "task_count": 0,
+            "inspection_count": 0,
+            "workbook": "",
+            "tasks": {},
+        }
+        write_json_file(scene_dir / "scene_review_manifest.json", manifest)
+        return manifest
+
+    task_sheets, model_stats_sheet, model_stats_count = _write_scene_inspection_excel(
+        rows_by_task,
+        workbook_path,
+        out_root=Path(out_root),
+        domain=str(domain),
+    )
+    for task_id, sheet_name in task_sheets.items():
+        task_entries.setdefault(str(task_id), {})["sheet"] = str(sheet_name)
+
+    manifest = {
+        "domain": str(domain),
+        "scene_id": str(scene_id),
+        "task_count": int(len(rows_by_task)),
+        "inspection_count": int(sum(len(rows) for rows in rows_by_task.values())),
+        "workbook": str(workbook_path.relative_to(out_root).as_posix()),
+        "model_stats_sheet": str(model_stats_sheet),
+        "model_stats_count": int(model_stats_count),
+        "tasks": task_entries,
+    }
+    write_json_file(scene_dir / "scene_review_manifest.json", manifest)
+    return manifest
+
+
+def build_scene_review_workbooks(*, out_root: Path, scene_keys: Sequence[tuple[str, str]] | None = None) -> Dict[str, Any]:
+    """Build combined scene workbooks for selected or all scenes under out_root."""
+
+    root = Path(out_root)
+    if scene_keys is None:
+        discovered: List[tuple[str, str]] = []
+        for domain_dir in sorted(path for path in root.iterdir() if path.is_dir()):
+            for scene_dir in sorted(path for path in domain_dir.iterdir() if path.is_dir()):
+                discovered.append((str(domain_dir.name), str(scene_dir.name)))
+        scene_keys = discovered
+
+    scene_manifests: Dict[str, Any] = {}
+    for domain, scene_id in sorted({(str(domain), str(scene_id)) for domain, scene_id in scene_keys}):
+        manifest = build_scene_review_workbook(out_root=root, domain=str(domain), scene_id=str(scene_id))
+        if int(manifest.get("task_count", 0)) <= 0:
+            continue
+        scene_key = f"{domain}/{scene_id}"
+        scene_manifests[scene_key] = manifest
+        print(
+            f"[done] scene workbook: {manifest['workbook']} "
+            f"(tasks={manifest['task_count']}, rows={manifest['inspection_count']})"
+        )
+    return scene_manifests
+
+
+def _safe_variant_dir_name(query_variant: str) -> str:
     """Return filesystem-safe variant directory label."""
-    value = str(task_variant).strip()
+    value = str(query_variant).strip()
     if not value:
         return "default"
     return re.sub(r"[^a-zA-Z0-9._-]+", "_", value)
@@ -629,25 +1406,90 @@ def _build_inspection_rows(
     """Generate inspection artifacts (images/json/workbook rows) for one task."""
     rows_by_variant: Dict[str, List[Dict[str, Any]]] = {}
     task = create_task(str(task_id))
+    taxonomy = resolve_task_taxonomy(
+        str(task_id),
+        source_domain=str(getattr(task, "domain", "")),
+        source_task_group=str(getattr(task, "task_group", "")),
+    )
+    for artifact_subdir in ("images", "data"):
+        shutil.rmtree(task_dir / artifact_subdir, ignore_errors=True)
 
-    for task_variant in sorted(seed_rows_by_variant.keys()):
-        variant_dir = _safe_variant_dir_name(str(task_variant))
+    for query_variant in sorted(seed_rows_by_variant.keys()):
+        variant_dir = _safe_variant_dir_name(str(query_variant))
         image_dir = task_dir / "images" / variant_dir
         data_dir = task_dir / "data" / variant_dir
         image_dir.mkdir(parents=True, exist_ok=True)
         data_dir.mkdir(parents=True, exist_ok=True)
 
-        seed_rows = list(seed_rows_by_variant.get(str(task_variant), []))
+        seed_rows = list(seed_rows_by_variant.get(str(query_variant), []))
         for index, seed_row in enumerate(seed_rows):
             instance_seed = int(seed_row.get("instance_seed", 0))
-            generation_params: Dict[str, Any] = {}
-            if str(task_variant).strip():
-                generation_params["task_variant"] = str(task_variant)
-            output = task.generate(
-                instance_seed,
-                params=generation_params,
-                max_attempts=int(max_attempts_per_instance),
+            generation_params = dict(seed_row.get("generation_params", {}) or {})
+            generation_param_candidates: List[Dict[str, Any]] = []
+            if str(query_variant).strip():
+                forced_task_params = dict(generation_params)
+                forced_task_params["query_variant"] = str(query_variant)
+                forced_task_params["query_id"] = str(query_variant)
+                generation_param_candidates.append(forced_task_params)
+
+                query_only_params = dict(generation_params)
+                query_only_params.pop("query_variant", None)
+                query_only_params["query_variant"] = str(query_variant)
+                query_only_params["query_id"] = str(query_variant)
+                generation_param_candidates.append(query_only_params)
+
+                replay_params = dict(generation_params)
+                replay_params.setdefault("query_variant", str(query_variant))
+                replay_params.setdefault("query_id", str(query_variant))
+                generation_param_candidates.append(replay_params)
+            else:
+                # For single-sheet public tasks, trace params often include
+                # resolved scene facts plus diagnostic query bookkeeping. Those
+                # values are useful in review JSON but are not a stable replay
+                # contract for narrowed wrapper tasks, so regenerate from the
+                # sampled seed with task defaults.
+                generation_param_candidates.append({})
+
+            deduped_generation_param_candidates: List[Dict[str, Any]] = []
+            seen_generation_param_candidates: set[str] = set()
+            for candidate_params in generation_param_candidates:
+                candidate_key = repr(sorted(candidate_params.items()))
+                if candidate_key in seen_generation_param_candidates:
+                    continue
+                seen_generation_param_candidates.add(candidate_key)
+                deduped_generation_param_candidates.append(dict(candidate_params))
+
+            output = None
+            final_seed = int(instance_seed)
+            last_error: Exception | None = None
+            candidate_seeds = [int(instance_seed)]
+            candidate_seeds.extend(
+                int(hash64(int(instance_seed), f"{str(task_id)}|{str(query_variant)}|inspection", retry_index))
+                for retry_index in range(1, 33)
             )
+            for candidate_seed in candidate_seeds:
+                for candidate_params in deduped_generation_param_candidates:
+                    try:
+                        candidate_output = task.generate(
+                            int(candidate_seed),
+                            params=dict(candidate_params),
+                            max_attempts=int(max_attempts_per_instance),
+                        )
+                    except Exception as exc:
+                        last_error = exc
+                        continue
+                    if str(query_variant).strip() and resolve_review_variant_key(candidate_output) != str(query_variant):
+                        continue
+                    output = candidate_output
+                    final_seed = int(candidate_seed)
+                    break
+                if output is not None:
+                    break
+            if output is None:
+                raise RuntimeError(
+                    f"{task_id} failed to build inspection row for variant {query_variant!r} "
+                    f"after {len(candidate_seeds)} deterministic seed attempts"
+                ) from last_error
 
             image_path = image_dir / f"{index:04d}.png"
             output.image.save(image_path, format="PNG")
@@ -657,10 +1499,31 @@ def _build_inspection_rows(
             prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
             prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", output.prompt))
 
+            sanitized_trace_payload = sanitize_trace_payload_for_public_evidence(
+                output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
+                evidence_gt=output.evidence_gt,
+            )
+            output_variant = str(getattr(output, "query_variant", "") or "")
+            review_variant = resolve_review_variant_key(output)
+            query_id = str(
+                getattr(output, "query_id", "")
+                or resolve_task_query_id(query_variant=output_variant, trace_payload=sanitized_trace_payload)
+            )
+            sanitized_trace_payload = inject_taxonomy_metadata(
+                sanitized_trace_payload,
+                task_id=str(task_id),
+                taxonomy=taxonomy,
+                query_id=query_id,
+                registered_domain=str(getattr(task, "domain", "")),
+                registered_task_group=str(getattr(task, "task_group", "")),
+            )
             data_payload = {
                 "task": str(task_id),
-                "task_variant": str(getattr(output, "task_variant", "") or ""),
-                "instance_seed": int(instance_seed),
+                "domain": str(taxonomy.domain),
+                "scene_id": str(taxonomy.scene_id),
+                "query_variant": output_variant,
+                "query_id": query_id,
+                "instance_seed": int(final_seed),
                 "prompt": prompt_answer_and_evidence,
                 "prompt_variants": prompt_variants,
                 "answer_gt": output.answer_gt.to_dict(),
@@ -669,7 +1532,7 @@ def _build_inspection_rows(
                     "path": str(rel_image_path),
                     "format": "png",
                 },
-                "trace_payload": dict(output.trace_payload),
+                "trace_payload": sanitized_trace_payload,
                 "versions": dict(output.task_versions),
             }
             data_path = data_dir / f"{index:04d}.json"
@@ -679,26 +1542,33 @@ def _build_inspection_rows(
             overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
                 evidence_type=str(output.evidence_gt.type),
                 evidence_value=output.evidence_gt.value,
-                trace_payload=output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
+                trace_payload=sanitized_trace_payload,
             )
             canonical_answer = {
                 "evidence": output.evidence_gt.value,
                 "answer": output.answer_gt.value,
             }
-            output_variant = str(getattr(output, "task_variant", "") or "")
-            variant_rows = rows_by_variant.setdefault(str(output_variant), [])
+            answer_only_ground_truth = {
+                "answer": output.answer_gt.value,
+            }
+            variant_rows = rows_by_variant.setdefault(str(review_variant), [])
             variant_rows.append(
                 {
                     "task": str(task_id),
-                    "task_variant": str(output_variant),
+                    "query_variant": str(output_variant),
+                    "scene_id": str(taxonomy.scene_id),
+                    "query_id": query_id,
                     "prompt": prompt_answer_and_evidence,
                     "prompt_answer": prompt_answer,
                     "prompt_answer_only": prompt_answer,
+                    "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                    "ground_truth_answer": answer_only_ground_truth,
+                    "ground_truth_answer_and_evidence": canonical_answer,
                     "answer": canonical_answer,
                     "answer_evidence": output.evidence_gt.value,
                     "answer_type": str(output.answer_gt.type),
                     "evidence_type": str(output.evidence_gt.type),
-                    "instance_seed": int(instance_seed),
+                    "instance_seed": int(final_seed),
                     "image_path": str(rel_image_path),
                     "data_path": str(rel_data_path),
                     "overlay_evidence_type": str(overlay_evidence_type),
@@ -707,12 +1577,12 @@ def _build_inspection_rows(
             )
 
     inspection_total = 0
-    for task_variant in sorted(rows_by_variant.keys()):
-        rows_by_variant[str(task_variant)] = sorted(
-            list(rows_by_variant.get(str(task_variant), [])),
+    for query_variant in sorted(rows_by_variant.keys()):
+        rows_by_variant[str(query_variant)] = sorted(
+            list(rows_by_variant.get(str(query_variant), [])),
             key=lambda item: int(item.get("instance_seed", 0)),
         )
-        inspection_total += int(len(rows_by_variant[str(task_variant)]))
+        inspection_total += int(len(rows_by_variant[str(query_variant)]))
 
     workbook_path = task_dir / f"{task_id}.xlsx"
     workbook_sheets = _write_inspection_excel(rows_by_variant, workbook_path, out_root=out_root)
@@ -729,6 +1599,21 @@ def _build_inspection_rows(
     }
     write_json_file(task_dir / "manifest.json", manifest)
     return manifest
+
+
+def _group_random_inspection_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group one public-task random sample for workbook sheets without changing total sample count."""
+
+    grouped: Dict[str, List[Dict[str, Any]]] = {}
+    for row in rows:
+        review_key = str(
+            row.get("review_variant")
+            or row.get("query_id")
+            or row.get("query_variant")
+            or ""
+        )
+        grouped.setdefault(str(review_key), []).append(dict(row))
+    return {str(key): list(value) for key, value in sorted(grouped.items(), key=lambda item: item[0])}
 
 
 def main() -> int:
@@ -759,6 +1644,7 @@ def main() -> int:
             "random_count": int(args.random_count),
             "count_per_variant": int(args.count_per_variant),
             "inspection_count_per_variant": int(args.inspection_count_per_variant),
+            "balanced_inspection_by_query": bool(args.balanced_inspection_by_query),
             "max_attempts_per_instance": int(args.max_attempts_per_instance),
             "max_total_samples_per_task": int(args.max_total_samples_per_task),
             "workers": int(args.workers),
@@ -767,18 +1653,27 @@ def main() -> int:
     }
 
     failed_distribution_tasks: List[str] = []
+    touched_scene_keys: set[tuple[str, str]] = set()
 
     for task_id in task_ids:
         task = create_task(str(task_id))
+        taxonomy = resolve_task_taxonomy(
+            str(task_id),
+            source_domain=str(getattr(task, "domain", "")),
+            source_task_group=str(getattr(task, "task_group", "")),
+        )
         task_dir = _resolve_task_review_dir(out_root=out_root, task_id=str(task_id), task_obj=task)
         task_dir.mkdir(parents=True, exist_ok=True)
 
         task_summary: Dict[str, Any] = {
             "task_id": str(task_id),
-            "domain": str(task.domain),
+            "domain": str(taxonomy.domain),
+            "scene_id": str(taxonomy.scene_id),
+            "source_domain": str(task.domain),
             "task_group": str(task.task_group),
             "reports": {},
         }
+        touched_scene_keys.add((str(taxonomy.domain), str(taxonomy.scene_id)))
 
         random_rows: List[Dict[str, Any]] = []
         random_report: Dict[str, Any] | None = None
@@ -798,7 +1693,7 @@ def main() -> int:
             write_json_file(random_path, random_report)
             task_summary["reports"]["random_review"] = str(random_path.relative_to(out_root).as_posix())
 
-            has_variants = bool(random_report["task_variant_distribution"]["has_variants"])
+            has_variants = bool(random_report["query_variant_distribution"]["has_variants"])
             variant_rows: Dict[str, List[Dict[str, Any]]] | None = None
             collection_meta: Dict[str, Any] | None = None
             if has_variants:
@@ -832,7 +1727,8 @@ def main() -> int:
             distribution_report = _build_distribution_review_report(
                 task_id=str(task_id),
                 task_group=str(task.task_group),
-                domain=str(task.domain),
+                domain=str(taxonomy.domain),
+                scene_id=str(taxonomy.scene_id),
                 random_rows=random_rows,
                 random_report=random_report,
                 variant_rows=variant_rows,
@@ -849,13 +1745,21 @@ def main() -> int:
             print(f"[{status}] {task_id} distribution review")
 
         if str(args.mode) in {"full", "inspection"}:
-            if str(args.mode) == "inspection":
-                random_rows_for_inspection = None
-            else:
-                random_rows_for_inspection = random_rows
-
             seed_rows_by_variant: Dict[str, List[Dict[str, Any]]]
-            if random_report is None:
+            random_rows_for_inspection: List[Dict[str, Any]] | None = None
+            if not bool(args.balanced_inspection_by_query):
+                random_rows_for_inspection = list(random_rows)
+                if not random_rows_for_inspection:
+                    random_rows_for_inspection = generate_random_samples(
+                        task_id=str(task_id),
+                        count=int(args.random_count),
+                        seed=int(args.seed),
+                        max_attempts_per_instance=int(args.max_attempts_per_instance),
+                        workers=int(args.workers),
+                        collector=_answer_collector,
+                    )
+                seed_rows_by_variant = _group_random_inspection_rows(random_rows_for_inspection)
+            elif random_report is None:
                 inspection_collected = collect_variant_samples(
                     task_id=str(task_id),
                     target_count_per_variant=int(args.inspection_count_per_variant),
@@ -882,7 +1786,7 @@ def main() -> int:
                         collector=_answer_collector,
                     )
                     seed_rows_by_variant = {"": list(fallback_rows)}
-            elif bool(random_report["task_variant_distribution"]["has_variants"]):
+            elif bool(random_report["query_variant_distribution"]["has_variants"]):
                 if distribution_variant_rows is not None and str(args.mode) == "full":
                     seed_rows_by_variant = {
                         str(variant): list(rows[: int(args.inspection_count_per_variant)])
@@ -942,6 +1846,11 @@ def main() -> int:
         "distribution_tasks_failed": int(len(failed_distribution_tasks)),
         "failed_distribution_task_ids": sorted(failed_distribution_tasks),
     }
+    if str(args.mode) in {"full", "inspection"} and not bool(args.skip_scene_workbooks):
+        summary["scene_workbooks"] = build_scene_review_workbooks(
+            out_root=out_root,
+            scene_keys=sorted(touched_scene_keys),
+        )
     summary_path = out_root / "review_summary.json"
     write_json_file(summary_path, summary)
     print(f"[done] wrote review summary: {summary_path}")

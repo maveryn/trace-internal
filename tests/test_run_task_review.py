@@ -26,10 +26,10 @@ class _DummyVariantTask:
 
     def generate(self, instance_seed: int, *, params: dict[str, object], max_attempts: int) -> TaskOutput:
         self.calls.append((int(instance_seed), dict(params)))
-        task_variant = str(params.get("task_variant", "default"))
+        query_variant = str(params.get("query_variant", "default"))
         image = Image.new("RGB", (64, 64), color=(255, 255, 255))
         return TaskOutput(
-            prompt=f"prompt for {task_variant}",
+            prompt=f"prompt for {query_variant}",
             answer_gt=TypedValue(type="integer", value=1),
             evidence_gt=TypedValue(type="bbox_set", value=[[8, 8, 24, 24]]),
             image=image,
@@ -37,7 +37,7 @@ class _DummyVariantTask:
             trace_payload={"projected_evidence": {}},
             complexity=TaskComplexity(complexity_score=1.0, complexity_components={}),
             task_versions={},
-            task_variant=task_variant,
+            query_variant=query_variant,
             prompt_variants={
                 "answer_only": '{"answer":1}',
                 "answer_and_evidence": '{"evidence":[[8,8,24,24]],"answer":1}',
@@ -45,7 +45,7 @@ class _DummyVariantTask:
         )
 
 
-def test_build_inspection_rows_passes_requested_task_variant(
+def test_build_inspection_rows_passes_requested_query_variant(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -69,18 +69,18 @@ def test_build_inspection_rows_passes_requested_task_variant(
     )
 
     assert dummy_task.calls == [
-        (101, {"task_variant": "variant_alpha"}),
-        (202, {"task_variant": "variant_beta"}),
+        (101, {"query_variant": "variant_alpha", "query_variant": "variant_alpha", "query_id": "variant_alpha"}),
+        (202, {"query_variant": "variant_beta", "query_variant": "variant_beta", "query_id": "variant_beta"}),
     ]
     assert manifest["variants"] == {"variant_alpha": 1, "variant_beta": 1}
 
     alpha_payload = json.loads((task_dir / "data" / "variant_alpha" / "0000.json").read_text(encoding="utf-8"))
     beta_payload = json.loads((task_dir / "data" / "variant_beta" / "0000.json").read_text(encoding="utf-8"))
-    assert alpha_payload["task_variant"] == "variant_alpha"
-    assert beta_payload["task_variant"] == "variant_beta"
+    assert alpha_payload["query_variant"] == "variant_alpha"
+    assert beta_payload["query_variant"] == "variant_beta"
 
 
-def test_resolve_task_review_dir_uses_domain_scoped_layout() -> None:
+def test_resolve_task_review_dir_uses_domain_scene_scoped_layout() -> None:
     dummy_task = _DummyVariantTask()
     out_root = Path("/tmp/task-reviews")
     task_dir = review._resolve_task_review_dir(
@@ -88,7 +88,7 @@ def test_resolve_task_review_dir_uses_domain_scoped_layout() -> None:
         task_id="task_dummy_review_variant",
         task_obj=dummy_task,
     )
-    assert task_dir == out_root / "dummy" / "task_dummy_review_variant"
+    assert task_dir == out_root / "dummy" / "review" / "task_dummy_review_variant"
 
 
 def test_review_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:

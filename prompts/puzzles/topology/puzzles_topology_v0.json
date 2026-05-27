@@ -1,0 +1,215 @@
+{
+  "bundle_id": "puzzles_topology_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "cyclic_order_match_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "string_topology_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "maze_exit_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "pipe_flow_repair_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "voxel_ladder_route_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "voxel_ladder_route_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:topology_cyclic_order_puzzle": [
+      "object_description"
+    ],
+    "query:cyclic_order_equivalent_label": [
+      "token_render_style_instruction"
+    ],
+    "scene:topology_string_component_puzzle": [
+      "object_description"
+    ],
+    "scene:topology_maze_exit_puzzle": [
+      "object_description"
+    ],
+    "scene:topology_pipe_flow_puzzle": [
+      "object_description"
+    ],
+    "scene:topology_voxel_ladder": [
+      "object_description"
+    ],
+    "query:exit_reachability_label": [
+      "target_reachability_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "topology_cyclic_order_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "topology_string_component_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "topology_maze_exit_puzzle": [
+      "The image shows {object_description}.",
+      "The maze shows {object_description}.",
+      "This maze shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "topology_pipe_flow_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "topology_voxel_ladder": [
+      "The image shows {object_description}.",
+      "The voxel maze shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "cyclic_order_equivalent_label": [
+      "{token_render_style_instruction} Exactly one option loop is equivalent to the reference loop. Rotations count as equivalent; reversed or reflected order does not.",
+      "{token_render_style_instruction} Select the only option that preserves the same cyclic order as the reference. Rotations are allowed, but reversal is not.",
+      "{token_render_style_instruction} Which labeled option matches the reference up to rotation, without reversing the order?",
+      "{token_render_style_instruction} Identify the single valid option loop. A valid loop may be rotated but not reflected.",
+      "{token_render_style_instruction} What label marks the equivalent option loop, treating rotated loops as the same and reflected loops as different?"
+    ],
+    "open_rope_count": [
+      "How many open-ended ropes are shown?",
+      "Count only the separate ropes with two visible endpoints.",
+      "How many string pieces are open rather than closed loops?",
+      "Count the open rope components in the diagram.",
+      "How many separate open strings are visible?"
+    ],
+    "closed_loop_count": [
+      "How many separate string pieces form closed loops, including plain rings and knotted closed loops?",
+      "Count only the components that are closed loops, including rings and knotted loops.",
+      "How many closed string components are visible, counting knotted closed loops as closed?",
+      "Count the separate pieces whose ends join to form a loop or ring, including knotted closed loops.",
+      "How many rope components are closed rather than open-ended, including any knotted closed loops?"
+    ],
+    "knotted_component_count": [
+      "How many separate string pieces contain a knot?",
+      "Count only the components with a visible self-crossing knot.",
+      "How many rope components are knotted?",
+      "Count the separate strings that contain a knot, whether or not they are also closed loops.",
+      "How many components show a knot?"
+    ],
+    "exit_reachability_label": [
+      "Which labeled exit is {target_reachability_description} from START? There is exactly one such exit.",
+      "Identify the only boundary exit label that is {target_reachability_description} from START.",
+      "From START, which exit label is {target_reachability_description} through the maze corridors?",
+      "Find the single labeled exit that is {target_reachability_description} without crossing a wall.",
+      "What is the label of the {target_reachability_description} exit from START?"
+    ],
+    "reachable_exit_count": [
+      "How many labeled exits are reachable from START?",
+      "Count the boundary exits that have an open corridor path from START.",
+      "Starting at START, how many labeled exits can be reached without crossing a wall?",
+      "What is the number of reachable exit labels from START?",
+      "Count all exit labels connected to START through open maze corridors."
+    ],
+    "flow_repair_tile_label": [
+      "Flow can pass only through matching pipe openings on adjacent tile edges. You may rotate an option before placing it. Which option fills the black 2x2 gap so the green start marker connects to the red triangular finish flag?",
+      "Choose the labeled 2x2 piece that can be rotated and placed in the black gap to complete the path from the green start marker to the red triangular finish flag.",
+      "Find the single option whose pipe openings, after any needed rotation, make a continuous path from the green start marker to the red triangular finish flag through the black 2x2 gap.",
+      "Which labeled 2x2 pipe piece can be rotated to fit the missing black region and restore flow from the green start marker to the red triangular finish flag?",
+      "Select the option that can be rotated to complete the missing 2x2 conduit block so the green start marker connects to the red triangular finish flag through matching openings."
+    ],
+    "checkpoint_sequence_label": [
+      "Walk from START to GOAL along adjacent cube tops, using black ladders to change height. Which option letter shows the checkpoint color sequence passed on the shortest route?",
+      "Following only adjacent cube tops and black ladders, choose the option letter whose color-swatch sequence matches the checkpoints on the shortest START-to-GOAL route.",
+      "Which displayed option gives the color order of checkpoint cubes encountered on the shortest valid route from START to GOAL?",
+      "Use the cube tops and ladders to trace the shortest START-to-GOAL route. What option letter shows the checkpoint color order?",
+      "What option letter lists the checkpoint colors passed on the shortest valid route from START to GOAL?"
+    ],
+    "unreachable_checkpoint_label": [
+      "Exactly one colored checkpoint cube cannot be reached from START by walking on adjacent cube tops and using black ladders. What is its color name?",
+      "Which colored checkpoint is unreachable from START through the cube maze and ladders?",
+      "Find the only colored checkpoint cube that is not connected to START by valid cube-top and ladder moves. What is its color name?",
+      "What color is the single unreachable checkpoint cube?",
+      "Starting from START, which checkpoint color cannot be reached through the connected cube tops and ladders?"
+    ],
+    "reachable_checkpoint_count": [
+      "How many colored checkpoint cubes are reachable from START by walking on adjacent cube tops and using black ladders?",
+      "Count the colored checkpoints connected to START through valid cube-top and ladder moves.",
+      "Starting at START, how many colored checkpoint cubes can be reached without leaving the cube platforms?",
+      "What is the number of reachable colored checkpoints from START?",
+      "Count all colored checkpoint cubes that are reachable from START through the voxel maze."
+    ],
+    "shortest_ladder_count": [
+      "How many black ladders are used on the shortest valid route from START to GOAL?",
+      "Trace the shortest START-to-GOAL route. What is the number of ladders used?",
+      "Count the black ladders on the shortest route from START to GOAL.",
+      "What is the fewest number of ladders needed to reach GOAL from START?",
+      "Following the shortest valid route through cube tops and ladders, how many ladders are used?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

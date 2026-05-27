@@ -81,43 +81,6 @@ def build_physics_complexity(
     )
 
 
-def build_physics_force_diagram_complexity(
-    *,
-    task_group_defaults: Mapping[str, Any],
-    task_id: str,
-    scene_variant: str,
-    query_variant: str,
-    arrow_count: int,
-    relevant_arrow_count: int,
-    target_force: int,
-) -> TaskComplexity:
-    """Build normalized complexity for mechanics force-diagram scenes."""
-
-    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
-    visual_scan = clamp_unit_interval(
-        (0.70 * normalize_linear(float(arrow_count), min_value=2.0, max_value=6.0))
-        + (0.08 if str(scene_variant) == "textured_block" else 0.0)
-    )
-    force_reasoning = clamp_unit_interval(
-        (0.42 if str(query_variant).startswith("net_") else 0.58)
-        + (0.06 * normalize_linear(float(target_force), min_value=0.0, max_value=12.0))
-    )
-    ambiguity = clamp_unit_interval(
-        (0.45 * normalize_linear(float(relevant_arrow_count), min_value=2.0, max_value=4.0))
-        + (0.25 if int(target_force) == 0 else 0.0)
-    )
-    output_burden = normalize_linear(float(relevant_arrow_count), min_value=2.0, max_value=4.0)
-    return build_physics_complexity(
-        weights=weights,
-        components={
-            "visual_scan": float(visual_scan),
-            "force_reasoning": float(force_reasoning),
-            "ambiguity": float(ambiguity),
-            "output_burden": float(output_burden),
-        },
-    )
-
-
 def build_physics_lever_balance_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
@@ -265,10 +228,15 @@ def build_physics_spring_extension_complexity(
         + (0.10 if str(scene_variant) == "staggered_springs" else 0.0)
         + (0.14 if str(scene_variant) == "textured_spring" else 0.0)
     )
+    variant_reasoning = {
+        "extension_difference": 0.00,
+        "missing_extension_for_weight": 0.50,
+        "missing_weight_for_extension": 1.00,
+    }.get(str(query_variant), 1.00)
     proportional_reasoning = clamp_unit_interval(
-        (0.44 if str(query_variant) == "extension_difference" else 0.62)
-        + (0.12 * normalize_linear(float(scale_factor), min_value=1.0, max_value=3.0))
-        + (0.10 * normalize_linear(float(target_answer), min_value=1.0, max_value=12.0))
+        float(variant_reasoning)
+        + (0.10 * normalize_linear(float(scale_factor), min_value=1.0, max_value=3.0))
+        + (0.05 * normalize_linear(float(target_answer), min_value=1.0, max_value=12.0))
     )
     ambiguity = clamp_unit_interval(
         (0.18 if str(query_variant) == "missing_extension_for_weight" else 0.08)
@@ -287,13 +255,350 @@ def build_physics_spring_extension_complexity(
     )
 
 
+def build_physics_pulley_mechanical_advantage_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    support_segment_count: int,
+    disconnected_segment_count: int,
+    target_answer: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for mechanics pulley-system scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.34 * normalize_linear(float(support_segment_count), min_value=2.0, max_value=6.0))
+        + (0.30 * normalize_linear(float(disconnected_segment_count), min_value=2.0, max_value=6.0))
+        + (0.12 if str(scene_variant) == "compact_block" else 0.0)
+        + (0.16 if str(scene_variant) == "tall_block" else 0.0)
+    )
+    pulley_reasoning = clamp_unit_interval(
+        0.58
+        + (0.16 * normalize_linear(float(support_segment_count), min_value=2.0, max_value=6.0))
+        + (0.08 * normalize_linear(float(target_answer), min_value=4.0, max_value=108.0))
+        + (0.05 if str(query_variant) == "load_force_from_effort" else 0.0)
+    )
+    ambiguity = clamp_unit_interval(
+        (0.18 * normalize_linear(float(evidence_count), min_value=4.0, max_value=8.0))
+        + (0.22 * normalize_linear(float(disconnected_segment_count), min_value=2.0, max_value=6.0))
+        + (0.08 if int(support_segment_count) >= 5 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=4.0, max_value=8.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "pulley_reasoning": float(pulley_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_sticky_collision_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    component_abs_sum: int,
+    total_mass: int,
+    option_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for perpendicular sticky-collision scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.26 * normalize_linear(float(option_count), min_value=4.0, max_value=6.0))
+        + (0.20 * normalize_linear(float(evidence_count), min_value=1.0, max_value=4.0))
+        + (0.10 if str(scene_variant) == "compact_table" else 0.0)
+        + (0.12 if str(scene_variant) == "gridded_table" else 0.0)
+    )
+    collision_reasoning = clamp_unit_interval(
+        {
+            "direction_choice": 0.54,
+            "velocity_component": 0.66,
+        }.get(str(query_variant), 0.60)
+        + (0.12 * normalize_linear(float(component_abs_sum), min_value=2.0, max_value=12.0))
+        + (0.08 * normalize_linear(float(total_mass), min_value=2.0, max_value=12.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.12 if str(query_variant) == "direction_choice" else 0.08)
+        + (0.14 if int(option_count) >= 6 else 0.0)
+        + (0.06 if str(scene_variant) == "compact_table" else 0.0)
+    )
+    output_burden = clamp_unit_interval(
+        0.18 if str(query_variant) == "direction_choice" else 0.52
+    )
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "collision_reasoning": float(collision_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_hydraulic_piston_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    mechanical_advantage: int,
+    target_answer: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for hydraulic-piston Pascal-law scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.32 * normalize_linear(float(evidence_count), min_value=3.0, max_value=4.0))
+        + (0.20 * normalize_linear(float(mechanical_advantage), min_value=2.0, max_value=6.0))
+        + (0.12 if str(scene_variant) == "compact_frame" else 0.0)
+        + (0.14 if str(scene_variant) == "tall_columns" else 0.0)
+    )
+    pascal_reasoning = clamp_unit_interval(
+        {
+            "missing_output_force": 0.46,
+            "missing_input_force": 0.56,
+            "missing_piston_area": 0.64,
+        }.get(str(query_variant), 0.56)
+        + (0.16 * normalize_linear(float(mechanical_advantage), min_value=2.0, max_value=6.0))
+        + (0.08 * normalize_linear(float(target_answer), min_value=4.0, max_value=72.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.12 if str(query_variant) == "missing_piston_area" else 0.08)
+        + (0.10 if int(mechanical_advantage) in {2, 6} else 0.0)
+    )
+    output_burden = normalize_linear(float(target_answer), min_value=4.0, max_value=72.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "pascal_reasoning": float(pascal_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_pv_diagram_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    work_mode: str | None,
+    target_sign: str | None,
+    work_magnitude: int,
+    option_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for pressure-volume diagram scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.24 * normalize_linear(float(option_count), min_value=0.0, max_value=6.0))
+        + (0.18 * normalize_linear(float(evidence_count), min_value=1.0, max_value=2.0))
+        + (0.10 if str(scene_variant) == "paper_grid" else 0.0)
+        + (0.12 if str(scene_variant) == "bold_grid" else 0.0)
+    )
+    pv_reasoning = clamp_unit_interval(
+        {
+            "work_value": 0.60,
+            "process_sign_choice": 0.40,
+        }.get(str(query_variant), 0.50)
+        + (0.16 if str(work_mode) == "rectangular_cycle" else 0.0)
+        + (0.12 * normalize_linear(float(abs(int(work_magnitude))), min_value=2.0, max_value=70.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.16 if str(query_variant) == "process_sign_choice" else 0.10)
+        + (0.08 if str(target_sign) == "zero" else 0.0)
+        + (0.08 if str(work_mode) == "rectangular_cycle" else 0.0)
+    )
+    output_burden = 0.22 if str(query_variant) == "process_sign_choice" else normalize_linear(
+        float(abs(int(work_magnitude))),
+        min_value=2.0,
+        max_value=70.0,
+    )
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "pv_reasoning": float(pv_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_electrostatics_field_map_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    direction_mode: str | None,
+    charge_count: int,
+    option_count: int,
+    target_answer_magnitude: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for electrostatics field-map scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.28 * normalize_linear(float(charge_count), min_value=2.0, max_value=4.0))
+        + (0.26 * normalize_linear(float(option_count), min_value=0.0, max_value=8.0))
+        + (0.10 if str(scene_variant) == "paper_grid" else 0.0)
+        + (0.12 if str(scene_variant) == "dense_grid" else 0.0)
+    )
+    field_reasoning = clamp_unit_interval(
+        {
+            "field_direction_choice": 0.58,
+            "zero_field_point_label": 0.52,
+            "potential_value": 0.64,
+        }.get(str(query_variant), 0.56)
+        + (0.14 if str(direction_mode) == "force_on_negative_charge" else 0.0)
+        + (0.08 * normalize_linear(float(abs(int(target_answer_magnitude))), min_value=0.0, max_value=12.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.16 if str(query_variant) in {"field_direction_choice", "zero_field_point_label"} else 0.08)
+        + (0.10 if int(option_count) >= 6 else 0.0)
+        + (0.08 if int(charge_count) >= 3 else 0.0)
+    )
+    output_burden = clamp_unit_interval(
+        0.24
+        if str(query_variant) in {"field_direction_choice", "zero_field_point_label"}
+        else normalize_linear(float(abs(int(target_answer_magnitude))), min_value=0.0, max_value=12.0)
+    )
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "field_reasoning": float(field_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_magnetism_force_field_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    charge_sign: int,
+    option_count: int,
+    target_answer_magnitude: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for magnetism force-field scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.24 * normalize_linear(float(option_count), min_value=0.0, max_value=8.0))
+        + (0.20 * normalize_linear(float(evidence_count), min_value=1.0, max_value=2.0))
+        + (0.10 if str(scene_variant) == "field_grid" else 0.0)
+        + (0.12 if str(scene_variant) == "lab_card" else 0.0)
+    )
+    magnetic_reasoning = clamp_unit_interval(
+        {
+            "force_direction_choice": 0.58,
+            "missing_quantity_value": 0.48,
+            "circular_path_radius_value": 0.64,
+        }.get(str(query_variant), 0.52)
+        + (0.12 if int(charge_sign) < 0 and str(query_variant) == "force_direction_choice" else 0.0)
+        + (0.08 * normalize_linear(float(abs(int(target_answer_magnitude))), min_value=0.0, max_value=96.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.16 if str(query_variant) == "force_direction_choice" else 0.08)
+        + (0.10 if int(option_count) >= 6 else 0.0)
+        + (0.06 if str(scene_variant) == "field_grid" else 0.0)
+    )
+    output_burden = clamp_unit_interval(
+        0.24
+        if str(query_variant) == "force_direction_choice"
+        else normalize_linear(float(abs(int(target_answer_magnitude))), min_value=1.0, max_value=96.0)
+    )
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "magnetic_reasoning": float(magnetic_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
+def build_physics_waves_interference_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    option_count: int,
+    path_difference_steps: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for wave-interference scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.26 * normalize_linear(float(option_count), min_value=0.0, max_value=8.0))
+        + (0.20 * normalize_linear(float(evidence_count), min_value=1.0, max_value=2.0))
+        + (0.10 if str(scene_variant) == "grid_tank" else 0.0)
+        + (0.12 if str(scene_variant) == "lab_sheet" else 0.0)
+    )
+    wave_reasoning = clamp_unit_interval(
+        {
+            "interference_point_choice": 0.62,
+            "path_difference_value": 0.56,
+        }.get(str(query_variant), 0.56)
+        + (0.08 * normalize_linear(float(abs(int(path_difference_steps))), min_value=0.0, max_value=7.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.18 if str(query_variant) == "interference_point_choice" else 0.10)
+        + (0.10 if int(option_count) >= 6 else 0.0)
+        + (0.06 if str(scene_variant) == "grid_tank" else 0.0)
+    )
+    output_burden = clamp_unit_interval(
+        0.24
+        if str(query_variant) == "interference_point_choice"
+        else normalize_linear(float(abs(int(path_difference_steps))), min_value=1.0, max_value=7.0)
+    )
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "wave_reasoning": float(wave_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_physics_circuit_resistance_complexity",
     "build_physics_complexity",
-    "build_physics_force_diagram_complexity",
+    "build_physics_electrostatics_field_map_complexity",
     "build_physics_lever_balance_complexity",
+    "build_physics_magnetism_force_field_complexity",
     "build_physics_optics_ray_trace_complexity",
+    "build_physics_pv_diagram_complexity",
+    "build_physics_pulley_mechanical_advantage_complexity",
     "build_physics_spring_extension_complexity",
+    "build_physics_sticky_collision_complexity",
+    "build_physics_waves_interference_complexity",
     "clamp_unit_interval",
     "normalize_int_with_bounds",
     "resolve_physics_complexity_weights",

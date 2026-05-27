@@ -1,0 +1,158 @@
+"""Contracts for area-partition theorem geometry tasks."""
+
+from __future__ import annotations
+
+import pytest
+
+from trace.tasks.geometry.measurement.area_partition import (
+    PARALLELOGRAM_SCENE_ID,
+    TRIANGLE_SCENE_ID,
+    GeometryParallelogramAreaPartitionTotalAreaValueTask,
+    GeometryTriangleAreaPartitionTotalAreaValueTask,
+)
+
+TASK_CLASSES = (
+    GeometryParallelogramAreaPartitionTotalAreaValueTask,
+    GeometryTriangleAreaPartitionTotalAreaValueTask,
+)
+
+QUERY_IDS_BY_TASK = {
+    GeometryParallelogramAreaPartitionTotalAreaValueTask: (
+        "total_area_from_shaded_partition",
+    ),
+    GeometryTriangleAreaPartitionTotalAreaValueTask: (
+        "total_area_from_shaded_partition",
+    ),
+}
+
+SCENE_ID_BY_TASK = {
+    GeometryParallelogramAreaPartitionTotalAreaValueTask: PARALLELOGRAM_SCENE_ID,
+    GeometryTriangleAreaPartitionTotalAreaValueTask: TRIANGLE_SCENE_ID,
+}
+
+VARIANTS_BY_TASK = {
+    GeometryParallelogramAreaPartitionTotalAreaValueTask: {
+        "parallelogram_diagonals_quarter",
+        "parallelogram_diagonals_midpoint_eighth",
+    },
+    GeometryTriangleAreaPartitionTotalAreaValueTask: {
+        "triangle_median_half",
+        "triangle_midsegment_quarter",
+        "triangle_medians_sixth",
+    },
+}
+
+DENOMINATORS_BY_TASK = {
+    GeometryParallelogramAreaPartitionTotalAreaValueTask: {4, 8},
+    GeometryTriangleAreaPartitionTotalAreaValueTask: {2, 4, 6},
+}
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
+    task = task_cls()
+    out = task.generate(62001, params={}, max_attempts=20)
+    scene_id = SCENE_ID_BY_TASK[task_cls]
+
+    assert out.scene_id == scene_id
+    assert out.query_variant == "default"
+    assert out.query_id == "total_area_from_shaded_partition"
+    assert out.answer_gt.type == "number"
+    assert out.evidence_gt.type == "bbox_set"
+    assert len(out.evidence_gt.value) == 4
+    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert '"answer"' in out.prompt_variants["answer_only"]
+
+    trace = out.trace_payload
+    assert trace["query_spec"]["scene_id"] == scene_id
+    assert trace["scene_ir"]["scene_id"] == scene_id
+    assert trace["witness_symbolic"]["scene_id"] == scene_id
+    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == out.query_id
+    assert trace["execution_trace"]["query_id"] == out.query_id
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+
+    shaded_area = int(trace["execution_trace"]["shaded_area"])
+    denominator = int(trace["execution_trace"]["shaded_fraction_denominator"])
+    assert denominator in DENOMINATORS_BY_TASK[task_cls]
+    assert trace["execution_trace"]["shaded_fraction_numerator"] == 1
+    assert out.answer_gt.value == pytest.approx(float(shaded_area * denominator))
+    assert trace["execution_trace"]["answer_value"] == pytest.approx(
+        float(shaded_area * denominator)
+    )
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_tasks_are_deterministic(task_cls) -> None:
+    task = task_cls()
+    params = {}
+    out_a = task.generate(62011, params=params, max_attempts=20)
+    out_b = task.generate(62011, params=params, max_attempts=20)
+
+    assert out_a.prompt == out_b.prompt
+    assert out_a.answer_gt == out_b.answer_gt
+    assert out_a.evidence_gt == out_b.evidence_gt
+    assert (
+        out_a.trace_payload["execution_trace"]
+        == out_b.trace_payload["execution_trace"]
+    )
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_tasks_support_every_explicit_query(task_cls) -> None:
+    task = task_cls()
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(
+            62021 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "number"
+        assert out.trace_payload["query_spec"]["params"][
+            "query_variant_probabilities"
+        ] == {query_id: 1.0}
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_tasks_sample_all_scene_variants(task_cls) -> None:
+    task = task_cls()
+    variants = set()
+    denominators = set()
+    for index in range(18):
+        out = task.generate(
+            62041 + index,
+            params={"_sampling_index": index},
+            max_attempts=20,
+        )
+        trace = out.trace_payload["execution_trace"]
+        variants.add(trace["scene_variant"])
+        denominators.add(trace["shaded_fraction_denominator"])
+
+    assert variants == VARIANTS_BY_TASK[task_cls]
+    assert denominators == DENOMINATORS_BY_TASK[task_cls]
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_area_partition_evidence_stays_inside_canvas(task_cls) -> None:
+    task = task_cls()
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(
+            62061 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        width, height = out.image.size
+        for x0, y0, x1, y1 in out.evidence_gt.value:
+            assert 0.0 <= x0 < x1 <= float(width)
+            assert 0.0 <= y0 < y1 <= float(height)
+            assert (x1 - x0) > 8.0
+            assert (y1 - y0) > 8.0
+
+
+def test_area_partition_tasks_reject_unknown_query_id() -> None:
+    for task_cls in TASK_CLASSES:
+        task = task_cls()
+        with pytest.raises(ValueError):
+            task.generate(62031, params={"query_id": "not_a_query"}, max_attempts=20)

@@ -7,10 +7,15 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.text_rendering import load_font
 from .drawing import draw_centered_text, draw_rounded_rect
 from .option_layout import centered_option_grid_shape, centered_option_row_counts
-from .overlay_common import PuzzleOverlayRenderParams, SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS
+from .overlay_common import (
+    PuzzleOverlayRenderParams,
+    SUPPORTED_PUZZLE_OVERLAY_MARK_SHAPES,
+    SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS,
+)
 
 
 @dataclass(frozen=True)
@@ -23,12 +28,6 @@ class RenderedPuzzleOverlayScene:
     option_choice_bbox_map: Dict[str, List[float]]
     reference_panel_bbox_px: List[float]
     source_sheet_bbox_map: Dict[str, List[float]]
-
-
-def _round_bbox(bbox: Sequence[float]) -> List[float]:
-    """Round one bbox to trace precision."""
-
-    return [round(float(value), 3) for value in bbox]
 
 
 def _draw_paper(
@@ -124,18 +123,51 @@ def _draw_marks(
     """Draw filled marks on one sheet and return traced entities."""
 
     entities: List[Dict[str, Any]] = []
+    mark_shape = str(render_params.mark_shape)
+    if mark_shape not in set(SUPPORTED_PUZZLE_OVERLAY_MARK_SHAPES):
+        raise ValueError(f"unsupported puzzle overlay mark_shape: {mark_shape}")
     for mark_spec in mark_specs:
         cell_x = int(mark_spec["cell"][0])
         cell_y = int(mark_spec["cell"][1])
         bbox = _mark_bbox(sheet_bbox, grid_size=int(grid_size), cell_x=int(cell_x), cell_y=int(cell_y))
-        draw.ellipse(
-            bbox,
-            fill=render_params.mark_fill_rgb,
-            outline=render_params.mark_outline_rgb,
-            width=max(1, int(render_params.border_width_px - 1)),
-        )
+        outline_width = max(1, int(render_params.border_width_px - 1))
+        if mark_shape == "circle":
+            draw.ellipse(
+                bbox,
+                fill=render_params.mark_fill_rgb,
+                outline=render_params.mark_outline_rgb,
+                width=outline_width,
+            )
+        elif mark_shape == "square":
+            draw.rectangle(
+                bbox,
+                fill=render_params.mark_fill_rgb,
+                outline=render_params.mark_outline_rgb,
+                width=outline_width,
+            )
+        elif mark_shape == "rounded_square":
+            radius = max(2, int(0.18 * min(float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1]))))
+            draw_rounded_rect(
+                draw,
+                bbox,
+                radius=radius,
+                fill=render_params.mark_fill_rgb,
+                outline=render_params.mark_outline_rgb,
+                width=outline_width,
+            )
+        else:
+            center_x = float(0.5 * (bbox[0] + bbox[2]))
+            center_y = float(0.5 * (bbox[1] + bbox[3]))
+            points = [
+                (center_x, float(bbox[1])),
+                (float(bbox[2]), center_y),
+                (center_x, float(bbox[3])),
+                (float(bbox[0]), center_y),
+            ]
+            draw.polygon(points, fill=render_params.mark_fill_rgb)
+            draw.line(points + [points[0]], fill=render_params.mark_outline_rgb, width=outline_width, joint="curve")
         attrs = dict(base_attrs)
-        attrs.update({"cell": [int(cell_x), int(cell_y)]})
+        attrs.update({"cell": [int(cell_x), int(cell_y)], "mark_shape": str(mark_shape)})
         entities.append(
             {
                 "entity_id": f"{str(entity_prefix)}_{str(mark_spec['mark_id'])}",

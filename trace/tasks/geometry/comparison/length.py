@@ -1,18 +1,13 @@
 """Graph-paper geometry comparison task over multiple labeled line segments."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from PIL import ImageDraw
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.comparison_sampling import (
     ComparisonGapMetrics,
     comparison_gap_is_valid,
@@ -67,11 +62,9 @@ from .shared import (
     slot_centers_graph_units,
 )
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for length-comparison generation."""
-
     canvas_size_min: int = COMPARISON_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COMPARISON_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = COMPARISON_SHARED_DEFAULTS.graph_cells_min
@@ -89,21 +82,17 @@ class _TaskDefaults:
     max_abs_vector_component: int = 10
     min_absolute_gap_units: float = 2.0
 
-
 @dataclass(frozen=True)
 class _SegmentObject:
     """One labeled segment object rendered in the comparison scene."""
-
     label: str
     endpoint_a: Point
     endpoint_b: Point
     length_units: int
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-segment comparison instance."""
-
     query_type: str
     object_count: int
     objects: Tuple[_SegmentObject, ...]
@@ -113,14 +102,12 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "comparison")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_comparison_length",
+    task_id="source_geometry_comparison_length",
 )
-
 
 def _length_vectors_by_length(
     *,
@@ -129,7 +116,6 @@ def _length_vectors_by_length(
     max_abs_vector_component: int,
 ) -> Dict[int, List[Tuple[int, int]]]:
     """Group feasible integer-length lattice vectors by segment length."""
-
     grouped: Dict[int, List[Tuple[int, int]]] = {}
     for dx, dy, length in integer_length_vectors(
         max_abs_component=int(max_abs_vector_component),
@@ -138,7 +124,6 @@ def _length_vectors_by_length(
     ):
         grouped.setdefault(int(length), []).append((int(dx), int(dy)))
     return grouped
-
 
 def _sample_target_lengths(
     rng,
@@ -150,7 +135,6 @@ def _sample_target_lengths(
     min_absolute_gap_units: float,
 ) -> List[int]:
     """Sample distinct target lengths whose winner gap is visually meaningful."""
-
     candidates = [int(value) for value in candidate_lengths]
     if len(candidates) < int(object_count):
         raise ValueError("not enough feasible length candidates for requested object_count")
@@ -165,7 +149,6 @@ def _sample_target_lengths(
             return selected
     raise ValueError("failed to sample comparison lengths with the configured gap rule")
 
-
 def _segment_points_from_slot(
     slot_units: Tuple[int, int],
     *,
@@ -175,7 +158,6 @@ def _segment_points_from_slot(
     graph_spacing: int,
 ) -> Tuple[Point, Point]:
     """Return pixel-space segment endpoints centered near one slot."""
-
     base_x = int(slot_units[0]) - int(dx // 2)
     base_y = int(slot_units[1]) - int(dy // 2)
     endpoint_a_units = (int(base_x), int(base_y))
@@ -193,7 +175,6 @@ def _segment_points_from_slot(
         ),
     )
 
-
 def _draw_segment_scene(
     draw: ImageDraw.ImageDraw,
     *,
@@ -207,7 +188,6 @@ def _draw_segment_scene(
     shape_style: GeometryShapeStyle,
 ) -> Dict[str, List[float]]:
     """Draw all compared segments plus object labels and return label centers."""
-
     scaled_objects = [
         {
             "label": str(obj.label),
@@ -233,7 +213,6 @@ def _draw_segment_scene(
                 (float(endpoint_b[0]), float(endpoint_b[1])),
             )
         )
-
     font = load_font(int(label_font_size_px), bold=True)
     occupied_boxes: List[Tuple[float, float, float, float]] = []
     label_centers: Dict[str, List[float]] = {}
@@ -287,7 +266,6 @@ def _draw_segment_scene(
         ]
     return label_centers
 
-
 def _sample_scene(
     rng,
     *,
@@ -308,7 +286,6 @@ def _sample_scene(
     shape_style: GeometryShapeStyle,
 ) -> _ScenePayload:
     """Sample and draw one multi-segment comparison scene."""
-
     vectors_by_length = _length_vectors_by_length(
         min_segment_length=int(min_segment_length),
         max_segment_length=int(max_segment_length),
@@ -317,7 +294,6 @@ def _sample_scene(
     candidate_lengths = [int(value) for value in sorted(vectors_by_length.keys())]
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     endpoint_padding_px = max(3.0, 0.75 * float(context.graph_spacing) * float(context.scene_scale))
-
     last_error: Exception | None = None
     for _ in range(700):
         labels = [
@@ -350,7 +326,6 @@ def _sample_scene(
             int(value) for value in sampled_target_lengths if int(value) != int(winner_target_length)
         ]
         rng.shuffle(other_target_lengths)
-
         objects: List[_SegmentObject] = []
         try:
             for label, slot_units in zip(selected_labels, slots):
@@ -398,7 +373,6 @@ def _sample_scene(
         except Exception as exc:
             last_error = exc
             continue
-
         values = [float(obj.length_units) for obj in objects]
         metrics = compute_comparison_gap_metrics(values, query_type=str(query_type))
         if str(objects[int(metrics.winner_index)].label) != str(winner_label):
@@ -410,7 +384,6 @@ def _sample_scene(
             min_absolute_gap=float(min_absolute_gap_units),
         ):
             continue
-
         label_centers = _draw_segment_scene(
             draw,
             objects=tuple(objects),
@@ -449,20 +422,14 @@ def _sample_scene(
         )
     raise RuntimeError("failed to sample length-comparison scene") from last_error
 
-
-@register_task
 class GeometryComparisonLengthTask:
     """Compare multiple labeled segments and choose the longest/shortest one."""
-
-    task_id = "task_geometry_comparison_length"
+    task_id = "source_geometry_comparison_length"
     domain = "geometry"
     task_group = "comparison"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic multi-segment comparison instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
-
         query_type, query_type_probabilities = resolve_comparison_query_type(
             scene_rng,
             params=params,
@@ -491,7 +458,6 @@ class GeometryComparisonLengthTask:
             object_count_probabilities=object_count_probabilities,
             query_types=COMPARISON_QUERY_TYPES,
         )
-
         min_segment_length = int(
             params.get(
                 "min_segment_length",
@@ -534,7 +500,6 @@ class GeometryComparisonLengthTask:
             raise ValueError("min_normalized_gap must be >= 0")
         if float(min_absolute_gap_units) < 0.0:
             raise ValueError("min_absolute_gap_units must be >= 0")
-
         context_params = dict(params)
         context = None
         image = None
@@ -548,6 +513,7 @@ class GeometryComparisonLengthTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -649,7 +615,6 @@ class GeometryComparisonLengthTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -660,8 +625,7 @@ class GeometryComparisonLengthTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_comparison_length instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_comparison_length instance") from last_error
         evidence = graph_point_set_evidence_artifacts(
             points_by_label=scene_payload.evidence_points_by_label,
             graph_origin=context.graph_origin,
@@ -674,10 +638,9 @@ class GeometryComparisonLengthTask:
             not isinstance(evidence_value, list)
             or len(evidence_value) != 2
             or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, int) for point in evidence_value for coord in point)
+            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("comparison-length evidence must include two integer graph-lattice points")
-
+            raise RuntimeError("comparison-length evidence must include two pixel points")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -685,12 +648,11 @@ class GeometryComparisonLengthTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -712,7 +674,7 @@ class GeometryComparisonLengthTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -728,10 +690,9 @@ class GeometryComparisonLengthTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         winner_label = str(scene_payload.winner_label)
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
-        evidence_gt = TypedValue(type="graph_point_set", value=list(evidence_value))
+        evidence_gt = TypedValue(type=str(evidence["evidence_type"]), value=list(evidence_value))
         values_by_label = {
             str(obj.label): int(obj.length_units)
             for obj in scene_payload.objects
@@ -783,7 +744,7 @@ class GeometryComparisonLengthTask:
                 },
             },
             "query_spec": {
-                "task_variant": "segment_set",
+                "query_variant": "segment_set",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -802,6 +763,7 @@ class GeometryComparisonLengthTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -832,7 +794,6 @@ class GeometryComparisonLengthTask:
             },
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
-
         complexity = build_geometry_comparison_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
@@ -853,6 +814,6 @@ class GeometryComparisonLengthTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="segment_set",
+            query_variant="segment_set",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

@@ -9,7 +9,9 @@ from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.mcq import option_label_for_index
+from ...shared.render_variation import resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
+from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 
 
 Cells = Tuple[Tuple[int, int], ...]
@@ -19,7 +21,13 @@ SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS: Tuple[str, ...] = (
     "overlay_card",
     "overlay_outline",
 )
-SUPPORTED_PUZZLE_OVERLAY_TASK_VARIANTS: Tuple[str, ...] = ("overlay_union_same_grid",)
+SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS: Tuple[str, ...] = ("overlay_union_same_grid",)
+SUPPORTED_PUZZLE_OVERLAY_MARK_SHAPES: Tuple[str, ...] = (
+    "circle",
+    "square",
+    "diamond",
+    "rounded_square",
+)
 
 
 @dataclass(frozen=True)
@@ -68,7 +76,9 @@ class PuzzleOverlayRenderParams:
     text_stroke_rgb: Tuple[int, int, int]
     mark_fill_rgb: Tuple[int, int, int]
     mark_outline_rgb: Tuple[int, int, int]
+    mark_shape: str
     instruction_fill_rgb: Tuple[int, int, int]
+    unit_size_jitter: Dict[str, Any]
 
 
 def _resolve_int_param(
@@ -110,7 +120,7 @@ def resolve_overlay_scene_variant(
     )
 
 
-def resolve_overlay_task_variant(
+def resolve_overlay_query_variant(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -123,12 +133,12 @@ def resolve_overlay_task_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_OVERLAY_TASK_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS,
         task_id=str(task_id),
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        axis_namespace="task_variant",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        axis_namespace="query_variant",
     )
 
 
@@ -136,36 +146,77 @@ def resolve_overlay_render_params(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
+    instance_seed: int | None = None,
 ) -> PuzzleOverlayRenderParams:
     """Resolve rendering params for transparent-sheet overlay scenes."""
 
+    def _int(key: str, fallback: int) -> int:
+        return resolve_render_int(
+            params,
+            render_defaults,
+            str(key),
+            int(fallback),
+            instance_seed=instance_seed,
+            namespace="puzzle_overlay_render",
+        )
+
     def _triple(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        raw = params.get(str(key), group_default(render_defaults, str(key), list(fallback)))
-        if not isinstance(raw, Sequence) or len(raw) != 3:
-            raise ValueError(f"{key} must be a length-3 RGB sequence")
-        return tuple(int(value) for value in raw)
+        return resolve_render_rgb(
+            params,
+            render_defaults,
+            str(key),
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzle_overlay_render",
+        )
+
+    def _choice(key: str, fallback: str, supported: Sequence[str]) -> str:
+        if params.get(str(key)) is not None:
+            raw = str(params[str(key)])
+        else:
+            options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
+            if options is not None:
+                option_list = [str(item).strip() for item in options if str(item).strip()]
+                if not option_list:
+                    raise ValueError(f"{key}_options must contain at least one string option")
+                seed = 0 if instance_seed is None else int(instance_seed)
+                rng = spawn_rng(seed, f"puzzle_overlay_render:{str(key)}", 12841)
+                raw = option_list[int(rng.randrange(len(option_list)))]
+            else:
+                raw = str(group_default(render_defaults, str(key), str(fallback)))
+        value = str(raw).strip()
+        if value not in set(str(item) for item in supported):
+            raise ValueError(f"{key} must be one of {tuple(supported)}")
+        return value
+
+    unit_size_scale, unit_size_jitter = resolve_puzzle_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=instance_seed,
+        namespace="puzzles.overlay.unit_size",
+    )
 
     return PuzzleOverlayRenderParams(
-        canvas_width=int(_resolve_int_param(params, render_defaults, "canvas_width", 1200)),
-        canvas_height=int(_resolve_int_param(params, render_defaults, "canvas_height", 860)),
-        scene_margin_left_px=int(_resolve_int_param(params, render_defaults, "scene_margin_left_px", 64)),
-        scene_margin_right_px=int(_resolve_int_param(params, render_defaults, "scene_margin_right_px", 64)),
-        scene_margin_top_px=int(_resolve_int_param(params, render_defaults, "scene_margin_top_px", 56)),
-        scene_margin_bottom_px=int(_resolve_int_param(params, render_defaults, "scene_margin_bottom_px", 56)),
-        reference_panel_height_px=int(_resolve_int_param(params, render_defaults, "reference_panel_height_px", 294)),
-        reference_panel_padding_px=int(_resolve_int_param(params, render_defaults, "reference_panel_padding_px", 24)),
-        source_paper_size_px=int(_resolve_int_param(params, render_defaults, "source_paper_size_px", 158)),
-        source_gap_px=int(_resolve_int_param(params, render_defaults, "source_gap_px", 120)),
-        reference_to_options_gap_px=int(_resolve_int_param(params, render_defaults, "reference_to_options_gap_px", 34)),
-        option_paper_size_px=int(_resolve_int_param(params, render_defaults, "option_paper_size_px", 158)),
-        option_gap_px=int(_resolve_int_param(params, render_defaults, "option_gap_px", 22)),
-        option_row_gap_px=int(_resolve_int_param(params, render_defaults, "option_row_gap_px", 22)),
-        option_label_gap_px=int(_resolve_int_param(params, render_defaults, "option_label_gap_px", 12)),
-        paper_corner_radius_px=int(_resolve_int_param(params, render_defaults, "paper_corner_radius_px", 18)),
-        panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", 28)),
-        border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", 3)),
-        option_label_font_size_px=int(_resolve_int_param(params, render_defaults, "option_label_font_size_px", 28)),
-        combine_symbol_font_size_px=int(_resolve_int_param(params, render_defaults, "combine_symbol_font_size_px", 46)),
+        canvas_width=int(_int("canvas_width", 1200)),
+        canvas_height=int(_int("canvas_height", 860)),
+        scene_margin_left_px=int(_int("scene_margin_left_px", 64)),
+        scene_margin_right_px=int(_int("scene_margin_right_px", 64)),
+        scene_margin_top_px=int(_int("scene_margin_top_px", 56)),
+        scene_margin_bottom_px=int(_int("scene_margin_bottom_px", 56)),
+        reference_panel_height_px=scale_puzzle_px(_int("reference_panel_height_px", 294), unit_size_scale, min_px=180),
+        reference_panel_padding_px=scale_puzzle_px(_int("reference_panel_padding_px", 24), unit_size_scale, min_px=12),
+        source_paper_size_px=scale_puzzle_px(_int("source_paper_size_px", 158), unit_size_scale, min_px=80),
+        source_gap_px=scale_puzzle_px(_int("source_gap_px", 120), unit_size_scale, min_px=48),
+        reference_to_options_gap_px=scale_puzzle_px(_int("reference_to_options_gap_px", 34), unit_size_scale, min_px=18),
+        option_paper_size_px=scale_puzzle_px(_int("option_paper_size_px", 158), unit_size_scale, min_px=80),
+        option_gap_px=scale_puzzle_px(_int("option_gap_px", 22), unit_size_scale, min_px=12),
+        option_row_gap_px=scale_puzzle_px(_int("option_row_gap_px", 22), unit_size_scale, min_px=12),
+        option_label_gap_px=scale_puzzle_px(_int("option_label_gap_px", 12), unit_size_scale, min_px=8),
+        paper_corner_radius_px=scale_puzzle_px(_int("paper_corner_radius_px", 18), unit_size_scale, min_px=8),
+        panel_corner_radius_px=int(_int("panel_corner_radius_px", 28)),
+        border_width_px=scale_puzzle_px(_int("border_width_px", 3), unit_size_scale, min_px=2),
+        option_label_font_size_px=scale_puzzle_px(_int("option_label_font_size_px", 28), unit_size_scale, min_px=20),
+        combine_symbol_font_size_px=scale_puzzle_px(_int("combine_symbol_font_size_px", 46), unit_size_scale, min_px=24),
         panel_fill_rgb=_triple("panel_fill_rgb", (248, 249, 252)),
         paper_fill_rgb=_triple("paper_fill_rgb", (255, 252, 245)),
         paper_shadow_rgb=_triple("paper_shadow_rgb", (236, 230, 215)),
@@ -174,7 +225,9 @@ def resolve_overlay_render_params(
         text_stroke_rgb=_triple("text_stroke_rgb", (255, 255, 255)),
         mark_fill_rgb=_triple("mark_fill_rgb", (53, 96, 164)),
         mark_outline_rgb=_triple("mark_outline_rgb", (36, 48, 66)),
+        mark_shape=_choice("mark_shape", "circle", SUPPORTED_PUZZLE_OVERLAY_MARK_SHAPES),
         instruction_fill_rgb=_triple("instruction_fill_rgb", (238, 243, 250)),
+        unit_size_jitter=dict(unit_size_jitter),
     )
 
 
@@ -210,6 +263,13 @@ def _resolve_choice(
     )
     chosen = int(lower + (selection % (upper - lower + 1)))
     return int(chosen), (int(lower), int(upper))
+
+
+def _advance_sampling_axis(params: Mapping[str, Any], *, axis_size: int) -> Mapping[str, Any]:
+    """No-op hook for overlay helper call sites."""
+
+    _ = int(axis_size)
+    return params
 
 
 def _all_grid_cells(grid_size: int) -> Tuple[Tuple[int, int], ...]:
@@ -283,6 +343,8 @@ def _build_overlay_options(
     union_cells: Cells,
     grid_size: int,
     option_count: int,
+    option_count_range: Sequence[int],
+    grid_size_range: Sequence[int],
     params: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
@@ -330,13 +392,20 @@ def _build_overlay_options(
 
     rng.shuffle(distractors)
     chosen_distractors = distractors[: int(option_count - 1)]
-    correct_option_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}:correct_option_index",
-        )
-    ) % int(option_count)
+    explicit_correct_index = params.get("correct_option_index")
+    if explicit_correct_index is not None:
+        correct_option_index = int(explicit_correct_index)
+        if not 0 <= int(correct_option_index) < int(option_count):
+            raise ValueError("correct_option_index must fall inside the option-count range")
+    else:
+        _ = option_count_range, grid_size_range
+        correct_option_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:correct_option_index",
+            )
+        ) % int(option_count)
     answer_option_label = str(option_label_for_index(int(correct_option_index)))
     correct_option_choice_id = f"option_choice_{int(correct_option_index + 1)}"
 
@@ -364,7 +433,7 @@ def _build_overlay_options(
 
 def build_overlay_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -373,8 +442,8 @@ def build_overlay_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic overlay puzzle dataset."""
 
-    if str(task_variant) not in set(SUPPORTED_PUZZLE_OVERLAY_TASK_VARIANTS):
-        raise ValueError(f"unsupported overlay variant: {task_variant}")
+    if str(query_variant) not in set(SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS):
+        raise ValueError(f"unsupported overlay variant: {query_variant}")
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
 
     option_count, option_count_range = _resolve_choice(
@@ -388,8 +457,10 @@ def build_overlay_dataset_for_variant(
         namespace=f"{task_id}:option_count",
         context=f"{task_id} option-count bounds",
     )
+    option_count_axis_size = int(option_count_range[1] - option_count_range[0] + 1)
+    grid_params = _advance_sampling_axis(params, axis_size=int(option_count_axis_size))
     grid_size, grid_size_range = _resolve_choice(
-        params,
+        grid_params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
         min_key="grid_size_min",
@@ -433,6 +504,8 @@ def build_overlay_dataset_for_variant(
         union_cells=union_cells,
         grid_size=int(grid_size),
         option_count=int(option_count),
+        option_count_range=option_count_range,
+        grid_size_range=grid_size_range,
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
@@ -441,7 +514,7 @@ def build_overlay_dataset_for_variant(
     answer_option_label = str(option_label_for_index(int(correct_option_index)))
 
     return {
-        "task_variant": str(task_variant),
+        "query_variant": str(query_variant),
         "question_format": "overlay_union_mcq",
         "view_family": "transparent_sheet_overlay_mcq",
         "grid_size": int(grid_size),
@@ -466,7 +539,7 @@ def build_overlay_dataset_for_variant(
         "correct_option_choice_id": str(correct_option_choice_id),
         "valid_option_choice_ids": [str(correct_option_choice_id)],
         "solver_trace": {
-            "task_variant": str(task_variant),
+            "query_variant": str(query_variant),
             "grid_size": int(grid_size),
             "left_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in left_cells],
             "right_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in right_cells],
@@ -487,9 +560,9 @@ __all__ = [
     "PuzzleOverlayDefaults",
     "PuzzleOverlayRenderParams",
     "SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_OVERLAY_TASK_VARIANTS",
+    "SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS",
     "build_overlay_dataset_for_variant",
     "resolve_overlay_render_params",
     "resolve_overlay_scene_variant",
-    "resolve_overlay_task_variant",
+    "resolve_overlay_query_variant",
 ]

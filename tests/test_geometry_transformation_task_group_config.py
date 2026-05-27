@@ -10,7 +10,7 @@ def test_geometry_transformation_task_overrides_expose_scene_and_query_axes() ->
     cfg = get_task_group_defaults("geometry", "transformation")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_transformation_match",
+        task_id="geometry_transformation_match_base",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -25,4 +25,4 @@ def test_geometry_transformation_task_overrides_expose_scene_and_query_axes() ->
     assert len(generation["candidate_slots"]) == 6
     assert len(generation["translation_vectors"]) >= 3
     assert int(rendering["line_width"]) > 0
-    assert str(prompt["bundle_id"]) == "geometry_transformation_v1"
+    assert str(prompt["bundle_id"]) == "geometry_transformation_v0"

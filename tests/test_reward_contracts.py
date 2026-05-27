@@ -11,16 +11,11 @@ from trace.core.reward_contracts import (
 
 def test_resolve_reward_contract_for_supported_evidence_types() -> None:
     cases = [
-        ("bbox_set", "bbox_set_iou_v1"),
-        ("integer", "numeric_exact_v1"),
-        ("integer_list", "numeric_exact_v1"),
-        ("label_set", "symbolic_set_exact_v1"),
-        ("edge_set", "symbolic_set_exact_v1"),
-        ("grid_point_path", "sequence_exact_v1"),
-        ("point_path", "sequence_exact_v1"),
-        ("graph_point", "point_set_match_v1"),
-        ("graph_point_set", "point_set_match_v1"),
-        ("point_set", "point_set_match_v1"),
+        ("bbox_sequence", "bbox_sequence_soft_iou_v0"),
+        ("bbox_set", "bbox_set_soft_iou_v0"),
+        ("point_sequence", "point_sequence_soft_distance_v0"),
+        ("point_pair_set", "point_pair_set_soft_distance_v0"),
+        ("point_set", "point_set_soft_distance_v0"),
     ]
 
     for evidence_type, expected_contract_id in cases:
@@ -36,9 +31,29 @@ def test_resolve_reward_contract_for_supported_evidence_types() -> None:
         ) is None
 
 
+def test_resolve_reward_contract_rejects_unsupported_evidence_types() -> None:
+    unsupported_types = [
+        "integer",
+        "integer_list",
+        "label_list",
+        "polygon_set",
+        "line_set",
+        "mask",
+        "heatmap",
+    ]
+
+    for evidence_type in unsupported_types:
+        try:
+            resolve_reward_contract(answer_type="integer", evidence_type=evidence_type)
+        except ValueError as exc:
+            assert "unsupported evidence type" in str(exc)
+        else:
+            raise AssertionError(f"unsupported evidence type unexpectedly resolved: {evidence_type}")
+
+
 def test_reward_contract_validation_rejects_mismatched_evidence_contract() -> None:
     payload = resolve_reward_contract(answer_type="integer", evidence_type="bbox_set").to_dict()
-    payload["evidence"]["id"] = "numeric_exact_v1"
+    payload["evidence"]["id"] = "point_set_soft_distance_v0"
     error = validate_reward_contract_payload(
         payload,
         answer_type="integer",

@@ -26,15 +26,15 @@ def test_icons_relation_between_two_anchors_count_deterministic() -> None:
 
 
 def test_icons_relation_between_two_anchors_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons_relation_between_two_anchors_count"
+    output_root = tmp_path / "task_icons__two_anchor__between_anchors_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons_relation_between_two_anchors_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_icons__two_anchor__between_anchors_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons_relation_between_two_anchors_count",
+                task_id="task_icons__two_anchor__between_anchors_count",
                 count=4,
                 params={},
             )
@@ -51,7 +51,7 @@ def test_icons_relation_between_two_anchors_count_build_smoke(tmp_path: Path) ->
     assert all(record["task_group"] == "relation" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons_relation_between_two_anchors_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_icons__two_anchor__between_anchors_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

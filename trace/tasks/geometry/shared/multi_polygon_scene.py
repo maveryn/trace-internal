@@ -33,6 +33,7 @@ def draw_polygon_objects(
     object_label_offset_px: float,
     render_canvas_size: int,
     shape_style: GeometryShapeStyle,
+    draw_object_labels: bool = True,
 ) -> Dict[str, List[float]]:
     """Draw polygon outlines plus object labels and return label centers."""
 
@@ -55,6 +56,9 @@ def draw_polygon_objects(
             blocked_segments.append(
                 ((float(point_a[0]), float(point_a[1])), (float(point_b[0]), float(point_b[1])))
             )
+
+    if not bool(draw_object_labels):
+        return {}
 
     font = load_font(int(label_font_size_px), bold=True)
     occupied_boxes: List[Tuple[float, float, float, float]] = []

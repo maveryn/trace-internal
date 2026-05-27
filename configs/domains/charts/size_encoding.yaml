@@ -1,0 +1,93 @@
+generation:
+  shared:
+    item_count_min: 20
+    item_count_max: 30
+    total_item_count_min: 20
+    total_item_count_max: 30
+    panel_count_min: 2
+    panel_count_max: 4
+    panel_item_count_min: 7
+    panel_item_count_max: 10
+    category_count_min: 3
+    category_count_max: 5
+    value_min: 12
+    value_max: 99
+    winner_gap_min: 16
+    filtered_item_winner_gap_min: 16
+    filtered_item_winner_gap_max: 24
+    filtered_item_outside_extreme_min: 2
+    neighbor_gap_min: 14
+    category_total_gap_min: 42
+    balanced_query_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_extremum_direction_sampling: true
+    query_variant_weights:
+      filtered_item_extremum_label: 1.0
+      reference_size_neighbor_label: 1.0
+      category_total_extremum_label: 1.0
+    scene_variant_weights:
+      rect_word_cloud: 1.0
+      circle_word_cloud: 1.0
+      packed_bubble_cloud: 1.0
+      small_multiple_bubble_cloud: 1.0
+    extremum_direction_weights:
+      largest: 1.0
+      smallest: 1.0
+
+rendering:
+  shared:
+    canvas_width: 1320
+    canvas_height: 900
+    outer_margin_px: 44
+    title_band_height_px: 74
+    legend_height_px: 58
+    panel_gap_px: 28
+    panel_padding_px: 18
+    panel_border_width_px: 2
+    panel_corner_radius_px: 10
+    title_font_size_px: 28
+    subtitle_font_size_px: 18
+    legend_font_size_px: 20
+    panel_title_font_size_px: 22
+    min_word_font_size_px: 22
+    max_word_font_size_px: 64
+    bubble_label_font_size_px: 22
+    item_stroke_width_px: 2
+    word_text_stroke_width_px: 1
+    bubble_label_stroke_width_px: 1
+    category_palette_rgb:
+      - [34, 92, 170]
+      - [180, 73, 38]
+      - [38, 126, 70]
+      - [125, 73, 165]
+      - [176, 126, 18]
+      - [31, 132, 145]
+
+prompt:
+  shared:
+    bundle_id: charts_size_encoding_v0
+    scene_key: size_encoded_chart_scene
+    task_key: size_comparison_label_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint: set "answer" to the exact visible item or category label as a string
+    object_description_rect_word_cloud: a rectangular word cloud where item text size indicates value and text color indicates category
+    object_description_circle_word_cloud: a circular word cloud where item text size indicates value and text color indicates category
+    object_description_packed_bubble_cloud: a packed bubble chart where bubble size indicates value and color indicates category
+    object_description_small_multiple_bubble_cloud: multiple packed bubble-chart panels where bubble size indicates value and color indicates category
+    evidence_hint_filtered_item_extremum_label: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] around the answer item
+    evidence_hint_reference_size_neighbor_label: set "evidence" to an array containing the reference item box and answer item box as [x0, y0, x1, y1] pixel boxes
+    evidence_hint_category_total_extremum_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the items in the answer category
+    json_example_filtered_item_extremum_label: '{"evidence":[[410,235,548,292]],"answer":"Aero"}'
+    json_example_reference_size_neighbor_label: '{"evidence":[[238,460,322,544],[628,306,710,388]],"answer":"Cair"}'
+    json_example_category_total_extremum_label: '{"evidence":[[118,250,236,318],[330,410,470,485],[710,205,842,280]],"answer":"Coastal"}'
+    json_example_answer_only_filtered_item_extremum_label: '{"answer":"Aero"}'
+    json_example_answer_only_reference_size_neighbor_label: '{"answer":"Cair"}'
+    json_example_answer_only_category_total_extremum_label: '{"answer":"Coastal"}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.36
+      reasoning_load: 0.36
+      scene_variant_load: 0.28

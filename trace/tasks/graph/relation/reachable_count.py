@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
@@ -22,6 +21,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ..shared.prompt_examples import build_graph_prompt_json_examples
 from ..shared.complexity import (
     build_graph_complexity,
     normalize_float_with_bounds,
@@ -29,9 +29,9 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_LABEL_VARIANTS,
+    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_REACHABLE_TASK_VARIANTS,
+    SUPPORTED_REACHABLE_QUERY_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_reachable_count,
     graph_label_sort_key,
@@ -39,16 +39,24 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
+    SUPPORTED_EDGE_ROUTING_VARIANTS,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     SUPPORTED_NODE_SHAPE_VARIANTS,
+    projected_node_point_evidence,
     render_graph_scene,
 )
+from ..shared.fixed_query_task import (
+    decoupled_merged_branch_params,
+    rewrite_graph_public_task_output,
+    rewrite_graph_query_output,
+    select_merged_graph_query_id,
+)
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
+from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph_relation_reachable_count"
+TASK_ID = "task_graph__node_link__reachable_node_count"
 
 
 @dataclass(frozen=True)
@@ -91,7 +99,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one reachable-count instance."""
 
-    task_variant: str
+    query_variant: str
     node_count: int
     target_reachable_count: int
     topology_profile: str
@@ -99,8 +107,9 @@ class _ResolvedQuery:
     label_variant: str
     node_shape_variant: str
     layout_transform_variant: str
+    edge_routing_variant: str
     node_color_name: str
-    task_variant_probabilities: Dict[str, float]
+    query_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_reachable_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -108,6 +117,7 @@ class _ResolvedQuery:
     label_variant_probabilities: Dict[str, float]
     node_shape_variant_probabilities: Dict[str, float]
     layout_transform_variant_probabilities: Dict[str, float]
+    edge_routing_variant_probabilities: Dict[str, float]
     node_color_name_probabilities: Dict[str, float]
 
 
@@ -122,31 +132,21 @@ POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", app
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
-def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the active node-label format."""
-
-    example_evidence = ["2", "5", "8"] if str(label_variant) == "numbers" else ["B", "D", "H"]
-    return (
-        json.dumps({"evidence": example_evidence, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-    )
-
-
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one directed reachable-count query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.task_variant")
-    task_variant, task_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    query_variant, query_variant_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        supported=SUPPORTED_REACHABLE_TASK_VARIANTS,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        supported=SUPPORTED_REACHABLE_QUERY_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="task_variant",
+        namespace="query_variant",
     )
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max = int(
@@ -249,7 +249,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         explicit_key="label_variant",
         weights_key="label_variant_weights",
         balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_LABEL_VARIANTS,
+        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
         namespace="label_variant",
@@ -280,6 +280,19 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="layout_transform_variant",
     )
+    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
+    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
+        edge_rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        explicit_key="edge_routing_variant",
+        weights_key="edge_routing_variant_weights",
+        balance_flag_key="balanced_edge_routing_variant_sampling",
+        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
+        instance_seed=int(instance_seed),
+        task_id=TASK_ID,
+        namespace="edge_routing_variant",
+    )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
     node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
         color_rng,
@@ -295,7 +308,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         node_count=int(node_count),
         target_reachable_count=int(target_reachable_count),
         topology_profile=str(topology_profile),
@@ -303,8 +316,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         layout_transform_variant=str(layout_transform_variant),
+        edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        task_variant_probabilities=dict(task_variant_probabilities),
+        query_variant_probabilities=dict(query_variant_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -322,6 +336,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant_probabilities=dict(label_variant_probabilities),
         node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
         layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
         node_color_name_probabilities=dict(node_color_name_probabilities),
     )
 
@@ -374,9 +389,8 @@ def _build_complexity(
     return build_graph_complexity(weights=_COMPLEXITY_WEIGHTS, components=components)
 
 
-@register_task
-class GraphRelationReachableCountTask:
-    """Count directed-graph nodes reachable from one queried source node."""
+class _GraphRelationReachableCountBaseTask:
+    """Generate the direct reachable-count branch."""
 
     task_id = TASK_ID
     domain = "graph"
@@ -394,6 +408,7 @@ class GraphRelationReachableCountTask:
             fallback_defaults=_DEFAULTS,
             node_color_name=str(query.node_color_name),
             node_shape_variant=str(query.node_shape_variant),
+            edge_routing_variant=str(query.edge_routing_variant),
         )
         image, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
@@ -432,12 +447,11 @@ class GraphRelationReachableCountTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_directed",
-                "question_text_reachable_count",
                 "evidence_hint_reachable_count",
                 "answer_hint",
                 "json_example",
@@ -445,25 +459,26 @@ class GraphRelationReachableCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples(
-            label_variant=str(query.label_variant)
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
+        prompt_query_label = format_graph_prompt_label(
+            str(graph_sample.query_label),
+            label_variant=str(query.label_variant),
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
+            query_key="reachable_count",
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_directed"]),
-                "question_text": str(prompt_defaults["question_text_reachable_count"]).format(
-                    query_label=str(graph_sample.query_label)
-                ),
+                "query_label": str(prompt_query_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint_reachable_count"]).format(
-                    query_label=str(graph_sample.query_label)
+                    query_label=str(prompt_query_label)
                 ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
@@ -475,7 +490,9 @@ class GraphRelationReachableCountTask:
 
         evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
         answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
+        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
+        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
+        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -500,16 +517,10 @@ class GraphRelationReachableCountTask:
                 "node_v_label": str(edge.node_v_label),
                 "directed": bool(edge.directed),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "route_variant": str(edge.route_variant),
+                "control_px": list(edge.control_px) if edge.control_px is not None else None,
             }
             for edge in rendered_scene.edges
-        ]
-        evidence_node_bboxes = [
-            list(next(node.bbox_xyxy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
-        ]
-        evidence_node_centers = [
-            list(next(node.center_xy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
         ]
         successors_by_label = {
             str(key): tuple(str(value) for value in values)
@@ -550,14 +561,14 @@ class GraphRelationReachableCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": "directed",
-                    "task_variant_probabilities": dict(query.task_variant_probabilities),
+                    "query_variant_probabilities": dict(query.query_variant_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "target_reachable_count": int(query.target_reachable_count),
@@ -574,6 +585,8 @@ class GraphRelationReachableCountTask:
                     "node_shape_variant_probabilities": dict(query.node_shape_variant_probabilities),
                     "layout_transform_variant": str(query.layout_transform_variant),
                     "layout_transform_variant_probabilities": dict(query.layout_transform_variant_probabilities),
+                    "edge_routing_variant": str(query.edge_routing_variant),
+                    "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
                 },
@@ -584,6 +597,8 @@ class GraphRelationReachableCountTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "node_color_name": str(query.node_color_name),
+                    "theme_tone": str(render_params.theme_tone),
+                    "panel_style_variant": str(render_params.panel_style_variant),
                     "background_color_rgb": list(render_params.background_color_rgb),
                     "panel_fill_rgb": list(render_params.panel_fill_rgb),
                     "panel_border_rgb": list(render_params.panel_border_rgb),
@@ -596,6 +611,7 @@ class GraphRelationReachableCountTask:
                     "node_shape_variant": str(render_params.node_shape_variant),
                     "node_radius_px": int(render_params.node_radius_px),
                     "edge_width_px": int(render_params.edge_width_px),
+                    "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                     "arrow_length_px": int(render_params.arrow_length_px),
                     "arrow_width_px": int(render_params.arrow_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
@@ -611,7 +627,7 @@ class GraphRelationReachableCountTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "count_reachable_nodes_including_query",
                 "graph_directionality": "directed",
@@ -629,33 +645,115 @@ class GraphRelationReachableCountTask:
                 "layout_variant_requested": str(query.layout_variant),
                 "layout_variant_used": str(rendered_scene.layout_variant),
                 "layout_transform_variant": str(rendered_scene.layout_transform_variant),
+                "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                 "node_color_name": str(query.node_color_name),
                 "crossing_count": int(rendered_scene.crossing_count),
                 "reachable_edge_count": int(graph_sample.reachable_edge_count),
                 "unreachable_edge_count": int(graph_sample.unreachable_edge_count),
             },
             "witness_symbolic": {
-                "type": "label_set",
-                "label_set": list(evidence_labels),
+                "type": "object_set",
+                "labels": list(evidence_labels),
                 "query_label": str(graph_sample.query_label),
             },
             "projected_evidence": {
-                "type": "label_set",
-                "label_set": list(evidence_labels),
-                "pixel_point_set": list(evidence_node_centers),
-                "pixel_bbox_set": list(evidence_node_bboxes),
+                "type": "point_set",
+                "point_set": list(evidence_points),
+                **dict(evidence_projection),
             },
         }
 
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            complexity=complexity,
-            task_versions=default_task_versions(),
-            task_variant=str(query.task_variant),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        return rewrite_graph_query_output(
+            TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                answer_gt=answer_gt,
+                evidence_gt=evidence_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                complexity=complexity,
+                task_versions=default_task_versions(),
+                query_variant=str(query.query_variant),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+            ),
+            query_id="reachable_count",
         )
+
+
+_MERGED_QUERY_IDS: Tuple[str, ...] = (
+    "reachable_count",
+    "reachable_count_after_edge_removal",
+    "reachable_count_after_edge_addition",
+)
+
+_MERGED_QUERY_ALIASES: Dict[str, str] = {
+    "edge_removal": "reachable_count_after_edge_removal",
+    "remove_edge": "reachable_count_after_edge_removal",
+    "arrow_removal": "reachable_count_after_edge_removal",
+    "remove_arrow": "reachable_count_after_edge_removal",
+    "edge_addition": "reachable_count_after_edge_addition",
+    "add_edge": "reachable_count_after_edge_addition",
+    "arrow_addition": "reachable_count_after_edge_addition",
+    "add_arrow": "reachable_count_after_edge_addition",
+}
+
+
+def _selected_reachable_query(params: Mapping[str, Any], instance_seed: int) -> str:
+    """Return the public reachability query id for this merged task."""
+
+    for key in ("edit_operation", "edge_edit_operation"):
+        value = params.get(str(key))
+        if value is None:
+            continue
+        text = str(value)
+        if text in {"edge_removal", "remove_edge", "arrow_removal", "remove_arrow"}:
+            return "reachable_count_after_edge_removal"
+        if text in {"edge_addition", "add_edge", "arrow_addition", "add_arrow"}:
+            return "reachable_count_after_edge_addition"
+    return select_merged_graph_query_id(
+        params=params,
+        instance_seed=int(instance_seed),
+        task_id=TASK_ID,
+        supported_query_ids=_MERGED_QUERY_IDS,
+        aliases=_MERGED_QUERY_ALIASES,
+    )
+
+
+def _reachable_edge_edit_params(params: Mapping[str, Any], query_id: str) -> Dict[str, Any]:
+    """Return params forcing one absorbed post-edit reachability branch."""
+
+    forced = dict(params)
+    forced["query_id"] = str(query_id)
+    forced["edit_operation"] = (
+        "edge_removal" if str(query_id) == "reachable_count_after_edge_removal" else "edge_addition"
+    )
+    return forced
+
+
+@register_task
+class GraphRelationReachableCountTask(_GraphRelationReachableCountBaseTask):
+    """Count directed reachability before or after one hypothetical edge edit."""
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        branch_base_params = decoupled_merged_branch_params(
+            params,
+            instance_seed=int(instance_seed),
+            task_id=TASK_ID,
+            supported_query_ids=_MERGED_QUERY_IDS,
+            aliases=_MERGED_QUERY_ALIASES,
+        )
+        query_id = _selected_reachable_query(params, int(instance_seed))
+        if str(query_id) == "reachable_count":
+            output = super().generate(int(instance_seed), params=dict(branch_base_params), max_attempts=int(max_attempts))
+        else:
+            from .reachable_count_after_edge_edit import GraphRelationReachableCountAfterEdgeEditTask
+
+            output = GraphRelationReachableCountAfterEdgeEditTask().generate(
+                int(instance_seed),
+                params=_reachable_edge_edit_params(branch_base_params, str(query_id)),
+                max_attempts=int(max_attempts),
+            )
+        return rewrite_graph_public_task_output(output, task_id=TASK_ID, query_id=output.query_id)
+
+
+__all__ = ["GraphRelationReachableCountTask"]

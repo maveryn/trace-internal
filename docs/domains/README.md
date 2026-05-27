@@ -7,18 +7,18 @@ Active contract docs should stay narrow and current. Long-term planning notes ar
 Use the matching `skills/domain-<domain>/` entry only as an operational overlay; canonical domain contracts live here.
 
 ## Cross-Domain
-- `TASK_FAMILY_VARIANTS.md` — domain/task-family variant map; currently also contains the active geometry surface.
+- `SCENE_TASK_QUERY_GUIDE.md` — cross-domain rules for scene, task, query,
+  answer, and evidence boundaries.
 - `CHART_DOMAIN_PLAN.md` — long-term chart-type universe and future expansion direction for `domain=charts`.
 
 ## Active Setup Docs
-- `CHART_TASK_SETUP.md` — active chart-domain contract and supported v1 chart families.
-- `DIAGRAM_TASK_SETUP.md` — concrete v1 setup for the active early diagrams-domain task families.
-- `DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain task family.
+- `CHART_TASK_SETUP.md` — active chart-domain contract for chart, map, and table data-display scenes.
 - `GAMES_TASK_SETUP.md` — concrete active setup for the current games-domain families.
-- `GRAPH_TASK_SETUP.md` — concrete v1 setup for the active graph-domain task families.
+- `GRAPH_TASK_SETUP.md` — concrete active setup for graph-domain task families.
+- `GEOMETRY_TASK_SETUP.md` — concrete active setup for split public geometry tasks.
 - `ICON_TASK_SETUP.md` — active icon-domain contract, asset policy, and supported task families.
-- `PHYSICS_TASK_SETUP.md` — concrete active setup for the first physics-domain family.
-- `PUZZLE_TASK_SETUP.md` — concrete active setup for the first puzzles-domain family.
-- `TABLE_TASK_SETUP.md` — concrete active setup for the current tables-domain families.
-- `TEMPORAL_TASK_SETUP.md` — concrete active setup for the current temporal-domain families.
-- `TILE_TASK_SETUP.md` — tile-domain board, coordinate, and visual policy.
+- `ILLUSTRATIONS_TASK_SETUP.md` — active synthetic object illustration contract and object-part grounding policy.
+- `PAGES_TASK_SETUP.md` — concrete active setup for page-like forms, diagrams, maps, and GUI/web screens.
+- `PHYSICS_TASK_SETUP.md` — concrete active setup for diagram-grounded physics scenes.
+- `PUZZLE_TASK_SETUP.md` — concrete active setup for puzzle-domain cell-board, logic, probability, clock, spatial, and topology families.
+- `THREE_D_TASK_SETUP.md` — active synthetic 3D scene contract, camera/projection policy, and spatial task surface.

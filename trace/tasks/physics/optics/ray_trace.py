@@ -8,33 +8,36 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
-from ...shared.graph_point_evidence import empty_graph_point_set_evidence_artifacts, graph_point_set_evidence_artifacts
+from ...shared.graph_point_evidence import labeled_grid_point_evidence_artifacts
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.render_variation import resolve_render_int
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     resolve_compatible_scene_query_variants,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_optics_ray_trace_complexity
+from ..shared.diagram_style import prepare_physics_diagram_style_and_background
+from ..shared.fixed_query_task import FixedPhysicsQueryVariantTaskMixin
 from ..shared.optics_scene import RenderedOpticsScene, render_optics_ray_scene
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
 from ..shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ..shared.visual_defaults import load_physics_background_defaults, load_physics_noise_defaults
+from ..shared.visual_defaults import load_physics_noise_defaults
 
 
-TASK_ID = "task_physics_optics_ray_trace"
+TASK_ID = "physics_optics_ray_trace_family"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "single_mirror",
     "double_mirror",
     "triple_mirror",
     "quad_mirror",
+    "five_mirror",
 )
 SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
     "bounce_count",
@@ -44,13 +47,15 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "single_mirror": ("target_hit_count",),
     "double_mirror": ("target_hit_count",),
     "triple_mirror": ("target_hit_count",),
-    "quad_mirror": SUPPORTED_QUERY_VARIANTS,
+    "quad_mirror": ("bounce_count",),
+    "five_mirror": ("bounce_count",),
 }
 _SCENE_MIRROR_COUNT = {
     "single_mirror": 1,
     "double_mirror": 2,
     "triple_mirror": 3,
     "quad_mirror": 4,
+    "five_mirror": 5,
 }
 _DIRECTION_STEP = {
     "E": (1, 0),
@@ -75,12 +80,12 @@ class _TaskDefaults:
     cell_size_px: int = 52
     board_grid_width_px: int = 1
     board_outline_width_px: int = 3
-    mirror_width_px: int = 5
-    mirror_padding_px: int = 10
+    mirror_width_px: int = 7
+    mirror_padding_px: int = 6
     ray_width_px: int = 6
     ray_head_length_px: int = 16
     ray_head_width_px: int = 16
-    target_radius_px: int = 15
+    target_radius_px: int = 18
     source_radius_px: int = 14
     bounce_radius_px: int = 8
     target_font_size_px: int = 18
@@ -90,9 +95,10 @@ class _TaskDefaults:
     bounce_count_support_double_mirror: Tuple[int, ...] = (0, 1, 2)
     bounce_count_support_triple_mirror: Tuple[int, ...] = (0, 1, 2, 3)
     bounce_count_support_quad_mirror: Tuple[int, ...] = (0, 1, 2, 3, 4)
-    target_hit_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+    bounce_count_support_five_mirror: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    target_hit_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     target_count_min: int = 4
-    target_count_max: int = 6
+    target_count_max: int = 5
 
 
 @dataclass(frozen=True)
@@ -154,8 +160,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_physics_background_defaults(task_group="optics")
-POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
 
 
 def _target_support_key(*, scene_variant: str, query_variant: str) -> str:
@@ -164,12 +169,6 @@ def _target_support_key(*, scene_variant: str, query_variant: str) -> str:
     if str(query_variant) == "target_hit_count":
         return "target_hit_count_support"
     return f"bounce_count_support_{str(scene_variant)}"
-
-
-def _board_graph_point(*, col: int, row: int, board_rows: int) -> List[int]:
-    """Return one integer graph-paper coordinate for a board cell center."""
-
-    return [int(col), int((int(board_rows) - 1) - int(row))]
 
 
 def _resolve_target_answer(
@@ -183,9 +182,10 @@ def _resolve_target_answer(
 
     support_key = _target_support_key(scene_variant=str(scene_variant), query_variant=str(query_variant))
     fallback = getattr(_DEFAULTS, support_key)
+    target_params = dict(params)
     return resolve_integer_choice(
         instance_seed=int(instance_seed),
-        params=params,
+        params=target_params,
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(support_key),
         explicit_key="target_answer",
@@ -193,6 +193,7 @@ def _resolve_target_answer(
         namespace=f"{TASK_ID}.target_answer.{str(scene_variant)}.{str(query_variant)}",
         balanced_flag_key="balanced_target_answer_sampling",
         use_instance_seed_cycle=True,
+        namespace_support_permutation=True,
     )
 
 
@@ -210,6 +211,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
         query_sampling_namespace=f"{TASK_ID}.query_variant",
+        decouple_scene_sampling=True,
     )
     target_answer, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
@@ -250,7 +252,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
 
 
-def _board_render_defaults(params: Mapping[str, Any]) -> Dict[str, Any]:
+def _board_render_defaults(params: Mapping[str, Any], *, instance_seed: int | None = None) -> Dict[str, Any]:
     """Return resolved render defaults for the optics board."""
 
     keys = (
@@ -276,7 +278,14 @@ def _board_render_defaults(params: Mapping[str, Any]) -> Dict[str, Any]:
         "label_stroke_width_px",
     )
     return {
-        key: params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key)))
+        key: resolve_render_int(
+            params,
+            _RENDER_DEFAULTS,
+            key,
+            int(getattr(_DEFAULTS, key)),
+            instance_seed=instance_seed,
+            namespace=TASK_ID,
+        )
         for key in keys
     }
 
@@ -402,22 +411,35 @@ def _construct_hit_mirrors(
     rows.remove(int(row1))
     rng.shuffle(rows)
     if not rows:
-        raise ValueError("four-bounce optics path needs a third interior row")
+        raise ValueError("multi-bounce optics path needs a third interior row")
     row2 = int(rows[0])
-    col1 = int(rng.randint(2, int(board_cols) - 5))
-    col2 = int(rng.randint(int(col1) + 2, int(board_cols) - 3))
+    if int(bounce_count) == 4:
+        col1 = int(rng.randint(2, int(board_cols) - 5))
+        col2 = int(rng.randint(int(col1) + 2, int(board_cols) - 3))
+    else:
+        if int(board_cols) < 8:
+            raise ValueError("five-bounce optics path needs at least eight columns")
+        col1 = int(rng.randint(1, max(1, int(board_cols) - 6)))
+        col2 = int(col1 + 2)
+        col3 = int(col2 + 2)
     first_vertical = "N" if int(row1) < int(row0) else "S"
     second_vertical = "N" if int(row2) < int(row1) else "S"
     orientation1 = "/" if str(first_vertical) == "N" else "\\"
     orientation2 = "/" if str(first_vertical) == "N" else "\\"
     orientation3 = "/" if str(second_vertical) == "N" else "\\"
     orientation4 = "/" if str(second_vertical) == "N" else "\\"
-    return int(start_row), [
+    mirrors = [
         (col1, int(row0), str(orientation1)),
         (col1, int(row1), str(orientation2)),
         (col2, int(row1), str(orientation3)),
         (col2, int(row2), str(orientation4)),
     ]
+    if int(bounce_count) == 4:
+        return int(start_row), mirrors
+    exit_vertical = "N" if int(row2) >= int(board_rows // 2) else "S"
+    orientation5 = "/" if str(exit_vertical) == "N" else "\\"
+    mirrors.append((int(col3), int(row2), str(orientation5)))
+    return int(start_row), mirrors
 
 
 def _place_unused_mirrors(
@@ -476,14 +498,25 @@ def _choose_targets(
     occupied = set(path_cells) | mirror_set | set(hit_cells)
     target_total = int(rng.randint(int(target_count_min), int(target_count_max)))
     target_total = max(int(target_total), int(target_answer))
-    distractor_slots: List[Tuple[int, int]] = [
+    target_cells = list(hit_cells)
+    all_distractor_slots: List[Tuple[int, int]] = [
         (col, row)
         for row in range(int(board_rows))
         for col in range(int(board_cols))
         if (int(col), int(row)) not in occupied
     ]
+    path_set = {(int(col), int(row)) for col, row in path_cells}
+    preferred_distractor_slots = [
+        (col, row)
+        for col, row in all_distractor_slots
+        if all(abs(int(col) - int(path_col)) + abs(int(row) - int(path_row)) >= 2 for path_col, path_row in path_set)
+    ]
+    distractor_slots = (
+        list(preferred_distractor_slots)
+        if len(preferred_distractor_slots) >= max(0, int(target_total) - len(target_cells))
+        else list(all_distractor_slots)
+    )
     rng.shuffle(distractor_slots)
-    target_cells = list(hit_cells)
     while len(target_cells) < int(target_total) and distractor_slots:
         target_cells.append(tuple(distractor_slots.pop()))
     if len(target_cells) < int(target_total):
@@ -616,14 +649,74 @@ def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
     """Return prompt JSON examples for the active optics query."""
 
     if str(query_variant) == "bounce_count":
-        evidence = [[2, 5], [4, 3]]
+        evidence = [[242, 190], [346, 294]]
     else:
-        evidence = [[1, 6], [5, 2]]
+        evidence = [[190, 138], [398, 346]]
     return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
 
 
-@register_task
-class PhysicsOpticsRayTraceTask:
+def _pixel_point_set_evidence_artifacts(
+    *,
+    points_by_label: Mapping[str, Sequence[float]],
+    graph_origin: Sequence[float],
+    graph_spacing: int,
+    witness_type: str,
+    ordered_labels: Sequence[str],
+) -> Dict[str, Any]:
+    """Expose optics graph-derived witnesses as public pixel point sets."""
+
+    labels = [str(label) for label in ordered_labels]
+    if not labels:
+        return _empty_pixel_point_set_evidence_artifacts(witness_type=str(witness_type))
+    labeled = labeled_grid_point_evidence_artifacts(
+        points_by_label=points_by_label,
+        graph_origin=graph_origin,
+        graph_spacing=int(graph_spacing),
+        witness_type=str(witness_type),
+        ordered_labels=tuple(labels),
+    )
+    projected = dict(labeled["projected_evidence"])
+    pixel_map = {
+        str(label): [float(point[0]), float(point[1])]
+        for label, point in dict(projected.get("pixel_point_map", {})).items()
+    }
+    point_set = [list(pixel_map[str(label)]) for label in labels]
+    witness_symbolic = dict(labeled["witness_symbolic"])
+    return {
+        "evidence_type": "point_set",
+        "evidence_value": [list(point) for point in point_set],
+        "required_labels": list(labels),
+        "witness_symbolic": witness_symbolic,
+        "projected_evidence": {
+            "type": "point_set",
+            "point_set": [list(point) for point in point_set],
+            "pixel_point_set": [list(point) for point in point_set],
+            "pixel_point_map": dict(pixel_map),
+        },
+    }
+
+
+def _empty_pixel_point_set_evidence_artifacts(*, witness_type: str) -> Dict[str, Any]:
+    """Return an empty pixel point-set evidence payload."""
+
+    return {
+        "evidence_type": "point_set",
+        "evidence_value": [],
+        "required_labels": [],
+        "witness_symbolic": {
+            "type": str(witness_type),
+            "count": 0,
+        },
+        "projected_evidence": {
+            "type": "point_set",
+            "point_set": [],
+            "pixel_point_set": [],
+            "pixel_point_map": {},
+        },
+    }
+
+
+class _PhysicsOpticsRayTraceBaseTask:
     """Return one simple diagram-first optics ray-tracing question."""
 
     task_id = TASK_ID
@@ -632,7 +725,7 @@ class PhysicsOpticsRayTraceTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
-        render_defaults = _board_render_defaults(params)
+        render_defaults = _board_render_defaults(params, instance_seed=int(instance_seed))
         rendered_scene: RenderedOpticsScene | None = None
         scene_layout: _SceneLayout | None = None
 
@@ -650,12 +743,13 @@ class PhysicsOpticsRayTraceTask:
             except ValueError:
                 continue
 
-            background, background_meta = make_background_canvas(
+            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
+                scene_id="ray_optics",
+                task_group=self.task_group,
                 canvas_width=int(render_defaults["canvas_width"]),
                 canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
                 params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
             )
             rendered_scene = render_optics_ray_scene(
                 background=background,
@@ -688,6 +782,7 @@ class PhysicsOpticsRayTraceTask:
                 exit_point_px=tuple(scene_layout.exit_point_px),
                 evidence_entity_ids=list(scene_layout.evidence_entity_ids),
                 query_variant=str(axes.query_variant),
+                diagram_style=diagram_style,
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -700,7 +795,7 @@ class PhysicsOpticsRayTraceTask:
                 _PROMPT_DEFAULTS,
                 (
                     "bundle_id",
-                    "task_family_key",
+                    "scene_key",
                     "task_key",
                     "json_output_contract",
                     "json_output_contract_answer_only",
@@ -711,6 +806,7 @@ class PhysicsOpticsRayTraceTask:
                     "object_description_double_mirror",
                     "object_description_triple_mirror",
                     "object_description_quad_mirror",
+                    "object_description_five_mirror",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
@@ -719,9 +815,9 @@ class PhysicsOpticsRayTraceTask:
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
-                task_family_key=str(prompt_defaults["task_family_key"]),
+                scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                task_variant_key=str(axes.query_variant),
+                query_key=str(axes.query_variant),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -751,20 +847,20 @@ class PhysicsOpticsRayTraceTask:
                     if str(spec.target_id) in set(rendered_scene.evidence_entity_ids)
                 }
                 witness_type = "physics_optics_hit_target_points"
-            if evidence_points_by_label:
-                evidence_artifacts = graph_point_set_evidence_artifacts(
-                    points_by_label=evidence_points_by_label,
-                    graph_origin=rendered_scene.graph_origin_px,
-                    graph_spacing=int(rendered_scene.graph_spacing_px),
-                    witness_type=str(witness_type),
-                    ordered_labels=tuple(str(item) for item in rendered_scene.evidence_entity_ids),
-                )
-            else:
-                evidence_artifacts = empty_graph_point_set_evidence_artifacts(witness_type=str(witness_type))
-            evidence_gt = TypedValue(type="graph_point_set", value=list(evidence_artifacts["evidence_value"]))
+            evidence_artifacts = _pixel_point_set_evidence_artifacts(
+                points_by_label=evidence_points_by_label,
+                graph_origin=rendered_scene.graph_origin_px,
+                graph_spacing=int(rendered_scene.graph_spacing_px),
+                witness_type=str(witness_type),
+                ordered_labels=tuple(str(item) for item in rendered_scene.evidence_entity_ids),
+            )
+            evidence_gt = TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            )
             complexity = build_physics_optics_ray_trace_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
-                task_id=self.task_id,
+                task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
                 query_variant=str(axes.query_variant),
                 mirror_count=len(scene_layout.mirrors),
@@ -779,14 +875,14 @@ class PhysicsOpticsRayTraceTask:
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
                         "query_variant": str(axes.query_variant),
-                        "task_variant": str(axes.query_variant),
+                        "query_variant": str(axes.query_variant),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                     },
                 },
                 "query_spec": {
-                    "task_variant": str(axes.query_variant),
+                    "query_variant": str(axes.query_variant),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -794,11 +890,11 @@ class PhysicsOpticsRayTraceTask:
                     "params": {
                         "scene_variant": str(axes.scene_variant),
                         "query_variant": str(axes.query_variant),
-                        "task_variant": str(axes.query_variant),
+                        "query_variant": str(axes.query_variant),
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "task_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),
@@ -809,12 +905,15 @@ class PhysicsOpticsRayTraceTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "technical_diagram_style": dict(diagram_style_meta),
+                    "background_style": background_meta,
+                    "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
                     "query_variant": str(axes.query_variant),
-                    "task_variant": str(axes.query_variant),
+                    "query_variant": str(axes.query_variant),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": list(
@@ -841,20 +940,13 @@ class PhysicsOpticsRayTraceTask:
                             "target_id": str(target.target_id),
                             "col": int(target.col),
                             "row": int(target.row),
-                            "graph_point": list(
-                                _board_graph_point(
-                                    col=int(target.col),
-                                    row=int(target.row),
-                                    board_rows=int(render_defaults["board_rows"]),
-                                )
-                            ),
                             "hit": bool(target.hit),
                         }
                         for target in scene_layout.targets
                     ],
                     "path_cells": [[int(col), int(row)] for col, row in scene_layout.path_cells],
                     "bounce_cells": [[int(col), int(row)] for col, row in scene_layout.bounce_cells],
-                    "evidence_graph_points": [list(point) for point in evidence_gt.value],
+                    "evidence_pixel_points": [list(point) for point in evidence_gt.value],
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                 },
                 "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
@@ -872,10 +964,36 @@ class PhysicsOpticsRayTraceTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                task_variant=str(axes.query_variant),
+                query_variant=str(axes.query_variant),
+                scene_id="ray_optics",
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
 
-__all__ = ["PhysicsOpticsRayTraceTask"]
+@register_task
+class PhysicsOpticsRayBounceCountTask(
+    FixedPhysicsQueryVariantTaskMixin,
+    _PhysicsOpticsRayTraceBaseTask,
+):
+    """Return the number of mirror-bounce points on the ray path."""
+
+    task_id = "task_physics__ray_optics__ray_bounce_count"
+    fixed_query_variant = "bounce_count"
+
+
+@register_task
+class PhysicsOpticsRayTargetHitCountTask(
+    FixedPhysicsQueryVariantTaskMixin,
+    _PhysicsOpticsRayTraceBaseTask,
+):
+    """Return the number of target points touched by the ray path."""
+
+    task_id = "task_physics__ray_optics__ray_target_hit_count"
+    fixed_query_variant = "target_hit_count"
+
+
+__all__ = [
+    "PhysicsOpticsRayBounceCountTask",
+    "PhysicsOpticsRayTargetHitCountTask",
+]

@@ -1,0 +1,59 @@
+{
+  "bundle_id": "puzzles_cell_board_reachability_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "region_size_query": [
+      "Obstacles are {obstacle_color} tiles, and the start tile is {start_color}. Using 4-neighbor moves through non-obstacle tiles, what is the size of the reachable region from the start?",
+      "The {obstacle_color} tiles are blocked, and the {start_color} tile marks the start. Using 4-neighbor moves through non-obstacle tiles, determine the size of the reachable region from the start.",
+      "Treat the {obstacle_color} tiles as obstacles. The start tile is {start_color}. With 4-neighbor movement through non-obstacle tiles, what is the reachable region size from the start?",
+      "The board uses {obstacle_color} tiles for obstacles and {start_color} for the start tile. Using 4-neighbor moves through non-obstacle tiles, find the size of the reachable region from the start.",
+      "Blocked tiles are {obstacle_color}, and the start tile is {start_color}. What is the size of the reachable region from the start using 4-neighbor moves through non-obstacle tiles?"
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:rectangular_tile_board": [
+      "rows",
+      "cols"
+    ],
+    "task:region_size_query": [
+      "obstacle_color",
+      "start_color"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "rectangular_tile_board": [
+      "The image shows one rectangular tile board with {rows} rows and {cols} columns.",
+      "The board is a {rows} by {cols} rectangular tile grid.",
+      "This tile board has {rows} rows and {cols} columns.",
+      "The grid shows a rectangular tile board with {rows} rows and {cols} columns.",
+      "The board layout is a {rows}-row by {cols}-column tile grid."
+    ]
+  }
+}

@@ -22,6 +22,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 from ..shared.complexity import (
     build_graph_complexity,
     normalize_float_with_bounds,
@@ -29,28 +30,31 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_LABEL_VARIANTS,
+    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_PATH_TASK_VARIANTS,
+    SUPPORTED_PATH_QUERY_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_shortest_path_length,
-    graph_directionality_for_task_variant,
+    graph_directionality_for_query_variant,
     graph_label_sort_key,
     sample_shortest_path_length_graph,
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
+    SUPPORTED_EDGE_ROUTING_VARIANTS,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     SUPPORTED_NODE_SHAPE_VARIANTS,
+    projected_node_point_evidence,
     render_graph_scene,
 )
+from ..shared.fixed_query_task import rewrite_graph_query_output
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
+from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph_path_shortest_path_length"
+TASK_ID = "task_graph__node_link__shortest_path_length"
 
 
 @dataclass(frozen=True)
@@ -58,10 +62,10 @@ class _TaskDefaults:
     """Stable fallback defaults for graph shortest-path scenes."""
 
     node_count_min: int = 5
-    node_count_max: int = 10
-    directed_node_count_max: int = 9
-    target_shortest_path_length_min: int = 1
-    target_shortest_path_length_max: int = 5
+    node_count_max: int = 15
+    directed_node_count_max: int = 15
+    target_shortest_path_length_min: int = 3
+    target_shortest_path_length_max: int = 8
     canvas_width: int = 864
     canvas_height: int = 640
     outer_margin_px: int = 28
@@ -94,7 +98,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one shortest-path instance."""
 
-    task_variant: str
+    query_variant: str
     graph_directionality: str
     node_count: int
     target_shortest_path_length: int
@@ -103,8 +107,9 @@ class _ResolvedQuery:
     label_variant: str
     node_shape_variant: str
     layout_transform_variant: str
+    edge_routing_variant: str
     node_color_name: str
-    task_variant_probabilities: Dict[str, float]
+    query_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_shortest_path_length_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -112,6 +117,7 @@ class _ResolvedQuery:
     label_variant_probabilities: Dict[str, float]
     node_shape_variant_probabilities: Dict[str, float]
     layout_transform_variant_probabilities: Dict[str, float]
+    edge_routing_variant_probabilities: Dict[str, float]
     node_color_name_probabilities: Dict[str, float]
 
 
@@ -127,32 +133,65 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the active node-label format."""
+    """Return prompt examples that match the pixel-space evidence format."""
 
-    example_evidence = ["2", "5", "8"] if str(label_variant) == "numbers" else ["B", "D", "H"]
+    example_evidence = [[180, 220], [310, 180], [430, 260]]
     return (
         json.dumps({"evidence": example_evidence, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
 
 
+def _query_support_selection_index(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    query_variant_probabilities: Mapping[str, float],
+) -> int:
+    """Return a query-support index decorrelated from balanced query variants."""
+
+    selection_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}:query_support",
+        )
+    )
+    balanced_query_variants = bool(
+        params.get(
+            "balanced_query_variant_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+        )
+    )
+    query_variant_overridden = any(has_non_null_param(params, key) for key in ("query_variant", "query_variant_weights"))
+    if (
+        bool(balanced_query_variants)
+        and not bool(query_variant_overridden)
+        and is_uniform_probability_map(query_variant_probabilities)
+    ):
+        active_variant_count = sum(1 for value in query_variant_probabilities.values() if float(value) > 0.0)
+        if int(active_variant_count) > 1:
+            return int(selection_index // int(active_variant_count))
+    return int(selection_index)
+
+
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one graph shortest-path query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.task_variant")
-    task_variant, task_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    query_variant, query_variant_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        supported=SUPPORTED_PATH_TASK_VARIANTS,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        supported=SUPPORTED_PATH_QUERY_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="task_variant",
+        namespace="query_variant",
     )
-    graph_directionality = str(graph_directionality_for_task_variant(str(task_variant)))
+    graph_directionality = str(graph_directionality_for_query_variant(str(query_variant)))
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max_key = "directed_node_count_max" if str(graph_directionality) == "directed" else "node_count_max"
     node_count_max_fallback = _DEFAULTS.directed_node_count_max if str(graph_directionality) == "directed" else _DEFAULTS.node_count_max
@@ -182,12 +221,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     if not target_support:
         raise ValueError("target_shortest_path_length support is empty for graph shortest-path tasks")
 
-    selection_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:query_support",
-        )
+    selection_index = _query_support_selection_index(
+        int(instance_seed),
+        params=params,
+        query_variant_probabilities=query_variant_probabilities,
     )
 
     feasible_support_by_target: Dict[int, Tuple[int, ...]] = {}
@@ -261,7 +298,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         explicit_key="label_variant",
         weights_key="label_variant_weights",
         balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_LABEL_VARIANTS,
+        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
         namespace="label_variant",
@@ -292,6 +329,19 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="layout_transform_variant",
     )
+    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
+    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
+        edge_rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        explicit_key="edge_routing_variant",
+        weights_key="edge_routing_variant_weights",
+        balance_flag_key="balanced_edge_routing_variant_sampling",
+        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
+        instance_seed=int(instance_seed),
+        task_id=TASK_ID,
+        namespace="edge_routing_variant",
+    )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
     node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
         color_rng,
@@ -307,7 +357,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         graph_directionality=str(graph_directionality),
         node_count=int(node_count),
         target_shortest_path_length=int(target_shortest_path_length),
@@ -316,8 +366,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         layout_transform_variant=str(layout_transform_variant),
+        edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        task_variant_probabilities=dict(task_variant_probabilities),
+        query_variant_probabilities=dict(query_variant_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -335,6 +386,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant_probabilities=dict(label_variant_probabilities),
         node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
         layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
         node_color_name_probabilities=dict(node_color_name_probabilities),
     )
 
@@ -401,8 +453,7 @@ def _build_complexity(
     return build_graph_complexity(weights=_COMPLEXITY_WEIGHTS, components=components)
 
 
-@register_task
-class GraphPathShortestPathLengthTask:
+class _GraphPathShortestPathLengthBaseTask:
     """Count edges in a unique shortest path between two labeled graph nodes."""
 
     task_id = TASK_ID
@@ -421,6 +472,7 @@ class GraphPathShortestPathLengthTask:
             fallback_defaults=_DEFAULTS,
             node_color_name=str(query.node_color_name),
             node_shape_variant=str(query.node_shape_variant),
+            edge_routing_variant=str(query.edge_routing_variant),
         )
         image, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
@@ -433,7 +485,7 @@ class GraphPathShortestPathLengthTask:
         graph_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.graph")
         graph_sample = sample_shortest_path_length_graph(
             graph_rng,
-            task_variant=str(query.task_variant),
+            query_variant=str(query.query_variant),
             node_count=int(query.node_count),
             target_shortest_path_length=int(query.target_shortest_path_length),
             topology_profile=str(query.topology_profile),
@@ -460,14 +512,12 @@ class GraphPathShortestPathLengthTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
                 "object_description_directed",
-                "question_text_shortest_path_length",
-                "question_text_directed_shortest_path_length",
                 "evidence_hint",
                 "answer_hint",
                 "json_example",
@@ -478,30 +528,33 @@ class GraphPathShortestPathLengthTask:
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples(
             label_variant=str(query.label_variant)
         )
-        question_text_key = (
-            "question_text_directed_shortest_path_length"
-            if str(query.graph_directionality) == "directed"
-            else "question_text_shortest_path_length"
-        )
+        prompt_query_key = "directed_shortest_path_length" if str(query.graph_directionality) == "directed" else "shortest_path_length"
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description"
+        prompt_source_label = format_graph_prompt_label(
+            str(graph_sample.source_label),
+            label_variant=str(query.label_variant),
+        )
+        prompt_goal_label = format_graph_prompt_label(
+            str(graph_sample.goal_label),
+            label_variant=str(query.label_variant),
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
+            query_key=str(prompt_query_key),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[object_description_key]),
-                "question_text": str(prompt_defaults[question_text_key]).format(
-                    source_label=str(graph_sample.source_label),
-                    goal_label=str(graph_sample.goal_label),
-                ),
+                "source_label": str(prompt_source_label),
+                "goal_label": str(prompt_goal_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
-                    source_label=str(graph_sample.source_label),
-                    goal_label=str(graph_sample.goal_label),
+                    source_label=str(prompt_source_label),
+                    goal_label=str(prompt_goal_label),
                 ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
@@ -513,7 +566,9 @@ class GraphPathShortestPathLengthTask:
 
         evidence_labels = tuple(str(label) for label in graph_sample.target_labels)
         answer_gt = TypedValue(type="integer", value=int(len(evidence_labels) - 1))
-        evidence_gt = TypedValue(type="label_path", value=list(evidence_labels))
+        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
+        evidence_path = [list(point) for point in evidence_projection["pixel_point_sequence"]]
+        evidence_gt = TypedValue(type="point_sequence", value=list(evidence_path))
         path_edge_labels = tuple(
             canonicalize_graph_edge_label(
                 str(left),
@@ -549,6 +604,8 @@ class GraphPathShortestPathLengthTask:
                 "node_v_label": str(edge.node_v_label),
                 "directed": bool(edge.directed),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "route_variant": str(edge.route_variant),
+                "control_px": list(edge.control_px) if edge.control_px is not None else None,
                 "is_on_shortest_path": bool(
                     canonicalize_graph_edge_label(
                         str(edge.node_u_label),
@@ -559,14 +616,6 @@ class GraphPathShortestPathLengthTask:
                 ),
             }
             for edge in rendered_scene.edges
-        ]
-        evidence_node_bboxes = [
-            list(next(node.bbox_xyxy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
-        ]
-        evidence_node_centers = [
-            list(next(node.center_xy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
         ]
         adjacency_by_label = {
             str(key): tuple(str(value) for value in values)
@@ -627,14 +676,14 @@ class GraphPathShortestPathLengthTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": str(query.graph_directionality),
-                    "task_variant_probabilities": dict(query.task_variant_probabilities),
+                    "query_variant_probabilities": dict(query.query_variant_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "target_shortest_path_length": int(query.target_shortest_path_length),
@@ -652,6 +701,8 @@ class GraphPathShortestPathLengthTask:
                     "node_shape_variant_probabilities": dict(query.node_shape_variant_probabilities),
                     "layout_transform_variant": str(query.layout_transform_variant),
                     "layout_transform_variant_probabilities": dict(query.layout_transform_variant_probabilities),
+                    "edge_routing_variant": str(query.edge_routing_variant),
+                    "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
                 },
@@ -662,6 +713,8 @@ class GraphPathShortestPathLengthTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "node_color_name": str(query.node_color_name),
+                    "theme_tone": str(render_params.theme_tone),
+                    "panel_style_variant": str(render_params.panel_style_variant),
                     "background_color_rgb": list(render_params.background_color_rgb),
                     "panel_fill_rgb": list(render_params.panel_fill_rgb),
                     "panel_border_rgb": list(render_params.panel_border_rgb),
@@ -674,6 +727,7 @@ class GraphPathShortestPathLengthTask:
                     "node_shape_variant": str(render_params.node_shape_variant),
                     "node_radius_px": int(render_params.node_radius_px),
                     "edge_width_px": int(render_params.edge_width_px),
+                    "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                     "arrow_length_px": int(render_params.arrow_length_px),
                     "arrow_width_px": int(render_params.arrow_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
@@ -689,7 +743,7 @@ class GraphPathShortestPathLengthTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "count_edges_in_unique_shortest_path",
                 "graph_directionality": str(query.graph_directionality),
@@ -712,20 +766,20 @@ class GraphPathShortestPathLengthTask:
                 "layout_variant_requested": str(query.layout_variant),
                 "layout_variant_used": str(rendered_scene.layout_variant),
                 "layout_transform_variant": str(rendered_scene.layout_transform_variant),
+                "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                 "node_color_name": str(query.node_color_name),
                 "crossing_count": int(rendered_scene.crossing_count),
             },
             "witness_symbolic": {
-                "type": "label_path",
-                "label_path": list(evidence_labels),
+                "type": "node_path",
+                "nodes": list(evidence_labels),
                 "source_label": str(graph_sample.source_label),
                 "goal_label": str(graph_sample.goal_label),
             },
             "projected_evidence": {
-                "type": "label_path",
-                "label_path": list(evidence_labels),
-                "pixel_point_path": list(evidence_node_centers),
-                "pixel_bbox_set": list(evidence_node_bboxes),
+                "type": "point_sequence",
+                "point_sequence": list(evidence_path),
+                **dict(evidence_projection),
             },
         }
 
@@ -738,6 +792,25 @@ class GraphPathShortestPathLengthTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(query.task_variant),
+            query_variant=str(query.query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
+
+
+@register_task
+class GraphPathShortestPathLengthTask(_GraphPathShortestPathLengthBaseTask):
+    """Count edges in an undirected or directed shortest path."""
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        output = super().generate(int(instance_seed), params=dict(params), max_attempts=int(max_attempts))
+        execution_trace = output.trace_payload.get("execution_trace") if isinstance(output.trace_payload, Mapping) else None
+        graph_directionality = ""
+        if isinstance(execution_trace, Mapping):
+            graph_directionality = str(execution_trace.get("graph_directionality", ""))
+        query_id = "directed_shortest_path_length" if graph_directionality == "directed" else "undirected_shortest_path_length"
+        return rewrite_graph_query_output(output, query_id=query_id)
+
+
+__all__ = [
+    "GraphPathShortestPathLengthTask",
+]

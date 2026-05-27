@@ -20,7 +20,7 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15110,
-        params={"task_variant": "mirror_diagonal_main", "target_count": 2, "distractor_count": 4},
+        params={"query_variant": "mirror_diagonal_main", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -31,14 +31,19 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert len(reference_entities) == 1
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
-    assert out.evidence_gt.type == "label_set"
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value)
+    assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 2
+    assert all(len(bbox) == 4 for bbox in out.evidence_gt.value)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_mirror_symmetry_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_mirror_symmetry"
-    assert execution["task_variant"] == "mirror_diagonal_main"
+    assert out.query_variant == "default"
+    assert out.query_id == "mirror_diagonal_main"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "mirror_diagonal_main"
+    assert execution["internal_query_variant"] == "mirror_diagonal_main"
+    assert execution["mirror_signature"] == "mirror_diagonal_main"
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
     assert int(execution["distractor_count"]) == 4
@@ -63,7 +68,14 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert len(scene_entities) == 6
     assert len({str(entity["label"]) for entity in scene_entities}) == 6
     matching_labels = set(str(value) for value in execution["matching_cell_labels"])
-    assert matching_labels == set(str(value) for value in out.evidence_gt.value)
+    assert trace["witness_symbolic"]["matching_cell_labels"] == execution["matching_cell_labels"]
+    evidence_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
+    expected_evidence = [
+        evidence_by_label[str(label)] for label in trace["witness_symbolic"]["matching_cell_labels_top_left"]
+    ]
+    assert out.evidence_gt.value == expected_evidence
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
     assert len(sampled_palette) >= 2
 
@@ -115,7 +127,7 @@ def test_icons_relation_mirror_symmetry_supports_zero_matches() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15111,
-        params={"task_variant": "mirror_horizontal", "target_count": 0, "distractor_count": 6},
+        params={"query_variant": "mirror_horizontal", "target_count": 0, "distractor_count": 6},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -126,14 +138,14 @@ def test_icons_relation_mirror_symmetry_prompt_example_matches_contract() -> Non
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15112,
-        params={"task_variant": "mirror_horizontal", "target_count": 2, "distractor_count": 4},
+        params={"query_variant": "mirror_horizontal", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": 2}
     assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == ["B", "E"]
+    assert answer_and_evidence["evidence"] == [[360, 120, 560, 320], [590, 120, 790, 320]]
     assert answer_and_evidence["answer"] == 2
 
 
@@ -141,7 +153,7 @@ def test_icons_relation_mirror_symmetry_supports_both_axes_reference() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15114,
-        params={"task_variant": "mirror_both_axes", "target_count": 1, "distractor_count": 5},
+        params={"query_variant": "mirror_both_axes", "target_count": 1, "distractor_count": 5},
         max_attempts=200,
     )
     reference_cell = next(
@@ -160,11 +172,18 @@ def test_icons_relation_mirror_symmetry_balanced_sampling_defaults() -> None:
     object_counts: Counter[int] = Counter()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()
-    variant_counts: Counter[str] = Counter()
-    for index in range(40):
+    signature_counts: Counter[str] = Counter()
+    signature_target_counts: dict[str, Counter[int]] = {
+        "mirror_vertical": Counter(),
+        "mirror_horizontal": Counter(),
+        "mirror_diagonal_main": Counter(),
+        "mirror_diagonal_anti": Counter(),
+        "mirror_both_axes": Counter(),
+    }
+    for index in range(25):
         out = task.generate(
             hash64(15113, "icons_relation_mirror_symmetry", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
@@ -174,7 +193,12 @@ def test_icons_relation_mirror_symmetry_balanced_sampling_defaults() -> None:
         object_counts[object_count] += 1
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        variant_counts[str(execution["task_variant"])] += 1
+        assert str(out.query_variant) == "default"
+        assert str(execution["query_variant"]) == "default"
+        assert str(out.query_id) == str(execution["mirror_signature"])
+        mirror_signature = str(execution["mirror_signature"])
+        signature_counts[mirror_signature] += 1
+        signature_target_counts[mirror_signature][target_count] += 1
         assert object_count == 6
         assert 0 <= target_count <= 4
         assert 2 <= distractor_count <= 6
@@ -182,12 +206,13 @@ def test_icons_relation_mirror_symmetry_balanced_sampling_defaults() -> None:
     assert set(object_counts.keys()) == {6}
     assert set(target_counts.keys()) == set(range(0, 5))
     assert set(distractor_counts.keys()) == set(range(2, 7))
-    assert set(variant_counts.keys()) == {
+    assert set(signature_counts.keys()) == {
         "mirror_vertical",
         "mirror_horizontal",
         "mirror_diagonal_main",
         "mirror_diagonal_anti",
         "mirror_both_axes",
     }
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert max(variant_counts.values()) - min(variant_counts.values()) <= 1
+    assert all(signature_target_counts[mirror_signature] for mirror_signature in signature_target_counts)
+    assert sum(target_counts.values()) == 25
+    assert sum(signature_counts.values()) == 25

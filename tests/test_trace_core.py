@@ -8,20 +8,45 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from trace.core.build_presets import build_equal_split_all_tasks_config, resolve_equal_split_task_count
+from trace.core.build_presets import (
+    build_equal_split_all_tasks_config,
+    resolve_equal_split_task_count,
+    resolve_task_active_variant_count,
+    resolve_variant_aware_task_weights,
+    resolve_weighted_task_counts,
+)
 from trace.core.builder import BuildError, build_dataset
 from trace.core.canonical import CanonicalizationError, canonical_json_bytes
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.identity import compute_instance_id
 from trace.core.reward_contracts import ANSWER_REWARD_CONTRACT_ID, resolve_reward_contract
 from trace.core.seed import hash64
+from trace.core.taxonomy import (
+    ACTIVE_DOMAINS,
+    inject_taxonomy_metadata,
+    missing_taxonomy_task_ids,
+    resolve_task_taxonomy,
+)
 from trace.core.trace_store import read_trace_shard
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks import create_task
 from trace.tasks.base import TaskOutput
-from trace.tasks.registry import TASK_REGISTRY, list_task_ids, register_task
-from trace.tasks.tile.path_shortest_path import TileShortestPathTask
+from trace.tasks.registry import TASK_REGISTRY, list_default_task_ids, list_task_ids, register_task
+from trace.tasks.puzzles.cell_board.path_shortest_path import TileShortestPathTask
 from tests.helpers import read_jsonl
+
+
+DUMMY_PROMPT_ROOT = Path("tests/fixtures/prompts")
+
+
+@pytest.fixture(autouse=True)
+def _restore_task_registry_after_test():
+    """Keep dummy registry entries from leaking into unrelated tests."""
+
+    original_registry = dict(TASK_REGISTRY)
+    yield
+    TASK_REGISTRY.clear()
+    TASK_REGISTRY.update(original_registry)
 
 
 def _generate_first_successful_output(task_id: str) -> TaskOutput:
@@ -32,7 +57,7 @@ def _generate_first_successful_output(task_id: str) -> TaskOutput:
         try:
             return task.generate(
                 int(instance_seed),
-                params={"_sampling_index": int(seed_index)},
+                params={},
                 max_attempts=100,
             )
         except Exception as exc:  # pragma: no cover - exercised only on unlucky seeds.
@@ -48,6 +73,7 @@ def _register_dummy_tasks() -> None:
             task_id = "task_dummy_weights_weighted_a"
             domain = "dummy"
             task_group = "weights"
+            default_dataset_enabled = False
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
                 image = Image.new("RGB", (32, 32), (250, 250, 250))
@@ -61,39 +87,41 @@ def _register_dummy_tasks() -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "task_variant": "default",
+                            "query_variant": "default",
                             "template_id": "dummy",
                             "prompt_variant": {
-                                "prompt_bundle_id": "dummy_weights_v1",
-                                "task_family_key": "weighted_task",
+                                "prompt_bundle_id": "dummy_weights_v0",
+                                "scene_key": "weighted_task",
                                 "task_key": "default_task",
-                                "task_variant_key": None,
-                                "task_family_variant_index": 0,
-                                "task_variant_index": 0,
-                                "task_variant_template_index": None,
+                                "query_key": None,
+                                "scene_template_index": 0,
+                                "task_template_index": 0,
+                                "query_template_index": None,
                                 "variant_count_by_key": {
-                                    "task_family:weighted_task": 5,
+                                    "scene:weighted_task": 5,
                                     "task:default_task": 5,
                                 },
                                 "slot_values": {},
-                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                                "template_paths": [
+                                    "tests/fixtures/prompts/dummy/weights/dummy_weights_v0.json"
+                                ],
                             },
                         },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 1},
-                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={"variant": "a"}),
                     task_versions={
-                        "dsl_spec_version": "v1",
-                        "template_version": "v1",
-                        "operator_bundle_version": "v1",
-                        "domain_capability_version": "v1",
-                        "renderer_version": "v1",
+                        "dsl_spec_version": "v0",
+                        "template_version": "v0",
+                        "operator_bundle_version": "v0",
+                        "domain_capability_version": "v0",
+                        "renderer_version": "v0",
                     },
-                    task_variant="default",
+                    query_variant="default",
                 )
 
     if "task_dummy_weights_weighted_b" not in TASK_REGISTRY:
@@ -103,6 +131,7 @@ def _register_dummy_tasks() -> None:
             task_id = "task_dummy_weights_weighted_b"
             domain = "dummy"
             task_group = "weights"
+            default_dataset_enabled = False
 
             def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
                 image = Image.new("RGB", (32, 32), (240, 240, 240))
@@ -116,39 +145,102 @@ def _register_dummy_tasks() -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "task_variant": "default",
+                            "query_variant": "default",
                             "template_id": "dummy",
                             "prompt_variant": {
-                                "prompt_bundle_id": "dummy_weights_v1",
-                                "task_family_key": "weighted_task",
+                                "prompt_bundle_id": "dummy_weights_v0",
+                                "scene_key": "weighted_task",
                                 "task_key": "default_task",
-                                "task_variant_key": None,
-                                "task_family_variant_index": 1,
-                                "task_variant_index": 1,
-                                "task_variant_template_index": None,
+                                "query_key": None,
+                                "scene_template_index": 1,
+                                "task_template_index": 1,
+                                "query_template_index": None,
                                 "variant_count_by_key": {
-                                    "task_family:weighted_task": 5,
+                                    "scene:weighted_task": 5,
                                     "task:default_task": 5,
                                 },
                                 "slot_values": {},
-                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                                "template_paths": [
+                                    "tests/fixtures/prompts/dummy/weights/dummy_weights_v0.json"
+                                ],
                             },
                         },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 2},
-                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.2, complexity_components={"variant": "b"}),
                     task_versions={
-                        "dsl_spec_version": "v1",
-                        "template_version": "v1",
-                        "operator_bundle_version": "v1",
-                        "domain_capability_version": "v1",
-                        "renderer_version": "v1",
+                        "dsl_spec_version": "v0",
+                        "template_version": "v0",
+                        "operator_bundle_version": "v0",
+                        "domain_capability_version": "v0",
+                        "renderer_version": "v0",
                     },
-                    task_variant="default",
+                    query_variant="default",
+                )
+
+    if "task_dummy_weights_variant_support" not in TASK_REGISTRY:
+
+        @register_task
+        class DummyWeightedQueryVariantSupport:
+            task_id = "task_dummy_weights_variant_support"
+            domain = "dummy"
+            task_group = "weights"
+            default_dataset_enabled = False
+
+            def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
+                image = Image.new("RGB", (32, 32), (245, 245, 245))
+                point = [[6.0, 6.0]]
+                probabilities = {"alpha": 0.25, "beta": 0.25, "gamma": 0.5}
+                return TaskOutput(
+                    prompt="dummy variant support",
+                    answer_gt=TypedValue(type="integer", value=5),
+                    evidence_gt=TypedValue(type="point_set", value=point),
+                    image=image,
+                    image_id="img0",
+                    trace_payload={
+                        "scene_ir": {"entities": []},
+                        "query_spec": {
+                            "query_variant": "alpha",
+                            "template_id": "dummy",
+                            "params": {"query_variant_probabilities": probabilities},
+                            "prompt_variant": {
+                                "prompt_bundle_id": "dummy_weights_v0",
+                                "scene_key": "weighted_task",
+                                "task_key": "default_task",
+                                "query_key": "alpha",
+                                "scene_template_index": 0,
+                                "task_template_index": 0,
+                                "query_template_index": 0,
+                                "variant_count_by_key": {
+                                    "scene:weighted_task": 5,
+                                    "task:default_task": 5,
+                                    "query:alpha": 5,
+                                },
+                                "slot_values": {},
+                                "template_paths": [
+                                    "tests/fixtures/prompts/dummy/weights/dummy_weights_v0.json"
+                                ],
+                            },
+                        },
+                        "render_spec": {"coord_space": "pixel"},
+                        "render_map": {"image_id": "img0", "anchors": {}},
+                        "execution_trace": {"answer": 5, "query_variant_probabilities": probabilities},
+                        "witness_symbolic": {"type": "point_set", "count": 1},
+                        "projected_evidence": {"pixel_point_set": point},
+                    },
+                    complexity=TaskComplexity(complexity_score=0.3, complexity_components={"variant": "support"}),
+                    task_versions={
+                        "dsl_spec_version": "v0",
+                        "template_version": "v0",
+                        "operator_bundle_version": "v0",
+                        "domain_capability_version": "v0",
+                        "renderer_version": "v0",
+                    },
+                    query_variant="alpha",
                 )
 
 
@@ -158,7 +250,7 @@ def test_canonical_non_finite_rejected() -> None:
     assert exc_info.value.code == "schema_non_finite_number"
 
 
-def test_tile_shortest_path_deterministic() -> None:
+def test_cell_board_shortest_path_deterministic() -> None:
     task = TileShortestPathTask()
     params = {
         "rows": 7,
@@ -174,7 +266,7 @@ def test_tile_shortest_path_deterministic() -> None:
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
-    assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "tile_path_v1"
+    assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "puzzles_cell_board_path_v0"
     assert out_a.trace_payload["execution_trace"]["target_shortest_len"] == out_b.trace_payload["execution_trace"]["target_shortest_len"]
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
@@ -200,21 +292,23 @@ def test_all_registered_tasks_emit_required_trace_fields() -> None:
 
 def test_instance_id_ignores_image_path() -> None:
     base = {
-        "instance_version": "v1",
+        "instance_version": "v0",
         "instance_seed": 42,
-        "domain": "tile",
-        "task_group": "path",
-        "task": "task_tile_path_shortest_path",
+        "domain": "puzzles",
+        "task_group": "cell_board",
+        "task": "task_puzzles__cell_board__path_distance",
+        "scene_id": "cell_board",
+        "query_id": "shortest_path",
         "prompt": "p",
         "prompt_variants": {"answer_only": "p0", "answer_and_evidence": "p1"},
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
         "answer_gt": {"type": "integer", "value": 5},
-        "evidence_gt": {"type": "grid_point_path", "value": [[1, 2], [1, 3]]},
+        "evidence_gt": {"type": "point_sequence", "value": [[120, 120], [168, 120]]},
         "reward_contract": resolve_reward_contract(
             answer_type="integer",
-            evidence_type="grid_point_path",
+            evidence_type="point_sequence",
         ).to_dict(),
-        "versions": {"dsl_spec_version": "v1"},
+        "versions": {"dsl_spec_version": "v0"},
     }
     variant = dict(base)
     variant["images"] = [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "other/path.png"}]
@@ -226,15 +320,16 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     config = BuildConfig(
         output_root=str(output_root),
         dataset_name="test_build",
-        instance_version="v1",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_tile_path_shortest_path",
+                task_id="task_puzzles__cell_board__path_distance",
                 count=4,
                 params={
                     "rows": 7,
                     "cols": 7,
+                    "query_id": "shortest_path",
                     "target_shortest_len_min": 4,
                     "target_shortest_len_max": 10,
                 },
@@ -252,13 +347,17 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     assert len(train_instances) == 4
     for instance in train_instances:
         assert instance["trace_ref"]["shard_id"] == "trace_shard_0001.jsonl.zst"
+        assert instance["domain"] == "puzzles"
+        assert instance["task_group"] == "cell_board"
+        assert instance["scene_id"] == "cell_board"
+        assert instance["query_id"] == "shortest_path"
         assert not Path(instance["images"][0]["path"]).is_absolute()
         assert instance["answer_gt"]["type"] == "integer"
-        assert instance["evidence_gt"]["type"] == "grid_point_path"
+        assert instance["evidence_gt"]["type"] == "point_sequence"
         assert instance["reward_contract"]["answer"]["id"] == ANSWER_REWARD_CONTRACT_ID
         assert instance["reward_contract"]["answer"]["type"] == "integer"
-        assert instance["reward_contract"]["evidence"]["id"] == "sequence_exact_v1"
-        assert instance["reward_contract"]["evidence"]["type"] == "grid_point_path"
+        assert instance["reward_contract"]["evidence"]["id"] == "point_sequence_soft_distance_v0"
+        assert instance["reward_contract"]["evidence"]["type"] == "point_sequence"
         assert sorted(instance["prompt_variants"].keys()) == ["answer_and_evidence", "answer_only"]
         assert instance["prompt"] == instance["prompt_variants"]["answer_and_evidence"]
 
@@ -269,24 +368,28 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     assert len(trace_records) == len(train_instances)
     for instance, trace_record in zip(train_instances, trace_records):
         assert trace_record["reward_contract"] == instance["reward_contract"]
+        assert trace_record["taxonomy"]["domain"] == instance["domain"]
+        assert trace_record["taxonomy"]["scene_id"] == instance["scene_id"]
+        assert trace_record["query_spec"]["scene_id"] == instance["scene_id"]
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert build_report["dataset_id"].startswith("blake3:")
-    assert build_report["accepted_counts_by_task"]["task_tile_path_shortest_path"] == 4
+    assert build_report["accepted_counts_by_task"]["task_puzzles__cell_board__path_distance"] == 4
 
     strict_output_root = tmp_path / "strict_out"
     strict_config = BuildConfig(
         output_root=str(strict_output_root),
         dataset_name="test_strict_repro",
-        instance_version="v1",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_tile_path_shortest_path",
+                task_id="task_puzzles__cell_board__path_distance",
                 count=3,
                 params={
                     "rows": 6,
                     "cols": 6,
+                    "query_id": "shortest_path",
                     "target_shortest_len_min": 4,
                     "target_shortest_len_max": 8,
                 },
@@ -307,15 +410,16 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
     task_params = {
         "rows": 7,
         "cols": 7,
+        "query_id": "shortest_path",
         "target_shortest_len_min": 4,
         "target_shortest_len_max": 10,
     }
     serial_config = BuildConfig(
         output_root=str(tmp_path / "serial_out"),
         dataset_name="parallel_match",
-        instance_version="v1",
+        instance_version="v0",
         image_format="png",
-        tasks=[BuildTaskConfig(task_id="task_tile_path_shortest_path", count=4, params=task_params)],
+        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__path_distance", count=4, params=task_params)],
         strict_repro=False,
         max_attempts_per_instance=120,
         sampling_seed=23,
@@ -324,9 +428,9 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
     parallel_config = BuildConfig(
         output_root=str(tmp_path / "parallel_out"),
         dataset_name="parallel_match",
-        instance_version="v1",
+        instance_version="v0",
         image_format="png",
-        tasks=[BuildTaskConfig(task_id="task_tile_path_shortest_path", count=4, params=task_params)],
+        tasks=[BuildTaskConfig(task_id="task_puzzles__cell_board__path_distance", count=4, params=task_params)],
         strict_repro=False,
         max_attempts_per_instance=120,
         sampling_seed=23,
@@ -350,34 +454,180 @@ def test_parallel_build_matches_serial(tmp_path: Path) -> None:
         assert (serial_path / image_rel_path).read_bytes() == (parallel_path / image_rel_path).read_bytes()
 
 
-def test_equal_split_all_tasks_build_preset_uses_registered_tasks() -> None:
-    per_task = resolve_equal_split_task_count(num_instances=len(TASK_REGISTRY) * 2, task_count=len(TASK_REGISTRY))
+def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None:
+    default_task_ids = list_default_task_ids()
+    active_table_tasks = {
+        "task_charts__table__value_predicate_count",
+        "task_charts__table__column_rank_label",
+        "task_charts__table__column_summary_value",
+        "task_charts__table__temporal_row_interval_difference_value",
+    }
+    active_cell_board_tasks = {
+        "task_puzzles__cell_board__attribute_count",
+        "task_puzzles__cell_board__color_region_count",
+        "task_puzzles__cell_board__reachability_count",
+        "task_puzzles__cell_board__path_distance",
+        "task_puzzles__cell_board__symmetry_violation_count",
+    }
+    active_page_time_artifact_tasks = {
+        "task_pages__calendar__marked_day_class_count",
+        "task_pages__calendar__weekday_occurrence_date",
+        "task_pages__schedule__longer_than_reference_count",
+        "task_pages__schedule__maximum_non_overlapping_count",
+        "task_pages__schedule__overlap_count",
+        "task_pages__timeline__interval_membership_count",
+    }
+    active_puzzle_clock_tasks = {
+        "task_puzzles__clock_collection__compare",
+        "task_puzzles__analog_clock__offset_readout",
+    }
+    active_brick_breaker_tasks = {
+        "task_games__brick_breaker__hit_row_remaining_count",
+        "task_games__brick_breaker__trajectory_target_label",
+    }
+    assert default_task_ids
+    assert len(default_task_ids) == len(set(default_task_ids))
+    assert all("__" in task_id for task_id in default_task_ids if task_id.startswith("task_"))
+    assert all("__" in task_id for task_id in TASK_REGISTRY if task_id.startswith("task_"))
+    assert {task_id for task_id in default_task_ids if task_id.startswith("task_games__brick_breaker__")} == active_brick_breaker_tasks
+    assert {task_id for task_id in TASK_REGISTRY if task_id.startswith("task_games__brick_breaker__")} == active_brick_breaker_tasks
+    assert {task_id for task_id in default_task_ids if task_id.startswith("task_charts__table__")} == active_table_tasks
+    assert {task_id for task_id in TASK_REGISTRY if task_id.startswith("task_charts__table__")} == active_table_tasks
+    assert {
+        task_id for task_id in default_task_ids if task_id.startswith("task_puzzles__cell_board__")
+    } == active_cell_board_tasks
+    assert {task_id for task_id in TASK_REGISTRY if task_id.startswith("task_puzzles__cell_board__")} == active_cell_board_tasks
+    assert active_page_time_artifact_tasks <= set(default_task_ids)
+    assert active_puzzle_clock_tasks <= set(default_task_ids)
+    assert not missing_taxonomy_task_ids(default_task_ids)
+    assert set(ACTIVE_DOMAINS) == {
+        "charts",
+        "games",
+        "geometry",
+        "graph",
+        "icons",
+        "illustrations",
+        "pages",
+        "physics",
+        "puzzles",
+        "three_d",
+    }
+    assert resolve_task_taxonomy("task_charts__table__column_rank_label").domain == "charts"
+    assert resolve_task_taxonomy("task_puzzles__cell_board__path_distance").domain == "puzzles"
+    assert resolve_task_taxonomy("task_pages__control_board__filter_count").domain == "pages"
+    assert resolve_task_taxonomy("task_pages__calendar__marked_day_class_count").domain == "pages"
+    assert resolve_task_taxonomy("task_puzzles__clock_collection__compare").domain == "puzzles"
+
+    taxonomy = resolve_task_taxonomy("task_puzzles__cell_board__path_distance")
+    injected = inject_taxonomy_metadata(
+        {
+            "query_spec": {
+                "source_task_id": "cell_board_shortest_path_internal",
+                "source_domain": "puzzles",
+                "source_task_group": "cell_board_path",
+                "prompt_variant": {
+                    "prompt_domain": "puzzles",
+                    "prompt_task_group": "cell_board_path",
+                },
+            },
+            "execution_trace": {"query_id": "shortest_path"},
+        },
+        task_id="task_puzzles__cell_board__path_distance",
+        taxonomy=taxonomy,
+        query_id="shortest_path",
+        registered_domain="puzzles",
+        registered_task_group="cell_board",
+    )
+    metadata = injected["taxonomy"]
+    assert metadata["public"] == {
+        "domain": "puzzles",
+        "scene_id": "cell_board",
+        "task_id": "task_puzzles__cell_board__path_distance",
+        "query_id": "shortest_path",
+    }
+    assert metadata["registered"] == {
+        "task_id": "task_puzzles__cell_board__path_distance",
+        "domain": "puzzles",
+        "task_group": "cell_board",
+    }
+    assert metadata["source"] == {
+        "implementation_task_id": "cell_board_shortest_path_internal",
+        "implementation_domain": "puzzles",
+        "implementation_task_group": "cell_board_path",
+        "config_domain": "puzzles",
+        "config_task_group": "cell_board",
+        "prompt_domain": "puzzles",
+        "prompt_task_group": "cell_board_path",
+    }
+
+    per_task = resolve_equal_split_task_count(num_instances=len(default_task_ids) * 2, task_count=len(default_task_ids))
     assert per_task == 2
 
     preset = build_equal_split_all_tasks_config(
         output_root="./out",
         dataset_name="all_tasks_equal_split",
-        num_instances=len(TASK_REGISTRY) * 2,
+        num_instances=len(default_task_ids) * 2,
         sampling_seed=5,
         workers=0,
         max_in_flight=0,
     )
-    assert len(preset.tasks) == len(TASK_REGISTRY)
-    assert [task.task_id for task in preset.tasks] == sorted(TASK_REGISTRY)
+    assert len(preset.tasks) == len(default_task_ids)
+    assert [task.task_id for task in preset.tasks] == default_task_ids
     assert all(int(task.count or 0) == 2 for task in preset.tasks)
     assert preset.workers == 0
 
     with pytest.raises(ValueError):
-        resolve_equal_split_task_count(num_instances=(len(TASK_REGISTRY) * 2) + 1, task_count=len(TASK_REGISTRY))
+        resolve_equal_split_task_count(num_instances=(len(default_task_ids) * 2) + 1, task_count=len(default_task_ids))
 
 
-def test_weighted_task_sampler(tmp_path: Path) -> None:
+def test_variant_aware_task_weight_helpers() -> None:
     _register_dummy_tasks()
+
+    counts = resolve_weighted_task_counts(
+        num_instances=10,
+        task_weights={
+            "task_dummy_weights_weighted_a": 1.0,
+            "task_dummy_weights_variant_support": 2.0,
+        },
+    )
+    assert counts == {
+        "task_dummy_weights_variant_support": 7,
+        "task_dummy_weights_weighted_a": 3,
+    }
+
+    assert resolve_task_active_variant_count(
+        "task_dummy_weights_variant_support",
+        probe_samples=1,
+        max_attempts_per_instance=10,
+    ) == 3
+
+    weights, variant_counts = resolve_variant_aware_task_weights(
+        task_ids=[
+            "task_dummy_weights_weighted_a",
+            "task_dummy_weights_variant_support",
+        ],
+        alpha=0.5,
+        probe_samples=1,
+        max_attempts_per_instance=10,
+    )
+    assert variant_counts == {
+        "task_dummy_weights_variant_support": 3,
+        "task_dummy_weights_weighted_a": 1,
+    }
+    assert weights == {
+        "task_dummy_weights_variant_support": 2.0,
+        "task_dummy_weights_weighted_a": 1.0,
+    }
+
+
+def test_weighted_task_sampler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _register_dummy_tasks()
+    monkeypatch.setenv("TRACE_PROMPT_ROOT", str(DUMMY_PROMPT_ROOT.resolve()))
     output_root = tmp_path / "out"
     config = BuildConfig(
         output_root=str(output_root),
         dataset_name="test_weighted_sampler",
-        instance_version="v1",
+        instance_version="v0",
         image_format="png",
         num_instances=30,
         tasks=[
@@ -402,7 +652,8 @@ def test_weighted_task_sampler(tmp_path: Path) -> None:
     ) == 30
 
 
-def test_prompt_validation_error_codes(tmp_path: Path) -> None:
+def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TRACE_PROMPT_ROOT", str(DUMMY_PROMPT_ROOT.resolve()))
     if "task_dummy_query_prompt_missing" not in TASK_REGISTRY:
 
         @register_task
@@ -422,22 +673,22 @@ def test_prompt_validation_error_codes(tmp_path: Path) -> None:
                     image_id="img0",
                     trace_payload={
                         "scene_ir": {"entities": []},
-                        "query_spec": {"task_variant": "default", "template_id": "dummy_query"},
+                        "query_spec": {"query_variant": "default", "template_id": "dummy_query"},
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 3},
-                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
-                        "dsl_spec_version": "v1",
-                        "template_version": "v1",
-                        "operator_bundle_version": "v1",
-                        "domain_capability_version": "v1",
-                        "renderer_version": "v1",
+                        "dsl_spec_version": "v0",
+                        "template_version": "v0",
+                        "operator_bundle_version": "v0",
+                        "domain_capability_version": "v0",
+                        "renderer_version": "v0",
                     },
-                    task_variant="default",
+                    query_variant="default",
                 )
 
     if "task_dummy_weights_prompt_unresolved" not in TASK_REGISTRY:
@@ -460,39 +711,41 @@ def test_prompt_validation_error_codes(tmp_path: Path) -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "task_variant": "default",
+                            "query_variant": "default",
                             "template_id": "dummy_query",
                             "prompt_variant": {
-                                "prompt_bundle_id": "dummy_weights_v1",
-                                "task_family_key": "weighted_task",
+                                "prompt_bundle_id": "dummy_weights_v0",
+                                "scene_key": "weighted_task",
                                 "task_key": "default_task",
-                                "task_variant_key": None,
-                                "task_family_variant_index": 0,
-                                "task_variant_index": 0,
-                                "task_variant_template_index": None,
+                                "query_key": None,
+                                "scene_template_index": 0,
+                                "task_template_index": 0,
+                                "query_template_index": None,
                                 "variant_count_by_key": {
-                                    "task_family:weighted_task": 5,
+                                    "scene:weighted_task": 5,
                                     "task:default_task": 5,
                                 },
                                 "slot_values": {},
-                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                                "template_paths": [
+                                    "tests/fixtures/prompts/dummy/weights/dummy_weights_v0.json"
+                                ],
                             },
                         },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 4},
-                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
-                        "dsl_spec_version": "v1",
-                        "template_version": "v1",
-                        "operator_bundle_version": "v1",
-                        "domain_capability_version": "v1",
-                        "renderer_version": "v1",
+                        "dsl_spec_version": "v0",
+                        "template_version": "v0",
+                        "operator_bundle_version": "v0",
+                        "domain_capability_version": "v0",
+                        "renderer_version": "v0",
                     },
-                    task_variant="default",
+                    query_variant="default",
                 )
 
     cases = [
@@ -516,7 +769,7 @@ def test_prompt_validation_error_codes(tmp_path: Path) -> None:
         config = BuildConfig(
             output_root=str(output_root),
             dataset_name=dataset_name,
-            instance_version="v1",
+            instance_version="v0",
             image_format="png",
             tasks=[BuildTaskConfig(task_id=str(task_id), count=1, params={})],
             strict_repro=False,

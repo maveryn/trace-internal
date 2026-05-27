@@ -22,19 +22,19 @@ def test_graph_comparison_largest_component_size_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
     assert out_a.answer_gt.type == "integer"
-    assert out_a.evidence_gt.type == "label_set"
+    assert out_a.evidence_gt.type == "point_set"
 
 
 def test_graph_comparison_largest_component_size_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_graph_comparison_largest_component_size"
+    output_root = tmp_path / "task_graph__node_link__component_membership_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_graph_comparison_largest_component_size",
-        instance_version="v1",
+        dataset_name="build_smoke_task_graph__node_link__component_membership_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_graph_comparison_largest_component_size",
+                task_id="task_graph__node_link__component_membership_count",
                 count=4,
                 params={},
             )
@@ -48,10 +48,10 @@ def test_graph_comparison_largest_component_size_build_smoke(tmp_path: Path) -> 
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["task_group"] == "comparison" for record in train_records)
+    assert all(record["task_group"] == "relation" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_graph_comparison_largest_component_size"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_graph__node_link__component_membership_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

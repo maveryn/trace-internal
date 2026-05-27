@@ -1,0 +1,5 @@
+task_id: task_icons__reference_canvas__anchor_position_count
+params:
+  query_variant: right_of_anchor
+  target_count: 2
+  distractor_count: 3

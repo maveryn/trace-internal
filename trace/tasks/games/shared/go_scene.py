@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from .go_common import BLACK, WHITE, Board, Coord, color_name, coord_to_point_id, coord_to_stone_id
+from .layout import apply_games_layout_jitter_to_bbox
 from .style import GoTheme, build_games_go_theme
 
 
@@ -27,6 +28,7 @@ class GoRenderParams:
     stone_radius_fraction: float
     highlight_outline_width_px: int
     liberty_bbox_fraction: float
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -125,7 +127,7 @@ def render_go_board_scene(
     liberty_coords: Sequence[Coord],
     params: GoRenderParams,
 ) -> RenderedGoScene:
-    """Render one visible 7x7 Go board with a highlighted connected group."""
+    """Render one visible Go board with a highlighted connected group."""
 
     del scene_variant
     board_size = int(len(board))
@@ -146,6 +148,13 @@ def render_go_board_scene(
         round(float(board_left + board_size_px), 3),
         round(float(board_top + board_size_px), 3),
     )
+    board_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=board_bbox,
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    board_left, board_top = float(board_bbox[0]), float(board_bbox[1])
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -246,6 +255,7 @@ def render_go_board_scene(
         "point_centers_px": {str(key): [float(value[0]), float(value[1])] for key, value in centers_px.items()},
         "point_bboxes_px": {str(key): list(value) for key, value in point_bboxes_px.items()},
         "stone_bboxes_px": {str(key): list(value) for key, value in stone_bboxes_px.items()},
+        "layout_jitter": dict(layout_jitter),
     }
     return RenderedGoScene(
         image=image,

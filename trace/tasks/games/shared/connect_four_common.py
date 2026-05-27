@@ -39,24 +39,42 @@ def coord_to_cell_id(coord: Coord) -> str:
     return f"cell_r{int(coord[0])}_c{int(coord[1])}"
 
 
-def empty_board() -> Board:
-    """Return one empty standard Connect Four board."""
+def board_dimensions(board: Sequence[Sequence[int]]) -> Tuple[int, int]:
+    """Return `(rows, columns)` for one rectangular Connect Four board."""
 
-    return tuple(tuple(int(EMPTY) for _ in range(COLUMNS)) for _ in range(ROWS))
+    rows = int(len(board))
+    if rows <= 0:
+        raise ValueError("Connect Four board must have at least one row")
+    columns = int(len(board[0]))
+    if columns <= 0:
+        raise ValueError("Connect Four board must have at least one column")
+    for row in board:
+        if int(len(row)) != int(columns):
+            raise ValueError("Connect Four board rows must all have the same length")
+    return int(rows), int(columns)
 
 
-def _in_bounds(row: int, col: int) -> bool:
-    """Return whether one coordinate lies on the standard board."""
+def empty_board(*, rows: int = ROWS, columns: int = COLUMNS) -> Board:
+    """Return one empty Connect Four board with the requested dimensions."""
 
-    return 0 <= int(row) < ROWS and 0 <= int(col) < COLUMNS
+    if int(rows) < 4 or int(columns) < 4:
+        raise ValueError("Connect Four board dimensions must both be at least 4")
+    return tuple(tuple(int(EMPTY) for _ in range(int(columns))) for _ in range(int(rows)))
+
+
+def _in_bounds(row: int, col: int, *, rows: int = ROWS, columns: int = COLUMNS) -> bool:
+    """Return whether one coordinate lies on the board dimensions."""
+
+    return 0 <= int(row) < int(rows) and 0 <= int(col) < int(columns)
 
 
 def legal_drop_rows(board: Sequence[Sequence[int]]) -> Dict[int, int]:
     """Return the landing row for each non-full column."""
 
+    rows, columns = board_dimensions(board)
     landing_rows: Dict[int, int] = {}
-    for col in range(COLUMNS):
-        for row in range(ROWS - 1, -1, -1):
+    for col in range(int(columns)):
+        for row in range(int(rows) - 1, -1, -1):
             if int(board[row][col]) == int(EMPTY):
                 landing_rows[int(col)] = int(row)
                 break
@@ -85,9 +103,10 @@ def occupied_cell_count(board: Sequence[Sequence[int]]) -> int:
 def completed_lines_for_cell(board: Sequence[Sequence[int]], player: int, coord: Coord) -> Tuple[Tuple[Coord, ...], ...]:
     """Return every distinct connect-four line for one player that includes one cell."""
 
+    rows, columns = board_dimensions(board)
     row = int(coord[0])
     col = int(coord[1])
-    if not _in_bounds(int(row), int(col)) or int(board[row][col]) != int(player):
+    if not _in_bounds(int(row), int(col), rows=int(rows), columns=int(columns)) or int(board[row][col]) != int(player):
         return tuple()
 
     lines: List[Tuple[Coord, ...]] = []
@@ -96,14 +115,14 @@ def completed_lines_for_cell(board: Sequence[Sequence[int]], player: int, coord:
         backward: List[Coord] = []
         scan_row = int(row - row_delta)
         scan_col = int(col - col_delta)
-        while _in_bounds(scan_row, scan_col) and int(board[scan_row][scan_col]) == int(player):
+        while _in_bounds(scan_row, scan_col, rows=int(rows), columns=int(columns)) and int(board[scan_row][scan_col]) == int(player):
             backward.append((int(scan_row), int(scan_col)))
             scan_row -= int(row_delta)
             scan_col -= int(col_delta)
         forward: List[Coord] = []
         scan_row = int(row + row_delta)
         scan_col = int(col + col_delta)
-        while _in_bounds(scan_row, scan_col) and int(board[scan_row][scan_col]) == int(player):
+        while _in_bounds(scan_row, scan_col, rows=int(rows), columns=int(columns)) and int(board[scan_row][scan_col]) == int(player):
             forward.append((int(scan_row), int(scan_col)))
             scan_row += int(row_delta)
             scan_col += int(col_delta)
@@ -123,8 +142,9 @@ def completed_lines_for_cell(board: Sequence[Sequence[int]], player: int, coord:
 def has_connect_four(board: Sequence[Sequence[int]], player: int) -> bool:
     """Return whether one player already has a completed line on the board."""
 
-    for row in range(ROWS):
-        for col in range(COLUMNS):
+    rows, columns = board_dimensions(board)
+    for row in range(int(rows)):
+        for col in range(int(columns)):
             if int(board[row][col]) != int(player):
                 continue
             if completed_lines_for_cell(board, int(player), (int(row), int(col))):
@@ -152,6 +172,7 @@ __all__ = [
     "RED",
     "ROWS",
     "YELLOW",
+    "board_dimensions",
     "completed_lines_for_cell",
     "coord_to_cell_id",
     "drop_disc",

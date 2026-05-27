@@ -6,6 +6,9 @@ import re
 from pathlib import Path
 
 import trace.tasks  # noqa: F401 - ensures task modules register on import
+from scripts.check_active_inventory_integrity import collect_inventory_integrity_failures
+from scripts.check_skill_consistency import collect_skill_consistency_failures
+from scripts.generate_active_task_inventory import render_inventory_markdown
 from trace.tasks import TASK_REGISTRY
 
 
@@ -51,3 +54,20 @@ def test_task_docs_readme_links_match_registry() -> None:
         if path.name not in {"README.md", "TASK_DOC_TEMPLATE.md"}
     }
     assert task_doc_files == expected_links
+
+
+def test_active_task_inventory_matches_registry_and_taxonomy() -> None:
+    inventory_path = DOCS_ROOT / "ACTIVE_TASK_INVENTORY.md"
+    assert inventory_path.is_file()
+    assert not (DOCS_ROOT / "SCENE_TASK_COUNTS.md").exists()
+    assert inventory_path.read_text(encoding="utf-8") == render_inventory_markdown()
+
+
+def test_active_inventory_integrity_check_passes() -> None:
+    failures = collect_inventory_integrity_failures(include_local_cache=False)
+    assert not failures, "\n".join(failure.format() for failure in failures)
+
+
+def test_repo_skills_match_active_domain_surface() -> None:
+    failures = collect_skill_consistency_failures()
+    assert not failures, "\n".join(failure.format() for failure in failures)

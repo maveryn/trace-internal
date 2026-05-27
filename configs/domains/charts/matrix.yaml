@@ -1,0 +1,105 @@
+generation:
+  shared:
+    row_count_min: 6
+    row_count_max: 12
+    column_count_min: 6
+    column_count_max: 12
+    query_variant_weights:
+      axis_extremum_label: 1.0
+      off_diagonal_confusion_label: 1.0
+      threshold_cell_count: 1.0
+    scene_variant_weights:
+      confusion_matrix_counts: 1.0
+      annotated_heatmap_table: 1.0
+      correlation_matrix_signed: 1.0
+      triangular_pairwise_matrix: 1.0
+      clustered_block_matrix: 1.0
+    palette_variant_weights:
+      blue_sequential: 1.0
+      viridis: 1.0
+      yellow_purple: 1.0
+      red_blue_diverging: 1.0
+      gray_print: 1.0
+      high_contrast: 1.0
+    header_layout_weights:
+      top_rotated_columns: 1.0
+      top_horizontal_columns: 1.0
+      dual_headers: 1.0
+    grid_style_weights:
+      thin_grid: 1.0
+      gapped_tiles: 1.0
+      heavy_block_lines: 1.0
+      minimal_grid: 1.0
+    query_axis_weights:
+      row: 1.0
+      column: 1.0
+    extremum_direction_weights:
+      highest: 1.0
+      lowest: 1.0
+    comparison_weights:
+      at_least: 1.0
+      at_most: 1.0
+    balanced_query_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_palette_variant_sampling: true
+    balanced_header_layout_sampling: true
+    balanced_grid_style_sampling: true
+    balanced_query_axis_sampling: true
+    balanced_extremum_direction_sampling: true
+    balanced_comparison_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 1376
+    canvas_height: 936
+    outer_margin_px: 38
+    panel_padding_px: 26
+    title_band_height_px: 60
+    legend_height_px: 56
+    row_label_width_px: 166
+    col_label_height_px: 90
+    cell_gap_px: 2
+    cell_border_width_px: 1
+    title_font_size_px: 29
+    header_font_size_px: 18
+    cell_font_size_px: 20
+    legend_font_size_px: 16
+    inactive_cell_rgb: [245, 246, 248]
+    highlight_rgb: [236, 180, 34]
+    grid_rgb_options:
+      - [86, 94, 106]
+      - [76, 92, 108]
+      - [98, 90, 78]
+      - [76, 100, 92]
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.42
+      reasoning_load: 0.44
+      scene_variant_load: 0.14
+
+prompt:
+  shared:
+    bundle_id: charts_matrix_v0
+    scene_key: matrix_cell
+    task_key: matrix_cell_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description_confusion_matrix_counts: a labeled confusion matrix with printed integer counts in each active cell
+    object_description_annotated_heatmap_table: a labeled annotated heatmap table with printed integer values in each cell
+    object_description_correlation_matrix_signed: a labeled signed association matrix with printed integer scores in each cell
+    object_description_triangular_pairwise_matrix: a labeled triangular pairwise matrix where only the filled cells count
+    object_description_clustered_block_matrix: a labeled matrix with grouped row and column blocks and printed integer values in each cell
+    answer_hint_integer: set "answer" to the requested integer value
+    answer_hint_label: set "answer" to the exact visible row or column label as a string
+    unanswerable_instruction: If the requested row or column label is not shown, answer exactly "unanswerable".
+    evidence_hint_axis_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the selected row or column header, the winning opposite-axis header, and all candidate cells used for the second-rank comparison
+    evidence_hint_off_diagonal_confusion_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the actual-class row header, winning predicted-class column header, and the off-diagonal candidate cells
+    evidence_hint_threshold_cell_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the selected row or column header, matching opposite-axis headers, and cells matching the threshold
+    json_example_axis_extremum_label: '{"evidence":[[80,300,170,345],[520,120,590,180],[240,300,310,345]],"answer":"C7"}'
+    json_example_off_diagonal_confusion_label: '{"evidence":[[80,260,170,305],[520,120,590,180],[240,260,310,305]],"answer":"C5"}'
+    json_example_threshold_cell_count: '{"evidence":[[80,260,170,305],[240,120,310,180],[240,260,310,305]],"answer":4}'
+    json_example_answer_only_axis_extremum_label: '{"answer":"C7"}'
+    json_example_answer_only_off_diagonal_confusion_label: '{"answer":"C5"}'
+    json_example_answer_only_threshold_cell_count: '{"answer":4}'

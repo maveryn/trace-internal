@@ -10,22 +10,37 @@ visual:
       solid_light:
         kind: solid
         color: [248, 249, 251]
+      cool_light:
+        kind: solid
+        color: [245, 249, 251]
+      warm_light:
+        kind: solid
+        color: [251, 249, 244]
+      paper_light:
+        kind: solid
+        color: [250, 248, 241]
+      mint_light:
+        kind: solid
+        color: [244, 250, 247]
+      lavender_light:
+        kind: solid
+        color: [248, 247, 252]
     weights:
       solid_light: 1.0
+      cool_light: 1.0
+      warm_light: 1.0
+      paper_light: 1.0
+      mint_light: 1.0
+      lavender_light: 1.0
   noise:
-    apply_prob: 0.0
-    edit_types:
-      - blur
-      - downsample
-      - jpeg
-      - noise
-    edit_count_range: [1, 2]
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
     value_ranges:
       blur:
-        radius: [0.2, 0.6]
+        radius: [0.1, 0.32]
       downsample:
-        scale: [0.85, 0.95]
+        scale: [0.93, 0.98]
       jpeg:
-        quality: [70.0, 90.0]
+        quality: [84.0, 95.0]
       noise:
-        alpha: [0.03, 0.08]
+        alpha: [0.008, 0.03]

@@ -1,0 +1,113 @@
+generation:
+  shared:
+    rows_min: 3
+    rows_max: 7
+    cols_min: 3
+    cols_max: 7
+  task_overrides:
+    cell_board_min_distance_internal:
+      rows_min: 4
+      rows_max: 8
+      cols_min: 4
+      cols_max: 8
+      target_distance_min: 3
+      target_distance_max: 7
+      component_size_min: 1
+      component_size_max: 6
+rendering:
+  shared:
+    short_side_px_min: 28
+    short_side_px_max: 56
+    aspect_ratio_min: 1.0
+    aspect_ratio_max: 2.0
+    outer_padding_fraction_min: 0.08
+    outer_padding_fraction_max: 0.12
+    placement_jitter_fraction_min: 0.02
+    placement_jitter_fraction_max: 0.06
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.5
+      reasoning_load: 0.5
+      scene_variant_load: 0.0
+  task_overrides:
+    cell_board_min_distance_internal:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.65
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_light:
+        kind: solid
+        color:
+        - 246
+        - 246
+        - 246
+      cool_light:
+        kind: solid
+        color:
+        - 243
+        - 247
+        - 252
+      warm_light:
+        kind: solid
+        color:
+        - 251
+        - 248
+        - 243
+      mint_light:
+        kind: solid
+        color:
+        - 244
+        - 249
+        - 246
+      lavender_light:
+        kind: solid
+        color:
+        - 248
+        - 246
+        - 253
+    weights:
+      solid_light: 1.0
+      cool_light: 1.0
+      warm_light: 1.0
+      mint_light: 1.0
+      lavender_light: 1.0
+  noise:
+    apply_prob: 0.5
+    edit_count_range:
+    - 1
+    - 1
+    value_ranges:
+      blur:
+        radius:
+        - 0.15
+        - 0.4
+      downsample:
+        scale:
+        - 0.92
+        - 0.97
+      jpeg:
+        quality:
+        - 82
+        - 94
+      noise:
+        alpha:
+        - 0.01
+        - 0.04
+prompt:
+  shared:
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    bundle_id: puzzles_cell_board_relation_v0
+    scene_key: rectangular_tile_board
+  task_overrides:
+    cell_board_min_distance_internal:
+      task_key: min_distance_query
+      answer_hint: set "answer" to the minimum number of orthogonal steps between the two queried colors as an integer
+      evidence_hint: set "evidence" to the ordered list of image pixel points [x, y] at tile centers for one unique shortest
+        path between the closest queried-color tiles, including both endpoints
+      json_example: '{"evidence":[[168,168],[216,168],[264,168],[312,168]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'

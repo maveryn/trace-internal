@@ -1,0 +1,222 @@
+"""Public cell-board puzzle wrappers backed by internal tile generators."""
+
+from __future__ import annotations
+
+from dataclasses import replace
+from typing import Any, Dict, Mapping, Sequence, Type
+
+from trace.core.seed import spawn_rng
+from trace.tasks.base import TaskOutput
+from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import rewrite_public_query_output
+from .attribute_count import CellBoardAttributeCountTask as _CellBoardAttributeCountTask
+from .count_color_components import TileColorComponentsTask
+from .count_largest_component_size import TileLargestComponentSizeTask
+from .path_reachable_target_count import TileReachableTargetCountTask
+from .path_shortest_path import TileShortestPathTask
+from .reachability_region_size import TileRegionSizeTask
+from .relation_min_distance import TileMinDistanceTask
+from .symmetry_violation_count import TileSymmetryViolationCountTask
+
+
+_WRAPPER_VERSION = "cell_board_query_wrapper_v0"
+_SCENE_ID = "cell_board"
+_TileQuerySpec = tuple[str, Type, str]
+
+
+def _query_specs(values: Sequence[_TileQuerySpec]) -> tuple[_TileQuerySpec, ...]:
+    specs = tuple(values)
+    if not specs:
+        raise ValueError("cell-board public task must define at least one query")
+    query_ids = [str(spec[0]) for spec in specs]
+    if len(set(query_ids)) != len(query_ids):
+        raise ValueError(f"duplicate cell-board query ids: {query_ids!r}")
+    return specs
+
+
+def _query_probability_map(specs: Sequence[_TileQuerySpec]) -> Dict[str, float]:
+    resolved = _query_specs(specs)
+    weight = 1.0 / float(len(resolved))
+    return {str(query_id): float(weight) for query_id, _task_cls, _source_variant in resolved}
+
+
+def _has_explicit_query(params: Mapping[str, Any]) -> bool:
+    """Return whether caller explicitly pinned a cell-board query branch."""
+
+    for key in ("query_id", "query_variant"):
+        candidate = params.get(key)
+        if candidate is None:
+            continue
+        if key == "query_variant" and str(candidate) == "default":
+            continue
+        return True
+    return False
+
+
+def _select_query_spec(
+    *,
+    params: Mapping[str, Any],
+    task_id: str,
+    query_specs: Sequence[_TileQuerySpec],
+    instance_seed: int,
+) -> tuple[_TileQuerySpec, Dict[str, float]]:
+    specs = _query_specs(query_specs)
+    by_query_id = {
+        str(query_id): (query_id, task_cls, source_variant)
+        for query_id, task_cls, source_variant in specs
+    }
+    by_source_variant = {
+        str(source_variant): (query_id, task_cls, source_variant)
+        for query_id, task_cls, source_variant in specs
+    }
+
+    explicit = None
+    for key in ("query_id", "query_variant"):
+        candidate = params.get(key)
+        if candidate is None:
+            continue
+        if key == "query_variant" and str(candidate) == "default":
+            continue
+        explicit = str(candidate)
+        break
+
+    if explicit is not None:
+        spec = by_query_id.get(explicit) or by_source_variant.get(explicit)
+        if spec is None:
+            expected = sorted(set(by_query_id) | set(by_source_variant))
+            raise ValueError(f"unsupported query for {task_id}: {explicit!r}; expected one of {expected!r}")
+        return spec, {str(spec[0]): 1.0}
+
+    rng = spawn_rng(int(instance_seed), f"{task_id}.cell_board_query")
+    selected_index = int(rng.randrange(len(specs)))
+    return specs[int(selected_index)], _query_probability_map(specs)
+
+
+def _rewrite_fixed_tile_output(
+    output: TaskOutput,
+    *,
+    public_task_id: str,
+    query_id: str,
+    source_domain: str,
+    source_task_id: str,
+    source_task_group: str,
+    query_variant_probabilities: Mapping[str, float] | None = None,
+) -> TaskOutput:
+    """Rewrite an internal Tile output to a narrow public task contract."""
+
+    query_id_text = str(query_id)
+    query_probabilities = {
+        str(key): float(value)
+        for key, value in (
+            dict(query_variant_probabilities) if query_variant_probabilities is not None else {query_id_text: 1.0}
+        ).items()
+    }
+
+    versions = dict(output.task_versions)
+    versions["cell_board_query_wrapper_version"] = _WRAPPER_VERSION
+    rewritten = rewrite_public_query_output(
+        output,
+        scene_id=_SCENE_ID,
+        query_id=query_id_text,
+        include_render_spec=True,
+        query_variant_probabilities=dict(query_probabilities),
+        variant_probabilities={"default": 1.0},
+        preserve_internal_query_variant_as="internal_query_variant",
+        extra_fields={
+            "public_task_id": str(public_task_id),
+            "source_task_id": str(source_task_id),
+            "source_task_group": str(source_task_group),
+        },
+        prompt_metadata={
+            "prompt_domain": str(source_domain),
+            "prompt_task_group": str(source_task_group),
+        },
+    )
+    return replace(
+        rewritten,
+        task_versions=versions,
+    )
+
+
+class _CellBoardQueryTask:
+    """Shared implementation for public cell-board puzzle query tasks."""
+
+    domain = "puzzles"
+    task_group = "cell_board"
+    query_specs: Sequence[_TileQuerySpec]
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        query_spec, query_probabilities = _select_query_spec(
+            params=params,
+            task_id=str(self.task_id),
+            query_specs=tuple(self.query_specs),
+            instance_seed=int(instance_seed),
+        )
+        query_id, source_task_cls, source_variant = query_spec
+        source_params = dict(params)
+        source_params["query_variant"] = str(source_variant)
+        source_task = source_task_cls()
+        output = source_task.generate(
+            int(instance_seed),
+            params=source_params,
+            max_attempts=int(max_attempts),
+        )
+        return _rewrite_fixed_tile_output(
+            output,
+            public_task_id=str(self.task_id),
+            query_id=str(query_id),
+            source_domain=str(getattr(source_task, "domain")),
+            source_task_id=str(getattr(source_task, "task_id")),
+            source_task_group=str(getattr(source_task, "task_group")),
+            query_variant_probabilities=query_probabilities,
+        )
+
+
+@register_task
+class TileColorRegionCountPublicTask(_CellBoardQueryTask):
+    """Count connected components or largest component size for one queried color."""
+
+    task_id = "task_puzzles__cell_board__color_region_count"
+    query_specs = (
+        ("color_components", TileColorComponentsTask, "color_components"),
+        ("largest_component_size", TileLargestComponentSizeTask, "largest_component_size"),
+    )
+
+
+@register_task
+class TileReachabilityCountPublicTask(_CellBoardQueryTask):
+    """Count reachable cells or reachable/unreachable target cells."""
+
+    task_id = "task_puzzles__cell_board__reachability_count"
+    query_specs = (
+        ("region_size", TileRegionSizeTask, "region_size"),
+        ("reachable_target_count", TileReachableTargetCountTask, "reachable_target_count"),
+        ("unreachable_target_count", TileReachableTargetCountTask, "unreachable_target_count"),
+    )
+
+
+@register_task
+class TilePathDistancePublicTask(_CellBoardQueryTask):
+    """Count a shortest-path or nearest-color-set path distance."""
+
+    task_id = "task_puzzles__cell_board__path_distance"
+    query_specs = (
+        ("shortest_path", TileShortestPathTask, "shortest_path"),
+        ("min_distance", TileMinDistanceTask, "min_distance"),
+    )
+
+
+@register_task
+class TileSymmetryViolationCountPublicTask(_CellBoardQueryTask):
+    """Count cells that violate a mirror-symmetry rule."""
+
+    task_id = "task_puzzles__cell_board__symmetry_violation_count"
+    query_specs = (("symmetry_violation_count", TileSymmetryViolationCountTask, "symmetry_violation_count"),)
+
+
+__all__ = [
+    "TileColorRegionCountPublicTask",
+    "TileReachabilityCountPublicTask",
+    "TilePathDistancePublicTask",
+    "TileSymmetryViolationCountPublicTask",
+]

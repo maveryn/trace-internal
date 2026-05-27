@@ -1,0 +1,124 @@
+generation:
+  task_overrides:
+    task_three_d__warehouse__robot_forward_path_label:
+      query_variant_weights:
+        first_object_ahead: 1.0
+      scene_variant_weights:
+        storage_aisle: 1.0
+        loading_zone: 1.0
+        packing_floor: 1.0
+      robot_heading_weights:
+        east: 1.0
+        north: 1.0
+        west: 1.0
+        south: 1.0
+      candidate_count_min: 5
+      candidate_count_max: 5
+      context_object_count_min: 11
+      context_object_count_max: 11
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      balanced_robot_heading_sampling: true
+    task_three_d__warehouse__robot_nearest_object_label:
+      query_variant_weights:
+        closest_robot_to_reference: 1.0
+        closest_object_to_robot: 1.0
+      scene_variant_weights:
+        storage_aisle: 1.0
+        loading_zone: 1.0
+        packing_floor: 1.0
+      aisle_heading_weights:
+        east: 1.0
+        north: 1.0
+        west: 1.0
+        south: 1.0
+      candidate_count_min: 5
+      candidate_count_max: 5
+      context_object_count_min: 10
+      context_object_count_max: 10
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      balanced_aisle_heading_sampling: true
+
+rendering:
+  task_overrides:
+    task_three_d__warehouse__robot_forward_path_label:
+      canvas_width: 1180
+      canvas_height: 920
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 42
+      scene_margin_bottom_px: 52
+      room_extent: 4.6
+      grid_step: 0.72
+      marker_radius_px: 20
+      label_font_size_px: 25
+      line_width_px: 2
+      floor_rgb: [221, 226, 220]
+      grid_rgb: [174, 184, 179]
+      aisle_rgb: [207, 215, 211]
+      shelf_zone_rgb: [190, 196, 194]
+      path_rgb: [236, 195, 72]
+      text_rgb: [24, 28, 36]
+      text_stroke_rgb: [255, 255, 255]
+    task_three_d__warehouse__robot_nearest_object_label:
+      canvas_width: 1180
+      canvas_height: 920
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 42
+      scene_margin_bottom_px: 52
+      room_extent: 4.6
+      grid_step: 0.72
+      marker_radius_px: 20
+      label_font_size_px: 25
+      line_width_px: 2
+      floor_rgb: [221, 226, 220]
+      grid_rgb: [174, 184, 179]
+      aisle_rgb: [207, 215, 211]
+      shelf_zone_rgb: [190, 196, 194]
+      path_rgb: [236, 195, 72]
+      text_rgb: [24, 28, 36]
+      text_stroke_rgb: [255, 255, 255]
+
+complexity:
+  task_overrides:
+    task_three_d__warehouse__robot_forward_path_label:
+      criteria_weights:
+        visual_scan: 0.30
+        movement_projection: 0.36
+        corridor_filtering: 0.22
+        distractor_load: 0.12
+    task_three_d__warehouse__robot_nearest_object_label:
+      criteria_weights:
+        robot_scan: 0.34
+        reference_grounding: 0.22
+        depth_distance_reasoning: 0.28
+        distractor_load: 0.16
+
+prompt:
+  shared:
+    bundle_id: three_d_warehouse_v0
+  task_overrides:
+    task_three_d__warehouse__robot_forward_path_label:
+      scene_key: warehouse
+      task_key: warehouse_robot_forward_path_query
+      object_description: a perspective 3D warehouse aisle with shelf racks, pallets, crate stacks, barrels, carts, forklifts, workbenches, bins, safety equipment, one red-boxed robot with a red travel-direction arrow, a highlighted forward path corridor, and lettered warehouse objects
+      evidence_hint: set "evidence" to one bounding box around the selected lettered warehouse object
+      answer_hint: set "answer" to the selected warehouse object letter
+      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    task_three_d__warehouse__robot_nearest_object_label:
+      scene_key: warehouse
+      task_key: warehouse_robot_nearest_object_query
+      object_description: a perspective 3D warehouse aisle with shelf racks, warehouse equipment, one unlettered reference object, and five lettered candidate items
+      object_description_closest_robot_to_reference: a perspective 3D warehouse aisle with shelf racks, warehouse equipment, one unlettered red sphere reference object, and five lettered robots
+      object_description_closest_object_to_robot: a perspective 3D warehouse aisle with shelf racks, warehouse equipment, one unlettered robot, and five lettered warehouse objects
+      evidence_hint: set "evidence" to one bounding box around the selected lettered robot
+      evidence_hint_closest_robot_to_reference: set "evidence" to one bounding box around the selected lettered robot
+      evidence_hint_closest_object_to_robot: set "evidence" to one bounding box around the selected lettered warehouse object
+      answer_hint: set "answer" to the selected robot letter
+      answer_hint_closest_robot_to_reference: set "answer" to the selected robot letter
+      answer_hint_closest_object_to_robot: set "answer" to the selected warehouse object letter
+      json_example: '{"evidence":[[142,118,238,178]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'

@@ -1,0 +1,93 @@
+{
+  "bundle_id": "charts_heatmap_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "heatmap_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:heatmap": [
+      "object_description"
+    ],
+    "query:axis_condition_extremum_label": [
+      "answer_axis",
+      "condition_phrase",
+      "unanswerable_instruction"
+    ],
+    "query:axis_cell_extremum_label": [
+      "query_axis",
+      "axis_label",
+      "answer_axis",
+      "extremum_phrase",
+      "unanswerable_instruction"
+    ],
+    "query:condition_run_extremum_label": [
+      "condition_phrase"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "heatmap": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "axis_condition_extremum_label": [
+      "Which {answer_axis} label has the most {condition_phrase} cells? {unanswerable_instruction}",
+      "Find the {answer_axis} with the largest number of {condition_phrase} cells. What is its label? {unanswerable_instruction}",
+      "Across all {answer_axis}s, which one contains the most cells that are {condition_phrase}? {unanswerable_instruction}",
+      "Using the heatmap colors, which {answer_axis} label has the most {condition_phrase} cells? {unanswerable_instruction}",
+      "What {answer_axis} label corresponds to the greatest count of {condition_phrase} cells? {unanswerable_instruction}"
+    ],
+    "axis_cell_extremum_label": [
+      "In {query_axis} \"{axis_label}\", which {answer_axis} label has the {extremum_phrase} cell? {unanswerable_instruction}",
+      "Look only at {query_axis} \"{axis_label}\". What {answer_axis} label contains the {extremum_phrase} cell? {unanswerable_instruction}",
+      "For {query_axis} \"{axis_label}\", what {answer_axis} label has the {extremum_phrase} cell? {unanswerable_instruction}",
+      "Within the {query_axis} labeled \"{axis_label}\", which {answer_axis} is {extremum_phrase}? {unanswerable_instruction}",
+      "What {answer_axis} label has the {extremum_phrase} cell in {query_axis} \"{axis_label}\"? {unanswerable_instruction}"
+    ],
+    "condition_run_extremum_label": [
+      "Which row label has the longest consecutive run of {condition_phrase} cells?",
+      "Find the row with the longest left-to-right run of {condition_phrase} cells. What is its label?",
+      "Across all rows, which row contains the longest uninterrupted sequence of {condition_phrase} cells?",
+      "Using the heatmap order from left to right, which row label has the longest run of {condition_phrase} cells?",
+      "What row label corresponds to the longest consecutive streak of {condition_phrase} cells?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

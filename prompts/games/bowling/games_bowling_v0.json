@@ -1,0 +1,77 @@
+{
+  "bundle_id": "games_bowling_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "bowling_lane_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_bowling_lane": [
+      "object_description"
+    ],
+    "query:first_pin_hit_label": [
+      "bowling_motion_rule_text"
+    ],
+    "query:spare_path_label": [
+      "spare_path_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_bowling_lane": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "first_pin_hit_label": [
+      "{bowling_motion_rule_text} Which labeled pin will the ball hit first?",
+      "Extrapolate the dashed arrow from the ball. {bowling_motion_rule_text} What is the label of the first pin on that path?",
+      "{bowling_motion_rule_text} Extend that path and identify the labeled pin reached before any other pin.",
+      "The ball moves along the dashed arrow. Which labeled pin is hit first?",
+      "{bowling_motion_rule_text} Report the label on the first pin the ball would reach if the path continues."
+    ],
+    "spare_path_label": [
+      "{spare_path_rule_text} Which numbered path is the correct spare path?",
+      "Compare the numbered dashed paths. {spare_path_rule_text} Which path number should be selected?",
+      "{spare_path_rule_text} Report the number of the path that covers the whole spare.",
+      "Which numbered dashed path passes through every remaining standing pin?",
+      "{spare_path_rule_text} Identify the numbered path that picks up all remaining pins."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

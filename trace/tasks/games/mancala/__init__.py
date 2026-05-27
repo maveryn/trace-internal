@@ -1,1 +1,0 @@
-"""Mancala games tasks."""

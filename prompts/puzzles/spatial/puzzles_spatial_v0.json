@@ -1,0 +1,556 @@
+{
+  "bundle_id": "puzzles_spatial_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "polyomino_arrangement_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "cube_structure_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "transform_result_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "tangram_assembly_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "rubiks_cube_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "cube_surface_net_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "sokoban_grid_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "sliding_block_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:spatial_polyomino_arrangement_puzzle": [
+      "object_description"
+    ],
+    "scene:spatial_cube_structure_puzzle": [
+      "object_description"
+    ],
+    "query:rectangle_complement_piece": [
+      "matching_policy_instruction"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ],
+    "scene:spatial_transform_result_puzzle": [
+      "object_description"
+    ],
+    "query:visible_cube_count": [
+      "view_direction",
+      "view_direction_description"
+    ],
+    "query:projection_match_label": [
+      "view_direction",
+      "view_direction_description"
+    ],
+    "query:inconsistent_projection_label": [],
+    "query:candidate_stack_from_views_label": [],
+    "scene:spatial_tangram_assembly_puzzle": [
+      "object_description"
+    ],
+    "scene:spatial_rubiks_cube_net_puzzle": [
+      "object_description"
+    ],
+    "scene:spatial_cube_surface_net_puzzle": [
+      "object_description"
+    ],
+    "scene:spatial_sokoban_grid_puzzle": [
+      "object_description"
+    ],
+    "query:static_sticker_color_label": [
+      "target_position_description"
+    ],
+    "query:one_move_sticker_color_label": [
+      "move_sequence_text",
+      "target_position_description"
+    ],
+    "query:short_sequence_sticker_color_label": [
+      "move_sequence_text",
+      "target_position_description"
+    ],
+    "query:static_face_color_count_label": [
+      "target_face_name"
+    ],
+    "query:one_move_face_color_count_label": [
+      "move_sequence_text",
+      "target_face_name"
+    ],
+    "query:short_sequence_face_color_count_label": [
+      "move_sequence_text",
+      "target_face_name"
+    ],
+    "query:one_move_result_label": [
+      "move_sequence_text"
+    ],
+    "query:two_move_result_label": [
+      "move_sequence_text"
+    ],
+    "query:inverse_sequence_result_label": [
+      "base_sequence_text"
+    ],
+    "query:opposite_face_label": [],
+    "query:marked_edge_neighbor_face_label": [],
+    "query:final_top_face_label": [],
+    "query:final_front_face_label": [],
+    "query:final_right_face_label": [],
+    "query:box_target_manhattan_rank_label": [
+      "rank_word"
+    ],
+    "scene:sliding_block": [
+      "object_description"
+    ],
+    "query:move_result_label": [
+      "move_sequence_description"
+    ],
+    "query:position_piece_label": [
+      "target_position_description"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "spatial_polyomino_arrangement_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_cube_structure_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_transform_result_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_tangram_assembly_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_rubiks_cube_net_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_cube_surface_net_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "spatial_sokoban_grid_puzzle": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "sliding_block": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "marked_region_piece_label": [
+      "The target polyomino has a black interior missing region. Which option can fill it if rotation is allowed but flipping is not?",
+      "Select the piece that fills the black missing region inside the target shape. Rotation is allowed; flipping is not.",
+      "Choose the labeled piece that completes the interior hole of the polyomino.",
+      "Determine which polyomino option fits the black missing region without flipping.",
+      "Identify the piece that belongs in the black interior gap, allowing rotation but not reflection."
+    ],
+    "blocker_count": [
+      "Count the blocks currently occupying the target block's straight path to the exit.",
+      "How many blocks are in the target block's direct exit path?",
+      "Determine the number of blocks blocking the red target block's straight route to the exit.",
+      "Count every block that lies between the target block and the exit arrow along the target's row or column.",
+      "How many rectangular blocks currently block the target block from sliding straight out?"
+    ],
+    "move_result_label": [
+      "Apply these slides in order: {move_sequence_description}. Which labeled option shows the final board?",
+      "After making these moves in sequence, {move_sequence_description}, select the matching final-board option.",
+      "Use the original board, perform these slides in order: {move_sequence_description}. Which option is the resulting board?",
+      "Follow the slide sequence {move_sequence_description}. Choose the option that matches the board afterward.",
+      "Move the blocks as listed: {move_sequence_description}. Which labeled option shows the final arrangement?"
+    ],
+    "total_cube_count": [
+      "How many unit cubes are in the shown structure?",
+      "Count the total number of unit cubes used to build the structure.",
+      "Determine how many unit cubes make up the shown structure.",
+      "How many small cubes are in the cube structure?",
+      "Count all unit cubes in the shown readable wall-like stack."
+    ],
+    "missing_to_complete_cuboid_count": [
+      "The left structure is the complete block and the right structure is the partial block. How many unit cubes are missing from the partial block?",
+      "Compare the complete block on the left with the partial block on the right. How many cubes are missing?",
+      "How many unit cubes must be added to the right structure to make the complete block shown on the left?",
+      "Use the complete block and the partial block to determine the missing cube count.",
+      "Count how many cubes are absent from the partial block compared with the complete block."
+    ],
+    "removed_cube_count": [
+      "The left structure is before and the right structure is after some cubes were removed. How many cubes were removed?",
+      "Compare the before structure on the left with the after structure on the right. How many cubes were taken away?",
+      "Use the two shown cube structures to determine how many cubes were removed.",
+      "The right structure is formed by removing cubes from the left structure. How many cubes were removed?",
+      "How many cubes have been taken away to turn the left structure into the right structure?"
+    ],
+    "painted_exterior_face_count": [
+      "If the entire outside of the glued cube structure is painted, including the bottom, how many unit-cube faces are painted?",
+      "The whole exterior of the structure is painted, bottom included. How many cube faces receive paint?",
+      "Count the total number of exposed unit-cube faces if the outside of the structure is painted.",
+      "How many exterior faces of unit cubes are painted when the whole structure, including its bottom, is painted?",
+      "Determine the total painted unit-cube face count for the full exterior of the structure."
+    ],
+    "exact_k_painted_faces_cube_count": [
+      "If the whole exterior is painted, including the bottom, how many unit cubes have exactly {painted_face_count} painted faces?",
+      "The entire outside of the structure is painted. How many cubes have exactly {painted_face_count} painted faces?",
+      "Count the unit cubes with exactly {painted_face_count} exterior faces painted.",
+      "How many small cubes receive paint on exactly {painted_face_count} of their faces?",
+      "Determine the number of cubes whose painted-face count is exactly {painted_face_count}."
+    ],
+    "rectangle_complement_piece": [
+      "{matching_policy_instruction} Identify the missing piece that completes the rectangular target.",
+      "{matching_policy_instruction} Select the option that fills the missing region in the rectangular target.",
+      "{matching_policy_instruction} Choose the piece that completes the target rectangle.",
+      "{matching_policy_instruction} Determine which option fits the missing region of the target rectangle.",
+      "{matching_policy_instruction} Select the complement piece for the rectangular target."
+    ],
+    "plain_rect_patch_label": [
+      "Do not rotate or flip any option. Identify the exact patch.",
+      "Select the option that fills the rectangular missing region exactly as shown.",
+      "Choose the missing image patch in the orientation shown.",
+      "Identify the option that restores the rectangular region without rotation or reflection.",
+      "Choose the exact patch with no rotation or flipping."
+    ],
+    "transformed_rect_patch_label": [
+      "The correct patch may be rotated or flipped. Identify the matching option.",
+      "Select the option that completes the image when rotation or reflection is allowed.",
+      "Choose the source patch even if the option is rotated or flipped.",
+      "Identify the option that restores the missing region under rotation or reflection.",
+      "Choose the patch, allowing rotation and flipping."
+    ],
+    "irregular_cutout_patch_label": [
+      "Do not rotate or flip any option. Identify the exact irregular cutout patch.",
+      "Select the option that fills the irregular missing region exactly as shown.",
+      "Choose the irregular image patch in the orientation shown.",
+      "Identify the option that restores the cutout region without rotation or reflection.",
+      "Choose the exact irregular patch with no rotation or flipping."
+    ],
+    "piece_order_no_transform": [
+      "Match each numbered block to the completed reference in the orientation shown. Do not rotate or reflect blocks.",
+      "Use the image content to place the loose blocks in the completed reference. Keep blocks as shown.",
+      "The numbered blocks are already upright; match them directly to their cells in the completed reference.",
+      "Do not rotate or flip any loose block. List the block labels in completed-reference row-major order.",
+      "Use the shown orientation of every numbered block when matching it to the completed reference."
+    ],
+    "piece_order_transform_allowed": [
+      "Some loose blocks may be rotated or reflected; mentally reorient them when matching to the completed reference.",
+      "Match the numbered blocks to the completed image even if a block is shown rotated or mirrored.",
+      "Rotations and reflections are allowed for matching. List the row-major block labels.",
+      "Use the image content after mentally rotating or reflecting blocks as needed.",
+      "The displayed orientation of a bottom block may differ from its final orientation in the completed image."
+    ],
+    "nearest_to_farthest_order": [
+      "Order the numbered points from nearest to farthest from the camera.",
+      "List the point labels in increasing distance from the camera.",
+      "Start with the numbered point closest to the camera and end with the farthest point.",
+      "Use perspective depth to order the point markers from near to far.",
+      "List the numbered points from closest camera distance to greatest camera distance."
+    ],
+    "lowest_to_highest_order": [
+      "Order the numbered points from lowest to highest above the floor grid.",
+      "List the point labels in increasing height.",
+      "Start with the point nearest the floor and end with the highest point.",
+      "Use the height stems and perspective view to order the markers by vertical height.",
+      "List the numbered points from lowest 3D height to highest 3D height."
+    ],
+    "closer_than_anchor_count": [
+      "Count how many non-anchor points are closer to the camera than the ringed anchor point.",
+      "Use the ringed point as the anchor and count the other points that are closer to the camera.",
+      "Determine how many numbered markers are in front of the ringed anchor point in depth.",
+      "Count the non-anchor point markers that are closer to the camera than the ringed anchor.",
+      "Use perspective depth to count the points closer than the ringed anchor."
+    ],
+    "overlay_result": [
+      "Which option shows the combined overlay result?",
+      "Select the option matching the combined transparent-sheet pattern.",
+      "Choose the labeled result that matches the overlaid sheets.",
+      "Identify the correctly combined overlay pattern.",
+      "Identify the correct overlay result option."
+    ],
+    "paper_fold_result": [
+      "Which option shows the paper after it is folded?",
+      "Select the labeled option that matches the folded paper.",
+      "Which labeled option is the correct folded result?",
+      "Choose the option that shows the paper after the indicated fold.",
+      "Which option gives the correct folded-paper result?"
+    ],
+    "paper_fold_cut_result": [
+      "Which option shows the unfolded paper after the indicated fold or folds and cut?",
+      "Select the unfolded-result option for the fold-and-cut puzzle.",
+      "Choose the option that matches the paper after the indicated folding, cutting, and unfolding.",
+      "Which labeled option is the correct unfolded result?",
+      "Identify the final hole pattern after the shown fold-and-cut process."
+    ],
+    "visible_cube_count": [
+      "Using the {view_direction_description}, how many cells in the empty query grid should be filled?",
+      "For the {view_direction_description}, count the query-grid cells that should be filled.",
+      "Project the cube stack into the {view_direction_description}; how many query-grid cells are occupied?",
+      "Using the cube stack, how many cells should be filled for the {view_direction_description}?",
+      "How many unit cells are occupied in the {view_direction_description}?"
+    ],
+    "projection_match_label": [
+      "Using the {view_direction_description}, which labeled projection option matches the cube stack?",
+      "Project the cube stack into the {view_direction_description}. Select the matching labeled option.",
+      "Which option shows the correct occupied-cell projection for the {view_direction_description}?",
+      "Use the cube stack and choose the labeled grid matching the {view_direction_description}.",
+      "Identify the projection option that matches the stack when viewed from the {view_direction_description}."
+    ],
+    "inconsistent_projection_label": [
+      "One labeled projection panel does not match the cube stack for its titled view. Which panel is inconsistent?",
+      "Compare the cube stack with each labeled projection panel using its view title. Select the panel whose occupied cells are wrong.",
+      "Which labeled view panel is inconsistent with the shown cube stack and the view title on that panel?",
+      "Use the cube stack to check each projection panel against its title. Identify the single incorrect panel.",
+      "Find the labeled projection panel that does not agree with the cube stack for the view named on the panel."
+    ],
+    "candidate_stack_from_views_label": [
+      "Use the three projection panels. Which labeled cube stack is consistent with all of them?",
+      "Select the candidate cube stack whose top, front, and right views match the shown projection panels.",
+      "Compare the projection panels with the labeled cube-stack options. Which option fits all three views?",
+      "Which labeled cube stack could produce the three shown projection panels?",
+      "Choose the cube-stack option that agrees with every shown orthographic view."
+    ],
+    "missing_piece_label": [
+      "Which labeled option matches the black missing region? Rotation is allowed; flipping is not.",
+      "Select the labeled piece option that fills the black gap in the assembled figure. Rotation is allowed; no flipping.",
+      "Choose the option with the same shape and size as the black missing region.",
+      "Identify the option that can fill the black gap if the piece may be rotated but not reflected.",
+      "Which labeled piece completes the tangram-style figure at the black missing region?"
+    ],
+    "contact_count": [
+      "Count the marked piece or pieces, plus every other piece that shares an edge with any marked piece.",
+      "How many pieces are either marked or directly touch a marked piece along an edge?",
+      "Count all pieces in the marked set and all unmarked pieces that share an edge with that set.",
+      "Using edge contact only, count the marked pieces and their directly touching neighboring pieces.",
+      "How many pieces should be counted if marked pieces and edge-touching unmarked pieces are included?"
+    ],
+    "static_sticker_color_label": [
+      "Which option shows the color at {target_position_description} in the shown cube state?",
+      "Using the shown cube state, select the option swatch for {target_position_description}.",
+      "Identify the labeled color option matching {target_position_description} in the displayed net.",
+      "From the shown cube net, which option has the color at {target_position_description}?",
+      "Choose the color-swatch option for {target_position_description}."
+    ],
+    "one_move_sticker_color_label": [
+      "After applying the sequence {move_sequence_text}, which option shows the color at {target_position_description}?",
+      "Use the shown cube state, apply {move_sequence_text}, then select the option swatch for {target_position_description}.",
+      "Perform {move_sequence_text} on the displayed net. Which option matches the color at {target_position_description}?",
+      "After the move sequence {move_sequence_text}, choose the color option for {target_position_description}.",
+      "Apply {move_sequence_text}; which labeled swatch is at {target_position_description} afterward?"
+    ],
+    "short_sequence_sticker_color_label": [
+      "After applying the sequence {move_sequence_text}, which option shows the color at {target_position_description}?",
+      "Use the shown cube state, apply {move_sequence_text}, then select the option swatch for {target_position_description}.",
+      "Perform {move_sequence_text} on the displayed net. Which option matches the color at {target_position_description}?",
+      "After the move sequence {move_sequence_text}, choose the color option for {target_position_description}.",
+      "Apply {move_sequence_text}; which labeled swatch is at {target_position_description} afterward?"
+    ],
+    "static_face_color_count_label": [
+      "Using the shown cube state, how many stickers matching the target swatch are on the {target_face_name} face?",
+      "Count the stickers on the {target_face_name} face that match the target color swatch.",
+      "In the displayed net, choose the option for the number of target-color stickers on the {target_face_name} face.",
+      "How many stickers on the {target_face_name} face match the target swatch?",
+      "Select the count option for target-swatch stickers on the {target_face_name} face."
+    ],
+    "one_move_face_color_count_label": [
+      "After applying the sequence {move_sequence_text}, how many stickers matching the target swatch are on the {target_face_name} face?",
+      "Use the shown cube state, apply {move_sequence_text}, then count target-swatch stickers on the {target_face_name} face.",
+      "Perform {move_sequence_text}; which option gives the number of target-color stickers on the {target_face_name} face?",
+      "After {move_sequence_text}, count the stickers on the {target_face_name} face that match the target swatch.",
+      "Apply {move_sequence_text} and select the count option for target-swatch stickers on the {target_face_name} face."
+    ],
+    "short_sequence_face_color_count_label": [
+      "After applying the sequence {move_sequence_text}, how many stickers matching the target swatch are on the {target_face_name} face?",
+      "Use the shown cube state, apply {move_sequence_text}, then count target-swatch stickers on the {target_face_name} face.",
+      "Perform {move_sequence_text}; which option gives the number of target-color stickers on the {target_face_name} face?",
+      "After {move_sequence_text}, count the stickers on the {target_face_name} face that match the target swatch.",
+      "Apply {move_sequence_text} and select the count option for target-swatch stickers on the {target_face_name} face."
+    ],
+    "one_move_result_label": [
+      "Which candidate net shows the cube after applying the sequence {move_sequence_text}?",
+      "Apply {move_sequence_text} to the starting net. Which labeled candidate is the result?",
+      "Use the starting cube net and perform {move_sequence_text}; select the matching result option.",
+      "After the move sequence {move_sequence_text}, which candidate net is correct?",
+      "Choose the labeled result net produced by {move_sequence_text}."
+    ],
+    "two_move_result_label": [
+      "Which candidate net shows the cube after applying the sequence {move_sequence_text}?",
+      "Apply {move_sequence_text} to the starting net. Which labeled candidate is the result?",
+      "Use the starting cube net and perform {move_sequence_text}; select the matching result option.",
+      "After the move sequence {move_sequence_text}, which candidate net is correct?",
+      "Choose the labeled result net produced by {move_sequence_text}."
+    ],
+    "inverse_sequence_result_label": [
+      "Which candidate net shows the cube after applying the inverse of {base_sequence_text}?",
+      "Use the starting net and undo {base_sequence_text}. Which labeled candidate is the result?",
+      "Apply the inverse sequence for {base_sequence_text}; select the matching result net.",
+      "Which option shows the net after reversing the sequence {base_sequence_text}?",
+      "Choose the candidate net produced by applying the inverse of {base_sequence_text}."
+    ],
+    "opposite_face_label": [
+      "After folding the cube net, which option labels the face opposite the marked face?",
+      "Fold the net into a cube. Select the option for the face opposite the marked face.",
+      "Which labeled option is on the face opposite the highlighted face after folding?",
+      "Use the cube net to find the face opposite the marked face. Which option is it?",
+      "Identify the option whose face label is opposite the marked face when the net folds."
+    ],
+    "marked_edge_neighbor_face_label": [
+      "The marked edge is drawn on the highlighted face. After folding, which option labels the face sharing that edge?",
+      "Fold the net into a cube. Which option labels the face that touches the marked edge?",
+      "Use the marked edge on the highlighted face. Which face option shares that edge after folding?",
+      "Which option is the face across the marked edge once the cube net is folded?",
+      "Identify the option whose face label touches the highlighted face along the marked edge."
+    ],
+    "final_top_face_label": [
+      "Roll the cube one square per arrow from S to E. Which option labels the face on top at the end?",
+      "Follow the arrow path, rolling the cube at each step. Select the option for the final top face.",
+      "After the cube rolls along the shown path, which option is on the top face?",
+      "Use the start cube and roll path. Which labeled option ends on top?",
+      "Track the cube through the arrow path. Choose the option for the final top face."
+    ],
+    "final_front_face_label": [
+      "Roll the cube one square per arrow from S to E. Which option labels the front face at the end?",
+      "Follow the arrow path, rolling the cube at each step. Select the option for the final front face.",
+      "After the cube rolls along the shown path, which option is on the front face?",
+      "Use the start cube and roll path. Which labeled option ends on the front face?",
+      "Track the cube through the arrow path. Choose the option for the final front face."
+    ],
+    "final_right_face_label": [
+      "Roll the cube one square per arrow from S to E. Which option labels the right face at the end?",
+      "Follow the arrow path, rolling the cube at each step. Select the option for the final right face.",
+      "After the cube rolls along the shown path, which option is on the right face?",
+      "Use the start cube and roll path. Which labeled option ends on the right face?",
+      "Track the cube through the arrow path. Choose the option for the final right face."
+    ],
+    "shortest_path_sequence_label": [
+      "Treat boxes as blockers. Which labeled option is the shortest move sequence from S to G?",
+      "With boxes acting like walls, select the option giving the shortest route from S to G.",
+      "Choose the shortest valid move sequence from the start cell S to the goal cell G.",
+      "Use the grid with boxes blocked off. Which option is the shortest S-to-G path?",
+      "Identify the labeled option that gives the shortest path from S to G."
+    ],
+    "valid_path_sequence_label": [
+      "Treat boxes as blockers. Which labeled option is a valid move sequence from S to G?",
+      "With boxes acting like walls, select the option that reaches G from S without a blocked move.",
+      "Choose the move sequence option that travels from S to G successfully.",
+      "Use the grid and boxes as blockers. Which option gives a valid S-to-G path?",
+      "Identify the labeled option that reaches G from S without crossing a wall or box."
+    ],
+    "blocked_path_sequence_label": [
+      "Treat boxes as blockers. Which labeled option contains a move that is blocked before the sequence finishes?",
+      "With boxes acting like walls, select the option that hits a blocked cell.",
+      "Choose the move sequence option that cannot be completed because one move is blocked.",
+      "Use the grid and boxes as blockers. Which option is stopped by a wall or box?",
+      "Identify the labeled option whose path becomes blocked before all moves are used."
+    ],
+    "nearest_target_for_marked_box_label": [
+      "Which option-lettered target is closest to the marked box by Manhattan distance?",
+      "Select the letter on the target with the smallest Manhattan distance from the marked box.",
+      "Using grid distance, choose the option letter on the target nearest to the marked box.",
+      "Find the closest target to the marked box and use its option letter.",
+      "Which target option letter identifies the nearest target for the marked box?"
+    ],
+    "box_closest_to_marked_target_label": [
+      "Which option-lettered box is closest to the marked target by Manhattan distance?",
+      "Select the letter on the box with the smallest Manhattan distance from the marked target.",
+      "Using grid distance, choose the option letter on the box nearest to the marked target.",
+      "Find the closest box to the marked target and use its option letter.",
+      "Which box option letter identifies the nearest box for the marked target?"
+    ],
+    "box_target_manhattan_rank_label": [
+      "Which same-letter box-target pair is the {rank_word} closest by Manhattan distance?",
+      "Compare the same-letter box-target pairs by Manhattan distance and select the {rank_word} closest pair.",
+      "Using grid distance, choose the option letter for the {rank_word} closest box-target pair.",
+      "Rank the same-letter pairs by Manhattan distance. Which option letter is {rank_word} closest?",
+      "Select the option letter whose box-target pair has the {rank_word} smallest Manhattan distance."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

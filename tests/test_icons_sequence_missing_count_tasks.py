@@ -48,7 +48,10 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert len(out.evidence_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "icons_sequence_missing_count"
     assert execution["question_format"] == "infer_missing_sequence_count"
-    assert execution["task_variant"] == "arithmetic_progression"
+    assert out.query_variant == "default"
+    assert out.query_id == "arithmetic_progression"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "arithmetic_progression"
     assert int(execution["sequence_length"]) == 5
     assert int(execution["missing_cell_index"]) == 2
     assert int(execution["step_delta"]) == 1
@@ -139,11 +142,13 @@ def test_icons_sequence_missing_count_balanced_sampling_defaults() -> None:
     task = IconsSequenceMissingCountTask()
     target_counts: Counter[int] = Counter()
     sequence_lengths: Counter[int] = Counter()
+    missing_cell_indices: Counter[int] = Counter()
+    missing_by_length: dict[int, Counter[int]] = {}
     end_missing_count = 0
     for index in range(66):
         out = task.generate(
             hash64(15113, "icons_sequence_missing_count", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
@@ -152,12 +157,16 @@ def test_icons_sequence_missing_count_balanced_sampling_defaults() -> None:
         missing_cell_index = int(execution["missing_cell_index"])
         target_counts[target_count] += 1
         sequence_lengths[sequence_length] += 1
+        missing_cell_indices[missing_cell_index] += 1
+        missing_by_length.setdefault(sequence_length, Counter())[missing_cell_index] += 1
         assert 0 <= target_count <= 10
         assert 4 <= sequence_length <= 6
         assert 0 <= missing_cell_index < sequence_length
         if missing_cell_index in {0, sequence_length - 1}:
             end_missing_count += 1
     assert set(target_counts.keys()) == set(range(0, 11))
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert sequence_lengths == Counter({4: 22, 5: 22, 6: 22})
+    assert set(sequence_lengths.keys()) == {4, 5, 6}
+    assert all(missing_by_length[length] for length in (4, 5, 6))
+    assert missing_cell_indices[0] <= 16
+    assert max(missing_cell_indices.values()) <= 16
     assert end_missing_count > 0

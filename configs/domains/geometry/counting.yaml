@@ -4,29 +4,51 @@ generation:
     object_count_max: 10
     balanced_sampling: true
   task_overrides:
-    task_geometry_counting_value:
+    geometry_counting_value_base:
+      object_count_min: 6
+      object_count_max: 12
+      object_count_weights:
+        "6": 1.0
+        "7": 1.0
+        "8": 1.0
+        "9": 1.0
+        "10": 1.0
+        "11": 1.0
+        "12": 1.0
+      target_count_min: 1
+      target_count_max: 11
       query_variant_weights:
-        acute_angle: 1.0
-        right_angle: 1.0
-        obtuse_angle: 1.0
-        equilateral_triangle: 1.0
-        isosceles_triangle: 1.0
-        scalene_triangle: 1.0
-        right_triangle: 1.0
-        acute_triangle: 1.0
-        obtuse_triangle: 1.0
+        angle_type_count: 1.0
+        triangle_type_count: 1.0
+        quadrilateral_type_count: 1.0
+        shape_type_count: 1.0
+        polygon_convexity_count: 1.0
+      angle_type_weights:
+        acute: 1.0
+        right: 1.0
+        obtuse: 1.0
+      triangle_type_weights:
+        equilateral: 1.0
+        isosceles: 1.0
+        scalene: 1.0
+        right: 1.0
+        acute: 1.0
+        obtuse: 1.0
+      quadrilateral_type_weights:
         square: 1.0
         rectangle_non_square: 1.0
         rhombus_non_square: 1.0
         parallelogram_only: 1.0
+      shape_type_weights:
         triangle: 1.0
         quadrilateral: 1.0
         pentagon: 1.0
         hexagon: 1.0
         circle: 1.0
         ellipse: 1.0
-        convex_polygon: 1.0
-        concave_polygon: 1.0
+      convexity_kind_weights:
+        convex: 1.0
+        concave: 1.0
       scene_variant_weights:
         angle: 1.0
         triangle: 1.0
@@ -35,7 +57,12 @@ generation:
         polygon: 1.0
       balanced_query_variant_sampling: true
       balanced_scene_variant_sampling: true
-    task_geometry_counting_angle:
+      balanced_angle_type_sampling: true
+      balanced_triangle_type_sampling: true
+      balanced_quadrilateral_type_sampling: true
+      balanced_shape_type_sampling: true
+      balanced_convexity_kind_sampling: true
+    source_geometry_counting_angle:
       min_angle: 25
       max_angle: 155
       angle_step: 1
@@ -54,7 +81,7 @@ generation:
         "8": 1.0
         "9": 1.0
         "10": 1.0
-    task_geometry_counting_triangle:
+    source_geometry_counting_triangle:
       object_count_min: 5
       object_count_max: 8
       min_side_units: 3.0
@@ -76,7 +103,7 @@ generation:
         "6": 1.0
         "7": 1.0
         "8": 1.0
-    task_geometry_counting_quadrilateral:
+    source_geometry_counting_quadrilateral:
       object_count_min: 5
       object_count_max: 7
       min_extent_units: 3.0
@@ -93,7 +120,7 @@ generation:
         "5": 1.0
         "6": 1.0
         "7": 1.0
-    task_geometry_counting_shape_type:
+    source_geometry_counting_shape_type:
       object_count_min: 6
       object_count_max: 9
       min_extent_units: 2.6
@@ -114,7 +141,7 @@ generation:
         "7": 1.0
         "8": 1.0
         "9": 1.0
-    task_geometry_counting_convexity:
+    source_geometry_counting_convexity:
       object_count_min: 6
       object_count_max: 9
       side_count_weights:
@@ -145,19 +172,23 @@ rendering:
     label_stroke_width_min: 1
     label_stroke_width_max: 2
   task_overrides:
-    task_geometry_counting_triangle:
+    geometry_counting_value_base:
+      graph_cells_min: 44
+      graph_cells_max: 52
+      object_label_offset_px: 20
+    source_geometry_counting_triangle:
       graph_cells_min: 24
       graph_cells_max: 32
       object_label_offset_px: 16
-    task_geometry_counting_quadrilateral:
+    source_geometry_counting_quadrilateral:
       graph_cells_min: 26
       graph_cells_max: 34
       object_label_offset_px: 18
-    task_geometry_counting_shape_type:
+    source_geometry_counting_shape_type:
       graph_cells_min: 28
       graph_cells_max: 36
       object_label_offset_px: 18
-    task_geometry_counting_convexity:
+    source_geometry_counting_convexity:
       graph_cells_min: 28
       graph_cells_max: 36
       object_label_offset_px: 18
@@ -175,68 +206,76 @@ visual:
       solid_warm:
         kind: solid
         color: [252, 249, 245]
+      solid_mist:
+        kind: solid
+        color: [248, 252, 249]
+      solid_lavender:
+        kind: solid
+        color: [250, 248, 253]
     weights:
       graph_paper: 0.0
-      solid_offwhite: 0.5
-      solid_cool: 0.25
-      solid_warm: 0.25
+      solid_offwhite: 0.35
+      solid_cool: 0.2
+      solid_warm: 0.2
+      solid_mist: 0.15
+      solid_lavender: 0.1
 
 prompt:
   shared:
-    bundle_id: geometry_counting_v1
-    task_family_key: counting_scene
+    bundle_id: geometry_counting_v0
+    scene_key: counting_scene
     task_key: counting_query
   task_overrides:
-    task_geometry_counting_angle:
-      object_description: several labeled angles
-      question_text_acute_angle: How many labeled angles are acute angles?
-      question_text_right_angle: How many labeled angles are right angles?
-      question_text_obtuse_angle: How many labeled angles are obtuse angles?
-      evidence_hint: set "evidence" to a sorted JSON array of the labels of all angles that match the requested type
+    source_geometry_counting_angle:
+      object_description: several angles
+      question_text_acute_angle: How many angles are acute angles?
+      question_text_right_angle: How many angles are right angles?
+      question_text_obtuse_angle: How many angles are obtuse angles?
+      evidence_hint: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] around all angles that match the requested type
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":["B","D"],"answer":2}'
+      json_example: '{"evidence":[[120,180,210,260],[320,220,410,300]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_geometry_counting_triangle:
-      object_description: several labeled triangles
-      question_text_equilateral_triangle: How many labeled triangles are equilateral triangles?
-      question_text_isosceles_triangle: How many labeled triangles are isosceles triangles but not equilateral triangles?
-      question_text_scalene_triangle: How many labeled triangles are scalene triangles?
-      question_text_right_triangle: How many labeled triangles are right triangles?
-      question_text_acute_triangle: How many labeled triangles are acute triangles?
-      question_text_obtuse_triangle: How many labeled triangles are obtuse triangles?
-      evidence_hint: set "evidence" to a sorted JSON array of the labels of all triangles that match the requested type
+    source_geometry_counting_triangle:
+      object_description: several triangles
+      question_text_equilateral_triangle: How many triangles are equilateral triangles?
+      question_text_isosceles_triangle: How many triangles are isosceles triangles but not equilateral triangles?
+      question_text_scalene_triangle: How many triangles are scalene triangles?
+      question_text_right_triangle: How many triangles are right triangles?
+      question_text_acute_triangle: How many triangles are acute triangles?
+      question_text_obtuse_triangle: How many triangles are obtuse triangles?
+      evidence_hint: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] around all triangles that match the requested type
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":["A","C","F"],"answer":3}'
+      json_example: '{"evidence":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
-    task_geometry_counting_quadrilateral:
-      object_description: several labeled quadrilaterals
-      question_text_square: How many labeled quadrilaterals are squares?
-      question_text_rectangle_non_square: How many labeled quadrilaterals are rectangles but not squares?
-      question_text_rhombus_non_square: How many labeled quadrilaterals are rhombuses but not squares?
-      question_text_parallelogram_only: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?
-      evidence_hint: set "evidence" to a sorted JSON array of the labels of all quadrilaterals that match the requested type
+    source_geometry_counting_quadrilateral:
+      object_description: several quadrilaterals
+      question_text_square: How many quadrilaterals are squares?
+      question_text_rectangle_non_square: How many quadrilaterals are rectangles but not squares?
+      question_text_rhombus_non_square: How many quadrilaterals are rhombuses but not squares?
+      question_text_parallelogram_only: How many quadrilaterals are parallelograms that are neither rectangles nor rhombuses?
+      evidence_hint: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] around all quadrilaterals that match the requested type
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":["B","E"],"answer":2}'
+      json_example: '{"evidence":[[120,180,220,280],[320,180,420,280]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_geometry_counting_shape_type:
-      object_description: several labeled shapes
-      question_text_triangle: How many labeled shapes are triangles?
-      question_text_quadrilateral: How many labeled shapes are quadrilaterals?
-      question_text_pentagon: How many labeled shapes are pentagons?
-      question_text_hexagon: How many labeled shapes are hexagons?
-      question_text_circle: How many labeled shapes are circles?
-      question_text_ellipse: How many labeled shapes are ellipses?
-      evidence_hint: set "evidence" to a sorted JSON array of the labels of all shapes that match the requested type
+    source_geometry_counting_shape_type:
+      object_description: several shapes
+      question_text_triangle: How many shapes are triangles?
+      question_text_quadrilateral: How many shapes are quadrilaterals?
+      question_text_pentagon: How many shapes are pentagons?
+      question_text_hexagon: How many shapes are hexagons?
+      question_text_circle: How many shapes are circles?
+      question_text_ellipse: How many shapes are ellipses?
+      evidence_hint: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] around all shapes that match the requested type
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":["A","D","F"],"answer":3}'
+      json_example: '{"evidence":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
-    task_geometry_counting_convexity:
-      object_description: several labeled polygons
-      question_text_convex_polygon: How many labeled polygons are convex polygons?
-      question_text_concave_polygon: How many labeled polygons are concave polygons?
-      evidence_hint: set "evidence" to a sorted JSON array of the labels of all polygons that match the requested type
+    source_geometry_counting_convexity:
+      object_description: several polygons
+      question_text_convex_polygon: How many polygons are convex polygons?
+      question_text_concave_polygon: How many polygons are concave polygons?
+      evidence_hint: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] around all polygons that match the requested type
       answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":["B","D","G"],"answer":3}'
+      json_example: '{"evidence":[[80,180,180,280],[260,180,360,280],[440,180,540,280]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
 
 complexity:

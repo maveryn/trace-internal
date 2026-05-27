@@ -16,11 +16,11 @@ def resolve_games_query_variant(
     gen_defaults: Mapping[str, Any],
     supported_variants: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query axis, honoring `task_variant` as an alias."""
+    """Resolve one balanced semantic query axis, honoring `query_variant` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("task_variant") is not None:
-        alias_params["query_variant"] = alias_params["task_variant"]
+    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_variant"] = alias_params["query_variant"]
     rng = spawn_rng(int(instance_seed), f"{str(task_id)}.query_variant")
     selected, probabilities = resolve_variant(
         rng,

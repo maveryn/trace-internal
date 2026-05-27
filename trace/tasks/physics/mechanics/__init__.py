@@ -1,2 +1,2 @@
-"""Physics mechanics task family."""
+"""Physics mechanics task group."""
 

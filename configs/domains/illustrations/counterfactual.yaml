@@ -1,0 +1,75 @@
+generation:
+  shared:
+    balanced_query_variant_sampling: true
+  task_overrides:
+    task_illustrations__single_object_figure__visible_part_count:
+      bird_leg_count_min: 1
+      bird_leg_count_max: 5
+      quadruped_leg_count_min: 2
+      quadruped_leg_count_max: 6
+      airplane_wing_count_min: 1
+      airplane_wing_count_max: 5
+      butterfly_wing_count_min: 2
+      butterfly_wing_count_max: 6
+      bicycle_wheel_count_min: 1
+      bicycle_wheel_count_max: 4
+      traffic_light_lens_count_min: 1
+      traffic_light_lens_count_max: 5
+      clover_leaf_count_min: 2
+      clover_leaf_count_max: 6
+      star_point_count_min: 3
+      star_point_count_max: 8
+      glove_finger_count_min: 3
+      glove_finger_count_max: 7
+      fork_tine_count_min: 2
+      fork_tine_count_max: 6
+      snowflake_arm_count_min: 3
+      snowflake_arm_count_max: 8
+      chair_leg_count_min: 2
+      chair_leg_count_max: 6
+    task_illustrations__source_scene_edit__object_count_after_edit:
+      edit_count_k_min: 1
+      edit_count_k_max: 3
+      current_count_min: 3
+      current_count_max: 8
+      source_query_support:
+        - mixed_car
+        - mixed_bicycle
+        - mixed_bird
+        - mixed_tree
+        - park_sitting
+        - park_walking
+        - construction_tools
+        - construction_brick_stacks
+        - construction_pipe_bundles
+
+rendering:
+  shared:
+    canvas_width: 960
+    canvas_height: 720
+    render_scale: 2
+    evidence_padding_px: 7
+    object_scale_min: 0.94
+    object_scale_max: 1.10
+
+prompt:
+  shared:
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+  task_overrides:
+    task_illustrations__single_object_figure__visible_part_count:
+      bundle_id: illustrations_counterfactual_v0
+      scene_key: counterfactual_single_object_figure
+      task_key: visible_part_count_task
+      answer_hint: set "answer" to the visible count as an integer
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates, one box for each counted visible part
+      json_example: '{"evidence":[[248,414,278,606],[326,414,356,606],[402,414,432,606]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_illustrations__source_scene_edit__object_count_after_edit:
+      bundle_id: illustrations_counterfactual_v0
+      scene_key: counterfactual_source_scene
+      task_key: object_count_after_edit_task
+      answer_hint: set "answer" to the resulting count as an integer after the hypothetical add/remove
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all currently visible {object_plural} before the hypothetical edit
+      json_example: '{"evidence":[[120,220,188,292],[310,204,382,286],[602,336,672,418]],"answer":5}'
+      json_example_answer_only: '{"answer":5}'

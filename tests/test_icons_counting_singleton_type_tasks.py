@@ -6,6 +6,7 @@ import json
 from collections import Counter
 
 from trace.core.seed import hash64
+from trace.tasks.icons.counting.most_frequent_type import IconsIconFieldTypeFrequencyCountTask
 from trace.tasks.icons.counting.singleton_type import IconsCountingSingletonTypeTask
 
 
@@ -33,7 +34,7 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18310,
-        params={"object_count": 9, "target_count": 3},
+        params={"object_count": 9, "target_count": 3, "query_variant": "singleton_type_count"},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -47,7 +48,11 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_singleton_type_counting"
+    assert out.query_variant == "default"
+    assert out.query_id == "singleton_type_count"
     assert execution["question_format"] == "count_singleton_type_icons"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "singleton_type_count"
     assert execution["scene_variant"] == "single_panel_scene"
     assert int(execution["object_count"]) == 9
     assert int(execution["target_count"]) == 3
@@ -95,7 +100,7 @@ def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18311,
-        params={"object_count": 8, "target_count": 0},
+        params={"object_count": 8, "target_count": 0, "query_variant": "singleton_type_count"},
         max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
@@ -106,7 +111,11 @@ def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
 
 def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None:
     task = IconsCountingSingletonTypeTask()
-    out = task.generate(18312, params={"object_count": 9, "target_count": 2}, max_attempts=200)
+    out = task.generate(
+        18312,
+        params={"object_count": 9, "target_count": 2, "query_variant": "singleton_type_count"},
+        max_attempts=200,
+    )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": 2}
@@ -116,24 +125,79 @@ def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None
     assert answer_and_evidence["answer"] == 2
 
 
-def test_icons_counting_singleton_type_balanced_sampling_defaults() -> None:
+def test_icons_counting_singleton_type_repeated_distractors_share_visual_style() -> None:
     task = IconsCountingSingletonTypeTask()
+    out = task.generate(
+        18314,
+        params={"object_count": 8, "target_count": 2, "query_variant": "singleton_type_count"},
+        max_attempts=200,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert int(out.answer_gt.value) == 2
+    assert len(out.evidence_gt.value) == 2
+    assert execution["question_format"] == "count_singleton_type_icons"
+    assert int(execution["object_count"]) == 8
+    assert int(execution["target_count"]) == 2
+    assert int(execution["singleton_count"]) == 2
+    assert int(execution["repeated_icon_count"]) == 6
+    assert len(execution["repeated_indices"]) == 6
+    assert len(execution["evidence_indices"]) == 2
+    assert trace["scene_ir"]["relations"]["counting_rule"] == "singleton_icon_type_frequency"
+    evidence_boxes = {tuple(int(value) for value in box) for box in out.evidence_gt.value}
+    repeated_styles: dict[str, set[tuple[object, ...]]] = {}
+    for entity in trace["scene_ir"]["entities"]:
+        bbox = tuple(int(value) for value in entity["bbox_xyxy"])
+        if bool(entity["is_repeated_type"]):
+            assert bbox not in evidence_boxes
+            assert int(entity["type_frequency"]) >= 2
+            repeated_styles.setdefault(str(entity["icon_id"]), set()).add(
+                (
+                    int(entity["rotation_degrees"]),
+                    int(entity["nominal_size_px"]),
+                    tuple(int(channel) for channel in entity["tint_rgb"]),
+                    json.dumps(entity["noise_edits"], sort_keys=True),
+                    entity["noise_seed"],
+                )
+            )
+        else:
+            assert bbox in evidence_boxes
+            assert int(entity["type_frequency"]) == 1
+    assert repeated_styles
+    assert all(len(styles) == 1 for styles in repeated_styles.values())
+
+
+def test_icons_counting_type_frequency_sampling_defaults() -> None:
+    task = IconsIconFieldTypeFrequencyCountTask()
     object_counts: Counter[int] = Counter()
+    variant_counts: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
-    for index in range(60):
+    singleton_targets: Counter[int] = Counter()
+    most_frequent_targets: Counter[int] = Counter()
+    for index in range(80):
         out = task.generate(
             hash64(18313, "icons_counting_singleton_type", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
         object_count = int(execution["object_count"])
         target_count = int(execution["target_count"])
+        query_variant = str(execution["query_id"])
         object_counts[object_count] += 1
+        variant_counts[query_variant] += 1
         target_counts[target_count] += 1
-        assert 6 <= object_count <= 15
-        assert 0 <= target_count <= 5
-    assert set(target_counts.keys()) == set(range(0, 6))
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert min(object_counts.keys()) >= 6
-    assert max(object_counts.keys()) <= 15
+        if query_variant == "singleton_type_count":
+            singleton_targets[target_count] += 1
+            assert 5 <= object_count <= 10
+            assert 0 <= target_count <= 4
+        else:
+            most_frequent_targets[target_count] += 1
+            assert query_variant == "most_frequent_type_count"
+            assert 7 <= object_count <= 12
+            assert 3 <= target_count <= 5
+    assert set(variant_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}
+    assert set(singleton_targets.keys()) == set(range(0, 5))
+    assert set(most_frequent_targets.keys()) == set(range(3, 6))
+    assert min(object_counts.keys()) >= 5
+    assert max(object_counts.keys()) <= 12

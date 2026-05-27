@@ -5,13 +5,14 @@ description: Use when defining or revising TRACE task complexity policy, especia
 
 # Task Complexity
 
-Use this whenever a change touches `complexity_score`, `complexity_components`, curriculum buckets, or domain/task-family difficulty policy.
+Use this whenever a change touches `complexity_score`, `complexity_components`, curriculum buckets, or domain/scene difficulty policy.
 
 ## Read first
 1. `docs/workflows/TASK_AUTHORING.md`
 2. `docs/workflows/CODE_REVIEW_GUIDELINES.md`
 3. `docs/project/STATUS.md`
-4. `docs/project/TODO.md`
+4. `docs/TODO.md`
+5. `skills/README.md`
 
 ## Core policy
 - Treat `complexity_score` as **within-task normalized difficulty only**.
@@ -21,7 +22,7 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 - Keep **domain-level criteria** broad enough that every task in the domain can score them meaningfully.
 - Keep **task-group criteria** broad enough that every task in that family can score them meaningfully.
 - Use task-level criteria or weight overrides only when a task materially breaks the family pattern; this should be rare.
-- Treat existing one-off scalar formulas as legacy. Do not copy them forward when touching a task.
+- Treat existing one-off scalar formulas as source. Do not copy them forward when touching a task.
 
 ## Workflow
 1. Open the domain reference from `references/` and choose the base criteria vocabulary for that domain.
@@ -35,14 +36,15 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 
 ## Read as needed
 - General policy and config shape: `references/policy.md`
-- Domain-specific guidance: open `references/<domain>.md` when present.
-- If no domain reference exists, inspect the domain's shared complexity helpers and add a reference only when the change introduces reusable policy.
+- Domain-specific guidance: every active domain must have `references/<domain>.md`.
+- For migrated scene types, use the domain where the task now lives. For example, clock scenes use the puzzles reference, while calendar, schedule, and timeline scenes use the pages reference.
 
 ## Update discipline
-- When adding a new domain or task family, add or update the corresponding domain reference in this skill in the same change.
+- When adding a new domain, add the corresponding domain reference in this skill in the same change and run `PYTHONPATH=. python scripts/check_skill_consistency.py`.
+- When adding a new scene, update the relevant domain reference only if the scene introduces reusable complexity policy.
 - When introducing a new criterion name, update the domain reference before using it in task code.
 - When moving a criterion upward (task -> task_group or task_group -> domain), verify the broader scope can score it for every task before promoting it.
-- When migrating a legacy task, preserve the task's relative easy/medium/hard ordering as closely as possible while moving to named normalized criteria.
+- When migrating a source task, preserve the task's relative easy/medium/hard ordering as closely as possible while moving to named normalized criteria.
 
 ## Pair with
 - `skills/task-design/SKILL.md`

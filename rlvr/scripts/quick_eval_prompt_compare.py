@@ -15,17 +15,17 @@ from transformers import AutoProcessor, AutoTokenizer
 from vllm import LLM, SamplingParams
 
 from verl.utils.dataset.trace_rl_dataset import TraceRLHFDataset
-from verl.utils.local_strict_eval import strict_score_response
-from verl.utils.val_reward import _format_reward
+from verl.utils.trace_reward import evaluate_trace_response_format, extract_trace_answer_for_scoring
+from verl.utils.val_reward import _format_reward, score_external_response
 
 
 DEFAULT_BENCHMARKS = (
     "mathvista_mini",
     "mmstar",
-    "charxiv_dq",
     "charxiv_rq",
     "embspatialbench",
-    "blink",
+    "mmmu_pro_vision",
+    "countqa",
 )
 
 
@@ -96,6 +96,7 @@ def _build_inputs(dataset: TraceRLHFDataset) -> tuple[list[dict[str, Any]], list
 
 def _score_outputs(
     *,
+    mode: str,
     benchmark: str,
     examples: list[dict[str, Any]],
     outputs: Any,
@@ -116,7 +117,7 @@ def _score_outputs(
             response = completion.text
             token_count = len(completion.token_ids or [])
             prompt_text = item.get("extra_info", {}).get("prompt")
-            accuracy, extracted, extracted_answer, method = strict_score_response(
+            accuracy, extracted, extracted_answer, method = score_external_response(
                 response=response,
                 ground_truth=item.get("ground_truth"),
                 prompt_text=prompt_text,
@@ -124,9 +125,12 @@ def _score_outputs(
                 metadata=item.get("metadata"),
             )
             hit = 1.0 if accuracy > 0.5 else 0.0
-            format_score = float(_format_reward(response))
+            if mode == "current_json":
+                format_score = float(evaluate_trace_response_format(response, trace_reward_mode="answer")["format"])
+            else:
+                format_score = float(_format_reward(response))
             has_boxed = 1.0 if "\\boxed" in response else 0.0
-            has_json_answer = 1.0 if '"answer"' in response or "'answer'" in response else 0.0
+            has_json_answer = 1.0 if extract_trace_answer_for_scoring(response) is not None else 0.0
 
             row = {
                 "benchmark": benchmark,
@@ -214,6 +218,7 @@ def _run_mode(
             batch = vllm_inputs[start : start + batch_size]
             outputs.extend(llm.generate(batch, sampling_params=sampling_params, use_tqdm=True))
         summary = _score_outputs(
+            mode=mode,
             benchmark=benchmark,
             examples=examples,
             outputs=outputs,
@@ -244,11 +249,13 @@ def main() -> None:
     parser.add_argument("--max-model-len", type=int, default=8192)
     parser.add_argument("--max-num-batched-tokens", type=int, default=8192)
     parser.add_argument("--max-num-seqs", type=int, default=512)
-    parser.add_argument("--max-tokens", type=int, default=1024)
+    parser.add_argument("--max-tokens", type=int, default=1536)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.7)
     parser.add_argument("--enforce-eager", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--max-pixels", type=int, default=4194304)
     parser.add_argument("--max-prompt-length", type=int, default=1536)
+    parser.add_argument("--attention-backend", default=None)
+    parser.add_argument("--disable-trtllm-attention", action="store_true")
     args = parser.parse_args()
 
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
@@ -272,6 +279,12 @@ def main() -> None:
         f"max_num_batched_tokens={args.max_num_batched_tokens} max_num_seqs={args.max_num_seqs}",
         flush=True,
     )
+    attention_config = {}
+    if args.attention_backend:
+        attention_config["backend"] = args.attention_backend
+    if args.disable_trtllm_attention:
+        attention_config["use_trtllm_attention"] = False
+
     llm = LLM(
         model=args.model,
         tensor_parallel_size=args.tensor_parallel_size,
@@ -286,6 +299,7 @@ def main() -> None:
         limit_mm_per_prompt={"image": 4},
         trust_remote_code=False,
         seed=18,
+        attention_config=attention_config or None,
     )
 
     benchmarks = tuple(args.benchmarks)
@@ -301,6 +315,8 @@ def main() -> None:
             "max_tokens": args.max_tokens,
             "temperature": 0.0,
             "enforce_eager": args.enforce_eager,
+            "attention_backend": args.attention_backend,
+            "disable_trtllm_attention": args.disable_trtllm_attention,
         },
         "modes": {},
     }

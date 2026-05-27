@@ -1,0 +1,114 @@
+{
+  "bundle_id": "charts_scientific_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "multipanel_subplot_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:curve_panels_subplot": [
+      "object_description"
+    ],
+    "query:curve_at_x_extremum_label": [
+      "panel_label",
+      "x_value"
+    ],
+    "query:threshold_series_count": [
+      "panel_label",
+      "x_value",
+      "threshold_value"
+    ],
+    "query:cross_panel_delta_extremum_label": [
+      "method_label",
+      "start_x_value",
+      "end_x_value"
+    ],
+    "query:curve_intersection_count": [
+      "panel_label",
+      "method_a_label",
+      "method_b_label"
+    ],
+    "query:earliest_maximum_panel_label": [
+      "method_label"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "curve_panels_subplot": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "curve_at_x_extremum_label": [
+      "In subplot {panel_label}, at x = {x_value}, which method has the highest y-value?",
+      "At x = {x_value} in subplot {panel_label}, which method reaches the largest value?",
+      "For subplot {panel_label}, identify the method with the maximum y-value at x = {x_value}.",
+      "Looking only at subplot {panel_label}, which method is highest at x = {x_value}?",
+      "Which method has the largest plotted marker value at x = {x_value} in subplot {panel_label}?"
+    ],
+    "threshold_series_count": [
+      "In subplot {panel_label}, how many methods are above y = {threshold_value} at x = {x_value}?",
+      "At x = {x_value} in subplot {panel_label}, count the methods whose y-value is greater than {threshold_value}.",
+      "For subplot {panel_label}, how many method markers exceed y = {threshold_value} at x = {x_value}?",
+      "Using subplot {panel_label}, count the methods above y = {threshold_value} at x = {x_value}.",
+      "How many curves in subplot {panel_label} are above y = {threshold_value} at x = {x_value}?"
+    ],
+    "cross_panel_delta_extremum_label": [
+      "For method {method_label}, which subplot has the largest increase from x = {start_x_value} to x = {end_x_value}?",
+      "Across subplots, where does method {method_label} increase the most between x = {start_x_value} and x = {end_x_value}?",
+      "Compare method {method_label} in every subplot: which subplot shows the greatest y-value gain from x = {start_x_value} to x = {end_x_value}?",
+      "Which subplot has the biggest rise for method {method_label} from x = {start_x_value} through x = {end_x_value}?",
+      "Using method {method_label}, find the subplot with the maximum upward change between x = {start_x_value} and x = {end_x_value}."
+    ],
+    "curve_intersection_count": [
+      "In subplot {panel_label}, how many times do methods {method_a_label} and {method_b_label} intersect?",
+      "Count the intersections between {method_a_label} and {method_b_label} in subplot {panel_label}.",
+      "Within subplot {panel_label}, what is the number of crossings between methods {method_a_label} and {method_b_label}?",
+      "How many crossing points are formed by {method_a_label} and {method_b_label} in subplot {panel_label}?",
+      "Looking at subplot {panel_label}, count where {method_a_label} and {method_b_label} cross each other."
+    ],
+    "earliest_maximum_panel_label": [
+      "For method {method_label}, each subplot has its own maximum point. Which subplot reaches that maximum at the smallest x-axis value?",
+      "Across subplots, which subplot has the earliest x-position of the maximum for method {method_label}?",
+      "For method {method_label}, identify the subplot where its maximum occurs at the lowest x-value.",
+      "Which subplot reaches its own method {method_label} maximum first along the x-axis?",
+      "Using method {method_label} in every subplot, which subplot has the maximum marker at the smallest x-value?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

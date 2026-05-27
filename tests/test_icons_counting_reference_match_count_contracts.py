@@ -1,4 +1,4 @@
-"""Contract tests for consolidated icon reference-match counting."""
+"""Contract tests for split icon reference-match counting."""
 
 from __future__ import annotations
 
@@ -9,17 +9,22 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.counting.reference_match_count import IconsCountingReferenceMatchCountTask
+from trace.tasks.icons.counting.reference_match_count import IconsReferenceCanvasAttributeMatchCountTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    "task_variant",
-    ("match_type", "match_color", "match_orientation", "match_attribute_binding"),
+    ("task_cls", "query_variant"),
+    (
+        (IconsReferenceCanvasAttributeMatchCountTask, "match_type"),
+        (IconsReferenceCanvasAttributeMatchCountTask, "match_color"),
+        (IconsReferenceCanvasAttributeMatchCountTask, "match_rotation"),
+        (IconsReferenceCanvasAttributeMatchCountTask, "match_type_color_rotation"),
+    ),
 )
-def test_icons_counting_reference_match_count_is_deterministic(task_variant: str) -> None:
-    task = IconsCountingReferenceMatchCountTask()
-    params = {"task_variant": task_variant, "object_count": 8, "target_count": 3}
+def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_variant: str) -> None:
+    task = task_cls()
+    params = {"query_variant": query_variant, "object_count": 8, "target_count": 3}
     out_a = task.generate(24020, params=params, max_attempts=200)
     out_b = task.generate(24020, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -27,20 +32,25 @@ def test_icons_counting_reference_match_count_is_deterministic(task_variant: str
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.task_variant == task_variant
+    assert out_a.query_variant == "default"
+    assert out_a.query_id == query_variant
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
 
 
-def test_icons_counting_reference_match_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons_counting_reference_match_count"
+@pytest.mark.parametrize(
+    "task_id",
+    ("task_icons__reference_canvas__attribute_match_count",),
+)
+def test_icons_counting_attribute_match_count_build_smoke(tmp_path: Path, task_id: str) -> None:
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons_counting_reference_match_count",
-        instance_version="v1",
+        dataset_name=f"build_smoke_{task_id}",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons_counting_reference_match_count",
+                task_id=str(task_id),
                 count=4,
                 params={},
             )
@@ -57,7 +67,7 @@ def test_icons_counting_reference_match_count_build_smoke(tmp_path: Path) -> Non
     assert all(record["task_group"] == "counting" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons_counting_reference_match_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"][str(task_id)]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

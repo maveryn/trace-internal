@@ -1,0 +1,89 @@
+{
+  "bundle_id": "games_darts_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "darts_score_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_dartboard": [
+      "object_description"
+    ],
+    "query:total_score": [
+      "scoring_rule_text"
+    ],
+    "query:ring_count": [
+      "ring_rule_text",
+      "target_ring_text"
+    ],
+    "query:threshold_score_count": [
+      "scoring_rule_text",
+      "target_threshold_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_dartboard": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "total_score": [
+      "{scoring_rule_text} The image shows five score options labeled A through E. Which option letter gives the total score of all marked darts?",
+      "Add the scores of all marked darts, then choose the matching option letter from the image. {scoring_rule_text}",
+      "{scoring_rule_text} Determine the combined score for every marked dart and use the matching option letter shown in the image.",
+      "Using the dartboard scoring rule, which visible option letter gives the total score of the marked darts? {scoring_rule_text}",
+      "Score each marked dart, add the scores together, and use the matching option letter shown in the image. {scoring_rule_text}"
+    ],
+    "ring_count": [
+      "{ring_rule_text} How many marked darts are in the yellow-highlighted {target_ring_text}? Use 0 if none are there.",
+      "Count the marked darts that land in the yellow-highlighted {target_ring_text}. {ring_rule_text} Use 0 if none are there.",
+      "{ring_rule_text} What is the number of marked darts in the yellow-highlighted {target_ring_text}?",
+      "Looking only at the marked darts, how many are in the yellow-highlighted {target_ring_text}? Use 0 if none are there. {ring_rule_text}",
+      "Use the yellow-highlighted region on the dartboard. {ring_rule_text} Count the marked darts in the {target_ring_text}."
+    ],
+    "threshold_score_count": [
+      "{scoring_rule_text} How many marked darts score at least {target_threshold_text} points?",
+      "Count the marked darts with score greater than or equal to {target_threshold_text}. {scoring_rule_text}",
+      "{scoring_rule_text} What is the number of marked darts scoring at least {target_threshold_text}?",
+      "Using the dartboard scoring rule, how many marked darts score {target_threshold_text} or more? {scoring_rule_text}",
+      "Score each marked dart. {scoring_rule_text} Count how many are at least {target_threshold_text}."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

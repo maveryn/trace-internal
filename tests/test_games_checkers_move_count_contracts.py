@@ -9,7 +9,11 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.checkers.move_count import GamesCheckersMoveCountTask
+from trace.tasks.games.checkers.move_count import (
+    GamesCheckersMaxCaptureChainLengthTask,
+    GamesCheckersMoveCountPublicTask,
+    GamesCheckersMoveCountTask,
+)
 from tests.helpers import read_jsonl
 
 
@@ -34,6 +38,15 @@ from tests.helpers import read_jsonl
             2,
             2,
         ),
+        (
+            {
+                "scene_variant": "midgame_board",
+                "query_variant": "max_capture_chain_length",
+                "target_answer": 4,
+            },
+            4,
+            4,
+        ),
     ),
 )
 def test_games_checkers_move_count_emits_expected_contract(
@@ -49,11 +62,16 @@ def test_games_checkers_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
-    assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
+    if str(params["query_variant"]) == "max_capture_chain_length":
+        assert all(str(entity_id).startswith("piece_") for entity_id in execution["evidence_entity_ids"])
+        assert execution["evidence_kind"] == "piece"
+        assert execution["max_capture_chain_length"] == int(expected_answer)
+    else:
+        assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
 
 
 def test_games_checkers_move_count_legal_evidence_tracks_unique_landing_squares() -> None:
@@ -96,6 +114,70 @@ def test_games_checkers_move_count_capture_evidence_tracks_capture_landings_only
     assert len(evidence_coords) == 4
 
 
+def test_games_checkers_max_capture_chain_evidence_tracks_captured_pieces() -> None:
+    out = GamesCheckersMaxCaptureChainLengthTask().generate(
+        33041,
+        params={
+            "scene_variant": "crowded_board",
+            "target_answer": 5,
+        },
+        max_attempts=160,
+    )
+    execution = out.trace_payload["execution_trace"]
+    evidence_coords = {tuple(coord) for coord in execution["evidence_coords"]}
+    chain = execution["max_capture_chain_specs"][0]
+    captured_coords = {tuple(coord) for coord in chain["captured"]}
+
+    assert out.query_variant == "default"
+    assert out.query_id == "max_capture_chain_length"
+    assert int(out.answer_gt.value) == 5
+    assert evidence_coords == captured_coords
+    assert len(evidence_coords) == 5
+
+
+def test_games_checkers_move_count_query_cycle_covers_legal_answer_support() -> None:
+    task = GamesCheckersMoveCountTask()
+    legal_answers: list[int] = []
+    chain_answers: list[int] = []
+    scenes_by_variant: dict[str, set[str]] = {
+        "capture_move_count": set(),
+        "legal_move_count": set(),
+        "max_capture_chain_length": set(),
+    }
+    styles_by_variant: dict[str, set[str]] = {
+        "capture_move_count": set(),
+        "legal_move_count": set(),
+        "max_capture_chain_length": set(),
+    }
+    for sampling_index in range(108):
+        out = task.generate(
+            33101 + int(sampling_index),
+            params={},
+            max_attempts=160,
+        )
+        query_variant = str(out.query_variant)
+        execution = out.trace_payload["execution_trace"]
+        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
+        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+        if query_variant == "legal_move_count":
+            legal_answers.append(int(out.answer_gt.value))
+        if query_variant == "max_capture_chain_length":
+            chain_answers.append(int(out.answer_gt.value))
+
+    assert set(legal_answers) == {0, 1, 2, 3, 4, 5}
+    assert set(chain_answers) == {1, 2, 3, 4, 5}
+    assert scenes_by_variant == {
+        "capture_move_count": {"crowded_board", "midgame_board"},
+        "legal_move_count": {"crowded_board", "midgame_board"},
+        "max_capture_chain_length": {"crowded_board", "midgame_board"},
+    }
+    assert styles_by_variant == {
+        "capture_move_count": {"classic", "soft", "outlined", "wood_token", "blue_table", "charcoal"},
+        "legal_move_count": {"classic", "soft", "outlined", "wood_token", "blue_table", "charcoal"},
+        "max_capture_chain_length": {"classic", "soft", "outlined", "wood_token", "blue_table", "charcoal"},
+    }
+
+
 def test_games_checkers_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "crowded_board",
@@ -114,33 +196,38 @@ def test_games_checkers_move_count_is_deterministic() -> None:
 
 
 def test_games_checkers_move_count_prompt_bundle_requires_rule_text_for_query_specific_prompts() -> None:
-    bundle = json.loads(Path("prompts/games/checkers/games_checkers_v1.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/checkers/games_checkers_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
-    assert required["task_variant:legal_move_count"] == [
+    assert required["query:legal_move_count"] == [
         "current_player_name",
         "movement_rule_text",
         "capture_rule_text",
         "single_jump_rule_text",
         "legal_move_rule_text",
     ]
-    assert required["task_variant:capture_move_count"] == [
+    assert required["query:capture_move_count"] == [
         "current_player_name",
         "movement_rule_text",
         "capture_rule_text",
         "single_jump_rule_text",
     ]
+    assert required["query:max_capture_chain_length"] == [
+        "current_player_name",
+        "capture_rule_text",
+        "king_chain_rule_text",
+    ]
 
 
 def test_games_checkers_move_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games_checkers_move_count"
+    output_root = tmp_path / "task_games__checkers__move_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games_checkers_move_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_games__checkers__move_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games_checkers_move_count",
+                task_id="task_games__checkers__move_count",
                 count=4,
                 params={},
             )
@@ -157,7 +244,7 @@ def test_games_checkers_move_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "checkers" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games_checkers_move_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__checkers__move_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

@@ -20,5 +20,14 @@ scene_variant_load: 0.33
 - Use task-group or task-level weight overrides only when a chart family really shifts the relative importance of scan, reasoning, and representation load.
 
 ## Notes
-- Use chart-native structure in the score: mark count, category count, series count, or bin count for `visual_scan`, task-variant semantics for `reasoning_load`, and task-local chart-type ordering for `scene_variant_load`.
+- Use chart-native structure in the score: mark count, category count, series count, or bin count for `visual_scan`, query semantics for `reasoning_load`, and task-local chart-type ordering for `scene_variant_load`.
 - Chart tasks often get harder because of representation load and scene semantics, not because the final numeric answer is larger.
+
+## Data Table Grid Notes
+- `table` is a chart scene for row/column/cell data displays.
+- Use the same broad chart vocabulary unless a task-group override is justified:
+  - `visual_scan`: rows, numeric columns, filtered subset size, queried interval length, or ranking span the model must inspect.
+  - `reasoning_load`: summary, transfer, ranking, filter, or interval logic required after reading the cells.
+  - `scene_variant_load`: table styling or layout variation only when it creates real within-task representation load.
+- Keep normalization task-local even when the criterion names are shared across table-grid tasks.
+- Keep raw diagnostics such as row count, numeric-column count, selected-row count, and year-interval length in trace/debug payloads rather than in `complexity_components`.

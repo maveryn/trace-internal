@@ -30,7 +30,7 @@ _ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
     re.IGNORECASE,
 )
 _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
-    r'^Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer\.\s*$',
+    r'^Use a valid JSON object with keys (?:"evidence" and "answer" in that order|"answer" and "evidence") for the final answer\.\s*$',
     re.IGNORECASE,
 )
 
@@ -78,18 +78,18 @@ def _strip_generic_output_contract_line(rendered_mode_text: str, *, answer_or_ev
 def _validate_required_slots(
     required_slots_by_key: Mapping[str, tuple[str, ...]],
     *,
-    task_family_key: str,
+    scene_key: str,
     task_key: str,
-    task_variant_key: str | None,
+    query_key: str | None,
     answer_or_evidence_key: str | None,
     slots: Mapping[str, Any],
 ) -> None:
-    """Ensure all slots declared by the selected task-family/task keys are present."""
-    required_family = required_slots_by_key.get(f"task_family:{task_family_key}", ())
+    """Ensure all slots declared by the selected scene/task/query keys are present."""
+    required_scene = required_slots_by_key.get(f"scene:{scene_key}", ())
     required_task = required_slots_by_key.get(f"task:{task_key}", ())
-    required_variant = (
-        required_slots_by_key.get(f"task_variant:{task_variant_key}", ())
-        if task_variant_key
+    required_query = (
+        required_slots_by_key.get(f"query:{query_key}", ())
+        if query_key
         else ()
     )
     required_mode = (
@@ -99,7 +99,7 @@ def _validate_required_slots(
     )
     missing = [
         name
-        for name in list(required_family) + list(required_task) + list(required_variant) + list(required_mode)
+        for name in list(required_scene) + list(required_task) + list(required_query) + list(required_mode)
         if str(name) not in slots
     ]
     if missing:
@@ -126,57 +126,57 @@ def render_prompt(
     domain: str,
     task_group: str,
     bundle_id: str,
-    task_family_key: str,
+    scene_key: str,
     task_key: str,
-    task_variant_key: str | None = None,
+    query_key: str | None = None,
     answer_or_evidence_key: str | None = None,
     slots: Mapping[str, Any],
     instance_seed: int,
 ) -> PromptRenderResult:
-    """Render one prompt using deterministic task-family/task/variant templates."""
+    """Render one prompt using deterministic scene/task/query templates."""
     bundle = load_prompt_bundle(domain=domain, task_group=task_group, bundle_id=bundle_id)
 
-    if task_family_key not in bundle.task_family_templates:
-        raise ValueError(f"missing task_family key in bundle: {task_family_key}")
+    if scene_key not in bundle.scene_templates:
+        raise ValueError(f"missing scene key in bundle: {scene_key}")
     if task_key not in bundle.task_templates:
         raise ValueError(f"missing task key in bundle: {task_key}")
-    resolved_task_variant_key = str(task_variant_key).strip() if task_variant_key is not None else None
-    if resolved_task_variant_key:
-        if resolved_task_variant_key not in bundle.task_variant_templates:
-            raise ValueError(f"missing task_variant key in bundle: {resolved_task_variant_key}")
+    resolved_query_key = str(query_key).strip() if query_key is not None else None
+    if resolved_query_key:
+        if resolved_query_key not in bundle.query_templates:
+            raise ValueError(f"missing query key in bundle: {resolved_query_key}")
     else:
-        resolved_task_variant_key = None
+        resolved_query_key = None
 
     resolved_mode_key = _resolve_answer_or_evidence_key(bundle, answer_or_evidence_key)
     _validate_required_slots(
         bundle.required_slots_by_key,
-        task_family_key=task_family_key,
+        scene_key=scene_key,
         task_key=task_key,
-        task_variant_key=resolved_task_variant_key,
+        query_key=resolved_query_key,
         answer_or_evidence_key=resolved_mode_key,
         slots=slots,
     )
 
-    task_family_template, task_family_idx, task_family_count = choose_variant(
-        bundle.task_family_templates[task_family_key],
+    scene_template, scene_idx, scene_count = choose_variant(
+        bundle.scene_templates[scene_key],
         instance_seed=instance_seed,
-        namespace=f"prompt.task_family.{task_family_key}",
+        namespace=f"prompt.scene.{scene_key}",
     )
     task_template, task_idx, task_count = choose_variant(
         bundle.task_templates[task_key],
         instance_seed=instance_seed,
         namespace=f"prompt.task.{task_key}",
     )
-    task_variant_text = ""
-    task_variant_idx = None
-    task_variant_count = None
-    if resolved_task_variant_key is not None:
-        variant_template, task_variant_idx, task_variant_count = choose_variant(
-            bundle.task_variant_templates[resolved_task_variant_key],
+    query_text = ""
+    query_idx = None
+    query_count = None
+    if resolved_query_key is not None:
+        query_template, query_idx, query_count = choose_variant(
+            bundle.query_templates[resolved_query_key],
             instance_seed=instance_seed,
-            namespace=f"prompt.task_variant.{resolved_task_variant_key}",
+            namespace=f"prompt.query.{resolved_query_key}",
         )
-        task_variant_text = _render_template(variant_template, slots)
+        query_text = _render_template(query_template, slots)
     mode_text = ""
     mode_idx = None
     mode_count = None
@@ -189,30 +189,30 @@ def render_prompt(
         mode_text = _render_template(mode_template, slots, allow_empty=True)
         mode_text = _strip_generic_output_contract_line(mode_text, answer_or_evidence_key=resolved_mode_key)
 
-    task_family_text = _render_template(task_family_template, slots)
-    task_text = _render_template(task_template, slots)
-    prompt = " ".join(text for text in (task_family_text, task_text, task_variant_text) if text).strip()
+    scene_text = _render_template(scene_template, slots)
+    task_text = _render_template(task_template, slots, allow_empty=bool(bundle.allow_empty_task_templates))
+    prompt = " ".join(text for text in (scene_text, task_text, query_text) if text).strip()
     if mode_text:
         prompt = f"{prompt}\n{mode_text}".strip()
 
     metadata = {
         "prompt_bundle_id": bundle.bundle_id,
         "schema_version": bundle.schema_version,
-        "task_family_key": str(task_family_key),
+        "scene_key": str(scene_key),
         "task_key": str(task_key),
-        "task_variant_key": (str(resolved_task_variant_key) if resolved_task_variant_key else None),
-        "task_family_variant_index": int(task_family_idx),
-        "task_variant_index": int(task_idx),
-        "task_variant_template_index": (int(task_variant_idx) if task_variant_idx is not None else None),
+        "query_key": (str(resolved_query_key) if resolved_query_key else None),
+        "scene_template_index": int(scene_idx),
+        "task_template_index": int(task_idx),
+        "query_template_index": (int(query_idx) if query_idx is not None else None),
         "variant_count_by_key": {
-            f"task_family:{task_family_key}": int(task_family_count),
+            f"scene:{scene_key}": int(scene_count),
             f"task:{task_key}": int(task_count),
         },
         "slot_values": {str(key): slots[key] for key in sorted(slots.keys(), key=str)},
         "template_paths": [bundle.source_path],
     }
-    if resolved_task_variant_key is not None and task_variant_count is not None:
-        metadata["variant_count_by_key"][f"task_variant:{resolved_task_variant_key}"] = int(task_variant_count)
+    if resolved_query_key is not None and query_count is not None:
+        metadata["variant_count_by_key"][f"query:{resolved_query_key}"] = int(query_count)
     if resolved_mode_key is not None and mode_idx is not None and mode_count is not None:
         metadata["answer_or_evidence_key"] = str(resolved_mode_key)
         metadata["answer_or_evidence_variant_index"] = int(mode_idx)
@@ -225,9 +225,9 @@ def render_prompt_variants(
     domain: str,
     task_group: str,
     bundle_id: str,
-    task_family_key: str,
+    scene_key: str,
     task_key: str,
-    task_variant_key: str | None = None,
+    query_key: str | None = None,
     answer_or_evidence_keys: Sequence[str],
     slots: Mapping[str, Any],
     instance_seed: int,
@@ -241,9 +241,9 @@ def render_prompt_variants(
             domain=domain,
             task_group=task_group,
             bundle_id=bundle_id,
-            task_family_key=task_family_key,
+            scene_key=scene_key,
             task_key=task_key,
-            task_variant_key=task_variant_key,
+            query_key=query_key,
             answer_or_evidence_key=key,
             slots=slots,
             instance_seed=instance_seed,

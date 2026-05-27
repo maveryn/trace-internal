@@ -65,7 +65,7 @@ def main() -> int:
         default=200,
         help="Number of task instances to generate for the calibration probe",
     )
-    parser.add_argument("--instance-version", default="v1", help="TRACE instance ABI version")
+    parser.add_argument("--instance-version", default="v0", help="TRACE instance ABI version")
     parser.add_argument("--image-format", default="png", help="TRACE image format")
     parser.add_argument(
         "--max-attempts-per-instance",
@@ -143,6 +143,7 @@ def main() -> int:
         else f"{task_id}_probe_{int(args.num_instances)}"
     )
     task_params = _parse_task_params(str(args.task_params_json))
+    task_params.setdefault("_trace_calibration_sample", True)
     config = BuildConfig(
         output_root=str(args.output_root),
         dataset_name=str(dataset_name),

@@ -9,6 +9,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.registry import create_task
 from trace.tasks.games.bingo.completed_line_count import GamesBingoCompletedLineCountTask
 from tests.helpers import read_jsonl
 
@@ -18,24 +19,18 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "completed_row_count",
+                "query_variant": "completed_axis_line_count",
+                "line_axis": "row",
                 "target_answer": 3,
             },
             3,
         ),
         (
             {
-                "task_variant": "completed_column_count",
+                "query_variant": "completed_column_count",
                 "target_answer": 4,
             },
             4,
-        ),
-        (
-            {
-                "query_variant": "completed_straight_line_count",
-                "target_answer": 5,
-            },
-            5,
         ),
     ),
 )
@@ -50,59 +45,79 @@ def test_games_bingo_completed_line_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
-    if str(out.task_variant) == "completed_row_count":
-        assert len(execution["completed_row_indices"]) == int(expected_answer)
-        assert len(out.evidence_gt.value) == 5 * int(expected_answer)
-    elif str(out.task_variant) == "completed_column_count":
-        assert len(execution["completed_column_indices"]) == int(expected_answer)
-        assert len(out.evidence_gt.value) == 5 * int(expected_answer)
-    else:
-        total_completed = len(execution["completed_row_indices"]) + len(execution["completed_column_indices"])
-        assert int(total_completed) == int(expected_answer)
-
-
-def test_games_bingo_completed_line_count_zero_answer_emits_empty_evidence() -> None:
+    if str(out.query_variant) == "completed_axis_line_count":
+        if str(execution["line_axis"]) == "row":
+            assert len(execution["completed_row_indices"]) == int(expected_answer)
+            assert len(out.evidence_gt.value) == 5 * int(expected_answer)
+        else:
+            assert str(execution["line_axis"]) == "column"
+            assert len(execution["completed_column_indices"]) == int(expected_answer)
+            assert len(out.evidence_gt.value) == 5 * int(expected_answer)
+@pytest.mark.parametrize(
+    ("line_axis", "extremum", "completed_line_count"),
+    (
+        ("row", "max", 3),
+        ("column", "min", 2),
+    ),
+)
+def test_games_bingo_line_sum_extremum_value_has_unique_extremum_line(
+    line_axis: str,
+    extremum: str,
+    completed_line_count: int,
+) -> None:
     out = GamesBingoCompletedLineCountTask().generate(
-        27011,
+        27023,
         params={
-            "query_variant": "completed_straight_line_count",
-            "target_answer": 0,
+            "query_variant": "line_sum_extremum_value",
+            "line_axis": line_axis,
+            "extremum": extremum,
+            "target_answer": completed_line_count,
         },
-        max_attempts=24,
-    )
-    assert int(out.answer_gt.value) == 0
-    assert out.evidence_gt.value == []
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == []
-
-
-def test_games_bingo_completed_line_count_straight_line_evidence_is_union_of_completed_rows_and_columns() -> None:
-    out = GamesBingoCompletedLineCountTask().generate(
-        27021,
-        params={
-            "query_variant": "completed_straight_line_count",
-            "target_answer": 4,
-        },
-        max_attempts=24,
+        max_attempts=100,
     )
     execution = out.trace_payload["execution_trace"]
-    expected_ids = set()
-    completed_rows = set(int(value) for value in execution["completed_row_indices"])
-    completed_columns = set(int(value) for value in execution["completed_column_indices"])
-    for spec in execution["cell_specs"]:
-        include = int(spec["row_index"]) in completed_rows or int(spec["column_index"]) in completed_columns
-        if include:
-            expected_ids.add(str(spec["cell_id"]))
-    assert set(str(value) for value in execution["evidence_entity_ids"]) == expected_ids
+
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "bbox_set"
+    assert len(out.evidence_gt.value) == 5
+    assert execution["completed_line_count_target"] == completed_line_count
+    assert execution["line_sum_extremum"] == extremum
+    assert execution["line_sum_target_axis"] == line_axis
+    assert execution["evidence_entity_ids"] == execution["line_sum_target_cell_ids"]
+
+    line_sums = [int(record["sum"]) for record in execution["completed_line_sums"]]
+    assert len(line_sums) == completed_line_count
+    expected_answer = max(line_sums) if extremum == "max" else min(line_sums)
+    assert line_sums.count(expected_answer) == 1
+    assert int(out.answer_gt.value) == int(expected_answer)
+
+    numbers = execution["numbers_grid"]
+    target_line_index = int(execution["line_sum_target_line_index"])
+    if line_axis == "row":
+        expected_ids = [f"cell_r{target_line_index}_c{column_index}" for column_index in range(5)]
+        assert sum(int(numbers[target_line_index][column_index]) for column_index in range(5)) == expected_answer
+    else:
+        expected_ids = [f"cell_r{row_index}_c{target_line_index}" for row_index in range(5)]
+        assert sum(int(numbers[row_index][target_line_index]) for row_index in range(5)) == expected_answer
+    assert execution["evidence_entity_ids"] == expected_ids
+
+
+def test_games_bingo_line_sum_extremum_public_wrapper_uses_default_variant() -> None:
+    out = create_task("task_games__bingo__line_sum_extremum_value").generate(27024, params={}, max_attempts=100)
+    assert out.query_variant == "default"
+    assert out.query_id == "line_sum_extremum_value"
+    assert out.trace_payload["query_spec"]["params"]["query_variant"] == "default"
 
 
 def test_games_bingo_completed_line_count_is_deterministic() -> None:
     params = {
-        "query_variant": "completed_column_count",
+        "query_variant": "completed_axis_line_count",
+        "line_axis": "column",
         "target_answer": 2,
     }
     task = GamesBingoCompletedLineCountTask()
@@ -117,23 +132,26 @@ def test_games_bingo_completed_line_count_is_deterministic() -> None:
 
 
 def test_games_bingo_completed_line_count_prompt_bundle_requires_rule_text_by_variant() -> None:
-    bundle = json.loads(Path("prompts/games/bingo/games_bingo_v1.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/bingo/games_bingo_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
-    assert required["task_variant:completed_row_count"] == ["completed_row_rule_text"]
-    assert required["task_variant:completed_column_count"] == ["completed_column_rule_text"]
-    assert required["task_variant:completed_straight_line_count"] == ["completed_straight_line_rule_text"]
+    assert required["query:completed_axis_line_count"] == ["completed_axis_rule_text", "line_axis"]
+    assert required["query:line_sum_extremum_value"] == [
+        "line_sum_extremum_rule_text",
+        "line_axis",
+        "extremum",
+    ]
 
 
 def test_games_bingo_completed_line_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games_bingo_completed_line_count"
+    output_root = tmp_path / "task_games__bingo__completed_line_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games_bingo_completed_line_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_games__bingo__completed_line_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games_bingo_completed_line_count",
+                task_id="task_games__bingo__completed_line_count",
                 count=4,
                 params={},
             )
@@ -150,7 +168,7 @@ def test_games_bingo_completed_line_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "bingo" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games_bingo_completed_line_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__bingo__completed_line_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

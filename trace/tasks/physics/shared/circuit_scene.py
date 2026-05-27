@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.drawing import draw_centered_text_with_auto_stroke as _draw_centered_text
 from ...shared.drawing import draw_rounded_rect
-from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_rendering import load_font
 from .style import build_physics_circuit_theme
 
 
@@ -32,41 +33,6 @@ class RenderedCircuitScene:
     evidence_entity_ids: List[str]
     render_map: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
-
-
-def _draw_centered_text(
-    draw: ImageDraw.ImageDraw,
-    *,
-    text: str,
-    center_xy: Tuple[float, float],
-    font,
-    fill: Tuple[int, int, int],
-    stroke_width_px: int,
-) -> List[float]:
-    """Draw centered text and return the rendered bbox."""
-
-    stroke_fill = resolve_text_stroke_fill(fill)
-    bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width_px)))
-    left, top, right, bottom = [float(value) for value in bbox]
-    center_x, center_y = float(center_xy[0]), float(center_xy[1])
-    origin = (
-        float(center_x - (0.5 * (left + right))),
-        float(center_y - (0.5 * (top + bottom))),
-    )
-    draw.text(
-        origin,
-        str(text),
-        font=font,
-        fill=tuple(int(value) for value in fill),
-        stroke_width=max(0, int(stroke_width_px)),
-        stroke_fill=tuple(int(value) for value in stroke_fill),
-    )
-    return [
-        round(float(origin[0] + left), 3),
-        round(float(origin[1] + top), 3),
-        round(float(origin[0] + right), 3),
-        round(float(origin[1] + bottom), 3),
-    ]
 
 
 def _draw_terminal(
@@ -152,6 +118,9 @@ def render_resistor_network_scene(
     scene_variant: str,
     series_values: Sequence[int],
     parallel_values: Sequence[int],
+    parallel_blocks: Sequence[Sequence[int]] | None = None,
+    inter_block_series_values: Sequence[int] | None = None,
+    outer_series_values: Sequence[int] | None = None,
     background: Image.Image,
     render_defaults: Mapping[str, Any],
     accent_color_name: str,
@@ -159,12 +128,13 @@ def render_resistor_network_scene(
     missing_resistor_indices: Sequence[int] = (),
     origin_offset_px: Tuple[float, float] = (0.0, 0.0),
     entity_id_prefix: str = "",
+    diagram_style: Any | None = None,
 ) -> RenderedCircuitScene:
     """Render one resistor network between labeled terminals `A` and `B`."""
 
     canvas = background.convert("RGB")
     draw = ImageDraw.Draw(canvas)
-    theme = build_physics_circuit_theme(str(accent_color_name))
+    theme = build_physics_circuit_theme(str(accent_color_name), diagram_style=diagram_style)
     canvas_width = int(render_defaults["canvas_width"])
     canvas_height = int(render_defaults["canvas_height"])
     mid_y = float(0.5 * canvas_height)
@@ -313,7 +283,72 @@ def render_resistor_network_scene(
             add_resistor(f"{str(entity_id_prefix)}resistor_{int(next_resistor_index)}", int(value), bbox)
             next_resistor_index += 1
 
-    if str(scene_variant) == "parallel":
+    def add_gap_series_resistor(start_x: float, end_x: float, value: int) -> None:
+        nonlocal next_resistor_index
+        if int(value) <= 0:
+            line((float(start_x), float(origin_y + mid_y)), (float(end_x), float(origin_y + mid_y)))
+            return
+        center_x = float(0.5 * (float(start_x) + float(end_x)))
+        bbox = [
+            round(float(center_x - (0.5 * resistor_box_width)), 3),
+            round(float(origin_y + mid_y - (0.5 * resistor_box_height)), 3),
+            round(float(center_x + (0.5 * resistor_box_width)), 3),
+            round(float(origin_y + mid_y + (0.5 * resistor_box_height)), 3),
+        ]
+        line((float(start_x), float(origin_y + mid_y)), (float(bbox[0]), float(origin_y + mid_y)))
+        add_resistor(f"{str(entity_id_prefix)}resistor_{int(next_resistor_index)}", int(value), bbox)
+        next_resistor_index += 1
+        line((float(bbox[2]), float(origin_y + mid_y)), (float(end_x), float(origin_y + mid_y)))
+
+    def add_compound_parallel_chain(start_x: float, end_x: float, blocks: Sequence[Sequence[int]], gaps: Sequence[int]) -> None:
+        if not blocks:
+            line((float(start_x), float(origin_y + mid_y)), (float(end_x), float(origin_y + mid_y)))
+            return
+        if len(gaps) != max(0, len(blocks) - 1):
+            raise ValueError("compound circuit gaps must have length len(blocks) - 1")
+        slot_count = (2 * len(blocks)) - 1
+        slot_width = float(end_x - start_x) / float(slot_count)
+        for block_index, block_values in enumerate(blocks):
+            block_left_x = float(start_x + ((2 * block_index) * slot_width))
+            block_right_x = float(start_x + (((2 * block_index) + 1) * slot_width))
+            add_parallel_bank(block_left_x, block_right_x, block_values)
+            if block_index < len(gaps):
+                gap_left_x = block_right_x
+                gap_right_x = float(start_x + (((2 * block_index) + 2) * slot_width))
+                add_gap_series_resistor(gap_left_x, gap_right_x, int(gaps[block_index]))
+
+    compound_blocks = (
+        tuple(tuple(int(value) for value in block) for block in parallel_blocks)
+        if parallel_blocks is not None
+        else tuple()
+    )
+    compound_gaps = (
+        tuple(int(value) for value in inter_block_series_values)
+        if inter_block_series_values is not None
+        else tuple()
+    )
+    compound_outer = (
+        tuple(int(value) for value in outer_series_values)
+        if outer_series_values is not None
+        else tuple()
+    )
+
+    if compound_blocks:
+        left_anchor_x = float(terminal_left[0] + terminal_radius)
+        right_anchor_x = float(terminal_right[0] - terminal_radius)
+        if compound_outer:
+            if len(compound_outer) != 2:
+                raise ValueError("compound outer series values must contain left and right slots")
+            slot_count = (2 * len(compound_blocks)) + 1
+            slot_width = float(right_anchor_x - left_anchor_x) / float(slot_count)
+            chain_left_x = float(left_anchor_x + slot_width)
+            chain_right_x = float(right_anchor_x - slot_width)
+            add_gap_series_resistor(left_anchor_x, chain_left_x, int(compound_outer[0]))
+            add_compound_parallel_chain(chain_left_x, chain_right_x, compound_blocks, compound_gaps)
+            add_gap_series_resistor(chain_right_x, right_anchor_x, int(compound_outer[1]))
+        else:
+            add_compound_parallel_chain(left_anchor_x, right_anchor_x, compound_blocks, compound_gaps)
+    elif str(scene_variant) == "parallel":
         rail_left_x = float(origin_x + float(render_defaults["parallel_rail_left_x_px"]))
         rail_right_x = float(origin_x + float(canvas_width - int(render_defaults["parallel_rail_left_x_px"])))
         line((float(terminal_left[0] + terminal_radius), float(origin_y + mid_y)), (rail_left_x, float(origin_y + mid_y)))
@@ -347,6 +382,8 @@ def render_resistor_network_scene(
         "missing_resistor_entity_ids": [str(spec.resistor_id) for spec in resistor_specs if bool(spec.missing)],
         "evidence_entity_ids": [str(spec.resistor_id) for spec in resistor_specs],
     }
+    if diagram_style is not None:
+        render_map["technical_diagram_frame_mode"] = str(getattr(diagram_style, "frame_mode", "none"))
     return RenderedCircuitScene(
         image=canvas,
         resistor_specs=list(resistor_specs),

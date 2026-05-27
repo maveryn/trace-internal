@@ -60,6 +60,8 @@ _REQUIRED_INSTANCE_FIELDS = [
     "domain",
     "task_group",
     "task",
+    "scene_id",
+    "query_id",
     "prompt",
     "prompt_variants",
     "images",
@@ -164,10 +166,10 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
 
     required_meta_fields = (
         "prompt_bundle_id",
-        "task_family_key",
+        "scene_key",
         "task_key",
-        "task_family_variant_index",
-        "task_variant_index",
+        "scene_template_index",
+        "task_template_index",
         "variant_count_by_key",
     )
     for field in required_meta_fields:
@@ -182,10 +184,10 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             )
 
     bundle_id = str(prompt_variant.get("prompt_bundle_id", "")).strip()
-    task_family_key = str(prompt_variant.get("task_family_key", "")).strip()
+    scene_key = str(prompt_variant.get("scene_key", "")).strip()
     task_key = str(prompt_variant.get("task_key", "")).strip()
-    task_variant_key_raw = prompt_variant.get("task_variant_key")
-    task_variant_key = str(task_variant_key_raw).strip() if task_variant_key_raw not in (None, "") else ""
+    query_key_raw = prompt_variant.get("query_key")
+    query_key = str(query_key_raw).strip() if query_key_raw not in (None, "") else ""
     variant_count_by_key = prompt_variant.get("variant_count_by_key")
 
     if not bundle_id:
@@ -197,13 +199,13 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 field_path="query_spec.prompt_variant.prompt_bundle_id",
             )
         )
-    if not task_family_key:
+    if not scene_key:
         errors.append(
             _err(
                 error_codes.PROMPT_METADATA_MISSING,
-                "task_family_key is empty",
+                "scene_key is empty",
                 instance_id=iid,
-                field_path="query_spec.prompt_variant.task_family_key",
+                field_path="query_spec.prompt_variant.scene_key",
             )
         )
     if not task_key:
@@ -228,8 +230,20 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
     if errors:
         return errors
 
-    domain = str(instance.get("domain", ""))
-    task_group = str(instance.get("task_group", ""))
+    trace_taxonomy = trace_record.get("taxonomy") if isinstance(trace_record.get("taxonomy"), Mapping) else {}
+    taxonomy_source = trace_taxonomy.get("source") if isinstance(trace_taxonomy.get("source"), Mapping) else {}
+    domain = str(
+        prompt_variant.get("prompt_domain")
+        or taxonomy_source.get("prompt_domain")
+        or taxonomy_source.get("implementation_domain")
+        or instance.get("domain", "")
+    )
+    task_group = str(
+        prompt_variant.get("prompt_task_group")
+        or taxonomy_source.get("prompt_task_group")
+        or taxonomy_source.get("implementation_task_group")
+        or instance.get("task_group", "")
+    )
     try:
         bundle = load_prompt_bundle(domain=domain, task_group=task_group, bundle_id=bundle_id)
     except FileNotFoundError as exc:
@@ -257,14 +271,14 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         )
         return errors
 
-    if task_family_key not in bundle.task_family_templates:
+    if scene_key not in bundle.scene_templates:
         errors.append(
             _err(
                 error_codes.PROMPT_KEY_MISSING,
-                "prompt task_family key not found in bundle",
+                "prompt scene key not found in bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_family_key=task_family_key,
+                scene_key=scene_key,
             )
         )
     if task_key not in bundle.task_templates:
@@ -277,40 +291,40 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 task_key=task_key,
             )
         )
-    if task_variant_key and task_variant_key not in bundle.task_variant_templates:
+    if query_key and query_key not in bundle.query_templates:
         errors.append(
             _err(
                 error_codes.PROMPT_KEY_MISSING,
-                "prompt task_variant key not found in bundle",
+                "prompt query key not found in bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_variant_key=task_variant_key,
+                query_key=query_key,
             )
         )
     if errors:
         return errors
 
-    task_family_variants = bundle.task_family_templates[task_family_key]
-    task_variants = bundle.task_templates[task_key]
-    task_variant_templates = (
-        bundle.task_variant_templates[task_variant_key]
-        if task_variant_key
+    scene_templates = bundle.scene_templates[scene_key]
+    task_templates = bundle.task_templates[task_key]
+    query_templates = (
+        bundle.query_templates[query_key]
+        if query_key
         else ()
     )
     mode_templates = dict(bundle.answer_or_evidence_templates)
-    if len(task_family_variants) != REQUIRED_PROMPT_VARIANTS:
+    if len(scene_templates) != REQUIRED_PROMPT_VARIANTS:
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
-                "task_family template variant count does not match required count",
+                "scene template variant count does not match required count",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_family_key=task_family_key,
+                scene_key=scene_key,
                 required_count=REQUIRED_PROMPT_VARIANTS,
-                actual_count=len(task_family_variants),
+                actual_count=len(scene_templates),
             )
         )
-    if len(task_variants) != REQUIRED_PROMPT_VARIANTS:
+    if len(task_templates) != REQUIRED_PROMPT_VARIANTS:
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
@@ -319,58 +333,58 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
                 required_count=REQUIRED_PROMPT_VARIANTS,
-                actual_count=len(task_variants),
+                actual_count=len(task_templates),
             )
         )
-    if task_variant_key and len(task_variant_templates) != REQUIRED_PROMPT_VARIANTS:
+    if query_key and len(query_templates) != REQUIRED_PROMPT_VARIANTS:
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
-                "task_variant template variant count does not match required count",
+                "query template variant count does not match required count",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_variant_key=task_variant_key,
+                query_key=query_key,
                 required_count=REQUIRED_PROMPT_VARIANTS,
-                actual_count=len(task_variant_templates),
+                actual_count=len(query_templates),
             )
         )
 
-    task_family_count_key = f"task_family:{task_family_key}"
+    scene_count_key = f"scene:{scene_key}"
     task_count_key = f"task:{task_key}"
-    task_variant_count_key = f"task_variant:{task_variant_key}" if task_variant_key else None
-    observed_task_family_count = _to_int(variant_count_by_key.get(task_family_count_key))
+    query_count_key = f"query:{query_key}" if query_key else None
+    observed_scene_count = _to_int(variant_count_by_key.get(scene_count_key))
     observed_task_count = _to_int(variant_count_by_key.get(task_count_key))
-    observed_task_variant_count = (
-        _to_int(variant_count_by_key.get(task_variant_count_key))
-        if task_variant_count_key is not None
+    observed_query_count = (
+        _to_int(variant_count_by_key.get(query_count_key))
+        if query_count_key is not None
         else None
     )
-    expected_task_family_count = len(task_family_variants)
-    expected_task_count = len(task_variants)
-    expected_task_variant_count = (len(task_variant_templates) if task_variant_key else None)
+    expected_scene_count = len(scene_templates)
+    expected_task_count = len(task_templates)
+    expected_query_count = (len(query_templates) if query_key else None)
     mode_key = str(prompt_variant.get("answer_or_evidence_key", "")).strip() if mode_templates else ""
     mode_variant_index = _to_int(prompt_variant.get("answer_or_evidence_variant_index")) if mode_templates else None
     expected_mode_count = len(mode_templates[mode_key]) if mode_key in mode_templates else None
 
-    if observed_task_family_count is None:
+    if observed_scene_count is None:
         errors.append(
             _err(
                 error_codes.PROMPT_METADATA_MISSING,
-                "missing task_family variant count in prompt metadata",
+                "missing scene variant count in prompt metadata",
                 instance_id=iid,
-                field_path=f"query_spec.prompt_variant.variant_count_by_key.{task_family_count_key}",
+                field_path=f"query_spec.prompt_variant.variant_count_by_key.{scene_count_key}",
             )
         )
-    elif observed_task_family_count != expected_task_family_count:
+    elif observed_scene_count != expected_scene_count:
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                "task_family variant count mismatch between metadata and bundle",
+                "scene variant count mismatch between metadata and bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_family_key=task_family_key,
-                expected_count=expected_task_family_count,
-                actual_count=observed_task_family_count,
+                scene_key=scene_key,
+                expected_count=expected_scene_count,
+                actual_count=observed_scene_count,
             )
         )
 
@@ -378,7 +392,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_METADATA_MISSING,
-                "missing task variant count in prompt metadata",
+                "missing query variant count in prompt metadata",
                 instance_id=iid,
                 field_path=f"query_spec.prompt_variant.variant_count_by_key.{task_count_key}",
             )
@@ -387,7 +401,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                "task variant count mismatch between metadata and bundle",
+                "query variant count mismatch between metadata and bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
@@ -395,26 +409,26 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 actual_count=observed_task_count,
             )
         )
-    if task_variant_count_key is not None:
-        if observed_task_variant_count is None:
+    if query_count_key is not None:
+        if observed_query_count is None:
             errors.append(
                 _err(
                     error_codes.PROMPT_METADATA_MISSING,
-                    "missing task_variant variant count in prompt metadata",
+                    "missing query variant count in prompt metadata",
                     instance_id=iid,
-                    field_path=f"query_spec.prompt_variant.variant_count_by_key.{task_variant_count_key}",
+                    field_path=f"query_spec.prompt_variant.variant_count_by_key.{query_count_key}",
                 )
             )
-        elif observed_task_variant_count != expected_task_variant_count:
+        elif observed_query_count != expected_query_count:
             errors.append(
                 _err(
                     error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                    "task_variant variant count mismatch between metadata and bundle",
+                    "query variant count mismatch between metadata and bundle",
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
-                    task_variant_key=task_variant_key,
-                    expected_count=expected_task_variant_count,
-                    actual_count=observed_task_variant_count,
+                    query_key=query_key,
+                    expected_count=expected_query_count,
+                    actual_count=observed_query_count,
                 )
             )
 
@@ -463,56 +477,56 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                     )
                 )
 
-    task_family_variant_index = _to_int(prompt_variant.get("task_family_variant_index"))
-    task_variant_index = _to_int(prompt_variant.get("task_variant_index"))
-    task_variant_template_index = (
-        _to_int(prompt_variant.get("task_variant_template_index"))
-        if task_variant_key
+    scene_template_index = _to_int(prompt_variant.get("scene_template_index"))
+    task_template_index = _to_int(prompt_variant.get("task_template_index"))
+    query_template_index = (
+        _to_int(prompt_variant.get("query_template_index"))
+        if query_key
         else None
     )
     if (
-        task_family_variant_index is None
-        or task_family_variant_index < 0
-        or task_family_variant_index >= expected_task_family_count
+        scene_template_index is None
+        or scene_template_index < 0
+        or scene_template_index >= expected_scene_count
     ):
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
-                "task_family variant index out of range",
+                "scene variant index out of range",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
-                task_family_key=task_family_key,
-                variant_index=prompt_variant.get("task_family_variant_index"),
-                variant_count=expected_task_family_count,
+                scene_key=scene_key,
+                variant_index=prompt_variant.get("scene_template_index"),
+                variant_count=expected_scene_count,
             )
         )
-    if task_variant_index is None or task_variant_index < 0 or task_variant_index >= expected_task_count:
+    if task_template_index is None or task_template_index < 0 or task_template_index >= expected_task_count:
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
-                "task variant index out of range",
+                "query variant index out of range",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
-                variant_index=prompt_variant.get("task_variant_index"),
+                variant_index=prompt_variant.get("task_template_index"),
                 variant_count=expected_task_count,
             )
         )
-    if task_variant_key and expected_task_variant_count is not None:
+    if query_key and expected_query_count is not None:
         if (
-            task_variant_template_index is None
-            or task_variant_template_index < 0
-            or task_variant_template_index >= expected_task_variant_count
+            query_template_index is None
+            or query_template_index < 0
+            or query_template_index >= expected_query_count
         ):
             errors.append(
                 _err(
                     error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
-                    "task_variant template index out of range",
+                    "query template index out of range",
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
-                    task_variant_key=task_variant_key,
-                    variant_index=prompt_variant.get("task_variant_template_index"),
-                    variant_count=expected_task_variant_count,
+                    query_key=query_key,
+                    variant_index=prompt_variant.get("query_template_index"),
+                    variant_count=expected_query_count,
                 )
             )
     if mode_templates and mode_key in mode_templates and expected_mode_count is not None:
@@ -529,10 +543,10 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 )
             )
 
-    required_slots = list(bundle.required_slots_by_key.get(f"task_family:{task_family_key}", ()))
+    required_slots = list(bundle.required_slots_by_key.get(f"scene:{scene_key}", ()))
     required_slots.extend(bundle.required_slots_by_key.get(f"task:{task_key}", ()))
-    if task_variant_key:
-        required_slots.extend(bundle.required_slots_by_key.get(f"task_variant:{task_variant_key}", ()))
+    if query_key:
+        required_slots.extend(bundle.required_slots_by_key.get(f"query:{query_key}", ()))
     if mode_templates and mode_key:
         required_slots.extend(bundle.required_slots_by_key.get(f"answer_or_evidence:{mode_key}", ()))
     if required_slots:

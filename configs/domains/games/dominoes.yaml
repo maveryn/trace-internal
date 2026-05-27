@@ -1,32 +1,77 @@
 generation:
-  shared: {}
-  task_overrides:
-    task_games_dominoes_chain_count:
-      scene_variant_weights:
-        single_row: 1.0
-        two_row: 1.0
-      query_variant_weights:
-        matching_end_count: 1.0
-        higher_sum_than_reference_count: 1.0
-        sum_to_target_count: 1.0
-        double_count: 1.0
-      style_variant_weights:
-        classic: 1.0
-        soft: 1.0
-        outlined: 1.0
-      balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
-      balanced_style_variant_sampling: true
-      balanced_target_answer_sampling: true
-      balanced_candidate_count_sampling: true
-      matching_end_target_answer_support: [0, 1, 2, 3, 4, 5]
-      higher_sum_target_answer_support: [0, 1, 2, 3, 4, 5]
-      sum_to_target_answer_support: [0, 1, 2, 3, 4]
-      double_target_answer_support: [0, 1, 2, 3, 4, 5]
-      single_row_candidate_count_support: [7, 8, 9]
-      two_row_candidate_count_support: [10, 11, 12]
-      sum_target_total_support: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-
+  shared:
+    scene_variant_weights:
+      single_row: 1.0
+      two_row: 1.0
+    query_variant_weights:
+      matching_end_count: 1.0
+      higher_sum_than_reference_count: 1.0
+      sum_to_target_count: 1.0
+      double_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      soft: 1.0
+      outlined: 1.0
+      ivory: 1.0
+      charcoal_tile: 1.0
+      wood_tile: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_candidate_count_sampling: true
+    matching_end_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    higher_sum_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    sum_to_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    double_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    two_step_extension_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    single_row_candidate_count_support:
+    - 7
+    - 8
+    - 9
+    two_row_candidate_count_support:
+    - 10
+    - 11
+    - 12
+    sum_target_total_support:
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
 rendering:
   shared:
     canvas_width: 1180
@@ -43,34 +88,48 @@ rendering:
     divider_width_px: 4
     reference_tag_font_size_px: 16
     reference_tag_gap_px: 14
-
+    section_label_font_size_px: 18
+    section_separator_width_px: 2
 complexity:
-  shared: {}
-  task_overrides:
-    task_games_dominoes_chain_count:
-      criteria_weights:
-        visual_scan: 0.28
-        card_reasoning: 0.44
-        ambiguity: 0.16
-        output_burden: 0.12
-
+  shared:
+    criteria_weights:
+      visual_scan: 0.28
+      card_reasoning: 0.44
+      ambiguity: 0.16
+      output_burden: 0.12
 prompt:
   shared:
-    bundle_id: games_dominoes_v1
-  task_overrides:
-    task_games_dominoes_chain_count:
-      task_family_key: visible_domino_chain
-      task_key: domino_chain_query
-      object_description_single_row: one short face-up domino chain across the top and one row of loose face-up dominoes below on a green table
-      object_description_two_row: one short face-up domino chain across the top and two rows of loose face-up dominoes below on a green table
-      connection_rule_text: A loose domino can connect to the open right end if either half has the same number of pips as that open end.
-      pip_sum_rule_text: The pip sum of a domino is the total number of pips across its two halves.
-      double_rule_text: A double has the same number of pips on both halves.
-      evidence_hint_matching_end_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every loose domino below that can connect to the open right end of the `REF` tile
-      evidence_hint_higher_sum_than_reference_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every loose domino below whose pip sum is larger than the `REF` tile's pip sum
-      evidence_hint_sum_to_target_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every loose domino below whose pip sum equals the target total
-      evidence_hint_double_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every loose domino below that is a double
-      answer_hint_matching_end_count: set "answer" to the number of loose dominoes below that can connect to the open right end of the `REF` tile
-      answer_hint_higher_sum_than_reference_count: set "answer" to the number of loose dominoes below whose pip sum is larger than the `REF` tile's pip sum
-      answer_hint_sum_to_target_count: set "answer" to the number of loose dominoes below whose pip sum equals the target total
-      answer_hint_double_count: set "answer" to the number of loose dominoes below that are doubles
+    bundle_id: games_dominoes_v0
+    scene_key: visible_domino_chain
+    task_key: domino_chain_query
+    object_description_single_row: a short face-up domino chain across the top with
+      one row of loose face-up dominoes below
+    object_description_two_row: a short face-up domino chain across the top with
+      two rows of loose face-up dominoes below
+    connection_rule_text: A loose domino can connect to the open right end if either
+      half has the same number of pips as that open end.
+    pip_sum_rule_text: The pip sum of a domino is the total number of pips across
+      its two halves.
+    double_rule_text: A double has the same number of pips on both halves.
+    two_step_rule_text: First attach one loose domino to the `REF` tile's open right
+      end. Then attach a second loose domino to the new open end created by that
+      first play.
+    evidence_hint_matching_end_count: set "evidence" to [x0, y0, x1, y1] boxes for
+      every loose domino that matches the `REF` tile's open right end
+    evidence_hint_higher_sum_than_reference_count: set "evidence" to [x0, y0, x1,
+      y1] boxes for every loose domino with a larger pip sum than `REF`
+    evidence_hint_sum_to_target_count: set "evidence" to [x0, y0, x1, y1] boxes for
+      every loose domino with the target pip sum
+    evidence_hint_double_count: set "evidence" to [x0, y0, x1, y1] boxes for every
+      loose domino that is a double
+    evidence_hint_two_step_extension_label: set "evidence" to [x0, y0, x1, y1]
+      boxes for the first-step loose domino and the labeled second-step domino
+    answer_hint_matching_end_count: set "answer" to the count of loose dominoes that
+      match the `REF` tile's open right end
+    answer_hint_higher_sum_than_reference_count: set "answer" to the count of loose
+      dominoes with a larger pip sum than `REF`
+    answer_hint_sum_to_target_count: set "answer" to the count of loose dominoes with
+      the target pip sum
+    answer_hint_double_count: set "answer" to the count of loose doubles
+    answer_hint_two_step_extension_label: set "answer" to the option letter of the
+      loose domino that can be played second in the two-step extension

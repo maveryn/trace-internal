@@ -1,0 +1,4 @@
+task_id: task_icons__paired_canvas__panel_exact_match_count
+params:
+  target_count: 2
+  distractor_count: 3

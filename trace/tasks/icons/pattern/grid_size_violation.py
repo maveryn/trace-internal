@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
+from ....core.taxonomy import resolve_task_taxonomy
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
@@ -78,6 +79,7 @@ class _TaskDefaults:
     row_step_candidates: Tuple[int, ...] = (-1, 0, 1)
     col_step_candidates: Tuple[int, ...] = (-1, 0, 1)
     size_level_gap_px: int = 8
+    min_violation_level_delta: int = 1
     shared_rotation_candidates_degrees: Tuple[int, ...] = (0, 90, 180, 270)
     palette_size_min: int = 1
     palette_size_max: int = 1
@@ -158,10 +160,13 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
+TASK_ID = "task_icons__pattern_grid__size_pattern_violation_index"
+QUERY_ID = "grid_size_violation"
+
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "pattern")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_pattern_grid_size_violation",
+    task_id=TASK_ID,
 )
 
 
@@ -359,7 +364,7 @@ def _resolve_pattern_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace="task_icons_pattern_grid_size_violation:pattern_spec",
+            namespace=f"{TASK_ID}:pattern_spec",
         )
     )
     explicit_answer_index = params.get("answer_index")
@@ -382,6 +387,14 @@ def _resolve_pattern_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _
     explicit_col_step = params.get("col_step_levels")
     explicit_violation_size_level = params.get("violation_size_level")
     explicit_shared_rotation = params.get("shared_rotation_degrees")
+    min_violation_level_delta = int(
+        params.get(
+            "min_violation_level_delta",
+            group_default(_GEN_DEFAULTS, "min_violation_level_delta", _DEFAULTS.min_violation_level_delta),
+        )
+    )
+    if int(min_violation_level_delta) < 1:
+        raise ValueError("min_violation_level_delta must be >= 1")
 
     allowed_levels = {int(level) for level in size_levels}
     feasible_patterns: List[Tuple[int, int, int, int, Tuple[int, ...], Tuple[int, ...], int]] = []
@@ -412,6 +425,8 @@ def _resolve_pattern_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _
                     if explicit_violation_size_level is not None and int(violation_size_level) != int(explicit_violation_size_level):
                         continue
                     if int(violation_size_level) == int(expected_level):
+                        continue
+                    if abs(int(violation_size_level) - int(expected_level)) < int(min_violation_level_delta):
                         continue
                     observed = list(int(value) for value in expected)
                     observed[int(violation_cell_index)] = int(violation_size_level)
@@ -720,7 +735,7 @@ def _sample_scene(
 class IconsPatternGridSizeViolationTask:
     """Identify the numbered cell that breaks a 2D icon-size grid rule."""
 
-    task_id = "task_icons_pattern_grid_size_violation"
+    task_id = TASK_ID
     domain = "icons"
     task_group = "pattern"
 
@@ -733,6 +748,7 @@ class IconsPatternGridSizeViolationTask:
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
         )
         render_params["size_level_gap_px"] = int(
             params.get(
@@ -765,13 +781,13 @@ class IconsPatternGridSizeViolationTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_pattern_grid_size_violation instance") from last_error
+            raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -788,7 +804,7 @@ class IconsPatternGridSizeViolationTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -806,17 +822,36 @@ class IconsPatternGridSizeViolationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
-        task_variant = "row_col_size_grid_violation"
+        taxonomy = resolve_task_taxonomy(str(self.task_id))
+        query_id = QUERY_ID
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        common_ids = {
+            "domain": taxonomy.domain,
+            "scene_id": taxonomy.scene_id,
+            "task_id": str(self.task_id),
+            "query_variant": "default",
+            "query_id": str(query_id),
+        }
         trace_payload = {
+            "taxonomy": {
+                "domain": taxonomy.domain,
+                "scene_id": taxonomy.scene_id,
+                "task_id": str(self.task_id),
+                "source_domain": taxonomy.source_domain,
+                "source_task_group": taxonomy.source_task_group,
+                "query_id": str(query_id),
+            },
             "scene_ir": {
+                **common_ids,
                 "scene_kind": "icons_pattern_grid_size_violation",
                 "entities": [
                     *[dict(cell) for cell in scene_payload.scene_cells],
                     *[dict(instance) for instance in scene_payload.scene_icon_instances],
                 ],
                 "relations": {
+                    "query_id": str(query_id),
+                    "query_variant": "default",
                     "pattern_rule": "row_col_size_level_offsets",
                     "pattern_icon_id": str(scene_payload.pattern_icon_id),
                     "size_levels": [int(value) for value in scene_payload.size_levels],
@@ -837,12 +872,17 @@ class IconsPatternGridSizeViolationTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                **common_ids,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
+                    "scene_id": taxonomy.scene_id,
+                    "query_id": str(query_id),
+                    "query_variant": "default",
+                    "query_variant_probabilities": {str(query_id): 1.0},
+                    "variant_probabilities": {str(query_id): 1.0},
                     "grid_rows": int(scene_payload.grid_rows),
                     "grid_cols": int(scene_payload.grid_cols),
                     "answer_index": int(scene_payload.answer_index),
@@ -866,6 +906,7 @@ class IconsPatternGridSizeViolationTask:
                 },
             },
             "render_spec": {
+                **common_ids,
                 "canvas_size": list(scene_payload.panel_geometry["canvas_size"]),
                 "coord_space": "pixel",
                 "panel_geometry": dict(scene_payload.panel_geometry),
@@ -904,8 +945,10 @@ class IconsPatternGridSizeViolationTask:
                 },
             },
             "execution_trace": {
-                "scene_variant": "single_panel_numbered_grid",
-                "task_variant": str(task_variant),
+                **common_ids,
+                "scene_variant": "numbered_grid",
+                "query_variant_probabilities": {str(query_id): 1.0},
+                "variant_probabilities": {str(query_id): 1.0},
                 "grid_rows": int(scene_payload.grid_rows),
                 "grid_cols": int(scene_payload.grid_cols),
                 "answer_index": int(scene_payload.answer_index),
@@ -981,7 +1024,9 @@ class IconsPatternGridSizeViolationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant="default",
+            scene_id=taxonomy.scene_id,
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

@@ -8,19 +8,22 @@ description: Use when designing, implementing, or reviewing TRACE geometry-domai
 Use this whenever the task lives under `domain=geometry`.
 
 ## Read first
-1. `docs/domains/TASK_FAMILY_VARIANTS.md`
-2. `docs/project/STATUS.md`
-3. `docs/workflows/TASK_AUTHORING.md`
-4. `docs/workflows/SHARED_UTILITIES.md`
+1. `docs/domains/SCENE_TASK_QUERY_GUIDE.md`
+2. `docs/domains/GEOMETRY_TASK_SETUP.md`
+3. `docs/ACTIVE_TASK_INVENTORY.md` for the generated active scene/task list.
+4. `docs/project/STATUS.md`
+5. `docs/workflows/TASK_AUTHORING.md`
+6. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Active-contract reminders
-- `docs/domains/TASK_FAMILY_VARIANTS.md` owns geometry family-boundary rules and the active geometry scene/query/evidence surface.
-- Active geometry tasks follow a chart-style two-axis contract: `scene_variant` names the geometric scene family, while `query_variant` names the requested question type.
-- Measurement tasks use graph-paper-style coordinate grounding and geometry shared helpers.
-- Analytical 2D / 3D tasks use symbolic `ANNOTATION=VALUE` `label_set` evidence.
+- `docs/domains/SCENE_TASK_QUERY_GUIDE.md` owns geometry family-boundary rules and the active geometry scene/query/evidence surface.
+- Public identity follows `domain=geometry -> scene_id -> task_id`; task-internal semantic branches should be recorded in `query_id`.
+- `scene_variant` may record visual or object-family axes inside a task, but it is not a public sampling unit.
+- Measurement tasks use coordinate-grounded diagrams and geometry shared helpers.
+- Analytical panel tasks answer with visible panel labels or option labels and ground evidence on the selected panel or supporting plotted objects.
 - Comparison tasks use labeled objects with `option_letter` answers and winner evidence.
-- Counting tasks use non-graph-paper multi-object scenes with unordered `label_set` evidence when labels are the canonical witness.
-- Coordinate-relation tasks may use `graph_point_set` evidence even for counting variants when the visible witness is an unlabeled point set on graph paper.
+- Counting tasks use non-graph-paper multi-object scenes with unordered `bbox_set` evidence over the matched objects.
+- Coordinate-relation tasks may use `point_set` evidence even for counting variants when the visible witness is an unlabeled point set on graph paper.
 - Shared geometry logic belongs in `trace/tasks/geometry/shared/`; task-group shared code belongs inside the task-group package.
 
 ## Practical review checklist
@@ -28,4 +31,5 @@ Use this whenever the task lives under `domain=geometry`.
 - Reuse existing scene samplers/renderers before introducing a new object-family stack.
 - Keep label placement collision-aware and matched to the object footprint; point labels should stay off the labeled point itself, other nearby markers, and the geometry lines/edges whenever a collision-free placement exists.
 - If sibling geometry objectives reuse the same scene/prompt/trace flow, factor that into shared helpers instead of copying task-local logic.
-- When refactoring geometry coverage, prefer widening `query_variant` or `scene_variant` support inside the existing geometry surface before adding new geometry task ids; add a fresh task id only when the visual scaffold or answer/evidence contract materially changes (as with the newer transformation, similarity, and coordinate-relation families).
+- When refactoring geometry coverage, prefer adding `query_id` branches or safe `scene_variant` support inside an existing task only when the visual scaffold, reasoning algorithm, and answer/evidence contract stay the same.
+- Add a fresh task id when the visual scaffold or answer/evidence contract materially changes.

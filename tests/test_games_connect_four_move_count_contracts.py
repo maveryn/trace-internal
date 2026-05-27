@@ -14,25 +14,31 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count"),
+    ("params", "expected_answer", "expected_evidence_count", "expected_rows", "expected_columns"),
     (
         (
             {
                 "scene_variant": "midgame_board",
                 "query_variant": "winning_move_count",
                 "target_answer": 3,
+                "board_size_variant": "standard_7x6",
             },
             3,
             3,
+            6,
+            7,
         ),
         (
             {
                 "scene_variant": "crowded_board",
                 "query_variant": "safe_move_count",
-                "target_answer": 2,
+                "target_answer": 3,
+                "board_size_variant": "small_6x5",
             },
-            2,
-            2,
+            3,
+            3,
+            5,
+            6,
         ),
     ),
 )
@@ -40,6 +46,8 @@ def test_games_connect_four_move_count_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
     expected_evidence_count: int,
+    expected_rows: int,
+    expected_columns: int,
 ) -> None:
     out = GamesConnectFourMoveCountTask().generate(31001, params=params, max_attempts=48)
     trace = out.trace_payload
@@ -49,8 +57,12 @@ def test_games_connect_four_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
     assert int(execution["target_answer"]) == int(expected_answer)
+    assert int(execution["board_row_count"]) == int(expected_rows)
+    assert int(execution["board_column_count"]) == int(expected_columns)
+    assert int(trace["render_map"]["rows"]) == int(expected_rows)
+    assert int(trace["render_map"]["columns"]) == int(expected_columns)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
     assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
@@ -63,6 +75,7 @@ def test_games_connect_four_move_count_winning_evidence_stays_on_immediate_wins(
             "scene_variant": "midgame_board",
             "query_variant": "winning_move_count",
             "target_answer": 4,
+            "board_size_variant": "standard_7x6",
         },
         max_attempts=48,
     )
@@ -93,6 +106,87 @@ def test_games_connect_four_move_count_safe_evidence_tracks_safe_landing_squares
     assert len(execution["winning_move_coords"]) == 0
 
 
+def test_games_connect_four_safe_move_count_default_board_size_uses_square_range() -> None:
+    task = GamesConnectFourMoveCountTask()
+    out = task.generate(
+        31025,
+        params={
+            "query_variant": "safe_move_count",
+            "target_answer": 2,
+        },
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+
+    assert str(execution["board_size_variant"]) in {"square_5x5", "square_6x6"}
+    assert int(execution["board_row_count"]) == int(execution["board_column_count"])
+    assert int(execution["board_row_count"]) in {5, 6}
+
+    forced_six = task.generate(
+        31026,
+        params={
+            "query_variant": "safe_move_count",
+            "target_answer": 6,
+        },
+        max_attempts=256,
+    )
+    forced_execution = forced_six.trace_payload["execution_trace"]
+
+    assert str(forced_execution["board_size_variant"]) == "square_6x6"
+    assert int(forced_execution["board_row_count"]) == 6
+    assert int(forced_execution["board_column_count"]) == 6
+
+
+def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() -> None:
+    safe_answers: list[int] = []
+    styles_by_variant: dict[str, set[str]] = {
+        "safe_move_count": set(),
+        "winning_move_count": set(),
+    }
+    task = GamesConnectFourMoveCountTask()
+    cases = (
+        (
+            "winning_move_count",
+            {
+                "scene_variant": "midgame_board",
+                "board_size_variant": "standard_7x6",
+                "target_answer": 3,
+            },
+        ),
+        (
+                "safe_move_count",
+                {
+                    "scene_variant": "crowded_board",
+                    "board_size_variant": "small_6x5",
+                    "target_answer": 3,
+                },
+        ),
+    )
+    expected_styles = {"classic", "soft", "outlined", "arcade_blue", "teal_frame", "charcoal"}
+    for query_variant, base_params in cases:
+        for sampling_index, style_variant in enumerate(sorted(expected_styles)):
+            params = dict(base_params)
+            params["query_variant"] = str(query_variant)
+            params["style_variant"] = str(style_variant)
+            params["_sample_cursor"] = int(sampling_index)
+            out = task.generate(
+                20260506 + int(sampling_index),
+                params=params,
+                max_attempts=96,
+            )
+            assert str(out.query_variant) == str(query_variant)
+            execution = out.trace_payload["execution_trace"]
+            styles_by_variant[str(query_variant)].add(str(execution["style_variant"]))
+            if str(query_variant) == "safe_move_count":
+                safe_answers.append(int(out.answer_gt.value))
+
+    assert set(safe_answers) == {3}
+    assert styles_by_variant == {
+        "safe_move_count": expected_styles,
+        "winning_move_count": expected_styles,
+    }
+
+
 def test_games_connect_four_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "crowded_board",
@@ -111,14 +205,14 @@ def test_games_connect_four_move_count_is_deterministic() -> None:
 
 
 def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_query_specific_prompts() -> None:
-    bundle = json.loads(Path("prompts/games/connect_four/games_connect_four_v1.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/connect_four/games_connect_four_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
-    assert required["task_variant:winning_move_count"] == [
+    assert required["query:winning_move_count"] == [
         "current_player_name",
         "legal_drop_rule_text",
         "winning_rule_text",
     ]
-    assert required["task_variant:safe_move_count"] == [
+    assert required["query:safe_move_count"] == [
         "current_player_name",
         "opponent_player_name",
         "legal_drop_rule_text",
@@ -128,15 +222,15 @@ def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_quer
 
 
 def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games_connect_four_move_count"
+    output_root = tmp_path / "task_games__connect_four__move_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games_connect_four_move_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_games__connect_four__move_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games_connect_four_move_count",
+                task_id="task_games__connect_four__move_count",
                 count=4,
                 params={},
             )
@@ -153,7 +247,7 @@ def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "connect_four" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games_connect_four_move_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__connect_four__move_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

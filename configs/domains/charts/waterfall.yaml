@@ -1,0 +1,90 @@
+generation:
+  shared:
+    step_count_min: 6
+    step_count_max: 9
+    start_value_min: 35
+    start_value_max: 65
+    delta_abs_min: 5
+    delta_abs_max: 20
+    running_total_min: 8
+    running_total_max: 95
+    balanced_query_variant_sampling: true
+    query_variant_weights:
+      running_total_after_step: 1.0
+      first_total_at_least_threshold: 1.0
+      first_total_at_most_threshold: 1.0
+      remove_step_final_total: 1.0
+      reverse_step_final_total: 1.0
+  task_overrides:
+    task_charts__waterfall__running_total_value:
+      step_count_min: 8
+      step_count_max: 10
+      running_total_target_index_min: 4
+      running_total_target_max_from_end: 1
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 760
+    plot_margin_left_px: 82
+    plot_margin_right_px: 46
+    plot_margin_top_px: 72
+    plot_margin_bottom_px: 98
+    y_axis_max: 100
+    y_tick_step: 20
+    axis_line_width_px: 2
+    grid_line_width_px: 1
+    connector_width_px: 2
+    bar_outline_width_px: 2
+    tick_length_px: 8
+    title_font_size_px: 26
+    tick_font_size_px: 16
+    label_font_size_px: 18
+    value_font_size_px: 17
+    threshold_font_size_px: 16
+    bar_width_fraction: 0.56
+    start_fill_rgb_options:
+      - [76, 118, 178]
+      - [87, 118, 160]
+      - [72, 132, 154]
+    final_fill_rgb_options:
+      - [58, 92, 150]
+      - [66, 96, 138]
+      - [58, 111, 136]
+    positive_fill_rgb_options:
+      - [74, 154, 98]
+      - [63, 143, 126]
+      - [88, 150, 84]
+    negative_fill_rgb_options:
+      - [206, 92, 74]
+      - [194, 103, 67]
+      - [188, 82, 108]
+    threshold_rgb_options:
+      - [102, 91, 168]
+      - [136, 86, 152]
+      - [92, 112, 168]
+
+prompt:
+  shared:
+    bundle_id: charts_waterfall_v0
+    scene_key: waterfall
+    task_key: waterfall_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint_value: set "answer" to the requested integer value
+    answer_hint_label: set "answer" to the exact contribution-step label as a string
+    unanswerable_instruction: If no contribution step satisfies the threshold rule, answer exactly "unanswerable".
+    object_description_waterfall: a waterfall chart with a start bar, signed contribution bars, connector lines, and a final-total bar
+    evidence_hint_value: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the printed values and step label needed for the computation
+    evidence_hint_label: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the printed values, threshold marker, and answer step label needed for the crossing
+    json_example_value: '{"evidence":[[100,210,145,235],[250,300,295,326],[390,185,434,210]],"answer":57}'
+    json_example_label: '{"evidence":[[100,210,145,235],[250,300,295,326],[810,180,854,205],[248,640,276,664]],"answer":"R"}'
+    json_example_answer_only_value: '{"answer":57}'
+    json_example_answer_only_label: '{"answer":"R"}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      reasoning_load: 0.50
+      scene_variant_load: 0.20

@@ -1,0 +1,77 @@
+{
+  "bundle_id": "games_minigolf_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "minigolf_course_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_minigolf_course": [
+      "object_description"
+    ],
+    "query:first_obstacle_label": [
+      "minigolf_cue_rule_text"
+    ],
+    "query:shot_path_label": [
+      "minigolf_bank_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_minigolf_course": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "first_obstacle_label": [
+      "{minigolf_cue_rule_text} Which labeled obstacle will the ball hit first?",
+      "Extrapolate the dashed cue from the ball. {minigolf_cue_rule_text} What is the label of the first obstacle on that line?",
+      "{minigolf_cue_rule_text} Report the label on the obstacle reached before any other obstacle.",
+      "The ball follows the dashed cue direction. Which labeled obstacle is hit first?",
+      "{minigolf_cue_rule_text} Identify the first labeled obstacle the ball would reach."
+    ],
+    "shot_path_label": [
+      "{minigolf_bank_rule_text} Which numbered shot cue would reach the hole without hitting an obstacle first?",
+      "Compare the numbered starting cues. {minigolf_bank_rule_text} Which shot number reaches the hole?",
+      "{minigolf_bank_rule_text} Report the number of the cue whose putt reaches the hole.",
+      "Each numbered cue shows a starting direction. {minigolf_bank_rule_text} Which cue should be selected to reach the hole?",
+      "{minigolf_bank_rule_text} Identify the numbered shot that reaches the hole before any obstacle."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -67,6 +67,7 @@ def draw_mixed_shape_objects(
     object_label_offset_px: float,
     render_canvas_size: int,
     shape_style: GeometryShapeStyle,
+    draw_object_labels: bool = True,
 ) -> Dict[str, List[float]]:
     """Draw mixed geometry objects plus object labels and return label centers."""
 
@@ -121,6 +122,9 @@ def draw_mixed_shape_objects(
             line_color=line_color,
             line_width=max(1, int(line_width)),
         )
+
+    if not bool(draw_object_labels):
+        return {}
 
     font = load_font(int(label_font_size_px), bold=True)
     occupied_boxes: List[Tuple[float, float, float, float]] = []

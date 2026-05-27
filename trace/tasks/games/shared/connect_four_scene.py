@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from .connect_four_common import COLUMNS, RED, ROWS, YELLOW, Coord, coord_to_cell_id, player_name
+from .connect_four_common import RED, YELLOW, Coord, board_dimensions, coord_to_cell_id, player_name
+from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .style import ConnectFourTheme, build_games_connect_four_theme
 
 
@@ -28,6 +29,7 @@ class ConnectFourRenderParams:
     disc_inset_fraction: float
     player_badge_font_size_px: int
     marked_square_outline_width_px: int
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,42 @@ def _disc_bbox(
     )
 
 
+def _adjust_rgb(rgb: Tuple[int, int, int], delta: int) -> Tuple[int, int, int]:
+    """Return `rgb` shifted by `delta` with channel clamping."""
+
+    return tuple(max(0, min(255, int(value) + int(delta))) for value in rgb)
+
+
+def _shrink_bbox(bbox_px: Tuple[float, float, float, float], inset_px: float) -> Tuple[float, float, float, float]:
+    """Return `bbox_px` inset on all sides."""
+
+    return (
+        round(float(bbox_px[0] + inset_px), 3),
+        round(float(bbox_px[1] + inset_px), 3),
+        round(float(bbox_px[2] - inset_px), 3),
+        round(float(bbox_px[3] - inset_px), 3),
+    )
+
+
+def _draw_rgba_rounded_rectangle(
+    image: Image.Image,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    radius_px: int,
+    fill_rgba: Tuple[int, int, int, int],
+) -> None:
+    """Composite one translucent rounded rectangle into `image`."""
+
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    overlay_draw = ImageDraw.Draw(overlay)
+    overlay_draw.rounded_rectangle(
+        bbox_px,
+        radius=int(radius_px),
+        fill=tuple(int(value) for value in fill_rgba),
+    )
+    image.alpha_composite(overlay)
+
+
 def _draw_disc(
     draw: ImageDraw.ImageDraw,
     *,
@@ -92,7 +130,16 @@ def _draw_disc(
         outline=tuple(int(value) for value in outline_rgb),
         width=int(theme.disc_outline_width_px),
     )
+    if str(theme.disc_rendering) == "flat":
+        return
     left, top, right, bottom = bbox_px
+    if str(theme.disc_rendering) == "token":
+        ring_inset = max(3.0, 0.16 * min(right - left, bottom - top))
+        draw.ellipse(
+            _shrink_bbox(bbox_px, ring_inset),
+            outline=tuple(int(value) for value in _adjust_rgb(outline_rgb, 38)),
+            width=max(2, int(theme.disc_outline_width_px) - 1),
+        )
     shine_w = 0.34 * (right - left)
     shine_h = 0.24 * (bottom - top)
     draw.ellipse(
@@ -103,6 +150,55 @@ def _draw_disc(
             top + 0.16 * (bottom - top) + shine_h,
         ],
         fill=tuple(int(value) for value in shine_rgb),
+    )
+
+
+def _draw_cell_well(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    theme: ConnectFourTheme,
+    cell_size: int,
+) -> None:
+    """Draw one empty Connect Four well using the active board style."""
+
+    well_inset = max(5.0, 0.10 * float(cell_size))
+    well_bbox = (
+        float(bbox_px[0] + well_inset),
+        float(bbox_px[1] + well_inset),
+        float(bbox_px[2] - well_inset),
+        float(bbox_px[3] - well_inset),
+    )
+    rendering = str(theme.cell_well_rendering)
+    if rendering == "inset":
+        draw.ellipse(
+            well_bbox,
+            fill=tuple(int(value) for value in _adjust_rgb(theme.cell_well_outline_rgb, -18)),
+        )
+        draw.ellipse(
+            _shrink_bbox(well_bbox, max(2.0, 0.035 * float(cell_size))),
+            fill=tuple(int(value) for value in theme.cell_well_rgb),
+            outline=tuple(int(value) for value in theme.cell_well_outline_rgb),
+            width=int(theme.cell_well_outline_width_px),
+        )
+        return
+    if rendering == "ring":
+        draw.ellipse(
+            well_bbox,
+            fill=tuple(int(value) for value in theme.cell_well_outline_rgb),
+        )
+        draw.ellipse(
+            _shrink_bbox(well_bbox, max(2.0, 0.045 * float(cell_size))),
+            fill=tuple(int(value) for value in theme.cell_well_rgb),
+            outline=tuple(int(value) for value in _adjust_rgb(theme.cell_well_outline_rgb, -12)),
+            width=max(1, int(theme.cell_well_outline_width_px) - 1),
+        )
+        return
+    draw.ellipse(
+        well_bbox,
+        fill=tuple(int(value) for value in theme.cell_well_rgb),
+        outline=tuple(int(value) for value in theme.cell_well_outline_rgb),
+        width=int(theme.cell_well_outline_width_px),
     )
 
 
@@ -121,20 +217,21 @@ def render_connect_four_board_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     theme = build_games_connect_four_theme(style_variant=str(style_variant))
+    rows, columns = board_dimensions(board)
 
     cell_size = min(
-        int(params.max_board_width_px) // COLUMNS,
-        (int(params.canvas_width) - (2 * int(params.panel_margin_px))) // COLUMNS,
+        int(params.max_board_width_px) // int(columns),
+        (int(params.canvas_width) - (2 * int(params.panel_margin_px))) // int(columns),
         (
             int(params.canvas_height)
             - (2 * int(params.panel_margin_px))
             - int(params.player_badge_height_px)
             - int(params.header_gap_px)
         )
-        // ROWS,
+        // int(rows),
     )
-    board_width = int(cell_size) * COLUMNS
-    board_height = int(cell_size) * ROWS
+    board_width = int(cell_size) * int(columns)
+    board_height = int(cell_size) * int(rows)
     board_left = int(0.5 * (int(params.canvas_width) - int(board_width)))
     available_height = (
         int(params.canvas_height)
@@ -154,6 +251,57 @@ def render_connect_four_board_scene(
         round(float(board_left + board_width), 3),
         round(float(board_top + board_height), 3),
     )
+
+    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_text = f"{player_name(int(current_player))} to move"
+    badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
+    badge_width = max(
+        int(params.player_badge_width_px),
+        int((badge_text_bbox[2] - badge_text_bbox[0]) + params.player_badge_height_px + 34),
+    )
+    badge_left = int(0.5 * (int(params.canvas_width) - int(badge_width)))
+    badge_top = int(params.panel_margin_px)
+    badge_bbox = (
+        round(float(badge_left), 3),
+        round(float(badge_top), 3),
+        round(float(badge_left + badge_width), 3),
+        round(float(badge_top + params.player_badge_height_px), 3),
+    )
+    group_bbox = (
+        min(float(board_bbox[0]), float(badge_bbox[0])),
+        min(float(board_bbox[1]), float(badge_bbox[1])),
+        max(float(board_bbox[2]), float(badge_bbox[2])),
+        max(float(board_bbox[3]), float(badge_bbox[3])),
+    )
+    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=group_bbox,
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    board_left = float(board_left + dx)
+    board_top = float(board_top + dy)
+    badge_left = float(badge_left + dx)
+    badge_top = float(badge_top + dy)
+    board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
+    badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
+
+    if int(theme.board_shadow_alpha) > 0:
+        shadow_dx, shadow_dy = theme.board_shadow_offset_px
+        shadow_bbox = offset_bbox(board_bbox, dx=float(shadow_dx), dy=float(shadow_dy))
+        _draw_rgba_rounded_rectangle(
+            image,
+            bbox_px=shadow_bbox,
+            radius_px=int(params.board_corner_radius_px),
+            fill_rgba=(
+                int(theme.board_shadow_rgb[0]),
+                int(theme.board_shadow_rgb[1]),
+                int(theme.board_shadow_rgb[2]),
+                int(theme.board_shadow_alpha),
+            ),
+        )
+        draw = ImageDraw.Draw(image)
+
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -171,22 +319,14 @@ def render_connect_four_board_scene(
         radius=max(8, int(params.board_corner_radius_px) - int(params.board_frame_width_px)),
         fill=tuple(int(value) for value in theme.board_fill_rgb),
     )
-
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
-    badge_text = f"{player_name(int(current_player))} to move"
-    badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
-    badge_width = max(
-        int(params.player_badge_width_px),
-        int((badge_text_bbox[2] - badge_text_bbox[0]) + params.player_badge_height_px + 34),
-    )
-    badge_left = int(0.5 * (int(params.canvas_width) - int(badge_width)))
-    badge_top = int(params.panel_margin_px)
-    badge_bbox = (
-        round(float(badge_left), 3),
-        round(float(badge_top), 3),
-        round(float(badge_left + badge_width), 3),
-        round(float(badge_top + params.player_badge_height_px), 3),
-    )
+    if str(theme.board_rendering) == "inset":
+        inner_outline_bbox = _shrink_bbox(inner_bbox, max(2.0, 0.20 * float(params.board_frame_width_px)))
+        draw.rounded_rectangle(
+            inner_outline_bbox,
+            radius=max(8, int(params.board_corner_radius_px) - int(params.board_frame_width_px) - 2),
+            outline=tuple(int(value) for value in _adjust_rgb(theme.board_fill_rgb, 34)),
+            width=2,
+        )
     draw.rounded_rectangle(
         badge_bbox,
         radius=int(0.5 * int(params.player_badge_height_px)),
@@ -222,8 +362,8 @@ def render_connect_four_board_scene(
     disc_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
 
     marked_square_bbox_px: Tuple[float, float, float, float] | None = None
-    for row in range(ROWS):
-        for col in range(COLUMNS):
+    for row in range(int(rows)):
+        for col in range(int(columns)):
             cell_id = coord_to_cell_id((int(row), int(col)))
             cell_bbox = (
                 round(float(board_left + (col * cell_size)), 3),
@@ -231,18 +371,7 @@ def render_connect_four_board_scene(
                 round(float(board_left + ((col + 1) * cell_size)), 3),
                 round(float(board_top + ((row + 1) * cell_size)), 3),
             )
-            well_inset = max(5.0, 0.10 * float(cell_size))
-            draw.ellipse(
-                [
-                    cell_bbox[0] + well_inset,
-                    cell_bbox[1] + well_inset,
-                    cell_bbox[2] - well_inset,
-                    cell_bbox[3] - well_inset,
-                ],
-                fill=tuple(int(value) for value in theme.cell_well_rgb),
-                outline=tuple(int(value) for value in theme.cell_well_outline_rgb),
-                width=int(theme.cell_well_outline_width_px),
-            )
+            _draw_cell_well(draw, bbox_px=cell_bbox, theme=theme, cell_size=int(cell_size))
             if marked_square is not None and (int(row), int(col)) == (int(marked_square[0]), int(marked_square[1])):
                 marked_square_bbox_px = cell_bbox
                 inset = 4.0
@@ -298,10 +427,11 @@ def render_connect_four_board_scene(
             "disc_bboxes_px": {str(key): list(value) for key, value in disc_bboxes_px.items()},
             "player_badge_bbox_px": list(badge_bbox),
             "marked_square_bbox_px": None if marked_square_bbox_px is None else list(marked_square_bbox_px),
-            "rows": int(ROWS),
-            "columns": int(COLUMNS),
+            "rows": int(rows),
+            "columns": int(columns),
             "scene_variant": str(scene_variant),
             "style_variant": str(style_variant),
+            "layout_jitter": dict(layout_jitter),
         },
     )
 

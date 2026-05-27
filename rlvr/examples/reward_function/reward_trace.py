@@ -48,11 +48,15 @@ def _score_ground_truth_exact(
 def _score_single_reward_input(
     reward_input: dict[str, Any],
     *,
-    trace_format_weight: float = 0.1,
+    trace_format_weight: float = 0.0,
     trace_reward_mode: str = "auto",
     trace_output_mode: str | None = None,
     trace_answer_scoring: str = "exact_json",
-    bbox_iou_threshold: float = 0.5,
+    trace_evidence_reward_formula: str = "gated",
+    trace_answer_weight: float = 0.5,
+    trace_evidence_weight: float = 0.5,
+    bbox_iou_threshold: float | None = None,
+    point_half_life_px: float | None = None,
 ) -> dict[str, float]:
     response = str(reward_input.get("response", "") or "")
     normalized_mode = resolve_trace_reward_mode(trace_reward_mode, trace_output_mode=trace_output_mode)
@@ -64,8 +68,16 @@ def _score_single_reward_input(
             evidence_gt=reward_input["evidence_gt"],
             reward_contract=reward_input["reward_contract"],
             bbox_iou_threshold=bbox_iou_threshold,
+            point_half_life_px=point_half_life_px,
+            image_size=reward_input.get("image_size") or reward_input.get("source_image_size"),
+            image_sizes=reward_input.get("image_sizes"),
+            metadata=reward_input.get("metadata"),
+            extra_info=reward_input.get("extra_info"),
             trace_reward_mode=normalized_mode,
             trace_answer_scoring=normalized_answer_scoring,
+            trace_evidence_reward_formula=trace_evidence_reward_formula,
+            answer_weight=float(trace_answer_weight),
+            evidence_weight=float(trace_evidence_weight),
             format_weight=trace_format_weight,
         )
         return {"score": float(trace_score["overall"]), **trace_score}
@@ -92,9 +104,21 @@ def _build_single_reward_input(
         "ground_truth": ground_truth,
     }
     extra_info = extra_info or {}
-    for key in ("answer_gt", "evidence_gt", "reward_contract", "metadata", "trace_ref", "prompt"):
+    for key in (
+        "answer_gt",
+        "evidence_gt",
+        "reward_contract",
+        "metadata",
+        "trace_ref",
+        "prompt",
+        "image_size",
+        "image_sizes",
+        "source_image_size",
+    ):
         if key in extra_info:
             reward_input[key] = extra_info[key]
+    if extra_info:
+        reward_input["extra_info"] = dict(extra_info)
     return reward_input
 
 
@@ -108,20 +132,54 @@ def compute_score(*args, **kwargs):
         reward_inputs = args[0]
         return [compute_score(reward_input=reward_input, **kwargs) for reward_input in reward_inputs]
 
+    if kwargs.get("solution_strs") is not None:
+        solution_strs = list(kwargs.pop("solution_strs"))
+        data_sources = list(kwargs.pop("data_sources", ["trace"] * len(solution_strs)))
+        ground_truths = list(kwargs.pop("ground_truths", [None] * len(solution_strs)))
+        extra_infos = list(kwargs.pop("extra_infos", [{} for _ in solution_strs]))
+        if not (len(data_sources) == len(solution_strs) == len(ground_truths) == len(extra_infos)):
+            raise ValueError("Batched TRACE reward inputs must have matching lengths")
+        return [
+            compute_score(
+                data_source=data_source,
+                solution_str=solution_str,
+                ground_truth=ground_truth,
+                extra_info=extra_info,
+                **kwargs,
+            )
+            for data_source, solution_str, ground_truth, extra_info in zip(
+                data_sources,
+                solution_strs,
+                ground_truths,
+                extra_infos,
+                strict=True,
+            )
+        ]
+
     if kwargs.get("reward_input") is not None:
         reward_input = kwargs.pop("reward_input")
-        trace_format_weight = float(kwargs.pop("trace_format_weight", 0.1))
+        trace_format_weight = float(kwargs.pop("trace_format_weight", 0.0))
         trace_reward_mode = kwargs.pop("trace_reward_mode", "auto")
         trace_output_mode = kwargs.pop("trace_output_mode", None)
         trace_answer_scoring = kwargs.pop("trace_answer_scoring", "exact_json")
-        bbox_iou_threshold = float(kwargs.pop("bbox_iou_threshold", 0.5))
+        trace_evidence_reward_formula = kwargs.pop("trace_evidence_reward_formula", "gated")
+        trace_answer_weight = float(kwargs.pop("trace_answer_weight", 0.5))
+        trace_evidence_weight = float(kwargs.pop("trace_evidence_weight", 0.5))
+        bbox_iou_threshold = kwargs.pop("bbox_iou_threshold", None)
+        bbox_iou_threshold = None if bbox_iou_threshold is None else float(bbox_iou_threshold)
+        point_half_life_px = kwargs.pop("point_half_life_px", None)
+        point_half_life_px = None if point_half_life_px is None else float(point_half_life_px)
         return _score_single_reward_input(
             reward_input,
             trace_format_weight=trace_format_weight,
             trace_reward_mode=trace_reward_mode,
             trace_output_mode=trace_output_mode,
             trace_answer_scoring=trace_answer_scoring,
+            trace_evidence_reward_formula=trace_evidence_reward_formula,
+            trace_answer_weight=trace_answer_weight,
+            trace_evidence_weight=trace_evidence_weight,
             bbox_iou_threshold=bbox_iou_threshold,
+            point_half_life_px=point_half_life_px,
         )
 
     data_source = kwargs.pop("data_source")

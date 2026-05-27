@@ -1,0 +1,69 @@
+generation:
+  shared:
+    scene_variant_weights:
+      standard_board: 1.0
+    query_variant_weights:
+      legal_move_count: 1.0
+      hit_move_count: 1.0
+      blocked_destination_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      navy: 1.0
+      parchment: 1.0
+      slate: 1.0
+      tournament: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    legal_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    hit_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    blocked_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 720
+    board_width_px: 900
+    board_height_px: 560
+    board_margin_px: 50
+    board_border_width_px: 5
+    point_label_font_size_px: 18
+    header_font_size_px: 20
+    checker_radius_px: 21
+    die_size_px: 44
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      move_reasoning: 0.36
+      ambiguity: 0.14
+      output_burden: 0.16
+prompt:
+  shared:
+    bundle_id: games_backgammon_v0
+    scene_key: visible_backgammon_board
+    task_key: backgammon_query
+    object_description_standard_board: a numbered backgammon board with black and white checker stacks and two dice
+    backgammon_rule_text: Black moves from higher-numbered points toward lower-numbered points. For each occupied black point, subtract either shown die to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more white checkers is blocked.
+    evidence_hint_legal_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where black can legally move
+    answer_hint_legal_move_count: set "answer" to the number of distinct legal destination points
+    evidence_hint_hit_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where black would hit exactly one white checker
+    answer_hint_hit_move_count: set "answer" to the number of distinct hit destination points
+    evidence_hint_blocked_destination_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct possible destination points blocked by two or more white checkers
+    answer_hint_blocked_destination_count: set "answer" to the number of distinct blocked destination points

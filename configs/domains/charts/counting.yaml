@@ -1,27 +1,26 @@
 generation:
   shared:
-    mark_count_min: 5
-    mark_count_max: 10
+    mark_count_min: 8
+    mark_count_max: 20
     value_min: 1
-    value_max: 20
+    value_max: 99
     target_answer_min: 0
-    target_answer_max: 10
-    task_variant_weights:
-      above_threshold: 1.0
-      below_threshold: 1.0
+    target_answer_max: 20
+    query_variant_weights:
+      threshold_count: 1.0
       in_interval: 1.0
+    comparison_weights:
+      greater_than: 1.0
+      less_than: 1.0
     scene_variant_weights:
       area: 1.0
       bar: 1.0
       line: 1.0
       scatter: 1.0
-      radar: 1.0
-      pie: 1.0
-      donut: 1.0
       horizontal_bar: 1.0
       dot_plot: 1.0
       lollipop: 1.0
-    balanced_task_variant_sampling: true
+    balanced_query_variant_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:
@@ -46,11 +45,6 @@ rendering:
     mark_color_channel_max: 220
     mark_color_min_distance: 40.0
     mark_color_distance_space: lab
-    axis_color_rgb: [74, 78, 86]
-    grid_color_rgb: [224, 227, 232]
-    text_color_rgb: [38, 41, 48]
-    text_stroke_rgb: [255, 255, 255]
-    plot_fill_rgb: [255, 255, 255]
 
 complexity:
   shared:
@@ -61,28 +55,22 @@ complexity:
 
 prompt:
   shared:
-    bundle_id: charts_counting_v1
-    task_family_key: labeled_chart_counting
+    bundle_id: charts_counting_v0
+    scene_key: labeled_chart_counting
     task_key: value_count_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the number of matching marks as an integer
-    object_description_area: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_bar: a labeled bar chart. Each bar's numeric height can be read from the vertical axis
-    object_description_pie: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
-    object_description_donut: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
-    object_description_horizontal_bar: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis
-    object_description_line: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_scatter: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_radar: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points
-    object_description_dot_plot: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_lollipop: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    evidence_hint_above_threshold: set "evidence" to an array containing the labels of all marks with values greater than the threshold
-    evidence_hint_below_threshold: set "evidence" to an array containing the labels of all marks with values less than the threshold
-    evidence_hint_in_interval: set "evidence" to an array containing the labels of all marks with values in the inclusive interval
-    json_example_above_threshold: '{"evidence":["B","K","T"],"answer":3}'
-    json_example_below_threshold: '{"evidence":["A","M"],"answer":2}'
-    json_example_in_interval: '{"evidence":["C","F","Q"],"answer":3}'
-    json_example_answer_only_above_threshold: '{"answer":3}'
-    json_example_answer_only_below_threshold: '{"answer":2}'
+    object_description_area: a labeled area chart where point labels identify y-values on the vertical axis
+    object_description_bar: a labeled bar chart where each bar height is read from the vertical axis
+    object_description_horizontal_bar: a labeled horizontal bar chart where each bar length is read from the horizontal axis
+    object_description_line: a labeled line chart where point labels identify y-values on the vertical axis
+    object_description_scatter: a labeled scatter plot where point labels identify y-values on the vertical axis
+    object_description_dot_plot: a labeled dot plot where point labels identify y-values on the vertical axis
+    object_description_lollipop: a labeled lollipop chart where point labels identify y-values on the vertical axis
+    evidence_hint_threshold_count: set "evidence" to an array of [x, y] pixel points at the centers of all marks with values matching the strict threshold comparison
+    evidence_hint_in_interval: set "evidence" to an array of [x, y] pixel points at the centers of all marks with values in the inclusive interval
+    json_example_threshold_count: '{"evidence":[[180,260],[390,180],[610,320]],"answer":3}'
+    json_example_in_interval: '{"evidence":[[165,310],[380,250],[590,285]],"answer":3}'
+    json_example_answer_only_threshold_count: '{"answer":3}'
     json_example_answer_only_in_interval: '{"answer":3}'

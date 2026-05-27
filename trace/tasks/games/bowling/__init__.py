@@ -1,0 +1,1 @@
+"""Bowling lane games tasks."""

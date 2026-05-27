@@ -1,0 +1,137 @@
+{
+  "bundle_id": "games_ultimate_tictactoe_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "ultimate_tictactoe_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:ultimate_tictactoe_board": [
+      "object_description"
+    ],
+    "query:x_won_board_count": [
+      "status_rule_text"
+    ],
+    "query:o_won_board_count": [
+      "status_rule_text"
+    ],
+    "query:neither_won_board_count": [
+      "status_rule_text"
+    ],
+    "query:drawn_board_count": [
+      "status_rule_text"
+    ],
+    "query:x_winning_move_label": [
+      "tactic_rule_text"
+    ],
+    "query:o_winning_move_label": [
+      "tactic_rule_text"
+    ],
+    "query:x_blocking_move_label": [
+      "tactic_rule_text"
+    ],
+    "query:o_blocking_move_label": [
+      "tactic_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "ultimate_tictactoe_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This game board shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "x_won_board_count": [
+      "{status_rule_text} How many small boards has X won?",
+      "{status_rule_text} Count the small boards won by X.",
+      "{status_rule_text} What is the number of small boards where X has a three-in-a-row?",
+      "{status_rule_text} Determine how many small boards are won by X.",
+      "{status_rule_text} Report the count of small boards won by X."
+    ],
+    "o_won_board_count": [
+      "{status_rule_text} How many small boards has O won?",
+      "{status_rule_text} Count the small boards won by O.",
+      "{status_rule_text} What is the number of small boards where O has a three-in-a-row?",
+      "{status_rule_text} Determine how many small boards are won by O.",
+      "{status_rule_text} Report the count of small boards won by O."
+    ],
+    "neither_won_board_count": [
+      "{status_rule_text} How many small boards has neither player won?",
+      "{status_rule_text} Count the small boards that neither X nor O has won.",
+      "{status_rule_text} What is the number of small boards with no winner?",
+      "{status_rule_text} Determine how many small boards are not won by either player.",
+      "{status_rule_text} Report the count of small boards with no X or O win."
+    ],
+    "drawn_board_count": [
+      "{status_rule_text} How many small boards are drawn?",
+      "{status_rule_text} Count the full small boards with no winner.",
+      "{status_rule_text} What is the number of drawn small boards?",
+      "{status_rule_text} Determine how many small boards are full and unwon.",
+      "{status_rule_text} Report the count of drawn small boards."
+    ],
+    "x_winning_move_label": [
+      "{tactic_rule_text} Which labeled empty cell lets X win the highlighted small board?",
+      "{tactic_rule_text} Choose the option letter for X's winning move in the highlighted small board.",
+      "{tactic_rule_text} Which empty-cell label completes a three-in-a-row for X?",
+      "{tactic_rule_text} Report the labeled cell where X should play to win the highlighted small board.",
+      "{tactic_rule_text} Which option is the immediate winning move for X?"
+    ],
+    "o_winning_move_label": [
+      "{tactic_rule_text} Which labeled empty cell lets O win the highlighted small board?",
+      "{tactic_rule_text} Choose the option letter for O's winning move in the highlighted small board.",
+      "{tactic_rule_text} Which empty-cell label completes a three-in-a-row for O?",
+      "{tactic_rule_text} Report the labeled cell where O should play to win the highlighted small board.",
+      "{tactic_rule_text} Which option is the immediate winning move for O?"
+    ],
+    "x_blocking_move_label": [
+      "{tactic_rule_text} Which labeled empty cell should X play to block O's immediate win?",
+      "{tactic_rule_text} Choose the option letter where X blocks O's threat in the highlighted small board.",
+      "{tactic_rule_text} Which empty-cell label stops O from completing three in a row?",
+      "{tactic_rule_text} Report the labeled cell where X should play to block O.",
+      "{tactic_rule_text} Which option is X's immediate blocking move?"
+    ],
+    "o_blocking_move_label": [
+      "{tactic_rule_text} Which labeled empty cell should O play to block X's immediate win?",
+      "{tactic_rule_text} Choose the option letter where O blocks X's threat in the highlighted small board.",
+      "{tactic_rule_text} Which empty-cell label stops X from completing three in a row?",
+      "{tactic_rule_text} Report the labeled cell where O should play to block X.",
+      "{tactic_rule_text} Which option is O's immediate blocking move?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,143 @@
+{
+  "bundle_id": "pages_infographic_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "metric_arithmetic_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "query:sum_named_metrics": [
+      "target_labels"
+    ],
+    "query:section_extrema_arithmetic": [
+      "target_section_a",
+      "target_section_b",
+      "target_extremum_a",
+      "target_extremum_b",
+      "extrema_operation"
+    ],
+    "query:section_total_extrema_difference": [],
+    "query:section_total_except_named": [
+      "target_section",
+      "excluded_labels"
+    ],
+    "query:section_ranked_total_label": [
+      "rank_ordinal",
+      "rank_direction",
+      "rank_order_phrase"
+    ],
+    "query:section_icon_total_value": [
+      "target_section",
+      "filter_icon_kind"
+    ],
+    "query:section_icon_total_difference_value": [
+      "target_section_a",
+      "target_section_b",
+      "comparison_icon_kind"
+    ],
+    "query:section_icon_extremum_label": [
+      "comparison_icon_kind",
+      "rank_direction"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "infographic_metric_arithmetic": [
+      "The image shows a multi-section infographic with labeled metric cards and printed values.",
+      "The image shows a multi-section infographic with labeled metric cards and printed values.",
+      "The image shows a multi-section infographic with labeled metric cards and printed values.",
+      "The image shows a multi-section infographic with labeled metric cards and printed values.",
+      "The image shows a multi-section infographic with labeled metric cards and printed values."
+    ]
+  },
+  "query_templates": {
+    "sum_named_metrics": [
+      "What is the sum of the values for {target_labels}?",
+      "Add the printed values for {target_labels}. What is the total?",
+      "What total do you get from the metric cards labeled {target_labels}?",
+      "Compute the sum of the named values {target_labels}.",
+      "Using the cards labeled {target_labels}, what is the combined value?"
+    ],
+    "section_extrema_arithmetic": [
+      "What is the {extrema_operation} of the {target_extremum_a} value in section {target_section_a} and the {target_extremum_b} value in section {target_section_b}?",
+      "Find the {target_extremum_a} value in section {target_section_a} and the {target_extremum_b} value in section {target_section_b}. What is their {extrema_operation}?",
+      "Using section {target_section_a} and section {target_section_b}, compute the {extrema_operation} of the {target_extremum_a} value in {target_section_a} and the {target_extremum_b} value in {target_section_b}.",
+      "Look up the {target_extremum_a} metric in section {target_section_a} and the {target_extremum_b} metric in section {target_section_b}. What is their {extrema_operation}?",
+      "What integer do you get from the {extrema_operation} of the {target_extremum_a} value in {target_section_a} and the {target_extremum_b} value in {target_section_b}?"
+    ],
+    "section_total_extrema_difference": [
+      "What is the difference between the highest section total and the lowest section total?",
+      "Sum each section, then subtract the lowest section total from the highest section total.",
+      "Find the section with the largest total and the section with the smallest total. What is their difference?",
+      "After totaling every section, what is highest total minus lowest total?",
+      "Compute the nonnegative difference between the largest and smallest section totals."
+    ],
+    "section_total_except_named": [
+      "In section {target_section}, what is the sum of all printed metric values except {excluded_labels}?",
+      "Add every value in section {target_section}, but exclude {excluded_labels}. What is the total?",
+      "What is the total for section {target_section} after removing the values for {excluded_labels}?",
+      "Within section {target_section}, skip {excluded_labels} and sum the remaining metric values.",
+      "Compute the section {target_section} total excluding {excluded_labels}."
+    ],
+    "section_ranked_total_label": [
+      "After summing the printed values in each section, which section has the {rank_ordinal} {rank_direction} total?",
+      "Sum each section's metric cards. What section is {rank_ordinal} {rank_direction} by total?",
+      "Which section ranks {rank_ordinal} when the section totals are ordered from {rank_order_phrase}?",
+      "Using the total of each section, identify the section with the {rank_ordinal} {rank_direction} total.",
+      "What is the section label for the {rank_ordinal} {rank_direction} section total?"
+    ],
+    "section_icon_total_value": [
+      "In section {target_section}, what is the sum of the values on cards using the {filter_icon_kind} icon?",
+      "Look only at section {target_section}. Add the values for cards marked with the {filter_icon_kind} icon.",
+      "What total do you get from the {filter_icon_kind}-icon cards in section {target_section}?",
+      "Within section {target_section}, sum every printed value whose card uses the {filter_icon_kind} icon.",
+      "Using the {filter_icon_kind} icon as the filter, what is the total in section {target_section}?"
+    ],
+    "section_icon_total_difference_value": [
+      "For cards with the {comparison_icon_kind} icon, what is the absolute difference between the total in section {target_section_a} and the total in section {target_section_b}?",
+      "Compare sections {target_section_a} and {target_section_b}. For the {comparison_icon_kind}-icon cards, what is the difference between their section totals?",
+      "Add the {comparison_icon_kind}-icon cards in section {target_section_a} and in section {target_section_b}. What is the nonnegative difference?",
+      "Using only cards marked with the {comparison_icon_kind} icon, compute the absolute total gap between {target_section_a} and {target_section_b}.",
+      "What is the absolute difference between the {comparison_icon_kind}-icon total in {target_section_a} and the {comparison_icon_kind}-icon total in {target_section_b}?"
+    ],
+    "section_icon_extremum_label": [
+      "Using only cards with the {comparison_icon_kind} icon, which section has the {rank_direction} total?",
+      "Filter to the {comparison_icon_kind}-icon cards. Which section has the {rank_direction} sum?",
+      "After summing {comparison_icon_kind}-icon cards within each section, what section has the {rank_direction} total?",
+      "Which section label has the {rank_direction} total among cards marked with the {comparison_icon_kind} icon?",
+      "Compare section totals using only {comparison_icon_kind}-icon cards. Which section is {rank_direction}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

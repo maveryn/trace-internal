@@ -8,10 +8,15 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.mcq import option_label_for_index
+from ...shared.render_variation import resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
 from .logic_scene import PuzzleLogicRenderParams, SUPPORTED_PUZZLE_LOGIC_SCENE_VARIANTS
 from .symbol_rendering import PUZZLE_OBJECT_TYPES
+from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 from ....core.seed import spawn_rng
+
+
+LOGIC_GRID_OBJECT_TYPES: Tuple[str, ...] = (*PUZZLE_OBJECT_TYPES, "pentagon")
 
 
 @dataclass(frozen=True)
@@ -41,7 +46,7 @@ class PuzzleLogicDefaults:
     panel_corner_radius_px: int = 28
     value_font_size_px: int = 46
     option_label_font_size_px: int = 30
-    balanced_task_variant_sampling: bool = True
+    balanced_query_variant_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 
@@ -50,36 +55,58 @@ def resolve_logic_render_params(
     *,
     render_defaults: Mapping[str, Any],
     defaults: PuzzleLogicDefaults,
+    instance_seed: int | None = None,
 ) -> PuzzleLogicRenderParams:
     """Resolve one reusable logic-grid render-parameter record."""
 
+    def _int(key: str, fallback: int) -> int:
+        return resolve_render_int(
+            params,
+            render_defaults,
+            str(key),
+            int(fallback),
+            instance_seed=instance_seed,
+            namespace="puzzle_logic_render",
+        )
+
     def _triple(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        raw = params.get(str(key), group_default(render_defaults, str(key), list(fallback)))
-        if not isinstance(raw, Sequence) or len(raw) != 3:
-            raise ValueError(f"{key} must be a length-3 RGB sequence")
-        return tuple(int(value) for value in raw)
+        return resolve_render_rgb(
+            params,
+            render_defaults,
+            str(key),
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzle_logic_render",
+        )
+
+    unit_scale, unit_meta = resolve_puzzle_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=instance_seed,
+        namespace="puzzles.logic.unit_size",
+    )
 
     return PuzzleLogicRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", int(defaults.canvas_width)))),
-        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", int(defaults.canvas_height)))),
-        scene_margin_left_px=int(params.get("scene_margin_left_px", group_default(render_defaults, "scene_margin_left_px", int(defaults.scene_margin_left_px)))),
-        scene_margin_right_px=int(params.get("scene_margin_right_px", group_default(render_defaults, "scene_margin_right_px", int(defaults.scene_margin_right_px)))),
-        scene_margin_top_px=int(params.get("scene_margin_top_px", group_default(render_defaults, "scene_margin_top_px", int(defaults.scene_margin_top_px)))),
-        scene_margin_bottom_px=int(params.get("scene_margin_bottom_px", group_default(render_defaults, "scene_margin_bottom_px", int(defaults.scene_margin_bottom_px)))),
-        cell_size_px=int(params.get("cell_size_px", group_default(render_defaults, "cell_size_px", int(defaults.cell_size_px)))),
-        cell_gap_px=int(params.get("cell_gap_px", group_default(render_defaults, "cell_gap_px", int(defaults.cell_gap_px)))),
-        board_panel_padding_px=int(params.get("board_panel_padding_px", group_default(render_defaults, "board_panel_padding_px", int(defaults.board_panel_padding_px)))),
-        board_to_options_gap_px=int(params.get("board_to_options_gap_px", group_default(render_defaults, "board_to_options_gap_px", int(defaults.board_to_options_gap_px)))),
-        option_panel_width_px=int(params.get("option_panel_width_px", group_default(render_defaults, "option_panel_width_px", int(defaults.option_panel_width_px)))),
-        option_panel_height_px=int(params.get("option_panel_height_px", group_default(render_defaults, "option_panel_height_px", int(defaults.option_panel_height_px)))),
-        option_gap_px=int(params.get("option_gap_px", group_default(render_defaults, "option_gap_px", int(defaults.option_gap_px)))),
-        option_symbol_box_size_px=int(params.get("option_symbol_box_size_px", group_default(render_defaults, "option_symbol_box_size_px", int(defaults.option_symbol_box_size_px)))),
-        option_label_gap_px=int(params.get("option_label_gap_px", group_default(render_defaults, "option_label_gap_px", int(defaults.option_label_gap_px)))),
-        slot_corner_radius_px=int(params.get("slot_corner_radius_px", group_default(render_defaults, "slot_corner_radius_px", int(defaults.slot_corner_radius_px)))),
-        border_width_px=int(params.get("border_width_px", group_default(render_defaults, "border_width_px", int(defaults.border_width_px)))),
-        panel_corner_radius_px=int(params.get("panel_corner_radius_px", group_default(render_defaults, "panel_corner_radius_px", int(defaults.panel_corner_radius_px)))),
-        value_font_size_px=int(params.get("value_font_size_px", group_default(render_defaults, "value_font_size_px", int(defaults.value_font_size_px)))),
-        option_label_font_size_px=int(params.get("option_label_font_size_px", group_default(render_defaults, "option_label_font_size_px", int(defaults.option_label_font_size_px)))),
+        canvas_width=int(_int("canvas_width", defaults.canvas_width)),
+        canvas_height=int(_int("canvas_height", defaults.canvas_height)),
+        scene_margin_left_px=int(_int("scene_margin_left_px", defaults.scene_margin_left_px)),
+        scene_margin_right_px=int(_int("scene_margin_right_px", defaults.scene_margin_right_px)),
+        scene_margin_top_px=int(_int("scene_margin_top_px", defaults.scene_margin_top_px)),
+        scene_margin_bottom_px=int(_int("scene_margin_bottom_px", defaults.scene_margin_bottom_px)),
+        cell_size_px=scale_puzzle_px(_int("cell_size_px", defaults.cell_size_px), unit_scale, min_px=20),
+        cell_gap_px=scale_puzzle_px(_int("cell_gap_px", defaults.cell_gap_px), unit_scale, min_px=2),
+        board_panel_padding_px=scale_puzzle_px(_int("board_panel_padding_px", defaults.board_panel_padding_px), unit_scale, min_px=10),
+        board_to_options_gap_px=scale_puzzle_px(_int("board_to_options_gap_px", defaults.board_to_options_gap_px), unit_scale, min_px=22),
+        option_panel_width_px=int(_int("option_panel_width_px", defaults.option_panel_width_px)),
+        option_panel_height_px=int(_int("option_panel_height_px", defaults.option_panel_height_px)),
+        option_gap_px=int(_int("option_gap_px", defaults.option_gap_px)),
+        option_symbol_box_size_px=scale_puzzle_px(_int("option_symbol_box_size_px", defaults.option_symbol_box_size_px), unit_scale, min_px=46),
+        option_label_gap_px=int(_int("option_label_gap_px", defaults.option_label_gap_px)),
+        slot_corner_radius_px=scale_puzzle_px(_int("slot_corner_radius_px", defaults.slot_corner_radius_px), unit_scale, min_px=6),
+        border_width_px=int(_int("border_width_px", defaults.border_width_px)),
+        panel_corner_radius_px=int(_int("panel_corner_radius_px", defaults.panel_corner_radius_px)),
+        value_font_size_px=scale_puzzle_px(_int("value_font_size_px", defaults.value_font_size_px), unit_scale, min_px=18),
+        option_label_font_size_px=int(_int("option_label_font_size_px", defaults.option_label_font_size_px)),
         panel_fill_rgb=_triple("panel_fill_rgb", (248, 249, 252)),
         cell_fill_rgb=_triple("cell_fill_rgb", (252, 252, 255)),
         unknown_cell_fill_rgb=_triple("unknown_cell_fill_rgb", (242, 246, 255)),
@@ -89,6 +116,7 @@ def resolve_logic_render_params(
         text_color_rgb=_triple("text_color_rgb", (30, 34, 40)),
         text_stroke_rgb=_triple("text_stroke_rgb", (255, 255, 255)),
         accent_color_rgb=_triple("accent_color_rgb", (54, 102, 180)),
+        unit_size_jitter=dict(unit_meta),
     )
 
 
@@ -137,7 +165,11 @@ def resolve_logic_scene_variant(
 def _sample_symbol_pool(board_size: int, *, rng) -> List[str]:
     """Sample one distinct visible symbol pool for the logic board."""
 
-    all_symbols = list(PUZZLE_OBJECT_TYPES)
+    all_symbols = list(LOGIC_GRID_OBJECT_TYPES)
+    if int(board_size) > int(len(all_symbols)):
+        raise ValueError(
+            f"logic-grid board_size={board_size} exceeds supported symbol count={len(all_symbols)}"
+        )
     rng.shuffle(all_symbols)
     return [str(value) for value in all_symbols[: int(board_size)]]
 
@@ -196,6 +228,7 @@ def _resolve_board_size(
     instance_seed: int,
     task_id: str,
     board_size_range: Sequence[int],
+    preceding_axis_size: int = 1,
 ) -> int:
     """Pick one deterministic board size from the inclusive feasible support."""
 
@@ -203,6 +236,12 @@ def _resolve_board_size(
     upper = int(board_size_range[1])
     if upper < lower:
         raise ValueError(f"{task_id} received empty board-size support")
+    explicit = params.get("board_size")
+    if explicit is not None:
+        board_size = int(explicit)
+        if not lower <= board_size <= upper:
+            raise ValueError(f"board_size must fall inside [{lower}, {upper}]")
+        return int(board_size)
     selection = int(
         resolve_selection_index(
             params=params,
@@ -210,7 +249,8 @@ def _resolve_board_size(
             namespace=f"{task_id}:board_size",
         )
     )
-    return int(lower + (selection % (upper - lower + 1)))
+    axis_selection = int(selection // max(1, int(preceding_axis_size)))
+    return int(lower + (axis_selection % (upper - lower + 1)))
 
 
 def _resolve_correct_option_index(
@@ -233,6 +273,44 @@ def _resolve_correct_option_index(
     flat_index = int(query_row_index) * int(board_size) + int(query_col_index)
     symbol_offset = int(list(PUZZLE_OBJECT_TYPES).index(str(answer_object_type)))
     return int((flat_index + symbol_offset) % int(option_count))
+
+
+def _resolve_grid_correct_option_index(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    task_id: str,
+    query_variant: str,
+    supported_variants: Sequence[str],
+    board_size_axis_size: int,
+    query_row_index: int,
+    query_col_index: int,
+    board_size: int,
+    answer_object_type: str,
+    option_count: int,
+) -> int:
+    """Pick a grid-task option index with per-variant balance under sampler cycling."""
+
+    explicit = params.get("correct_option_index")
+    if explicit is not None:
+        return _resolve_correct_option_index(
+            params,
+            query_row_index=int(query_row_index),
+            query_col_index=int(query_col_index),
+            board_size=int(board_size),
+            answer_object_type=str(answer_object_type),
+            option_count=int(option_count),
+        )
+
+    _ = supported_variants, board_size_axis_size
+    selection = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:{query_variant}:correct_option_index",
+        )
+    )
+    return int(selection % int(option_count))
 
 
 def _king_neighbor_coords(board_size: int, row_index: int, col_index: int) -> List[Tuple[int, int]]:
@@ -317,7 +395,7 @@ def _fill_board_with_king_non_touch(
 
 def build_logic_adjacency_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -326,10 +404,10 @@ def build_logic_adjacency_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic explicit-rule adjacency logic puzzle dataset."""
 
-    selected_variant = str(task_variant)
+    selected_variant = str(query_variant)
     supported = {"king_non_touch"}
     if selected_variant not in supported:
-        raise ValueError(f"unsupported logic adjacency variant: {task_variant}")
+        raise ValueError(f"unsupported logic adjacency variant: {query_variant}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     board_size_range = resolve_logic_board_size_bounds(
@@ -343,6 +421,11 @@ def build_logic_adjacency_dataset_for_variant(
         instance_seed=int(instance_seed),
         task_id=task_id,
         board_size_range=board_size_range,
+    )
+    board_size_axis_size = (
+        1
+        if params.get("board_size") is not None
+        else int(board_size_range[1] - board_size_range[0] + 1)
     )
     option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", int(defaults.option_count))))
     if int(option_count) != 6:
@@ -413,8 +496,13 @@ def build_logic_adjacency_dataset_for_variant(
         grid_rows.append(row_cells)
 
     distractor_pool = [str(symbol) for symbol in symbol_pool if str(symbol) != str(answer_object_type)]
-    correct_option_index = _resolve_correct_option_index(
+    correct_option_index = _resolve_grid_correct_option_index(
         params,
+        instance_seed=int(instance_seed),
+        task_id=task_id,
+        query_variant=str(selected_variant),
+        supported_variants=(str(selected_variant),),
+        board_size_axis_size=int(board_size_axis_size),
         query_row_index=int(query_row_index),
         query_col_index=int(query_col_index),
         board_size=int(board_size),
@@ -477,7 +565,7 @@ def build_logic_adjacency_dataset_for_variant(
 
 def build_logic_grid_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -486,14 +574,14 @@ def build_logic_grid_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic logic-grid puzzle dataset."""
 
-    selected_variant = str(task_variant)
-    supported = {
+    selected_variant = str(query_variant)
+    supported = (
         "row_uniqueness",
         "column_uniqueness",
         "row_and_column_uniqueness",
-    }
+    )
     if selected_variant not in supported:
-        raise ValueError(f"unsupported logic-grid variant: {task_variant}")
+        raise ValueError(f"unsupported logic-grid variant: {query_variant}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     board_size_range = resolve_logic_board_size_bounds(
@@ -502,11 +590,17 @@ def build_logic_grid_dataset_for_variant(
         defaults=defaults,
         task_id=task_id,
     )
+    board_size_axis_size = (
+        1
+        if params.get("board_size") is not None
+        else int(board_size_range[1] - board_size_range[0] + 1)
+    )
     board_size = _resolve_board_size(
         params,
         instance_seed=int(instance_seed),
         task_id=task_id,
         board_size_range=board_size_range,
+        preceding_axis_size=len(supported),
     )
     option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", int(defaults.option_count))))
     if int(option_count) != 6:
@@ -541,11 +635,16 @@ def build_logic_grid_dataset_for_variant(
             )
         grid_rows.append(row_cells)
 
-    distractor_pool = [str(value) for value in PUZZLE_OBJECT_TYPES if str(value) != str(answer_object_type)]
+    distractor_pool = [str(value) for value in LOGIC_GRID_OBJECT_TYPES if str(value) != str(answer_object_type)]
     rng.shuffle(distractor_pool)
     distractor_types = [str(value) for value in distractor_pool[: int(option_count) - 1]]
-    correct_option_index = _resolve_correct_option_index(
+    correct_option_index = _resolve_grid_correct_option_index(
         params,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        query_variant=str(selected_variant),
+        supported_variants=supported,
+        board_size_axis_size=int(board_size_axis_size),
         query_row_index=int(query_row_index),
         query_col_index=int(query_col_index),
         board_size=int(board_size),

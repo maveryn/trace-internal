@@ -27,13 +27,15 @@ Operational policy for build lifecycle and pre-finalize validation.
 1. Train-instance schema validity.
 2. `trace_ref` existence/hash/index integrity.
 3. Image path/hash integrity.
-4. Task count expectations.
-5. Single `instance_version` consistency.
-6. Prompt metadata/bundle/key validity.
-7. Required slot conformance and unresolved placeholder checks.
-8. Prompt variant-count/index consistency.
-9. `reward_contract` schema validity plus train/trace reward-contract consistency.
-10. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
+4. Public taxonomy fields (`domain`, `scene_id`, `task`) plus source `task_group`.
+5. Task count expectations.
+6. Single `instance_version` consistency.
+7. Prompt metadata/bundle/key validity.
+8. Required slot conformance and unresolved placeholder checks.
+9. Prompt variant-count/index consistency.
+10. `reward_contract` schema validity plus train/trace reward-contract consistency.
+11. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
+12. Active inventory consistency: `docs/ACTIVE_TASK_INVENTORY.md` matches the live registry/taxonomy generator.
 
 ## 4) Task-review and distribution policy
 For new or distribution-changing task logic:
@@ -44,18 +46,30 @@ For new or distribution-changing task logic:
    - by default review scripts use all visible CPUs via `--workers`; override it explicitly when you need a smaller review footprint
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
-   - per-variant distribution review: 100 samples per task variant when variants exist (`distribution_review.json`)
-     - per-variant collection explicitly regenerates each discovered `task_variant` with a deterministic `_sampling_index`, so task-local balancing paths should behave the same way they do under builder-style prefix sampling
-   - manual inspection workbook: 25 samples per task variant in `task-reviews/<domain>/<task_id>/<task_id>.xlsx` (one sheet per task variant)
-   - review artifacts live under `task-reviews/<domain>/<task_id>/` so the review root stays grouped by domain as task count grows
+   - per-variant distribution review: 100 samples per query variant when variants exist (`distribution_review.json`)
+     - per-variant collection uses the same task sampler as dataset generation, with only explicit public variant/query overrides when needed for coverage
+   - manual inspection workbook: 100 random samples per public task in `plans/task-reviews/<domain>/<scene_id>/<task_id>/<task_id>.xlsx`, grouped into one sheet per query variant or query id when variants exist
+     - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration workbooks should use the default 100 total task samples
+   - review artifacts live under `plans/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows
+   - current calibration artifacts must carry `calibration_baseline: "v0"` in manifests or stats files; artifacts without that metadata are stale for current acceptance
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 5`
-   - `max_answer_frequency < 25%`
-   - apply checks per task variant; task-level pass requires every variant to pass.
+   - `max_answer_frequency < 1/3`
+   - apply checks per query variant; task-level pass requires every variant to pass.
    - zero collected samples for a task/variant review is a hard fail (`no_samples_collected`).
-4. Numeric answer-distribution summaries still report `max_five_bin_frequency` and the 5 equal-width bin counts over the observed numeric range, but these are informational review metrics rather than hard pass/fail gates.
-5. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
+4. Solve-rate calibration must also gate the exact exported calibration parquet,
+   not only a separately sampled review stream. `scripts/run_task_calibration_sweep.py`
+   runs `scripts/check_rlvr_probe_distribution.py` on the realized `100` rows
+   first; if the answer-frequency gate fails, it may generate up to four
+   additional same-sampler validation shards of 100 rows each and validate the
+   cumulative distribution. Review workbooks and solve-rate runs still use the
+   original 100-row shard. Any remaining validation failure blocks the task until the
+   sampler is fixed.
+5. Numeric answer-distribution summaries still report `max_five_bin_frequency` and the 5 equal-width bin counts over the observed numeric range, but these are informational review metrics rather than hard pass/fail gates.
+6. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
    - `PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>`
+   For exact exported RLVR probes, use:
+   - `PYTHONPATH=. python scripts/check_rlvr_probe_distribution.py --parquet <probe.parquet> --dataset-root <trace_dataset_root>`
 
 ## 5) Reports and failure artifacts
 Always emit in staging:

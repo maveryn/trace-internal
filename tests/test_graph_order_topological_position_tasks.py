@@ -7,6 +7,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks.graph.order.topological_position import GraphOrderTopologicalPositionTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.graph_algorithms import unique_topological_order_by_adjacency
 from trace.tasks.shared.named_colors import named_color
 
@@ -38,7 +39,7 @@ def test_graph_order_topological_position_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "label_sequence"
+    assert out.evidence_gt.type == "point_sequence"
     assert trace["scene_ir"]["scene_kind"] == "graph_topological_position"
     assert execution["question_format"] == "query_topological_position_of_node"
     assert execution["graph_directionality"] == "directed"
@@ -58,15 +59,22 @@ def test_graph_order_topological_position_contract_matches_trace() -> None:
         str(key): tuple(str(value) for value in values)
         for key, values in trace["execution_trace"]["successors_by_label"].items()
     }
-    evidence_labels = tuple(str(label) for label in out.evidence_gt.value)
+    evidence_labels = tuple(str(label) for label in execution["topological_order_labels"])
+    evidence_path = list(out.evidence_gt.value)
     verified_order = unique_topological_order_by_adjacency(successors_by_label, node_order=evidence_labels)
     assert verified_order is not None
     assert tuple(str(label) for label in verified_order) == evidence_labels
     assert int(out.answer_gt.value) == int(evidence_labels.index(str(execution["query_label"])) + 1)
     assert int(out.answer_gt.value) == int(execution["target_position"])
-    assert trace["projected_evidence"]["label_sequence"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_path"]) == len(out.evidence_gt.value)
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(out.evidence_gt.value)
+    assert trace["witness_symbolic"]["type"] == "node_sequence"
+    assert trace["witness_symbolic"]["nodes"] == list(evidence_labels)
+    assert "label_sequence" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_sequence"
+    assert trace["projected_evidence"]["point_sequence"] == evidence_path
+    assert trace["projected_evidence"]["pixel_point_sequence"] == evidence_path
+    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_path)
+    width, height = trace["render_spec"]["canvas_size"]
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_path)
     assert sum(1 for node in node_entities if bool(node["is_query_node"])) == 1
 
 
@@ -84,8 +92,9 @@ def test_graph_order_topological_position_prompt_examples_follow_label_variant()
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": ["A", "B", "C", "D", "E"], "answer": 3}
-    assert numbers_example == {"evidence": ["1", "2", "3", "4", "5"], "answer": 3}
+    expected_example = {"evidence": [[140, 220], [260, 180], [380, 240], [500, 300], [620, 260]], "answer": 3}
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_order_topological_position_supports_numeric_labels_and_named_colors() -> None:
@@ -125,7 +134,7 @@ def test_graph_order_topological_position_balanced_sampling_defaults() -> None:
     for index in range(54):
         out = task.generate(
             hash64(19644, "graph_order_topological_position", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -136,12 +145,12 @@ def test_graph_order_topological_position_balanced_sampling_defaults() -> None:
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
         node_colors[str(execution["node_color_name"])] += 1
-        assert 5 <= int(execution["node_count"]) <= 7
+        assert 3 <= int(execution["node_count"]) <= 7
         assert 1 <= int(execution["target_position"]) <= int(execution["node_count"])
-    assert set(node_counts.keys()) == {5, 6, 7}
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(node_counts.keys()) == {3, 4, 5, 6, 7}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}
     assert set(node_colors.keys()) == {
         "red",

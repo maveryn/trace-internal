@@ -1,0 +1,53 @@
+generation:
+  task_overrides:
+    task_puzzles__counterfactual_board__board_grid_count:
+      balanced_board_style_sampling: true
+      balanced_query_variant_sampling: true
+      board_style_weights:
+        chess_checkers: 1.0
+        sudoku: 1.0
+        xiangqi: 1.0
+      query_variant_weights:
+        row_count: 1.0
+        column_count: 1.0
+        horizontal_line_count: 1.0
+        vertical_line_count: 1.0
+      canonical_exact_weight: 1.0
+
+rendering:
+  task_overrides:
+    task_puzzles__counterfactual_board__board_grid_count:
+      canvas_width: 920
+      canvas_height: 720
+      scene_supersample_scale: 2
+      unit_size_scale_min: 0.5
+      unit_size_scale_max: 1.0
+      board_margin_px: 92
+      evidence_padding_px: 3
+      background_rgb: [246, 248, 250]
+      outline_rgb: [33, 37, 45]
+      chess_light_rgb: [238, 229, 206]
+      chess_dark_rgb: [92, 124, 80]
+      sudoku_fill_rgb: [255, 255, 252]
+      sudoku_line_rgb: [38, 42, 50]
+      xiangqi_board_rgb: [241, 205, 142]
+      xiangqi_line_rgb: [72, 45, 24]
+
+prompt:
+  shared:
+    bundle_id: puzzles_counterfactual_v0
+    scene_key: counterfactual_board
+    task_key: board_grid_count_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+  task_overrides:
+    task_puzzles__counterfactual_board__board_grid_count:
+      object_description: a familiar board or puzzle grid whose visible size may differ from the usual pattern
+      evidence_hint: set "evidence" to an array containing the full board bounding box as [x0,y0,x1,y1] in pixels
+      answer_hint: set "answer" to the integer count requested in the question
+      json_example: '{"evidence":[[160,96,760,696]],"answer":8}'
+      json_example_answer_only: '{"answer":8}'
+
+visual:
+  noise:
+    apply_prob: 0.0

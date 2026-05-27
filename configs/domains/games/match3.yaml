@@ -1,0 +1,95 @@
+generation:
+  shared:
+    scene_variant_weights:
+      square_board: 1.0
+      wide_board: 1.0
+      tall_board: 1.0
+    effect_value_query_variant_weights:
+      cleared_count_after_marked_swap: 1.0
+      created_run_count_after_marked_swap: 1.0
+    best_swap_query_variant_weights:
+      max_clear_swap_label: 1.0
+      target_clear_swap_label: 1.0
+    style_variant_weights:
+      panel_scene: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_row_count_sampling: true
+    balanced_col_count_sampling: true
+    balanced_gem_type_count_sampling: true
+    balanced_option_count_sampling: true
+    balanced_target_answer_sampling: true
+    row_count_support: [5, 6, 7]
+    col_count_support: [5, 6, 7]
+    gem_type_count_support: [5, 6]
+    option_count_support: [5, 6, 7, 8]
+    target_clear_count_support: [0, 3, 4, 5, 6]
+    target_run_count_support: [0, 1, 2]
+  task_overrides:
+    task_games__match3__best_swap_label:
+      row_count_support: [5]
+      col_count_support: [5]
+      gem_type_count_support: [5]
+      option_count_support: [5]
+      target_clear_count_support: [0, 3]
+    task_games__match3__swap_effect_value:
+      row_count_support: [5, 6]
+      col_count_support: [5, 6]
+      target_clear_count_support: [0, 3, 4]
+      target_run_count_support: [0, 1, 2]
+rendering:
+  shared:
+    canvas_width: 760
+    canvas_height: 720
+    panel_margin_px: 42
+    board_inner_margin_px: 38
+    index_margin_px: 34
+    cell_size_px: 78
+    cell_gap_px: 8
+    gem_inset_px: 10
+    label_font_size_px: 21
+    index_font_size_px: 18
+    arrow_width_px: 7
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+  task_overrides:
+    task_games__match3__best_swap_label:
+      arrow_width_px: 9
+    task_games__match3__swap_effect_value:
+      arrow_width_px: 9
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      state_reasoning: 0.42
+      ambiguity: 0.16
+      output_burden: 0.12
+prompt:
+  shared:
+    bundle_id: games_match3_v0
+    scene_key: match3_grid
+    task_key: match3_query
+    object_description_match3_grid: a match-3 jewel grid with row and column numbers, colored gems, and marked or labeled adjacent-swap arrows
+    match3_rule_text: Swap only the two adjacent gems connected by the arrow. After the swap, immediately clear every horizontal or vertical run of three or more matching gems. Count only this immediate clear; do not apply falling, refill, special effects, or cascades.
+    evidence_hint_cleared_count_after_marked_swap: set "evidence" to an array containing the marked swap-arrow box and the boxes for the gems cleared by the swap; if no gems clear, include the marked arrow and the two swapped gem boxes
+    answer_hint_cleared_count_after_marked_swap: set "answer" to the number of gems cleared by the marked swap
+    evidence_hint_created_run_count_after_marked_swap: set "evidence" to an array containing the marked swap-arrow box and the boxes for the gems in the runs created by the swap; if no run is created, include the marked arrow and the two swapped gem boxes
+    answer_hint_created_run_count_after_marked_swap: set "answer" to the number of horizontal or vertical matching runs created by the marked swap
+    evidence_hint_max_clear_swap_label: set "evidence" to an array containing the selected swap-arrow box and the boxes for the gems cleared by that swap
+    answer_hint_max_clear_swap_label: set "answer" to only the selected swap-arrow letter
+    evidence_hint_target_clear_swap_label: set "evidence" to an array containing the selected swap-arrow box and the boxes for the gems cleared by that swap; if the target is 0, include the selected arrow and the two swapped gem boxes
+    answer_hint_target_clear_swap_label: set "answer" to only the selected swap-arrow letter
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.15, 0.4]
+      downsample:
+        scale: [0.9, 0.97]
+      jpeg:
+        quality: [78.0, 94.0]
+      noise:
+        alpha: [0.015, 0.045]

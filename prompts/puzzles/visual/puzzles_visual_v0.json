@@ -1,0 +1,78 @@
+{
+  "bundle_id": "puzzles_visual_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "color_gradient_violation_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "color_gradient_completion_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:color_gradient": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "color_gradient": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "color_gradient_violation_cell_label": [
+      "Which labeled swatch breaks the color progression pattern?",
+      "Identify the swatch label that does not fit the color progression.",
+      "One swatch interrupts the smooth color progression. Which label marks it?",
+      "Use the row and column color changes to find the out-of-pattern swatch. Which label is it?",
+      "Which labeled cell has the color that violates the swatch-grid progression?"
+    ],
+    "linear_gradient_completion_label": [
+      "Which labeled option completes the missing swatch in the color gradient?",
+      "Choose the option label whose color fits the blank position in the gradient row.",
+      "One swatch is missing from the linear color progression. Which option belongs there?",
+      "Use the colors before and after the blank swatch to pick the completing option label.",
+      "Which labeled color option should replace the blank swatch?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

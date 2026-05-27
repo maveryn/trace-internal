@@ -1,0 +1,89 @@
+{
+  "bundle_id": "games_pool_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pool_table_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_pool_table": [
+      "object_description"
+    ],
+    "query:pottable_ball_count": [
+      "direct_shot_rule_text"
+    ],
+    "query:legal_group_pottable_count": [
+      "direct_shot_rule_text",
+      "legal_group_rule_text",
+      "current_player_group"
+    ],
+    "query:blocking_ball_count": [
+      "marked_shot_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_pool_table": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "pottable_ball_count": [
+      "{direct_shot_rule_text} How many object balls are directly pottable?",
+      "{direct_shot_rule_text} Count the object balls that can be potted by a direct shot.",
+      "{direct_shot_rule_text} Determine the number of directly pottable object balls.",
+      "Using only direct shots, how many object balls can be potted? {direct_shot_rule_text}",
+      "Count object balls with a clear cue path and at least one clear path to a pocket. {direct_shot_rule_text}"
+    ],
+    "legal_group_pottable_count": [
+      "{legal_group_rule_text} {direct_shot_rule_text} The current player group is {current_player_group}. How many balls in that group are directly pottable?",
+      "{legal_group_rule_text} {direct_shot_rule_text} Count directly pottable balls from the current player group: {current_player_group}.",
+      "Only count the current player's {current_player_group} balls. {legal_group_rule_text} {direct_shot_rule_text} How many are directly pottable?",
+      "{direct_shot_rule_text} {legal_group_rule_text} How many directly pottable balls belong to the current player's {current_player_group} group?",
+      "Use the current player group shown on the table: {current_player_group}. {legal_group_rule_text} {direct_shot_rule_text} Count the directly pottable legal balls."
+    ],
+    "blocking_ball_count": [
+      "{marked_shot_rule_text} How many balls block that marked shot lane?",
+      "{marked_shot_rule_text} Count the balls that lie on and block the marked shot lane.",
+      "How many other balls block the path from cue ball to marked ball or from marked ball to marked pocket? {marked_shot_rule_text}",
+      "{marked_shot_rule_text} Determine the number of blockers on the marked shot lane.",
+      "Count every ball obstructing either segment of the marked shot lane. {marked_shot_rule_text}"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

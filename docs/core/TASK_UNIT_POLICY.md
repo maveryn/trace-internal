@@ -4,7 +4,8 @@ This document defines what should count as one TRACE task.
 
 Use it when:
 - proposing new tasks,
-- deciding whether a new idea should become a `task_variant` or a new task id,
+- deciding whether a new idea should become a `query_id` / query variant or a
+  new task id,
 - evaluating whether an existing task should be split or merged,
 - rebalancing the benchmark for uniform task-level sampling.
 
@@ -22,6 +23,103 @@ Use it when:
    - what kind of visual search it performs,
    - what kind of witness/evidence supports the answer,
    - and what kind of scene grammar it sees repeatedly.
+4. Public taxonomy identifies this as `domain -> scene_id -> task_id`.
+5. Source `task_group` remains an implementation/config grouping during the transition, but it is not the public taxonomy unit.
+6. Do not introduce a field, config key, prompt column, or artifact column named `task_variant`; use `query_id` for branch identity and `query_variant` only for internal replay selectors.
+
+## 2.1) Hard Task Boundary
+
+A public task is one stable combination of the following four contract axes:
+
+1. **Scene grammar** — the repeated visual setup and rendering grammar.
+2. **Primary witness kind** — the semantic object type that evidence points to,
+   such as a node set, edge set, ordered path, table cells, chart marks, map
+   regions, option panel, or page element boxes.
+3. **Visual search pattern** — the perceptual job needed to locate the support,
+   such as finding qualifying objects, tracing one path, selecting one option,
+   ranking visible marks, or aggregating a named group of cells/regions.
+4. **Algorithmic/objective family** — the domain-level problem family applied
+   after the visual support is located.
+
+Merge tasks only when all four axes match and the difference can be expressed
+as a task-local `query_id` operator or parameter. If any axis differs, the
+default decision is **keep separate**, not "needs review".
+
+Objective family is intentionally **coarser than an individual subroutine**.
+Use the smallest named domain concept that still describes the whole task
+without becoming a theme bucket. A task may contain several `query_id`s with
+different rationale templates when they are branches of one coherent objective
+family over the same scene and witness contract.
+
+Examples of coherent objective families:
+
+1. Music-staff `pitch/interval` reading may include note naming, interval
+   naming, same-pitch checks, and transposition checks.
+2. Music-staff `key/scale` reasoning may include key-signature identification,
+   scale-degree function, and scale validation.
+3. Music-staff `chord/harmony` reasoning may include chord quality, inversion,
+   and roman-numeral labeling.
+4. Arithmetic-constraint missing-value puzzles may include several visible
+   rule templates when the scene remains a compact rule-bearing arithmetic
+   diagram with one missing value.
+
+Examples of different objective families:
+
+1. Music key/scale reasoning vs visible bar counting.
+2. Chord-label reasoning vs dominant-chord counting.
+3. Path length between hierarchy nodes vs subtree descendant counting.
+4. Shortest path vs longest path in a graph.
+5. BST search/insert path operation vs heap-property violation scan.
+
+Examples:
+
+1. Highest vs lowest over the same visible chart marks is usually one objective
+   family with mirrored query parameters.
+2. Above vs below a threshold over the same object set is usually one predicate
+   family with mirrored query parameters.
+3. Shortest path vs longest path are different algorithmic/objective families,
+   even if both use an ordered path as evidence.
+4. Node-color count vs edge-color count are different primary witness kinds.
+5. Articulation-point count vs bridge-edge count are different witness kinds and
+   different graph-objective families.
+6. Max-flow value vs minimum-cut edge count are different objective contracts,
+   even though they share a flow-network scene.
+
+Use a "blocked/needs inspection" outcome only when the available docs, code, or
+sampled outputs are inconsistent or insufficient to determine the four axes.
+Do not use a review bucket merely because two tasks are conceptually related or
+share a scene.
+
+## 2.2) Query Variant Definition
+
+Use **query variant** as the human-facing term and `query_id` as the canonical
+metadata field.
+
+A query variant is the smallest task-internal semantic branch that needs a
+distinct reasoning/rationale template family. This includes changes to the
+requested operation, answer transform, witness role, ordering rule, filtering
+predicate, traversal rule, comparison target, or evidence explanation.
+
+Rules:
+
+1. Every active `query_id` must have a corresponding rationale template family
+   for each supported output mode and detail level once rationale targets are
+   enabled for that task.
+2. If a branch needs a different rationale template family, give it a distinct
+   `query_id`.
+3. If two branches differ only by slot values inside the same rationale
+   structure, they may remain one `query_id`. Examples include mirrored words
+   like highest/lowest or before/after only when the same template can express
+   both with a parameter.
+4. Visual/rendering/style variants are not query variants unless they change the
+   reasoning/rationale template family.
+5. Difficulty knobs, counts, labels, colors, and sampled values are not query
+   variants unless they change the reasoning/rationale template family.
+6. Different algorithms or objective families are not query variants just
+   because the scene, answer type, or evidence type is shared. For example,
+   shortest path and longest path should be separate public tasks unless the
+   domain intentionally defines a broader objective family that preserves one
+   solver/rationale structure.
 
 ## 3) What should stay stable within one task
 The following should usually remain broadly stable inside a single task:
@@ -78,24 +176,29 @@ In other words: a task does **not** need equal difficulty across variants, but i
 
 ## 5) New variant vs new task
 
-### Add a new `task_variant` when:
+### Add a new `query_id` / query variant when:
 1. the same scene scaffold still works,
 2. the same unit of attention still matters,
 3. the same witness semantics still apply,
 4. the model is doing roughly the same visual search,
-5. the new query feels like a natural extension of the existing family.
+5. the same algorithmic/objective family still applies,
+6. the new query is a parameter, mirror direction, threshold, ordering choice,
+   or local answer transform inside that family.
 
 Examples:
 1. adding more unordered card-qualification queries inside one hand-based card task,
 2. adding more threshold/interval conditions inside one single-column table-counting task,
 3. adding more clock readout offsets inside one single-clock task.
+4. adding highest/lowest or kth-highest/kth-lowest mirrors over the same
+   located chart marks.
 
 ### Create a new task when:
 1. the scene grammar changes materially,
 2. the witness semantics change materially,
 3. the visual search pattern changes materially,
-4. the new family has a different notion of what the “relevant object” is,
-5. the same broad theme now hides multiple different perceptual contracts.
+4. the algorithmic/objective family changes materially,
+5. the new family has a different notion of what the “relevant object” is,
+6. the same broad theme now hides multiple different perceptual contracts.
 
 Common signals:
 1. **order matters vs order does not**
@@ -106,6 +209,11 @@ Common signals:
    - legal moves vs result of one marked move
 4. **one interaction grammar vs another**
    - row rule checking vs 2D grid rule checking
+5. **different algorithmic objective**
+   - shortest path vs longest path
+   - path traversal vs topological ordering
+   - MST vs max flow
+   - articulation points vs bridge edges
 
 ## 6) Different evidence is a signal, not a rule
 1. Different evidence formats or evidence scopes often reveal that a task is over-broad.
@@ -137,14 +245,19 @@ This matters especially in domains like `games`, where different games may natur
 ## 8) Merge policy
 Merge only when two task ids are effectively the same sampling unit.
 
-Strong merge signals:
-1. same scene scaffold,
-2. same unit of attention,
-3. same witness semantics,
-4. same visual search pattern,
-5. only thin query wording or arithmetic differences separate them.
+Required merge conditions:
+1. same scene grammar,
+2. same primary witness kind,
+3. same visual search pattern,
+4. same algorithmic/objective family,
+5. same answer/evidence role at the contract level,
+6. only query-parameter, mirror-operator, threshold, ordering, or local
+   answer-transform differences separate them.
 
-Do **not** merge just because two tasks come from the same theme or domain.
+Do **not** merge just because two tasks come from the same theme, scene, domain,
+answer type, or evidence type. If two tasks are related but fail any required
+merge condition, mark them **keep separate** unless sampled outputs or docs are
+inconsistent enough to block classification.
 
 ## 9) Domain asymmetry is acceptable
 1. Different domains do **not** need the same number of tasks.
@@ -153,18 +266,32 @@ Do **not** merge just because two tasks come from the same theme or domain.
 4. The goal is not symmetry of counts.
 5. The goal is a benchmark where each task is a comparably meaningful sampling unit.
 
-## 10) Practical checklist
+## 10) Variant-Aware Dataset Sampling
+1. The default TRACE sampling unit remains the task id.
+2. `query_id` values are diagnostics for query variants inside one task, not
+   separate public tasks. Source `query_variant` remains only an internal replay
+   selector.
+3. Large RLVR training builds may optionally use variant-aware task counts when comparing task-unit ablations.
+4. The supported weight formula is:
+   - `task_weight = 1 + alpha * (active_query_id_count - 1)`
+5. Use `alpha=0.0` for the equal-task baseline, `alpha=0.5` for the balanced variant-aware recipe, and `alpha=1.0` for the variant-proportional ablation.
+6. This changes only task-level build counts; task-local query sampling remains owned by each task's config and generator.
+
+## 11) Practical checklist
 When deciding whether something is one task or multiple tasks, ask:
 1. Is the model looking at the same kind of thing each time?
 2. Is it performing the same kind of visual search?
 3. Would the public evidence still mean the same kind of witness?
-4. Does repeated sampling from this task feel like one grounded family rather than several bundled together?
-5. If split, would both children still be viable standalone tasks?
+4. Is the same algorithmic/objective family being used?
+5. Does repeated sampling from this task feel like one grounded family rather than several bundled together?
+6. If split, would both children still be viable standalone tasks?
 
 If the answers are mostly “yes”, keep it as one task.
 If the answers are mostly “no”, it likely wants multiple tasks.
+If the answers are mixed because one required merge condition fails, keep the
+tasks separate rather than creating a vague review candidate.
 
-## 11) Relationship to the audit workflow
+## 12) Relationship to the audit workflow
 1. `docs/workflows/TASK_UNIT_AUDIT.md` is the review procedure.
 2. This document is the underlying policy for what a TRACE task should be.
 3. Use this policy first, then use the audit workflow to apply it to concrete tasks.

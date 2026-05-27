@@ -10,14 +10,14 @@ from copy import deepcopy
 from typing import Any, Dict, Mapping
 
 from ...core.visual.defaults import load_domain_visual_section, load_task_group_visual_section
-from ...core.visual.noise import TRACE_DEFAULT_NOISE_VALUE_RANGES
+from ...core.visual.noise import TRACE_DEFAULT_NOISE_EDIT_TYPES, TRACE_DEFAULT_NOISE_VALUE_RANGES
 
 
 def default_noise_fallback(*, apply_prob: float) -> Dict[str, Any]:
     """Build a standard deterministic post-noise fallback config."""
     return {
         "apply_prob": float(apply_prob),
-        "edit_types": ["blur", "downsample", "jpeg", "noise"],
+        "edit_types": list(TRACE_DEFAULT_NOISE_EDIT_TYPES),
         "edit_count_range": [1, 2],
         "value_ranges": deepcopy(TRACE_DEFAULT_NOISE_VALUE_RANGES),
     }

@@ -1,0 +1,71 @@
+{
+  "bundle_id": "charts_counting_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "value_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:labeled_chart_counting": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "labeled_chart_counting": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "threshold_count": [
+      "How many labeled marks have value {threshold_comparison_phrase} {threshold}?",
+      "Count the labeled marks with values {threshold_comparison_phrase} {threshold}.",
+      "Determine how many marks show values strictly {threshold_comparison_phrase} {threshold}.",
+      "What number of labeled marks have values {threshold_comparison_phrase} {threshold}?",
+      "Find how many labeled marks are {threshold_comparison_phrase} {threshold}."
+    ],
+    "in_interval": [
+      "How many labeled marks have value in the inclusive interval [{interval_min}, {interval_max}]?",
+      "Count the labeled marks whose values fall in [{interval_min}, {interval_max}], inclusive.",
+      "Determine how many marks have values between {interval_min} and {interval_max}, inclusive.",
+      "What number of labeled marks lie in the inclusive interval [{interval_min}, {interval_max}]?",
+      "Find how many labeled marks have values from {interval_min} to {interval_max}, inclusive."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

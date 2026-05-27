@@ -1,79 +1,315 @@
 generation:
   shared:
-    category_count_min: 6
-    category_count_max: 9
-    series_count_min: 5
-    series_count_max: 7
-    query_category_subset_size_min: 3
-    query_category_subset_size_max: 4
-    query_series_subset_size_min: 3
-    query_series_subset_size_max: 4
-    comparison_subset_size_min: 2
-    comparison_subset_size_max: 3
-    value_min: 4
-    value_max: 18
-    task_variant_weights:
-      category_subset_sum: 1.0
-      series_across_categories_sum: 1.0
-      subset_margin_sum: 1.0
-    scene_variant_weights:
-      stacked_bar: 1.0
-      stacked_horizontal_bar: 1.0
-    balanced_task_variant_sampling: true
+    panel_count_min: 4
+    panel_count_max: 9
+    segment_count_min: 5
+    segment_count_max: 7
+    total_values: [1000, 1200, 1400, 1600, 1800, 2000, 2400, 3000]
+    top_k_values: [2, 3]
+    condition_threshold_values: [32, 35, 38]
+    balanced_query_variant_sampling: true
     balanced_scene_variant_sampling: true
+  task_overrides:
+    charts_composition_small_multiples_aggregate_value_base:
+      query_variant_weights:
+        top_k_by_segment_then_sum_other_segment_count: 1.0
+        conditioned_panel_sum_from_percent: 1.0
+        average_top_k_minus_average_bottom_k: 1.0
+        composition_shift_l1_distance: 1.0
+      scene_variant_weights:
+        small_multiple_pie: 1.0
+        small_multiple_donut: 1.0
+    task_charts__small_multiple__difference_value:
+      panel_count_min: 4
+      panel_count_max: 7
+      segment_count_min: 5
+      segment_count_max: 5
+      query_variant_weights:
+        top_k_by_segment_then_sum_other_segment_count: 0.0
+        conditioned_panel_sum_from_percent: 0.0
+        average_top_k_minus_average_bottom_k: 1.0
+        composition_shift_l1_distance: 1.0
+      scene_variant_weights:
+        small_multiple_pie: 1.0
+        small_multiple_donut: 1.0
+    charts_composition_share_arithmetic_value_base:
+      category_count_min: 16
+      category_count_max: 24
+      value_min: 1
+      value_max: 18
+      rank_position_min: 1
+      rank_position_max: 7
+      rank_position_set_size_min: 3
+      rank_position_set_size_max: 3
+      conditional_match_count_min: 4
+      conditional_match_count_max: 8
+      compact_value_min: 2
+      compact_value_max: 40
+      contiguous_category_count_min: 4
+      contiguous_category_count_max: 8
+      contiguous_span_count_min: 3
+      contiguous_span_count_max: 5
+      counterfactual_category_count_min: 4
+      counterfactual_category_count_max: 8
+      counterfactual_transfer_delta_min: 3
+      counterfactual_transfer_delta_max: 10
+      transfer_rank_min: 1
+      transfer_rank_max: 5
+      part_whole_category_count_min: 4
+      part_whole_category_count_max: 8
+      part_whole_total_values: [600, 800, 1000, 1200, 1500, 1800, 2000, 2400, 3000]
+      part_whole_span_count_min: 3
+      part_whole_span_count_max: 5
+      part_whole_angle_span_count_min: 2
+      part_whole_angle_span_count_max: 5
+      positional_category_count_min: 4
+      positional_category_count_max: 8
+      derived_composition_category_count_min: 4
+      derived_composition_category_count_max: 8
+      query_variant_weights:
+        contiguous_chart_order_sum: 1.0
+        positional_segment_share_sum: 1.0
+        chart_order_share_to_count: 1.0
+        chart_order_remaining_count: 1.0
+        sector_share_to_angle: 1.0
+        chart_order_adjacent_transfer_gap: 1.0
+      scene_variant_weights:
+        pie: 1.0
+        donut: 1.0
+        stacked_bar: 1.0
+        stacked_horizontal_bar: 1.0
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
+    task_charts__part_whole__order_share_sum_value:
+      contiguous_category_count_min: 4
+      contiguous_category_count_max: 6
+      contiguous_span_count_min: 2
+      contiguous_span_count_max: 3
+      positional_category_count_min: 4
+      positional_category_count_max: 6
+      scene_variant_weights:
+        pie: 1.0
+        donut: 0.0
+    task_charts__part_whole__order_count_conversion_value:
+      part_whole_category_count_min: 3
+      part_whole_category_count_max: 5
+      part_whole_span_count_min: 2
+      part_whole_span_count_max: 3
+    task_charts__part_whole__order_sector_angle_value:
+      part_whole_angle_span_count_min: 2
+      part_whole_angle_span_count_max: 2
+    task_charts__part_whole__adjacent_transfer_gap_value:
+      counterfactual_category_count_min: 4
+      counterfactual_category_count_max: 6
+      counterfactual_transfer_delta_min: 2
+      counterfactual_transfer_delta_max: 6
+    charts_composition_sunburst_hierarchy_base:
+      sunburst_parent_count_min: 4
+      sunburst_parent_count_max: 5
+      sunburst_subgroup_count_min: 3
+      sunburst_subgroup_count_max: 3
+      sunburst_leaf_count_min: 2
+      sunburst_leaf_count_max: 2
+      sunburst_leaf_value_min: 5
+      sunburst_leaf_value_max: 45
+      sunburst_leaf_value_step: 5
+      sunburst_condition_count_support: [1, 2, 3, 4, 5]
+    charts_composition_treemap_base:
+      treemap_parent_count_min: 4
+      treemap_parent_count_max: 6
+      treemap_leaf_count_min: 4
+      treemap_leaf_count_max: 6
+      treemap_value_min: 16
+      treemap_value_max: 88
 
 rendering:
   shared:
-    canvas_width: 1120
-    canvas_height: 720
-    plot_margin_left_px: 120
-    plot_margin_right_px: 72
-    plot_margin_top_px: 44
-    plot_margin_bottom_px: 112
-    label_font_size_px: 24
-    tick_font_size_px: 20
-    axis_line_width_px: 2
-    grid_line_width_px: 1
-    tick_length_px: 8
-    label_stroke_width_px: 2
-    mark_outline_width_px: 2
-    line_width_px: 4
-    point_radius_px: 8
-    bar_width_fraction: 0.62
-    mark_color_channel_min: 0
-    mark_color_channel_max: 220
-    mark_color_min_distance: 40.0
-    mark_color_distance_space: lab
-    axis_color_rgb: [74, 78, 86]
-    grid_color_rgb: [224, 227, 232]
-    text_color_rgb: [38, 41, 48]
-    text_stroke_rgb: [255, 255, 255]
-    plot_fill_rgb: [255, 255, 255]
+    canvas_width: 1384
+    canvas_height: 888
+    plot_margin_left_px: 54
+    plot_margin_right_px: 54
+    plot_margin_top_px: 38
+    plot_margin_bottom_px: 110
+    title_font_size_px: 24
+    subtitle_font_size_px: 17
+    slice_font_size_px: 17
+    small_slice_font_size_px: 14
+    legend_font_size_px: 18
+  task_overrides:
+    charts_composition_share_arithmetic_value_base:
+      canvas_width: 1280
+      canvas_height: 920
+      plot_margin_left_px: 42
+      plot_margin_right_px: 42
+      plot_margin_top_px: 46
+      plot_margin_bottom_px: 42
+      table_width_px: 450
+      table_height_px: 280
+      table_position_options: [right, left, bottom, top]
+      chart_table_gap_px: 34
+      title_font_size_px: 26
+      label_font_size_px: 18
+      table_font_size_px: 18
+      table_header_font_size_px: 19
+      mark_outline_width_px: 2
+    charts_composition_sunburst_hierarchy_base:
+      canvas_width: 1280
+      canvas_height: 1080
+      center_y_px: 560
+      center_x_jitter_px_min: -18
+      center_x_jitter_px_max: 18
+      center_y_jitter_px_min: -10
+      center_y_jitter_px_max: 10
+      inner_radius_px: 98
+      parent_outer_radius_px: 220
+      subgroup_outer_radius_px: 350
+      leaf_outer_radius_px: 480
+      title_font_size_px: 26
+      parent_font_size_px: 17
+      subgroup_font_size_px: 15
+      leaf_font_size_px: 13
+      value_font_size_px: 14
+      note_font_size_px: 14
+      panel_fill_rgb_options:
+        - [252, 253, 250]
+        - [250, 252, 255]
+        - [255, 252, 247]
+        - [250, 255, 252]
+      plot_fill_rgb: [255, 255, 255]
+      text_color_rgb: [32, 37, 44]
+      muted_text_rgb: [88, 95, 106]
+      panel_border_rgb: [198, 204, 210]
+      separator_rgb: [255, 255, 255]
+      text_stroke_rgb: [255, 255, 255]
+      label_stroke_width_px: 1
+    charts_composition_treemap_base:
+      canvas_width: 1280
+      canvas_height: 940
+      plot_margin_left_px: 62
+      plot_margin_right_px: 78
+      plot_margin_top_px: 78
+      plot_margin_bottom_px: 56
+      title_font_size_px: 26
+      parent_font_size_px: 18
+      leaf_font_size_px: 15
+      value_font_size_px: 16
+      note_font_size_px: 14
+      panel_fill_rgb_options:
+        - [252, 253, 250]
+        - [250, 252, 255]
+        - [255, 252, 247]
+        - [250, 255, 252]
+      panel_border_rgb: [44, 50, 60]
+      text_color_rgb: [26, 31, 38]
+      muted_text_rgb: [78, 86, 98]
+      separator_rgb: [246, 248, 250]
+      text_stroke_rgb: [255, 255, 255]
+      label_stroke_width_px: 1
 
 complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      reasoning_load: 0.50
+      scene_variant_load: 0.20
   task_overrides:
-    task_charts_composition_subset_value:
+    charts_composition_share_arithmetic_value_base:
       criteria_weights:
-        visual_scan: 0.35
+        visual_scan: 0.40
         reasoning_load: 0.45
-        scene_variant_load: 0.20
+        scene_variant_load: 0.15
+    charts_composition_sunburst_hierarchy_base:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.45
+        scene_variant_load: 0.10
+    charts_composition_treemap_base:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.45
+        scene_variant_load: 0.10
 
 prompt:
   shared:
-    bundle_id: charts_composition_v2
-    task_family_key: composition_chart_value
-    task_key: stacked_composition_query
+    bundle_id: charts_composition_v0
+    scene_key: composition_small_multiples
+    task_key: small_multiples_aggregate_value_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint: set "answer" to the requested integer value
-    object_description_stacked_bar: a stacked bar chart with category stacks, a color legend, and printed segment values
-    object_description_stacked_horizontal_bar: a stacked horizontal bar chart with category stacks, a color legend, and printed segment values
-    evidence_hint_category_subset_sum: set "evidence" to an array [v1, v2, ...] listing the selected segment values in legend order for the queried stack
-    evidence_hint_series_across_categories_sum: set "evidence" to an array [v1, v2, ...] listing the selected segment values in category order for the queried legend label
-    evidence_hint_subset_margin_sum: set "evidence" to an array [m1, m2, ...] listing, in category order, the per-category margin sum(left subset) minus sum(right subset)
-    json_example_category_subset_sum: '{"evidence":[6,9,5],"answer":20}'
-    json_example_series_across_categories_sum: '{"evidence":[7,11,8],"answer":26}'
-    json_example_subset_margin_sum: '{"evidence":[5,-3,9,1],"answer":15}'
-    json_example_answer_only_category_subset_sum: '{"answer":20}'
-    json_example_answer_only_series_across_categories_sum: '{"answer":26}'
-    json_example_answer_only_subset_margin_sum: '{"answer":15}'
+    answer_hint: set "answer" to the requested integer; for percentage-point questions, omit the percent sign
+    object_description_small_multiple_pie: several small pie charts. Each panel has the same segment legend, slice numbers are percentages, and each panel title includes its total count
+    object_description_small_multiple_donut: several small donut charts. Each panel has the same segment legend, slice numbers are percentages, and each panel title includes its total count
+    evidence_hint_top_k_by_segment_then_sum_other_segment_count: set "evidence" to an array of [x,y] pixel points for the target-segment value labels from the selected panels
+    evidence_hint_conditioned_panel_sum_from_percent: set "evidence" to an array of [x,y] pixel points for the target-segment value labels from the panels that satisfy the percentage condition
+    evidence_hint_average_top_k_minus_average_bottom_k: set "evidence" to an array of [x,y] pixel points for the target-segment percentage labels from the selected highest and lowest panels
+    evidence_hint_composition_shift_l1_distance: set "evidence" to an array of [x,y] pixel points for each start-panel and end-panel segment percentage label used to compute the absolute changes
+    json_example_top_k_by_segment_then_sum_other_segment_count: '{"evidence":[[260,280],[520,300]],"answer":780}'
+    json_example_conditioned_panel_sum_from_percent: '{"evidence":[[240,290],[480,310],[720,330]],"answer":720}'
+    json_example_average_top_k_minus_average_bottom_k: '{"evidence":[[240,260],[480,280],[720,360],[960,380]],"answer":20}'
+    json_example_composition_shift_l1_distance: '{"evidence":[[240,250],[240,310],[240,370],[240,430],[620,250],[620,310],[620,370],[620,430]],"answer":28}'
+    json_example_answer_only_top_k_by_segment_then_sum_other_segment_count: '{"answer":780}'
+    json_example_answer_only_conditioned_panel_sum_from_percent: '{"answer":720}'
+    json_example_answer_only_average_top_k_minus_average_bottom_k: '{"answer":20}'
+    json_example_answer_only_composition_shift_l1_distance: '{"answer":28}'
+  task_overrides:
+    charts_composition_share_arithmetic_value_base:
+      bundle_id: charts_composition_v0
+      scene_key: composition_share_arithmetic
+      task_key: share_arithmetic_value_query
+      json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      answer_hint: set "answer" to the requested integer; for share values, omit the percent sign
+      object_description_pie: one pie chart with a table of exact integer category shares
+      object_description_donut: one donut chart with a table of exact integer category shares
+      object_description_stacked_bar: one vertical 100% stacked bar with a table of exact integer category shares
+      object_description_stacked_horizontal_bar: one horizontal 100% stacked bar with a table of exact integer category shares
+      evidence_hint_contiguous_chart_order_sum: set "evidence" to [x0,y0,x1,y1] boxes for the category rows in the chart-order span
+      evidence_hint_positional_segment_share_sum: set "evidence" to [x0,y0,x1,y1] boxes for the anchor category row and target segment rows named in the prompt
+      evidence_hint_chart_order_share_to_count: set "evidence" to [x0,y0,x1,y1] boxes for the displayed total count and category rows in the chart-order span
+      evidence_hint_chart_order_remaining_count: set "evidence" to [x0,y0,x1,y1] boxes for the displayed total count and excluded category rows in the chart-order span
+      evidence_hint_sector_share_to_angle: set "evidence" to [x0,y0,x1,y1] boxes for the category rows in the sector span
+      evidence_hint_chart_order_adjacent_transfer_gap: set "evidence" to [x0,y0,x1,y1] boxes for the source category row and adjacent target category row
+      json_example_contiguous_chart_order_sum: '{"evidence":[[790,180,1220,210],[790,270,1220,300],[790,360,1220,390],[790,510,1220,540]],"answer":42}'
+      json_example_positional_segment_share_sum: '{"evidence":[[790,150,1220,180],[790,270,1220,300],[790,450,1220,480]],"answer":31}'
+      json_example_chart_order_share_to_count: '{"evidence":[[42,72,210,96],[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":600}'
+      json_example_chart_order_remaining_count: '{"evidence":[[42,72,210,96],[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":900}'
+      json_example_sector_share_to_angle: '{"evidence":[[790,180,1220,210],[790,270,1220,300],[790,360,1220,390]],"answer":108}'
+      json_example_chart_order_adjacent_transfer_gap: '{"evidence":[[790,180,1220,210],[790,390,1220,420]],"answer":13}'
+      json_example_answer_only_contiguous_chart_order_sum: '{"answer":42}'
+      json_example_answer_only_positional_segment_share_sum: '{"answer":31}'
+      json_example_answer_only_chart_order_share_to_count: '{"answer":600}'
+      json_example_answer_only_chart_order_remaining_count: '{"answer":900}'
+      json_example_answer_only_sector_share_to_angle: '{"answer":108}'
+      json_example_answer_only_chart_order_adjacent_transfer_gap: '{"answer":13}'
+    charts_composition_sunburst_hierarchy_base:
+      bundle_id: charts_composition_v0
+      scene_key: composition_sunburst_hierarchy
+      task_key: sunburst_hierarchy_query
+      json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      object_description_sunburst: a not-to-scale concentric hierarchy chart with parent categories in the inner ring, subgroups in the middle ring, and outer leaves with printed integer values
+      answer_hint_integer: set "answer" to the requested integer
+      answer_hint_label: set "answer" to the exact parent category label
+      evidence_hint_parent_total_from_leaves_value: set "evidence" to [x0,y0,x1,y1] boxes for the outer leaf value labels under the requested parent category
+      evidence_hint_parent_total_extremum_label: set "evidence" to [x0,y0,x1,y1] boxes for the outer leaf value labels under the answer parent category
+      evidence_hint_conditional_leaf_count: set "evidence" to [x0,y0,x1,y1] boxes for the checked outer leaf value labels under the requested parent category
+      json_example_parent_total_from_leaves_value: '{"evidence":[[860,250,910,278],[930,312,980,340],[970,390,1020,418]],"answer":105}'
+      json_example_parent_total_extremum_label: '{"evidence":[[840,230,890,258],[920,320,970,348],[420,520,470,548]],"answer":"Healthcare"}'
+      json_example_conditional_leaf_count: '{"evidence":[[840,230,890,258],[920,320,970,348],[970,410,1020,438]],"answer":2}'
+      json_example_answer_only_parent_total_from_leaves_value: '{"answer":105}'
+      json_example_answer_only_parent_total_extremum_label: '{"answer":"Healthcare"}'
+      json_example_answer_only_conditional_leaf_count: '{"answer":2}'
+    charts_composition_treemap_base:
+      bundle_id: charts_composition_v0
+      scene_key: composition_treemap
+      task_key: treemap_composition_query
+      json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+      json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+      object_description_treemap: a treemap composition chart with parent category rectangles and child rectangles labeled with printed integer values
+      answer_hint_integer: set "answer" to the requested integer
+      evidence_hint_treemap_group_total_value: set "evidence" to [x0,y0,x1,y1] boxes for the child value labels inside the requested parent rectangle
+      evidence_hint_treemap_repeated_leaf_aggregate_value: set "evidence" to [x0,y0,x1,y1] boxes for the matching child value labels across parent rectangles
+      json_example_treemap_group_total_value: '{"evidence":[[150,160,190,184],[210,240,250,264],[310,320,350,344]],"answer":168}'
+      json_example_treemap_repeated_leaf_aggregate_value: '{"evidence":[[150,160,190,184],[410,160,450,184],[680,160,720,184]],"answer":54}'
+      json_example_answer_only_treemap_group_total_value: '{"answer":168}'
+      json_example_answer_only_treemap_repeated_leaf_aggregate_value: '{"answer":54}'

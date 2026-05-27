@@ -30,7 +30,7 @@ from ..shared.complexity import (
 from ..shared.graph_sampling import (
     SUPPORTED_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_OPTIMIZATION_TASK_VARIANTS,
+    SUPPORTED_OPTIMIZATION_QUERY_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_extra_edge_counts_for_minimum_spanning_tree,
@@ -40,14 +40,16 @@ from ..shared.graph_scene import (
     GraphRenderParams,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     SUPPORTED_NODE_SHAPE_VARIANTS,
+    projected_edge_pair_evidence,
     render_graph_scene,
 )
+from ..shared.fixed_query_task import rewrite_graph_query_output
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph_optimization_minimum_spanning_tree_weight"
+TASK_ID = "task_graph__node_link__mst_weight"
 
 
 @dataclass(frozen=True)
@@ -83,7 +85,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one MST-weight instance."""
 
-    task_variant: str
+    query_variant: str
     node_count: int
     extra_edge_count: int
     edge_weight_min: int
@@ -94,7 +96,7 @@ class _ResolvedQuery:
     node_shape_variant: str
     layout_transform_variant: str
     node_color_name: str
-    task_variant_probabilities: Dict[str, float]
+    query_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     extra_edge_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -117,9 +119,9 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the active node-label format."""
+    """Return prompt examples that match the pixel-space edge evidence format."""
 
-    example_evidence = [["2", "5"], ["5", "8"], ["3", "8"]] if str(label_variant) == "numbers" else [["B", "D"], ["D", "G"], ["C", "G"]]
+    example_evidence = [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]]
     return (
         json.dumps({"evidence": example_evidence, "answer": 12}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 12}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -129,18 +131,18 @@ def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one weighted MST query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.task_variant")
-    task_variant, task_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    query_variant, query_variant_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        supported=SUPPORTED_OPTIMIZATION_TASK_VARIANTS,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        supported=SUPPORTED_OPTIMIZATION_QUERY_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="task_variant",
+        namespace="query_variant",
     )
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max = int(params.get("node_count_max", group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max)))
@@ -269,7 +271,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         node_count=int(node_count),
         extra_edge_count=int(extra_edge_count),
         edge_weight_min=int(edge_weight_min),
@@ -280,7 +282,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_shape_variant=str(node_shape_variant),
         layout_transform_variant=str(layout_transform_variant),
         node_color_name=str(node_color_name),
-        task_variant_probabilities=dict(task_variant_probabilities),
+        query_variant_probabilities=dict(query_variant_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in node_support),
@@ -315,7 +317,10 @@ def _build_complexity(
     edge_count = int(graph_sample.edge_count)
     max_edges = int((node_count * (node_count - 1)) // 2)
     edge_density = 0.0 if int(max_edges) <= 0 else float(edge_count) / float(max_edges)
-    crossing_norm = normalize_float_with_bounds(float(rendered_scene.crossing_count), (0.0, max(1.0, float(max_edges))))
+    crossing_norm = normalize_float_with_bounds(
+        float(rendered_scene.crossing_count),
+        (0.0, min(10.0, max(1.0, float(max_edges)))),
+    )
     edge_count_norm = normalize_int_with_bounds(int(edge_count), (4, int(query.edge_weight_max)))
     extra_edge_norm = normalize_int_with_bounds(
         int(query.extra_edge_count),
@@ -338,14 +343,14 @@ def _build_complexity(
         (1, max(1, int(query.edge_weight_max) - int(query.edge_weight_min))),
     )
 
+    mst_edge_norm = normalize_int_with_bounds(max(0, int(node_count) - 1), (4, _DEFAULTS.node_count_max - 1))
     components = {
-        "visual_scan": (0.55 * float(node_count_norm)) + (0.25 * float(edge_count_norm)) + (0.20 * float(extra_edge_norm)),
-        "topology_reasoning": (0.35 * float(node_count_norm))
-        + (0.25 * float(extra_edge_norm))
-        + (0.20 * normalize_int_with_bounds(int(weight_span), (0, int(query.edge_weight_max) - int(query.edge_weight_min))))
-        + (0.20 * float(edge_count_norm)),
-        "ambiguity": (0.65 * float(ambiguity)) + (0.35 * float(extra_edge_norm)),
-        "clutter": (0.40 * float(edge_count_norm)) + (0.30 * float(crossing_norm)) + (0.20 * float(node_radius_norm)) + (0.10 * float(edge_density)),
+        "visual_scan": (0.45 * float(node_count_norm)) + (0.45 * float(edge_count_norm)) + (0.10 * float(mst_edge_norm)),
+        "topology_reasoning": (0.45 * float(edge_count_norm))
+        + (0.30 * float(node_count_norm))
+        + (0.25 * normalize_int_with_bounds(int(weight_span), (0, int(query.edge_weight_max) - int(query.edge_weight_min)))),
+        "ambiguity": (0.70 * float(ambiguity)) + (0.30 * float(extra_edge_norm)),
+        "clutter": float(crossing_norm),
     }
     return build_graph_complexity(weights=_COMPLEXITY_WEIGHTS, components=components)
 
@@ -437,18 +442,17 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 last_error = exc
                 continue
         else:
-            raise RuntimeError("failed to generate task_graph_optimization_minimum_spanning_tree_weight instance") from last_error
+            raise RuntimeError("failed to generate task_graph__node_link__mst_weight instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_undirected",
-                "question_text_minimum_spanning_tree_weight",
                 "evidence_hint",
                 "answer_hint",
                 "json_example",
@@ -463,12 +467,12 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
+            query_key="minimum_spanning_tree_weight",
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_undirected"]),
-                "question_text": str(prompt_defaults["question_text_minimum_spanning_tree_weight"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]),
@@ -483,7 +487,9 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
         evidence_edges = tuple((str(left), str(right)) for left, right in graph_sample.target_edges)
         evidence_edge_set = {tuple(edge) for edge in evidence_edges}
         answer_gt = TypedValue(type="integer", value=int(graph_sample.target_total_weight))
-        evidence_gt = TypedValue(type="edge_set", value=[list(edge) for edge in evidence_edges])
+        evidence_projection = projected_edge_pair_evidence(rendered_scene, evidence_edges)
+        evidence_point_pairs = [[list(point) for point in pair] for pair in evidence_projection["point_pair_set"]]
+        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
 
         node_entities = [
             {
@@ -516,14 +522,6 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             }
             for edge in rendered_scene.edges
         ]
-        segment_by_edge = {
-            canonicalize_graph_edge_label(str(edge.node_u_label), str(edge.node_v_label), directed=False): [
-                list(edge.segment_px[0]),
-                list(edge.segment_px[1]),
-            ]
-            for edge in rendered_scene.edges
-        }
-        evidence_segments = [list(segment_by_edge[tuple(edge)]) for edge in evidence_edges]
         edge_weights_trace = [
             {"endpoints": [str(left), str(right)], "weight": int(weight)}
             for (left, right), weight in sorted(
@@ -560,14 +558,14 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": "undirected",
-                    "task_variant_probabilities": dict(query.task_variant_probabilities),
+                    "query_variant_probabilities": dict(query.query_variant_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "extra_edge_count": int(query.extra_edge_count),
@@ -595,6 +593,8 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "node_color_name": str(query.node_color_name),
+                    "theme_tone": str(render_params.theme_tone),
+                    "panel_style_variant": str(render_params.panel_style_variant),
                     "background_color_rgb": list(render_params.background_color_rgb),
                     "panel_fill_rgb": list(render_params.panel_fill_rgb),
                     "panel_border_rgb": list(render_params.panel_border_rgb),
@@ -620,7 +620,7 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "sum_unique_mst_weights",
                 "graph_directionality": "undirected",
@@ -644,27 +644,29 @@ class GraphOptimizationMinimumSpanningTreeWeightTask:
                 "crossing_count": int(rendered_scene.crossing_count),
             },
             "witness_symbolic": {
-                "type": "edge_set",
-                "edge_set": [list(edge) for edge in evidence_edges],
+                "type": "edge_pair_set",
+                "edges": [list(edge) for edge in evidence_edges],
             },
             "projected_evidence": {
-                "type": "edge_set",
-                "edge_set": [list(edge) for edge in evidence_edges],
-                "pixel_edge_set": evidence_segments,
+                "type": "point_pair_set",
+                **dict(evidence_projection),
             },
         }
 
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            complexity=complexity,
-            task_versions=default_task_versions(),
-            task_variant=str(query.task_variant),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        return rewrite_graph_query_output(
+            TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                answer_gt=answer_gt,
+                evidence_gt=evidence_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                complexity=complexity,
+                task_versions=default_task_versions(),
+                query_variant=str(query.query_variant),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+            ),
+            query_id="minimum_spanning_tree_weight",
         )
 
 

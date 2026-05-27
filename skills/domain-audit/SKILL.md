@@ -11,8 +11,9 @@ Use this for broad cleanup passes that review one active domain at a time.
 1. `docs/workflows/DOMAIN_AUDIT_REVIEW.md`
 2. `docs/workflows/CODE_REVIEW_GUIDELINES.md`
 3. `docs/workflows/BUILD_VALIDATION.md`
-4. The relevant domain setup doc in `docs/domains/`
-5. The relevant domain skill in `skills/domain-<domain>/`
+4. `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`
+5. The relevant domain setup doc in `docs/domains/`
+6. The relevant domain skill in `skills/domain-<domain>/`
 
 ## Workflow
 1. Inventory the active tasks and shared helpers for the target domain.

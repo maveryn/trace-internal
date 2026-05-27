@@ -1,0 +1,131 @@
+generation:
+  shared:
+    accent_color_name_weights:
+      red: 1.0
+      blue: 1.0
+      green: 1.0
+      yellow: 1.0
+      orange: 1.0
+      purple: 1.0
+      brown: 1.0
+      cyan: 1.0
+      magenta: 1.0
+      maroon: 1.0
+    balanced_accent_color_name_sampling: true
+  task_overrides:
+    physics_electrostatics_field_map_family:
+      scene_variant_weights:
+        clean_grid: 1.0
+        paper_grid: 1.0
+        dense_grid: 1.0
+      query_variant_weights:
+        field_direction_choice: 1.0
+        zero_field_point_label: 1.0
+        potential_value: 1.0
+      direction_mode_weights:
+        electric_field_direction: 1.0
+        force_on_positive_charge: 1.0
+        force_on_negative_charge: 1.0
+      target_direction_weights:
+        east: 1.0
+        northeast: 1.0
+        north: 1.0
+        northwest: 1.0
+        west: 1.0
+        southwest: 1.0
+        south: 1.0
+        southeast: 1.0
+      direction_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+        G: 1.0
+        H: 1.0
+      point_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_direction_mode_sampling: true
+      balanced_target_direction_sampling: true
+      balanced_direction_option_letter_sampling: true
+      balanced_point_option_letter_sampling: true
+      balanced_target_answer_sampling: true
+      potential_answer_support: [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      potential_contribution_support: [-3, -2, -1, 1, 2, 3]
+
+rendering:
+  task_overrides:
+    physics_electrostatics_field_map_family:
+      canvas_width: 1180
+      canvas_height: 760
+      board_left_px: 58
+      board_top_px: 58
+      board_width_px: 760
+      board_height_px: 560
+      coord_extent: 5
+      grid_line_width_px: 1
+      dense_grid_line_width_px: 2
+      axis_width_px: 4
+      axis_width_px_min: 3
+      axis_width_px_max: 5
+      charge_radius_px: 30
+      point_radius_px: 14
+      label_font_size_px: 22
+      option_font_size_px: 25
+      note_font_size_px: 21
+      charge_font_size_px: 25
+      option_panel_left_px: 850
+      option_panel_top_px: 82
+      option_cell_width_px: 140
+      option_cell_height_px: 118
+      option_cell_gap_x_px: 22
+      option_cell_gap_y_px: 22
+      option_arrow_length_px: 64
+      option_arrow_width_px: 7
+      option_arrow_width_px_min: 6
+      option_arrow_width_px_max: 8
+      option_arrow_head_length_px: 20
+      option_arrow_head_width_px: 18
+
+complexity:
+  task_overrides:
+    physics_electrostatics_field_map_family:
+      criteria_weights:
+        visual_scan: 0.28
+        field_reasoning: 0.48
+        ambiguity: 0.14
+        output_burden: 0.10
+
+prompt:
+  shared:
+    bundle_id: physics_electrostatics_v0
+  task_overrides:
+    physics_electrostatics_field_map_family:
+      scene_key: electrostatics_field_map
+      task_key: electrostatics_field_map_query
+      object_description_clean_grid: an electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
+      object_description_paper_grid: a paper-style electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
+      object_description_dense_grid: a dense electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
+      object_description_clean_grid_field_direction_choice: an electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
+      object_description_paper_grid_field_direction_choice: a paper-style electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
+      object_description_dense_grid_field_direction_choice: a dense electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
+      object_description_clean_grid_zero_field_point_label: an electrostatics coordinate grid with fixed point charges and labeled candidate points
+      object_description_paper_grid_zero_field_point_label: a paper-style electrostatics coordinate grid with fixed point charges and labeled candidate points
+      object_description_dense_grid_zero_field_point_label: a dense electrostatics coordinate grid with fixed point charges and labeled candidate points
+      object_description_clean_grid_potential_value: an electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
+      object_description_paper_grid_potential_value: a paper-style electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
+      object_description_dense_grid_potential_value: a dense electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
+      evidence_hint_field_direction_choice: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct candidate direction arrow
+      evidence_hint_zero_field_point_label: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct labeled candidate point
+      evidence_hint_potential_value: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the charges, distance labels, and point P used to compute the potential
+      answer_hint_field_direction_choice: set "answer" to the option letter of the candidate arrow
+      answer_hint_zero_field_point_label: set "answer" to the option letter of the labeled zero-field point
+      answer_hint_potential_value: set "answer" to the signed integer electric potential at P

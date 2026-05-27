@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
@@ -21,6 +20,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ..shared.prompt_examples import build_graph_prompt_json_examples
 from ..shared.complexity import (
     build_graph_complexity,
     normalize_float_with_bounds,
@@ -28,8 +28,8 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_ARTICULATION_TASK_VARIANTS,
-    SUPPORTED_LABEL_VARIANTS,
+    SUPPORTED_ARTICULATION_QUERY_VARIANTS,
+    SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_articulation_point_count,
@@ -38,16 +38,19 @@ from ..shared.graph_sampling import (
 )
 from ..shared.graph_scene import (
     GraphRenderParams,
+    SUPPORTED_EDGE_ROUTING_VARIANTS,
     SUPPORTED_LAYOUT_TRANSFORM_VARIANTS,
     SUPPORTED_NODE_SHAPE_VARIANTS,
+    projected_node_point_evidence,
     render_graph_scene,
 )
+from ..shared.fixed_query_task import rewrite_graph_query_output
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph_counting_articulation_point_count"
+TASK_ID = "task_graph__node_link__articulation_point_count"
 
 
 @dataclass(frozen=True)
@@ -79,7 +82,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one articulation-count instance."""
 
-    task_variant: str
+    query_variant: str
     node_count: int
     target_count: int
     topology_profile: str
@@ -87,8 +90,9 @@ class _ResolvedQuery:
     label_variant: str
     node_shape_variant: str
     layout_transform_variant: str
+    edge_routing_variant: str
     node_color_name: str
-    task_variant_probabilities: Dict[str, float]
+    query_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -96,6 +100,7 @@ class _ResolvedQuery:
     label_variant_probabilities: Dict[str, float]
     node_shape_variant_probabilities: Dict[str, float]
     layout_transform_variant_probabilities: Dict[str, float]
+    edge_routing_variant_probabilities: Dict[str, float]
     node_color_name_probabilities: Dict[str, float]
 
 
@@ -110,31 +115,21 @@ POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="counting", app
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
-def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
-    """Return prompt examples that match the active node-label format."""
-
-    example_evidence = ["2", "5", "8"] if str(label_variant) == "numbers" else ["B", "E", "H"]
-    return (
-        json.dumps({"evidence": example_evidence, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-    )
-
-
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one articulation-point query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.task_variant")
-    task_variant, task_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    query_variant, query_variant_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        supported=SUPPORTED_ARTICULATION_TASK_VARIANTS,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        supported=SUPPORTED_ARTICULATION_QUERY_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="task_variant",
+        namespace="query_variant",
     )
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max = int(params.get("node_count_max", group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max)))
@@ -217,7 +212,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         explicit_key="label_variant",
         weights_key="label_variant_weights",
         balance_flag_key="balanced_label_variant_sampling",
-        supported=SUPPORTED_LABEL_VARIANTS,
+        supported=SUPPORTED_NODE_LINK_LABEL_VARIANTS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
         namespace="label_variant",
@@ -248,6 +243,19 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         task_id=TASK_ID,
         namespace="layout_transform_variant",
     )
+    edge_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.edge_routing_variant")
+    edge_routing_variant, edge_routing_variant_probabilities = resolve_graph_named_variant(
+        edge_rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        explicit_key="edge_routing_variant",
+        weights_key="edge_routing_variant_weights",
+        balance_flag_key="balanced_edge_routing_variant_sampling",
+        supported=SUPPORTED_EDGE_ROUTING_VARIANTS,
+        instance_seed=int(instance_seed),
+        task_id=TASK_ID,
+        namespace="edge_routing_variant",
+    )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
     node_color_name, node_color_name_probabilities = resolve_graph_named_variant(
         color_rng,
@@ -263,7 +271,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         node_count=int(node_count),
         target_count=int(target_count),
         topology_profile=str(topology_profile),
@@ -271,8 +279,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         layout_transform_variant=str(layout_transform_variant),
+        edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        task_variant_probabilities=dict(task_variant_probabilities),
+        query_variant_probabilities=dict(query_variant_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -290,6 +299,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         label_variant_probabilities=dict(label_variant_probabilities),
         node_shape_variant_probabilities=dict(node_shape_variant_probabilities),
         layout_transform_variant_probabilities=dict(layout_transform_variant_probabilities),
+        edge_routing_variant_probabilities=dict(edge_routing_variant_probabilities),
         node_color_name_probabilities=dict(node_color_name_probabilities),
     )
 
@@ -353,6 +363,7 @@ class GraphCountingArticulationPointCountTask:
             fallback_defaults=_DEFAULTS,
             node_color_name=str(query.node_color_name),
             node_shape_variant=str(query.node_shape_variant),
+            edge_routing_variant=str(query.edge_routing_variant),
         )
         search_attempts = int(params.get("graph_search_attempts", group_default(_GEN_DEFAULTS, "graph_search_attempts", _DEFAULTS.graph_search_attempts)))
 
@@ -398,18 +409,17 @@ class GraphCountingArticulationPointCountTask:
                 last_error = exc
                 continue
         else:
-            raise RuntimeError("failed to generate task_graph_counting_articulation_point_count instance") from last_error
+            raise RuntimeError("failed to generate task_graph__node_link__articulation_point_count instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_undirected",
-                "question_text_articulation_point_count",
                 "evidence_hint",
                 "answer_hint",
                 "json_example",
@@ -417,19 +427,17 @@ class GraphCountingArticulationPointCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples(
-            label_variant=str(query.label_variant)
-        )
+        prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180], [430, 260]], answer_value=3)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
+            query_key="articulation_point_count",
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_undirected"]),
-                "question_text": str(prompt_defaults["question_text_articulation_point_count"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]),
@@ -443,7 +451,9 @@ class GraphCountingArticulationPointCountTask:
 
         evidence_labels = tuple(sorted((str(label) for label in graph_sample.target_labels), key=graph_label_sort_key))
         answer_gt = TypedValue(type="integer", value=int(len(evidence_labels)))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
+        evidence_projection = projected_node_point_evidence(rendered_scene, evidence_labels)
+        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
+        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
         node_entities = [
             {
                 "entity_id": f"node_{node.label}",
@@ -467,16 +477,10 @@ class GraphCountingArticulationPointCountTask:
                 "node_v_label": str(edge.node_v_label),
                 "directed": bool(edge.directed),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
+                "route_variant": str(edge.route_variant),
+                "control_px": list(edge.control_px) if edge.control_px is not None else None,
             }
             for edge in rendered_scene.edges
-        ]
-        evidence_node_bboxes = [
-            list(next(node.bbox_xyxy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
-        ]
-        evidence_node_centers = [
-            list(next(node.center_xy for node in rendered_scene.nodes if str(node.label) == str(label)))
-            for label in evidence_labels
         ]
         complexity = _build_complexity(
             graph_sample=graph_sample,
@@ -503,14 +507,14 @@ class GraphCountingArticulationPointCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": "undirected",
-                    "task_variant_probabilities": dict(query.task_variant_probabilities),
+                    "query_variant_probabilities": dict(query.query_variant_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "target_count": int(query.target_count),
@@ -526,6 +530,8 @@ class GraphCountingArticulationPointCountTask:
                     "node_shape_variant_probabilities": dict(query.node_shape_variant_probabilities),
                     "layout_transform_variant": str(query.layout_transform_variant),
                     "layout_transform_variant_probabilities": dict(query.layout_transform_variant_probabilities),
+                    "edge_routing_variant": str(query.edge_routing_variant),
+                    "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
                 },
@@ -536,6 +542,8 @@ class GraphCountingArticulationPointCountTask:
                 "panel_geometry": dict(rendered_scene.panel_geometry),
                 "style": {
                     "node_color_name": str(query.node_color_name),
+                    "theme_tone": str(render_params.theme_tone),
+                    "panel_style_variant": str(render_params.panel_style_variant),
                     "background_color_rgb": list(render_params.background_color_rgb),
                     "panel_fill_rgb": list(render_params.panel_fill_rgb),
                     "panel_border_rgb": list(render_params.panel_border_rgb),
@@ -548,6 +556,7 @@ class GraphCountingArticulationPointCountTask:
                     "node_shape_variant": str(render_params.node_shape_variant),
                     "node_radius_px": int(render_params.node_radius_px),
                     "edge_width_px": int(render_params.edge_width_px),
+                    "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                     "arrow_length_px": int(render_params.arrow_length_px),
                     "arrow_width_px": int(render_params.arrow_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
@@ -560,7 +569,7 @@ class GraphCountingArticulationPointCountTask:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "task_variant": str(query.task_variant),
+                "query_variant": str(query.query_variant),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "count_articulation_points",
                 "graph_directionality": "undirected",
@@ -576,30 +585,33 @@ class GraphCountingArticulationPointCountTask:
                 "layout_variant_requested": str(query.layout_variant),
                 "layout_variant_used": str(rendered_scene.layout_variant),
                 "layout_transform_variant": str(rendered_scene.layout_transform_variant),
+                "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                 "node_color_name": str(query.node_color_name),
                 "crossing_count": int(rendered_scene.crossing_count),
             },
             "witness_symbolic": {
-                "type": "label_set",
-                "label_set": list(evidence_labels),
+                "type": "object_set",
+                "labels": list(evidence_labels),
             },
             "projected_evidence": {
-                "type": "label_set",
-                "label_set": list(evidence_labels),
-                "pixel_point_set": list(evidence_node_centers),
-                "pixel_bbox_set": list(evidence_node_bboxes),
+                "type": "point_set",
+                "point_set": list(evidence_points),
+                **dict(evidence_projection),
             },
         }
 
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=answer_gt,
-            evidence_gt=evidence_gt,
-            image=image,
-            image_id="img0",
-            trace_payload=trace_payload,
-            complexity=complexity,
-            task_versions=default_task_versions(),
-            task_variant=str(query.task_variant),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        return rewrite_graph_query_output(
+            TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                answer_gt=answer_gt,
+                evidence_gt=evidence_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                complexity=complexity,
+                task_versions=default_task_versions(),
+                query_variant=str(query.query_variant),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+            ),
+            query_id="articulation_point_count",
         )

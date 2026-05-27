@@ -1,392 +1,181 @@
 # Chart Task Setup
 
 ## Purpose
-Define the concrete v1 setup for the first chart-domain task families.
+Charts is the public domain for synthetic data displays, including chart renderers and the `table` scene.
 
-This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a source-of-truth note for the first implementation wave, not just a long-term idea list.
+The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the default sampling unit. Query mirrors and semantic branches are recorded as `query_id` and trace params, not public sampling units.
 
-For the broader long-term chart-type universe and future family direction, use `docs/domains/CHART_DOMAIN_PLAN.md`.
+## Active Scenes
+- `area`: 3 active task(s)
+- `boxplot`: 3 active task(s)
+- `candlestick`: 2 active task(s)
+- `combo_mark`: 5 active task(s)
+- `part_whole`: 4 active task(s)
+- `dashboard`: 5 active task(s)
+- `table`: 4 active task(s)
+- `dumbbell`: 2 active task(s)
+- `error_interval`: 2 active task(s)
+- `heatmap`: 3 active task(s)
+- `histogram`: 2 active task(s)
+- `matrix`: 2 active task(s)
+- `marker_map`: 2 active task(s)
+- `region_map`: 5 active task(s)
+- `multiseries`: 3 active task(s)
+- `scatter_readout`: 2 active task(s)
+- `parallel_coords`: 3 active task(s)
+- `pictogram`: 3 active task(s)
+- `radar`: 3 active task(s)
+- `radial_progress`: 1 active task(s)
+- `radial_sankey`: 2 active task(s)
+- `sankey`: 2 active task(s)
+- `scatter_cluster`: 2 active task(s)
+- `curve_panels`: 5 active task(s)
+- `single_series`: 8 active task(s)
+- `size_encoding`: 3 active task(s)
+- `small_multiple`: 2 active task(s)
+- `sunburst`: 3 active task(s)
+- `bar_3d`: 3 active task(s)
+- `surface_3d`: 4 active task(s)
+- `treemap`: 2 active task(s)
+- `violin`: 2 active task(s)
+- `waterfall`: 3 active task(s)
 
-## V1 scope
-1. `domain = charts`
-2. First active `task_group`s:
-   - `statistics`
-   - `counting`
-   - `readout`
-   - `multiseries`
-   - `distribution`
-   - `composition`
-   - `trend`
-3. First concrete statistics tasks:
-   - `task_charts_statistics_summary_value`
-   - `task_charts_statistics_summary_label`
-4. First concrete counting task:
-   - `task_charts_counting_value_count`
-5. First concrete readout task:
-   - `task_charts_readout_subset_value`
-6. First concrete multiseries task:
-   - `task_charts_multiseries_pairwise_comparison_count`
-7. First concrete distribution tasks:
-   - `task_charts_distribution_histogram_count`
-   - `task_charts_distribution_boxplot_label`
-   - `task_charts_distribution_density_label`
-8. First concrete composition task:
-   - `task_charts_composition_subset_value`
-9. First concrete trend task:
-   - `task_charts_trend_structure_value`
-10. First supported single-series chart-type renderings:
-   - `area`
-   - `bar`
-   - `pie`
-   - `donut`
-   - `horizontal_bar`
-   - `line`
-   - `radar`
-   - `scatter`
-   - `dot_plot`
-   - `lollipop`
-11. First supported multiseries chart-type renderings:
-   - `grouped_bar`
-   - `grouped_horizontal_bar`
-   - `multi_line`
-   - `grouped_lollipop`
-12. First supported distribution chart-type renderings:
-   - `histogram`
-   - `boxplot`
-   - `violin`
-13. First supported composition chart-type renderings:
-   - `stacked_bar`
-   - `stacked_horizontal_bar`
-   - `pie`
-   - `donut`
+## Active Tasks
 
-## Taxonomy
-1. Keep the normal TRACE split:
-   - `domain -> task_group -> task`
-2. For the first statistics family:
-   - `task_group = statistics`
-   - active tasks: `summary_value`, `summary_label`
-3. For the first counting family:
-   - `task_group = counting`
-   - active task: `value_count`
-4. For the first readout family:
-   - `task_group = readout`
-   - active task: `subset_value`
-5. For the first multiseries family:
-   - `task_group = multiseries`
-   - active task: `pairwise_comparison_count`
-6. For the first distribution family:
-   - `task_group = distribution`
-   - active tasks: `histogram_count`, `boxplot_label`, `density_label`
-7. For the first composition family:
-   - `task_group = composition`
-   - active task: `subset_value`
-8. For the first trend family:
-   - `task_group = trend`
-   - active task: `structure_value`
-9. The semantic query type is the public `task_variant`.
-10. The chart type is the visual `scene_variant`.
+| Scene id | Task id | Query id |
+|---|---|---|
+| `area` | `task_charts__area__interval_area_value` | `interval_area_value` |
+| `area` | `task_charts__area__stacked_band_interval_sum_value` | `stacked_band_interval_sum_value` |
+| `area` | `task_charts__area__stacked_band_dominance_label` | `stacked_dominance_label` |
+| `boxplot` | `task_charts__boxplot__median_rank_difference_value` | sampled from `median_top_second_difference_value`, `median_top_third_difference_value`, `median_top_bottom_difference_value` |
+| `boxplot` | `task_charts__boxplot__paired_median_shift_label` | sampled from `paired_median_greatest_increase_label`, `paired_median_greatest_decrease_label`, `paired_median_greatest_absolute_change_label` |
+| `boxplot` | `task_charts__boxplot__summary_statistic_label` | sampled from `median_reference_label`, `iqr_extremum_label` |
+| `candlestick` | `task_charts__candlestick__counterfactual_close_value` | `close_after_body_change_value` |
+| `candlestick` | `task_charts__candlestick__range_extremum_label` | sampled from `wick_range_extremum_label`, `body_range_extremum_label` |
+| `combo_mark` | `task_charts__combo_mark__conditioned_extremum_label` | sampled from `max_line_where_primary_above_threshold`, `min_line_where_primary_above_threshold`, `max_primary_where_line_below_threshold`, `min_primary_where_line_below_threshold` |
+| `combo_mark` | `task_charts__combo_mark__cross_mark_difference_value` | sampled from `primary_minus_line_at_label`, `line_minus_primary_at_label` |
+| `combo_mark` | `task_charts__combo_mark__dual_condition_count` | sampled from `primary_above_and_line_above`, `primary_above_and_line_below`, `primary_below_and_line_above`, `primary_between_and_line_above` |
+| `combo_mark` | `task_charts__combo_mark__gap_extremum_label` | sampled from `largest_absolute_gap_label`, `smallest_nonzero_absolute_gap_label`, `largest_primary_over_line_gap_label`, `largest_line_over_primary_gap_label` |
+| `combo_mark` | `task_charts__combo_mark__interval_change_comparison_value` | sampled from `line_change_minus_primary_change`, `primary_change_minus_line_change`, `absolute_change_gap`, `larger_change_minus_smaller_change` |
+| `region_map` | `task_charts__region_map__adjacent_condition_count` | sampled from `adjacent_same_category_count`, `adjacent_category_count`, `adjacent_numeric_threshold_count` |
+| `region_map` | `task_charts__region_map__border_neighbor_count` | `border_neighbor_count` |
+| `region_map` | `task_charts__region_map__continent_filtered_count` | sampled from `continent_region_count`, `continent_category_region_count`, `continent_threshold_region_count` |
+| `region_map` | `task_charts__region_map__region_category_count` | `categorical_region_count` |
+| `region_map` | `task_charts__region_map__region_value_count` | sampled from `numeric_threshold_region_count`, `numeric_interval_region_count` |
+| `marker_map` | `task_charts__marker_map__marker_region_extremum_label` | `marker_region_extremum_label` |
+| `marker_map` | `task_charts__marker_map__marker_region_threshold_count` | `marker_region_threshold_count` |
+| `part_whole` | `task_charts__part_whole__order_share_sum_value` | sampled from `contiguous_chart_order_sum`, `positional_segment_share_sum` |
+| `part_whole` | `task_charts__part_whole__order_count_conversion_value` | `chart_order_share_to_count` |
+| `part_whole` | `task_charts__part_whole__order_sector_angle_value` | `sector_share_to_angle` |
+| `part_whole` | `task_charts__part_whole__adjacent_transfer_gap_value` | `chart_order_adjacent_transfer_gap` |
+| `dashboard` | `task_charts__dashboard__dual_condition_count` | `dual_condition_count` |
+| `dashboard` | `task_charts__dashboard__dual_source_target_sum_value` | `dual_source_target_sum_value` |
+| `dashboard` | `task_charts__dashboard__panel_gap_extremum_category_label` | `panel_gap_extremum_category_label` |
+| `dashboard` | `task_charts__dashboard__source_rank_difference_value` | `source_rank_difference_value` |
+| `dashboard` | `task_charts__dashboard__source_rank_target_value` | `source_rank_target_value` |
+| `table` | `task_charts__table__value_predicate_count` | sampled from `threshold_count`, `in_interval`, `categorical_value_count` |
+| `table` | `task_charts__table__column_rank_label` | `kth_rank_in_column` |
+| `table` | `task_charts__table__column_summary_value` | sampled from `column_sum`, `column_mean`, `column_median`, `filtered_column_mean` |
+| `table` | `task_charts__table__temporal_row_interval_difference_value` | sampled from `absolute_difference_between_rows_over_year_interval`, `sum_absolute_differences_between_rows_over_year_interval` |
+| `dumbbell` | `task_charts__dumbbell__gap_rank_row_label` | `gap_rank_row_label` |
+| `dumbbell` | `task_charts__dumbbell__pair_relation_count` | sampled from `side_winner_count`, `absolute_gap_threshold_count` |
+| `error_interval` | `task_charts__error_interval__reference_relation_count` | sampled from `contains_reference_count`, `entirely_above_reference_count`, `entirely_below_reference_count` |
+| `error_interval` | `task_charts__error_interval__interval_width_rank_label` | sampled from `widest_interval_label`, `narrowest_interval_label`, `second_widest_interval_label`, `second_narrowest_interval_label` |
+| `heatmap` | `task_charts__heatmap__axis_cell_extremum_label` | `axis_cell_extremum_label` |
+| `heatmap` | `task_charts__heatmap__axis_condition_extremum_label` | `axis_condition_extremum_label` |
+| `heatmap` | `task_charts__heatmap__condition_run_extremum_label` | `condition_run_extremum_label` |
+| `histogram` | `task_charts__histogram__cumulative_rank_bin_label` | `rank_item_bin_label` |
+| `histogram` | `task_charts__histogram__interval_value` | sampled from `interval_mass`, `bin_count_between_values` |
+| `matrix` | `task_charts__matrix__axis_extremum_label` | sampled from `axis_extremum_label`, `off_diagonal_confusion_label` |
+| `matrix` | `task_charts__matrix__threshold_cell_count` | `threshold_cell_count` |
+| `multiseries` | `task_charts__multiseries__category_total_extremum_label` | `category_total_extremum_label` |
+| `multiseries` | `task_charts__multiseries__ranked_metric_extremum_label` | sampled from `ranked_change_extremum`, `ranked_ratio_extremum` |
+| `multiseries` | `task_charts__multiseries__series_comparison_count` | `series_comparison_count` |
+| `parallel_coords` | `task_charts__parallel_coords__axis_condition_count` | sampled from `above_on_both_axes`, `below_on_both_axes`, `above_on_one_below_on_other` |
+| `parallel_coords` | `task_charts__parallel_coords__axis_delta_extremum_label` | sampled from `largest_increase_between_axes`, `largest_decrease_between_axes`, `largest_absolute_change_between_axes` |
+| `parallel_coords` | `task_charts__parallel_coords__crossing_count` | sampled from `all_crossings_between_adjacent_axes`, `crossings_involving_profile_between_axes` |
+| `pictogram` | `task_charts__pictogram__category_total_value` | `category_total_value` |
+| `pictogram` | `task_charts__pictogram__group_difference_value` | `group_difference_value` |
+| `pictogram` | `task_charts__pictogram__threshold_count` | `threshold_count` |
+| `radial_progress` | `task_charts__radial_progress__condition_count` | sampled from `at_least_threshold_count`, `below_threshold_count`, `within_range_count`, `remaining_at_least_threshold_count` |
+| `scatter_readout` | `task_charts__scatter_readout__series_x_extremum_label` | sampled from `series_highest_x_label`, `series_lowest_x_label` |
+| `scatter_readout` | `task_charts__scatter_readout__series_point_lookup_value` | sampled from `series_pair_value_gap_at_x`, `series_y_anchor_other_series_value` |
+| `radar` | `task_charts__radar__profile_advantage_count` | `profile_advantage_count` |
+| `radar` | `task_charts__radar__threshold_panel_count` | sampled from `highlighted_metric_threshold_panel_count`, `matching_condition_panel_count` |
+| `radar` | `task_charts__radar__threshold_metric_count_for_panel` | `threshold_metric_count_for_panel` |
+| `radial_sankey` | `task_charts__radial_sankey__dominant_endpoint_label` | sampled from `largest_target_for_source`, `largest_source_for_target`, `second_largest_target_for_source` |
+| `radial_sankey` | `task_charts__radial_sankey__transfer_total_value` | sampled from `source_to_targets_total`, `sources_to_target_total` |
+| `sankey` | `task_charts__sankey__node_side_total_value` | sampled from `source_outgoing_total_flow`, `target_incoming_total_flow` |
+| `sankey` | `task_charts__sankey__path_value` | sampled from `source_to_target_total_flow`, `path_bottleneck_value`, `path_flow_difference` |
+| `scatter_cluster` | `task_charts__scatter_cluster__cluster_feature_extremum_label` | sampled from `cluster_separation_extremum_label`, `cluster_spread_extremum_label` |
+| `scatter_cluster` | `task_charts__scatter_cluster__cluster_trend_direction_label` | `cluster_trend_direction_label` |
+| `curve_panels` | `task_charts__curve_panels__cross_panel_delta_extremum_label` | `cross_panel_delta_extremum_label` |
+| `curve_panels` | `task_charts__curve_panels__curve_at_x_extremum_label` | `curve_at_x_extremum_label` |
+| `curve_panels` | `task_charts__curve_panels__curve_intersection_count` | `curve_intersection_count` |
+| `curve_panels` | `task_charts__curve_panels__earliest_maximum_panel_label` | `earliest_maximum_panel_label` |
+| `curve_panels` | `task_charts__curve_panels__threshold_series_count` | `threshold_series_count` |
+| `single_series` | `task_charts__single_series__value_predicate_count` | sampled from `threshold_count`, `in_interval` |
+| `single_series` | `task_charts__single_series__counterfactual_value` | sampled from `remaining_mean_after_removal`, `target_share_after_removal`, `baseline_from_aggregate_percent_change` |
+| `single_series` | `task_charts__single_series__order_statistic_value` | `order_statistic_value` |
+| `single_series` | `task_charts__single_series__order_statistic_label` | `order_statistic_label` |
+| `single_series` | `task_charts__single_series__interval_change_value` | sampled from `endpoint_change_value`, `interval_rate_value` |
+| `single_series` | `task_charts__single_series__monotone_streak_length` | `longest_monotone_streak` |
+| `single_series` | `task_charts__single_series__threshold_crossing_label` | `threshold_crossing` |
+| `single_series` | `task_charts__single_series__turning_point_count` | `turning_point_count` |
+| `size_encoding` | `task_charts__size_encoding__category_total_extremum_label` | `category_total_extremum_label` |
+| `size_encoding` | `task_charts__size_encoding__filtered_item_extremum_label` | `filtered_item_extremum_label` |
+| `size_encoding` | `task_charts__size_encoding__reference_size_neighbor_label` | `reference_size_neighbor_label` |
+| `small_multiple` | `task_charts__small_multiple__aggregate_value` | sampled from `top_k_by_segment_then_sum_other_segment_count`, `conditioned_panel_sum_from_percent` |
+| `small_multiple` | `task_charts__small_multiple__difference_value` | sampled from `average_top_k_minus_average_bottom_k`, `composition_shift_l1_distance` |
+| `sunburst` | `task_charts__sunburst__conditional_leaf_count` | sampled from `leaf_threshold_count_under_parent`, `leaf_range_count_under_parent` |
+| `sunburst` | `task_charts__sunburst__parent_total_extremum_label` | sampled from `highest_parent_total_label`, `lowest_parent_total_label` |
+| `sunburst` | `task_charts__sunburst__parent_total_value` | `parent_total_from_leaves_value` |
+| `treemap_part_whole` | `task_charts__treemap__group_total_value` | `treemap_group_total_value` |
+| `treemap_part_whole` | `task_charts__treemap__repeated_leaf_aggregate_value` | sampled from `treemap_repeated_leaf_sum_value`, `treemap_repeated_leaf_average_value` |
+| `bar_3d` | `task_charts__bar_3d__axis_gap_value` | sampled from `series_total_gap_value`, `category_total_gap_value`, `category_extremum_gap_value` |
+| `bar_3d` | `task_charts__bar_3d__axis_total_value` | sampled from `series_total_value`, `category_total_value`, `series_interval_total_value` |
+| `bar_3d` | `task_charts__bar_3d__condition_count` | sampled from `series_threshold_count`, `category_threshold_count`, `series_comparison_count` |
+| `surface_3d` | `task_charts__surface_3d__panel_variation_label` | `panel_variation_label` |
+| `surface_3d` | `task_charts__surface_3d__reference_nearest_label` | `reference_nearest_label` |
+| `surface_3d` | `task_charts__surface_3d__series_trend_label` | `series_trend_label` |
+| `surface_3d` | `task_charts__surface_3d__surface_extremum_label` | `surface_extremum_label` |
+| `violin` | `task_charts__violin__feature_extremum_label` | sampled from `highest_mode`, `lowest_mode`, `widest_support`, `narrowest_support` |
+| `violin` | `task_charts__violin__shape_feature_label` | `bimodal_label` |
+| `waterfall` | `task_charts__waterfall__counterfactual_final_value` | sampled from `remove_step_final_total`, `reverse_step_final_total` |
+| `waterfall` | `task_charts__waterfall__running_total_value` | `running_total_after_step` |
+| `waterfall` | `task_charts__waterfall__threshold_crossing_label` | sampled from `first_total_at_least_threshold`, `first_total_at_most_threshold` |
 
-### V1 variant axes
-1. `task_variant`:
-   - `max`
-   - `min`
-   - `range`
-   - `mean`
-   - `median`
-   - `sum`
-   - `mode`
-2. Active single-series chart tasks use these `scene_variant` values:
-   - `area`
-   - `bar`
-   - `pie`
-   - `donut`
-   - `horizontal_bar`
-   - `line`
-   - `radar`
-   - `scatter`
-   - `dot_plot`
-   - `lollipop`
-3. Active multiseries chart tasks currently use these `scene_variant` values:
-   - `grouped_bar`
-   - `grouped_horizontal_bar`
-   - `multi_line`
-   - `grouped_lollipop`
-4. Active distribution chart tasks currently use fixed `scene_variant` values:
-   - `histogram`
-   - `boxplot`
-   - `violin`
-5. Active composition chart tasks currently use these `scene_variant` values:
-   - `stacked_bar`
-   - `stacked_horizontal_bar`
-   - `pie`
-   - `donut`
-6. Active trend chart tasks currently use these `scene_variant` values:
-   - `area`
-   - `bar`
-   - `horizontal_bar`
-   - `line`
-   - `dot_plot`
-   - `lollipop`
+## Refactor Rules
+1. The meaningful semantic branch is kept in `query_id` and trace params.
+2. `query_variant` is an internal replay selector, not a public sampling unit.
+3. Chart type, palette, background, row/column axis, largest/smallest, highest/lowest, clockwise/counterclockwise, and other mirror/rendering choices stay internal query or render params.
+4. Shared broad generators may remain internal implementation details, but only active public task IDs are registered.
+5. Fresh task-review workbooks and solve-rate probes are required for current public task IDs.
 
-Note:
-1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
-2. Until the cross-domain `scene_variant` ABI note is fully written in core docs, treat this file as the domain-local contract for that split.
-3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
-4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`.
-5. The active distribution tasks use fixed `scene_variant` values `histogram`, `boxplot`, and `violin` instead of sampling across the broader chart-variant pool.
-6. `task_charts_composition_subset_value` is the active composition chart task; it stays stacked-only (`stacked_bar|stacked_horizontal_bar`) and uses the semantic variants `category_subset_sum|series_across_categories_sum|subset_margin_sum`, with ordered `integer_list` evidence over the queried segment values or per-category subset margins.
-7. `task_charts_trend_structure_value` is the first active trend chart task; it uses ordered single-series charts only and currently supports `area|bar|horizontal_bar|line|dot_plot|lollipop`.
+## Scene Render Notes
+1. `region_map` covers synthetic region maps and bundled Natural Earth-derived geographic maps under `assets/charts/maps/`. Mixed map tasks sample synthetic maps and geographic maps; geographic maps sample world countries, contiguous USA states, EU countries, and China provinces. Filtered-continent and border-neighbor tasks are restricted to the world-country asset. Filtered-continent targets `Africa`, `Asia`, `Europe`, `North America`, or `South America`; border-neighbor uses exact shared boundary segments with configured shared-border length and neighbor-area thresholds; adjacent-condition tasks count colored neighbors touching a highlighted reference region. `marker_map` reuses the same map assets and synthetic map grammar but encodes values with marker bubbles over labeled regions; evidence is always marker-bubble `bbox_set` evidence. These assets supply geometry and geography metadata only; task values, category labels, assignments, and counted regions are synthetic and verified from TRACE metadata. Runtime generation must not download map geometry. The renderer preserves each geographic asset's longitude/latitude aspect ratio, samples map styles and legend placement, and records selected style metadata under `render_spec.map_render_style`.
+2. Chart post-render noise follows the domain policy in `configs/domains/charts/base.yaml`: `apply_prob=0.5` with coordinate-preserving `blur`, `downsample`, `jpeg`, and additive/noise-like edits. The `table` scene uses the chart table group configs under `configs/domains/charts/table_*.yaml`. Scene/task groups should not override this without a documented exception and a trace-level audit.
+3. Prompt bundles should use the normal scene/task/query layering. The scene sentence describes what the image shows, task/query text asks for the reasoning target, and answer+evidence prompts must include a named `Evidence format:` section.
+4. `violin` samples non-semantic violin styling: optional/subtle mode markers, fill style, width/smoothing scale, and single vs per-violin muted palettes. These choices are recorded in `render_spec.violin_style` and must not change the symbolic supports, mode values, or answer/evidence contract.
+5. `sunburst` is a not-to-scale concentric hierarchy display. Ring geometry encodes parent/subgroup/leaf structure only; printed outer leaf values are the numeric source of truth, and the render spec records `not_to_scale=true`.
+6. `treemap_part_whole` uses parent rectangles split into child rectangles. Printed child values are the numeric source of truth; rectangle areas are visual layout and verification uses metadata-backed child values and value-label boxes.
+7. `scatter_readout` uses point markers, printed point values, x-axis labels, and a series legend as the source of truth. Evidence projects to the selected point/value label and the x-axis label when the answer is an x label.
+8. `waterfall` uses the printed start value, signed contribution labels, connector lines, and final-total value as the source of truth. Cumulative totals are derived from the signed contributions rather than printed at each intermediate step.
+9. `candlestick` uses candle bodies, wicks, period labels, and printed O/H/L/C values as the source of truth. Body-range, wick-range, and counterfactual-close answers are verified from metadata-backed open, high, low, and close values.
+10. `combo_mark` uses one primary mark encoding plus one overlaid line encoding in the same panel. The primary encoding may be bars, stacked bars, grouped bars, or a filled area; printed exact values are the numeric source of truth for both encodings. Dual-condition count tasks explicitly balance target answers over `1..5`.
+11. `pictogram` uses repeated blocks or repeated icons as unit marks. Icon identity is non-semantic; quantity comes from the mark count and the legend unit scale. Evidence uses category-row bounding boxes, not individual icon identity.
+12. `radial_progress` uses progress arcs, semicircular gauges, or segmented radial bars on a 0 to 100 scale. Evidence uses widget-card bounding boxes for counted indicators.
+13. `parallel_coords` uses vertical metric axes with labeled profile polylines. Axis values increase upward; evidence projects to the profile segments or profile lines needed for the condition, change, or crossing query.
+14. `error_interval` uses lower endpoint, midpoint/estimate marker, and upper endpoint metadata as the source of truth. Render variants include horizontal forest-style interval plots, vertical dot-and-whisker plots, and bars with error bars. Evidence uses interval-mark bounding boxes consistently for count and label tasks.
+15. `dashboard` includes a trace-backed context-text layer using `assets/context_text/` for non-answer dashboard/report chrome such as headlines, optional main titles, source notes, footer notes, metric snippets, and randomized reserved context boxes. The context boxes may appear as a left sidebar, right sidebar, or bottom band, with per-instance box count, size, and sampled text content recorded in the trace. Context text is excluded from answer semantics, recorded with bboxes/source manifests, and must remain outside the chart-panel evidence contract unless a future task explicitly scopes it in.
 
-## Scene contract
-1. One chart per image.
-2. Active single-series chart tasks use one data series per chart in v1.
-3. Active multiseries chart tasks use `2..3` named series and `5..10` labeled categories in v1.
-4. Active composition chart tasks use one legend label per segment color and, for stacked scenes, one stack per category.
-5. Use a clean light background with one chart frame/axis scaffold.
-6. Every single-series chart mark must have one visible unique label.
-7. In multiseries charts, every category must have one visible unique uppercase label and every series must have one visible legend label.
-8. Labels remain the canonical prompt-facing identities for both mark-level and category-level evidence.
-9. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
-10. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
-11. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice, a higher-contrast slice palette than the generic single-series charts, and a right-side legend with framed color swatches that maps slice colors to labels.
-12. Composition scenes use their own semantics:
-   - stacked charts render one stack per category, print integer segment values inside the segments, and keep grid lines/axes without numeric tick labels,
-   - pie/donut scenes render positive integer percentages that sum to `100`.
-13. Distribution scenes use their own semantics:
-   - histograms render contiguous numeric interval bins and treat bar height as count/frequency,
-   - boxplots render quartile/whisker summaries per labeled category.
-
-### Chart-type semantics
-1. `area`
-   - the statistic is computed over the plotted point `y` values, not over `x`.
-   - visible point markers should be present so each labeled mark corresponds to one sampled data point.
-2. `bar`
-   - the statistic is computed over bar heights / bar values.
-3. `line`
-   - the statistic is computed over the plotted point `y` values, not over `x`.
-   - visible point markers should be present so each labeled mark corresponds to one sampled data point.
-4. `scatter`
-   - the statistic is computed over point `y` values, not over `x`.
-5. `horizontal_bar`
-   - the statistic is computed over bar lengths on the horizontal axis.
-6. `pie`
-   - when supported by a task, the numeric contract uses positive integer percentages that sum to `100`.
-   - slices use distinct sampled colors, and a legend on the right maps colors to labels.
-   - legend swatches should be visually prominent even for lighter slice colors; framed swatches and stronger slice/background contrast are preferred.
-   - slice angles are normalized for rendering only; tasks should reason over the printed percentages, not visual angle estimation alone.
-7. `donut`
-   - when supported by a task, the numeric contract uses positive integer percentages that sum to `100`.
-   - slices use distinct sampled colors, and a legend on the right maps colors to labels.
-   - legend swatches should be visually prominent even for lighter slice colors; framed swatches and stronger slice/background contrast are preferred.
-   - donut hole size is a rendering choice only; tasks should reason over the printed percentages, not visual angle estimation alone.
-8. `dot_plot`
-   - the statistic is computed over plotted point `y` values, not over `x`.
-9. `lollipop`
-   - the statistic is computed over plotted point `y` values, not over `x`.
-10. `radar`
-   - when supported, the numeric contract uses the printed point values near the polygon markers.
-   - each label owns one spoke, and the polygon/rings provide the visual radar structure rather than Cartesian axes.
-11. `grouped_bar`
-   - each category contains one bar per series, and each bar height encodes that series value for the category.
-12. `grouped_horizontal_bar`
-   - each category contains one horizontal bar per series, and each bar length encodes that series value for the category.
-13. `multi_line`
-   - each category contains one point per series, and each series point sequence is connected by a colored line.
-14. `grouped_lollipop`
-   - each category contains one colored lollipop stem/point per series without cumulative stacking.
-15. `histogram`
-   - the x-axis represents ordered numeric bins rather than arbitrary categories.
-   - adjacent bars should visually touch so the scene reads as a real histogram.
-16. `boxplot`
-   - each label denotes one categorical boxplot.
-   - the median is the line inside the box, the box spans `Q1..Q3`, and the whiskers show the minimum and maximum shown.
-17. `violin`
-   - each label denotes one categorical violin.
-   - the widest parts of the violin indicate the modal values of the distribution.
-   - `bimodal` queries rely on a clearly two-peaked violin shape rather than hidden statistics.
-
-## Mark labels
-1. Every single-series mark uses one unique randomized uppercase label.
-2. Labels may be one or two letters.
-3. Labels must be assigned independently of:
-   - rank,
-   - value,
-   - left-to-right order,
-   - top-to-bottom order.
-4. V1 should sample chart labels from a random uppercase subset rather than always starting with `A, B, C, ...`.
-5. V1 should keep chart size modest enough that one-letter labels are usually sufficient.
-6. Recommended initial mark count: `5..10` for axis-based scenes.
-7. `pie` and `donut` should use a tighter default effective mark-count cap such as `5..8` so the legend and printed percentages remain readable.
-8. `radar` should use a tighter default effective mark-count cap such as `5..7` so the perimeter labels and printed point values remain readable.
-9. Multiseries charts should keep randomized uppercase category labels separate from series legend labels so category evidence and series references never share one identity namespace.
-10. Multiseries series labels should come from one vendored short human-name manifest rather than the uppercase category-label pool.
-
-## Value range
-1. Axis-based chart marks should use integer values in the range `1..20`.
-2. Pie/donut scenes should use positive integer percentages that sum to `100`.
-3. Multiseries chart values should also use integer values in the range `1..20` unless a later family needs a stricter bound.
-4. Statistic-specific target-answer ranges may still be narrower than the full displayed value range.
-
-## Answer contract
-1. `answer_gt.type = integer`
-2. All seven statistics should produce integer answers in v1 by construction.
-
-### Per-variant answer meaning
-1. `max`: highest displayed value
-2. `min`: lowest displayed value
-3. `range`: `max - min`
-4. `mean`: arithmetic mean of all displayed values
-5. `median`: median of all displayed values
-6. `sum`: sum of all displayed values
-7. `mode`: unique modal value
-8. `sum` should use the full feasible support implied by the active mark-count and per-mark value bounds, not an additional narrow task-local cap.
-
-## Evidence contract
-1. V1 default `evidence_gt.type` for the statistics family is `label_set`.
-2. The evidence is the set of labeled marks that directly witness the requested statistic.
-3. Label order must be deterministic.
-
-### Evidence by statistic
-1. `max`
-   - singleton `label_set` containing the unique maximum mark
-2. `min`
-   - singleton `label_set` containing the unique minimum mark
-3. `range`
-   - two-label `label_set` containing the unique minimum mark and unique maximum mark
-4. `mean`
-   - `label_set` containing all chart marks used in the average
-5. `median`
-   - singleton `label_set` containing the median mark
-6. `sum`
-   - `label_set` containing all chart marks used in the sum
-7. `mode`
-   - `label_set` containing all marks whose value equals the unique modal value
-
-### Why `label_set` in v1
-1. The current ABI already supports `label_set`.
-2. A chart-native evidence type such as `label_value_map` may be worth adding later, but it should not block the first chart task family.
-3. Raw plotted geometry, bar boxes, or point coordinates should stay in trace as derived render projections rather than the public evidence contract for this family.
-
-## Uniqueness and construction rules
-1. Final numeric answer must be unique by construction.
-2. `max` / `min`
-   - require a unique maximum / unique minimum mark.
-3. `range`
-   - require a unique maximum and unique minimum mark.
-   - prefer `range > 0` in v1.
-4. `mean`
-   - construct the dataset so the mean is an integer.
-5. `median`
-   - use an odd number of marks in v1.
-   - with the current `5..10` mark-count policy, this means the effective median support is `5|7|9`.
-   - prefer distinct values in v1 so the median mark is unique and evidence is singleton.
-6. `sum`
-   - no extra extremum-style uniqueness rule is needed beyond unique final answer.
-7. `mode`
-   - require one unique modal value.
-   - evidence includes every mark with that modal value.
-
-## Sampling policy
-1. Global sampling stays at the task level, as elsewhere in TRACE.
-2. Inside `task_charts_statistics_summary_value`, sample:
-   - `task_variant` from the supported statistics set,
-   - `scene_variant` from the supported chart types for that statistic.
-3. These two axes should be sampled independently at the policy level, subject to compatibility.
-4. Then sample the target answer from feasible support before finalizing the concrete chart data/layout.
-
-## Prompt rules
-1. The chart-family prompt layer should establish:
-   - that the image is a chart,
-   - that marks are labeled,
-   - that the answer must be derived from the chart values.
-2. The task layer should ask only for the statistic itself.
-3. When `scene_variant` is `area`, `line`, `scatter`, `dot_plot`, or `lollipop`, the prompt should make it explicit that the statistic is over the plotted values (`y` values), not over the horizontal positions.
-4. When `scene_variant` is `horizontal_bar`, the prompt should make it explicit that values are read from the horizontal axis.
-5. When `scene_variant` is `pie` or `donut`, the prompt should make it explicit that the relevant values are the printed percentages shown on the slices and that the legend on the right maps slice colors to labels.
-6. When `scene_variant` is `radar`, the prompt should make it explicit that each label owns one spoke and that the relevant values are the printed values near the plotted radar points.
-7. Do not phrase chart statistics in category-name terms for this family; the requested output is always the numeric summary value.
-8. `answer_and_evidence` prompts should ask for the supporting labeled marks, not pixel boxes or coordinates.
-
-### Recommended task-layer wording
-1. `max`
-   - ask for the highest value among the labeled marks
-2. `min`
-   - ask for the lowest value among the labeled marks
-3. `range`
-   - ask for the difference between the highest and lowest values
-4. `mean`
-   - ask for the mean (average) value
-5. `median`
-   - ask for the median value
-6. `sum`
-   - ask for the total / sum of the values
-7. `mode`
-   - ask for the mode value
-
-### Recommended prompt slots
-1. `object_description_<scene_variant>`
-   - describe the chart marks for the chosen chart type
-2. `question_text_<task_variant>`
-   - one per statistic kind
-3. `evidence_hint`
-   - should explain that evidence is the set of supporting mark labels
-4. `answer_hint`
-   - should explain that the answer is a numeric value
-5. `json_example_answer_only_<task_variant>`
-   - variant-aware examples are preferred
-6. `json_example_<task_variant>`
-   - variant-aware examples are preferred
-
-## Trace guidance
-1. Keep symbolic mark records in trace with:
-   - `mark_id`
-   - visible `label`
-   - numeric `value`
-   - chart-type-specific geometry metadata
-2. Keep `task_variant` and `scene_variant` explicit in trace/query metadata.
-3. Keep derived pixel geometry in trace, not as the source of truth.
-
-## Deferred follow-up
-1. Add a chart-native evidence type if `label_set` becomes too weak for later chart families.
-2. Formalize the cross-domain `scene_variant` ABI in core docs once charts are implemented.
-3. Revisit whether the seven statistic kinds should later split into multiple tasks if charts need more task-level mass.
-
-## Companion label-answer task
-1. The first follow-up companion task is `task_charts_statistics_summary_label`.
-2. It reuses the same chart scenes and `scene_variant` values (`area|bar|pie|donut|horizontal_bar|line|radar|scatter|dot_plot|lollipop`) but narrows the semantic `task_variant` set to:
-   - `argmax`
-   - `argmin`
-   - `median_label`
-3. Its contract is:
-   - `answer_gt.type = option_letter`
-   - `evidence_gt.type = integer`
-4. Prompt-facing evidence is the winning numeric statistic value, while the answer is the visible label of the winning mark.
-5. The label-answer task intentionally excludes `mean`, `sum`, `range`, and `mode` because those statistics do not map cleanly to one unique label answer in v1.
-
-## Counting follow-up task
-1. The first counting-family task is `task_charts_counting_value_count`.
-2. It reuses the same chart scenes and `scene_variant` values (`area|bar|pie|donut|horizontal_bar|line|radar|scatter|dot_plot|lollipop`) but changes the semantic `task_variant` set to:
-   - `above_threshold`
-   - `below_threshold`
-   - `in_interval`
-3. Its contract is:
-   - `answer_gt.type = integer`
-   - `evidence_gt.type = label_set`
-4. Threshold queries use strict comparisons (`>` for `above_threshold`, `<` for `below_threshold`).
-5. Interval queries use inclusive `[interval_min, interval_max]` bounds.
-6. Empty `label_set` evidence is valid when the answer count is `0`.
-
-## Readout follow-up task
-1. The first readout-family task is `task_charts_readout_subset_value`.
-2. It reuses the same chart scenes and `scene_variant` values (`area|bar|pie|donut|horizontal_bar|line|radar|scatter|dot_plot|lollipop`) and introduces semantic `task_variant` values:
-   - `sum_two`
-   - `difference_two_abs`
-   - `max_two`
-   - `min_two`
-   - `mean_two`
-3. Its contract is:
-   - `answer_gt.type = integer`
-   - `evidence_gt.type = integer_list`
-4. Prompt-facing evidence is the ordered pair of queried values, in the same order the two queried labels appear in the prompt.
-5. Readout tasks keep the queried labels in trace/query metadata and keep the full label->value table in trace so the integer-list evidence order remains explicit and auditable.
+## Data Table Grid Notes
+1. `table` is the chart scene for row/column/cell data displays.
+2. Active task modules live under `trace/tasks/charts/table/`.
+3. Defaults live under `configs/domains/charts/table_*.yaml`.
+4. Prompt bundles live under `prompts/charts/table_*/`.
+5. Public registered task IDs use the `task_charts__table__*` prefix.
+6. Keep table evidence prompt-facing as `bbox_set`, with ordering and minimal supporting regions defined by the active task contract.
+7. Prompts should name queried rows, columns, cells, years, filters, ranks, or intervals explicitly enough that the supporting bbox evidence is unambiguous.
+8. Preserve deterministic bbox ordering whenever prompt order or row order matters.
+9. Prefer readable tables over schema complexity: short labels, moderate row/column counts, and style variation through borders, shading, and framing.

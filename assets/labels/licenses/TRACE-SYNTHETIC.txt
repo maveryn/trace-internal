@@ -1,0 +1,5 @@
+TRACE synthetic label assets.
+
+These labels were authored for TRACE synthetic task generation and are
+included as project-local assets. They are not copied from an external
+upstream dataset.

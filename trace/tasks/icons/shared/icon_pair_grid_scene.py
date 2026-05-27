@@ -24,6 +24,10 @@ class IconPairSpec:
     icon_id: str
     transform_id: str
     tint_rgb: Tuple[int, int, int]
+    left_tint_rgb: Tuple[int, int, int] | None = None
+    right_tint_rgb: Tuple[int, int, int] | None = None
+    left_size_scale: float = 1.0
+    right_size_scale: float = 1.0
     left_noise_edits: Tuple[NoiseEdit, ...] = ()
     left_noise_seed: int | None = None
     right_noise_edits: Tuple[NoiseEdit, ...] = ()
@@ -37,6 +41,10 @@ class RenderedReferencePair:
     icon_id: str
     transform_id: str
     tint_rgb: Tuple[int, int, int]
+    left_tint_rgb: Tuple[int, int, int]
+    right_tint_rgb: Tuple[int, int, int]
+    left_size_scale: float
+    right_size_scale: float
     left_bbox_xyxy: BBox
     right_bbox_xyxy: BBox
     left_noise_edits: Tuple[Dict[str, Any], ...]
@@ -53,6 +61,10 @@ class RenderedScenePairCell:
     icon_id: str
     transform_id: str
     tint_rgb: Tuple[int, int, int]
+    left_tint_rgb: Tuple[int, int, int]
+    right_tint_rgb: Tuple[int, int, int]
+    left_size_scale: float
+    right_size_scale: float
     cell_bbox_xyxy: BBox
     left_bbox_xyxy: BBox
     right_bbox_xyxy: BBox
@@ -102,18 +114,22 @@ def _draw_pair_in_box(
 ) -> Tuple[BBox, BBox]:
     """Draw one before/after pair inside a target box and return both icon boxes."""
 
+    left_size_px = max(8, int(round(float(icon_size_px) * max(0.25, float(pair_spec.left_size_scale)))))
+    right_size_px = max(8, int(round(float(icon_size_px) * max(0.25, float(pair_spec.right_size_scale)))))
+    left_tint = tuple(int(v) for v in (pair_spec.left_tint_rgb or pair_spec.tint_rgb))
+    right_tint = tuple(int(v) for v in (pair_spec.right_tint_rgb or pair_spec.tint_rgb))
     left_icon = render_icon_transformed_rgba(
         icon_id=str(pair_spec.icon_id),
-        size_px=int(icon_size_px),
-        tint_rgb=tuple(int(v) for v in pair_spec.tint_rgb),
+        size_px=int(left_size_px),
+        tint_rgb=left_tint,
         transform_id="identity",
         noise_edits=tuple(pair_spec.left_noise_edits),
         noise_seed=pair_spec.left_noise_seed,
     )
     right_icon = render_icon_transformed_rgba(
         icon_id=str(pair_spec.icon_id),
-        size_px=int(icon_size_px),
-        tint_rgb=tuple(int(v) for v in pair_spec.tint_rgb),
+        size_px=int(right_size_px),
+        tint_rgb=right_tint,
         transform_id=str(pair_spec.transform_id),
         noise_edits=tuple(pair_spec.right_noise_edits),
         noise_seed=pair_spec.right_noise_seed,
@@ -247,6 +263,8 @@ def render_two_panel_icon_pair_grid_scene(
         icon_cap_from_height = max(20, int(pair_span_h))
         icon_size = min(scene_max_size, icon_cap_from_width, icon_cap_from_height)
         icon_size = max(scene_min_size, icon_size)
+        max_pair_scale = max(1.0, float(pair_spec.left_size_scale), float(pair_spec.right_size_scale))
+        icon_size = max(scene_min_size, int(icon_size / max_pair_scale))
         left_box, right_box = _draw_pair_in_box(
             image=image,
             pair_spec=pair_spec,
@@ -261,6 +279,10 @@ def render_two_panel_icon_pair_grid_scene(
                 icon_id=str(pair_spec.icon_id),
                 transform_id=str(pair_spec.transform_id),
                 tint_rgb=tuple(int(v) for v in pair_spec.tint_rgb),
+                left_tint_rgb=tuple(int(v) for v in (pair_spec.left_tint_rgb or pair_spec.tint_rgb)),
+                right_tint_rgb=tuple(int(v) for v in (pair_spec.right_tint_rgb or pair_spec.tint_rgb)),
+                left_size_scale=float(pair_spec.left_size_scale),
+                right_size_scale=float(pair_spec.right_size_scale),
                 cell_bbox_xyxy=tuple(int(v) for v in cell_bbox),
                 left_bbox_xyxy=tuple(int(v) for v in left_box),
                 right_bbox_xyxy=tuple(int(v) for v in right_box),
@@ -275,6 +297,10 @@ def render_two_panel_icon_pair_grid_scene(
         icon_id=str(reference_pair.icon_id),
         transform_id=str(reference_pair.transform_id),
         tint_rgb=tuple(int(v) for v in reference_pair.tint_rgb),
+        left_tint_rgb=tuple(int(v) for v in (reference_pair.left_tint_rgb or reference_pair.tint_rgb)),
+        right_tint_rgb=tuple(int(v) for v in (reference_pair.right_tint_rgb or reference_pair.tint_rgb)),
+        left_size_scale=float(reference_pair.left_size_scale),
+        right_size_scale=float(reference_pair.right_size_scale),
         left_bbox_xyxy=tuple(int(v) for v in reference_left_box),
         right_bbox_xyxy=tuple(int(v) for v in reference_right_box),
         left_noise_edits=serialize_icon_noise_edits(reference_pair.left_noise_edits),

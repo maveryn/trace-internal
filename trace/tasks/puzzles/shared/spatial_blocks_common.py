@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.render_variation import resolve_render_float, resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
 
 
@@ -64,6 +65,8 @@ class PuzzleBlockStackRenderParams:
     arrow_width_px: int
     arrow_head_length_px: int
     arrow_head_width_px: int
+    view_orientation_index: int
+    voxel_scale: float
     panel_fill_rgb: Tuple[int, int, int]
     border_color_rgb: Tuple[int, int, int]
     face_top_rgb: Tuple[int, int, int]
@@ -98,7 +101,7 @@ def resolve_block_scene_variant(
     )
 
 
-def resolve_cube_removal_task_variant(
+def resolve_cube_removal_query_variant(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -113,10 +116,10 @@ def resolve_cube_removal_task_variant(
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_PUZZLE_BLOCK_REMOVAL_VARIANTS,
         task_id=str(task_id),
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        axis_namespace="task_variant",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        axis_namespace="query_variant",
     )
 
 
@@ -124,35 +127,68 @@ def resolve_block_stack_render_params(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
+    instance_seed: int | None = None,
 ) -> PuzzleBlockStackRenderParams:
     """Resolve rendering params for block-stack scenes."""
 
+    def _int(key: str, fallback: int) -> int:
+        return resolve_render_int(
+            params,
+            render_defaults,
+            str(key),
+            int(fallback),
+            instance_seed=instance_seed,
+            namespace="puzzle_block_stack_render",
+        )
+
+    def _rgb(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
+        return resolve_render_rgb(
+            params,
+            render_defaults,
+            str(key),
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzle_block_stack_render",
+        )
+
+    def _float(key: str, fallback: float) -> float:
+        return resolve_render_float(
+            params,
+            render_defaults,
+            str(key),
+            float(fallback),
+            instance_seed=instance_seed,
+            namespace="puzzle_block_stack_render",
+        )
+
     return PuzzleBlockStackRenderParams(
-        canvas_width=int(_resolve_int_param(params, render_defaults, "canvas_width", 1200)),
-        canvas_height=int(_resolve_int_param(params, render_defaults, "canvas_height", 760)),
-        scene_margin_left_px=int(_resolve_int_param(params, render_defaults, "scene_margin_left_px", 64)),
-        scene_margin_right_px=int(_resolve_int_param(params, render_defaults, "scene_margin_right_px", 64)),
-        scene_margin_top_px=int(_resolve_int_param(params, render_defaults, "scene_margin_top_px", 56)),
-        scene_margin_bottom_px=int(_resolve_int_param(params, render_defaults, "scene_margin_bottom_px", 56)),
-        structure_padding_px=int(_resolve_int_param(params, render_defaults, "structure_padding_px", 44)),
-        structure_pair_gap_px=int(_resolve_int_param(params, render_defaults, "structure_pair_gap_px", 96)),
-        caption_gap_px=int(_resolve_int_param(params, render_defaults, "caption_gap_px", 16)),
-        caption_font_size_px=int(_resolve_int_param(params, render_defaults, "caption_font_size_px", 30)),
-        panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", 30)),
-        border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", 3)),
-        arrow_width_px=int(_resolve_int_param(params, render_defaults, "arrow_width_px", 6)),
-        arrow_head_length_px=int(_resolve_int_param(params, render_defaults, "arrow_head_length_px", 18)),
-        arrow_head_width_px=int(_resolve_int_param(params, render_defaults, "arrow_head_width_px", 18)),
-        panel_fill_rgb=tuple(int(v) for v in render_defaults.get("panel_fill_rgb", (248, 249, 252))),
-        border_color_rgb=tuple(int(v) for v in render_defaults.get("border_color_rgb", (86, 94, 108))),
-        face_top_rgb=tuple(int(v) for v in render_defaults.get("face_top_rgb", (240, 194, 108))),
-        face_right_rgb=tuple(int(v) for v in render_defaults.get("face_right_rgb", (213, 161, 73))),
-        face_left_rgb=tuple(int(v) for v in render_defaults.get("face_left_rgb", (187, 136, 56))),
-        face_shadow_rgb=tuple(int(v) for v in render_defaults.get("face_shadow_rgb", (150, 104, 38))),
-        instruction_fill_rgb=tuple(int(v) for v in render_defaults.get("instruction_fill_rgb", (238, 243, 250))),
-        caption_fill_rgb=tuple(int(v) for v in render_defaults.get("caption_fill_rgb", (32, 38, 46))),
-        caption_stroke_rgb=tuple(int(v) for v in render_defaults.get("caption_stroke_rgb", (255, 255, 255))),
-        arrow_rgb=tuple(int(v) for v in render_defaults.get("arrow_rgb", (75, 88, 107))),
+        canvas_width=int(_int("canvas_width", 1200)),
+        canvas_height=int(_int("canvas_height", 760)),
+        scene_margin_left_px=int(_int("scene_margin_left_px", 64)),
+        scene_margin_right_px=int(_int("scene_margin_right_px", 64)),
+        scene_margin_top_px=int(_int("scene_margin_top_px", 56)),
+        scene_margin_bottom_px=int(_int("scene_margin_bottom_px", 56)),
+        structure_padding_px=int(_int("structure_padding_px", 44)),
+        structure_pair_gap_px=int(_int("structure_pair_gap_px", 96)),
+        caption_gap_px=int(_int("caption_gap_px", 16)),
+        caption_font_size_px=int(_int("caption_font_size_px", 30)),
+        panel_corner_radius_px=int(_int("panel_corner_radius_px", 30)),
+        border_width_px=int(_int("border_width_px", 3)),
+        arrow_width_px=int(_int("arrow_width_px", 6)),
+        arrow_head_length_px=int(_int("arrow_head_length_px", 18)),
+        arrow_head_width_px=int(_int("arrow_head_width_px", 18)),
+        view_orientation_index=int(_int("view_orientation_index", 0)) % 2,
+        voxel_scale=float(max(0.50, min(1.00, _float("voxel_scale", 1.0)))),
+        panel_fill_rgb=_rgb("panel_fill_rgb", (248, 249, 252)),
+        border_color_rgb=_rgb("border_color_rgb", (86, 94, 108)),
+        face_top_rgb=_rgb("face_top_rgb", (240, 194, 108)),
+        face_right_rgb=_rgb("face_right_rgb", (213, 161, 73)),
+        face_left_rgb=_rgb("face_left_rgb", (187, 136, 56)),
+        face_shadow_rgb=_rgb("face_shadow_rgb", (150, 104, 38)),
+        instruction_fill_rgb=_rgb("instruction_fill_rgb", (238, 243, 250)),
+        caption_fill_rgb=_rgb("caption_fill_rgb", (32, 38, 46)),
+        caption_stroke_rgb=_rgb("caption_stroke_rgb", (255, 255, 255)),
+        arrow_rgb=_rgb("arrow_rgb", (75, 88, 107)),
     )
 
 
@@ -276,7 +312,7 @@ def _distribute_removals_across_columns(
 
 def build_cube_removal_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -285,7 +321,7 @@ def build_cube_removal_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one deterministic cube-removal comparison dataset."""
 
-    del task_variant
+    del query_variant
     rng = spawn_rng(int(instance_seed), f"{task_id}.cube_removal_dataset")
     width_min = int(params.get("width_min", group_default(gen_defaults, "width_min", int(defaults.width_min))))
     width_max = int(params.get("width_max", group_default(gen_defaults, "width_max", int(defaults.width_max))))
@@ -446,6 +482,6 @@ __all__ = [
     "cube_records_from_height_rows",
     "resolve_block_scene_variant",
     "resolve_block_stack_render_params",
-    "resolve_cube_removal_task_variant",
+    "resolve_cube_removal_query_variant",
     "total_cubes_from_height_rows",
 ]

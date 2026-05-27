@@ -1,1 +1,0 @@
-"""Hierarchy-family diagrams tasks."""

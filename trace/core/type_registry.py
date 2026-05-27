@@ -23,7 +23,7 @@ class TypeRegistry:
         return type_id in self.evidence_types
 
 
-DEFAULT_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "configs" / "type_registry_v1.json"
+DEFAULT_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "configs" / "type_registry_v0.json"
 
 
 def load_type_registry(path: str | Path | None = None) -> TypeRegistry:

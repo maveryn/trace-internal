@@ -28,10 +28,21 @@ _FONT_CANDIDATES_REGULAR: Sequence[str] = (
 )
 
 
-@lru_cache(maxsize=128)
-def load_font(size_px: int, *, bold: bool = True) -> ImageFont.ImageFont:
+@lru_cache(maxsize=512)
+def load_font(size_px: int, *, bold: bool = True, font_family: str | None = None) -> ImageFont.ImageFont:
     """Load a cached TrueType font with robust fallback behavior."""
     size = max(6, int(size_px))
+    if font_family:
+        try:
+            from .font_assets import resolve_font_paths
+
+            for path in resolve_font_paths(str(font_family), bold=bool(bold)):
+                try:
+                    return ImageFont.truetype(str(path), size=size)
+                except Exception:
+                    continue
+        except Exception:
+            pass
     candidates = _FONT_CANDIDATES_BOLD if bool(bold) else _FONT_CANDIDATES_REGULAR
     for name in candidates:
         try:
@@ -142,6 +153,7 @@ def fit_font_to_box(
     max_width: float,
     max_height: float,
     bold: bool = True,
+    font_family: str | None = None,
     min_size_px: int = 8,
     max_size_px: int | None = None,
     fill_ratio: float = 0.8,
@@ -158,11 +170,11 @@ def fit_font_to_box(
     if max_size_px is None:
         max_size_px = int(max(int(min_size_px), round(min(float(max_width), float(max_height)) * 0.95)))
     for size_px in range(max(int(min_size_px), int(max_size_px)), int(min_size_px) - 1, -1):
-        font = load_font(int(size_px), bold=bool(bold))
+        font = load_font(int(size_px), bold=bool(bold), font_family=font_family)
         width, height = _text_size(draw, str(text), font)
         if float(width) <= float(allowed_width) and float(height) <= float(allowed_height):
             return font
-    return load_font(int(min_size_px), bold=bool(bold))
+    return load_font(int(min_size_px), bold=bool(bold), font_family=font_family)
 
 
 def _normalize_direction(direction: Point) -> Point:

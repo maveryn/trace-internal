@@ -249,7 +249,7 @@ def _strip_boundary_difficulty(
     scene_instances: Sequence[Mapping[str, Any]],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    task_variant: str,
+    query_variant: str,
     boundary_margin_px: int,
 ) -> float:
     """Measure how close icon centers sit to the inferred strip boundary."""
@@ -260,19 +260,19 @@ def _strip_boundary_difficulty(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(boundary_margin_px)))
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         lower, upper = sorted((float(ax), float(bx)))
-    elif str(task_variant) == "inside_horizontal_strip":
+    elif str(query_variant) == "inside_horizontal_strip":
         lower, upper = sorted((float(ay), float(by)))
     else:
-        raise ValueError(f"unsupported relation strip variant: {task_variant}")
+        raise ValueError(f"unsupported relation strip variant: {query_variant}")
 
     distances: list[float] = []
     for entity in scene_instances:
         center_xy = entity.get("center_xy", ())
         if not isinstance(center_xy, Sequence) or len(center_xy) < 2:
             continue
-        coordinate = float(center_xy[0]) if str(task_variant) == "inside_vertical_strip" else float(center_xy[1])
+        coordinate = float(center_xy[0]) if str(query_variant) == "inside_vertical_strip" else float(center_xy[1])
         distances.append(min(abs(float(coordinate) - float(lower)), abs(float(upper) - float(coordinate))))
 
     if not distances:
@@ -622,9 +622,11 @@ def build_icons_relation_relative_position_type_complexity(
     object_count_min: int,
     object_count_max: int,
     same_type_nonspatial_distractor_count: int,
+    different_type_distractor_count: int,
     different_type_spatial_distractor_count: int,
     target_region_area_ratio: float,
     same_type_boundary_proximity: float,
+    matching_scene_indices: Sequence[int],
     scene_instances: Sequence[Mapping[str, Any]],
     render_params: Mapping[str, Any],
 ) -> TaskComplexity:
@@ -637,14 +639,19 @@ def build_icons_relation_relative_position_type_complexity(
     )
     distractor_total = float(max(1, int(distractor_count)))
     same_type_wrong_side_share = float(same_type_nonspatial_distractor_count) / distractor_total
-    different_type_queried_side_share = float(different_type_spatial_distractor_count) / distractor_total
-    region_balance = _clip01(1.0 - abs((2.0 * float(target_region_area_ratio)) - 1.0))
-    spatial_reasoning = _clip01((0.40 * region_balance) + (0.60 * visual_scan))
+    different_type_load = _normalize_linear(float(different_type_distractor_count), min_value=0.0, max_value=8.0)
+    target_count_load = _normalize_linear(float(target_count), min_value=1.0, max_value=6.0)
+    spatial_reasoning = _clip01(
+        (0.58 * target_count_load)
+        + (0.34 * different_type_load)
+        + (0.05 * visual_scan)
+        + (0.03 * same_type_wrong_side_share)
+    )
     ambiguity = _clip01(
-        (0.35 * same_type_wrong_side_share)
-        + (0.35 * different_type_queried_side_share)
-        + (0.20 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
-        + (0.10 * _clip01(float(same_type_boundary_proximity)))
+        (0.58 * target_count_load)
+        + (0.34 * different_type_load)
+        + (0.05 * visual_scan)
+        + (0.03 * same_type_wrong_side_share)
     )
     clutter = icon_scene_clutter_score(
         scene_instances=scene_instances,
@@ -669,7 +676,7 @@ def build_icons_relation_between_two_anchors_count_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
     task_id: str,
-    task_variant: str,
+    query_variant: str,
     object_count: int,
     target_count: int,
     object_count_min: int,
@@ -691,14 +698,14 @@ def build_icons_relation_between_two_anchors_count_complexity(
         object_count_max=int(object_count_max),
     )
     x0, y0, x1, y1 = [float(value) for value in scene_content_bbox]
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         strip_span = abs(float(anchor_a_center_xy[0]) - float(anchor_b_center_xy[0]))
         total_span = max(1.0, float(x1) - float(x0))
-    elif str(task_variant) == "inside_horizontal_strip":
+    elif str(query_variant) == "inside_horizontal_strip":
         strip_span = abs(float(anchor_a_center_xy[1]) - float(anchor_b_center_xy[1]))
         total_span = max(1.0, float(y1) - float(y0))
     else:
-        raise ValueError(f"unsupported relation strip variant: {task_variant}")
+        raise ValueError(f"unsupported relation strip variant: {query_variant}")
     span_ratio = float(strip_span) / float(total_span)
     span_difficulty = 1.0 - _normalize_linear(
         float(span_ratio),
@@ -709,7 +716,7 @@ def build_icons_relation_between_two_anchors_count_complexity(
         scene_instances=scene_instances,
         anchor_a_center_xy=anchor_a_center_xy,
         anchor_b_center_xy=anchor_b_center_xy,
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         boundary_margin_px=int(strip_boundary_margin_px),
     )
     spatial_reasoning = _clip01((0.55 * span_difficulty) + (0.45 * visual_scan))
@@ -808,7 +815,7 @@ def build_icons_relation_mirror_symmetry_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
     task_id: str,
-    task_variant: str,
+    query_variant: str,
     object_count: int,
     target_count: int,
     scene_cells: Sequence[Mapping[str, Any]],
@@ -838,7 +845,7 @@ def build_icons_relation_mirror_symmetry_complexity(
         min_value=float(min_icons_per_cell),
         max_value=float(max_icons_per_cell),
     )
-    variant_load = _MIRROR_VARIANT_DIFFICULTY.get(str(task_variant), 0.50)
+    variant_load = _MIRROR_VARIANT_DIFFICULTY.get(str(query_variant), 0.50)
     distractor_count = max(1, int(object_count) - int(target_count))
     structured_distractor_share = sum(
         1
@@ -1078,77 +1085,6 @@ def _grid_center_position_load(*, cell_index: int, grid_rows: int, grid_cols: in
     return _clip01(1.0 - (distance / max_distance))
 
 
-def build_icons_pattern_grid_rotation_violation_complexity(
-    *,
-    task_group_defaults: Mapping[str, Any],
-    task_id: str,
-    grid_rows: int,
-    grid_cols: int,
-    row_step_degrees: int,
-    col_step_degrees: int,
-    distinct_expected_rotation_count: int,
-    plausible_rule_count: int,
-    total_rule_support: int,
-    violation_cell_index: int,
-    violation_rotation_difference_degrees: int,
-    scene_icon_instances: Sequence[Mapping[str, Any]],
-    render_params: Mapping[str, Any],
-) -> TaskComplexity:
-    """Build complexity for the 2D icon grid rotation-violation pattern task."""
-
-    cell_count = max(1, int(grid_rows) * int(grid_cols))
-    visual_scan = _normalize_linear(
-        float(cell_count),
-        min_value=4.0,
-        max_value=9.0,
-    )
-    distinct_rotation_load = _normalize_linear(
-        float(distinct_expected_rotation_count),
-        min_value=2.0,
-        max_value=4.0,
-    )
-    multi_axis_load = 1.0 if int(row_step_degrees) % 360 != int(col_step_degrees) % 360 else 0.55
-    rule_inference = _clip01((0.65 * distinct_rotation_load) + (0.35 * multi_axis_load))
-
-    subtle_violation_load = 1.0 - _normalize_linear(
-        float(violation_rotation_difference_degrees),
-        min_value=90.0,
-        max_value=180.0,
-    )
-    interior_position_load = _grid_center_position_load(
-        cell_index=int(violation_cell_index),
-        grid_rows=int(grid_rows),
-        grid_cols=int(grid_cols),
-    )
-    plausible_rule_load = _normalize_linear(
-        float(plausible_rule_count),
-        min_value=1.0,
-        max_value=float(max(1, int(total_rule_support))),
-    )
-    ambiguity = _clip01(
-        (0.45 * subtle_violation_load)
-        + (0.35 * interior_position_load)
-        + (0.20 * plausible_rule_load)
-    )
-    clutter = icon_scene_clutter_score(
-        scene_instances=scene_icon_instances,
-        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
-        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
-        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
-        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
-    )
-    return build_icon_task_complexity(
-        task_group_defaults=task_group_defaults,
-        task_id=str(task_id),
-        criterion_values={
-            "visual_scan": float(visual_scan),
-            "rule_inference": float(rule_inference),
-            "ambiguity": float(ambiguity),
-            "clutter": float(clutter),
-        },
-    )
-
-
 def build_icons_pattern_grid_size_violation_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
@@ -1228,6 +1164,78 @@ def build_icons_pattern_grid_size_violation_complexity(
     )
 
 
+def build_icons_pattern_grid_color_violation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    grid_rows: int,
+    grid_cols: int,
+    row_step_color_levels: int,
+    col_step_color_levels: int,
+    distinct_expected_color_level_count: int,
+    plausible_rule_count: int,
+    total_rule_support: int,
+    violation_cell_index: int,
+    violation_level_delta: int,
+    max_violation_level_delta: int,
+    scene_icon_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the 2D icon grid color-violation pattern task."""
+
+    cell_count = max(1, int(grid_rows) * int(grid_cols))
+    visual_scan = _normalize_linear(
+        float(cell_count),
+        min_value=4.0,
+        max_value=9.0,
+    )
+    distinct_color_load = _normalize_linear(
+        float(distinct_expected_color_level_count),
+        min_value=3.0,
+        max_value=7.0,
+    )
+    multi_axis_load = 1.0 if int(row_step_color_levels) != 0 and int(col_step_color_levels) != 0 else 0.55
+    rule_inference = _clip01((0.65 * distinct_color_load) + (0.35 * multi_axis_load))
+
+    subtle_level_load = 1.0 - _normalize_linear(
+        float(violation_level_delta),
+        min_value=1.0,
+        max_value=float(max(1, int(max_violation_level_delta))),
+    )
+    interior_position_load = _grid_center_position_load(
+        cell_index=int(violation_cell_index),
+        grid_rows=int(grid_rows),
+        grid_cols=int(grid_cols),
+    )
+    plausible_rule_load = _normalize_linear(
+        float(plausible_rule_count),
+        min_value=1.0,
+        max_value=float(max(1, int(total_rule_support))),
+    )
+    ambiguity = _clip01(
+        (0.40 * subtle_level_load)
+        + (0.35 * interior_position_load)
+        + (0.25 * plausible_rule_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_icon_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -1236,7 +1244,7 @@ __all__ = [
     "build_icons_counting_size_relation_complexity",
     "build_icons_counting_singleton_type_complexity",
     "build_icons_counting_type_complexity",
-    "build_icons_pattern_grid_rotation_violation_complexity",
+    "build_icons_pattern_grid_color_violation_complexity",
     "build_icons_pattern_grid_size_violation_complexity",
     "build_icons_relation_between_two_anchors_count_complexity",
     "build_icons_relation_mirror_symmetry_complexity",

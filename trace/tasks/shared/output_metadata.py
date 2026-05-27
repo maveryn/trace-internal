@@ -10,11 +10,11 @@ from typing import Dict
 
 
 _DEFAULT_TASK_VERSIONS: Dict[str, str] = {
-    "dsl_spec_version": "v1",
-    "template_version": "v1",
-    "operator_bundle_version": "v1",
-    "domain_capability_version": "v1",
-    "renderer_version": "v1",
+    "dsl_spec_version": "v0",
+    "template_version": "v0",
+    "operator_bundle_version": "v0",
+    "domain_capability_version": "v0",
+    "renderer_version": "v0",
 }
 
 

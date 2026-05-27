@@ -1,6 +1,0 @@
-task: task_geometry_solid_view_count
-
-params:
-  scene_variant: cube_stack
-  query_variant: front_view_visible_count
-  target_count: 4

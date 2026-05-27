@@ -1,0 +1,233 @@
+generation:
+  shared:
+    region_row_count_min: 4
+    region_row_count_max: 7
+    region_col_count_min: 4
+    region_col_count_max: 7
+    region_count_min: 14
+    region_count_max: 22
+    legend_bin_count_min: 3
+    legend_bin_count_max: 6
+    count_answer_min: 1
+    count_answer_max: 6
+    threshold_direction_weights:
+      greater_than: 1.0
+      less_than: 1.0
+    balanced_geographic_map_variant_sampling: true
+    geographic_map_variant_weights:
+      world_countries: 0.50
+      usa_states: 0.25
+      eu_countries: 0.125
+      china_provinces: 0.125
+    scene_variant_weights:
+      synthetic_region_map: 0.3333333333333333
+      geographic_region_map: 0.6666666666666666
+    balanced_query_variant_sampling: true
+    balanced_threshold_direction_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_marker_render_variant_sampling: true
+    balanced_marker_extremum_direction_sampling: true
+    marker_render_variant_weights:
+      proportional_bubble: 1.0
+      unit_bubble_count: 1.0
+    marker_extremum_direction_weights:
+      largest: 1.0
+      smallest: 1.0
+    marker_value_min: 1
+    marker_value_max: 5
+  task_overrides:
+    task_charts__region_map__region_value_count:
+      query_variant_weights:
+        numeric_threshold_region_count: 1.0
+        numeric_interval_region_count: 1.0
+      count_answer_min: 1
+      count_answer_max: 7
+      legend_bin_count_min: 3
+      legend_bin_count_max: 5
+      geographic_selected_region_count_min: 12
+      geographic_selected_region_count_max: 24
+    task_charts__region_map__region_category_count:
+      query_variant_weights:
+        categorical_region_count: 1.0
+      legend_bin_count_min: 4
+      legend_bin_count_max: 6
+      geographic_selected_region_count_min: 12
+      geographic_selected_region_count_max: 24
+    task_charts__region_map__continent_filtered_count:
+      scene_variant: geographic_region_map
+      geographic_map_variant: world_countries
+      geographic_selected_region_count_min: 18
+      geographic_selected_region_count_max: 28
+      legend_bin_count_min: 4
+      legend_bin_count_max: 6
+      count_answer_min: 1
+      count_answer_max: 5
+      query_variant_weights:
+        continent_region_count: 1.0
+        continent_category_region_count: 1.0
+        continent_threshold_region_count: 1.0
+    task_charts__region_map__border_neighbor_count:
+      scene_variant: geographic_region_map
+      geographic_map_variant: world_countries
+      geographic_selected_region_count_min: 8
+      geographic_selected_region_count_max: 12
+      legend_bin_count_min: 3
+      legend_bin_count_max: 5
+      count_answer_min: 2
+      count_answer_max: 7
+      border_min_shared_length_deg: 1.0
+      border_reference_min_area_sqdeg: 60.0
+      border_neighbor_min_area_sqdeg: 8.0
+      query_variant_weights:
+        border_neighbor_count: 1.0
+    task_charts__region_map__adjacent_condition_count:
+      query_variant_weights:
+        adjacent_same_category_count: 1.0
+        adjacent_category_count: 1.0
+        adjacent_numeric_threshold_count: 1.0
+      count_answer_min: 1
+      count_answer_max: 5
+      legend_bin_count_min: 4
+      legend_bin_count_max: 6
+      geographic_selected_region_count_min: 10
+      geographic_selected_region_count_max: 18
+      adjacent_neighbor_count_min: 2
+      adjacent_neighbor_count_max: 7
+      adjacent_min_shared_length_deg: 0.15
+      adjacent_reference_min_area_sqdeg: 0.0
+      adjacent_neighbor_min_area_sqdeg: 0.0
+    task_charts__marker_map__marker_region_threshold_count:
+      query_variant_weights:
+        marker_region_threshold_count: 1.0
+      count_answer_min: 1
+      count_answer_max: 5
+      region_count_min: 8
+      region_count_max: 14
+      geographic_selected_region_count_min: 8
+      geographic_selected_region_count_max: 14
+      legend_bin_count_min: 3
+      legend_bin_count_max: 3
+    task_charts__marker_map__marker_region_extremum_label:
+      query_variant_weights:
+        marker_region_extremum_label: 1.0
+      region_count_min: 9
+      region_count_max: 14
+      geographic_selected_region_count_min: 9
+      geographic_selected_region_count_max: 14
+      legend_bin_count_min: 3
+      legend_bin_count_max: 3
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 760
+    outer_margin_px: 42
+    panel_padding_px: 26
+    title_band_height_px: 62
+    legend_width_px: 238
+    legend_height_px: 118
+    map_legend_gap_px: 32
+    region_gap_px: 3
+    region_border_width_px: 3
+    label_font_size_px: 18
+    legend_font_size_px: 17
+    title_font_size_px: 28
+    region_border_rgb: [255, 255, 255]
+    balanced_legend_position_sampling: true
+    legend_position_weights:
+      right: 1.0
+      top: 1.0
+      bottom: 1.0
+    balanced_numeric_palette_variant_sampling: true
+    numeric_palette_variant_weights:
+      blue: 1.0
+      green: 1.0
+      orange: 1.0
+      purple: 1.0
+      rose: 1.0
+      teal: 1.0
+      indigo: 1.0
+      magma: 1.0
+      earth: 1.0
+      sunset: 1.0
+    balanced_categorical_palette_variant_sampling: true
+    categorical_palette_variant_weights:
+      tableau: 1.0
+      bold: 1.0
+      pastel: 1.0
+      metro: 1.0
+      harbor: 1.0
+      orchid: 1.0
+      field: 1.0
+      civic: 1.0
+    balanced_world_map_style_sampling: true
+    world_map_style_weights:
+      atlas_light: 1.0
+      report_blue: 1.0
+      warm_print: 1.0
+      muted_gray: 1.0
+      clean_minimal: 1.0
+    balanced_marker_style_variant_sampling: true
+    marker_style_variant_weights:
+      teal: 1.0
+      coral: 1.0
+      violet: 1.0
+      gold: 1.0
+      ink: 1.0
+    marker_unit_radius_px: 6
+    marker_min_radius_px: 8
+    marker_max_radius_px: 22
+  task_overrides:
+    task_charts__region_map__border_neighbor_count:
+      legend_position_weights:
+        none: 1.0
+    task_charts__region_map__adjacent_condition_count:
+      region_gap_px: 0
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.45
+      reasoning_load: 0.45
+      scene_variant_load: 0.10
+
+prompt:
+  shared:
+    bundle_id: charts_map_v0
+    scene_key: region_map
+    task_key: map_region_count_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description_synthetic_region_map: a synthetic map with colored regions and a legend
+    object_description_geographic_region_map: a geographic map with selected regions colored by value and a legend
+    object_description_geographic_categorical_map: a geographic map with selected regions colored by category and a category legend
+    object_description_geographic_border_map: a world map with one highlighted country
+    object_description_marker_map: a map with marker bubbles over selected regions
+    answer_hint_count: set "answer" to the requested number of regions as an integer
+    answer_hint_label: set "answer" to the exact visible region label as a string
+    evidence_hint_region_count: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the counted regions
+    evidence_hint_marker: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes around the marker bubbles used for the answer
+    json_example_numeric_threshold_region_count: '{"evidence":[[140,190,230,260],[340,188,430,258],[442,272,532,342]],"answer":3}'
+    json_example_numeric_interval_region_count: '{"evidence":[[150,210,236,284],[260,218,346,292],[374,222,460,296],[486,230,572,304]],"answer":4}'
+    json_example_categorical_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_continent_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_continent_category_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_continent_threshold_region_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_border_neighbor_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_adjacent_same_category_count: '{"evidence":[[132,182,218,250],[252,178,338,246]],"answer":2}'
+    json_example_adjacent_category_count: '{"evidence":[[132,182,218,250],[252,178,338,246],[398,266,484,334]],"answer":3}'
+    json_example_adjacent_numeric_threshold_count: '{"evidence":[[132,182,218,250],[252,178,338,246]],"answer":2}'
+    json_example_marker_region_threshold_count: '{"evidence":[[180,220,206,246],[320,260,346,286],[460,210,486,236]],"answer":3}'
+    json_example_marker_region_extremum_label: '{"evidence":[[420,230,462,272]],"answer":"D"}'
+    json_example_answer_only_numeric_threshold_region_count: '{"answer":3}'
+    json_example_answer_only_numeric_interval_region_count: '{"answer":4}'
+    json_example_answer_only_categorical_region_count: '{"answer":3}'
+    json_example_answer_only_continent_region_count: '{"answer":3}'
+    json_example_answer_only_continent_category_region_count: '{"answer":3}'
+    json_example_answer_only_continent_threshold_region_count: '{"answer":3}'
+    json_example_answer_only_border_neighbor_count: '{"answer":3}'
+    json_example_answer_only_adjacent_same_category_count: '{"answer":2}'
+    json_example_answer_only_adjacent_category_count: '{"answer":3}'
+    json_example_answer_only_adjacent_numeric_threshold_count: '{"answer":2}'
+    json_example_answer_only_marker_region_threshold_count: '{"answer":3}'
+    json_example_answer_only_marker_region_extremum_label: '{"answer":"D"}'

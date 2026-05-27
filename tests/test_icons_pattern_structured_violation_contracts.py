@@ -1,4 +1,4 @@
-"""Contract tests for consolidated icon structured-violation task."""
+"""Contract tests for public icon pattern-violation tasks."""
 
 from __future__ import annotations
 
@@ -9,36 +9,47 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.pattern.structured_violation import IconsPatternStructuredViolationTask
+from trace.tasks.icons.pattern.grid_color_violation import IconsPatternGridColorViolationTask
+from trace.tasks.icons.pattern.grid_size_violation import IconsPatternGridSizeViolationTask
+from trace.tasks.icons.pattern.sequence_rotation_violation import IconsPatternSequenceRotationViolationTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    "task_variant",
-    ("row_rotation_violation", "grid_rotation_violation", "grid_size_violation"),
+    "task_cls",
+    (IconsPatternSequenceRotationViolationTask, IconsPatternGridSizeViolationTask, IconsPatternGridColorViolationTask),
 )
-def test_icons_pattern_structured_violation_is_deterministic(task_variant: str) -> None:
-    task = IconsPatternStructuredViolationTask()
-    out_a = task.generate(24120, params={"task_variant": task_variant}, max_attempts=200)
-    out_b = task.generate(24120, params={"task_variant": task_variant}, max_attempts=200)
+def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
+    task = task_cls()
+    out_a = task.generate(24120, params={}, max_attempts=200)
+    out_b = task.generate(24120, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.task_variant == task_variant
+    assert out_a.query_variant == "default"
+    assert out_a.query_id
 
 
-def test_icons_pattern_structured_violation_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons_pattern_structured_violation"
+@pytest.mark.parametrize(
+    "task_id",
+    (
+        "task_icons__sequence_strip__rotation_sequence_violation_index",
+        "task_icons__pattern_grid__size_pattern_violation_index",
+        "task_icons__pattern_grid__color_pattern_violation_index",
+    ),
+)
+def test_icons_pattern_violation_build_smoke(tmp_path: Path, task_id: str) -> None:
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons_pattern_structured_violation",
-        instance_version="v1",
+        dataset_name=f"build_smoke_{task_id}",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons_pattern_structured_violation",
+                task_id=str(task_id),
                 count=4,
                 params={},
             )
@@ -55,7 +66,7 @@ def test_icons_pattern_structured_violation_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "pattern" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons_pattern_structured_violation"]) == 4
+    assert int(build_report["accepted_counts_by_task"][str(task_id)]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

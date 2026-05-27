@@ -10,7 +10,7 @@ def test_geometry_similarity_task_overrides_expose_scene_query_and_count_axes() 
     cfg = get_task_group_defaults("geometry", "similarity")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_similarity_count",
+        task_id="geometry_similarity_count_base",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -22,4 +22,4 @@ def test_geometry_similarity_task_overrides_expose_scene_query_and_count_axes() 
     assert list(generation["target_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["similar_scale_support"]) == [1, 2]
     assert int(rendering["line_width"]) > 0
-    assert str(prompt["bundle_id"]) == "geometry_similarity_v1"
+    assert str(prompt["bundle_id"]) == "geometry_similarity_v0"

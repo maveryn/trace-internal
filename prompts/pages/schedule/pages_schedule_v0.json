@@ -1,0 +1,78 @@
+{
+  "bundle_id": "pages_schedule_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "schedule_day_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:day_schedule": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "day_schedule": [
+      "The image shows {object_description}.",
+      "The schedule shows {object_description}.",
+      "This schedule shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "overlap_count": [
+      "How many other scheduled events cross the horizontal reference-time guide band?",
+      "Count the other event blocks whose time range crosses between the horizontal reference-time guide lines.",
+      "Among the other scheduled events, how many have any part inside the horizontal reference-time guide band?",
+      "How many other event blocks overlap the highlighted reference event's guide band?",
+      "Count the other scheduled events that enter the horizontal reference-time guide band; events separated from the band do not count."
+    ],
+    "longer_than_reference_count": [
+      "How many other scheduled events are longer than the highlighted reference event?",
+      "Count the other events whose duration is longer than the highlighted reference event.",
+      "Among the other scheduled events, how many last longer than the highlighted reference event?",
+      "How many other event blocks are longer than the highlighted reference event?",
+      "Count the other scheduled events with a longer duration than the highlighted reference event."
+    ],
+    "maximum_non_overlapping_count": [
+      "What is the maximum number of scheduled events that can be selected without any overlap?",
+      "Choose the largest possible set of non-overlapping scheduled events. How many events can it contain?",
+      "How many scheduled events can be selected at most so that none overlap?",
+      "Find the maximum-size set of non-overlapping scheduled events. What is its size?",
+      "What is the greatest number of scheduled events that can be chosen with no overlaps?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

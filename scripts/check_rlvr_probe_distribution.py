@@ -18,13 +18,19 @@ from trace.core.trace_store import read_trace_shard
 
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Check answer-distribution health on one exact RLVR probe parquet."
+        description="Check answer-distribution health on one or more exact RLVR probe parquets."
     )
-    parser.add_argument("--parquet", required=True, help="Path to the RLVR parquet to validate")
+    parser.add_argument(
+        "--parquet",
+        required=True,
+        action="append",
+        help="Path to an RLVR parquet to validate. Repeat to validate a cumulative sample.",
+    )
     parser.add_argument(
         "--dataset-root",
-        default="",
-        help="Optional TRACE dataset root used to resolve trace_ref -> task_variant",
+        action="append",
+        default=[],
+        help="Optional TRACE dataset root used to resolve trace_ref -> query_variant. Repeat in parquet order.",
     )
     parser.add_argument(
         "--out",
@@ -40,7 +46,7 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument(
         "--max-answer-frequency",
         type=float,
-        default=0.25,
+        default=1.0 / 3.0,
         help="Maximum top-answer frequency threshold",
     )
     parser.add_argument(
@@ -75,7 +81,7 @@ def _empty_distribution_report() -> Dict[str, Any]:
     }
 
 
-def _load_rows(parquet_path: Path) -> List[Dict[str, Any]]:
+def _load_rows(parquet_path: Path, *, dataset_root: Path | None = None) -> List[Dict[str, Any]]:
     table = pq.read_table(parquet_path)
     data = table.to_pylist()
     rows: List[Dict[str, Any]] = []
@@ -83,6 +89,8 @@ def _load_rows(parquet_path: Path) -> List[Dict[str, Any]]:
         parsed = dict(row)
         parsed["answer_gt"] = _json_load_maybe(parsed.get("answer_gt"))
         parsed["trace_ref"] = _json_load_maybe(parsed.get("trace_ref"))
+        if dataset_root is not None:
+            parsed["_dataset_root"] = str(dataset_root)
         rows.append(parsed)
     return rows
 
@@ -106,7 +114,7 @@ def _load_trace_record(
     *,
     dataset_root: Path,
     trace_ref: Mapping[str, Any],
-    cache: Dict[str, List[Dict[str, Any]]],
+    cache: Dict[tuple[str, str], List[Dict[str, Any]]],
 ) -> Dict[str, Any]:
     shard_id = str(trace_ref.get("shard_id", "")).strip()
     line_index = int(trace_ref.get("line_index", -1))
@@ -114,10 +122,11 @@ def _load_trace_record(
         raise ValueError("trace_ref shard_id is missing")
     if line_index < 0:
         raise ValueError("trace_ref line_index is invalid")
-    records = cache.get(shard_id)
+    cache_key = (str(dataset_root.resolve()), str(shard_id))
+    records = cache.get(cache_key)
     if records is None:
         records = read_trace_shard(dataset_root / "traces" / shard_id)
-        cache[shard_id] = records
+        cache[cache_key] = records
     if line_index >= len(records):
         raise ValueError("trace_ref line_index is out of range")
     return dict(records[line_index])
@@ -126,11 +135,10 @@ def _load_trace_record(
 def _resolve_variant_fields(
     *,
     rows: Sequence[Dict[str, Any]],
-    dataset_root: Path,
 ) -> tuple[Dict[str, Dict[str, List[Dict[str, Any]]]], Dict[str, List[str]]]:
-    rows_by_task_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    rows_by_query_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
     expected_variants_by_task: Dict[str, set[str]] = {}
-    trace_cache: Dict[str, List[Dict[str, Any]]] = {}
+    trace_cache: Dict[tuple[str, str], List[Dict[str, Any]]] = {}
 
     for row in rows:
         task_id = str(row.get("task", "")).strip()
@@ -139,23 +147,29 @@ def _resolve_variant_fields(
         trace_ref = row.get("trace_ref")
         if not isinstance(trace_ref, Mapping):
             continue
+        dataset_root_text = str(row.get("_dataset_root", "")).strip()
+        if not dataset_root_text:
+            continue
+        dataset_root = Path(dataset_root_text)
         trace_record = _load_trace_record(dataset_root=dataset_root, trace_ref=trace_ref, cache=trace_cache)
         execution_trace = trace_record.get("execution_trace", {})
         if not isinstance(execution_trace, Mapping):
             execution_trace = {}
-        task_variant = str(execution_trace.get("task_variant", "") or "")
-        probabilities = execution_trace.get("task_variant_probabilities", {})
+        query_id = str(execution_trace.get("query_id", "") or "").strip()
+        query_variant = str(execution_trace.get("query_variant", "") or "").strip()
+        query_label = query_id or query_variant
+        probabilities = execution_trace.get("query_variant_probabilities", {})
         if isinstance(probabilities, Mapping):
             expected_variants_by_task.setdefault(task_id, set()).update(
                 str(key) for key in probabilities.keys() if str(key).strip()
             )
-        rows_by_task_variant.setdefault(task_id, {}).setdefault(task_variant, []).append(row)
+        rows_by_query_variant.setdefault(task_id, {}).setdefault(query_label, []).append(row)
 
     expected_lists = {
         task_id: sorted(variants)
         for task_id, variants in expected_variants_by_task.items()
     }
-    return rows_by_task_variant, expected_lists
+    return rows_by_query_variant, expected_lists
 
 
 def _format_metrics(report: Mapping[str, Any]) -> str:
@@ -181,27 +195,27 @@ def _task_report(
         max_answer_frequency=max_answer_frequency,
     )
 
-    per_task_variant: Dict[str, Dict[str, Any]] = {}
+    per_query_variant: Dict[str, Dict[str, Any]] = {}
     missing_variants: List[str] = []
     expected = list(expected_variants) if expected_variants else sorted(rows_by_variant.keys())
     if not expected and rows_by_variant:
         expected = sorted(rows_by_variant.keys())
 
-    for task_variant in expected:
-        variant_rows = list(rows_by_variant.get(str(task_variant), []))
+    for query_variant in expected:
+        variant_rows = list(rows_by_variant.get(str(query_variant), []))
         if variant_rows:
-            per_task_variant[str(task_variant)] = evaluate_answer_distribution(
+            per_query_variant[str(query_variant)] = evaluate_answer_distribution(
                 _answer_rows(variant_rows),
                 min_unique_answers=min_unique_answers,
                 max_answer_frequency=max_answer_frequency,
             )
         else:
-            per_task_variant[str(task_variant)] = _empty_distribution_report()
-            missing_variants.append(str(task_variant))
+            per_query_variant[str(query_variant)] = _empty_distribution_report()
+            missing_variants.append(str(query_variant))
 
     failing_variants = [
-        str(task_variant)
-        for task_variant, report in per_task_variant.items()
+        str(query_variant)
+        for query_variant, report in per_query_variant.items()
         if not bool(report.get("pass"))
     ]
 
@@ -212,10 +226,10 @@ def _task_report(
         "overall": overall,
         "expected_variants": list(expected),
         "observed_variant_counts": {
-            str(task_variant): int(len(rows_by_variant.get(str(task_variant), [])))
-            for task_variant in sorted(rows_by_variant.keys())
+            str(query_variant): int(len(rows_by_variant.get(str(query_variant), [])))
+            for query_variant in sorted(rows_by_variant.keys())
         },
-        "per_task_variant": per_task_variant,
+        "per_query_variant": per_query_variant,
         "missing_variants": missing_variants,
         "failed_variants": failing_variants,
         "pass": task_pass,
@@ -224,12 +238,19 @@ def _task_report(
 
 def main() -> int:
     args = _parse_cli()
-    parquet_path = Path(str(args.parquet)).resolve()
-    if not parquet_path.exists():
-        raise FileNotFoundError(f"parquet not found: {parquet_path}")
+    parquet_paths = [Path(str(value)).resolve() for value in args.parquet]
+    for parquet_path in parquet_paths:
+        if not parquet_path.exists():
+            raise FileNotFoundError(f"parquet not found: {parquet_path}")
 
-    dataset_root = Path(str(args.dataset_root)).resolve() if str(args.dataset_root).strip() else None
-    rows = _load_rows(parquet_path)
+    raw_dataset_roots = [str(value).strip() for value in args.dataset_root if str(value).strip()]
+    if raw_dataset_roots and len(raw_dataset_roots) != len(parquet_paths):
+        raise ValueError("--dataset-root must be repeated once per --parquet when provided")
+    dataset_roots = [Path(value).resolve() for value in raw_dataset_roots]
+    rows: List[Dict[str, Any]] = []
+    for index, parquet_path in enumerate(parquet_paths):
+        dataset_root = dataset_roots[index] if dataset_roots else None
+        rows.extend(_load_rows(parquet_path, dataset_root=dataset_root))
     if not rows:
         raise ValueError("probe parquet is empty")
 
@@ -238,18 +259,15 @@ def main() -> int:
         task_id = str(row.get("task", "")).strip()
         rows_by_task.setdefault(task_id, []).append(row)
 
-    rows_by_task_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    rows_by_query_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
     expected_variants_by_task: Dict[str, List[str]] = {}
-    if dataset_root is not None:
-        rows_by_task_variant, expected_variants_by_task = _resolve_variant_fields(
-            rows=rows,
-            dataset_root=dataset_root,
-        )
+    if dataset_roots:
+        rows_by_query_variant, expected_variants_by_task = _resolve_variant_fields(rows=rows)
 
     report: Dict[str, Any] = {
         "config": {
-            "parquet": str(parquet_path),
-            "dataset_root": str(dataset_root) if dataset_root is not None else "",
+            "parquets": [str(path) for path in parquet_paths],
+            "dataset_roots": [str(path) for path in dataset_roots],
             "min_unique_answers": int(args.min_unique_answers),
             "max_answer_frequency": float(args.max_answer_frequency),
         },
@@ -259,7 +277,7 @@ def main() -> int:
     failed_tasks: List[str] = []
     for task_id in sorted(rows_by_task.keys()):
         task_rows = list(rows_by_task.get(task_id, []))
-        variant_rows = rows_by_task_variant.get(task_id, {})
+        variant_rows = rows_by_query_variant.get(task_id, {})
         task_report = _task_report(
             task_id=task_id,
             rows=task_rows,
@@ -272,9 +290,9 @@ def main() -> int:
 
         status = "PASS" if bool(task_report["pass"]) else "FAIL"
         print(f"[{status}] {task_id}: overall({_format_metrics(task_report['overall'])})")
-        if task_report["per_task_variant"]:
-            for task_variant, variant_report in sorted(task_report["per_task_variant"].items()):
-                label = str(task_variant).strip() or "<default>"
+        if task_report["per_query_variant"]:
+            for query_variant, variant_report in sorted(task_report["per_query_variant"].items()):
+                label = str(query_variant).strip() or "<default>"
                 variant_status = "PASS" if bool(variant_report.get("pass")) else "FAIL"
                 print(f"    - [{variant_status}] {label}: {_format_metrics(variant_report)}")
         if task_report["missing_variants"]:
@@ -293,7 +311,7 @@ def main() -> int:
     out_path = (
         Path(str(args.out)).resolve()
         if str(args.out).strip()
-        else parquet_path.with_suffix(parquet_path.suffix + ".distribution_report.json")
+        else parquet_paths[0].with_suffix(parquet_paths[0].suffix + ".distribution_report.json")
     )
     write_json_file(out_path, report)
     print(f"[done] wrote report: {out_path}")

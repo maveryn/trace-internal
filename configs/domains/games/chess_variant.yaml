@@ -1,0 +1,82 @@
+generation:
+  shared:
+    scene_variant_weights:
+      sparse_board: 1.0
+      crowded_board: 1.0
+    query_variant_weights:
+      marked_piece_move_count: 1.0
+      marked_piece_capture_count: 1.0
+    rule_family_weights:
+      straight_range: 1.0
+      diagonal_range: 1.0
+      straight_or_diagonal_range: 1.0
+      leaper_2_1: 1.0
+      leaper_3_1: 1.0
+    style_variant_weights:
+      classic: 1.0
+      soft: 1.0
+      outlined: 1.0
+      wood_token: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_rule_family_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_range_k_sampling: true
+    marked_piece_move_count_support: [0, 1, 2, 3, 4]
+    marked_piece_capture_count_support: [0, 1, 2, 3, 4]
+    range_k_support: [2, 3, 4]
+    queen_range_k_support: [2, 3]
+    sparse_min_occupied_count: 7
+    sparse_max_occupied_count: 12
+    crowded_min_occupied_count: 13
+    crowded_max_occupied_count: 18
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 920
+    panel_margin_px: 48
+    rule_badge_height_px: 58
+    rule_badge_width_px: 360
+    header_gap_px: 18
+    max_board_size_px: 760
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    board_corner_radius_px: 24
+    board_frame_width_px: 10
+    piece_inset_fraction: 0.18
+    marked_square_outline_width_px: 7
+    rule_badge_font_size_px: 22
+    token_label_font_size_px: 20
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.32
+      state_reasoning: 0.44
+      ambiguity: 0.14
+      output_burden: 0.10
+prompt:
+  shared:
+    bundle_id: games_chess_variant_v0
+    scene_key: chess_variant_board
+    task_key: chess_variant_query
+    object_description_sparse_board: a chess-like 8 by 8 board with a small set of white and black tokens and a visible movement rule card
+    object_description_crowded_board: a chess-like 8 by 8 board with many white and black tokens and a visible movement rule card
+    marked_piece_rule_text: Tokens labeled W are one side and tokens labeled B are the other side. The blue outlined square contains the marked token.
+    landing_rule_text: The marked token may land on an empty square or an opponent token, but not on a friendly token.
+    slider_block_rule_text: For range rules, movement stops at the first occupied square in each direction and cannot pass through it.
+    leaper_block_rule_text: For jump rules, the marked token may jump over occupied squares.
+    rule_text_straight_range: The rule card says the marked token moves horizontally or vertically up to {range_k} squares.
+    rule_text_diagonal_range: The rule card says the marked token moves diagonally up to {range_k} squares.
+    rule_text_straight_or_diagonal_range: The rule card says the marked token moves horizontally, vertically, or diagonally up to {range_k} squares.
+    rule_text_leaper_2_1: The rule card says the marked token jumps exactly 2 rows and 1 column, or 1 row and 2 columns.
+    rule_text_leaper_3_1: The rule card says the marked token jumps exactly 3 rows and 1 column, or 1 row and 3 columns.
+    rule_badge_straight_range: STRAIGHT <= {range_k}
+    rule_badge_diagonal_range: DIAGONAL <= {range_k}
+    rule_badge_straight_or_diagonal_range: ANY LINE <= {range_k}
+    rule_badge_leaper_2_1: JUMP 2+1
+    rule_badge_leaper_3_1: JUMP 3+1
+    evidence_hint_marked_piece_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for every legal destination square of the marked token
+    answer_hint_marked_piece_move_count: set "answer" to the count of legal destination squares for the marked token
+    evidence_hint_marked_piece_capture_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for every destination square occupied by an opponent token that the marked token can capture
+    answer_hint_marked_piece_capture_count: set "answer" to the count of capture destination squares for the marked token

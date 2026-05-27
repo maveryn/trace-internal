@@ -21,6 +21,7 @@ from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
+from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_evidence
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
 from trace.core.seed import hash64
@@ -33,27 +34,25 @@ _FIELD_LABELS: Dict[str, str] = {
     "task": "task",
     "sample_index": "sample_index",
     "instance_seed": "instance_seed",
-    "task_variant": "task_variant",
+    "query_variant": "query_variant",
     "image_path": "image_path",
     "data_path": "data_path",
-    "prompt": "prompt",
     "prompt_answer": "prompt_answer",
-    "prompt_answer_only": "prompt_answer_only",
-    "answer": "answer",
+    "ground_truth_answer": "ground_truth_answer",
+    "prompt_answer_and_evidence": "prompt_answer_and_evidence",
+    "ground_truth_answer_and_evidence": "ground_truth_answer_and_evidence",
     "answer_type": "answer_type",
     "answer_value": "answer_value",
     "evidence_type": "evidence_type",
-    "answer_evidence": "answer_evidence",
 }
 
 _TASK_SHEET_FIELDS: List[str] = [
     "task",
-    "task_variant",
-    "prompt",
+    "query_variant",
     "prompt_answer",
-    "prompt_answer_only",
-    "answer",
-    "answer_evidence",
+    "ground_truth_answer",
+    "prompt_answer_and_evidence",
+    "ground_truth_answer_and_evidence",
     "domain",
     "task_group",
     "sample_index",
@@ -70,32 +69,30 @@ _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "task": 24,
     "sample_index": 12,
     "instance_seed": 20,
-    "task_variant": 28,
+    "query_variant": 28,
     "image_path": 22,
     "data_path": 38,
-    "prompt": 34,
     "prompt_answer": 34,
-    "prompt_answer_only": 34,
-    "answer": 20,
+    "ground_truth_answer": 22,
+    "prompt_answer_and_evidence": 40,
+    "ground_truth_answer_and_evidence": 24,
     "answer_type": 14,
     "answer_value": 12,
     "evidence_type": 14,
-    "answer_evidence": 18,
 }
 
 _PREVIEW_COLUMN_WIDTH = 56
 _INT_FIELDS = {"sample_index", "instance_seed"}
-_JSON_FIELDS = {"answer", "answer_value", "answer_evidence"}
+_JSON_FIELDS = {"answer_value", "ground_truth_answer", "ground_truth_answer_and_evidence"}
 _WRAP_FIELDS = {
     "task",
     "image_path",
     "data_path",
-    "prompt",
     "prompt_answer",
-    "prompt_answer_only",
-    "answer",
+    "ground_truth_answer",
+    "prompt_answer_and_evidence",
+    "ground_truth_answer_and_evidence",
     "answer_value",
-    "answer_evidence",
 }
 _TASK_WRAP_MAX_CHARS = 20
 
@@ -400,14 +397,14 @@ def _probability_maps_match(left: Mapping[str, float], right: Mapping[str, float
     return True
 
 
-def _extract_task_variant_distribution_hints(trace_payload: Mapping[str, Any]) -> Dict[str, Any]:
+def _extract_query_variant_distribution_hints(trace_payload: Mapping[str, Any]) -> Dict[str, Any]:
     """Extract optional variant-probability hints from one task output trace payload."""
     query_spec = trace_payload.get("query_spec", {}) if isinstance(trace_payload, Mapping) else {}
     query_params = query_spec.get("params", {}) if isinstance(query_spec, Mapping) else {}
     execution_trace = trace_payload.get("execution_trace", {}) if isinstance(trace_payload, Mapping) else {}
 
     variant_probabilities = _normalize_probability_map(
-        execution_trace.get("task_variant_probabilities")
+        execution_trace.get("query_variant_probabilities")
         if isinstance(execution_trace, Mapping)
         else {}
     )
@@ -419,7 +416,7 @@ def _extract_task_variant_distribution_hints(trace_payload: Mapping[str, Any]) -
         )
     if not variant_probabilities:
         variant_probabilities = _normalize_probability_map(
-            query_params.get("task_variant_probabilities")
+            query_params.get("query_variant_probabilities")
             if isinstance(query_params, Mapping)
             else {}
         )
@@ -457,14 +454,14 @@ def _extract_task_variant_distribution_hints(trace_payload: Mapping[str, Any]) -
             break
 
     return {
-        "task_variant_probabilities": variant_probabilities,
+        "query_variant_probabilities": variant_probabilities,
         "source_kind": str(source_kind),
         "source_kind_probabilities": source_kind_probabilities,
         "answer_option_labels": list(option_labels),
     }
 
 
-def _resolve_task_variant_expected_probabilities(
+def _resolve_query_variant_expected_probabilities(
     rows_by_variant: Mapping[str, List[Dict[str, Any]]],
 ) -> Tuple[Dict[str, float], str]:
     """Resolve expected variant probabilities from trace metadata or fallback uniform."""
@@ -475,13 +472,13 @@ def _resolve_task_variant_expected_probabilities(
     direct_maps: List[Dict[str, float]] = []
     for rows in rows_by_variant.values():
         for row in rows:
-            parsed = _normalize_probability_map(row.get("_task_variant_probabilities"))
+            parsed = _normalize_probability_map(row.get("_query_variant_probabilities"))
             if parsed:
                 direct_maps.append(parsed)
     if direct_maps:
         first = direct_maps[0]
         if all(_probability_maps_match(first, item) for item in direct_maps[1:]):
-            return dict(first), "task_variant_probabilities"
+            return dict(first), "query_variant_probabilities"
 
     source_probability_maps: List[Dict[str, float]] = []
     source_to_variant: Dict[str, str] = {}
@@ -566,7 +563,7 @@ def _finalize_binned_check(
 
 
 def _build_answer_distribution_for_variant(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
-    """Build one answer-distribution report for a task-variant slice."""
+    """Build one answer-distribution report for a query-variant slice."""
     answer_counter = Counter(_json_cell(row.get("answer_value")) for row in rows)
     report: Dict[str, Any] = {
         "accepted_samples": int(len(rows)),
@@ -686,12 +683,12 @@ def _build_answer_distribution_for_variant(rows: Sequence[Dict[str, Any]]) -> Di
 
 
 def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Build task-variant and answer-bin distribution reports for one task."""
+    """Build query-variant and answer-bin distribution reports for one task."""
     rows_by_variant: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        rows_by_variant[str(row.get("task_variant", "default"))].append(row)
+        rows_by_variant[str(row.get("query_variant", "default"))].append(row)
 
-    expected_variant_probabilities, expected_variant_source = _resolve_task_variant_expected_probabilities(rows_by_variant)
+    expected_variant_probabilities, expected_variant_source = _resolve_query_variant_expected_probabilities(rows_by_variant)
     variant_labels = sorted(expected_variant_probabilities.keys() or rows_by_variant.keys())
     variant_counts = {str(variant): int(len(rows_by_variant.get(str(variant), []))) for variant in variant_labels}
     variant_bins = [
@@ -733,8 +730,8 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
     else:
         checks_skipped += 1
 
-    for task_variant in sorted(rows_by_variant.keys()):
-        variant_report = _build_answer_distribution_for_variant(rows_by_variant[task_variant])
+    for query_variant in sorted(rows_by_variant.keys()):
+        variant_report = _build_answer_distribution_for_variant(rows_by_variant[query_variant])
         distribution_check = variant_report.get("distribution_check", {})
         status = str(distribution_check.get("status", "skipped"))
         if status in {"pass", "fail"}:
@@ -743,7 +740,7 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
                 checks_failed += 1
         else:
             checks_skipped += 1
-        per_variant[str(task_variant)] = variant_report
+        per_variant[str(query_variant)] = variant_report
 
     return {
         "thresholds": {
@@ -754,8 +751,8 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
         "checks_run": int(checks_run),
         "checks_failed": int(checks_failed),
         "checks_skipped": int(checks_skipped),
-        "task_variant_distribution": variant_distribution_report,
-        "per_task_variant": per_variant,
+        "query_variant_distribution": variant_distribution_report,
+        "per_query_variant": per_variant,
     }
 
 
@@ -788,7 +785,6 @@ def _generate_samples_for_task(
         nonlocal accepted
         instance_seed = hash64(int(base_seed), seed_namespace, int(seed_index))
         task_params = dict(params)
-        task_params["_sampling_index"] = int(seed_index)
 
         try:
             output = task.generate(
@@ -813,14 +809,21 @@ def _generate_samples_for_task(
         prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
         prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", output.prompt))
 
+        trace_payload = sanitize_trace_payload_for_public_evidence(
+            output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
+            evidence_gt=output.evidence_gt,
+        )
+
         payload = {
             "domain": task.domain,
             "task_group": task.task_group,
             "task": task.task_id,
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
-            "task_variant": str(getattr(output, "task_variant", "default")),
+            "query_variant": str(getattr(output, "query_variant", "default")),
             "prompt": prompt_answer_and_evidence,
+            "prompt_answer": prompt_answer,
+            "prompt_answer_and_evidence": prompt_answer_and_evidence,
             "prompt_variants": prompt_variants,
             "answer_gt": output.answer_gt.to_dict(),
             "evidence_gt": output.evidence_gt.to_dict(),
@@ -830,12 +833,11 @@ def _generate_samples_for_task(
                 "format": image_format,
             },
             "versions": dict(output.task_versions),
-            "trace_payload": dict(output.trace_payload),
+            "trace_payload": trace_payload,
         }
         write_json_file(data_path, payload)
 
-        trace_payload = dict(output.trace_payload) if isinstance(output.trace_payload, dict) else {}
-        distribution_hints = _extract_task_variant_distribution_hints(trace_payload)
+        distribution_hints = _extract_query_variant_distribution_hints(trace_payload)
         overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
             evidence_type=str(output.evidence_gt.type),
             evidence_value=output.evidence_gt.value,
@@ -845,6 +847,9 @@ def _generate_samples_for_task(
             "evidence": output.evidence_gt.value,
             "answer": output.answer_gt.value,
         }
+        answer_only_ground_truth = {
+            "answer": output.answer_gt.value,
+        }
         rows.append(
             {
                 "domain": task.domain,
@@ -852,12 +857,15 @@ def _generate_samples_for_task(
                 "task": task.task_id,
                 "sample_index": int(accepted),
                 "instance_seed": int(instance_seed),
-                "task_variant": str(getattr(output, "task_variant", "default")),
+                "query_variant": str(getattr(output, "query_variant", "default")),
                 "image_path": rel_image_path,
                 "data_path": rel_data_path,
                 "prompt": prompt_answer_and_evidence,
                 "prompt_answer": prompt_answer,
                 "prompt_answer_only": prompt_answer,
+                "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                "ground_truth_answer": answer_only_ground_truth,
+                "ground_truth_answer_and_evidence": canonical_answer,
                 "answer": canonical_answer,
                 "answer_type": output.answer_gt.type,
                 "answer_value": output.answer_gt.value,
@@ -865,14 +873,14 @@ def _generate_samples_for_task(
                 "answer_evidence": output.evidence_gt.value,
                 "_overlay_evidence_type": overlay_evidence_type,
                 "_overlay_evidence_value": overlay_evidence_value,
-                "_task_variant_probabilities": dict(distribution_hints.get("task_variant_probabilities", {})),
+                "_query_variant_probabilities": dict(distribution_hints.get("query_variant_probabilities", {})),
                 "_source_kind": str(distribution_hints.get("source_kind", "")),
                 "_source_kind_probabilities": dict(distribution_hints.get("source_kind_probabilities", {})),
                 "_answer_option_labels": list(distribution_hints.get("answer_option_labels", [])),
             }
         )
         accepted += 1
-        accepted_by_variant[str(getattr(output, "task_variant", "default"))] += 1
+        accepted_by_variant[str(getattr(output, "query_variant", "default"))] += 1
 
     seed_index = 0
     while accepted < int(count) and seed_index < int(max_candidates):
@@ -892,10 +900,10 @@ def _generate_samples_for_task(
         "task": task.task_id,
         "requested_samples": int(requested_samples),
         "accepted_samples": int(accepted),
-        "accepted_samples_by_task_variant": dict(sorted((k, int(v)) for k, v in accepted_by_variant.items())),
+        "accepted_samples_by_query_variant": dict(sorted((k, int(v)) for k, v in accepted_by_variant.items())),
         "attempted_candidates": int(attempted_candidates),
         "max_candidates": int(max_candidates),
-        "task_variants": sorted(accepted_by_variant.keys()),
+        "query_variants": sorted(accepted_by_variant.keys()),
         "rejections_by_error": dict(sorted(rejections.items())),
         "distribution_checks": {
             "checks_run": int(distribution_report.get("checks_run", 0)),

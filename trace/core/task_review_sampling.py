@@ -27,26 +27,59 @@ def _thread_local_task(task_id: str):
 
 
 def extract_variant_probability_keys(output: Any) -> List[str]:
-    """Extract declared task-variant ids from one task output trace payload."""
+    """Extract declared review-unit ids from one task output trace payload."""
+
+    def _positive_keys(probabilities: Any) -> List[str]:
+        if not isinstance(probabilities, Mapping):
+            return []
+        keys = [str(key) for key, value in probabilities.items() if float(value) > 0.0]
+        review_key = resolve_review_variant_key(output)
+        if str(review_key).strip() == "default":
+            return [key for key in keys if str(key).strip() == "default"]
+        non_default = [key for key in keys if str(key).strip() not in {"", "default"}]
+        return non_default or keys
+
     trace_payload = getattr(output, "trace_payload", {})
     if not isinstance(trace_payload, Mapping):
         return []
     exec_trace = trace_payload.get("execution_trace", {})
     if isinstance(exec_trace, Mapping):
-        probabilities = exec_trace.get("task_variant_probabilities")
-        if isinstance(probabilities, Mapping):
-            return [str(key) for key, value in probabilities.items() if float(value) > 0.0]
+        probabilities = exec_trace.get("query_variant_probabilities")
+        keys = _positive_keys(probabilities)
+        if keys:
+            return keys
     query_spec = trace_payload.get("query_spec", {})
     if isinstance(query_spec, Mapping):
         params = query_spec.get("params", {})
         if isinstance(params, Mapping):
-            probabilities = params.get("task_variant_probabilities")
-            if isinstance(probabilities, Mapping):
-                return [str(key) for key, value in probabilities.items() if float(value) > 0.0]
+            probabilities = params.get("query_variant_probabilities")
+            keys = _positive_keys(probabilities)
+            if keys:
+                return keys
             probabilities = params.get("variant_probabilities")
-            if isinstance(probabilities, Mapping):
-                return [str(key) for key, value in probabilities.items() if float(value) > 0.0]
+            keys = _positive_keys(probabilities)
+            if keys:
+                return keys
     return []
+
+
+def resolve_review_variant_key(output: Any) -> str:
+    """Return the key used for review sheets and per-query sampling buckets."""
+
+    query_variant = str(getattr(output, "query_variant", "") or "")
+    query_id = str(getattr(output, "query_id", "") or "")
+    if not query_id:
+        trace_payload = getattr(output, "trace_payload", {})
+        if isinstance(trace_payload, Mapping):
+            query_spec = trace_payload.get("query_spec", {})
+            execution_trace = trace_payload.get("execution_trace", {})
+            if isinstance(query_spec, Mapping):
+                query_id = str(query_spec.get("query_id", "") or "")
+            if not query_id and isinstance(execution_trace, Mapping):
+                query_id = str(execution_trace.get("query_id", "") or "")
+    if query_variant.strip() in {"", "default"} and query_id.strip():
+        return str(query_id)
+    return str(query_variant)
 
 
 def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None]) -> Dict[str, Any]:
@@ -54,9 +87,17 @@ def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None])
     task_id, instance_seed, max_attempts, params = job
     task = _thread_local_task(str(task_id))
     try:
+        task_params = dict(params) if isinstance(params, Mapping) else {}
+        forbidden = [
+            key
+            for key in task_params
+            if str(key).endswith("sampling_index") or str(key).endswith("sample_cursor")
+        ]
+        if forbidden:
+            raise ValueError(f"manual sampler controls are not allowed in task-review params: {forbidden}")
         out = task.generate(
             int(instance_seed),
-            params=dict(params) if isinstance(params, Mapping) else {},
+            params=task_params,
             max_attempts=int(max_attempts),
         )
         return {
@@ -109,7 +150,7 @@ def _generate_explicit_variant_batch(
     request_counts_by_variant: Dict[str, int],
     batch_size: int,
 ) -> List[Dict[str, Any]]:
-    """Generate one round-robin batch that explicitly targets missing task variants."""
+    """Generate one round-robin batch that explicitly targets missing query variants."""
 
     pending_variants = [
         str(variant)
@@ -135,11 +176,11 @@ def _generate_explicit_variant_batch(
         jobs.append(
             (
                 str(task_id),
-                int(hash64(int(seed), f"{str(task_id)}|task_variant:{variant}", int(request_index))),
+                int(hash64(int(seed), f"{str(task_id)}|query_variant:{variant}", int(request_index))),
                 int(max_attempts),
                 {
-                    "task_variant": str(variant),
-                    "_sampling_index": int(request_index),
+                    "query_variant": str(variant),
+                    "query_id": str(variant),
                 },
             )
         )
@@ -224,18 +265,28 @@ def collect_variant_samples(
                     error_type = str(row.get("error_type", "")).strip() or "GenerationError"
                     generation_error_counts[error_type] = int(generation_error_counts.get(error_type, 0) + 1)
                     continue
-                task_variant = str(getattr(output, "task_variant", "") or "")
-                generated_variant_counts[task_variant] = int(generated_variant_counts.get(task_variant, 0) + 1)
+                query_variant = resolve_review_variant_key(output)
+                probability_keys = extract_variant_probability_keys(output)
+                non_default_probability_keys = [
+                    str(value) for value in probability_keys if str(value).strip() not in {"", "default"}
+                ]
+                effective_probability_keys = non_default_probability_keys or [str(value) for value in probability_keys]
+                if str(query_variant).strip() == "default" and len(effective_probability_keys) == 1:
+                    query_variant = str(effective_probability_keys[0])
+                generated_variant_counts[query_variant] = int(generated_variant_counts.get(query_variant, 0) + 1)
 
                 expected_before = len(expected_variants)
-                expected_variants.add(str(task_variant))
-                probability_keys = extract_variant_probability_keys(output)
+                expected_variants.add(str(query_variant))
                 transitioned_to_explicit = False
-                if probability_keys:
-                    if not known_from_probabilities:
+                if effective_probability_keys:
+                    if len(effective_probability_keys) > 1 and not known_from_probabilities:
                         transitioned_to_explicit = True
-                    known_from_probabilities = True
-                    expected_variants.update(str(value) for value in probability_keys)
+                    if len(effective_probability_keys) > 1:
+                        known_from_probabilities = True
+                    expected_variants.update(str(value) for value in effective_probability_keys)
+                    if any(str(value).strip() not in {"", "default"} for value in expected_variants):
+                        expected_variants.discard("default")
+                        samples_by_variant.pop("default", None)
                 if len(expected_variants) > int(expected_before):
                     no_new_variant_streak = 0
                 else:
@@ -247,7 +298,7 @@ def collect_variant_samples(
                     break
 
                 if not transitioned_to_explicit:
-                    variant_rows = samples_by_variant.setdefault(str(task_variant), [])
+                    variant_rows = samples_by_variant.setdefault(str(query_variant), [])
                     if len(variant_rows) < int(target_count):
                         variant_rows.append(dict(collector(output, instance_seed)))
 

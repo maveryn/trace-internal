@@ -25,7 +25,7 @@ TRACE-specific behavior now integrated on top of the Vero stack:
 - TRACE reward modes are `answer` and `answer_and_evidence`
 - `TRACE_OUTPUT_MODE` is the common mode selector for prompt key, reward mode, and default system prompt
 - `TRACE_OUTPUT_MODE=evidence` is accepted as a shorthand alias for `answer_and_evidence`
-- TRACE outputs require TRACE JSON inside `<answer>...</answer>`; reasoning may appear outside the answer block
+- TRACE outputs should end with a TRACE JSON object; reasoning may appear before that final object
 - TRACE training metrics include grouped `zero_solve_*` and `perfect_solve_*`
 - numeric TRACE reward breakdowns are surfaced as `reward/*` metrics in training
 
@@ -36,17 +36,23 @@ Temporary boundary:
 - TRACE benchmark-style validation assets and older launchers should be pulled over selectively as needed
 - TRACE benchmark validation is available through `data.validation_style=trace_benchmark`
 - the active TRACE validation subset currently keeps 6 benchmarks under `rlvr/dataset/validation/`
-- `mathverse_mini` and `countqa` are excluded for now
+- `mathverse_mini` is excluded for now
 - launcher rebuild is in progress on top of this path; the 8-GPU answer launcher is available now
 
 Training launcher:
 
-- 8-GPU answer-reward launcher: `rlvr/examples/model_runs/run_trace_qwen3vl_2b_answer.sh`
-- default model: `Qwen/Qwen3-VL-2B-Instruct`
+- generic TRACE VL RLVR launcher: `rlvr/examples/model_runs/run_trace_vl_rlvr.sh`
+- experiment-plan wrapper: `scripts/run_trace_rlvr_experiment.sh`
+- compatibility 8-GPU Qwen3-VL-2B answer launcher: `rlvr/examples/model_runs/run_trace_qwen3vl_2b_answer.sh`
+- generic launcher default model: `Qwen/Qwen3-VL-4B-Instruct`
+- default `MAX_PROMPT_LENGTH` is model-aware in the launcher: `1536` for Qwen3-VL models and `2048` for Qwen2.5-VL models; set `MAX_PROMPT_LENGTH` explicitly to override
+- default TRACE training `MAX_RESPONSE_LENGTH` is `2048`; set `MAX_RESPONSE_LENGTH` explicitly to override
+- default validation generation `VAL_MAX_RESPONSE_LENGTH` is `1536`; set `VAL_MAX_RESPONSE_LENGTH` explicitly to override
 - default reward mode: `answer`
 - default prompt key: `prompt_answer`
 - default output mode: `answer`
-- default logging: `console` and `wandb` under project `trace_rlvr`
+- default checkpoint retention remains one actor checkpoint and one critic checkpoint
+- default logging: `console` and `wandb` under project `trace`
 - default W&B mode is `online`; set `WANDB_MODE=offline` only when you explicitly want a local offline run
 
 Example:
@@ -70,9 +76,9 @@ Curriculum probe:
   - `batch_size=1024` as the global prompt batch, split across replica workers
   - `prefetch_workers=1` to prepare the next batch while vLLM is generating the current one
 - probe-only answer extraction is intentionally lenient:
-  - first recover JSON from `<answer>...</answer>` when present
-  - otherwise fall back to valid JSON elsewhere in the response
-  - the probe then normalizes that recovered payload back into `<answer>{...}</answer>` before scoring
+  - first recover the final JSON object when present
+  - otherwise fall back to valid JSON elsewhere in the response, including legacy `<answer>...</answer>` wrappers
+  - the probe then scores the recovered payload with the same answer/evidence contracts used by training
   - this does not change training reward behavior
 
 Example:
@@ -134,10 +140,13 @@ Minimal TRACE knobs on the new stack:
 - `custom_reward_function.reward_kwargs.trace_output_mode=answer` or `answer_and_evidence`
 - `custom_reward_function.reward_kwargs.trace_reward_mode=auto` follows `trace_output_mode` by default
 - `custom_reward_function.reward_kwargs.trace_answer_scoring=exact_json` by default; set `legacy_strict` to recover the older TRACE answer-matching semantics used by `strict_score_response(...)`
-- `custom_reward_function.reward_kwargs.trace_format_weight=0.1`
+- `custom_reward_function.reward_kwargs.trace_format_weight=0.05` by default; set `TRACE_FORMAT_WEIGHT` to override it for both answer and answer-and-evidence modes
 - RLVR export now strips the generic JSON-schema boilerplate line from `prompt_answer` and `prompt_answer_and_evidence`; the mode-specific system prompt carries the schema contract, while task-specific hints and examples stay in the user prompt
-- TRACE format reward checks for exactly one `<answer>...</answer>` block whose contents parse as JSON with the expected mode-specific keys; it no longer requires `<think>...</think>` tags.
-- `reward/zero_reward` and grouped `rlvr_stats/zero_solve_*` / `perfect_solve_*` now track task reward correctness rather than format-weighted overall reward, so a wrong but well-formed JSON answer does not count as a solve.
+- RLVR export includes `query_variant` and `scene_variant` when trace sidecars are available; retained curriculum parquets also keep per-question staged probe counts and solve rates
+- TRACE format reward is binary: it is `1.0` only when the response ends with a JSON object whose keys match the expected mode-specific contract, otherwise `0.0`; it does not require `<think>` or `<answer>` tags.
+- `reward/zero_reward` and grouped `rlvr_stats/zero_solve_*` / `perfect_solve_*` track task reward correctness, so a wrong but well-formed JSON answer does not count as a solve.
 - `data.validation_style=trace_benchmark`
-- `data.val_files=[./dataset/validation/mathvista_mini.parquet, ./dataset/validation/mmstar.parquet, ./dataset/validation/charxiv_dq.parquet, ./dataset/validation/charxiv_rq.parquet, ./dataset/validation/embspatialbench.parquet, ./dataset/validation/blink.parquet]`
-- external benchmark validation intentionally uses the legacy boxed validation prompt for comparability with prior TRACE numbers: `data.val_prompt_key=prompt`, `data.val_answer_key=ground_truth`, `data.val_disable_system_prompt=true`, and `data.val_format_prompt=./examples/format_prompt/math.jinja`
+- `data.val_files=[./dataset/validation/mathvista_mini.parquet, ./dataset/validation/mmstar.parquet, ./dataset/validation/charxiv_rq.parquet, ./dataset/validation/embspatialbench.parquet, ./dataset/validation/mmmu_pro_vision.parquet, ./dataset/validation/countqa.parquet]`
+- the default trace launcher config uses model-aware `data.max_prompt_length` and `data.max_response_length=2048` for TRACE training unless overridden
+- the default external benchmark validation setup should be run with prompt/response caps of 1536
+- external benchmark validation uses the same answer-mode JSON system prompt as TRACE RLVR training: `data.val_prompt_key=prompt_answer`, `data.val_answer_key=answer_gt`, `data.val_disable_system_prompt=false`, and `data.val_format_prompt=null`; legacy rows still load through the dataset adapter's `prompt`/`ground_truth` fallback

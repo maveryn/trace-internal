@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .reversi_common import BLACK, WHITE, Coord, coord_to_cell_id, player_name
 from .style import ReversiTheme, build_games_reversi_theme
 
@@ -29,6 +30,7 @@ class ReversiRenderParams:
     marked_square_outline_width_px: int
     disc_inset_fraction: float
     player_badge_font_size_px: int
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -152,6 +154,41 @@ def render_reversi_board_scene(
         round(float(board_left + board_width), 3),
         round(float(board_top + board_height), 3),
     )
+
+    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_text = f"{player_name(int(current_player))} to move"
+    badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
+    badge_width = max(
+        int(params.player_badge_width_px),
+        int((badge_text_bbox[2] - badge_text_bbox[0]) + params.player_badge_height_px + 34),
+    )
+    badge_left = int(0.5 * (int(params.canvas_width) - int(badge_width)))
+    badge_top = int(params.panel_margin_px)
+    badge_bbox = (
+        round(float(badge_left), 3),
+        round(float(badge_top), 3),
+        round(float(badge_left + badge_width), 3),
+        round(float(badge_top + params.player_badge_height_px), 3),
+    )
+    group_bbox = (
+        min(float(board_bbox[0]), float(badge_bbox[0])),
+        min(float(board_bbox[1]), float(badge_bbox[1])),
+        max(float(board_bbox[2]), float(badge_bbox[2])),
+        max(float(board_bbox[3]), float(badge_bbox[3])),
+    )
+    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=group_bbox,
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    board_left = float(board_left + dx)
+    board_top = float(board_top + dy)
+    badge_left = float(badge_left + dx)
+    badge_top = float(badge_top + dy)
+    board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
+    badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
+
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -168,22 +205,6 @@ def render_reversi_board_scene(
         inner_bbox,
         radius=max(8, int(params.board_corner_radius_px) - int(params.board_frame_width_px)),
         fill=tuple(int(value) for value in theme.board_fill_rgb),
-    )
-
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
-    badge_text = f"{player_name(int(current_player))} to move"
-    badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
-    badge_width = max(
-        int(params.player_badge_width_px),
-        int((badge_text_bbox[2] - badge_text_bbox[0]) + params.player_badge_height_px + 34),
-    )
-    badge_left = int(0.5 * (int(params.canvas_width) - int(badge_width)))
-    badge_top = int(params.panel_margin_px)
-    badge_bbox = (
-        round(float(badge_left), 3),
-        round(float(badge_top), 3),
-        round(float(badge_left + badge_width), 3),
-        round(float(badge_top + params.player_badge_height_px), 3),
     )
     draw.rounded_rectangle(
         badge_bbox,
@@ -301,6 +322,7 @@ def render_reversi_board_scene(
             "board_size": int(board_size),
             "scene_variant": str(scene_variant),
             "style_variant": str(style_variant),
+            "layout_jitter": dict(layout_jitter),
         },
     )
 

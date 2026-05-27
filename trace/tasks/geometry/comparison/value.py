@@ -8,53 +8,182 @@ from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import split_generation_rendering_prompt_defaults
-from ..shared.consolidated_legacy import (
-    normalize_legacy_geometry_output,
+from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
+from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ..shared.consolidated_source import (
+    normalize_source_geometry_output,
     strip_consolidated_params,
-    unregister_legacy_tasks,
+    unregister_source_tasks,
 )
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from .angle import GeometryComparisonAngleTask
 from .area import GeometryComparisonAreaTask
 from .length import GeometryComparisonLengthTask
 from .perimeter import GeometryComparisonPerimeterTask
+from .shared import COMPARISON_ANSWER_LABEL_POOL
 
-LEGACY_TASK_IDS: Tuple[str, ...] = (
-    "task_geometry_comparison_angle",
-    "task_geometry_comparison_area",
-    "task_geometry_comparison_length",
-    "task_geometry_comparison_perimeter",
+SOURCE_TASK_IDS: Tuple[str, ...] = (
+    "source_geometry_comparison_angle",
+    "source_geometry_comparison_area",
+    "source_geometry_comparison_length",
+    "source_geometry_comparison_perimeter",
 )
-unregister_legacy_tasks(LEGACY_TASK_IDS)
+unregister_source_tasks(SOURCE_TASK_IDS)
 
-TASK_ID = "task_geometry_comparison_value"
-_SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("angle", "segment", "rectangle")
+TASK_ID = "geometry_comparison_value_base"
+_SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("angle", "segment", "rectangle", "triangle")
 _SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
-    "largest_angle",
-    "smallest_angle",
-    "largest_length",
-    "smallest_length",
-    "largest_area",
-    "smallest_area",
-    "largest_perimeter",
-    "smallest_perimeter",
+    "angle_extremum",
+    "length_extremum",
+    "area_extremum",
+    "perimeter_extremum",
 )
+_SUPPORTED_EXTREMUM_DIRECTIONS: Tuple[str, ...] = ("largest", "smallest")
 _COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "angle": ("largest_angle", "smallest_angle"),
-    "segment": ("largest_length", "smallest_length"),
-    "rectangle": ("largest_area", "smallest_area", "largest_perimeter", "smallest_perimeter"),
+    "angle": ("angle_extremum",),
+    "segment": ("length_extremum",),
+    "rectangle": ("area_extremum", "perimeter_extremum"),
+    "triangle": ("area_extremum", "perimeter_extremum"),
 }
-_LEGACY_BUILDERS: Dict[Tuple[str, str], Tuple[object, Dict[str, Any]]] = {
-    ("angle", "largest_angle"): (GeometryComparisonAngleTask, {"query_type": "largest"}),
-    ("angle", "smallest_angle"): (GeometryComparisonAngleTask, {"query_type": "smallest"}),
-    ("segment", "largest_length"): (GeometryComparisonLengthTask, {"query_type": "largest"}),
-    ("segment", "smallest_length"): (GeometryComparisonLengthTask, {"query_type": "smallest"}),
-    ("rectangle", "largest_area"): (GeometryComparisonAreaTask, {"query_type": "largest"}),
-    ("rectangle", "smallest_area"): (GeometryComparisonAreaTask, {"query_type": "smallest"}),
-    ("rectangle", "largest_perimeter"): (GeometryComparisonPerimeterTask, {"query_type": "largest"}),
-    ("rectangle", "smallest_perimeter"): (GeometryComparisonPerimeterTask, {"query_type": "smallest"}),
+_SOURCE_BUILDERS: Dict[Tuple[str, str], Tuple[object, Dict[str, Any]]] = {
+    ("angle", "angle_extremum"): (GeometryComparisonAngleTask, {}),
+    ("segment", "length_extremum"): (GeometryComparisonLengthTask, {}),
+    ("rectangle", "area_extremum"): (GeometryComparisonAreaTask, {}),
+    ("rectangle", "perimeter_extremum"): (GeometryComparisonPerimeterTask, {}),
+    ("triangle", "area_extremum"): (GeometryComparisonAreaTask, {"shape_family": "triangle"}),
+    ("triangle", "perimeter_extremum"): (GeometryComparisonPerimeterTask, {"shape_family": "triangle"}),
 }
+_SOURCE_QUERY_ALIASES: Dict[str, Tuple[str, str]] = {
+    "largest_angle": ("angle_extremum", "largest"),
+    "smallest_angle": ("angle_extremum", "smallest"),
+    "largest_length": ("length_extremum", "largest"),
+    "smallest_length": ("length_extremum", "smallest"),
+    "largest_area": ("area_extremum", "largest"),
+    "smallest_area": ("area_extremum", "smallest"),
+    "largest_perimeter": ("perimeter_extremum", "largest"),
+    "smallest_perimeter": ("perimeter_extremum", "smallest"),
+}
+
+
+def _inject_balanced_winner_label(
+    params: Mapping[str, Any],
+    source_params: Dict[str, Any],
+    query_variant: str,
+    *,
+    instance_seed: int,
+) -> None:
+    """Decouple answer-label cycling from the query-variant cycle."""
+
+    if "winner_label" in source_params or "winner_label_weights" in source_params:
+        return
+    sampling_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.winner_label.{query_variant}",
+    )
+    query_index = int(_SUPPORTED_QUERY_VARIANTS.index(str(query_variant)))
+    explicit_query = any(key in params for key in ("query_variant", "query_variant"))
+    if explicit_query:
+        label_index = int(sampling_index) % len(COMPARISON_ANSWER_LABEL_POOL)
+    else:
+        label_index = (int(sampling_index) // len(_SUPPORTED_QUERY_VARIANTS) + int(query_index)) % len(
+            COMPARISON_ANSWER_LABEL_POOL
+        )
+    source_params["winner_label"] = str(COMPARISON_ANSWER_LABEL_POOL[int(label_index)])
+
+
+def _params_with_source_query_aliases(params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Map largest/smallest aliases to canonical quantity query plus direction."""
+
+    alias_params = dict(params)
+    explicit_query = alias_params.get("query_variant")
+    if explicit_query is None and alias_params.get("query_variant") is not None:
+        explicit_query = alias_params.get("query_variant")
+        alias_params["query_variant"] = explicit_query
+    if explicit_query is None:
+        return alias_params
+    canonical = _SOURCE_QUERY_ALIASES.get(str(explicit_query))
+    if canonical is None:
+        return alias_params
+    query_variant, direction = canonical
+    explicit_direction = alias_params.get("extremum_direction")
+    if explicit_direction is not None and str(explicit_direction) != str(direction):
+        raise ValueError(
+            f"conflicting extremum_direction={explicit_direction!r} for source query_variant={explicit_query!r}"
+        )
+    alias_params["query_variant"] = str(query_variant)
+    alias_params["extremum_direction"] = str(direction)
+    return alias_params
+
+
+def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
+    """Return true when the query axis is using the default balanced cycle."""
+
+    normalized_params = _params_with_source_query_aliases(params)
+    if normalized_params.get("query_variant") is not None or normalized_params.get("query_variant") is not None:
+        return False
+    enabled = bool(
+        normalized_params.get(
+            "balanced_query_variant_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+        )
+    )
+    if not enabled:
+        return False
+    positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _params_for_query_occurrence_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    """Return params with source query aliases applied."""
+
+    cycle_params = _params_with_source_query_aliases(params)
+    _ = query_variant_probabilities
+    return cycle_params
+
+
+def _resolve_extremum_direction(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_variant_probabilities: Mapping[str, float],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve largest/smallest as a sampled parameter instead of a query variant."""
+
+    direction_params = _params_for_query_occurrence_cycle(
+        params,
+        query_variant_probabilities=query_variant_probabilities,
+    )
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.extremum_direction")
+    selected, probabilities = resolve_variant(
+        rng,
+        params=direction_params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=_SUPPORTED_EXTREMUM_DIRECTIONS,
+        explicit_key="extremum_direction",
+        weights_key="extremum_direction_weights",
+    )
+    selected = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=direction_params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected),
+        variant_probabilities=probabilities,
+        supported_variants=_SUPPORTED_EXTREMUM_DIRECTIONS,
+        balance_flag_key="balanced_extremum_direction_sampling",
+        explicit_key="extremum_direction",
+        weights_key="extremum_direction_weights",
+        sampling_namespace=f"{TASK_ID}.extremum_direction",
+    )
+    return str(selected), dict(probabilities)
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "comparison")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -63,9 +192,8 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
-@register_task
 class GeometryComparisonValueTask:
-    """Unified geometry comparison task spanning angle, segment, and region scenes."""
+    """Unified geometry comparison task spanning angle, segment, and polygon-region scenes."""
 
     task_id = TASK_ID
     domain = "geometry"
@@ -73,10 +201,11 @@ class GeometryComparisonValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rng = spawn_rng(instance_seed, f"{self.task_id}.axes")
+        axis_params = _params_with_source_query_aliases(params)
         scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
             rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=axis_params,
             gen_defaults=_GEN_DEFAULTS,
             supported_scene_variants=_SUPPORTED_SCENE_VARIANTS,
             supported_query_variants=_SUPPORTED_QUERY_VARIANTS,
@@ -84,19 +213,78 @@ class GeometryComparisonValueTask:
             scene_sampling_namespace=f"{self.task_id}.scene_variant",
             query_sampling_namespace=f"{self.task_id}.query_variant",
         )
-        legacy_task_cls, legacy_overrides = _LEGACY_BUILDERS[(str(scene_variant), str(query_variant))]
-        legacy_task = legacy_task_cls()
-        legacy_params = strip_consolidated_params(params)
-        legacy_params.update(dict(legacy_overrides))
-        output = legacy_task.generate(int(instance_seed), params=legacy_params, max_attempts=int(max_attempts))
-        legacy_trace = dict(output.trace_payload.get("execution_trace") or {})
-        return normalize_legacy_geometry_output(
+        extremum_direction, extremum_probs = _resolve_extremum_direction(
+            instance_seed=int(instance_seed),
+            params=axis_params,
+            query_variant_probabilities=query_probs,
+        )
+        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(query_variant))]
+        source_task = source_task_cls()
+        source_params = strip_consolidated_params(params)
+        source_params.update(dict(source_overrides))
+        source_params["query_type"] = str(extremum_direction)
+        _inject_balanced_winner_label(
+            axis_params,
+            source_params,
+            str(query_variant),
+            instance_seed=int(instance_seed),
+        )
+        output = source_task.generate(int(instance_seed), params=source_params, max_attempts=int(max_attempts))
+        source_trace = dict(output.trace_payload.get("execution_trace") or {})
+        extra_query_params = {
+            "extremum_direction": str(extremum_direction),
+            "extremum_direction_probabilities": {
+                str(key): float(value) for key, value in sorted(extremum_probs.items())
+            },
+        }
+        return normalize_source_geometry_output(
             output,
             scene_variant=str(scene_variant),
             query_variant=str(query_variant),
-            legacy_task_id=str(legacy_task.task_id),
+            source_task_id=str(source_task.task_id),
             scene_variant_probabilities=scene_probs,
             query_variant_probabilities=query_probs,
-            legacy_scene_variant=str(legacy_trace.get("scene_variant", scene_variant)),
-            legacy_query_variant=str(output.task_variant),
+            source_scene_variant=str(source_trace.get("scene_variant", scene_variant)),
+            source_query_variant=str(output.query_variant),
+            extra_query_params=extra_query_params,
         )
+
+
+@register_task
+class GeometryComparisonAngleExtremumLabelTask(FixedGeometryQueryTaskMixin, GeometryComparisonValueTask):
+    """Public angle-extremum comparison task."""
+
+    task_id = "task_geometry__graph_paper__angle_extremum_label"
+    fixed_query_variant = "angle_extremum"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("angle",)
+
+
+@register_task
+class GeometryComparisonLengthExtremumLabelTask(FixedGeometryQueryTaskMixin, GeometryComparisonValueTask):
+    """Public length-extremum comparison task."""
+
+    task_id = "task_geometry__graph_paper__length_extremum_label"
+    fixed_query_variant = "length_extremum"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("segment",)
+
+
+@register_task
+class GeometryComparisonAreaExtremumLabelTask(FixedGeometryQueryTaskMixin, GeometryComparisonValueTask):
+    """Public area-extremum comparison task."""
+
+    task_id = "task_geometry__graph_paper__area_extremum_label"
+    fixed_query_variant = "area_extremum"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("rectangle", "triangle")
+
+
+@register_task
+class GeometryComparisonPerimeterExtremumLabelTask(FixedGeometryQueryTaskMixin, GeometryComparisonValueTask):
+    """Public perimeter-extremum comparison task."""
+
+    task_id = "task_geometry__graph_paper__perimeter_extremum_label"
+    fixed_query_variant = "perimeter_extremum"
+    public_scene_id = "graph_paper"
+    allowed_scene_variants = ("rectangle", "triangle")

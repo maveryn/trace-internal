@@ -11,7 +11,6 @@ from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -24,6 +23,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_icons_counting_singleton_type_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
@@ -45,6 +45,7 @@ from ..shared.icon_task_rendering import (
     resolve_icon_render_params,
     sample_icon_instance_noise,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 
 
 @dataclass(frozen=True)
@@ -113,17 +114,64 @@ class _ScenePayload:
     scene_rotations_degrees: Tuple[int, ...]
     singleton_indices: Tuple[int, ...]
     singleton_bboxes: Tuple[Tuple[int, int, int, int], ...]
+    repeated_indices: Tuple[int, ...]
+    repeated_bboxes: Tuple[Tuple[int, int, int, int], ...]
     type_frequencies: Dict[str, int]
     sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
     panel_geometry: Dict[str, Any]
     scene_instances: Tuple[Dict[str, Any], ...]
 
 
+def _resolve_query_variant(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve whether to count singleton icons or repeated-type icons."""
+
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    selected_variant, variant_probabilities = resolve_variant(
+        rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=_SUPPORTED_VARIANTS,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+    )
+    selected_variant = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_variant),
+        variant_probabilities=variant_probabilities,
+        supported_variants=_SUPPORTED_VARIANTS,
+        balance_flag_key="balanced_variant_sampling",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        sampling_namespace=f"{TASK_ID}.query_variant",
+    )
+    return str(selected_variant), {str(key): float(value) for key, value in sorted(variant_probabilities.items())}
+
+
+def _variant_prompt_text(defaults: Mapping[str, Any], key: str, *, query_variant: str) -> str:
+    """Resolve variant-specific prompt text with a scalar fallback."""
+
+    mapped = defaults.get(f"{key}_by_variant")
+    if isinstance(mapped, Mapping):
+        value = mapped.get(str(query_variant))
+        if isinstance(value, str) and value.strip():
+            return str(value)
+    value = defaults.get(str(key))
+    if isinstance(value, str) and value.strip():
+        return str(value)
+    raise ValueError(f"missing prompt {key} for {TASK_ID}:{query_variant}")
+
+
+TASK_ID = "task_icons__icon_field__type_frequency_count"
+_SUPPORTED_VARIANTS: Tuple[str, ...] = (
+    "singleton_type_count",
+)
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_counting_singleton_type",
+    task_id=TASK_ID,
 )
 
 
@@ -160,7 +208,7 @@ def _bounded_compositions(total: int, parts: int, *, min_part: int, max_part: in
     return compositions
 
 
-def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _CountSpec:
+def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any], query_variant: str) -> _CountSpec:
     """Resolve balanced singleton and repeated-type counts for one instance."""
 
     object_count_min = int(params.get("object_count_min", group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)))
@@ -208,22 +256,43 @@ def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _Co
     if repeated_type_multiplicity_min < 2 or repeated_type_multiplicity_max < repeated_type_multiplicity_min:
         raise ValueError("repeated_type_multiplicity range is invalid")
 
-    answer_support = tuple(range(int(target_count_min), int(target_count_max) + 1))
-    if not answer_support:
+    singleton_support = tuple(range(int(target_count_min), int(target_count_max) + 1))
+    if not singleton_support:
         raise ValueError("singleton target support is empty")
     selection_index = int(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace="task_icons_counting_singleton_type:count_spec",
+            namespace=f"{TASK_ID}:count_spec",
         )
     )
     explicit_target = params.get("target_count")
+    explicit_object_count = params.get("object_count")
+
+    def _group_support_for(repeated_icon_count: int) -> Tuple[int, ...]:
+        min_group_count = max(
+            int(repeated_type_count_min),
+            (int(repeated_icon_count) + int(repeated_type_multiplicity_max) - 1)
+            // int(repeated_type_multiplicity_max),
+        )
+        max_group_count = min(
+            int(repeated_type_count_max),
+            int(repeated_icon_count) // int(repeated_type_multiplicity_min),
+        )
+        if min_group_count > max_group_count:
+            return ()
+        return tuple(range(int(min_group_count), int(max_group_count) + 1))
+
+    answer_probability_support: Tuple[int, ...]
+    answer_probability_selected: int | None = None
+
+    answer_probability_support = singleton_support
     if explicit_target is not None:
         target_count = int(explicit_target)
+        answer_probability_selected = int(target_count)
     else:
-        target_count = int(answer_support[int(selection_index % len(answer_support))])
-    if target_count not in answer_support:
+        target_count = int(singleton_support[int(selection_index % len(singleton_support))])
+    if target_count not in singleton_support:
         raise ValueError("target_count is outside configured support")
 
     object_support = tuple(
@@ -235,31 +304,22 @@ def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _Co
     )
     if not object_support:
         raise ValueError("no feasible object_count values exist for singleton-type counting")
-    explicit_object_count = params.get("object_count")
     if explicit_object_count is not None:
         object_count = int(explicit_object_count)
     else:
-        object_offset = int(selection_index // len(answer_support))
+        object_offset = int(selection_index // len(singleton_support))
         object_count = int(object_support[int(object_offset % len(object_support))])
     if object_count not in object_support:
         raise ValueError("object_count is outside configured singleton-type support")
-
     repeated_icon_count = int(object_count) - int(target_count)
+
     if repeated_icon_count < int(repeated_type_multiplicity_min):
         raise ValueError("repeated icon count is too small to form one repeated type")
 
-    min_group_count = max(
-        int(repeated_type_count_min),
-        (int(repeated_icon_count) + int(repeated_type_multiplicity_max) - 1) // int(repeated_type_multiplicity_max),
-    )
-    max_group_count = min(
-        int(repeated_type_count_max),
-        int(repeated_icon_count) // int(repeated_type_multiplicity_min),
-    )
-    if min_group_count > max_group_count:
+    group_support = _group_support_for(int(repeated_icon_count))
+    if not group_support:
         raise ValueError("no feasible repeated_type_count values exist for singleton-type counting")
-    group_support = tuple(range(int(min_group_count), int(max_group_count) + 1))
-    partition_index = int(selection_index // max(1, len(answer_support) * len(object_support)))
+    partition_index = int(selection_index // max(1, len(answer_probability_support)))
     repeated_type_count = int(group_support[int(partition_index % len(group_support))])
     multiplicity_support = _bounded_compositions(
         int(repeated_icon_count),
@@ -282,14 +342,20 @@ def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _Co
         distinct_type_count=int(target_count) + int(repeated_type_count),
         object_count_probabilities=dict(
             uniform_probability_map(
-                object_support,
+                tuple(
+                    value
+                    for value in range(
+                        max(int(object_count_min), int(target_count) + int(repeated_type_multiplicity_min)),
+                        int(object_count_max) + 1,
+                    )
+                ),
                 selected=int(object_count) if explicit_object_count is not None else None,
             )
         ),
         target_count_probabilities=dict(
             uniform_probability_map(
-                answer_support,
-                selected=int(target_count) if explicit_target is not None else None,
+                answer_probability_support,
+                selected=answer_probability_selected,
             )
         ),
     )
@@ -350,9 +416,6 @@ def _sample_scene(
         distance_space=str(render_params["color_distance_space"]),
     ):
         raise ValueError("sampled icon palette did not satisfy strict distance constraints")
-    sampled_tints = list(sample_icon_tints(rng, palette=palette, count=int(count_spec.object_count)))
-    rotation_candidates = _rotation_candidates()
-
     layout = resolve_single_panel_layout(
         canvas_width=int(render_params["canvas_width"]),
         canvas_height=int(render_params["canvas_height"]),
@@ -379,58 +442,65 @@ def _sample_scene(
     max_overlap_fraction = max(0.0, min(1.0, float(render_params["scene_max_overlap_fraction"])))
     placement_attempts = max(1, int(render_params["scene_placement_max_attempts"]))
     shrink_rounds = max(0, int(render_params["scene_size_shrink_rounds"]))
-    shrink_factor = max(0.1, min(1.0, float(render_params["scene_size_shrink_factor"])))
+    content_w = max(1, int(scene_content_bbox[2] - scene_content_bbox[0]))
+    content_h = max(1, int(scene_content_bbox[3] - scene_content_bbox[1]))
+    current_max_size = min(int(max_size), int(content_w), int(content_h))
+    sampled_tints = list(sample_icon_tints(rng, palette=palette, count=int(count_spec.distinct_type_count)))
+    rotation_candidates = _rotation_candidates()
+    type_styles: Dict[str, Dict[str, Any]] = {}
+    for type_index, icon_id in enumerate(sampled_icon_ids):
+        noise_edits, noise_seed = sample_icon_instance_noise(
+            instance_seed=int(instance_seed),
+            namespace=f"{IconsCountingSingletonTypeTask.task_id}:icon_type_{int(type_index)}",
+            render_params=render_params,
+        )
+        type_styles[str(icon_id)] = {
+            "tint_rgb": tuple(int(channel) for channel in sampled_tints[int(type_index)]),
+            "rotation_degrees": int(rng.choice(rotation_candidates)) % 360,
+            "nominal_size_px": int(rng.randint(int(min_size), int(max(int(min_size), int(current_max_size))))),
+            "noise_edits": tuple(noise_edits),
+            "noise_seed": int(noise_seed),
+        }
 
     placed_bboxes: List[Tuple[int, int, int, int]] = []
     scene_instances: List[Dict[str, Any]] = []
     singleton_indices: List[int] = []
     singleton_bboxes: List[Tuple[int, int, int, int]] = []
+    repeated_indices: List[int] = []
+    repeated_bboxes: List[Tuple[int, int, int, int]] = []
     scene_rotations_degrees: List[int] = []
 
     for index, icon_id in enumerate(scene_icon_ids):
-        tint_rgb = tuple(int(channel) for channel in sampled_tints.pop(0))
-        rotation_degrees = int(rng.choice(rotation_candidates))
-        noise_edits, noise_seed = sample_icon_instance_noise(
-            instance_seed=int(instance_seed),
-            namespace=f"{IconsCountingSingletonTypeTask.task_id}:scene_icon_{int(index)}",
-            render_params=render_params,
+        type_style = type_styles[str(icon_id)]
+        tint_rgb = tuple(int(channel) for channel in type_style["tint_rgb"])
+        rotation_degrees = int(type_style["rotation_degrees"])
+        nominal_size = int(type_style["nominal_size_px"])
+        noise_edits = tuple(type_style["noise_edits"])
+        noise_seed = int(type_style["noise_seed"])
+        sprite = render_icon_rgba(
+            icon_id=str(icon_id),
+            size_px=int(nominal_size),
+            tint_rgb=tuple(int(channel) for channel in tint_rgb),
+            rotation_degrees=int(rotation_degrees),
+            mirror_x=False,
+            noise_edits=tuple(noise_edits),
+            noise_seed=int(noise_seed),
         )
-        sprite = None
         paste_bbox = None
-        nominal_size = None
-        content_w = max(1, int(scene_content_bbox[2] - scene_content_bbox[0]))
-        content_h = max(1, int(scene_content_bbox[3] - scene_content_bbox[1]))
-        current_max_size = min(int(max_size), int(content_w), int(content_h))
-        for shrink_round in range(int(shrink_rounds) + 1):
-            round_max_size = max(int(min_size), int(round(float(current_max_size) * (float(shrink_factor) ** int(shrink_round)))))
-            for _ in range(int(placement_attempts)):
-                sampled_size = int(rng.randint(int(min_size), int(round_max_size)))
-                candidate_sprite = render_icon_rgba(
-                    icon_id=str(icon_id),
-                    size_px=int(sampled_size),
-                    tint_rgb=tuple(int(channel) for channel in tint_rgb),
-                    rotation_degrees=int(rotation_degrees),
-                    mirror_x=False,
-                    noise_edits=tuple(noise_edits),
-                    noise_seed=int(noise_seed),
+        for _ in range(int(placement_attempts) * (int(shrink_rounds) + 1)):
+            try:
+                candidate_bbox = random_paste_bbox(
+                    sprite_size=sprite.size,
+                    content_bbox=scene_content_bbox,
+                    rng=rng,
                 )
-                try:
-                    candidate_bbox = random_paste_bbox(
-                        sprite_size=candidate_sprite.size,
-                        content_bbox=scene_content_bbox,
-                        rng=rng,
-                    )
-                except ValueError:
-                    continue
-                if float(max_overlap_with_existing(candidate_bbox, placed_bboxes)) > float(max_overlap_fraction):
-                    continue
-                sprite = candidate_sprite
-                paste_bbox = tuple(int(value) for value in candidate_bbox)
-                nominal_size = int(sampled_size)
-                break
-            if sprite is not None and paste_bbox is not None and nominal_size is not None:
-                break
-        if sprite is None or paste_bbox is None or nominal_size is None:
+            except ValueError:
+                continue
+            if float(max_overlap_with_existing(candidate_bbox, placed_bboxes)) > float(max_overlap_fraction):
+                continue
+            paste_bbox = tuple(int(value) for value in candidate_bbox)
+            break
+        if paste_bbox is None:
             raise ValueError("failed to place singleton-type icon within scene content under overlap constraints")
 
         image.alpha_composite(sprite, (int(paste_bbox[0]), int(paste_bbox[1])))
@@ -439,6 +509,9 @@ def _sample_scene(
         if bool(is_singleton_type):
             singleton_indices.append(int(index))
             singleton_bboxes.append(tuple(int(value) for value in paste_bbox))
+        else:
+            repeated_indices.append(int(index))
+            repeated_bboxes.append(tuple(int(value) for value in paste_bbox))
         scene_rotations_degrees.append(int(rotation_degrees) % 360)
         rendered_instance = RenderedIconInstance(
             instance_id=f"scene_icon_{int(index)}",
@@ -460,6 +533,7 @@ def _sample_scene(
                     "index": int(index),
                     "type_frequency": int(type_frequencies[str(icon_id)]),
                     "is_singleton_type": bool(is_singleton_type),
+                    "is_repeated_type": not bool(is_singleton_type),
                 },
             )
         )
@@ -477,6 +551,8 @@ def _sample_scene(
             scene_rotations_degrees=tuple(int(value) for value in scene_rotations_degrees),
             singleton_indices=tuple(int(value) for value in singleton_indices),
             singleton_bboxes=tuple(tuple(int(value) for value in bbox) for bbox in singleton_bboxes),
+            repeated_indices=tuple(int(value) for value in repeated_indices),
+            repeated_bboxes=tuple(tuple(int(value) for value in bbox) for bbox in repeated_bboxes),
             type_frequencies={str(key): int(value) for key, value in type_frequencies.items()},
             sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in palette),
             panel_geometry=single_panel_geometry_to_trace(layout),
@@ -486,22 +562,27 @@ def _sample_scene(
     )
 
 
-@register_task
 class IconsCountingSingletonTypeTask:
     """Count icons whose type appears exactly once in the image."""
 
-    task_id = "task_icons_counting_singleton_type"
+    task_id = TASK_ID
     domain = "icons"
     task_group = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic singleton-type counting instance."""
 
-        count_spec = _resolve_count_spec(instance_seed=int(instance_seed), params=params)
+        query_variant, variant_probabilities = _resolve_query_variant(int(instance_seed), params)
+        count_spec = _resolve_count_spec(
+            instance_seed=int(instance_seed),
+            params=params,
+            query_variant=str(query_variant),
+        )
         render_params = resolve_icon_render_params(
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
         )
         pool_manifest = str(
             params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest))
@@ -525,38 +606,38 @@ class IconsCountingSingletonTypeTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_counting_singleton_type instance") from last_error
+            raise RuntimeError(f"failed to generate {TASK_ID} singleton-type instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "question_text",
-                "evidence_hint",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
+        question_text = _variant_prompt_text(_PROMPT_DEFAULTS, "question_text", query_variant=str(query_variant))
+        evidence_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "evidence_hint", query_variant=str(query_variant))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults["question_text"]),
+                "question_text": str(question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(evidence_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults["json_example"]),
                 "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
@@ -565,20 +646,28 @@ class IconsCountingSingletonTypeTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
+        singleton_count = int(scene_payload.target_count)
+        repeated_icon_count = int(scene_payload.object_count) - int(scene_payload.target_count)
+        if str(query_variant) != "singleton_type_count":  # pragma: no cover - guarded by _resolve_query_variant
+            raise ValueError(f"unsupported query_variant: {query_variant}")
         evidence_bboxes = sort_bboxes_reading_order(scene_payload.singleton_bboxes)
-        answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
+        evidence_indices = list(scene_payload.singleton_indices)
+        answer_value = int(singleton_count)
+        counting_rule = "singleton_icon_type_frequency"
+        question_format = "count_singleton_type_icons"
+        answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
-        task_variant = "singleton_type_count"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_singleton_type_counting",
                 "entities": [dict(entity) for entity in scene_payload.scene_instances],
                 "relations": {
-                    "counting_rule": "singleton_icon_type_frequency",
+                    "counting_rule": str(counting_rule),
                     "singleton_icon_ids": list(scene_payload.singleton_icon_ids),
                     "repeated_icon_ids": list(scene_payload.repeated_icon_ids),
                     "type_frequencies": dict(scene_payload.type_frequencies),
                     "singleton_indices": list(scene_payload.singleton_indices),
+                    "repeated_indices": list(scene_payload.repeated_indices),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -586,19 +675,22 @@ class IconsCountingSingletonTypeTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "object_count": int(scene_payload.object_count),
-                    "target_count": int(scene_payload.target_count),
+                    "target_count": int(answer_value),
+                    "singleton_count": int(singleton_count),
+                    "repeated_icon_count": int(repeated_icon_count),
                     "repeated_type_count": int(scene_payload.repeated_type_count),
                     "repeated_type_multiplicities": list(scene_payload.repeated_type_multiplicities),
                     "distinct_type_count": int(scene_payload.distinct_type_count),
                     "object_count_probabilities": dict(count_spec.object_count_probabilities),
                     "target_count_probabilities": dict(count_spec.target_count_probabilities),
+                    "query_variant_probabilities": dict(variant_probabilities),
                     "pool_manifest": str(pool_manifest),
                     "rotation_candidates_degrees": list(_rotation_candidates()),
                 },
@@ -618,10 +710,13 @@ class IconsCountingSingletonTypeTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_scene",
-                "task_variant": str(task_variant),
-                "question_format": "count_singleton_type_icons",
+                "query_variant": str(query_variant),
+                "query_variant_probabilities": dict(variant_probabilities),
+                "question_format": str(question_format),
                 "object_count": int(scene_payload.object_count),
-                "target_count": int(scene_payload.target_count),
+                "target_count": int(answer_value),
+                "singleton_count": int(singleton_count),
+                "repeated_icon_count": int(repeated_icon_count),
                 "repeated_type_count": int(scene_payload.repeated_type_count),
                 "repeated_type_multiplicities": list(scene_payload.repeated_type_multiplicities),
                 "distinct_type_count": int(scene_payload.distinct_type_count),
@@ -629,11 +724,16 @@ class IconsCountingSingletonTypeTask:
                 "scene_rotations_degrees": list(scene_payload.scene_rotations_degrees),
                 "type_frequencies": dict(scene_payload.type_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
+                "repeated_indices": list(scene_payload.repeated_indices),
+                "evidence_indices": list(evidence_indices),
             },
             "witness_symbolic": {
                 "singleton_icon_ids": list(scene_payload.singleton_icon_ids),
+                "repeated_icon_ids": list(scene_payload.repeated_icon_ids),
                 "type_frequencies": dict(scene_payload.type_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
+                "repeated_indices": list(scene_payload.repeated_indices),
+                "evidence_indices": list(evidence_indices),
             },
             "projected_evidence": {
                 "bbox_set": list(evidence_bboxes),
@@ -643,7 +743,7 @@ class IconsCountingSingletonTypeTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
             object_count=int(scene_payload.object_count),
-            target_count=int(scene_payload.target_count),
+            target_count=int(answer_value),
             repeated_type_count=int(scene_payload.repeated_type_count),
             distinct_type_count=int(scene_payload.distinct_type_count),
             object_count_min=int(
@@ -655,7 +755,7 @@ class IconsCountingSingletonTypeTask:
             scene_instances=scene_payload.scene_instances,
             render_params=render_params,
         )
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
             evidence_gt=evidence_gt,
@@ -664,8 +764,14 @@ class IconsCountingSingletonTypeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
+        )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(query_variant),
+            scene_id="icon_field",
+            query_probabilities=variant_probabilities,
         )
 
 

@@ -10,7 +10,7 @@ def test_geometry_coordinate_relation_task_overrides_expose_scene_query_axes() -
     cfg = get_task_group_defaults("geometry", "coordinate")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_coordinate_relation",
+        task_id="geometry_coordinate_relation_base",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -36,5 +36,5 @@ def test_geometry_coordinate_relation_task_overrides_expose_scene_query_axes() -
     assert list(generation["collinear_target_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["same_quadrant_target_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["point_in_shape_target_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    assert str(prompt["bundle_id"]) == "geometry_coordinate_v1"
+    assert str(prompt["bundle_id"]) == "geometry_coordinate_v0"
     assert int(rendering["line_width"]) > 0

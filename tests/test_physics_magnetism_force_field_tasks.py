@@ -1,0 +1,133 @@
+"""Contract tests for physics magnetism force-field tasks."""
+
+from __future__ import annotations
+
+import json
+from collections import Counter
+from pathlib import Path
+
+from trace.tasks.physics.magnetism.force_field import (
+    PhysicsMagnetismForceDirectionChoiceTask,
+)
+
+
+def test_physics_magnetism_force_direction_choice_contract() -> None:
+    out = PhysicsMagnetismForceDirectionChoiceTask().generate(
+        97001,
+        params={
+            "scene_variant": "clean_panel",
+            "field_orientation": "out_of_page",
+            "velocity_direction": "east",
+            "charge_sign": 1,
+            "correct_option_letter": "D",
+            "accent_color_name": "blue",
+        },
+        max_attempts=30,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    scenario = execution["direction_scenario"]
+
+
+    assert out.answer_gt.type == "option_letter"
+
+    assert out.answer_gt.value == "D"
+
+    assert out.evidence_gt.type == "bbox_set"
+
+    assert len(out.evidence_gt.value) == 1
+
+    assert out.query_variant == "default"
+
+    assert out.scene_id == "magnetic_force"
+
+    assert out.query_id == "force_direction_choice"
+    assert trace["query_spec"]["query_variant"] == "default"
+
+    assert trace["query_spec"]["params"]["internal_query_variant"] == "force_direction_choice"
+
+    assert execution["field_orientation"] == "out_of_page"
+
+    assert execution["charge_sign"] == 1
+
+    assert scenario["velocity_direction"] == "east"
+
+    assert scenario["force_direction"] == "south"
+
+    assert scenario["option_directions"]["D"] == "south"
+
+    assert execution["evidence_entity_ids"] == ["option_D"]
+
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+
+
+def test_physics_magnetism_tasks_are_deterministic() -> None:
+    params = {
+        "scene_variant": "lab_card",
+        "velocity_direction": "north",
+        "field_orientation": "into_page",
+        "charge_sign": -1,
+        "correct_option_letter": "F",
+        "accent_color_name": "orange",
+    }
+    task = PhysicsMagnetismForceDirectionChoiceTask()
+    out_a = task.generate(97031, params=params, max_attempts=60)
+    out_b = task.generate(97031, params=params, max_attempts=60)
+
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+
+    assert out_a.prompt == out_b.prompt
+
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_physics_magnetism_sampling_covers_internal_axes() -> None:
+    field_orientations: Counter[str] = Counter()
+    velocity_directions: Counter[str] = Counter()
+    charge_signs: Counter[int] = Counter()
+    direction_letters: Counter[str] = Counter()
+
+    for sampling_index in range(96):
+        direction = PhysicsMagnetismForceDirectionChoiceTask().generate(
+            97100 + sampling_index,
+            params={},
+            max_attempts=80,
+        )
+        direction_execution = direction.trace_payload["execution_trace"]
+        field_orientations[str(direction_execution["field_orientation"])] += 1
+        velocity_directions[str(direction_execution["velocity_direction"])] += 1
+        charge_signs[int(direction_execution["charge_sign"])] += 1
+        direction_letters[str(direction.answer_gt.value)] += 1
+
+
+    assert set(field_orientations) == {"out_of_page", "into_page"}
+
+    assert set(velocity_directions) == {
+        "east",
+        "northeast",
+        "north",
+        "northwest",
+        "west",
+        "southwest",
+        "south",
+        "southeast",
+    }
+
+    assert set(charge_signs) == {-1, 1}
+
+    assert {"B", "C", "D", "E", "G", "H"}.issubset(set(direction_letters))
+
+
+def test_physics_magnetism_prompt_bundle_supports_variants() -> None:
+    bundle = json.loads(Path("prompts/physics/magnetism/physics_magnetism_v0.json").read_text(encoding="utf-8"))
+
+    assert len(bundle["scene_templates"]["magnetic_force_field"]) == 5
+
+    assert set(bundle["query_templates"]) == {"force_direction_choice"}
+
+    assert len(bundle["query_templates"]["force_direction_choice"]) == 5

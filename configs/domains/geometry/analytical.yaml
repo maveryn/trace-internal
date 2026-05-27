@@ -1,0 +1,101 @@
+generation:
+  shared:
+    balanced_sampling: true
+  task_overrides:
+    geometry_analytical_function_property_label_base:
+      query_variant_weights:
+        function_status_label: 1.0
+        one_to_one_status_label: 1.0
+        domain_match_label: 1.0
+        range_match_label: 1.0
+        y_axis_symmetry_label: 1.0
+        x_axis_symmetry_label: 1.0
+        origin_symmetry_label: 1.0
+        monotonic_interval_increasing_label: 1.0
+        monotonic_interval_decreasing_label: 1.0
+        sign_interval_positive_label: 1.0
+        sign_interval_negative_label: 1.0
+      balanced_query_variant_sampling: true
+      balanced_sampling: true
+      candidate_label_pool: [A, B, C, D, E, F]
+    geometry_analytical_intersection_property_label_base:
+      query_variant_weights:
+        line_circle_tangent_label: 1.0
+        line_circle_two_intersections_label: 1.0
+        circle_circle_two_intersections_label: 1.0
+      balanced_query_variant_sampling: true
+      balanced_sampling: true
+      candidate_label_pool: [A, B, C, D, E, F, G, H, I]
+
+rendering:
+  shared:
+    canvas_width: 1024
+    canvas_height: 720
+    line_width: 4
+  task_overrides:
+    geometry_analytical_function_property_label_base:
+      canvas_width: 1024
+      canvas_height: 720
+      line_width: 4
+    geometry_analytical_intersection_property_label_base:
+      canvas_width: 1024
+      canvas_height: 1024
+      line_width: 4
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_offwhite:
+        kind: solid
+        color: [252, 252, 252]
+      solid_cool:
+        kind: solid
+        color: [246, 248, 252]
+      solid_warm:
+        kind: solid
+        color: [252, 249, 245]
+      solid_mist:
+        kind: solid
+        color: [248, 252, 249]
+      solid_lavender:
+        kind: solid
+        color: [250, 248, 253]
+    weights:
+      graph_paper: 0.0
+      solid_offwhite: 0.35
+      solid_cool: 0.2
+      solid_warm: 0.2
+      solid_mist: 0.15
+      solid_lavender: 0.1
+
+prompt:
+  shared:
+    bundle_id: geometry_analytical_function_property_v0
+  task_overrides:
+    geometry_analytical_function_property_label_base:
+      bundle_id: geometry_analytical_function_property_v0
+      scene_key: analytical_function_property_grid
+      task_key: analytical_function_property_query
+      object_description: six labeled coordinate-plane panels A through F, each showing one relation
+      evidence_hint_selected_panel_bbox: set "evidence" to a JSON array containing the selected panel bounding box as [x0,y0,x1,y1] in pixels
+      answer_hint_option_letter: set "answer" to the single selected panel label as a capital letter A, B, C, D, E, or F
+      json_example: '{"evidence":[[40,40,310,320]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+    geometry_analytical_intersection_property_label_base:
+      bundle_id: geometry_analytical_intersection_property_v0
+      scene_key: analytical_intersection_property_grid
+      task_key: analytical_intersection_property_query
+      object_description: nine labeled coordinate-plane panels A through I, each showing two plotted objects
+      evidence_hint_selected_panel_and_intersections: set "evidence" to a JSON array of pixel boxes [x0,y0,x1,y1] covering the selected panel and the visible intersection point box or boxes
+      answer_hint_option_letter: set "answer" to the single selected panel label as a capital letter A, B, C, D, E, F, G, H, or I
+      json_example: '{"evidence":[[40,40,310,320],[156,168,170,182]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.20
+      analytical_reasoning: 0.55
+      ambiguity: 0.20
+      output_burden: 0.05

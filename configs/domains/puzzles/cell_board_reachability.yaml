@@ -1,0 +1,111 @@
+generation:
+  shared:
+    rows_min: 3
+    rows_max: 7
+    cols_min: 3
+    cols_max: 7
+  task_overrides:
+    cell_board_region_size_internal:
+      obstacle_fraction_min: 0.12
+      obstacle_fraction_max: 0.38
+      reachable_fraction_min: 0.2
+      reachable_fraction_max: 0.85
+      answer_min: 3
+      answer_max: 8
+rendering:
+  shared:
+    short_side_px_min: 28
+    short_side_px_max: 56
+    aspect_ratio_min: 1.0
+    aspect_ratio_max: 2.0
+    outer_padding_fraction_min: 0.08
+    outer_padding_fraction_max: 0.12
+    placement_jitter_fraction_min: 0.02
+    placement_jitter_fraction_max: 0.06
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.5
+      reasoning_load: 0.5
+      scene_variant_load: 0.0
+  task_overrides:
+    cell_board_region_size_internal:
+      criteria_weights:
+        visual_scan: 0.2
+        reasoning_load: 0.8
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_light:
+        kind: solid
+        color:
+        - 246
+        - 246
+        - 246
+      cool_light:
+        kind: solid
+        color:
+        - 243
+        - 247
+        - 252
+      warm_light:
+        kind: solid
+        color:
+        - 251
+        - 248
+        - 243
+      mint_light:
+        kind: solid
+        color:
+        - 244
+        - 249
+        - 246
+      lavender_light:
+        kind: solid
+        color:
+        - 248
+        - 246
+        - 253
+    weights:
+      solid_light: 1.0
+      cool_light: 1.0
+      warm_light: 1.0
+      mint_light: 1.0
+      lavender_light: 1.0
+  noise:
+    apply_prob: 0.5
+    edit_count_range:
+    - 1
+    - 1
+    value_ranges:
+      blur:
+        radius:
+        - 0.15
+        - 0.4
+      downsample:
+        scale:
+        - 0.92
+        - 0.97
+      jpeg:
+        quality:
+        - 82
+        - 94
+      noise:
+        alpha:
+        - 0.01
+        - 0.04
+prompt:
+  shared:
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    bundle_id: puzzles_cell_board_reachability_v0
+    scene_key: rectangular_tile_board
+  task_overrides:
+    cell_board_region_size_internal:
+      task_key: region_size_query
+      answer_hint: set "answer" to the size of the reachable region, including the start tile, as an integer
+      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of every reachable tile, including
+        the start tile
+      json_example: '{"evidence":[[120,120],[168,120],[168,168],[168,216]],"answer":4}'
+      json_example_answer_only: '{"answer":4}'

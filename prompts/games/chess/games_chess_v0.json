@@ -1,0 +1,113 @@
+{
+  "bundle_id": "games_chess_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "chess_board_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_chess_board": [
+      "object_description"
+    ],
+    "query:marked_piece_move_count": [
+      "standard_rule_text",
+      "marked_piece_rule_text"
+    ],
+    "query:marked_piece_capture_count": [
+      "standard_rule_text",
+      "marked_piece_rule_text"
+    ],
+    "query:player_capture_piece_count": [
+      "standard_rule_text",
+      "player_rule_text",
+      "player_color_name"
+    ],
+    "query:check_attacker_count": [
+      "standard_rule_text",
+      "check_rule_text"
+    ],
+    "query:king_escape_square_count": [
+      "standard_rule_text",
+      "king_escape_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_chess_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "marked_piece_move_count": [
+      "{standard_rule_text} {marked_piece_rule_text} How many squares can the marked piece move to in one move?",
+      "{standard_rule_text} {marked_piece_rule_text} Count the squares the marked piece can move to in one move.",
+      "{marked_piece_rule_text} Using normal chess movement, how many destination squares are available to that piece?",
+      "{standard_rule_text} {marked_piece_rule_text} Determine the number of one-move destination squares for the marked piece.",
+      "{marked_piece_rule_text} How many legal movement destinations does the marked piece have?"
+    ],
+    "marked_piece_capture_count": [
+      "{standard_rule_text} {marked_piece_rule_text} How many opponent pieces can the marked piece capture in one move?",
+      "{standard_rule_text} {marked_piece_rule_text} Count the opponent pieces the marked piece can capture.",
+      "{marked_piece_rule_text} Using normal chess movement, how many opponent pieces are capturable by that piece?",
+      "{standard_rule_text} {marked_piece_rule_text} Determine the number of opponent pieces the marked piece attacks and can capture.",
+      "{marked_piece_rule_text} How many enemy pieces can the marked piece take in one move?"
+    ],
+    "player_capture_piece_count": [
+      "{standard_rule_text} {player_rule_text} How many {opponent_color_name} pieces can {player_color_name} capture in one move?",
+      "{standard_rule_text} Count the {opponent_color_name} pieces that are capturable by {player_color_name} in one move.",
+      "{player_rule_text} How many opponent pieces are currently capturable by {player_color_name}?",
+      "{standard_rule_text} Determine how many {opponent_color_name} pieces can be captured by any {player_color_name} piece in one move.",
+      "{standard_rule_text} For {player_color_name}, count the opponent pieces that can be taken immediately."
+    ],
+    "check_attacker_count": [
+      "{standard_rule_text} {check_rule_text} How many opponent pieces are attacking the marked king?",
+      "{check_rule_text} Count the opponent pieces giving check to the marked king.",
+      "{standard_rule_text} {check_rule_text} Determine how many enemy pieces attack that king.",
+      "{check_rule_text} How many opponent pieces currently threaten the marked king?",
+      "{standard_rule_text} {check_rule_text} Count the pieces attacking the marked king."
+    ],
+    "king_escape_square_count": [
+      "{standard_rule_text} {king_escape_rule_text} How many safe squares can the marked king move to?",
+      "{king_escape_rule_text} Count the safe one-step destinations for the marked king.",
+      "{standard_rule_text} {king_escape_rule_text} Determine the number of legal escape squares for that king.",
+      "{king_escape_rule_text} How many destination squares can the marked king move to without being attacked?",
+      "{standard_rule_text} {king_escape_rule_text} Count the safe movement destinations for the marked king."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,194 @@
+{
+  "bundle_id": "charts_multiseries_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pairwise_comparison_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "delta_extremum_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "ratio_extremum_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "conditional_gap_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "category_total_extremum_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:multiseries_chart_comparison": [
+      "object_description"
+    ],
+    "query:series_comparison_count": [
+      "left_series",
+      "right_series",
+      "comparison_phrase"
+    ],
+    "query:ranked_change_extremum": [
+      "left_series",
+      "right_series",
+      "rank",
+      "ranked_extremum",
+      "change_measure",
+      "change_measure_prompt"
+    ],
+    "query:ranked_ratio_extremum": [
+      "rank",
+      "ranked_extremum",
+      "ratio_measure",
+      "ratio_measure_prompt"
+    ],
+    "query:conditional_gap_aggregate_value": [
+      "condition_left_series",
+      "condition_right_series",
+      "comparison_phrase",
+      "target_left_series",
+      "target_right_series",
+      "conditional_gap_aggregate_instruction"
+    ],
+    "query:conditional_gap_extremum_value": [
+      "condition_left_series",
+      "condition_right_series",
+      "comparison_phrase",
+      "target_left_series",
+      "target_right_series",
+      "extremum_direction"
+    ],
+    "query:category_total_extremum_label": [
+      "rank",
+      "ranked_extremum"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "multiseries_chart_comparison": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "series_comparison_count": [
+      "Across the labeled categories, in how many categories is \"{left_series}\" {comparison_phrase} \"{right_series}\"?",
+      "Count the category labels where \"{left_series}\" is {comparison_phrase} \"{right_series}\".",
+      "How many labeled categories have \"{left_series}\" {comparison_phrase} \"{right_series}\"?",
+      "Determine the number of categories where \"{left_series}\" is {comparison_phrase} \"{right_series}\".",
+      "Find how many category labels show \"{left_series}\" {comparison_phrase} \"{right_series}\"."
+    ],
+    "ranked_directional_change": [
+      "Which category label has the {ranked_largest} {change_direction} from \"{left_series}\" to \"{right_series}\"?",
+      "Find the category where {change_expression} for \"{left_series}\" and \"{right_series}\" is the {ranked_largest}.",
+      "Across the labeled categories, which one shows the {ranked_greatest} {change_direction} from \"{left_series}\" to \"{right_series}\"?",
+      "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category ranks {rank} by {change_action}?",
+      "Determine the category label with the {ranked_largest} {change_direction} when moving from \"{left_series}\" to \"{right_series}\"."
+    ],
+    "ranked_absolute_gap": [
+      "Which category label has the {ranked_extremum} absolute gap between \"{left_series}\" and \"{right_series}\"?",
+      "Find the category where the absolute difference between \"{left_series}\" and \"{right_series}\" is the {ranked_extremum}.",
+      "Across the labeled categories, which one shows the {ranked_extremum} gap between \"{left_series}\" and \"{right_series}\"?",
+      "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category ranks {rank} by the requested distance between their values?",
+      "Determine the category label with the {ranked_extremum} absolute difference between \"{left_series}\" and \"{right_series}\"."
+    ],
+    "ranked_series_share": [
+      "Which category label has the {ranked_extremum} percentage share for \"{target_series}\" out of that category's total across all series?",
+      "For each category, divide \"{target_series}\" by the total of all series in that category. Which category has the {ranked_extremum} share?",
+      "Across the labeled categories, which one ranks {rank} by the requested share of \"{target_series}\" within its category total?",
+      "Use every series in each category to compute the category total. Which category has the {ranked_extremum} \"{target_series}\" share?",
+      "Determine the category label with the {ranked_extremum} percentage contribution from \"{target_series}\"."
+    ],
+    "ranked_pair_ratio": [
+      "Which category label has the {ranked_extremum} ratio of \"{numerator_series}\" to \"{denominator_series}\"?",
+      "For each category, divide \"{numerator_series}\" by \"{denominator_series}\". Which category has the {ranked_extremum} ratio?",
+      "Across the labeled categories, which one ranks {rank} by the requested ratio \"{numerator_series}\" over \"{denominator_series}\"?",
+      "Use the legend to read \"{numerator_series}\" and \"{denominator_series}\" for each category. Which category has the {ranked_extremum} ratio?",
+      "Determine the category label with the {ranked_extremum} percentage ratio of \"{numerator_series}\" to \"{denominator_series}\"."
+    ],
+    "ranked_change_extremum": [
+      "Which category label has the {ranked_extremum} {change_measure_prompt} between \"{left_series}\" and \"{right_series}\"?",
+      "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category ranks {rank} by {change_measure_prompt}?",
+      "Across the labeled categories, which one has the {ranked_extremum} {change_measure} for \"{left_series}\" and \"{right_series}\"?",
+      "Use the legend to read \"{left_series}\" and \"{right_series}\" for every category, then choose the label with the {ranked_extremum} {change_measure_prompt}.",
+      "Determine the category label where \"{left_series}\" and \"{right_series}\" produce the {ranked_extremum} {change_measure_prompt}."
+    ],
+    "ranked_ratio_extremum": [
+      "Which category label has the {ranked_extremum} {ratio_measure_prompt}?",
+      "For each category, compute {ratio_measure_prompt}. Which category has the {ranked_extremum} value?",
+      "Across the labeled categories, which one ranks {rank} by {ratio_measure_prompt}?",
+      "Use the legend and category labels to compare {ratio_measure_prompt}; which category is the {ranked_extremum}?",
+      "Determine the category label with the {ranked_extremum} {ratio_measure_prompt}."
+    ],
+    "conditional_gap_aggregate_value": [
+      "Among categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\", what is the {conditional_gap_aggregate_instruction} of the absolute gaps between \"{target_left_series}\" and \"{target_right_series}\"?",
+      "Keep only category labels with \"{condition_left_series}\" {comparison_phrase} \"{condition_right_series}\". Compute the {conditional_gap_aggregate_instruction} of the \"{target_left_series}\" vs \"{target_right_series}\" absolute gaps.",
+      "Filter to categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\"; report the {conditional_gap_aggregate_instruction} for the absolute gaps between \"{target_left_series}\" and \"{target_right_series}\".",
+      "For labels satisfying \"{condition_left_series}\" {comparison_phrase} \"{condition_right_series}\", use each \"{target_left_series}\" vs \"{target_right_series}\" absolute gap and compute the {conditional_gap_aggregate_instruction}.",
+      "After keeping categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\", what is the {conditional_gap_aggregate_instruction} across the \"{target_left_series}\" vs \"{target_right_series}\" absolute gaps?"
+    ],
+    "conditional_gap_extremum_value": [
+      "Among categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\", what is the {extremum_direction} absolute gap between \"{target_left_series}\" and \"{target_right_series}\"?",
+      "Keep only category labels with \"{condition_left_series}\" {comparison_phrase} \"{condition_right_series}\". What is the {extremum_direction} absolute difference between \"{target_left_series}\" and \"{target_right_series}\"?",
+      "Filter to categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\"; report the {extremum_direction} absolute gap between \"{target_left_series}\" and \"{target_right_series}\".",
+      "For the labels satisfying \"{condition_left_series}\" {comparison_phrase} \"{condition_right_series}\", find the {extremum_direction} absolute gap between \"{target_left_series}\" and \"{target_right_series}\".",
+      "What is the {extremum_direction} \"{target_left_series}\" vs \"{target_right_series}\" absolute gap among categories where \"{condition_left_series}\" is {comparison_phrase} \"{condition_right_series}\"?"
+    ],
+    "category_total_extremum_label": [
+      "Which category label has the {ranked_extremum} total across all series?",
+      "For each category, add all series values. Which category ranks {rank} by total?",
+      "Across the labeled categories, which one has the {ranked_extremum} sum over all series?",
+      "Use every series in each category to compute category totals. Which category label is the {ranked_extremum}?",
+      "Determine the category label with the {ranked_extremum} total value across the legend series."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

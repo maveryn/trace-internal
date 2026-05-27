@@ -1,0 +1,193 @@
+{
+  "bundle_id": "puzzles_automaton_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "agent_final_pose_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "agent_flip_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "life_future_grid_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "life_population_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "turing_written_symbol_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:agent_automaton": [
+      "object_description"
+    ],
+    "scene:life_automaton": [
+      "object_description"
+    ],
+    "scene:turing_tape": [
+      "object_description"
+    ],
+    "query:binary_rule_final_pose": [
+      "query_instruction",
+      "steps"
+    ],
+    "query:three_state_rule_final_pose": [
+      "query_instruction",
+      "steps"
+    ],
+    "query:marked_region_flip_count": [
+      "query_instruction",
+      "rule_instruction",
+      "steps"
+    ],
+    "query:one_step_future_grid": [
+      "query_instruction"
+    ],
+    "query:two_step_future_grid": [
+      "query_instruction"
+    ],
+    "query:marked_line_live_count": [
+      "query_instruction",
+      "steps"
+    ],
+    "query:marked_region_live_count": [
+      "query_instruction",
+      "steps"
+    ],
+    "query:written_symbol_count": [
+      "query_instruction",
+      "query_symbol",
+      "steps"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "agent_automaton": [
+      "The puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The automaton panel shows {object_description}.",
+      "The grid diagram shows {object_description}."
+    ],
+    "life_automaton": [
+      "The puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The automaton panel shows {object_description}.",
+      "The grid diagram shows {object_description}."
+    ],
+    "turing_tape": [
+      "The puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The automaton panel shows {object_description}.",
+      "The tape-machine diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "binary_rule_final_pose": [
+      "{query_instruction} After {steps} steps, which option panel shows the agent's final cell and direction?",
+      "{query_instruction} Simulate {steps} steps. Which option gives the final agent position and facing direction?",
+      "{query_instruction} After running the agent for {steps} steps, choose the option with the final pose.",
+      "{query_instruction} Follow the rule for {steps} steps and select the option showing the final cell and direction.",
+      "{query_instruction} Which option matches the agent's pose after {steps} steps?"
+    ],
+    "three_state_rule_final_pose": [
+      "{query_instruction} After {steps} steps, which option panel shows the agent's final cell and direction?",
+      "{query_instruction} Simulate {steps} steps. Which option gives the final agent position and facing direction?",
+      "{query_instruction} After running the agent for {steps} steps, choose the option with the final pose.",
+      "{query_instruction} Follow the rule for {steps} steps and select the option showing the final cell and direction.",
+      "{query_instruction} Which option matches the agent's pose after {steps} steps?"
+    ],
+    "marked_region_flip_count": [
+      "{rule_instruction} {query_instruction} Simulate {steps} steps. How many times is a cell inside the marked region changed?",
+      "{rule_instruction} {query_instruction} After {steps} steps, how many update steps change a cell inside the marked region?",
+      "{rule_instruction} {query_instruction} Follow the agent for {steps} steps and count changes inside the marked region.",
+      "{rule_instruction} {query_instruction} Over {steps} steps, how many times does any marked-region cell advance to its next state?",
+      "{rule_instruction} {query_instruction} Count the update steps, out of {steps}, where a cell in the marked region is changed."
+    ],
+    "one_step_future_grid": [
+      "{query_instruction} Which option shows the grid after one update?",
+      "{query_instruction} Choose the option that matches the next grid.",
+      "{query_instruction} After one update, which option is correct?",
+      "{query_instruction} Select the option showing the one-step future grid.",
+      "{query_instruction} Which labeled option gives the grid after the next update?"
+    ],
+    "two_step_future_grid": [
+      "{query_instruction} Which option shows the grid after two updates?",
+      "{query_instruction} Choose the option that matches the grid after two updates.",
+      "{query_instruction} After two updates, which option is correct?",
+      "{query_instruction} Select the option showing the two-step future grid.",
+      "{query_instruction} Which labeled option gives the grid after two updates?"
+    ],
+    "marked_line_live_count": [
+      "{query_instruction} How many marked cells are dark?",
+      "{query_instruction} What is the number of dark cells in the marked line?",
+      "{query_instruction} Count the dark cells in the marked row or column.",
+      "{query_instruction} How many cells in the marked line are dark?",
+      "{query_instruction} Report the count of dark cells in the marked row or column."
+    ],
+    "marked_region_live_count": [
+      "{query_instruction} After {steps} update steps, how many cells are alive inside the marked region?",
+      "{query_instruction} Run the rule for {steps} steps. What is the number of alive cells in the marked region of the future grid?",
+      "{query_instruction} How many marked-region cells are alive after {steps} updates?",
+      "{query_instruction} Apply {steps} updates and count alive cells inside the marked region.",
+      "{query_instruction} What is the marked-region alive-cell count after {steps} steps?"
+    ],
+    "written_symbol_count": [
+      "{query_instruction} After exactly {steps} steps, how many tape cells contain symbol {query_symbol}?",
+      "{query_instruction} Simulate exactly {steps} steps. What is the count of tape cells showing {query_symbol} afterward?",
+      "{query_instruction} Follow the tape machine for {steps} steps and count cells containing symbol {query_symbol}.",
+      "{query_instruction} After running {steps} transitions, how many cells on the tape show symbol {query_symbol}?",
+      "{query_instruction} Use the table for {steps} steps. Report the number of tape cells with symbol {query_symbol}."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

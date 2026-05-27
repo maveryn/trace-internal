@@ -2,25 +2,26 @@ generation:
   shared:
     candidate_label_pool: ["A", "B", "C", "D", "E", "F"]
     candidate_slots:
-      - [4, 4]
-      - [8, 4]
-      - [4, 0]
-      - [8, 0]
-      - [4, -4]
-      - [8, -4]
+      - [6, 6]
+      - [13, 6]
+      - [6, 0]
+      - [13, 0]
+      - [6, -6]
+      - [13, -6]
     translation_vectors:
-      - [8, 0]
-      - [8, 3]
-      - [8, -3]
-      - [12, 0]
-      - [12, 3]
-      - [12, -3]
-    translation_vector_anchor: [-10, 7]
+      - [10, 0]
+      - [10, 4]
+      - [10, -4]
+      - [15, 0]
+      - [15, 4]
+      - [15, -4]
+    translation_cue_gap_graph: 4
+    candidate_min_gap_graph: 0.75
     reflection_axis_x: 0
     reflection_line_y_min: -9
     reflection_line_y_max: 9
   task_overrides:
-    task_geometry_transformation_match:
+    geometry_transformation_match_base:
       scene_variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
@@ -33,10 +34,10 @@ generation:
 
 rendering:
   shared:
-    canvas_size_min: 640
-    canvas_size_max: 720
-    graph_cells_min: 24
-    graph_cells_max: 28
+    canvas_size_min: 720
+    canvas_size_max: 800
+    graph_cells_min: 34
+    graph_cells_max: 38
     line_width: 4
     line_width_min: 3
     line_width_max: 5
@@ -57,11 +58,11 @@ rendering:
 
 prompt:
   shared:
-    bundle_id: geometry_transformation_v1
-    task_family_key: transformation_graph_scene
+    bundle_id: geometry_transformation_v0
+    scene_key: transformation_graph_scene
     task_key: transformation_query
     object_description: a Reference polygon, one transformation cue, and six labeled candidate polygons A through F
-    evidence_hint_template: 'set "evidence" to an array of exactly {vertex_count} graph-paper points for the winning polygon vertices'
+    evidence_hint_template: 'set "evidence" to an array of exactly {vertex_count} pixel points [x,y] for the winning polygon vertices'
     answer_hint: 'set "answer" to the single-letter label of the correct polygon'
 
 complexity:

@@ -1,13 +1,13 @@
 {
   "name": "external_validation_selected512_trace6",
   "created_from": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/manifest.json",
-  "description": "TRACE-style external validation subset for the active rlvr/ stack. MathVerse and CountQA are excluded for now, leaving 6 benchmark parquets.",
+  "description": "TRACE-style external validation subset for the active rlvr/ stack. MathVerse is excluded for now. The default set keeps six 512-row validation benchmarks.",
   "selection_model": "Qwen/Qwen3-VL-2B-Instruct",
-  "selection_max_tokens": 2048,
+  "selection_max_tokens": 1536,
+  "selection_max_prompt_length": 1536,
   "rows_per_dataset": 512,
   "excluded_benchmarks": [
-    "mathverse_mini",
-    "countqa"
+    "mathverse_mini"
   ],
   "datasets": [
     {
@@ -23,12 +23,6 @@
       "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/mmstar.parquet"
     },
     {
-      "benchmark_id": "charxiv_dq",
-      "file": "charxiv_dq.parquet",
-      "row_count": 512,
-      "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/charxiv_dq.parquet"
-    },
-    {
       "benchmark_id": "charxiv_rq",
       "file": "charxiv_rq.parquet",
       "row_count": 512,
@@ -41,10 +35,26 @@
       "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/embspatialbench.parquet"
     },
     {
-      "benchmark_id": "blink",
-      "file": "blink.parquet",
+      "benchmark_id": "mmmu_pro_vision",
+      "file": "mmmu_pro_vision.parquet",
       "row_count": 512,
-      "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/blink.parquet"
+      "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/mmmu_pro_vision.parquet",
+      "dataset_id": "MMMU/MMMU_Pro",
+      "dataset_config": "vision",
+      "split": "test",
+      "sample_seed": 20260504,
+      "max_image_pixels": 1048576
+    },
+    {
+      "benchmark_id": "countqa",
+      "file": "countqa.parquet",
+      "row_count": 512,
+      "source_path": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/countqa.parquet",
+      "dataset_id": "Jayant-Sravan/CountQA",
+      "split": "test",
+      "sample_seed": 20260504,
+      "max_image_pixels": 1048576,
+      "unique_source_image_count": 394
     }
   ]
 }

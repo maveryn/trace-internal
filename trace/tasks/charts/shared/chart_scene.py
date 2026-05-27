@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 from ....core.seed import spawn_rng
 from ...shared.text_rendering import draw_text_centered, load_font
@@ -59,6 +59,7 @@ class ChartMarkSpec:
     value: int
     fill_rgb: ChartColor | None = None
     outline_rgb: ChartColor | None = None
+    visible: bool = True
 
 
 @dataclass(frozen=True)
@@ -139,6 +140,26 @@ class ChartRenderParams:
     text_color_rgb: ChartColor
     text_stroke_rgb: ChartColor
     plot_fill_rgb: ChartColor
+    value_axis_window_enabled: bool = False
+    value_axis_span_min: int = 10
+    value_axis_span_max: int = 25
+    value_axis_hard_max: int = 99
+    value_axis_major_tick_step: int = 5
+    value_axis_minor_tick_step: int = 1
+    value_axis_allow_nonzero_min: bool = True
+    guide_line_mode: str = "off"
+    guide_line_prob: float = 0.0
+    guide_line_style: str = "dashed"
+    guide_line_width_px: int = 1
+    guide_line_color_rgb: ChartColor = (150, 156, 166)
+    layout_jitter_px: Tuple[int, int] = (0, 0)
+    layout_jitter_meta: Dict[str, Any] | None = None
+    violin_mode_line_style: str = "full"
+    violin_fill_style: str = "solid"
+    violin_width_scale: float = 1.0
+    violin_smoothing_scale: float = 1.0
+    violin_palette_mode: str = "single"
+    violin_palette_offset: int = 0
 
 
 @dataclass(frozen=True)
@@ -152,6 +173,14 @@ class RenderedChartScene:
     y_axis_max: int
     y_ticks: Tuple[int, ...]
     scene_variant: str
+    value_axis_min: int = 0
+    value_axis_max: int = 0
+    value_axis_span: int = 0
+    value_axis_major_ticks: Tuple[int, ...] = ()
+    value_axis_minor_ticks: Tuple[int, ...] = ()
+    value_axis_window_enabled: bool = False
+    guide_line_style: str = "none"
+    guide_lines: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)
 
 
 def _text_bbox(
@@ -209,20 +238,186 @@ def _resolve_plot_bbox(params: ChartRenderParams) -> Tuple[int, int, int, int]:
     return (int(left), int(top), int(right), int(bottom))
 
 
-def _tick_y(value: int, *, y_axis_max: int, plot_top: int, plot_bottom: int) -> float:
+def _tick_y(
+    value: int,
+    *,
+    y_axis_min: int = 0,
+    y_axis_max: int,
+    plot_top: int,
+    plot_bottom: int,
+) -> float:
     """Map one integer chart value to plot-space pixel y coordinate."""
 
-    span = max(1, int(y_axis_max))
+    span = max(1, int(y_axis_max) - int(y_axis_min))
     plot_height = float(max(1, int(plot_bottom) - int(plot_top)))
-    return float(plot_bottom) - (float(value) / float(span)) * float(plot_height)
+    return float(plot_bottom) - ((float(value) - float(y_axis_min)) / float(span)) * float(plot_height)
 
 
-def _tick_x(value: int, *, x_axis_max: int, plot_left: int, plot_right: int) -> float:
+def _tick_x(
+    value: int,
+    *,
+    x_axis_min: int = 0,
+    x_axis_max: int,
+    plot_left: int,
+    plot_right: int,
+) -> float:
     """Map one integer chart value to plot-space pixel x coordinate."""
 
-    span = max(1, int(x_axis_max))
+    span = max(1, int(x_axis_max) - int(x_axis_min))
     plot_width = float(max(1, int(plot_right) - int(plot_left)))
-    return float(plot_left) + (float(value) / float(span)) * float(plot_width)
+    return float(plot_left) + ((float(value) - float(x_axis_min)) / float(span)) * float(plot_width)
+
+
+def _axis_ticks(axis_max: int, *, axis_min: int = 0, step: int | None = None) -> Tuple[int, ...]:
+    """Return readable integer ticks for a chart axis."""
+
+    min_value = int(axis_min)
+    max_value = max(1, int(axis_max))
+    if int(max_value) < int(min_value):
+        min_value, max_value = int(max_value), int(min_value)
+    if step is None:
+        span = int(max_value) - int(min_value)
+        if int(span) <= 25:
+            return tuple(range(int(min_value), int(max_value) + 1))
+        target_step = max(1, int(math.ceil(float(span) / 10.0)))
+        nice_steps = (2, 5, 10, 20, 25, 50, 100)
+        resolved_step = next((candidate for candidate in nice_steps if int(candidate) >= int(target_step)), int(target_step))
+    else:
+        resolved_step = max(1, int(step))
+    ticks = [int(value) for value in range(int(min_value), int(max_value) + 1, int(resolved_step))]
+    if not ticks or ticks[0] != int(min_value):
+        ticks.insert(0, int(min_value))
+    if ticks[-1] != int(max_value):
+        ticks.append(int(max_value))
+    return tuple(int(value) for value in ticks)
+
+
+def _resolve_value_axis(
+    values: Sequence[int],
+    *,
+    render_params: ChartRenderParams,
+) -> Tuple[int, int, Tuple[int, ...], Tuple[int, ...], bool]:
+    """Resolve one readable value-axis window for axis-based charts."""
+
+    if not values:
+        return 0, 4, _axis_ticks(4), _axis_ticks(4), False
+    data_min = int(min(int(value) for value in values))
+    data_max = int(max(int(value) for value in values))
+    if not bool(render_params.value_axis_window_enabled):
+        axis_min = 0
+        axis_max = max(4, int(data_max) + 1)
+        ticks = _axis_ticks(axis_max)
+        return int(axis_min), int(axis_max), ticks, ticks, False
+
+    hard_max = int(max(1, render_params.value_axis_hard_max))
+    major_step = max(1, int(render_params.value_axis_major_tick_step))
+    minor_step = max(1, int(render_params.value_axis_minor_tick_step))
+    span_min = max(1, int(render_params.value_axis_span_min))
+    span_max = max(int(span_min), int(render_params.value_axis_span_max))
+
+    if bool(render_params.value_axis_allow_nonzero_min):
+        axis_min = int(math.floor(float(data_min) / float(major_step)) * int(major_step))
+        if int(data_max) - int(axis_min) > int(span_max) and int(data_max) - int(data_min) <= int(span_max):
+            axis_min = int(data_max) - int(span_max)
+    else:
+        axis_min = 0
+    axis_min = max(0, int(axis_min))
+
+    required_span = max(int(span_min), int(data_max) - int(axis_min))
+    if int(required_span) <= int(span_max):
+        axis_span = int(span_max)
+    else:
+        axis_span = int(required_span)
+    axis_max = int(axis_min) + int(axis_span)
+
+    if int(axis_max) > int(hard_max):
+        axis_max = int(hard_max)
+        axis_min = max(0, int(axis_max) - int(axis_span))
+        if int(data_min) < int(axis_min):
+            axis_min = int(data_min)
+        if int(data_max) > int(axis_max):
+            axis_max = int(data_max)
+
+    if int(axis_min) == int(axis_max):
+        axis_max = int(axis_min) + 1
+    major_ticks = _axis_ticks(int(axis_max), axis_min=int(axis_min), step=int(major_step))
+    minor_ticks = _axis_ticks(int(axis_max), axis_min=int(axis_min), step=int(minor_step))
+    return int(axis_min), int(axis_max), major_ticks, minor_ticks, True
+
+
+def _draw_styled_line(
+    draw: ImageDraw.ImageDraw,
+    points: Sequence[Tuple[float, float]],
+    *,
+    fill: ChartColor,
+    width: int,
+    style: str,
+) -> None:
+    """Draw a solid, dashed, or dotted line segment."""
+
+    if len(points) < 2:
+        return
+    x0, y0 = float(points[0][0]), float(points[0][1])
+    x1, y1 = float(points[1][0]), float(points[1][1])
+    resolved_width = max(1, int(width))
+    resolved_style = str(style).strip().lower()
+    if resolved_style == "solid":
+        draw.line([(x0, y0), (x1, y1)], fill=fill, width=resolved_width)
+        return
+
+    dx = float(x1 - x0)
+    dy = float(y1 - y0)
+    length = math.hypot(dx, dy)
+    if length <= 0.0:
+        return
+    ux = dx / length
+    uy = dy / length
+    if resolved_style == "dotted":
+        gap = max(4.0, float(resolved_width) * 4.0)
+        radius = max(1.0, float(resolved_width))
+        distance = 0.0
+        while distance <= length:
+            cx = x0 + ux * distance
+            cy = y0 + uy * distance
+            draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), fill=fill)
+            distance += gap
+        return
+
+    dash = max(8.0, float(resolved_width) * 8.0)
+    gap = max(5.0, float(resolved_width) * 5.0)
+    distance = 0.0
+    while distance < length:
+        end = min(length, distance + dash)
+        draw.line(
+            [
+                (x0 + ux * distance, y0 + uy * distance),
+                (x0 + ux * end, y0 + uy * end),
+            ],
+            fill=fill,
+            width=resolved_width,
+        )
+        distance += dash + gap
+
+
+def _guide_lines_enabled(render_params: ChartRenderParams) -> bool:
+    """Return whether value guide lines should be drawn for this render."""
+
+    return str(render_params.guide_line_mode).strip().lower() in {"always", "variant"}
+
+
+def value_axis_render_metadata(rendered_scene: RenderedChartScene) -> Dict[str, Any]:
+    """Return trace/render metadata for the chart value axis."""
+
+    return {
+        "value_axis_min": int(rendered_scene.value_axis_min),
+        "value_axis_max": int(rendered_scene.value_axis_max),
+        "value_axis_span": int(rendered_scene.value_axis_span),
+        "value_axis_major_ticks": [int(value) for value in rendered_scene.value_axis_major_ticks],
+        "value_axis_minor_ticks": [int(value) for value in rendered_scene.value_axis_minor_ticks],
+        "value_axis_window_enabled": bool(rendered_scene.value_axis_window_enabled),
+        "guide_line_style": str(rendered_scene.guide_line_style),
+        "guide_lines": [dict(line) for line in rendered_scene.guide_lines],
+    }
 
 
 def _label_center_for_variant(
@@ -385,8 +580,117 @@ def _normalize_color(value: Sequence[int], fallback: ChartColor) -> ChartColor:
     return tuple(int(channel) for channel in fallback)
 
 
+def _blend_rgb(foreground: ChartColor, background: ChartColor, foreground_weight: float) -> ChartColor:
+    """Blend two RGB colors with a clamped foreground weight."""
+
+    weight = max(0.0, min(1.0, float(foreground_weight)))
+    return tuple(
+        int(round((weight * float(fg)) + ((1.0 - weight) * float(bg))))
+        for fg, bg in zip(foreground, background)
+    )
+
+
+def _darken_rgb(color: ChartColor, factor: float = 0.58) -> ChartColor:
+    """Return a darker RGB color for outlines/hatching."""
+
+    scale = max(0.0, min(1.0, float(factor)))
+    return tuple(max(0, min(255, int(round(float(channel) * scale)))) for channel in color)
+
+
+def _violin_palette_color(
+    base_fill: ChartColor,
+    *,
+    index: int,
+    offset: int,
+    plot_fill: ChartColor,
+) -> ChartColor:
+    """Return one muted per-violin color while preserving readable contrast."""
+
+    muted_palette: Tuple[ChartColor, ...] = (
+        (92, 133, 196),
+        (193, 111, 86),
+        (94, 155, 116),
+        (170, 126, 190),
+        (196, 154, 77),
+        (90, 154, 168),
+        (184, 103, 135),
+        (128, 139, 92),
+    )
+    palette_color = muted_palette[(int(index) + int(offset)) % len(muted_palette)]
+    return _blend_rgb(palette_color, base_fill, 0.82) if base_fill else _blend_rgb(palette_color, plot_fill, 0.90)
+
+
+def _draw_violin_polygon(
+    image: Image.Image,
+    *,
+    points: Sequence[Tuple[float, float]],
+    fill_rgb: ChartColor,
+    outline_rgb: ChartColor,
+    fill_style: str,
+    outline_width: int,
+    plot_fill_rgb: ChartColor,
+) -> None:
+    """Draw one violin body with optional lightweight fill styling."""
+
+    style = str(fill_style).strip().lower()
+    draw = ImageDraw.Draw(image)
+    if style == "light":
+        body_fill = _blend_rgb(fill_rgb, plot_fill_rgb, 0.58)
+    elif style == "outline":
+        body_fill = _blend_rgb(fill_rgb, plot_fill_rgb, 0.28)
+    elif style == "hatch":
+        body_fill = _blend_rgb(fill_rgb, plot_fill_rgb, 0.34)
+    else:
+        body_fill = fill_rgb
+
+    draw.polygon(points, fill=body_fill)
+    if style == "hatch":
+        mask = Image.new("L", image.size, 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.polygon(points, fill=255)
+        hatch_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+        hatch_draw = ImageDraw.Draw(hatch_layer)
+        x0, y0, x1, y1 = [int(round(value)) for value in _bbox_from_points(points)]
+        hatch_color = _darken_rgb(outline_rgb, 0.86)
+        spacing = max(9, int(round(0.75 * float(outline_width + 10))))
+        for start_x in range(x0 - (y1 - y0) - spacing, x1 + spacing, spacing):
+            hatch_draw.line(
+                [(start_x, y1 + spacing), (start_x + (y1 - y0) + spacing, y0 - spacing)],
+                fill=(*hatch_color, 95),
+                width=max(1, int(outline_width)),
+            )
+        hatch_alpha = ImageChops.multiply(hatch_layer.getchannel("A"), mask)
+        hatch_layer.putalpha(hatch_alpha)
+        composited = Image.alpha_composite(image.convert("RGBA"), hatch_layer)
+        image.paste(composited.convert("RGB"))
+        draw = ImageDraw.Draw(image)
+
+    draw.line(
+        list(points) + [tuple(points[0])],
+        fill=outline_rgb,
+        width=max(1, int(outline_width)),
+        joint="curve",
+    )
+
+
 def resolve_chart_render_params(params: Mapping[str, Any]) -> ChartRenderParams:
     """Resolve one chart render-parameter block from config-like values."""
+
+    def _bool_value(key: str, fallback: bool) -> bool:
+        value = params.get(str(key), bool(fallback))
+        if isinstance(value, str):
+            return str(value).strip().lower() in {"1", "true", "yes", "on", "always"}
+        return bool(value)
+
+    def _style_value() -> str:
+        explicit = params.get("guide_line_style")
+        if explicit is not None:
+            return str(explicit)
+        styles = params.get("guide_line_styles", ())
+        if isinstance(styles, Sequence) and styles and not isinstance(styles, (str, bytes)):
+            seed = int(params.get("_guide_style_seed", 0))
+            return str(styles[abs(seed) % len(styles)])
+        return "dashed"
 
     return ChartRenderParams(
         canvas_width=int(params["canvas_width"]),
@@ -412,6 +716,31 @@ def resolve_chart_render_params(params: Mapping[str, Any]) -> ChartRenderParams:
         text_color_rgb=_normalize_color(params.get("text_color_rgb", (38, 41, 48)), (38, 41, 48)),
         text_stroke_rgb=_normalize_color(params.get("text_stroke_rgb", (255, 255, 255)), (255, 255, 255)),
         plot_fill_rgb=_normalize_color(params.get("plot_fill_rgb", (255, 255, 255)), (255, 255, 255)),
+        value_axis_window_enabled=_bool_value("value_axis_window_enabled", False),
+        value_axis_span_min=int(params.get("value_axis_span_min", 10)),
+        value_axis_span_max=int(params.get("value_axis_span_max", 25)),
+        value_axis_hard_max=int(params.get("value_axis_hard_max", 99)),
+        value_axis_major_tick_step=int(params.get("value_axis_major_tick_step", 5)),
+        value_axis_minor_tick_step=int(params.get("value_axis_minor_tick_step", 1)),
+        value_axis_allow_nonzero_min=_bool_value("value_axis_allow_nonzero_min", True),
+        guide_line_mode=str(params.get("guide_line_mode", "off")),
+        guide_line_prob=float(params.get("guide_line_prob", 0.0)),
+        guide_line_style=str(_style_value()),
+        guide_line_width_px=int(params.get("guide_line_width_px", 1)),
+        guide_line_color_rgb=_normalize_color(params.get("guide_line_color_rgb", (150, 156, 166)), (150, 156, 166)),
+        layout_jitter_px=(
+            int(params.get("layout_jitter_dx_px", 0)),
+            int(params.get("layout_jitter_dy_px", 0)),
+        ),
+        layout_jitter_meta=dict(params.get("layout_jitter_meta", {}))
+        if isinstance(params.get("layout_jitter_meta", {}), dict)
+        else None,
+        violin_mode_line_style=str(params.get("violin_mode_line_style", "full")),
+        violin_fill_style=str(params.get("violin_fill_style", "solid")),
+        violin_width_scale=float(params.get("violin_width_scale", 1.0)),
+        violin_smoothing_scale=float(params.get("violin_smoothing_scale", 1.0)),
+        violin_palette_mode=str(params.get("violin_palette_mode", "single")),
+        violin_palette_offset=int(params.get("violin_palette_offset", 0)),
     )
 
 
@@ -437,9 +766,20 @@ def render_labeled_chart_scene(
     plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
     draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
 
-    max_value = max(int(mark.value) for mark in marks)
-    y_axis_max = max(4, int(max_value) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    visible_marks = [mark for mark in marks if bool(getattr(mark, "visible", True))]
+    if not visible_marks:
+        raise ValueError("charts require at least one visible mark")
+    max_value = max(int(mark.value) for mark in visible_marks)
+    y_axis_min, y_axis_max, y_ticks, y_minor_ticks, value_axis_window_enabled = _resolve_value_axis(
+        [int(mark.value) for mark in visible_marks],
+        render_params=render_params,
+    )
+    if selected_variant in {"pie", "donut", "radar"}:
+        y_axis_min = 0
+        y_axis_max = max(4, int(max_value) + 1)
+        y_ticks = _axis_ticks(y_axis_max)
+        y_minor_ticks = tuple(int(value) for value in y_ticks)
+        value_axis_window_enabled = False
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
@@ -518,7 +858,7 @@ def render_labeled_chart_scene(
                 float(center_x + (percent_radius * math.cos(theta))),
                 float(center_y + (percent_radius * math.sin(theta))),
             )
-            percent_text = f"{int(mark.value)}%"
+            percent_text = f"{int(mark.value)}"
             percent_center = _clamp_text_center_to_canvas(
                 draw,
                 text=str(percent_text),
@@ -657,6 +997,12 @@ def render_labeled_chart_scene(
             y_axis_max=int(y_axis_max),
             y_ticks=tuple(int(value) for value in y_ticks),
             scene_variant=str(selected_variant),
+            value_axis_min=0,
+            value_axis_max=int(y_axis_max),
+            value_axis_span=int(y_axis_max),
+            value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+            value_axis_minor_ticks=tuple(int(value) for value in y_ticks),
+            value_axis_window_enabled=False,
         )
 
     if selected_variant == "radar":
@@ -857,12 +1203,19 @@ def render_labeled_chart_scene(
             y_axis_max=int(y_axis_max),
             y_ticks=tuple(int(value) for value in y_ticks),
             scene_variant=str(selected_variant),
+            value_axis_min=0,
+            value_axis_max=int(y_axis_max),
+            value_axis_span=int(y_axis_max),
+            value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+            value_axis_minor_ticks=tuple(int(value) for value in y_ticks),
+            value_axis_window_enabled=False,
         )
 
     if selected_variant == "horizontal_bar":
-        for tick_value in y_ticks:
+        for tick_value in y_minor_ticks:
             x_px = _tick_x(
                 int(tick_value),
+                x_axis_min=int(y_axis_min),
                 x_axis_max=int(y_axis_max),
                 plot_left=int(plot_left),
                 plot_right=int(plot_right),
@@ -872,31 +1225,33 @@ def render_labeled_chart_scene(
                 fill=grid_color,
                 width=int(render_params.grid_line_width_px),
             )
-            draw.line(
-                [
-                    (float(x_px), float(plot_bottom)),
-                    (float(x_px), float(plot_bottom) + float(render_params.tick_length_px)),
-                ],
-                fill=axis_color,
-                width=int(render_params.axis_line_width_px),
-            )
-            tick_center = (
-                float(x_px),
-                float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
-            )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=tick_center,
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-            )
+            if int(tick_value) in set(int(value) for value in y_ticks):
+                draw.line(
+                    [
+                        (float(x_px), float(plot_bottom)),
+                        (float(x_px), float(plot_bottom) + float(render_params.tick_length_px)),
+                    ],
+                    fill=axis_color,
+                    width=int(render_params.axis_line_width_px),
+                )
+                tick_center = (
+                    float(x_px),
+                    float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
+                )
+                draw_text_centered(
+                    draw,
+                    text=str(tick_value),
+                    center=tick_center,
+                    font=tick_font,
+                    fill=render_params.text_color_rgb,
+                    stroke_fill=render_params.text_stroke_rgb,
+                    stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+                )
     else:
-        for tick_value in y_ticks:
+        for tick_value in y_minor_ticks:
             y_px = _tick_y(
                 int(tick_value),
+                y_axis_min=int(y_axis_min),
                 y_axis_max=int(y_axis_max),
                 plot_top=int(plot_top),
                 plot_bottom=int(plot_bottom),
@@ -906,27 +1261,28 @@ def render_labeled_chart_scene(
                 fill=grid_color,
                 width=int(render_params.grid_line_width_px),
             )
-            draw.line(
-                [
-                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
-                    (float(plot_left), float(y_px)),
-                ],
-                fill=axis_color,
-                width=int(render_params.axis_line_width_px),
-            )
-            tick_center = (
-                float(plot_left) - float(render_params.tick_length_px) - 18.0,
-                float(y_px),
-            )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=tick_center,
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-            )
+            if int(tick_value) in set(int(value) for value in y_ticks):
+                draw.line(
+                    [
+                        (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                        (float(plot_left), float(y_px)),
+                    ],
+                    fill=axis_color,
+                    width=int(render_params.axis_line_width_px),
+                )
+                tick_center = (
+                    float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                    float(y_px),
+                )
+                draw_text_centered(
+                    draw,
+                    text=str(tick_value),
+                    center=tick_center,
+                    font=tick_font,
+                    fill=render_params.text_color_rgb,
+                    stroke_fill=render_params.text_stroke_rgb,
+                    stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+                )
 
     draw.line(
         [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
@@ -955,52 +1311,89 @@ def render_labeled_chart_scene(
     line_points: List[Tuple[float, float]] = []
     mark_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
+    guide_lines: List[Dict[str, Any]] = []
+    guide_color = tuple(int(value) for value in render_params.guide_line_color_rgb)
+    draw_guides = _guide_lines_enabled(render_params)
     slot_width = float(max(1.0, (float(plot_right) - float(plot_left)) / max(1, len(marks))))
     bar_width = float(max(12.0, float(render_params.bar_width_fraction) * float(slot_width)))
     slot_height = float(max(1.0, (float(plot_bottom) - float(plot_top)) / max(1, len(marks))))
     horizontal_bar_height = float(max(12.0, float(render_params.bar_width_fraction) * float(slot_height)))
 
     for index, mark in enumerate(marks):
+        mark_visible = bool(getattr(mark, "visible", True))
         bar_bbox: Tuple[float, float, float, float] | None = None
         if selected_variant == "horizontal_bar":
             y_center = float(y_slot_centers[index])
             x_extent = _tick_x(
                 int(mark.value),
+                x_axis_min=int(y_axis_min),
                 x_axis_max=int(y_axis_max),
                 plot_left=int(plot_left),
                 plot_right=int(plot_right),
             )
             x_center = float(plot_left) + 0.5 * float(x_extent - float(plot_left))
+            mark_point = (float(x_extent), float(y_center))
             top = float(y_center - 0.5 * float(horizontal_bar_height))
             bottom = float(y_center + 0.5 * float(horizontal_bar_height))
             bar_bbox = (float(plot_left), float(top), float(x_extent), float(bottom))
-            fill_rgb = (
-                tuple(int(channel) for channel in mark.fill_rgb)
-                if isinstance(mark.fill_rgb, tuple)
-                else tuple(int(value) for value in render_params.mark_fill_rgb)
-            )
-            outline_rgb = (
-                tuple(int(channel) for channel in mark.outline_rgb)
-                if isinstance(mark.outline_rgb, tuple)
-                else tuple(int(value) for value in render_params.mark_outline_rgb)
-            )
-            draw.rectangle(
-                bar_bbox,
-                fill=fill_rgb,
-                outline=outline_rgb,
-                width=int(render_params.mark_outline_width_px),
-            )
+            if mark_visible:
+                fill_rgb = (
+                    tuple(int(channel) for channel in mark.fill_rgb)
+                    if isinstance(mark.fill_rgb, tuple)
+                    else tuple(int(value) for value in render_params.mark_fill_rgb)
+                )
+                outline_rgb = (
+                    tuple(int(channel) for channel in mark.outline_rgb)
+                    if isinstance(mark.outline_rgb, tuple)
+                    else tuple(int(value) for value in render_params.mark_outline_rgb)
+                )
+                draw.rectangle(
+                    bar_bbox,
+                    fill=fill_rgb,
+                    outline=outline_rgb,
+                    width=int(render_params.mark_outline_width_px),
+                )
         else:
             x_center = float(x_centers[index])
-            y_center = _tick_y(
-                int(mark.value),
-                y_axis_max=int(y_axis_max),
-                plot_top=int(plot_top),
-                plot_bottom=int(plot_bottom),
-            )
-            line_points.append((float(x_center), float(y_center)))
+            if mark_visible:
+                y_center = _tick_y(
+                    int(mark.value),
+                    y_axis_min=int(y_axis_min),
+                    y_axis_max=int(y_axis_max),
+                    plot_top=int(plot_top),
+                    plot_bottom=int(plot_bottom),
+                )
+                line_points.append((float(x_center), float(y_center)))
+                mark_point = (float(x_center), float(y_center))
+            else:
+                y_center = float(plot_bottom)
+                mark_point = (float(x_center), float(y_center))
 
-        if selected_variant == "bar":
+        if bool(draw_guides) and bool(mark_visible):
+            if selected_variant == "horizontal_bar":
+                guide_points = [(float(mark_point[0]), float(plot_bottom)), (float(mark_point[0]), float(mark_point[1]))]
+                guide_orientation = "vertical"
+            else:
+                guide_points = [(float(plot_left), float(mark_point[1])), (float(mark_point[0]), float(mark_point[1]))]
+                guide_orientation = "horizontal"
+            _draw_styled_line(
+                draw,
+                guide_points,
+                fill=guide_color,
+                width=int(render_params.guide_line_width_px),
+                style=str(render_params.guide_line_style),
+            )
+            guide_lines.append(
+                {
+                    "label": str(mark.label),
+                    "value": int(mark.value),
+                    "orientation": str(guide_orientation),
+                    "points_px": [[round(float(x), 3), round(float(y), 3)] for x, y in guide_points],
+                    "style": str(render_params.guide_line_style),
+                }
+            )
+
+        if mark_visible and selected_variant == "bar":
             resolved_bar_width = float(bar_width)
             left = float(x_center - 0.5 * float(bar_width))
             right = float(x_center + 0.5 * float(bar_width))
@@ -1023,7 +1416,7 @@ def render_labeled_chart_scene(
                 outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
-        elif selected_variant == "lollipop":
+        elif mark_visible and selected_variant == "lollipop":
             fill_rgb = (
                 tuple(int(channel) for channel in mark.fill_rgb)
                 if isinstance(mark.fill_rgb, tuple)
@@ -1052,7 +1445,7 @@ def render_labeled_chart_scene(
                 outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
-        elif selected_variant in {"scatter", "dot_plot"}:
+        elif mark_visible and selected_variant in {"scatter", "dot_plot"}:
             fill_rgb = (
                 tuple(int(channel) for channel in mark.fill_rgb)
                 if isinstance(mark.fill_rgb, tuple)
@@ -1077,13 +1470,27 @@ def render_labeled_chart_scene(
                 width=int(render_params.mark_outline_width_px),
             )
 
-        label_center = _label_center_for_variant(
-            scene_variant=selected_variant,
-            mark_center=(float(x_center), float(y_center)),
-            bar_bbox=bar_bbox,
-            point_radius_px=int(render_params.point_radius_px),
-            label_font_size_px=int(render_params.label_font_size_px),
-        )
+        if mark_visible:
+            label_center = _label_center_for_variant(
+                scene_variant=selected_variant,
+                mark_center=(float(x_center), float(y_center)),
+                bar_bbox=bar_bbox,
+                point_radius_px=int(render_params.point_radius_px),
+                label_font_size_px=int(render_params.label_font_size_px),
+            )
+        else:
+            draw.line(
+                [
+                    (float(x_center), float(plot_bottom)),
+                    (float(x_center), float(plot_bottom) + float(render_params.tick_length_px)),
+                ],
+                fill=axis_color,
+                width=max(1, int(render_params.axis_line_width_px)),
+            )
+            label_center = (
+                float(x_center),
+                float(plot_bottom) + float(render_params.tick_length_px) + float(render_params.label_font_size_px),
+            )
         draw_text_centered(
             draw,
             text=str(mark.label),
@@ -1095,22 +1502,31 @@ def render_labeled_chart_scene(
         )
 
         label_bbox = _text_bbox(draw, text=str(mark.label), center=label_center, font=label_font)
-        mark_bbox = (
-            list(bar_bbox)
-            if bar_bbox is not None
-            else [
-                float(x_center - float(render_params.point_radius_px)),
-                float(y_center - float(render_params.point_radius_px)),
-                float(x_center + float(render_params.point_radius_px)),
-                float(y_center + float(render_params.point_radius_px)),
-            ]
-        )
+        if mark_visible:
+            mark_bbox = (
+                list(bar_bbox)
+                if bar_bbox is not None
+                else [
+                    float(x_center - float(render_params.point_radius_px)),
+                    float(y_center - float(render_params.point_radius_px)),
+                    float(x_center + float(render_params.point_radius_px)),
+                    float(y_center + float(render_params.point_radius_px)),
+                ]
+            )
+            entity_type = "bar" if selected_variant in {"bar", "horizontal_bar"} else "point"
+        else:
+            mark_bbox = list(label_bbox)
+            entity_type = "future_label_slot"
         mark_trace = {
             "entity_id": f"mark_{str(mark.label)}",
             "label": str(mark.label),
             "value": int(mark.value),
+            "visible": bool(mark_visible),
             "x_rank": int(index),
-            "mark_center_px": [round(float(x_center), 3), round(float(y_center), 3)],
+            "mark_center_px": [
+                round(float(mark_point[0] if mark_visible else label_center[0]), 3),
+                round(float(mark_point[1] if mark_visible else label_center[1]), 3),
+            ],
             "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
             "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
             "label_bbox_px": [round(float(value), 3) for value in label_bbox],
@@ -1135,22 +1551,23 @@ def render_labeled_chart_scene(
         entities.append(
             {
                 "entity_id": str(mark_trace["entity_id"]),
-                "entity_type": "bar" if selected_variant in {"bar", "horizontal_bar"} else "point",
+                "entity_type": str(entity_type),
                 "attrs": {
                     "label": str(mark.label),
-                    "value": int(mark.value),
                     "x_rank": int(index),
                     "scene_variant": str(selected_variant),
                     "mark_center_px": list(mark_trace["mark_center_px"]),
                     "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
                     "label_center_px": list(mark_trace["label_center_px"]),
+                    "visible": bool(mark_visible),
                     "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
                     "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                    **({"value": int(mark.value)} if mark_visible else {}),
                 },
             }
         )
 
-    if selected_variant == "area":
+    if selected_variant == "area" and len(line_points) >= 2:
         polygon_points = list(line_points)
         polygon_points.extend(
             [
@@ -1163,6 +1580,19 @@ def render_labeled_chart_scene(
             fill=render_params.mark_fill_rgb,
             outline=None,
         )
+        for guide in guide_lines:
+            guide_points = [
+                (float(point[0]), float(point[1]))
+                for point in guide.get("points_px", [])
+                if isinstance(point, list) and len(point) == 2
+            ]
+            _draw_styled_line(
+                draw,
+                guide_points,
+                fill=guide_color,
+                width=int(render_params.guide_line_width_px),
+                style=str(render_params.guide_line_style),
+            )
         draw.line(
             line_points,
             fill=render_params.mark_outline_rgb,
@@ -1170,7 +1600,11 @@ def render_labeled_chart_scene(
             joint="curve",
         )
         for trace in mark_traces:
+            if not bool(trace.get("visible", True)):
+                continue
             center_x, center_y = trace["mark_center_px"]
+            fill_rgb = tuple(int(value) for value in trace.get("mark_fill_rgb", render_params.mark_fill_rgb))
+            outline_rgb = tuple(int(value) for value in trace.get("mark_outline_rgb", render_params.mark_outline_rgb))
             radius = float(render_params.point_radius_px)
             ellipse_box = (
                 float(center_x - radius),
@@ -1180,8 +1614,8 @@ def render_labeled_chart_scene(
             )
             draw.ellipse(
                 ellipse_box,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
             draw_text_centered(
@@ -1194,7 +1628,7 @@ def render_labeled_chart_scene(
                 stroke_width=int(render_params.label_stroke_width_px),
             )
 
-    if selected_variant == "line":
+    if selected_variant == "line" and len(line_points) >= 2:
         draw.line(
             line_points,
             fill=render_params.mark_outline_rgb,
@@ -1202,7 +1636,11 @@ def render_labeled_chart_scene(
             joint="curve",
         )
         for trace in mark_traces:
+            if not bool(trace.get("visible", True)):
+                continue
             center_x, center_y = trace["mark_center_px"]
+            fill_rgb = tuple(int(value) for value in trace.get("mark_fill_rgb", render_params.mark_fill_rgb))
+            outline_rgb = tuple(int(value) for value in trace.get("mark_outline_rgb", render_params.mark_outline_rgb))
             radius = float(render_params.point_radius_px)
             ellipse_box = (
                 float(center_x - radius),
@@ -1212,8 +1650,8 @@ def render_labeled_chart_scene(
             )
             draw.ellipse(
                 ellipse_box,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
 
@@ -1225,6 +1663,14 @@ def render_labeled_chart_scene(
         y_axis_max=int(y_axis_max),
         y_ticks=tuple(int(value) for value in y_ticks),
         scene_variant=str(selected_variant),
+        value_axis_min=int(y_axis_min),
+        value_axis_max=int(y_axis_max),
+        value_axis_span=int(y_axis_max) - int(y_axis_min),
+        value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+        value_axis_minor_ticks=tuple(int(value) for value in y_minor_ticks),
+        value_axis_window_enabled=bool(value_axis_window_enabled),
+        guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
+        guide_lines=tuple(dict(item) for item in guide_lines),
     )
 
 
@@ -1286,9 +1732,10 @@ def render_multiseries_chart_scene(
     chart_right = int(max(int(plot_left) + 180, int(round(float(plot_right) - float(legend_width) - float(legend_gap)))))
     chart_bbox = (int(plot_left), int(plot_top), int(chart_right), int(plot_bottom))
 
-    max_value = max(int(mark.value) for mark in marks)
-    y_axis_max = max(4, int(max_value) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    y_axis_min, y_axis_max, y_ticks, y_minor_ticks, value_axis_window_enabled = _resolve_value_axis(
+        [int(mark.value) for mark in marks],
+        render_params=render_params,
+    )
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
@@ -1296,9 +1743,11 @@ def render_multiseries_chart_scene(
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 
     if selected_variant == "grouped_horizontal_bar":
-        for tick_value in y_ticks:
+        major_tick_values = set(int(value) for value in y_ticks)
+        for tick_value in y_minor_ticks:
             x_px = _tick_x(
                 int(tick_value),
+                x_axis_min=int(y_axis_min),
                 x_axis_max=int(y_axis_max),
                 plot_left=int(plot_left),
                 plot_right=int(chart_right),
@@ -1308,31 +1757,34 @@ def render_multiseries_chart_scene(
                 fill=grid_color,
                 width=int(render_params.grid_line_width_px),
             )
-            draw.line(
-                [
-                    (float(x_px), float(plot_bottom)),
-                    (float(x_px), float(plot_bottom) + float(render_params.tick_length_px)),
-                ],
-                fill=axis_color,
-                width=int(render_params.axis_line_width_px),
-            )
-            tick_center = (
-                float(x_px),
-                float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
-            )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=tick_center,
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-            )
+            if int(tick_value) in major_tick_values:
+                draw.line(
+                    [
+                        (float(x_px), float(plot_bottom)),
+                        (float(x_px), float(plot_bottom) + float(render_params.tick_length_px)),
+                    ],
+                    fill=axis_color,
+                    width=int(render_params.axis_line_width_px),
+                )
+                tick_center = (
+                    float(x_px),
+                    float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
+                )
+                draw_text_centered(
+                    draw,
+                    text=str(tick_value),
+                    center=tick_center,
+                    font=tick_font,
+                    fill=render_params.text_color_rgb,
+                    stroke_fill=render_params.text_stroke_rgb,
+                    stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+                )
     else:
-        for tick_value in y_ticks:
+        major_tick_values = set(int(value) for value in y_ticks)
+        for tick_value in y_minor_ticks:
             y_px = _tick_y(
                 int(tick_value),
+                y_axis_min=int(y_axis_min),
                 y_axis_max=int(y_axis_max),
                 plot_top=int(plot_top),
                 plot_bottom=int(plot_bottom),
@@ -1342,27 +1794,28 @@ def render_multiseries_chart_scene(
                 fill=grid_color,
                 width=int(render_params.grid_line_width_px),
             )
-            draw.line(
-                [
-                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
-                    (float(plot_left), float(y_px)),
-                ],
-                fill=axis_color,
-                width=int(render_params.axis_line_width_px),
-            )
-            tick_center = (
-                float(plot_left) - float(render_params.tick_length_px) - 18.0,
-                float(y_px),
-            )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=tick_center,
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-            )
+            if int(tick_value) in major_tick_values:
+                draw.line(
+                    [
+                        (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                        (float(plot_left), float(y_px)),
+                    ],
+                    fill=axis_color,
+                    width=int(render_params.axis_line_width_px),
+                )
+                tick_center = (
+                    float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                    float(y_px),
+                )
+                draw_text_centered(
+                    draw,
+                    text=str(tick_value),
+                    center=tick_center,
+                    font=tick_font,
+                    fill=render_params.text_color_rgb,
+                    stroke_fill=render_params.text_stroke_rgb,
+                    stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+                )
 
     draw.line(
         [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
@@ -1436,6 +1889,9 @@ def render_multiseries_chart_scene(
         str(category_label): []
         for _, category_label in categories
     }
+    guide_lines: List[Dict[str, Any]] = []
+    guide_color = tuple(int(value) for value in render_params.guide_line_color_rgb)
+    draw_guides = _guide_lines_enabled(render_params)
 
     for category_rank, category_label in categories:
         if selected_variant == "grouped_horizontal_bar":
@@ -1460,27 +1916,33 @@ def render_multiseries_chart_scene(
                 x_center = float(category_center_x)
                 y_center = _tick_y(
                     int(mark.value),
+                    y_axis_min=int(y_axis_min),
                     y_axis_max=int(y_axis_max),
                     plot_top=int(plot_top),
                     plot_bottom=int(plot_bottom),
                 )
+                mark_point = (float(x_center), float(y_center))
             elif selected_variant == "grouped_horizontal_bar":
                 y_center = float(group_top) + (float(series_rank) + 0.5) * float(subgroup_height)
                 x_extent = _tick_x(
                     int(mark.value),
+                    x_axis_min=int(y_axis_min),
                     x_axis_max=int(y_axis_max),
                     plot_left=int(plot_left),
                     plot_right=int(chart_right),
                 )
                 x_center = float(plot_left) + 0.5 * float(x_extent - float(plot_left))
+                mark_point = (float(x_extent), float(y_center))
             else:
                 x_center = float(group_left) + (float(series_rank) + 0.5) * float(subgroup_width)
                 y_center = _tick_y(
                     int(mark.value),
+                    y_axis_min=int(y_axis_min),
                     y_axis_max=int(y_axis_max),
                     plot_top=int(plot_top),
                     plot_bottom=int(plot_bottom),
                 )
+                mark_point = (float(x_center), float(y_center))
 
             if selected_variant == "grouped_bar":
                 mark_bbox = (
@@ -1506,6 +1968,30 @@ def render_multiseries_chart_scene(
                 )
             mark_bboxes_by_category[str(category_label)].append(tuple(float(value) for value in mark_bbox))
             series_points[str(series_label)].append((int(category_rank), (float(x_center), float(y_center))))
+            if bool(draw_guides):
+                if selected_variant == "grouped_horizontal_bar":
+                    guide_points = [(float(mark_point[0]), float(plot_bottom)), (float(mark_point[0]), float(mark_point[1]))]
+                    guide_orientation = "vertical"
+                else:
+                    guide_points = [(float(plot_left), float(mark_point[1])), (float(mark_point[0]), float(mark_point[1]))]
+                    guide_orientation = "horizontal"
+                _draw_styled_line(
+                    draw,
+                    guide_points,
+                    fill=guide_color,
+                    width=int(render_params.guide_line_width_px),
+                    style=str(render_params.guide_line_style),
+                )
+                guide_lines.append(
+                    {
+                        "category_label": str(category_label),
+                        "series_label": str(series_label),
+                        "value": int(mark.value),
+                        "orientation": str(guide_orientation),
+                        "points_px": [[round(float(x), 3), round(float(y), 3)] for x, y in guide_points],
+                        "style": str(render_params.guide_line_style),
+                    }
+                )
             mark_records.append(
                 {
                     "category_label": str(category_label),
@@ -1515,7 +2001,7 @@ def render_multiseries_chart_scene(
                     "value": int(mark.value),
                     "fill_rgb": [int(channel) for channel in fill_rgb],
                     "outline_rgb": [int(channel) for channel in outline_rgb],
-                    "mark_center_px": [round(float(x_center), 3), round(float(y_center), 3)],
+                    "mark_center_px": [round(float(mark_point[0]), 3), round(float(mark_point[1]), 3)],
                     "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
                 }
             )
@@ -1582,6 +2068,12 @@ def render_multiseries_chart_scene(
             float(legend_left + legend_swatch_side),
             float(row_y + legend_swatch_side),
         )
+        legend_frame_bbox = (
+            float(swatch_bbox[0]) - float(legend_frame_pad),
+            float(swatch_bbox[1]) - float(legend_frame_pad),
+            float(swatch_bbox[2]) + float(legend_frame_pad),
+            float(swatch_bbox[3]) + float(legend_frame_pad),
+        )
         if selected_variant == "multi_line":
             center_y = 0.5 * float(swatch_bbox[1] + swatch_bbox[3])
             draw.line(
@@ -1608,8 +2100,10 @@ def render_multiseries_chart_scene(
                 outline=outline_rgb,
                 width=max(1, int(render_params.mark_outline_width_px)),
             )
+        label_width, _ = _text_size(draw, text=str(series_label), font=label_font)
+        label_left = float(legend_frame_bbox[2]) + float(legend_text_gap)
         label_center = (
-            float(swatch_bbox[2]) + float(max(14, int(render_params.label_font_size_px) * 0.7)),
+            float(label_left) + 0.5 * float(label_width),
             float(0.5 * (swatch_bbox[1] + swatch_bbox[3])),
         )
         draw_text_centered(
@@ -1669,12 +2163,12 @@ def render_multiseries_chart_scene(
                     "scene_variant": str(selected_variant),
                     "mark_center_px": list(mark_trace["mark_center_px"]),
                     "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
-                    "category_label_center_px": list(mark_trace["category_label_center_px"]),
-                    "category_group_bbox_px": list(mark_trace["category_group_bbox_px"]),
-                    "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
-                    "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
-                },
-            }
+                        "category_label_center_px": list(mark_trace["category_label_center_px"]),
+                        "category_group_bbox_px": list(mark_trace["category_group_bbox_px"]),
+                        "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                        "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                    },
+                }
         )
 
     return RenderedChartScene(
@@ -1685,6 +2179,14 @@ def render_multiseries_chart_scene(
         y_axis_max=int(y_axis_max),
         y_ticks=tuple(int(value) for value in y_ticks),
         scene_variant=str(selected_variant),
+        value_axis_min=int(y_axis_min),
+        value_axis_max=int(y_axis_max),
+        value_axis_span=int(y_axis_max) - int(y_axis_min),
+        value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+        value_axis_minor_ticks=tuple(int(value) for value in y_minor_ticks),
+        value_axis_window_enabled=bool(value_axis_window_enabled),
+        guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
+        guide_lines=tuple(dict(item) for item in guide_lines),
     )
 
 
@@ -1750,7 +2252,7 @@ def render_stacked_chart_scene(
     }
     max_total = max(int(value) for value in stack_totals_by_category.values())
     y_axis_max = max(8, int(max_total) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    y_ticks = _axis_ticks(y_axis_max)
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
@@ -2114,17 +2616,20 @@ def render_histogram_scene(
     plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
     draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
 
-    max_count = max(int(bin_spec.count) for bin_spec in bins)
-    y_axis_max = max(4, int(max_count) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    y_axis_min, y_axis_max, y_ticks, y_minor_ticks, value_axis_window_enabled = _resolve_value_axis(
+        [int(bin_spec.count) for bin_spec in bins],
+        render_params=render_params,
+    )
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 
-    for tick_value in y_ticks:
+    major_tick_values = set(int(value) for value in y_ticks)
+    for tick_value in y_minor_ticks:
         y_px = _tick_y(
             int(tick_value),
+            y_axis_min=int(y_axis_min),
             y_axis_max=int(y_axis_max),
             plot_top=int(plot_top),
             plot_bottom=int(plot_bottom),
@@ -2134,26 +2639,27 @@ def render_histogram_scene(
             fill=grid_color,
             width=int(render_params.grid_line_width_px),
         )
-        draw.line(
-            [
-                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
-                (float(plot_left), float(y_px)),
-            ],
-            fill=axis_color,
-            width=int(render_params.axis_line_width_px),
-        )
-        draw_text_centered(
-            draw,
-            text=str(tick_value),
-            center=(
-                float(plot_left) - float(render_params.tick_length_px) - 18.0,
-                float(y_px),
-            ),
-            font=tick_font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-        )
+        if int(tick_value) in major_tick_values:
+            draw.line(
+                [
+                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                    (float(plot_left), float(y_px)),
+                ],
+                fill=axis_color,
+                width=int(render_params.axis_line_width_px),
+            )
+            draw_text_centered(
+                draw,
+                text=str(tick_value),
+                center=(
+                    float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                    float(y_px),
+                ),
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
 
     draw.line(
         [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
@@ -2170,11 +2676,14 @@ def render_histogram_scene(
     slot_width = float(plot_width / max(1, len(bins)))
     mark_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
+    guide_lines: List[Dict[str, Any]] = []
+    draw_guides = _guide_lines_enabled(render_params)
     for index, bin_spec in enumerate(bins):
         left = float(plot_left) + float(index) * float(slot_width)
         right = float(plot_left) + float(index + 1) * float(slot_width)
         top = _tick_y(
             int(bin_spec.count),
+            y_axis_min=int(y_axis_min),
             y_axis_max=int(y_axis_max),
             plot_top=int(plot_top),
             plot_bottom=int(plot_bottom),
@@ -2197,6 +2706,25 @@ def render_histogram_scene(
             width=int(render_params.mark_outline_width_px),
         )
         x_center = 0.5 * float(left + right)
+        if bool(draw_guides):
+            guide_points = [(float(plot_left), float(top)), (float(x_center), float(top))]
+            _draw_styled_line(
+                draw,
+                guide_points,
+                fill=render_params.guide_line_color_rgb,
+                width=int(render_params.guide_line_width_px),
+                style=str(render_params.guide_line_style),
+            )
+            guide_lines.append(
+                {
+                    "entity_id": f"bin_{index}",
+                    "label": str(bin_spec.label),
+                    "value": int(bin_spec.count),
+                    "orientation": "horizontal",
+                    "points_px": [[round(float(x), 3), round(float(y), 3)] for x, y in guide_points],
+                    "style": str(render_params.guide_line_style),
+                }
+            )
         label_center = (
             float(x_center),
             float(plot_bottom) + float(max(18, int(render_params.label_font_size_px) + 6)),
@@ -2255,6 +2783,14 @@ def render_histogram_scene(
         y_axis_max=int(y_axis_max),
         y_ticks=tuple(int(value) for value in y_ticks),
         scene_variant="histogram",
+        value_axis_min=int(y_axis_min),
+        value_axis_max=int(y_axis_max),
+        value_axis_span=int(y_axis_max) - int(y_axis_min),
+        value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+        value_axis_minor_ticks=tuple(int(value) for value in y_minor_ticks),
+        value_axis_window_enabled=bool(value_axis_window_enabled),
+        guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
+        guide_lines=tuple(dict(item) for item in guide_lines),
     )
 
 
@@ -2275,17 +2811,23 @@ def render_boxplot_scene(
     plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
     draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
 
-    max_value = max(int(spec.whisker_max) for spec in boxplots)
-    y_axis_max = max(4, int(max_value) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    boxplot_values: List[int] = []
+    for spec in boxplots:
+        boxplot_values.extend([int(spec.whisker_min), int(spec.q1), int(spec.median), int(spec.q3), int(spec.whisker_max)])
+    y_axis_min, y_axis_max, y_ticks, y_minor_ticks, value_axis_window_enabled = _resolve_value_axis(
+        boxplot_values,
+        render_params=render_params,
+    )
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 
-    for tick_value in y_ticks:
+    major_tick_values = set(int(value) for value in y_ticks)
+    for tick_value in y_minor_ticks:
         y_px = _tick_y(
             int(tick_value),
+            y_axis_min=int(y_axis_min),
             y_axis_max=int(y_axis_max),
             plot_top=int(plot_top),
             plot_bottom=int(plot_bottom),
@@ -2295,26 +2837,27 @@ def render_boxplot_scene(
             fill=grid_color,
             width=int(render_params.grid_line_width_px),
         )
-        draw.line(
-            [
-                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
-                (float(plot_left), float(y_px)),
-            ],
-            fill=axis_color,
-            width=int(render_params.axis_line_width_px),
-        )
-        draw_text_centered(
-            draw,
-            text=str(tick_value),
-            center=(
-                float(plot_left) - float(render_params.tick_length_px) - 18.0,
-                float(y_px),
-            ),
-            font=tick_font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-        )
+        if int(tick_value) in major_tick_values:
+            draw.line(
+                [
+                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                    (float(plot_left), float(y_px)),
+                ],
+                fill=axis_color,
+                width=int(render_params.axis_line_width_px),
+            )
+            draw_text_centered(
+                draw,
+                text=str(tick_value),
+                center=(
+                    float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                    float(y_px),
+                ),
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
 
     draw.line(
         [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
@@ -2334,13 +2877,15 @@ def render_boxplot_scene(
 
     mark_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
+    guide_lines: List[Dict[str, Any]] = []
+    draw_guides = _guide_lines_enabled(render_params)
     for index, spec in enumerate(boxplots):
         x_center = float(centers[index])
-        y_whisker_min = _tick_y(int(spec.whisker_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
-        y_q1 = _tick_y(int(spec.q1), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
-        y_median = _tick_y(int(spec.median), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
-        y_q3 = _tick_y(int(spec.q3), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
-        y_whisker_max = _tick_y(int(spec.whisker_max), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_whisker_min = _tick_y(int(spec.whisker_min), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_q1 = _tick_y(int(spec.q1), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_median = _tick_y(int(spec.median), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_q3 = _tick_y(int(spec.q3), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_whisker_max = _tick_y(int(spec.whisker_max), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
 
         fill_rgb = (
             tuple(int(channel) for channel in spec.fill_rgb)
@@ -2392,6 +2937,26 @@ def render_boxplot_scene(
             fill=outline_rgb,
             width=max(1, int(render_params.line_width_px) - 1),
         )
+        if bool(draw_guides):
+            guide_points = [(float(plot_left), float(y_median)), (float(x_center), float(y_median))]
+            _draw_styled_line(
+                draw,
+                guide_points,
+                fill=render_params.guide_line_color_rgb,
+                width=int(render_params.guide_line_width_px),
+                style=str(render_params.guide_line_style),
+            )
+            guide_lines.append(
+                {
+                    "entity_id": f"boxplot_{str(spec.label)}",
+                    "label": str(spec.label),
+                    "value": int(spec.median),
+                    "stat": "median",
+                    "orientation": "horizontal",
+                    "points_px": [[round(float(x), 3), round(float(y), 3)] for x, y in guide_points],
+                    "style": str(render_params.guide_line_style),
+                }
+            )
 
         label_center = (
             float(x_center),
@@ -2462,6 +3027,339 @@ def render_boxplot_scene(
         y_axis_max=int(y_axis_max),
         y_ticks=tuple(int(value) for value in y_ticks),
         scene_variant="boxplot",
+        value_axis_min=int(y_axis_min),
+        value_axis_max=int(y_axis_max),
+        value_axis_span=int(y_axis_max) - int(y_axis_min),
+        value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+        value_axis_minor_ticks=tuple(int(value) for value in y_minor_ticks),
+        value_axis_window_enabled=bool(value_axis_window_enabled),
+        guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
+        guide_lines=tuple(dict(item) for item in guide_lines),
+    )
+
+
+def render_paired_boxplot_scene(
+    background: Image.Image,
+    *,
+    before_boxplots: Sequence[BoxPlotSpec],
+    after_boxplots: Sequence[BoxPlotSpec],
+    render_params: ChartRenderParams,
+    before_title: str = "Before",
+    after_title: str = "After",
+) -> RenderedChartScene:
+    """Render matched before/after boxplots as two aligned panels."""
+
+    if len(before_boxplots) < 2 or len(after_boxplots) < 2:
+        raise ValueError("paired boxplot scenes require at least two categories per panel")
+    if len(before_boxplots) != len(after_boxplots):
+        raise ValueError("paired boxplot scenes require equal before/after category counts")
+    before_labels = [str(spec.label) for spec in before_boxplots]
+    after_labels = [str(spec.label) for spec in after_boxplots]
+    if before_labels != after_labels:
+        raise ValueError("paired boxplot panels must use the same labels in the same order")
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    plot_left, plot_top, plot_right, plot_bottom = _resolve_plot_bbox(render_params)
+    plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
+    draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
+
+    plot_width = float(max(1, int(plot_right) - int(plot_left)))
+    panel_gap = float(max(42.0, min(82.0, 0.075 * float(plot_width))))
+    panel_width = float(max(1.0, (float(plot_width) - float(panel_gap)) / 2.0))
+    left_panel = (
+        int(plot_left),
+        int(plot_top),
+        int(round(float(plot_left) + float(panel_width))),
+        int(plot_bottom),
+    )
+    right_panel = (
+        int(round(float(plot_left) + float(panel_width) + float(panel_gap))),
+        int(plot_top),
+        int(plot_right),
+        int(plot_bottom),
+    )
+
+    boxplot_values: List[int] = []
+    for spec in [*before_boxplots, *after_boxplots]:
+        boxplot_values.extend([int(spec.whisker_min), int(spec.q1), int(spec.median), int(spec.q3), int(spec.whisker_max)])
+    y_axis_min, y_axis_max, y_ticks, y_minor_ticks, value_axis_window_enabled = _resolve_value_axis(
+        boxplot_values,
+        render_params=render_params,
+    )
+    tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
+    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
+    grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
+
+    title_y = max(12.0, float(plot_top) - float(max(18, int(render_params.label_font_size_px))))
+    for panel_bbox, title in ((left_panel, before_title), (right_panel, after_title)):
+        panel_left, _, panel_right, _ = panel_bbox
+        draw_text_centered(
+            draw,
+            text=str(title),
+            center=(0.5 * (float(panel_left) + float(panel_right)), float(title_y)),
+            font=label_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=int(render_params.label_stroke_width_px),
+        )
+
+    major_tick_values = set(int(value) for value in y_ticks)
+    for tick_value in y_minor_ticks:
+        y_px = _tick_y(
+            int(tick_value),
+            y_axis_min=int(y_axis_min),
+            y_axis_max=int(y_axis_max),
+            plot_top=int(plot_top),
+            plot_bottom=int(plot_bottom),
+        )
+        for panel_bbox in (left_panel, right_panel):
+            panel_left, _, panel_right, _ = panel_bbox
+            draw.line(
+                [(float(panel_left), float(y_px)), (float(panel_right), float(y_px))],
+                fill=grid_color,
+                width=int(render_params.grid_line_width_px),
+            )
+        if int(tick_value) in major_tick_values:
+            draw.line(
+                [
+                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                    (float(plot_left), float(y_px)),
+                ],
+                fill=axis_color,
+                width=int(render_params.axis_line_width_px),
+            )
+            draw_text_centered(
+                draw,
+                text=str(tick_value),
+                center=(
+                    float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                    float(y_px),
+                ),
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
+
+    for panel_bbox in (left_panel, right_panel):
+        panel_left, panel_top, panel_right, panel_bottom = panel_bbox
+        draw.line(
+            [(float(panel_left), float(panel_top)), (float(panel_left), float(panel_bottom))],
+            fill=axis_color,
+            width=int(render_params.axis_line_width_px),
+        )
+        draw.line(
+            [(float(panel_left), float(panel_bottom)), (float(panel_right), float(panel_bottom))],
+            fill=axis_color,
+            width=int(render_params.axis_line_width_px),
+        )
+
+    mark_traces: List[Dict[str, Any]] = []
+    entities: List[Dict[str, Any]] = []
+    guide_lines: List[Dict[str, Any]] = []
+    draw_guides = _guide_lines_enabled(render_params)
+
+    def _draw_panel_boxplots(
+        *,
+        panel_id: str,
+        panel_title: str,
+        panel_rank: int,
+        panel_bbox: Tuple[int, int, int, int],
+        specs: Sequence[BoxPlotSpec],
+    ) -> None:
+        panel_left, panel_top, panel_right, panel_bottom = panel_bbox
+        centers = _slot_centers(count=len(specs), plot_left=int(panel_left), plot_right=int(panel_right))
+        slot_width = float(max(1.0, (float(panel_right) - float(panel_left)) / max(1, len(specs))))
+        box_width = float(max(18.0, float(render_params.bar_width_fraction) * float(slot_width)))
+        whisker_cap = float(max(14.0, 0.55 * float(box_width)))
+        for index, spec in enumerate(specs):
+            display_label = str(spec.label)
+            trace_label = f"{display_label}__{str(panel_id)}"
+            x_center = float(centers[index])
+            y_whisker_min = _tick_y(int(spec.whisker_min), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+            y_q1 = _tick_y(int(spec.q1), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+            y_median = _tick_y(int(spec.median), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+            y_q3 = _tick_y(int(spec.q3), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+            y_whisker_max = _tick_y(int(spec.whisker_max), y_axis_min=int(y_axis_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+
+            fill_rgb = (
+                tuple(int(channel) for channel in spec.fill_rgb)
+                if isinstance(spec.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in spec.outline_rgb)
+                if isinstance(spec.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
+
+            draw.line(
+                [(float(x_center), float(y_whisker_max)), (float(x_center), float(y_whisker_min))],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+            draw.line(
+                [
+                    (float(x_center - 0.5 * whisker_cap), float(y_whisker_max)),
+                    (float(x_center + 0.5 * whisker_cap), float(y_whisker_max)),
+                ],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+            draw.line(
+                [
+                    (float(x_center - 0.5 * whisker_cap), float(y_whisker_min)),
+                    (float(x_center + 0.5 * whisker_cap), float(y_whisker_min)),
+                ],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+
+            box_bbox = (
+                float(x_center - 0.5 * float(box_width)),
+                float(y_q3),
+                float(x_center + 0.5 * float(box_width)),
+                float(y_q1),
+            )
+            draw.rectangle(
+                box_bbox,
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+            draw.line(
+                [(float(box_bbox[0]), float(y_median)), (float(box_bbox[2]), float(y_median))],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+            if bool(draw_guides):
+                guide_points = [(float(panel_left), float(y_median)), (float(x_center), float(y_median))]
+                _draw_styled_line(
+                    draw,
+                    guide_points,
+                    fill=render_params.guide_line_color_rgb,
+                    width=int(render_params.guide_line_width_px),
+                    style=str(render_params.guide_line_style),
+                )
+                guide_lines.append(
+                    {
+                        "entity_id": f"boxplot_{trace_label}",
+                        "label": str(trace_label),
+                        "display_label": str(display_label),
+                        "panel": str(panel_id),
+                        "panel_title": str(panel_title),
+                        "value": int(spec.median),
+                        "stat": "median",
+                        "orientation": "horizontal",
+                        "points_px": [[round(float(x), 3), round(float(y), 3)] for x, y in guide_points],
+                        "style": str(render_params.guide_line_style),
+                    }
+                )
+
+            label_center = (
+                float(x_center),
+                float(plot_bottom) + float(max(18, int(render_params.label_font_size_px) + 6)),
+            )
+            draw_text_centered(
+                draw,
+                text=str(display_label),
+                center=label_center,
+                font=label_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=int(render_params.label_stroke_width_px),
+            )
+            label_bbox = _text_bbox(draw, text=str(display_label), center=label_center, font=label_font)
+            mark_bbox = (
+                float(box_bbox[0]),
+                float(min(y_whisker_max, y_whisker_min)),
+                float(box_bbox[2]),
+                float(max(y_whisker_max, y_whisker_min)),
+            )
+            mark_center = (float(x_center), float(0.5 * (float(box_bbox[1]) + float(box_bbox[3]))))
+            mark_trace = {
+                "entity_id": f"boxplot_{trace_label}",
+                "label": str(trace_label),
+                "display_label": str(display_label),
+                "panel": str(panel_id),
+                "panel_title": str(panel_title),
+                "panel_rank": int(panel_rank),
+                "value": int(spec.median),
+                "x_rank": int(index),
+                "whisker_min": int(spec.whisker_min),
+                "q1": int(spec.q1),
+                "median": int(spec.median),
+                "q3": int(spec.q3),
+                "whisker_max": int(spec.whisker_max),
+                "panel_bbox_px": [int(value) for value in panel_bbox],
+                "mark_center_px": [round(float(mark_center[0]), 3), round(float(mark_center[1]), 3)],
+                "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
+                "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
+                "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+                "mark_fill_rgb": [int(channel) for channel in fill_rgb],
+                "mark_outline_rgb": [int(channel) for channel in outline_rgb],
+            }
+            mark_traces.append(mark_trace)
+            entities.append(
+                {
+                    "entity_id": str(mark_trace["entity_id"]),
+                    "entity_type": "boxplot",
+                    "attrs": {
+                        "label": str(trace_label),
+                        "display_label": str(display_label),
+                        "panel": str(panel_id),
+                        "panel_title": str(panel_title),
+                        "panel_rank": int(panel_rank),
+                        "x_rank": int(index),
+                        "scene_variant": "boxplot",
+                        "whisker_min": int(spec.whisker_min),
+                        "q1": int(spec.q1),
+                        "median": int(spec.median),
+                        "q3": int(spec.q3),
+                        "whisker_max": int(spec.whisker_max),
+                        "panel_bbox_px": list(mark_trace["panel_bbox_px"]),
+                        "mark_center_px": list(mark_trace["mark_center_px"]),
+                        "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
+                        "label_center_px": list(mark_trace["label_center_px"]),
+                        "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                        "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                    },
+                }
+            )
+
+    _draw_panel_boxplots(
+        panel_id="before",
+        panel_title=str(before_title),
+        panel_rank=0,
+        panel_bbox=left_panel,
+        specs=before_boxplots,
+    )
+    _draw_panel_boxplots(
+        panel_id="after",
+        panel_title=str(after_title),
+        panel_rank=1,
+        panel_bbox=right_panel,
+        specs=after_boxplots,
+    )
+
+    return RenderedChartScene(
+        image=image,
+        mark_traces=tuple(dict(item) for item in mark_traces),
+        entities=tuple(dict(item) for item in entities),
+        plot_bbox_px=tuple(int(value) for value in plot_bbox),
+        y_axis_max=int(y_axis_max),
+        y_ticks=tuple(int(value) for value in y_ticks),
+        scene_variant="boxplot",
+        value_axis_min=int(y_axis_min),
+        value_axis_max=int(y_axis_max),
+        value_axis_span=int(y_axis_max) - int(y_axis_min),
+        value_axis_major_ticks=tuple(int(value) for value in y_ticks),
+        value_axis_minor_ticks=tuple(int(value) for value in y_minor_ticks),
+        value_axis_window_enabled=bool(value_axis_window_enabled),
+        guide_line_style=str(render_params.guide_line_style if guide_lines else "none"),
+        guide_lines=tuple(dict(item) for item in guide_lines),
     )
 
 
@@ -2484,7 +3382,7 @@ def render_violin_scene(
 
     max_value = max(int(spec.support_max) for spec in violins)
     y_axis_max = max(4, int(max_value) + 1)
-    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    y_ticks = _axis_ticks(y_axis_max)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
@@ -2536,7 +3434,18 @@ def render_violin_scene(
 
     centers = _slot_centers(count=len(violins), plot_left=int(plot_left), plot_right=int(plot_right))
     slot_width = float(max(1.0, (float(plot_right) - float(plot_left)) / max(1, len(violins))))
-    half_width = float(max(16.0, 0.44 * float(slot_width)))
+    width_scale = max(0.72, min(1.25, float(render_params.violin_width_scale)))
+    smoothing_scale = max(0.70, min(1.35, float(render_params.violin_smoothing_scale)))
+    fill_style = str(render_params.violin_fill_style).strip().lower()
+    if fill_style not in {"solid", "light", "outline", "hatch"}:
+        fill_style = "solid"
+    mode_line_style = str(render_params.violin_mode_line_style).strip().lower()
+    if mode_line_style not in {"full", "short", "dot", "none"}:
+        mode_line_style = "full"
+    palette_mode = str(render_params.violin_palette_mode).strip().lower()
+    if palette_mode not in {"single", "per_violin_muted"}:
+        palette_mode = "single"
+    half_width = float(max(16.0, 0.44 * float(slot_width) * float(width_scale)))
 
     mark_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
@@ -2557,16 +3466,24 @@ def render_violin_scene(
             if isinstance(spec.outline_rgb, tuple)
             else tuple(int(value) for value in render_params.mark_outline_rgb)
         )
+        if palette_mode == "per_violin_muted":
+            fill_rgb = _violin_palette_color(
+                tuple(int(value) for value in render_params.mark_fill_rgb),
+                index=int(index),
+                offset=int(render_params.violin_palette_offset),
+                plot_fill=tuple(int(value) for value in render_params.plot_fill_rgb),
+            )
+            outline_rgb = _darken_rgb(fill_rgb, 0.54)
 
         def _width_fraction(value: float) -> float:
             total = 0.16
             for mode in mode_values:
-                sigma = max(0.9, 0.16 * float(support_span))
+                sigma = max(0.9, 0.16 * float(support_span) * float(smoothing_scale))
                 delta = (float(value) - float(mode)) / float(sigma)
                 total += 0.52 * math.exp(-0.5 * float(delta * delta))
             if len(mode_values) >= 2:
                 valley_center = 0.5 * float(mode_values[0] + mode_values[-1])
-                valley_sigma = max(0.8, 0.12 * float(support_span))
+                valley_sigma = max(0.8, 0.12 * float(support_span) * float(smoothing_scale))
                 valley_delta = (float(value) - float(valley_center)) / float(valley_sigma)
                 total -= 0.20 * math.exp(-0.5 * float(valley_delta * valley_delta))
             return max(0.10, min(1.0, float(total)))
@@ -2585,10 +3502,14 @@ def render_violin_scene(
             right_points.append((float(x_center + width), float(y_px)))
             left_points.append((float(x_center - width), float(y_px)))
         polygon_points = right_points + list(reversed(left_points))
-        draw.polygon(
-            polygon_points,
-            fill=fill_rgb,
-            outline=outline_rgb,
+        _draw_violin_polygon(
+            image,
+            points=polygon_points,
+            fill_rgb=fill_rgb,
+            outline_rgb=outline_rgb,
+            fill_style=str(fill_style),
+            outline_width=int(render_params.mark_outline_width_px),
+            plot_fill_rgb=tuple(int(value) for value in render_params.plot_fill_rgb),
         )
         draw.line(
             [(float(x_center), float(_tick_y(support_min, y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom)))),
@@ -2600,11 +3521,30 @@ def render_violin_scene(
         for mode in mode_values:
             mode_y = _tick_y(int(mode), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
             mode_width = float(half_width) * float(_width_fraction(float(mode)))
-            draw.line(
-                [(float(x_center - 0.78 * mode_width), float(mode_y)), (float(x_center + 0.78 * mode_width), float(mode_y))],
-                fill=outline_rgb,
-                width=max(1, int(render_params.line_width_px) - 1),
-            )
+            if mode_line_style == "short":
+                draw.line(
+                    [(float(x_center - 0.34 * mode_width), float(mode_y)), (float(x_center + 0.34 * mode_width), float(mode_y))],
+                    fill=outline_rgb,
+                    width=max(1, int(render_params.line_width_px) - 2),
+                )
+            elif mode_line_style == "dot":
+                radius = max(2.0, 0.38 * float(render_params.point_radius_px))
+                draw.ellipse(
+                    [
+                        float(x_center - radius),
+                        float(mode_y - radius),
+                        float(x_center + radius),
+                        float(mode_y + radius),
+                    ],
+                    fill=outline_rgb,
+                    outline=outline_rgb,
+                )
+            elif mode_line_style == "full":
+                draw.line(
+                    [(float(x_center - 0.78 * mode_width), float(mode_y)), (float(x_center + 0.78 * mode_width), float(mode_y))],
+                    fill=outline_rgb,
+                    width=max(1, int(render_params.line_width_px) - 1),
+                )
             mode_center_points.append([round(float(x_center), 3), round(float(mode_y), 3)])
 
         label_center = (
@@ -2638,6 +3578,12 @@ def render_violin_scene(
             "mode_center_points_px": [list(point) for point in mode_center_points],
             "mark_fill_rgb": [int(channel) for channel in fill_rgb],
             "mark_outline_rgb": [int(channel) for channel in outline_rgb],
+            "violin_fill_style": str(fill_style),
+            "violin_mode_line_style": str(mode_line_style),
+            "violin_width_scale": round(float(width_scale), 4),
+            "violin_smoothing_scale": round(float(smoothing_scale), 4),
+            "violin_palette_mode": str(palette_mode),
+            "violin_palette_offset": int(render_params.violin_palette_offset),
         }
         mark_traces.append(mark_trace)
         entities.append(
@@ -2657,6 +3603,12 @@ def render_violin_scene(
                     "mode_center_points_px": [list(point) for point in mark_trace["mode_center_points_px"]],
                     "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
                     "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                    "violin_fill_style": str(mark_trace["violin_fill_style"]),
+                    "violin_mode_line_style": str(mark_trace["violin_mode_line_style"]),
+                    "violin_width_scale": float(mark_trace["violin_width_scale"]),
+                    "violin_smoothing_scale": float(mark_trace["violin_smoothing_scale"]),
+                    "violin_palette_mode": str(mark_trace["violin_palette_mode"]),
+                    "violin_palette_offset": int(mark_trace["violin_palette_offset"]),
                 },
             }
         )
@@ -2687,6 +3639,8 @@ __all__ = [
     "render_histogram_scene",
     "render_labeled_chart_scene",
     "render_multiseries_chart_scene",
+    "render_paired_boxplot_scene",
     "render_violin_scene",
     "resolve_chart_render_params",
+    "value_axis_render_metadata",
 ]

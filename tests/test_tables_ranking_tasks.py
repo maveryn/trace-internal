@@ -2,20 +2,28 @@
 
 from __future__ import annotations
 
-from trace.tasks.tables.ranking.label import TablesRankingLabelTask
+from trace.tasks.charts.table.ranking.label import TablesRankingLabelTask
 from tests.helpers import extract_prompt_json_example
 
 
 def test_table_ranking_label_variants_match_contract() -> None:
     task = TablesRankingLabelTask()
     cases = (
-        ("kth_highest_in_column", "spreadsheet"),
-        ("kth_lowest_in_column", "zebra"),
-        ("kth_highest_in_column", "ledger"),
-        ("kth_lowest_in_column", "card_table"),
+        ("highest", "spreadsheet"),
+        ("lowest", "zebra"),
+        ("highest", "ledger"),
+        ("lowest", "card_table"),
     )
-    for seed, (task_variant, scene_variant) in enumerate(cases, start=18610):
-        out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
+    for seed, (rank_direction, scene_variant) in enumerate(cases, start=18610):
+        out = task.generate(
+            seed,
+            params={
+                "query_variant": "kth_rank_in_column",
+                "rank_direction": rank_direction,
+                "scene_variant": scene_variant,
+            },
+            max_attempts=10,
+        )
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
@@ -31,14 +39,14 @@ def test_table_ranking_label_variants_match_contract() -> None:
         query_column = str(execution["query_column"])
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-        assert str(out.task_variant) == str(task_variant)
+        assert str(out.query_variant) == "kth_rank_in_column"
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        assert 5 <= int(execution["row_count"]) <= 10
+        assert 10 <= int(execution["row_count"]) <= 20
         assert 3 <= int(execution["numeric_column_count"]) <= 5
         assert len(evidence_bboxes) == 1
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
@@ -59,28 +67,29 @@ def test_table_ranking_label_variants_match_contract() -> None:
         sorted_rows = sorted(
             query_values,
             key=lambda item: int(item["value"]),
-            reverse=(str(task_variant) == "kth_highest_in_column"),
+            reverse=(str(rank_direction) == "highest"),
         )
         assert str(out.answer_gt.value) == str(sorted_rows[int(query_rank) - 1]["row_label"])
 
 
 def test_table_ranking_label_prompt_examples_match_selected_variant() -> None:
     task = TablesRankingLabelTask()
-    expected = {
-        "kth_highest_in_column": {"evidence": [[260, 180, 372, 520]], "answer": "Ava"},
-        "kth_lowest_in_column": {"evidence": [[260, 180, 372, 520]], "answer": "Milo"},
-    }
-    for index, task_variant in enumerate(expected, start=18640):
-        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+    expected = {"evidence": [[260, 180, 372, 520]], "answer": "Ava"}
+    for index, rank_direction in enumerate(("highest", "lowest"), start=18640):
+        out = task.generate(
+            index,
+            params={"query_variant": "kth_rank_in_column", "rank_direction": rank_direction},
+            max_attempts=10,
+        )
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[task_variant]
-        assert answer_only == {"answer": expected[task_variant]["answer"]}
+        assert answer_and_evidence == expected
+        assert answer_only == {"answer": expected["answer"]}
 
 
 def test_table_ranking_label_task_is_deterministic() -> None:
     task = TablesRankingLabelTask()
-    params = {"task_variant": "kth_highest_in_column", "scene_variant": "spreadsheet"}
+    params = {"query_variant": "kth_highest_in_column", "scene_variant": "spreadsheet"}
     out_a = task.generate(18670, params=params, max_attempts=10)
     out_b = task.generate(18670, params=params, max_attempts=10)
 

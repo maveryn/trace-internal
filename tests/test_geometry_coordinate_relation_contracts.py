@@ -12,12 +12,12 @@ from trace.tasks.shared.text_rendering import load_font, resolve_text_label_cent
 @pytest.mark.parametrize(
     ("params", "expected_answer_type", "expected_evidence_type", "expected_evidence_count"),
     (
-        ({"scene_variant": "segment_set", "query_variant": "parallel_count", "target_count": 2}, "integer", "graph_point_set", 4),
-        ({"scene_variant": "segment_set", "task_variant": "perpendicular_count", "target_count": 1}, "integer", "graph_point_set", 2),
-        ({"scene_variant": "line_points", "query_variant": "collinear_count", "target_count": 3}, "integer", "graph_point_set", 3),
-        ({"scene_variant": "quadrant_points", "query_variant": "same_quadrant_count", "target_count": 3}, "integer", "graph_point_set", 3),
-        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 2}, "integer", "graph_point_set", 2),
-        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 8}, "integer", "graph_point_set", 8),
+        ({"scene_variant": "segment_set", "query_variant": "parallel_count", "target_count": 2}, "integer", "point_set", 4),
+        ({"scene_variant": "segment_set", "query_variant": "perpendicular_count", "target_count": 1}, "integer", "point_set", 2),
+        ({"scene_variant": "line_points", "query_variant": "collinear_count", "target_count": 3}, "integer", "point_set", 3),
+        ({"scene_variant": "quadrant_points", "query_variant": "same_quadrant_count", "target_count": 3}, "integer", "point_set", 3),
+        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 2}, "integer", "point_set", 2),
+        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 8}, "integer", "point_set", 8),
     ),
 )
 def test_geometry_coordinate_relation_emits_expected_contract(
@@ -30,7 +30,8 @@ def test_geometry_coordinate_relation_emits_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     assert out.evidence_gt.type == expected_evidence_type
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert out.trace_payload["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert out.trace_payload["query_spec"]["params"]["query_variant"] == out.query_variant
 
 
 def test_geometry_coordinate_relation_rejects_unsupported_scene_variant() -> None:
@@ -82,7 +83,7 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
     quadrant_frame = quadrant_out.trace_payload["render_spec"]["graph_coordinate_frame"]
     assert float(quadrant_frame["origin_fraction_x"]) == pytest.approx(0.5)
     assert float(quadrant_frame["origin_fraction_y"]) == pytest.approx(0.5)
-    assert quadrant_out.evidence_gt.type == "graph_point_set"
+    assert quadrant_out.evidence_gt.type == "point_set"
     assert all(isinstance(point, list) and len(point) == 2 for point in quadrant_out.evidence_gt.value)
 
 

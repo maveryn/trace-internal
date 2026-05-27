@@ -1,0 +1,101 @@
+{
+  "bundle_id": "charts_radar_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "radar_profile_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:radar_profile_charts": [
+      "object_description"
+    ],
+    "query:highlighted_metric_threshold_panel_count": [
+      "metric_label",
+      "threshold_value"
+    ],
+    "query:threshold_metric_count_for_panel": [
+      "panel_label",
+      "threshold_value"
+    ],
+    "query:profile_advantage_count": [
+      "profile_a_label",
+      "profile_b_label"
+    ],
+    "query:matching_condition_panel_count": [
+      "minimum_metric_count",
+      "threshold_value"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "radar_profile_charts": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "highlighted_metric_threshold_panel_count": [
+      "For the highlighted metric \"{metric_label}\", how many panels have values above threshold {threshold_value}?",
+      "Count the panels where the highlighted spoke \"{metric_label}\" is greater than {threshold_value}.",
+      "Across the radar panels, how many highlighted-metric vertices exceed threshold {threshold_value}?",
+      "Using highlighted metric \"{metric_label}\", count the panels with profile values above {threshold_value}.",
+      "How many panels are beyond ring {threshold_value} on the highlighted spoke \"{metric_label}\"?"
+    ],
+    "threshold_metric_count_for_panel": [
+      "In panel \"{panel_label}\", how many metrics are above threshold {threshold_value}?",
+      "For panel \"{panel_label}\", count the metric vertices with values greater than {threshold_value}.",
+      "Looking only at panel \"{panel_label}\", how many spokes have profile values above {threshold_value}?",
+      "Within panel \"{panel_label}\", what is the count of metrics whose vertices are beyond ring {threshold_value}?",
+      "How many metrics in panel \"{panel_label}\" exceed threshold {threshold_value}?"
+    ],
+    "profile_advantage_count": [
+      "How many metrics have profile \"{profile_a_label}\" greater than profile \"{profile_b_label}\"?",
+      "Count the spokes where \"{profile_a_label}\" is farther from the center than \"{profile_b_label}\".",
+      "For the two-profile radar chart, on how many metrics does \"{profile_a_label}\" exceed \"{profile_b_label}\"?",
+      "What is the count of metrics where \"{profile_a_label}\" has the larger value than \"{profile_b_label}\"?",
+      "Compare the two profiles by metric: how many times is \"{profile_a_label}\" greater than \"{profile_b_label}\"?"
+    ],
+    "matching_condition_panel_count": [
+      "How many panels have at least {minimum_metric_count} metrics above threshold {threshold_value}?",
+      "Count the panels where {minimum_metric_count} or more metric vertices are greater than {threshold_value}.",
+      "Across panels, how many radar charts have at least {minimum_metric_count} spokes above {threshold_value}?",
+      "What is the number of panels satisfying at least {minimum_metric_count} metrics above threshold {threshold_value}?",
+      "Using the shared ring scale, how many panels meet the condition of {minimum_metric_count} metrics above {threshold_value}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

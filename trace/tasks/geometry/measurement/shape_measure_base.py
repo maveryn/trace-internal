@@ -361,6 +361,7 @@ class GeometryShapeMeasureBase:
 
         context = resolve_graph_scene_context(
             scene_rng,
+            instance_seed=int(instance_seed),
             params=context_params,
             render_defaults=render_defaults,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -617,7 +618,7 @@ class GeometryShapeMeasureBase:
             prompt_defaults,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -625,7 +626,7 @@ class GeometryShapeMeasureBase:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(base_prompt_required["bundle_id"])
-        prompt_task_family_key = str(base_prompt_required["task_family_key"])
+        prompt_scene_key = str(base_prompt_required["scene_key"])
         prompt_task_key = str(base_prompt_required["task_key"])
         json_output_contract = str(base_prompt_required["json_output_contract"])
         json_output_contract_answer_only = str(base_prompt_required["json_output_contract_answer_only"])
@@ -689,7 +690,7 @@ class GeometryShapeMeasureBase:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_family_key=prompt_task_family_key,
+            scene_key=prompt_scene_key,
             task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -779,7 +780,7 @@ class GeometryShapeMeasureBase:
                 },
             },
             "query_spec": {
-                "task_variant": str(variant_kind),
+                "query_variant": str(variant_kind),
                 "template_id": str(self.query_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -801,6 +802,7 @@ class GeometryShapeMeasureBase:
                 "shape_style": dict(shape_style.to_trace_dict()),
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {"image_id": "img0", "anchors": {"target_1": dict(anchor)}},
             "execution_trace": dict(execution_trace),
@@ -810,7 +812,7 @@ class GeometryShapeMeasureBase:
 
         evidence_value = evidence["evidence_value"]
         evidence_point_count = 1
-        if str(evidence["evidence_type"]) == "graph_point_set":
+        if str(evidence["evidence_type"]) in {"graph_point_set", "point_set"}:
             evidence_point_count = len(evidence_value) if isinstance(evidence_value, list) else 1
         elif str(evidence["evidence_type"]) == "graph_point":
             evidence_point_count = 1
@@ -840,6 +842,6 @@ class GeometryShapeMeasureBase:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(variant_kind),
+            query_variant=str(variant_kind),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

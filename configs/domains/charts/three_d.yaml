@@ -1,0 +1,119 @@
+generation:
+  shared:
+    category_count_min: 5
+    category_count_max: 8
+    surface_x_count_min: 5
+    surface_x_count_max: 7
+    surface_y_count_min: 4
+    surface_y_count_max: 6
+    series_count_min: 4
+    series_count_max: 6
+    time_count_min: 5
+    time_count_max: 7
+    panel_count_min: 4
+    panel_count_max: 6
+    query_variant_weights:
+      reference_nearest_label: 1.0
+      surface_extremum_label: 1.0
+      series_trend_label: 1.0
+      panel_variation_label: 1.0
+    extremum_direction_weights:
+      highest: 1.0
+      lowest: 1.0
+    trend_direction_weights:
+      increase: 1.0
+      decrease: 1.0
+    balanced_query_variant_sampling: true
+    balanced_extremum_direction_sampling: true
+    balanced_trend_direction_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 1280
+    canvas_height: 860
+    plot_margin_left_px: 132
+    plot_margin_right_px: 118
+    plot_margin_top_px: 98
+    plot_margin_bottom_px: 132
+    panel_gap_px: 30
+    point_radius_px: 9
+    line_width_px: 5
+    axis_line_width_px: 3
+    grid_line_width_px: 2
+    tick_font_size_px: 18
+    label_font_size_px: 24
+    title_font_size_px: 30
+    panel_title_font_size_px: 20
+    plot_fill_rgb_options:
+      - [255, 255, 255]
+      - [252, 254, 255]
+      - [255, 253, 248]
+      - [250, 252, 250]
+    panel_fill_rgb_options:
+      - [255, 255, 255]
+      - [252, 254, 255]
+      - [255, 253, 248]
+      - [250, 252, 250]
+    panel_border_rgb_options:
+      - [156, 168, 184]
+      - [150, 166, 184]
+      - [170, 160, 146]
+      - [148, 170, 160]
+    axis_color_rgb_options:
+      - [32, 38, 48]
+      - [44, 46, 42]
+      - [34, 46, 58]
+    grid_color_rgb_options:
+      - [180, 190, 204]
+      - [172, 188, 194]
+      - [194, 184, 168]
+    text_color_rgb_options:
+      - [38, 41, 48]
+      - [42, 47, 58]
+      - [48, 44, 38]
+    text_stroke_rgb_options:
+      - [255, 255, 255]
+      - [252, 254, 255]
+      - [255, 253, 248]
+    surface_low_rgb_options:
+      - [71, 135, 206]
+      - [73, 158, 132]
+      - [123, 108, 205]
+      - [214, 127, 58]
+    surface_high_rgb_options:
+      - [218, 71, 61]
+      - [214, 78, 127]
+      - [228, 142, 39]
+      - [48, 124, 196]
+    surface_edge_rgb_options:
+      - [82, 91, 76]
+      - [70, 94, 88]
+      - [90, 80, 108]
+      - [104, 84, 64]
+    marker_outline_rgb_options:
+      - [31, 38, 49]
+      - [42, 45, 42]
+      - [34, 44, 54]
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.50
+      reasoning_load: 0.35
+      scene_variant_load: 0.15
+
+prompt:
+  shared:
+    bundle_id: charts_three_d_v0
+    scene_key: surface_3d
+    task_key: three_d_chart_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint_label: set "answer" to the requested chart label as a string
+    answer_hint_count: set "answer" to the requested count as an integer
+    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] bounding boxes around the supporting point, surface cell, panel, or counted points
+    json_example_label: '{"evidence":[[330,210,356,236]],"answer":"K"}'
+    json_example_count: '{"evidence":[[220,360,238,378],[310,296,328,314]],"answer":2}'
+    json_example_answer_only_label: '{"answer":"K"}'
+    json_example_answer_only_count: '{"answer":2}'
+    object_description: one or more synthetic 3D chart panels

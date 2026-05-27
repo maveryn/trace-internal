@@ -9,7 +9,13 @@ from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from .bingo_common import BINGO_BOARD_SIZE, BINGO_COLUMN_LABELS, BingoCellInstance
+from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import BingoTheme, build_games_bingo_theme
+
+
+SUPPORTED_BINGO_MARK_SHAPES: Tuple[str, ...] = ("ellipse", "cell", "ring", "slash")
+SUPPORTED_BINGO_CELL_FILL_PATTERNS: Tuple[str, ...] = ("solid", "column_tint", "checker_tint")
 
 
 @dataclass(frozen=True)
@@ -31,6 +37,9 @@ class BingoRenderParams:
     cell_corner_radius_px: int
     cell_gap_px: int
     mark_inset_px: int
+    mark_shape: str = "ellipse"
+    cell_fill_pattern: str = "solid"
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -86,6 +95,7 @@ def render_bingo_card_scene(
     scene_variant: str,
     style_variant: str,
     params: BingoRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBingoCardScene:
     """Render one visible bingo card with marked cells and traced cell boxes."""
 
@@ -95,12 +105,43 @@ def render_bingo_card_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     theme: BingoTheme = build_games_bingo_theme(style_variant=str(style_variant))
+    mark_shape = str(params.mark_shape)
+    if mark_shape not in SUPPORTED_BINGO_MARK_SHAPES:
+        raise ValueError(f"unsupported bingo mark shape: {params.mark_shape}")
+    cell_fill_pattern = str(params.cell_fill_pattern)
+    if cell_fill_pattern not in SUPPORTED_BINGO_CELL_FILL_PATTERNS:
+        raise ValueError(f"unsupported bingo cell fill pattern: {params.cell_fill_pattern}")
 
     card_left = float(0.5 * (int(params.canvas_width) - int(params.card_width_px)))
     card_top = float(0.5 * (int(params.canvas_height) - int(params.card_height_px)))
     card_right = float(card_left + int(params.card_width_px))
     card_bottom = float(card_top + int(params.card_height_px))
-    card_bbox = (card_left, card_top, card_right, card_bottom)
+    card_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=(card_left, card_top, card_right, card_bottom),
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    card_left, card_top, card_right, card_bottom = [float(value) for value in card_bbox]
+
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad_x = max(20, int(round(float(params.panel_margin_px) * 0.45)))
+        panel_pad_top = max(24, int(round(float(params.title_band_height_px) * 0.34)))
+        panel_pad_bottom = max(20, int(round(float(params.panel_margin_px) * 0.38)))
+        panel_bbox = (
+            max(4, int(round(card_left)) - panel_pad_x),
+            max(4, int(round(card_top)) - panel_pad_top),
+            min(int(params.canvas_width) - 4, int(round(card_right)) + panel_pad_x),
+            min(int(params.canvas_height) - 4, int(round(card_bottom)) + panel_pad_bottom),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=max(22, int(params.card_corner_radius_px) + 8),
+            border_width=max(2, int(theme.card_border_width_px)),
+        )
 
     _draw_shadow(
         image,
@@ -190,10 +231,17 @@ def render_bingo_card_scene(
         bottom = float(top + cell_height)
         bbox = (left, top, right, bottom)
 
+        if cell_fill_pattern == "column_tint" and int(cell.column_index) % 2 == 1:
+            cell_fill_rgb = tuple(int(value) for value in theme.cell_alt_fill_rgb)
+        elif cell_fill_pattern == "checker_tint" and (int(cell.row_index) + int(cell.column_index)) % 2 == 1:
+            cell_fill_rgb = tuple(int(value) for value in theme.cell_alt_fill_rgb)
+        else:
+            cell_fill_rgb = tuple(int(value) for value in theme.cell_fill_rgb)
+
         draw.rounded_rectangle(
             bbox,
             radius=int(params.cell_corner_radius_px),
-            fill=tuple(int(value) for value in theme.cell_fill_rgb),
+            fill=tuple(int(value) for value in cell_fill_rgb),
             outline=tuple(int(value) for value in theme.grid_line_rgb),
             width=2,
         )
@@ -215,12 +263,40 @@ def render_bingo_card_scene(
 
         if bool(cell.is_marked):
             inset = int(params.mark_inset_px)
-            mark_draw.ellipse(
-                [left + inset, top + inset, right - inset, bottom - inset],
-                fill=tuple(int(value) for value in theme.mark_fill_rgba),
-                outline=tuple(int(value) for value in theme.mark_outline_rgb),
-                width=3,
-            )
+            mark_bbox = [left + inset, top + inset, right - inset, bottom - inset]
+            if mark_shape == "cell":
+                mark_draw.rounded_rectangle(
+                    [left + 2, top + 2, right - 2, bottom - 2],
+                    radius=max(2, int(params.cell_corner_radius_px) - 2),
+                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
+                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    width=3,
+                )
+            elif mark_shape == "ring":
+                mark_draw.ellipse(
+                    mark_bbox,
+                    fill=tuple(int(value) for value in (*theme.mark_fill_rgba[:3], max(28, int(theme.mark_fill_rgba[3]) // 3))),
+                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    width=5,
+                )
+            elif mark_shape == "slash":
+                mark_draw.line(
+                    [(float(mark_bbox[0]), float(mark_bbox[3])), (float(mark_bbox[2]), float(mark_bbox[1]))],
+                    fill=tuple(int(value) for value in (*theme.mark_outline_rgb, 210)),
+                    width=max(8, int(params.mark_inset_px)),
+                )
+                mark_draw.line(
+                    [(float(mark_bbox[0]) + 4.0, float(mark_bbox[3])), (float(mark_bbox[2]), float(mark_bbox[1]) - 4.0)],
+                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
+                    width=max(4, int(params.mark_inset_px) // 2),
+                )
+            else:
+                mark_draw.ellipse(
+                    mark_bbox,
+                    fill=tuple(int(value) for value in theme.mark_fill_rgba),
+                    outline=tuple(int(value) for value in theme.mark_outline_rgb),
+                    width=3,
+                )
 
         rounded_bbox = [
             round(float(left), 3),
@@ -264,9 +340,15 @@ def render_bingo_card_scene(
         scene_entities=tuple(scene_entities),
         render_map={
             "card_bbox_px": [round(float(value), 3) for value in card_bbox],
+            "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
             "column_header_bboxes_px": dict(column_header_bboxes),
             "cell_bboxes_px": dict(cell_bbox_map),
             "cell_mark_centers_px": dict(cell_mark_center_map),
+            "mark_shape": str(mark_shape),
+            "cell_fill_pattern": str(cell_fill_pattern),
+            "style_variant": str(style_variant),
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+            "layout_jitter": dict(layout_jitter),
         },
     )
 
@@ -275,5 +357,7 @@ __all__ = [
     "BingoRenderParams",
     "RenderedBingoCardScene",
     "RenderedBingoCellSpec",
+    "SUPPORTED_BINGO_CELL_FILL_PATTERNS",
+    "SUPPORTED_BINGO_MARK_SHAPES",
     "render_bingo_card_scene",
 ]

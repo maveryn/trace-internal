@@ -62,6 +62,10 @@ def _coerce_graph_style(
         1,
         min(4, int(scene_supersample_value)),
     )
+    if isinstance(spec, Mapping):
+        for key in ("style_variants", "style_variant_weights"):
+            if key in spec and isinstance(spec.get(key), Mapping):
+                style[key] = dict(spec[key])
     return style
 
 
@@ -125,6 +129,12 @@ def scaled_graph_style_for_scene(graph_style: Mapping[str, Any], *, scene_scale:
         if key in scaled:
             min_value = 0 if str(key) == "outer_margin_px" else 1
             scaled[key] = max(int(min_value), int(scaled[key]) * scale)
+    origin_pixel = scaled.get("origin_pixel")
+    if isinstance(origin_pixel, (list, tuple)) and len(origin_pixel) >= 2:
+        scaled["origin_pixel"] = [
+            max(0, int(origin_pixel[0]) * int(scale)),
+            max(0, int(origin_pixel[1]) * int(scale)),
+        ]
     scaled["supersample_scale"] = 1
     return scaled
 
@@ -225,7 +235,7 @@ def build_graph_coordinate_frame(
 
 def graph_paper_grid_from_frame(frame: Mapping[str, Any]) -> Dict[str, Any]:
     """Project graph-paper grid fields from one graph coordinate-frame mapping."""
-    return {
+    out = {
         "target_cells_x": int(frame["target_cells_x"]),
         "target_cells_y": int(frame["target_cells_y"]),
         "full_cells_x": int(frame["full_cells_x"]),
@@ -233,3 +243,15 @@ def graph_paper_grid_from_frame(frame: Mapping[str, Any]) -> Dict[str, Any]:
         "partial_edge_cells": bool(frame["partial_edge_cells"]),
         "spacing_px": int(frame["spacing_px"]),
     }
+    for key in (
+        "graph_panel_bbox_px",
+        "graph_content_bbox_px",
+        "graph_origin_px",
+        "graph_spacing_px",
+        "scene_bbox_px",
+        "layout_placement",
+    ):
+        if key in frame:
+            value = frame[key]
+            out[str(key)] = dict(value) if isinstance(value, Mapping) else value
+    return out

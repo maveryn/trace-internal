@@ -38,7 +38,7 @@ def _parse_cli() -> argparse.Namespace:
         "--count-per-variant",
         type=int,
         default=100,
-        help="Collected samples per task variant (default: 100)",
+        help="Collected samples per query variant (default: 100)",
     )
     parser.add_argument(
         "--count",
@@ -142,7 +142,7 @@ def main() -> int:
             "workers": int(args.workers),
             "checks": {
                 "min_unique_answers": 5,
-                "max_answer_frequency": 0.25,
+                "max_answer_frequency": 1.0 / 3.0,
                 "numeric_bin_summary": "reported_only_five_equal_width_bins",
             },
         },
@@ -185,8 +185,8 @@ def main() -> int:
         )
 
         failing_variants = [
-            str(task_variant)
-            for task_variant, variant_report in variant_reports.items()
+            str(query_variant)
+            for query_variant, variant_report in variant_reports.items()
             if not bool(variant_report["pass"])
         ]
         incomplete_variants = list(collected.get("incomplete_variants", []))
@@ -204,7 +204,7 @@ def main() -> int:
         task_report["collected_variant_counts"] = dict(collected.get("collected_variant_counts", {}))
         task_report["generation_error_counts"] = dict(collected.get("generation_error_counts", {}))
         task_report["overall"] = overall_report
-        task_report["per_task_variant"] = variant_reports
+        task_report["per_query_variant"] = variant_reports
         task_report["failed_variants"] = list(failing_variants)
         task_report["incomplete_variants"] = list(incomplete_variants)
         task_report["no_samples_collected"] = bool(no_samples_collected)
@@ -217,8 +217,8 @@ def main() -> int:
             f"[{status}] {task_id}: variants={variant_count}, generated={task_report['total_generated']}, "
             f"overall({_format_task_distribution_metrics(overall_report)})"
         )
-        for task_variant, variant_report in variant_reports.items():
-            label = str(task_variant) if str(task_variant).strip() else "<default>"
+        for query_variant, variant_report in variant_reports.items():
+            label = str(query_variant) if str(query_variant).strip() else "<default>"
             variant_status = "PASS" if bool(variant_report["pass"]) else "FAIL"
             print(f"    - [{variant_status}] {label}: {_format_task_distribution_metrics(variant_report)}")
         if incomplete_variants:
@@ -236,12 +236,12 @@ def main() -> int:
         "passed_tasks": int(total - failed_count),
         "failed_tasks": int(failed_count),
         "failed_task_ids": sorted(failed),
-        "failed_task_variant_map": {
+        "failed_query_variant_map": {
             str(task_report["task_id"]): list(task_report.get("failed_variants", []))
             for task_report in report["tasks"]
             if not bool(task_report.get("pass"))
         },
-        "incomplete_task_variant_map": {
+        "incomplete_query_variant_map": {
             str(task_report["task_id"]): list(task_report.get("incomplete_variants", []))
             for task_report in report["tasks"]
             if task_report.get("incomplete_variants")

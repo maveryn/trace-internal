@@ -14,9 +14,10 @@ class PromptBundle:
 
     bundle_id: str
     schema_version: str
-    task_family_templates: Dict[str, Tuple[str, ...]]
+    allow_empty_task_templates: bool
+    scene_templates: Dict[str, Tuple[str, ...]]
     task_templates: Dict[str, Tuple[str, ...]]
-    task_variant_templates: Dict[str, Tuple[str, ...]]
+    query_templates: Dict[str, Tuple[str, ...]]
     answer_or_evidence_templates: Dict[str, Tuple[str, ...]]
     required_slots_by_key: Dict[str, Tuple[str, ...]]
     source_path: str
@@ -73,18 +74,23 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
     if not schema_version:
         raise ValueError("schema_version is required")
 
-    task_family_templates = _parse_template_map(
-        raw.get("task_family_templates"),
-        field_name="task_family_templates",
+    scene_templates = _parse_template_map(
+        raw.get("scene_templates"),
+        field_name="scene_templates",
     )
-    task_templates = _parse_template_map(raw.get("task_templates"), field_name="task_templates")
-    task_variant_raw = raw.get("task_variant_templates")
-    task_variant_templates = (
+    allow_empty_task_templates = bool(raw.get("allow_empty_task_templates", False))
+    task_templates = _parse_template_map(
+        raw.get("task_templates"),
+        field_name="task_templates",
+        allow_empty_templates=allow_empty_task_templates,
+    )
+    query_raw = raw.get("query_templates")
+    query_templates = (
         _parse_template_map(
-            task_variant_raw,
-            field_name="task_variant_templates",
+            query_raw,
+            field_name="query_templates",
         )
-        if task_variant_raw is not None
+        if query_raw is not None
         else {}
     )
     answer_or_evidence_raw = raw.get("answer_or_evidence_templates")
@@ -102,9 +108,10 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
     return PromptBundle(
         bundle_id=bundle_id,
         schema_version=schema_version,
-        task_family_templates=task_family_templates,
+        allow_empty_task_templates=allow_empty_task_templates,
+        scene_templates=scene_templates,
         task_templates=task_templates,
-        task_variant_templates=task_variant_templates,
+        query_templates=query_templates,
         answer_or_evidence_templates=answer_or_evidence_templates,
         required_slots_by_key=required_slots_by_key,
         source_path=str(source_path),

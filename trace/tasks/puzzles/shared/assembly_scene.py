@@ -44,12 +44,14 @@ def _draw_polyomino(
     left, top, right, bottom = [float(value) for value in bbox]
     available_width = float(right - left)
     available_height = float(bottom - top)
-    unit = float(cell_size_px)
     cell_gap = max(0.0, float(cell_gap_px))
+    max_unit_w = (available_width - max(0, width_cells - 1) * cell_gap) / max(1, width_cells)
+    max_unit_h = (available_height - max(0, height_cells - 1) * cell_gap) / max(1, height_cells)
+    unit = min(float(cell_size_px), float(max_unit_w), float(max_unit_h))
+    if unit <= 0:
+        raise ValueError("polyomino does not fit inside the target bbox")
     shape_width = float(width_cells * unit + max(0, width_cells - 1) * cell_gap)
     shape_height = float(height_cells * unit + max(0, height_cells - 1) * cell_gap)
-    if shape_width > available_width or shape_height > available_height:
-        raise ValueError("polyomino does not fit inside the target bbox with the fixed cell size")
     origin_x = float(left + 0.5 * (available_width - shape_width))
     origin_y = float(top + 0.5 * (available_height - shape_height))
     bboxes: List[List[float]] = []

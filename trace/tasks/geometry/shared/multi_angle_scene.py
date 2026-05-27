@@ -52,6 +52,84 @@ def screen_bisector_direction(obj: AngleSceneObject) -> Point:
     return bisector
 
 
+def _vector_length(vector: Vector) -> float:
+    return math.hypot(float(vector[0]), float(vector[1]))
+
+
+def _orientation(a: Point, b: Point, c: Point) -> float:
+    return (
+        (float(b[0]) - float(a[0])) * (float(c[1]) - float(a[1]))
+        - (float(b[1]) - float(a[1])) * (float(c[0]) - float(a[0]))
+    )
+
+
+def _point_segment_distance(point: Point, segment_a: Point, segment_b: Point) -> float:
+    px, py = float(point[0]), float(point[1])
+    ax, ay = float(segment_a[0]), float(segment_a[1])
+    bx, by = float(segment_b[0]), float(segment_b[1])
+    dx = bx - ax
+    dy = by - ay
+    denom = (dx * dx) + (dy * dy)
+    if denom <= 1e-9:
+        return math.hypot(px - ax, py - ay)
+    t_value = max(0.0, min(1.0, (((px - ax) * dx) + ((py - ay) * dy)) / denom))
+    closest = (ax + (t_value * dx), ay + (t_value * dy))
+    return math.hypot(px - closest[0], py - closest[1])
+
+
+def _segments_intersect(segment_a: Tuple[Point, Point], segment_b: Tuple[Point, Point]) -> bool:
+    a0, a1 = segment_a
+    b0, b1 = segment_b
+    o1 = _orientation(a0, a1, b0)
+    o2 = _orientation(a0, a1, b1)
+    o3 = _orientation(b0, b1, a0)
+    o4 = _orientation(b0, b1, a1)
+    return (float(o1) * float(o2) < 0.0) and (float(o3) * float(o4) < 0.0)
+
+
+def _segment_clearance(segment_a: Tuple[Point, Point], segment_b: Tuple[Point, Point]) -> float:
+    return min(
+        _point_segment_distance(segment_a[0], segment_b[0], segment_b[1]),
+        _point_segment_distance(segment_a[1], segment_b[0], segment_b[1]),
+        _point_segment_distance(segment_b[0], segment_a[0], segment_a[1]),
+        _point_segment_distance(segment_b[1], segment_a[0], segment_a[1]),
+    )
+
+
+def _angle_segments(obj: AngleSceneObject) -> Tuple[Tuple[Point, Point], Tuple[Point, Point]]:
+    return (
+        ((float(obj.point_a[0]), float(obj.point_a[1])), (float(obj.vertex[0]), float(obj.vertex[1]))),
+        ((float(obj.vertex[0]), float(obj.vertex[1])), (float(obj.point_b[0]), float(obj.point_b[1]))),
+    )
+
+
+def _angle_object_has_clearance(
+    candidate: AngleSceneObject,
+    existing: Sequence[AngleSceneObject],
+    *,
+    min_segment_clearance_px: float,
+    min_vertex_clearance_px: float,
+) -> bool:
+    candidate_segments = _angle_segments(candidate)
+    candidate_points = (candidate.point_a, candidate.vertex, candidate.point_b)
+    for other in existing:
+        other_segments = _angle_segments(other)
+        other_points = (other.point_a, other.vertex, other.point_b)
+        for candidate_segment in candidate_segments:
+            for other_segment in other_segments:
+                if _segments_intersect(candidate_segment, other_segment):
+                    return False
+                if _segment_clearance(candidate_segment, other_segment) < float(min_segment_clearance_px):
+                    return False
+        for point_a in candidate_points:
+            for point_b in other_points:
+                if math.hypot(float(point_a[0]) - float(point_b[0]), float(point_a[1]) - float(point_b[1])) < float(
+                    min_vertex_clearance_px
+                ):
+                    return False
+    return True
+
+
 def sample_angle_objects_for_targets(
     rng,
     *,
@@ -72,6 +150,12 @@ def sample_angle_objects_for_targets(
     for label, target_angle, slot in zip(labels, target_angles, slot_units):
         pairs = list(angle_catalog[int(target_angle)])
         rng.shuffle(pairs)
+        pairs.sort(
+            key=lambda item: (
+                max(_vector_length(item[0]), _vector_length(item[1])),
+                _vector_length(item[0]) + _vector_length(item[1]),
+            )
+        )
         selected_object: AngleSceneObject | None = None
         vertex = graph_units_to_pixel(
             (int(slot[0]), int(slot[1])),
@@ -112,7 +196,7 @@ def sample_angle_objects_for_targets(
                 )
             ):
                 continue
-            selected_object = AngleSceneObject(
+            candidate_object = AngleSceneObject(
                 label=str(label),
                 vertex=(float(vertex[0]), float(vertex[1])),
                 point_a=(float(point_a[0]), float(point_a[1])),
@@ -120,6 +204,14 @@ def sample_angle_objects_for_targets(
                 target_angle_degrees=int(target_angle),
                 raw_angle_degrees=float(raw_angle),
             )
+            if not _angle_object_has_clearance(
+                candidate_object,
+                objects,
+                min_segment_clearance_px=max(3.0, 0.35 * float(context.graph_spacing)),
+                min_vertex_clearance_px=max(4.0, 0.55 * float(context.graph_spacing)),
+            ):
+                continue
+            selected_object = candidate_object
             break
         if selected_object is None:
             raise ValueError(f"no feasible angle geometry for target {target_angle}")
@@ -138,6 +230,7 @@ def draw_angle_objects(
     object_label_offset_px: float,
     render_canvas_size: int,
     shape_style: GeometryShapeStyle,
+    draw_object_labels: bool = True,
 ) -> Dict[str, List[float]]:
     """Draw one multi-angle scene and return unscaled label centers."""
 
@@ -165,6 +258,9 @@ def draw_angle_objects(
                 ((float(vertex[0]), float(vertex[1])), (float(point_b[0]), float(point_b[1]))),
             ]
         )
+
+    if not bool(draw_object_labels):
+        return {}
 
     font = load_font(int(label_font_size_px), bold=True)
     occupied_boxes: List[Tuple[float, float, float, float]] = []

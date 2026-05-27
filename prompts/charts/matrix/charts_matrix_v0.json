@@ -1,0 +1,93 @@
+{
+  "bundle_id": "charts_matrix_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "matrix_cell_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:matrix_cell": [
+      "object_description"
+    ],
+    "query:axis_extremum_label": [
+      "query_axis",
+      "axis_label",
+      "answer_axis",
+      "extremum_phrase",
+      "unanswerable_instruction"
+    ],
+    "query:off_diagonal_confusion_label": [
+      "row_label"
+    ],
+    "query:threshold_cell_count": [
+      "query_axis",
+      "axis_label",
+      "comparison_phrase"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "matrix_cell": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "axis_extremum_label": [
+      "In {query_axis} \"{axis_label}\", which {answer_axis} label has the {extremum_phrase}? {unanswerable_instruction}",
+      "Look only at {query_axis} \"{axis_label}\". What {answer_axis} label contains the {extremum_phrase}? {unanswerable_instruction}",
+      "For {query_axis} \"{axis_label}\", what {answer_axis} label has the cell with the {extremum_phrase}? {unanswerable_instruction}",
+      "Within the {query_axis} labeled \"{axis_label}\", which {answer_axis} has the {extremum_phrase}? {unanswerable_instruction}",
+      "What {answer_axis} label corresponds to the {extremum_phrase} in {query_axis} \"{axis_label}\"? {unanswerable_instruction}"
+    ],
+    "off_diagonal_confusion_label": [
+      "For actual class \"{row_label}\", ignoring the diagonal cell, which predicted column has the largest printed count?",
+      "In the row for actual class \"{row_label}\", exclude the matching diagonal cell. What predicted column label has the largest count?",
+      "Look across actual class \"{row_label}\" and ignore the diagonal. Which predicted column label is highest?",
+      "For the actual-class row \"{row_label}\", which off-diagonal predicted column has the largest printed value?",
+      "Ignoring the correct-class diagonal cell for actual class \"{row_label}\", which predicted label has the highest count?"
+    ],
+    "threshold_cell_count": [
+      "In {query_axis} \"{axis_label}\", how many active cells have printed values {comparison_phrase}?",
+      "Look only at {query_axis} \"{axis_label}\". Count the active cells with values {comparison_phrase}.",
+      "For {query_axis} \"{axis_label}\", how many printed values are {comparison_phrase}?",
+      "Within the {query_axis} labeled \"{axis_label}\", how many active cells satisfy {comparison_phrase}?",
+      "Count the cells in {query_axis} \"{axis_label}\" whose printed values are {comparison_phrase}."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

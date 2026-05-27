@@ -11,7 +11,7 @@ from trace.core.rlvr_export import build_rlvr_row, export_trace_dataset_to_rlvr
 
 def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
     dataset_root = tmp_path / "trace_dataset"
-    image_path = dataset_root / "images" / "geometry" / "task_geometry_coordinate_relation" / "000000.png"
+    image_path = dataset_root / "images" / "geometry" / "task_geometry__coordinate_plane__segment_relation_count" / "000000.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)
     Image.new("RGB", (8, 8), (255, 255, 255)).save(image_path)
 
@@ -19,7 +19,9 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         "instance_id": "inst-001",
         "domain": "geometry",
         "task_group": "coordinate",
-        "task": "task_geometry_coordinate_relation",
+        "task": "task_geometry__coordinate_plane__segment_relation_count",
+        "scene_id": "coordinate_plane",
+        "query_id": "perpendicular_count",
         "prompt": "active prompt",
         "prompt_variants": {
             "answer_only": (
@@ -43,15 +45,15 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
                 "image_id": "img-001",
                 "format": "png",
                 "image_hash": "hash-001",
-                "path": "images/geometry/task_geometry_coordinate_relation/000000.png",
+                "path": "images/geometry/task_geometry__coordinate_plane__segment_relation_count/000000.png",
             }
         ],
         "answer_gt": {"type": "integer", "value": 3},
-        "evidence_gt": {"type": "graph_point_set", "value": [[1, 2], [3, 4], [5, 6]]},
+        "evidence_gt": {"type": "point_set", "value": [[1, 2], [3, 4], [5, 6]]},
         "reward_contract": {
-            "reward_contract_version": "v1",
-            "answer": {"id": "answer_exact_match_v1", "type": "integer"},
-            "evidence": {"id": "point_set_match_v1", "type": "graph_point_set"},
+            "reward_contract_version": "v0",
+            "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+            "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
         },
         "task_complexity": {
             "complexity_score": 0.6,
@@ -80,6 +82,9 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
 
     assert row["uid"] == "inst-001"
     assert row["instance_id"] == "inst-001"
+    assert row["domain"] == "geometry"
+    assert row["scene_id"] == "coordinate_plane"
+    assert row["query_id"] == "perpendicular_count"
     assert row["prompt"] == (
         "<image>Count the marked dots.\n"
         'Required answer format: set "answer" to the requested integer value.\n'
@@ -103,7 +108,7 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
     assert row["prompt_mode"] == "answer_only"
     assert row["complexity_score"] == 0.6
     assert row["images"] == [
-        {"path": "../../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"}
+        {"path": "../../trace_dataset/images/geometry/task_geometry__coordinate_plane__segment_relation_count/000000.png"}
     ]
     assert row["answer_gt"] == train_record["answer_gt"]
     assert row["evidence_gt"] == train_record["evidence_gt"]
@@ -196,9 +201,9 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     )
     assert jsonl_rows[0]["complexity_score"] == 0.6
     assert jsonl_rows[0]["difficulty_bin"] == 0
-    assert jsonl_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
+    assert jsonl_rows[0]["bucket_id_str"] == "task_geometry__coordinate_plane__segment_relation_count::q0"
     assert jsonl_rows[0]["images"] == [
-        {"path": "../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"}
+        {"path": "../trace_dataset/images/geometry/task_geometry__coordinate_plane__segment_relation_count/000000.png"}
     ]
 
     parquet_path = tmp_path / "exports" / "trace_train.parquet"
@@ -230,19 +235,19 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     )
     assert parquet_rows[0]["complexity_score"] == 0.6
     assert parquet_rows[0]["difficulty_bin"] == 0
-    assert parquet_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
+    assert parquet_rows[0]["bucket_id_str"] == "task_geometry__coordinate_plane__segment_relation_count::q0"
     assert json.loads(parquet_rows[0]["answer_gt"]) == {
         "type": "integer",
         "value": 3,
     }
     assert json.loads(parquet_rows[0]["evidence_gt"]) == {
-        "type": "graph_point_set",
+        "type": "point_set",
         "value": [[1, 2], [3, 4], [5, 6]],
     }
     assert json.loads(parquet_rows[0]["reward_contract"]) == {
-        "reward_contract_version": "v1",
-        "answer": {"id": "answer_exact_match_v1", "type": "integer"},
-        "evidence": {"id": "point_set_match_v1", "type": "graph_point_set"},
+        "reward_contract_version": "v0",
+        "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+        "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
     }
     assert json.loads(parquet_rows[0]["trace_ref"]) == {
         "shard_id": "trace-0001",
@@ -256,7 +261,7 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
                     dataset_root
                     / "images"
                     / "geometry"
-                    / "task_geometry_coordinate_relation"
+                    / "task_geometry__coordinate_plane__segment_relation_count"
                     / "000000.png"
                 ).resolve()
             )
@@ -310,15 +315,17 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_type
             "instance_id": "inst-a",
             "domain": "geometry",
             "task_group": "coordinate",
-            "task": "task_geometry_coordinate_relation",
+            "task": "task_geometry__coordinate_plane__segment_relation_count",
+            "scene_id": "coordinate_plane",
+            "query_id": "",
             "prompt": "prompt a",
             "images": [{"path": "images/a.png"}],
             "answer_gt": {"type": "integer", "value": 3},
-            "evidence_gt": {"type": "graph_point_set", "value": [[1, 2], [3, 4]]},
+            "evidence_gt": {"type": "point_set", "value": [[1, 2], [3, 4]]},
             "reward_contract": {
-                "reward_contract_version": "v1",
-                "answer": {"id": "answer_exact_match_v1", "type": "integer"},
-                "evidence": {"id": "point_set_match_v1", "type": "graph_point_set"},
+                "reward_contract_version": "v0",
+                "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+                "evidence": {"id": "point_set_soft_distance_v0", "type": "point_set"},
             },
             "task_complexity": {"complexity_score": 0.4, "complexity_components": {}},
             "trace_ref": {"shard_id": "trace", "line_index": 0, "trace_record_hash": "ha"},
@@ -327,15 +334,17 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_type
             "instance_id": "inst-b",
             "domain": "puzzles",
             "task_group": "logic",
-            "task": "task_puzzles_logic_grid_completion_label",
+            "task": "task_puzzles__logic_grid__grid_uniqueness_completion_label",
+            "scene_id": "logic_grid",
+            "query_id": "",
             "prompt": "prompt b",
             "images": [{"path": "images/b.png"}],
             "answer_gt": {"type": "option_letter", "value": "K"},
             "evidence_gt": {"type": "bbox_set", "value": [[10, 10, 20, 20]]},
             "reward_contract": {
-                "reward_contract_version": "v1",
-                "answer": {"id": "answer_exact_match_v1", "type": "option_letter"},
-                "evidence": {"id": "bbox_set_iou_v1", "type": "bbox_set"},
+                "reward_contract_version": "v0",
+                "answer": {"id": "answer_exact_match_v0", "type": "option_letter"},
+                "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
             },
             "task_complexity": {"complexity_score": 0.7, "complexity_components": {}},
             "trace_ref": {"shard_id": "trace", "line_index": 1, "trace_record_hash": "hb"},
@@ -374,15 +383,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
                 "instance_id": f"task-a-{index}",
                 "domain": "games",
                 "task_group": "cards",
-                "task": "task_games_cards_hand_count",
+                "task": "task_games__cards__reference_condition_count",
+                "scene_id": "cards",
+                "query_id": "",
                 "prompt": f"prompt {index}",
                 "images": [{"path": f"images/{image_path.name}"}],
                 "answer_gt": {"type": "integer", "value": index},
                 "evidence_gt": {"type": "bbox_set", "value": []},
                 "reward_contract": {
-                    "reward_contract_version": "v1",
-                    "answer": {"id": "answer_exact_match_v1", "type": "integer"},
-                    "evidence": {"id": "bbox_set_iou_v1", "type": "bbox_set"},
+                    "reward_contract_version": "v0",
+                    "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+                    "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
                 },
                 "task_complexity": {"complexity_score": score, "complexity_components": {}},
                 "trace_ref": {"shard_id": "trace", "line_index": index, "trace_record_hash": f"h{index}"},
@@ -396,15 +407,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
                 "instance_id": f"task-b-{index}",
                 "domain": "games",
                 "task_group": "dominoes",
-                "task": "task_games_dominoes_chain_count",
+                "task": "task_games__dominoes__property_count",
+                "scene_id": "dominoes",
+                "query_id": "",
                 "prompt": f"prompt-b {index}",
                 "images": [{"path": f"images/{image_path.name}"}],
                 "answer_gt": {"type": "integer", "value": index},
                 "evidence_gt": {"type": "bbox_set", "value": []},
                 "reward_contract": {
-                    "reward_contract_version": "v1",
-                    "answer": {"id": "answer_exact_match_v1", "type": "integer"},
-                    "evidence": {"id": "bbox_set_iou_v1", "type": "bbox_set"},
+                    "reward_contract_version": "v0",
+                    "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+                    "evidence": {"id": "bbox_set_soft_iou_v0", "type": "bbox_set"},
                 },
                 "task_complexity": {"complexity_score": score, "complexity_components": {}},
                 "trace_ref": {"shard_id": "trace", "line_index": 100 + index, "trace_record_hash": f"hb{index}"},
@@ -425,17 +438,17 @@ def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_pat
     rows_by_id = {row["instance_id"]: row for row in rows}
 
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (1, 2)} == {
-        "task_games_cards_hand_count::q0"
+        "task_games__cards__reference_condition_count::q0"
     }
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (3, 4)} == {
-        "task_games_cards_hand_count::q1"
+        "task_games__cards__reference_condition_count::q1"
     }
     assert {rows_by_id[f"task-a-{index}"]["bucket_id_str"] for index in (5, 6)} == {
-        "task_games_cards_hand_count::q2"
+        "task_games__cards__reference_condition_count::q2"
     }
 
-    assert rows_by_id["task-b-1"]["bucket_id_str"] == "task_games_dominoes_chain_count::q0"
-    assert rows_by_id["task-b-2"]["bucket_id_str"] == "task_games_dominoes_chain_count::q0"
-    assert rows_by_id["task-b-3"]["bucket_id_str"] == "task_games_dominoes_chain_count::q1"
+    assert rows_by_id["task-b-1"]["bucket_id_str"] == "task_games__dominoes__property_count::q0"
+    assert rows_by_id["task-b-2"]["bucket_id_str"] == "task_games__dominoes__property_count::q0"
+    assert rows_by_id["task-b-3"]["bucket_id_str"] == "task_games__dominoes__property_count::q1"
     assert rows_by_id["task-b-1"]["difficulty_bin"] == 0
     assert rows_by_id["task-b-3"]["difficulty_bin"] == 1

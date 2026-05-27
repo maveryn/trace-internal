@@ -7,7 +7,11 @@ from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 
 SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS: Tuple[str, ...] = ("forced_turn_capture_count",)
+SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS: Tuple[str, ...] = (
+    "three_sided_box_count",
+    "capture_move_count",
+    "highlighted_candidate_capture_count",
+)
 
 
 @dataclass(frozen=True)
@@ -60,6 +64,10 @@ class DotsAndBoxesBoardState:
     path_box_ids: Tuple[str, ...]
     path_turn_count: int
     target_answer: int
+    highlighted_edge_ids: Tuple[str, ...] = ()
+    counted_box_ids: Tuple[str, ...] = ()
+    counted_edge_ids: Tuple[str, ...] = ()
+    candidate_edge_ids: Tuple[str, ...] = ()
 
 
 _BoxCoord = Tuple[int, int]
@@ -241,6 +249,42 @@ def _completed_box_ids(
         if all(str(edge_id) in drawn for edge_id in box_edges[box_id]):
             completed.append(str(box_id))
     return tuple(completed)
+
+
+def box_drawn_side_counts(
+    *,
+    drawn_edge_ids: Sequence[str],
+    box_edges: Mapping[str, Tuple[str, str, str, str]],
+) -> Dict[str, int]:
+    """Return the visible drawn-side count for every box."""
+
+    drawn = set(str(edge_id) for edge_id in drawn_edge_ids)
+    return {
+        str(box_id): int(sum(1 for edge_id in edges if str(edge_id) in drawn))
+        for box_id, edges in sorted(box_edges.items())
+    }
+
+
+def immediate_capture_edge_ids(
+    *,
+    drawn_edge_ids: Sequence[str],
+    box_edges: Mapping[str, Tuple[str, str, str, str]],
+) -> Tuple[str, ...]:
+    """Return undrawn edges that would complete at least one box immediately."""
+
+    drawn = set(str(edge_id) for edge_id in drawn_edge_ids)
+    all_edge_ids = sorted({str(edge_id) for edges in box_edges.values() for edge_id in edges})
+    capture_edges: List[str] = []
+    for edge_id in all_edge_ids:
+        if str(edge_id) in drawn:
+            continue
+        completed_if_drawn = _completed_box_ids(
+            drawn_edge_ids=tuple(sorted(drawn | {str(edge_id)})),
+            box_edges=box_edges,
+        )
+        if completed_if_drawn:
+            capture_edges.append(str(edge_id))
+    return tuple(capture_edges)
 
 
 def simulate_forced_capture_turn(
@@ -447,9 +491,215 @@ def build_dots_and_boxes_board_state(
             path_box_ids=tuple(_box_id(*box) for box in path),
             path_turn_count=int(_path_turn_count(path)),
             target_answer=int(target),
+            highlighted_edge_ids=(str(start_edge_id),),
+            counted_box_ids=tuple(str(box_id) for box_id in simulation.captured_box_ids),
+            counted_edge_ids=(),
+            candidate_edge_ids=(),
         )
 
     raise RuntimeError(f"failed to build a dots-and-boxes board for target {target}")
+
+
+def _all_edge_ids(box_edges: Mapping[str, Tuple[str, str, str, str]]) -> Tuple[str, ...]:
+    """Return all edge ids in stable order."""
+
+    return tuple(sorted({str(edge_id) for edges in box_edges.values() for edge_id in edges}))
+
+
+def _remove_completed_boxes(
+    *,
+    rng,
+    drawn_edge_ids: set[str],
+    box_edges: Mapping[str, Tuple[str, str, str, str]],
+) -> None:
+    """Remove random edges until no already-completed boxes remain."""
+
+    for _ in range(64):
+        completed = _completed_box_ids(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges)
+        if not completed:
+            return
+        for box_id in completed:
+            removable = [str(edge_id) for edge_id in box_edges[str(box_id)] if str(edge_id) in drawn_edge_ids]
+            if removable:
+                drawn_edge_ids.remove(str(removable[int(rng.randrange(len(removable)))]))
+
+
+def _sample_open_drawn_edges(
+    *,
+    rng,
+    all_edge_ids: Sequence[str],
+    box_edges: Mapping[str, Tuple[str, str, str, str]],
+) -> set[str]:
+    """Sample a visible board state with no already-completed boxes."""
+
+    density = float(rng.uniform(0.18, 0.82))
+    drawn_edge_ids = {
+        str(edge_id)
+        for edge_id in all_edge_ids
+        if float(rng.random()) < float(density)
+    }
+    _remove_completed_boxes(rng=rng, drawn_edge_ids=drawn_edge_ids, box_edges=box_edges)
+    return set(str(edge_id) for edge_id in drawn_edge_ids)
+
+
+def _make_board_state_from_drawn_edges(
+    *,
+    box_rows: int,
+    box_cols: int,
+    edge_specs: Mapping[str, Tuple[str, Tuple[int, int], Tuple[int, int]]],
+    box_edges: Mapping[str, Tuple[str, str, str, str]],
+    drawn_edge_ids: Sequence[str],
+    highlighted_edge_ids: Sequence[str],
+    counted_box_ids: Sequence[str],
+    counted_edge_ids: Sequence[str],
+    candidate_edge_ids: Sequence[str],
+    target_answer: int,
+) -> DotsAndBoxesBoardState:
+    """Build a board state from a sampled static edge set."""
+
+    drawn = set(str(edge_id) for edge_id in drawn_edge_ids)
+    highlighted = tuple(str(edge_id) for edge_id in highlighted_edge_ids)
+    highlighted_set = set(highlighted)
+    edges: List[DotsAndBoxesEdgeInstance] = []
+    for edge_id in sorted(edge_specs):
+        orientation, dot_start, dot_end = edge_specs[edge_id]
+        edges.append(
+            DotsAndBoxesEdgeInstance(
+                edge_id=str(edge_id),
+                orientation=str(orientation),
+                dot_start=tuple(int(value) for value in dot_start),
+                dot_end=tuple(int(value) for value in dot_end),
+                is_drawn=bool(str(edge_id) in drawn),
+                is_highlighted=bool(str(edge_id) in highlighted_set),
+            )
+        )
+
+    boxes: List[DotsAndBoxesBoxInstance] = []
+    for box_id in sorted(box_edges):
+        row_index, column_index = _box_coord_from_id(box_id)
+        boxes.append(
+            DotsAndBoxesBoxInstance(
+                box_id=str(box_id),
+                row_index=int(row_index),
+                column_index=int(column_index),
+                edge_ids=tuple(str(edge_id) for edge_id in box_edges[box_id]),
+            )
+        )
+
+    return DotsAndBoxesBoardState(
+        box_rows=int(box_rows),
+        box_cols=int(box_cols),
+        edges=tuple(edges),
+        boxes=tuple(boxes),
+        highlighted_edge_id=str(highlighted[0]) if highlighted else "",
+        drawn_edge_ids=tuple(sorted(drawn)),
+        captured_box_ids=(),
+        move_edge_sequence=(),
+        branching_edge_ids=(),
+        path_box_ids=(),
+        path_turn_count=0,
+        target_answer=int(target_answer),
+        highlighted_edge_ids=tuple(str(edge_id) for edge_id in highlighted),
+        counted_box_ids=tuple(str(box_id) for box_id in counted_box_ids),
+        counted_edge_ids=tuple(str(edge_id) for edge_id in counted_edge_ids),
+        candidate_edge_ids=tuple(str(edge_id) for edge_id in candidate_edge_ids),
+    )
+
+
+def build_dots_and_boxes_count_board_state(
+    *,
+    rng,
+    query_variant: str,
+    target_answer: int,
+    box_rows: int,
+    box_cols: int,
+    candidate_edge_count: int,
+) -> DotsAndBoxesBoardState:
+    """Build one static dots-and-boxes board for an exact count query."""
+
+    edge_specs, box_edges, _edge_boxes = _build_geometry(int(box_rows), int(box_cols))
+    all_edge_ids = _all_edge_ids(box_edges)
+    target = int(target_answer)
+    query = str(query_variant)
+    if target < 0:
+        raise ValueError("dots-and-boxes count targets must be non-negative")
+
+    for _ in range(8192):
+        drawn_edge_ids = _sample_open_drawn_edges(rng=rng, all_edge_ids=all_edge_ids, box_edges=box_edges)
+        side_counts = box_drawn_side_counts(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges)
+        if any(int(count) >= 4 for count in side_counts.values()):
+            continue
+
+        if query == "three_sided_box_count":
+            counted_box_ids = tuple(str(box_id) for box_id, count in sorted(side_counts.items()) if int(count) == 3)
+            if len(counted_box_ids) != target:
+                continue
+            return _make_board_state_from_drawn_edges(
+                box_rows=int(box_rows),
+                box_cols=int(box_cols),
+                edge_specs=edge_specs,
+                box_edges=box_edges,
+                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+                highlighted_edge_ids=(),
+                counted_box_ids=counted_box_ids,
+                counted_edge_ids=(),
+                candidate_edge_ids=(),
+                target_answer=int(target),
+            )
+
+        capture_edges = immediate_capture_edge_ids(drawn_edge_ids=tuple(sorted(drawn_edge_ids)), box_edges=box_edges)
+        if query == "capture_move_count":
+            if len(capture_edges) != target:
+                continue
+            return _make_board_state_from_drawn_edges(
+                box_rows=int(box_rows),
+                box_cols=int(box_cols),
+                edge_specs=edge_specs,
+                box_edges=box_edges,
+                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+                highlighted_edge_ids=(),
+                counted_box_ids=(),
+                counted_edge_ids=capture_edges,
+                candidate_edge_ids=(),
+                target_answer=int(target),
+            )
+
+        if query == "highlighted_candidate_capture_count":
+            candidate_count = max(1, int(candidate_edge_count))
+            if target > candidate_count:
+                raise ValueError("target_answer cannot exceed candidate_edge_count")
+            missing_edges = tuple(str(edge_id) for edge_id in all_edge_ids if str(edge_id) not in drawn_edge_ids)
+            capture_set = set(str(edge_id) for edge_id in capture_edges)
+            non_capture_edges = tuple(str(edge_id) for edge_id in missing_edges if str(edge_id) not in capture_set)
+            if len(capture_edges) < target or len(non_capture_edges) < candidate_count - target:
+                continue
+            capture_pool = list(capture_edges)
+            non_capture_pool = list(non_capture_edges)
+            rng.shuffle(capture_pool)
+            rng.shuffle(non_capture_pool)
+            counted_edge_ids = tuple(sorted(str(edge_id) for edge_id in capture_pool[:target]))
+            highlighted_edge_ids = tuple(
+                sorted(
+                    [str(edge_id) for edge_id in capture_pool[:target]]
+                    + [str(edge_id) for edge_id in non_capture_pool[: candidate_count - target]]
+                )
+            )
+            return _make_board_state_from_drawn_edges(
+                box_rows=int(box_rows),
+                box_cols=int(box_cols),
+                edge_specs=edge_specs,
+                box_edges=box_edges,
+                drawn_edge_ids=tuple(sorted(drawn_edge_ids)),
+                highlighted_edge_ids=highlighted_edge_ids,
+                counted_box_ids=(),
+                counted_edge_ids=counted_edge_ids,
+                candidate_edge_ids=highlighted_edge_ids,
+                target_answer=int(target),
+            )
+
+        raise ValueError(f"unsupported dots-and-boxes query_variant: {query}")
+
+    raise RuntimeError(f"failed to build a dots-and-boxes board for {query} target {target}")
 
 
 def evidence_box_ids(board_state: DotsAndBoxesBoardState) -> Tuple[str, ...]:
@@ -465,7 +715,10 @@ __all__ = [
     "DotsAndBoxesSimulationResult",
     "SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS",
     "SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS",
+    "box_drawn_side_counts",
     "build_dots_and_boxes_board_state",
+    "build_dots_and_boxes_count_board_state",
     "evidence_box_ids",
+    "immediate_capture_edge_ids",
     "simulate_forced_capture_turn",
 ]

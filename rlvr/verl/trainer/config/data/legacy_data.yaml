@@ -17,7 +17,7 @@ val_files: ~/data/rlhf/gsm8k/test.parquet
 validation_style: standard
 
 # TRACE benchmark validation currently excludes these held-out benchmarks by default.
-trace_validation_exclude_benchmarks: ["mathverse_mini", "countqa"]
+trace_validation_exclude_benchmarks: ["mathverse_mini"]
 
 # Dataset mode selector. Use "trace" for TRACE exports, otherwise leave "none".
 dataset_mode: none

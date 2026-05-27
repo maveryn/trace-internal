@@ -1,0 +1,88 @@
+{
+  "bundle_id": "games_marble_chain_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "marble_chain_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:marble_chain_board": [
+      "object_description"
+    ],
+    "query:max_pop_direction_label": [
+      "marble_chain_rule_text"
+    ],
+    "query:target_pop_direction_label": [
+      "marble_chain_rule_text",
+      "target_pop_count"
+    ],
+    "query:pop_count_after_marked_shot": [
+      "marble_chain_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "marble_chain_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This board shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "max_pop_direction_label": [
+      "{marble_chain_rule_text} Which labeled arrow removes the most existing chain marbles?",
+      "{marble_chain_rule_text} Choose the arrow letter that makes the largest number of existing marbles pop.",
+      "{marble_chain_rule_text} Among the labeled shot arrows, which shot pops the most existing marbles?",
+      "{marble_chain_rule_text} Report the label of the shot arrow with the largest pop count.",
+      "{marble_chain_rule_text} Which labeled arrow gives the maximum number of existing marbles removed?"
+    ],
+    "target_pop_direction_label": [
+      "{marble_chain_rule_text} Which labeled arrow removes exactly {target_pop_count} existing chain marbles?",
+      "{marble_chain_rule_text} Choose the arrow letter whose shot pops exactly {target_pop_count} existing marbles.",
+      "{marble_chain_rule_text} Among the labeled shot arrows, which one has pop count {target_pop_count}?",
+      "{marble_chain_rule_text} Report the label of the arrow that removes exactly {target_pop_count} existing marbles.",
+      "{marble_chain_rule_text} Which labeled shot resolves to exactly {target_pop_count} existing marbles popped?"
+    ],
+    "pop_count_after_marked_shot": [
+      "{marble_chain_rule_text} Following the marked shot arrow, how many existing chain marbles are removed?",
+      "{marble_chain_rule_text} Count the existing marbles that pop after the shown marked shot.",
+      "{marble_chain_rule_text} What is the pop count for existing chain marbles along the marked arrow?",
+      "{marble_chain_rule_text} After the marked shot, how many existing chain marbles are removed?",
+      "{marble_chain_rule_text} Determine the number of existing chain marbles that pop from the marked shot."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -21,14 +21,19 @@ Each generated instance should include:
 - If behavior/contracts change, update the relevant source-of-truth docs above.
 - Use the repo-local skills under `skills/` for workflow-specific guidance; keep `AGENTS.md` focused on repo-wide invariants.
 
+## Local vLLM serving
+- This machine has one calibration GPU. The shared qwen25 vLLM endpoint is `http://127.0.0.1:8002/v1` serving `Qwen/Qwen2.5-VL-7B-Instruct`.
+- Do not start additional vLLM servers on other local ports for calibration. Use the calibration runner's server-pool lock at `logs/vllm/locks/qwen25vl7b_8002.lock`; if another agent holds it, wait for the lock instead of bypassing it.
+- Current serving/runbook details live in `plans/CALIBRATION_PLAN.md`.
+
 ## Core engineering rules
-- Use taxonomy consistently: `domain -> task_group -> task`.
-- Task ids must follow `task_<domain>_<task_group>_<task_name>` (lowercase snake_case). Default task module layout is `trace/tasks/<domain>/<task_group>/<task_name>.py`; tile is the explicit flat-layout exception and uses `trace/tasks/tile/<task_group>_<task_name>.py`.
-- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep intra-task variants in `task_variant`.
-- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and task-variant sampling happens inside each task (uniform by default unless task-config override).
+- Use public taxonomy consistently: `domain -> scene_id -> task_id`; `task_group` remains a module/config grouping layer.
+- Task ids use taxonomy-v0 form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. Default implementation layout remains `trace/tasks/<domain>/<task_group>/<task_name>.py`; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
+- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep intra-task query branches in `query_id`.
+- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
-- Prompt composition must be reusable: one task-family layer and one task layer (plus optional task-variant layer), each with deterministic variant selection.
+- Prompt composition must be reusable: one scene layer and one task layer (plus optional query layer), each with deterministic template selection.
 - Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).
 - Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.

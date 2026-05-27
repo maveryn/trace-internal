@@ -2,17 +2,30 @@
 
 Use this folder for implementation and review procedures.
 
-Repo-local workflow skills under `skills/` are operational overlays. The canonical process docs are listed here.
+Repo-local workflow skills under `skills/` are operational overlays. The canonical process docs are listed here. Skill-folder maintenance rules live in `../../skills/README.md`.
 
 ## Authoring
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 - `SHARED_UTILITIES.md` — helper placement and anti-duplication rules.
+- `SHARED_LABEL_ASSETS.md` — repo-wide label/name manifests, source metadata,
+  and task-local filtering guidance.
+- `SHARED_CONTEXT_TEXT_ASSETS.md` — repo-wide non-answer context/distractor
+  text manifests, source metadata, and renderer usage rules.
+- `SHARED_FONT_ASSETS.md` — repo-wide vendored font assets, deterministic
+  font-family sampling, and text-role consistency rules.
+- `TEMPLATED_RATIONALE_TARGETS.md` — standard for optional metadata-generated
+  rationale targets across output modes, detail levels, and domains.
+- `PUZZLE_GAME_RENDERING_UPGRADE.md` — scene-by-scene checklist for repeated-unit puzzle/game rendering upgrades.
+- `TECHNICAL_DIAGRAM_RENDERING_UPGRADE.md` — scene-by-scene checklist for geometry/physics technical-diagram rendering upgrades.
+- `INFORMATION_SCENE_RENDERING_UPGRADE.md` — scene-by-scene checklist for charts/pages/graph structured-information rendering upgrades.
 
 ## RLVR-specific workflows
 RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
-- `../../rlvr_legacy/docs/README.md` for legacy TRACE RLVR docs.
-- `../../plans/difficulty_calibration/README.md` for the task-difficulty calibration workspace and per-task tracking.
+- `../../plans/README.md` for the active task-review and calibration workspace.
+- `../../plans/CALIBRATION_PLAN.md` for the current per-task acceptance gates,
+  model-specific response caps, and split vLLM server commands used by
+  calibration agents.
 
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.
@@ -23,3 +36,5 @@ RLVR training/export/validation docs live under:
 ## Quality
 - `CODE_DOCUMENTATION.md` — documentation standards and update triggers.
 - `CODE_REVIEW_GUIDELINES.md` — reusable review checklist and distilled findings.
+- `DOCS_AND_SKILLS_MAINTENANCE.md` — required docs/skills update workflow,
+  anti-drift rules, and validation commands.

@@ -1,0 +1,104 @@
+{
+  "bundle_id": "games_rhythm_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "rhythm_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_rhythm_lanes": [
+      "object_description"
+    ],
+    "query:lane_hit_count": [
+      "rhythm_motion_rule_text",
+      "selected_lane_label",
+      "beat_window"
+    ],
+    "query:lane_color_hit_count": [
+      "rhythm_motion_rule_text",
+      "selected_lane_label",
+      "target_color",
+      "beat_window"
+    ],
+    "query:most_hits_lane_label": [
+      "rhythm_motion_rule_text",
+      "beat_window"
+    ],
+    "query:earliest_hit_lane_label": [
+      "rhythm_motion_rule_text",
+      "beat_window"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_rhythm_lanes": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "lane_hit_count": [
+      "{rhythm_motion_rule_text} In lane {selected_lane_label}, how many notes reach the hit line within {beat_window} beats?",
+      "Look only at lane {selected_lane_label}. {rhythm_motion_rule_text} Count the notes that reach the hit line within {beat_window} beats.",
+      "{rhythm_motion_rule_text} For lane {selected_lane_label}, report the count of notes that arrive at the hit line in at most {beat_window} beats.",
+      "Using lane {selected_lane_label}, count the notes whose bottom edge is {beat_window} or fewer rows above the hit line.",
+      "{rhythm_motion_rule_text} How many notes in lane {selected_lane_label} are within the next {beat_window} beats?"
+    ],
+    "lane_color_hit_count": [
+      "{rhythm_motion_rule_text} In lane {selected_lane_label}, how many {target_color} notes reach the hit line within {beat_window} beats?",
+      "Look only at lane {selected_lane_label}. Count the {target_color} notes that reach the hit line within {beat_window} beats.",
+      "{rhythm_motion_rule_text} For lane {selected_lane_label}, count only {target_color} notes that arrive in at most {beat_window} beats.",
+      "In lane {selected_lane_label}, how many {target_color} notes have their bottom edge {beat_window} or fewer rows above the hit line?",
+      "{rhythm_motion_rule_text} Report the number of {target_color} notes in lane {selected_lane_label} that are within the next {beat_window} beats."
+    ],
+    "most_hits_lane_label": [
+      "{rhythm_motion_rule_text} Which lane number has the most notes reaching the hit line within {beat_window} beats?",
+      "Across all lanes, count notes reaching the hit line within {beat_window} beats. Which lane number has the largest count?",
+      "{rhythm_motion_rule_text} Report the lane number with the most notes arriving in at most {beat_window} beats.",
+      "Which lane has the highest number of notes whose bottom edge is {beat_window} or fewer rows above the hit line?",
+      "{rhythm_motion_rule_text} Identify the lane number with the most notes in the next {beat_window} beats."
+    ],
+    "earliest_hit_lane_label": [
+      "{rhythm_motion_rule_text} Which lane number has the note that reaches the hit line earliest within {beat_window} beats?",
+      "Across all lanes, find the note closest to the hit line within {beat_window} beats. What lane number is it in?",
+      "{rhythm_motion_rule_text} Report the lane number of the first note to arrive at the hit line.",
+      "Which lane contains the note whose bottom edge is closest to the hit line, considering only the next {beat_window} beats?",
+      "{rhythm_motion_rule_text} Identify the lane number with the earliest arriving note."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,80 @@
+{
+  "bundle_id": "pages_arithmetic_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "section_expression_query": [
+      "{question_text}",
+      "Question: {question_text}",
+      "Use the displayed information to answer: {question_text}",
+      "Determine the answer: {question_text}",
+      "Answer based on the displayed information: {question_text}"
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:structured_document_sections": [
+      "object_description"
+    ],
+    "task:section_expression_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "structured_document_sections": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This page shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "sum_two_amounts_in_section": [
+      "Use only amount fields in the named section.",
+      "Apply the requested operation exactly as written.",
+      "Ignore values outside the queried section.",
+      "Read the referenced field values before computing.",
+      "Compute the resulting amount from the shown values."
+    ],
+    "difference_two_amounts_in_section": [
+      "Use only amount fields in the named section.",
+      "Apply the requested operation exactly as written.",
+      "Ignore values outside the queried section.",
+      "Read the referenced field values before computing.",
+      "Compute the resulting amount from the shown values."
+    ],
+    "sum_minus_amount_in_section": [
+      "Use only amount fields in the named section.",
+      "Apply the requested operation exactly as written.",
+      "Ignore values outside the queried section.",
+      "Read the referenced field values before computing.",
+      "Compute the resulting amount from the shown values."
+    ]
+  }
+}

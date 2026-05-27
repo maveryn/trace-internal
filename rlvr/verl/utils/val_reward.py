@@ -28,21 +28,55 @@ from transformers import PreTrainedTokenizer
 
 from ..protocol import DataProto
 from .local_strict_eval import strict_score_response
-from .trace_reward import is_trace_reward_input, score_trace_response
+from .trace_reward import extract_trace_answer_for_scoring, is_trace_reward_input, score_trace_response
 
 
-_CHOICE_LETTERS = "ABCDEFG"
+_CHOICE_LETTERS = "ABCDEFGHIJKL"
 _CHOICE_SINGLE_RE = re.compile(
-    rf"\(([{_CHOICE_LETTERS}a-g])\)|(?<![A-Za-z0-9])([{_CHOICE_LETTERS}a-g])(?=[^A-Za-z0-9]|$)"
+    rf"\(([{_CHOICE_LETTERS}a-l])\)|(?<![A-Za-z0-9])([{_CHOICE_LETTERS}a-l])(?=[^A-Za-z0-9]|$)"
 )
-_CHOICE_SEQ_RE = re.compile(rf"(?<![A-Za-z0-9])([{_CHOICE_LETTERS}]{{2,7}})(?=[^A-Za-z0-9]|$)")
-_CHOICE_PREFIX_RE = re.compile(r"^\s*\(?([A-Ga-g])[\)\.\:]\s*(.*)$")
+_CHOICE_SEQ_RE = re.compile(rf"(?<![A-Za-z0-9])([{_CHOICE_LETTERS}]{{2,12}})(?=[^A-Za-z0-9]|$)")
+_CHOICE_PREFIX_RE = re.compile(r"^\s*\(?([A-La-l])[\)\.\:]\s*(.*)$")
 _NUMBER_RE = re.compile(r"[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
 _NUMBER_OR_FRAC_RE = re.compile(
     r"[-+]?\d+\s*/\s*\d+|[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"
 )
 _YES_NO_RE = re.compile(r"(?<![A-Za-z])(yes|no|true|false)(?![A-Za-z])", re.IGNORECASE)
 _INT_RE = re.compile(r"[-+]?\d+")
+
+
+def score_external_response(
+    *,
+    response: str,
+    ground_truth: Any,
+    prompt_text: str | None = None,
+    parser_family: str | None = None,
+    metadata: Any | None = None,
+) -> tuple[float, bool, str | None, str]:
+    """Score an external validation response, accepting TRACE JSON answer payloads."""
+    extracted_trace_answer = extract_trace_answer_for_scoring(response)
+    if extracted_trace_answer is not None:
+        accuracy, extracted, extracted_answer, method = strict_score_response(
+            response=extracted_trace_answer,
+            ground_truth=ground_truth,
+            prompt_text=prompt_text,
+            parser_family=parser_family,
+            metadata=metadata,
+        )
+        return (
+            accuracy,
+            True,
+            extracted_answer if extracted_answer is not None else extracted_trace_answer,
+            f"trace_json:{method}",
+        )
+
+    return strict_score_response(
+        response=response,
+        ground_truth=ground_truth,
+        prompt_text=prompt_text,
+        parser_family=parser_family,
+        metadata=metadata,
+    )
 
 
 def _is_non_string_sequence(value: Any) -> bool:
@@ -232,7 +266,7 @@ def _parse_choice_ground_truth(gt: str) -> Optional[list[str]]:
     # remove common conjunctions
     s_norm = re.sub(r"\b(AND|OR)\b", "", s)
     # letters outside choice range => not MCQ
-    if re.search(rf"[H-Z]", s_norm):
+    if re.search(rf"[M-Z]", s_norm):
         return None
     letters = re.findall(rf"[{_CHOICE_LETTERS}]", s_norm)
     if not letters:
@@ -240,7 +274,7 @@ def _parse_choice_ground_truth(gt: str) -> Optional[list[str]]:
     cleaned = re.sub(rf"[{_CHOICE_LETTERS}\s,;/\\()\[\]-]", "", s_norm)
     if cleaned:
         return None
-    if re.fullmatch(rf"[{_CHOICE_LETTERS}]{{2,7}}", s_norm):
+    if re.fullmatch(rf"[{_CHOICE_LETTERS}]{{2,12}}", s_norm):
         if len(set(letters)) != len(letters):
             return None
     return letters
@@ -349,7 +383,7 @@ def _index_list_similarity(pred_list: list[int], gt_list: list[int], mode: str =
     gt_set = set(int(v) for v in gt_list)
 
     if mode == "exact":
-        return 1.0 if pred_set == gt_set else 0.0
+        return 1.0 if [int(v) for v in pred_list] == [int(v) for v in gt_list] else 0.0
 
     if not pred_set and not gt_set:
         return 1.0
@@ -573,6 +607,10 @@ def compute_val_reward(
         ground_truth = data.non_tensor_batch["ground_truth"][i]
         parser_family = data.non_tensor_batch["parser_family"][i] if "parser_family" in data.non_tensor_batch else None
         metadata = data.non_tensor_batch["metadata"][i] if "metadata" in data.non_tensor_batch else None
+        extra_info = data.non_tensor_batch["extra_info"][i] if "extra_info" in data.non_tensor_batch else None
+        image_sizes = data.non_tensor_batch["image_sizes"][i] if "image_sizes" in data.non_tensor_batch else None
+        if image_sizes is None and isinstance(extra_info, dict):
+            image_sizes = extra_info.get("image_sizes") or extra_info.get("image_size")
         reward_input = {
             "ground_truth": ground_truth,
             **{
@@ -581,24 +619,29 @@ def compute_val_reward(
                 if key in data.non_tensor_batch
             },
         }
+        answer_reward: float | None = None
+        evidence_reward: float | None = None
         if is_trace_reward_input(reward_input):
             trace_score = score_trace_response(
                 response=response_str,
                 answer_gt=reward_input["answer_gt"],
                 evidence_gt=reward_input["evidence_gt"],
                 reward_contract=reward_input["reward_contract"],
+                image_sizes=image_sizes,
+                metadata=metadata,
+                extra_info=extra_info,
+                trace_reward_mode="answer",
             )
             overall = float(trace_score["overall"])
             format_score = float(trace_score.get("format", 0.0))
             answer_reward = float(trace_score.get("answer_reward", 0.0))
+            evidence_reward = float(trace_score.get("evidence_reward", 0.0))
             hit = 1.0 if answer_reward >= 0.999999 else 0.0
             extracted = bool(trace_score.get("answer_parse_ok", 0.0) or trace_score.get("evidence_parse_ok", 0.0))
-            reward_metrics["answer_reward"].append(answer_reward)
-            reward_metrics["evidence_reward"].append(float(trace_score.get("evidence_reward", 0.0)))
             extracted_answer = trace_score.get("answer")
             parser_output = trace_score
         else:
-            accuracy, extracted, extracted_answer, parser_output = strict_score_response(
+            accuracy, extracted, extracted_answer, parser_output = score_external_response(
                 response=response_str,
                 ground_truth=ground_truth,
                 prompt_text=prompt_str,
@@ -610,6 +653,8 @@ def compute_val_reward(
             overall = accuracy
 
         reward_tensor[i, cur_length - 1] = overall
+        reward_metrics["answer_reward"].append(answer_reward)
+        reward_metrics["evidence_reward"].append(evidence_reward)
         reward_metrics["overall"].append(overall)
         reward_metrics["format"].append(format_score)
         reward_metrics["accuracy_on_total"].append(hit)

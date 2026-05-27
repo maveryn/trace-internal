@@ -1,0 +1,106 @@
+{
+  "bundle_id": "pages_concept_map_v0",
+  "schema_version": "v0",
+  "scene_templates": {
+    "concept_map_diagram": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This diagram shows {object_description}.",
+      "The concept map shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "branch_child_count_query": [
+      "How many child items are listed under the \"{branch_label}\" branch?",
+      "Count the child-item nodes connected to \"{branch_label}\".",
+      "What is the number of child items under \"{branch_label}\"?",
+      "Using the \"{branch_label}\" branch, how many child items are shown?",
+      "How many item nodes belong directly to \"{branch_label}\"?"
+    ],
+    "nth_child_label_query": [
+      "Reading child items under \"{branch_label}\" {reading_order}, what is the {rank_ordinal} child-item label?",
+      "Under \"{branch_label}\", which child item is {rank_ordinal} when ordered {reading_order}?",
+      "Use the child-item order under \"{branch_label}\" ({reading_order}). What label is {rank_ordinal}?",
+      "What is the label of the {rank_ordinal} child item under \"{branch_label}\" when ordered {reading_order}?",
+      "Order the child items under \"{branch_label}\" {reading_order}; what is the {rank_ordinal} label?"
+    ],
+    "marked_child_count_query": [
+      "How many child items under \"{branch_label}\" have the {marker_label} marker?",
+      "Count the child-item nodes in \"{branch_label}\" marked with a {marker_label}.",
+      "What is the number of {marker_label}-marked child items under \"{branch_label}\"?",
+      "Using only the \"{branch_label}\" branch, how many child items have the {marker_label} marker?",
+      "How many direct child items of \"{branch_label}\" carry the {marker_label} marker?"
+    ]
+  },
+  "query_templates": {
+    "branch_child_count": [
+      "Count direct child items only.",
+      "Do not count the branch node itself.",
+      "Use only the named branch.",
+      "Count each connected child-item node once.",
+      "Ignore child items under other branches."
+    ],
+    "nth_child_label": [
+      "Use the child-item nodes directly under the named branch.",
+      "Apply the stated reading order before choosing the ranked item.",
+      "Report the visible child-item label exactly.",
+      "Do not report the branch label.",
+      "Use only the named branch."
+    ],
+    "marked_child_count": [
+      "Use only child-item nodes under the named branch.",
+      "Count nodes with the requested visible marker.",
+      "Do not count the branch node itself.",
+      "Ignore the same marker on other branches.",
+      "Count each matching child-item node once."
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nAnswer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:concept_map_diagram": [
+      "object_description"
+    ],
+    "task:branch_child_count_query": [
+      "branch_label"
+    ],
+    "task:nth_child_label_query": [
+      "branch_label",
+      "rank_ordinal",
+      "reading_order"
+    ],
+    "task:marked_child_count_query": [
+      "branch_label",
+      "marker_label"
+    ],
+    "query:branch_child_count": [],
+    "query:nth_child_label": [],
+    "query:marked_child_count": [],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

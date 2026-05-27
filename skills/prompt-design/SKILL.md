@@ -13,9 +13,9 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
 
 ## Prompt workflow
 1. Keep bundle structure aligned to TRACE's composition layers:
-   - task family,
+   - scene,
    - task,
-   - optional task variant,
+   - optional query,
    - output mode.
 2. Keep exactly 5 strong variants per required template list.
 3. Use static prompt slots from bundle/config data, not task-module constants.
@@ -26,8 +26,8 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
 - No hardcoded user-facing prompt text in task modules.
 - `answer_only` and `answer_and_evidence` must both have explicit JSON response instructions.
 - If a task mentions a color, pass it as `name [#RRGGBB]` through the shared formatter.
-- If variants change evidence structure or semantics, examples must be variant-aware too.
-- Keep task-layer wording semantic; do not duplicate formatting instructions already carried by family or mode templates.
+- If query branches change evidence structure or semantics, examples must be query-aware too.
+- Keep task-layer wording semantic; do not duplicate formatting instructions already carried by scene or mode templates.
 
 ## Handoff
 After prompt wiring is stable, run `skills/verification-review/SKILL.md`.

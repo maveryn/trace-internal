@@ -19,7 +19,7 @@ This directory is the local home for benchmark evaluation that mirrors the Vero 
 - Judge model for judge-backed benchmarks: `Qwen/Qwen3-32B`
 
 `ChartQA-Pro` zero-shot evaluation does not require an LLM judge. It uses the Vero task prompt templates plus deterministic answer extraction and relaxed matching.
-The default local reasoning task is also deterministic unless you explicitly use the local `chartqa_pro_reasoning_samplingq3_judge` task variant added in this repo.
+The default local reasoning task is also deterministic unless you explicitly use the local `chartqa_pro_reasoning_samplingq3_judge` query branch added in this repo.
 
 ## Local Layout
 
@@ -49,7 +49,7 @@ The copied files are a local snapshot of the benchmark/task logic we are matchin
 
 For MathVista Mini, the default upstream Qwen3 prompt tasks are deterministic. Local judge-backed variants can be created by swapping `process_results` to `utils.mathvista_process_results_judge`, or by using `--predict_only` plus `scripts/mathvista_judge_score.py` for batched judge extraction.
 
-For MathVision, upstream includes Qwen3 zero-shot and reasoning prompt tasks on the full `test` split. This repo also adds local `testmini` task variants for faster comparison runs:
+For MathVision, upstream includes Qwen3 zero-shot and reasoning prompt tasks on the full `test` split. This repo also adds local `testmini` query branches for faster comparison runs:
 
 - [mathvision_testmini_qwen3_thinking_zs.yaml](/home/jovyan/work/trace/eval/vendor/vero_eval/lmms_eval/tasks/mathvision/mathvision_testmini_qwen3_thinking_zs.yaml)
 - [mathvision_testmini_reasoning_samplingq3.yaml](/home/jovyan/work/trace/eval/vendor/vero_eval/lmms_eval/tasks/mathvision/mathvision_testmini_reasoning_samplingq3.yaml)

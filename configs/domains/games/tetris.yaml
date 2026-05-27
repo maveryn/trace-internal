@@ -1,0 +1,79 @@
+generation:
+  shared:
+    scene_variant_weights:
+      low_stack: 1.0
+      notched_stack: 1.0
+      high_stack: 1.0
+    line_clear_count_query_weights:
+      max_clear_with_next_piece: 1.0
+    drop_result_label_query_weights:
+      no_clear_result: 1.0
+      single_clear_result: 1.0
+      multi_clear_result: 1.0
+    style_variant_weights:
+      panel_scene: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_target_clear_count_sampling: true
+    balanced_option_count_sampling: true
+    balanced_board_size_sampling: true
+    line_clear_count_support: [0, 1, 2, 3, 4]
+    drop_result_clear_count_support: [0, 1, 2]
+    option_count_support: [5]
+    board_row_count_support: [10, 11, 12, 13, 14, 15]
+    board_col_count_support: [7, 8, 9, 10, 11]
+
+rendering:
+  shared:
+    canvas_width: 1100
+    canvas_height: 990
+    panel_margin_px: 42
+    board_gap_px: 34
+    cell_size_px: 24
+    line_cell_size_px: 34
+    cell_gap_px: 2
+    panel_pad_px: 12
+    label_band_height_px: 28
+    cell_outline_width_px: 1
+    ghost_outline_width_px: 4
+    label_font_size_px: 20
+    small_label_font_size_px: 15
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      state_reasoning: 0.44
+      ambiguity: 0.14
+      output_burden: 0.12
+
+prompt:
+  shared:
+    bundle_id: games_tetris_v0
+    scene_key: tetris_board
+    task_key: tetris_query
+    object_description_tetris_board: a Tetris board with colored locked blocks and tetromino pieces
+    tetris_rule_text: A tetromino falls straight down until it rests on the stack or the bottom of the board.
+    next_piece_rule_text: The NEXT piece may be rotated and moved sideways, then it falls straight down until it rests.
+    fixed_drop_rule_text: In the START board, the falling piece drops straight down from its shown position without moving sideways or rotating.
+    line_clear_rule_text: After the piece locks, every completely filled row clears and all rows above fall down by the number of cleared rows.
+    evidence_hint_line_clear_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for the main board and the NEXT piece panel
+    answer_hint_line_clear_count: set "answer" to the maximum number of rows the NEXT piece can clear
+    evidence_hint_drop_result_label: set "evidence" to an array containing the selected result-board bounding box
+    answer_hint_drop_result_label: set "answer" to only the selected option letter
+
+visual:
+  noise:
+    apply_prob: 0.5
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.15, 0.4]
+      downsample:
+        scale: [0.9, 0.97]
+      jpeg:
+        quality: [78.0, 94.0]
+      noise:
+        alpha: [0.015, 0.045]

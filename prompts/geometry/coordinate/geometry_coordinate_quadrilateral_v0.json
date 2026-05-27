@@ -1,0 +1,123 @@
+{
+  "bundle_id": "geometry_coordinate_quadrilateral_v0",
+  "schema_version": "v0",
+  "allow_empty_task_templates": true,
+  "task_templates": {
+    "coordinate_quadrilateral_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:coordinate_quadrilateral_candidate_scene": [
+      "object_description"
+    ],
+    "scene:coordinate_panels_scene": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "coordinate_quadrilateral_candidate_scene": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The coordinate diagram shows {object_description}."
+    ],
+    "coordinate_panels_scene": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The coordinate panel grid shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "parallelogram_completion_label": [
+      "Which lettered point completes a parallelogram with the three unlabeled points?",
+      "Choose the candidate point that forms a parallelogram with the three unlabeled points.",
+      "Which candidate point can be added to the three unlabeled points to make a parallelogram?",
+      "Find the lettered point that completes the parallelogram.",
+      "Which lettered point is the missing vertex of a parallelogram?"
+    ],
+    "rectangle_completion_label": [
+      "Which lettered point completes a rectangle with the three unlabeled points?",
+      "Choose the candidate point that forms a rectangle with the three unlabeled points.",
+      "Which candidate point can be added to the three unlabeled points to make a rectangle?",
+      "Find the lettered point that completes the rectangle.",
+      "Which lettered point is the missing vertex of a rectangle?"
+    ],
+    "square_completion_label": [
+      "Which lettered point completes a square with the three unlabeled points?",
+      "Choose the candidate point that forms a square with the three unlabeled points.",
+      "Which candidate point can be added to the three unlabeled points to make a square?",
+      "Find the lettered point that completes the square.",
+      "Which lettered point is the missing vertex of a square?"
+    ],
+    "rhombus_completion_label": [
+      "Which lettered point completes a rhombus with the three unlabeled points?",
+      "Choose the candidate point that forms a rhombus with the three unlabeled points.",
+      "Which candidate point can be added to the three unlabeled points to make a rhombus?",
+      "Find the lettered point that completes the rhombus.",
+      "Which lettered point is the missing vertex of a rhombus?"
+    ],
+    "square_shape_match_label": [
+      "Which panel shows four points that are vertices of a square?",
+      "Choose the panel whose four points form a square.",
+      "Which labeled panel contains four vertices of a square?",
+      "Find the panel where the four plotted points make a square.",
+      "Which panel's four points form a square?"
+    ],
+    "rectangle_shape_match_label": [
+      "Which panel shows four points that are vertices of a rectangle?",
+      "Choose the panel whose four points form a rectangle.",
+      "Which labeled panel contains four vertices of a rectangle?",
+      "Find the panel where the four plotted points make a rectangle.",
+      "Which panel's four points form a rectangle?"
+    ],
+    "rhombus_shape_match_label": [
+      "Which panel shows four points that are vertices of a rhombus?",
+      "Choose the panel whose four points form a rhombus.",
+      "Which labeled panel contains four vertices of a rhombus?",
+      "Find the panel where the four plotted points make a rhombus.",
+      "Which panel's four points form a rhombus?"
+    ],
+    "parallelogram_shape_match_label": [
+      "Which panel shows four points that are vertices of a parallelogram?",
+      "Choose the panel whose four points form a parallelogram.",
+      "Which labeled panel contains four vertices of a parallelogram?",
+      "Find the panel where the four plotted points make a parallelogram.",
+      "Which panel's four points form a parallelogram?"
+    ]
+  }
+}

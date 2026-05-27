@@ -25,6 +25,7 @@ from .shared import (
     COMPARISON_ANSWER_LABEL_POOL,
     bulky_slot_centers_graph_units,
     graph_units_to_pixel,
+    polygon_has_clearance,
 )
 
 RectangleMetricKind = Literal["area_square_units", "perimeter_units"]
@@ -308,14 +309,17 @@ def sample_rectangle_comparison_scene(
                 rng.shuffle(candidates)
                 selected_object: RectangleComparisonObject | None = None
                 for width_units, height_units in candidates:
-                    v0, v1, v2, v3, center = rectangle_vertices_from_slot(
+                    vertex_a, vertex_b, vertex_c, vertex_d, center = rectangle_vertices_from_slot(
                         slot_units,
                         width_units=int(width_units),
                         height_units=int(height_units),
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                     )
-                    scaled_vertices = [scale_point(point, int(context.scene_scale)) for point in (v0, v1, v2, v3)]
+                    scaled_vertices = [
+                        scale_point(point, int(context.scene_scale))
+                        for point in (vertex_a, vertex_b, vertex_c, vertex_d)
+                    ]
                     if not all(
                         point_inside_square_canvas(
                             point,
@@ -325,11 +329,18 @@ def sample_rectangle_comparison_scene(
                         for point in scaled_vertices
                     ):
                         continue
+                    if not polygon_has_clearance(
+                        (vertex_a, vertex_b, vertex_c, vertex_d),
+                        [existing.vertices for existing in objects],
+                        min_segment_clearance_px=max(3.0, 0.35 * float(context.graph_spacing)),
+                        min_vertex_clearance_px=max(3.0, 0.35 * float(context.graph_spacing)),
+                    ):
+                        continue
                     area = int(width_units) * int(height_units)
                     perimeter = int(2 * (int(width_units) + int(height_units)))
                     selected_object = RectangleComparisonObject(
                         label=str(label),
-                        vertices=(v0, v1, v2, v3),
+                        vertices=(vertex_a, vertex_b, vertex_c, vertex_d),
                         width_units=int(width_units),
                         height_units=int(height_units),
                         area_square_units=int(area),

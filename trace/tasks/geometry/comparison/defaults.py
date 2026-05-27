@@ -20,7 +20,7 @@ class GeometryComparisonSharedDefaults:
     label_font_size_max: int = 30
     label_stroke_width: int = 1
     object_count_min: int = 4
-    object_count_max: int = 6
+    object_count_max: int = 8
     min_normalized_gap: float = 0.2
 
 

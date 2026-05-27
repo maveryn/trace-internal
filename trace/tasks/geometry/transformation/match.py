@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.seed import spawn_rng
+from ....core.seed import hash64, spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
@@ -17,9 +18,10 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_rendering import draw_text_centered, load_font, resolve_scene_label_font_size_px
 from ...shared.geometry_primitives import Point, point_inside_square_canvas
 from ...shared.drawing import draw_arrow, draw_dashed_line
-from ..comparison.shared import COMPARISON_ANSWER_LABEL_POOL, resolve_comparison_winner_label
+from ..comparison.shared import resolve_comparison_winner_label
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_transformation_complexity
+from ..shared.fixed_query_task import MultiFixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.multi_polygon_scene import PolygonSceneObject, draw_polygon_objects
@@ -50,7 +52,7 @@ from ..shared.single_object_scene import (
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
 
 
-TASK_ID = "task_geometry_transformation_match"
+TASK_ID = "geometry_transformation_match_base"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("triangle", "quadrilateral")
 SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("translation_match", "reflection_match", "rotation_match")
@@ -76,10 +78,10 @@ _LOCAL_TRANSFORM_RECIPES: Tuple[str, ...] = tuple(RIGID_TRANSFORM_RECIPE_IDS)
 class _TaskDefaults:
     """Stable fallback defaults for geometry transformation scenes."""
 
-    canvas_size_min: int = 640
-    canvas_size_max: int = 720
-    graph_cells_min: int = 24
-    graph_cells_max: int = 28
+    canvas_size_min: int = 720
+    canvas_size_max: int = 800
+    graph_cells_min: int = 34
+    graph_cells_max: int = 38
     line_width: int = 4
     line_width_min: int = 3
     line_width_max: int = 5
@@ -97,24 +99,25 @@ class _TaskDefaults:
     cue_arrow_head_width_px: int = 14
     cue_point_radius_px: int = 4
     cue_line_padding_px: int = 18
-    candidate_label_pool: Tuple[str, ...] = COMPARISON_ANSWER_LABEL_POOL
+    candidate_label_pool: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
     translation_vectors: Tuple[Tuple[int, int], ...] = (
-        (8, 0),
-        (8, 3),
-        (8, -3),
-        (12, 0),
-        (12, 3),
-        (12, -3),
+        (10, 0),
+        (10, 4),
+        (10, -4),
+        (15, 0),
+        (15, 4),
+        (15, -4),
     )
     candidate_slots: Tuple[Tuple[int, int], ...] = (
-        (4, 4),
-        (8, 4),
-        (4, 0),
-        (8, 0),
-        (4, -4),
-        (8, -4),
+        (6, 6),
+        (13, 6),
+        (6, 0),
+        (13, 0),
+        (6, -6),
+        (13, -6),
     )
-    translation_vector_anchor: Tuple[int, int] = (-10, 7)
+    translation_cue_gap_graph: int = 4
+    candidate_min_gap_graph: float = 0.75
     reflection_axis_x: int = 0
     reflection_line_y_min: int = -9
     reflection_line_y_max: int = 9
@@ -198,6 +201,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
+_WINNER_LABEL_BALANCE_SALT = 49017
 
 
 def _apply_local_transform(template: Polygon, *, recipe: str) -> Polygon:
@@ -274,6 +278,99 @@ def _candidate_slot_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, int],
     return tuple(slots)
 
 
+def _polygon_graph_bbox(vertices: Sequence[Point]) -> Tuple[float, float, float, float]:
+    """Return one graph-coordinate bbox for a polygon."""
+
+    min_x = min(float(point[0]) for point in vertices)
+    max_x = max(float(point[0]) for point in vertices)
+    min_y = min(float(point[1]) for point in vertices)
+    max_y = max(float(point[1]) for point in vertices)
+    return (float(min_x), float(min_y), float(max_x), float(max_y))
+
+
+def _candidate_bboxes_have_clearance(
+    polygons_by_label: Mapping[str, Sequence[Point]],
+    *,
+    min_gap_graph: float,
+) -> bool:
+    """Return true when candidate polygon bboxes do not overlap or crowd."""
+
+    labels = sorted(str(label) for label in polygons_by_label.keys())
+    boxes = {
+        str(label): _polygon_graph_bbox(polygons_by_label[str(label)])
+        for label in labels
+    }
+    gap = float(min_gap_graph)
+    for left_index, left_label in enumerate(labels):
+        left = boxes[str(left_label)]
+        for right_label in labels[left_index + 1 :]:
+            right = boxes[str(right_label)]
+            separated = (
+                float(left[2]) + gap <= float(right[0])
+                or float(right[2]) + gap <= float(left[0])
+                or float(left[3]) + gap <= float(right[1])
+                or float(right[3]) + gap <= float(left[1])
+            )
+            if not bool(separated):
+                return False
+    return True
+
+
+def _translation_cue_stays_left_of_y_axis(
+    *,
+    vector_anchor: Tuple[int, int],
+    translation_vector: Tuple[int, int],
+) -> bool:
+    """Return true when the translation cue does not touch or cross x=0."""
+
+    start_x = int(vector_anchor[0])
+    end_x = int(vector_anchor[0]) + int(translation_vector[0])
+    return max(int(start_x), int(end_x)) < 0
+
+
+def _translation_cue_anchor_for_reference(
+    reference_vertices_graph: Sequence[Point],
+    *,
+    translation_vector: Tuple[int, int],
+    context: GraphSceneContext,
+    padding_px: float,
+    cue_gap_graph: int,
+) -> Tuple[int, int] | None:
+    """Place the translation cue above the Reference while keeping it left of x=0."""
+
+    min_x, _min_y, max_x, max_y = _polygon_graph_bbox(reference_vertices_graph)
+    dx = int(translation_vector[0])
+    dy = int(translation_vector[1])
+    reference_mid_x = (float(min_x) + float(max_x)) / 2.0
+    start_x = int(round(float(reference_mid_x) - (float(dx) / 2.0)))
+    if int(dx) >= 0:
+        start_x = min(int(start_x), -int(dx) - 1)
+    else:
+        start_x = min(int(start_x), -1)
+
+    start_y = int(math.ceil(float(max_y) + float(cue_gap_graph) + float(max(0, -int(dy)))))
+    anchor = (int(start_x), int(start_y))
+    end = (int(anchor[0]) + int(dx), int(anchor[1]) + int(dy))
+    if not _translation_cue_stays_left_of_y_axis(
+        vector_anchor=anchor,
+        translation_vector=(int(dx), int(dy)),
+    ):
+        return None
+    if min(int(anchor[1]), int(end[1])) <= float(max_y):
+        return None
+    cue_points_ok = all(
+        point_inside_square_canvas(
+            pixel_point_from_graph_units(point, context=context),
+            canvas_size=int(context.canvas_size),
+            padding=float(padding_px),
+        )
+        for point in (anchor, end)
+    )
+    if not cue_points_ok:
+        return None
+    return anchor
+
+
 def _draw_translation_cue(
     draw,
     *,
@@ -330,7 +427,7 @@ def _draw_reflection_cue(
     label_color: Sequence[int],
     label_stroke_color: Sequence[int],
 ) -> Dict[str, Any]:
-    """Draw the vertical reflection line `l` and return trace metadata."""
+    """Draw the vertical reflection line `L` and return trace metadata."""
 
     start_graph = (int(axis_x), int(y_min))
     end_graph = (int(axis_x), int(y_max))
@@ -352,7 +449,7 @@ def _draw_reflection_cue(
     font = load_font(int(label_font_size_px), bold=True)
     draw_text_centered(
         draw,
-        text="l",
+        text="L",
         center=label_center,
         font=font,
         fill=tuple(int(value) for value in label_color),
@@ -362,7 +459,7 @@ def _draw_reflection_cue(
     return {
         "type": "reflection_line",
         "axis_kind": "vertical",
-        "line_label": "l",
+        "line_label": "L",
         "x_graph": int(axis_x),
         "y_graph_range": [int(y_min), int(y_max)],
         "start_px": [round(float(start_px[0]) / float(max(1, int(context.scene_scale))), 3), round(float(start_px[1]) / float(max(1, int(context.scene_scale))), 3)],
@@ -407,6 +504,12 @@ def _draw_rotation_cue(
     }
 
 
+def _decoupled_winner_label_params(*, params: Mapping[str, Any]) -> Mapping[str, Any]:
+    """No-op hook for winner-label cycling call sites."""
+
+    return params
+
+
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve scene/query axes plus balanced answer-label support."""
 
@@ -435,7 +538,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     winner_label, winner_probs = resolve_comparison_winner_label(
         winner_rng,
         instance_seed=int(instance_seed),
-        params=params,
+        params=_decoupled_winner_label_params(params=params),
         gen_defaults=_GEN_DEFAULTS,
         label_pool=label_pool,
         selection_namespace=(
@@ -477,7 +580,7 @@ def _sample_transformation_scene(
 ) -> _RenderedTransformationScene:
     """Sample and render one full transformation-match scene."""
 
-    template = sample_asymmetric_polygon_template(str(query.scene_variant), rng)
+    template = sample_asymmetric_polygon_template(str(query.scene_variant), rng, profile="compact")
     slots = _candidate_slot_support(params)
     translation_vectors = _translation_vector_support(params)
 
@@ -485,11 +588,12 @@ def _sample_transformation_scene(
     reference_center_graph: Point | None = None
     rotation_mode: _RotationMode | None = None
     translation_vector: Tuple[int, int] | None = None
+    translation_vector_anchor: Tuple[int, int] | None = None
 
     slot_indices = list(range(len(slots)))
     rng.shuffle(slot_indices)
     if str(query.query_variant) == "translation_match":
-        candidate_pairs: List[Tuple[int, Tuple[int, int], Point]] = []
+        candidate_pairs: List[Tuple[int, Tuple[int, int], Point, Tuple[int, int]]] = []
         for slot_index in slot_indices:
             slot_center = slots[int(slot_index)]
             for dx, dy in translation_vectors:
@@ -499,34 +603,35 @@ def _sample_transformation_scene(
                 )
                 if float(candidate_reference[0]) > -2.0:
                     continue
+                reference_vertices_candidate = translate_polygon(
+                    template,
+                    dx=int(candidate_reference[0]),
+                    dy=int(candidate_reference[1]),
+                )
                 if not graph_polygon_inside_canvas(
-                    translate_polygon(template, dx=int(candidate_reference[0]), dy=int(candidate_reference[1])),
+                    reference_vertices_candidate,
                     context=context,
                     padding_px=float(padding_px),
                 ):
                     continue
-                cue_start = tuple(
-                    int(value)
-                    for value in params.get(
-                        "translation_vector_anchor",
-                        group_default(_GEN_DEFAULTS, "translation_vector_anchor", _DEFAULTS.translation_vector_anchor),
-                    )
+                cue_start = _translation_cue_anchor_for_reference(
+                    reference_vertices_candidate,
+                    translation_vector=(int(dx), int(dy)),
+                    context=context,
+                    padding_px=float(padding_px),
+                    cue_gap_graph=int(
+                        params.get(
+                            "translation_cue_gap_graph",
+                            group_default(_GEN_DEFAULTS, "translation_cue_gap_graph", _DEFAULTS.translation_cue_gap_graph),
+                        )
+                    ),
                 )
-                cue_end = (int(cue_start[0]) + int(dx), int(cue_start[1]) + int(dy))
-                cue_points_ok = all(
-                    point_inside_square_canvas(
-                        pixel_point_from_graph_units(point, context=context),
-                        canvas_size=int(context.canvas_size),
-                        padding=float(padding_px),
-                    )
-                    for point in (cue_start, cue_end)
-                )
-                if not cue_points_ok:
+                if cue_start is None:
                     continue
-                candidate_pairs.append((int(slot_index), (int(dx), int(dy)), candidate_reference))
+                candidate_pairs.append((int(slot_index), (int(dx), int(dy)), candidate_reference, cue_start))
         if not candidate_pairs:
             raise ValueError("no feasible translation slot/vector pair for current scene context")
-        winner_slot_index, translation_vector, reference_center_graph = rng.choice(candidate_pairs)
+        winner_slot_index, translation_vector, reference_center_graph, translation_vector_anchor = rng.choice(candidate_pairs)
     elif str(query.query_variant) == "reflection_match":
         axis_x = int(params.get("reflection_axis_x", group_default(_GEN_DEFAULTS, "reflection_axis_x", _DEFAULTS.reflection_axis_x)))
         for slot_index in slot_indices:
@@ -647,6 +752,18 @@ def _sample_transformation_scene(
             }
         )
 
+    candidate_min_gap_graph = float(
+        params.get(
+            "candidate_min_gap_graph",
+            group_default(_GEN_DEFAULTS, "candidate_min_gap_graph", _DEFAULTS.candidate_min_gap_graph),
+        )
+    )
+    if not _candidate_bboxes_have_clearance(
+        candidate_vertices_graph_by_label,
+        min_gap_graph=float(candidate_min_gap_graph),
+    ):
+        raise ValueError("candidate polygons are too close or overlapping")
+
     object_label_centers = draw_polygon_objects(
         draw,
         objects=objects,
@@ -672,19 +789,15 @@ def _sample_transformation_scene(
     )
 
     if str(query.query_variant) == "translation_match":
+        if translation_vector_anchor is None:
+            raise ValueError("translation_match requires one resolved cue anchor")
         cue_trace = _draw_translation_cue(
             draw,
             context=context,
             line_width=int(line_width),
             head_length_px=int(cue_arrow_head_length_px),
             head_width_px=int(cue_arrow_head_width_px),
-            vector_anchor=tuple(
-                int(value)
-                for value in params.get(
-                    "translation_vector_anchor",
-                    group_default(_GEN_DEFAULTS, "translation_vector_anchor", _DEFAULTS.translation_vector_anchor),
-                )
-            ),
+            vector_anchor=translation_vector_anchor,
             translation_vector=translation_vector if translation_vector is not None else (0, 0),
             color=shape_style.line_color,
         )
@@ -773,7 +886,6 @@ def _sample_transformation_scene(
     )
 
 
-@register_task
 class GeometryTransformationMatchTask:
     """Match the labeled polygon that satisfies the shown transformation cue."""
 
@@ -798,6 +910,7 @@ class GeometryTransformationMatchTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -933,7 +1046,7 @@ class GeometryTransformationMatchTask:
 
         evidence_value = rendered_scene.evidence.get("evidence_value", [])
         if not isinstance(evidence_value, list) or not evidence_value:
-            raise RuntimeError("geometry transformation evidence must include winning polygon graph points")
+            raise RuntimeError("geometry transformation evidence must include winning polygon pixel points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -947,7 +1060,7 @@ class GeometryTransformationMatchTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "object_description",
                 "json_output_contract",
@@ -979,9 +1092,9 @@ class GeometryTransformationMatchTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            task_variant_key=str(query.query_variant),
+            query_key=str(query.query_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
@@ -989,12 +1102,15 @@ class GeometryTransformationMatchTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(rendered_scene.answer_value))
-        evidence_gt = TypedValue(type="graph_point_set", value=[list(point) for point in evidence_value])
+        evidence_gt = TypedValue(
+            type=str(rendered_scene.evidence["evidence_type"]),
+            value=[list(point) for point in evidence_value],
+        )
 
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_variant": str(query.query_variant),
-            "task_variant": str(query.query_variant),
+            "query_variant": str(query.query_variant),
             "variant_probabilities": dict(query.query_variant_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_variant_probabilities": dict(query.query_variant_probabilities),
@@ -1016,11 +1132,11 @@ class GeometryTransformationMatchTask:
                     "query_variant": str(query.query_variant),
                     "winner_label": str(rendered_scene.winner_label),
                     "cue_kind": str(rendered_scene.cue_kind),
-                    "task_variant": str(query.query_variant),
+                    "query_variant": str(query.query_variant),
                 },
             },
             "query_spec": {
-                "task_variant": str(query.query_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1039,6 +1155,7 @@ class GeometryTransformationMatchTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
                 "scene_variant": str(query.scene_variant),
             },
             "render_map": {
@@ -1049,10 +1166,10 @@ class GeometryTransformationMatchTask:
             "execution_trace": {
                 "scene_variant": str(query.scene_variant),
                 "query_variant": str(query.query_variant),
-                "task_variant": str(query.query_variant),
+                "query_variant": str(query.query_variant),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "query_variant_probabilities": dict(query.query_variant_probabilities),
-                "task_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_variant_probabilities": dict(query.query_variant_probabilities),
                 "winner_label": str(rendered_scene.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "cue_kind": str(rendered_scene.cue_kind),
@@ -1101,6 +1218,16 @@ class GeometryTransformationMatchTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(query.query_variant),
+            query_variant=str(query.query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
+
+
+@register_task
+class GeometryTransformationCandidateMatchTask(MultiFixedGeometryQueryTaskMixin, GeometryTransformationMatchTask):
+    """Choose the candidate polygon matching the requested transformation."""
+
+    task_id = "task_geometry__shape_gallery__transformation_match_label"
+    fixed_query_variants = ("translation_match", "reflection_match", "rotation_match")
+    public_scene_id = "shape_gallery"
+    allowed_scene_variants = SUPPORTED_SCENE_VARIANTS

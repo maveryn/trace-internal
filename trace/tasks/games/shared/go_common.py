@@ -1,4 +1,4 @@
-"""Shared Go board-state helpers for liberty-count games tasks."""
+"""Shared Go board-state helpers for group-property games tasks."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ EMPTY = 0
 BLACK = 1
 WHITE = -1
 BOARD_SIZE = 7
+SUPPORTED_GO_PLAYER_COLORS: Tuple[str, ...] = ("black", "white")
 
 Coord = Tuple[int, int]
 Board = Tuple[Tuple[int, ...], ...]
@@ -36,6 +37,8 @@ class GoBoardState:
     marked_group_color: int
     marked_group_coords: Tuple[Coord, ...]
     liberty_coords: Tuple[Coord, ...]
+    adjacent_enemy_coords: Tuple[Coord, ...]
+    shared_liberty_coords: Tuple[Coord, ...]
     stone_specs: Tuple[GoStoneSpec, ...]
     scene_variant: str
 
@@ -142,10 +145,66 @@ def liberty_point_ids(liberties: Iterable[Coord]) -> Tuple[str, ...]:
     return tuple(coord_to_point_id(coord) for coord in liberties)
 
 
-def supported_targets_for_query() -> Tuple[int, ...]:
-    """Return the supported visible liberty counts for the active Go task."""
+def stone_ids_for_coords(coords: Iterable[Coord]) -> Tuple[str, ...]:
+    """Return stable stone ids for occupied intersections."""
 
-    return (1, 2, 3, 4, 5, 6, 7, 8)
+    return tuple(coord_to_stone_id(coord) for coord in coords)
+
+
+def adjacent_enemy_coords(board: Sequence[Sequence[int]], group: Iterable[Coord]) -> Tuple[Coord, ...]:
+    """Return unique opponent stones orthogonally adjacent to one group."""
+
+    group_tuple = tuple((int(coord[0]), int(coord[1])) for coord in group)
+    if not group_tuple:
+        return tuple()
+    first_row, first_col = group_tuple[0]
+    group_color = int(board[int(first_row)][int(first_col)])
+    if int(group_color) == int(EMPTY):
+        return tuple()
+    enemy_color = int(opponent(group_color))
+    board_size = int(len(board))
+    enemies: Set[Coord] = set()
+    for coord in group_tuple:
+        for neighbor in neighbors(coord, board_size=board_size):
+            if int(board[neighbor[0]][neighbor[1]]) == int(enemy_color):
+                enemies.add((int(neighbor[0]), int(neighbor[1])))
+    return tuple(sorted(enemies))
+
+
+def shared_liberty_coords(board: Sequence[Sequence[int]], group: Iterable[Coord]) -> Tuple[Coord, ...]:
+    """Return liberties of one group that also touch at least one opponent stone."""
+
+    group_tuple = tuple((int(coord[0]), int(coord[1])) for coord in group)
+    if not group_tuple:
+        return tuple()
+    first_row, first_col = group_tuple[0]
+    group_color = int(board[int(first_row)][int(first_col)])
+    if int(group_color) == int(EMPTY):
+        return tuple()
+    enemy_color = int(opponent(group_color))
+    board_size = int(len(board))
+    shared: Set[Coord] = set()
+    for liberty in group_liberties(board, group_tuple):
+        for neighbor in neighbors(liberty, board_size=board_size):
+            if int(board[neighbor[0]][neighbor[1]]) == int(enemy_color):
+                shared.add((int(liberty[0]), int(liberty[1])))
+                break
+    return tuple(sorted(shared))
+
+
+def supported_targets_for_query(query_variant: str = "marked_group_liberty_count") -> Tuple[int, ...]:
+    """Return supported count targets for one Go group-property query."""
+
+    variant = str(query_variant)
+    if variant in {"marked_black_group_liberty_count", "marked_white_group_liberty_count"}:
+        variant = "marked_group_liberty_count"
+    if variant == "marked_group_liberty_count":
+        return (1, 2, 3, 4, 6)
+    if variant == "marked_group_adjacent_enemy_count":
+        return (1, 2, 3, 4, 5, 6)
+    if variant == "marked_group_shared_liberty_count":
+        return (1, 2, 3, 4, 5)
+    raise ValueError(f"unsupported Go query variant: {query_variant}")
 
 
 def _sample_connected_group(rng, *, board_size: int, size: int, favor_center: bool) -> Tuple[Coord, ...]:
@@ -194,6 +253,18 @@ def _minimum_group_size_for_target(target_answer: int) -> int:
     return max(1, int(math.ceil((float(target_answer) - 2.0) / 2.0)))
 
 
+def _minimum_group_size_for_adjacent_enemies(target_answer: int) -> int:
+    """Return a small group size likely to expose enough boundary enemy slots."""
+
+    return max(2, int(math.ceil((float(target_answer) - 2.0) / 2.0)))
+
+
+def _minimum_group_size_for_shared_liberties(target_answer: int) -> int:
+    """Return a small group size likely to expose enough shared-liberty slots."""
+
+    return max(2, int(math.ceil((float(target_answer) + 1.0) / 2.0)))
+
+
 def _stone_specs(board: Sequence[Sequence[int]], *, marked_group_coords: Iterable[Coord]) -> Tuple[GoStoneSpec, ...]:
     """Return visible stone specs in stable row-major order."""
 
@@ -225,55 +296,108 @@ def build_go_board_state(
     query_variant: str,
     scene_variant: str,
     target_answer: int,
+    player_color: str | None = None,
     board_size: int = BOARD_SIZE,
     max_internal_attempts: int = 512,
 ) -> GoBoardState:
-    """Construct one visible `7 x 7` Go board with a marked group and exact liberties."""
+    """Construct one visible Go board with a marked group and exact query answer."""
 
     target = int(target_answer)
-    if target not in supported_targets_for_query():
-        raise ValueError(f"unsupported Go liberty target: {target}")
-    if int(board_size) != int(BOARD_SIZE):
-        raise ValueError("the active Go task keeps the board fixed to 7x7")
-    if str(query_variant) not in {"marked_black_group_liberty_count", "marked_white_group_liberty_count"}:
+    if int(board_size) < 5:
+        raise ValueError("Go liberty boards require board_size >= 5")
+    variant = str(query_variant)
+    if variant == "marked_black_group_liberty_count":
+        variant = "marked_group_liberty_count"
+        player_color = "black"
+    elif variant == "marked_white_group_liberty_count":
+        variant = "marked_group_liberty_count"
+        player_color = "white"
+    if variant not in {
+        "marked_group_liberty_count",
+        "marked_group_adjacent_enemy_count",
+        "marked_group_shared_liberty_count",
+    }:
         raise ValueError(f"unsupported Go query variant: {query_variant}")
+    if target not in supported_targets_for_query(variant):
+        raise ValueError(f"unsupported Go target {target} for {variant}")
+    color = str(player_color or "black")
+    if color not in SUPPORTED_GO_PLAYER_COLORS:
+        raise ValueError(f"unsupported Go player_color: {player_color}")
     if str(scene_variant) not in {"open_board", "crowded_board"}:
         raise ValueError(f"unsupported Go scene variant: {scene_variant}")
 
-    marked_group_color = int(BLACK if str(query_variant) == "marked_black_group_liberty_count" else WHITE)
+    marked_group_color = int(BLACK if color == "black" else WHITE)
     opponent_color = int(opponent(marked_group_color))
     extras_min, extras_max = (4, 10) if str(scene_variant) == "open_board" else (12, 20)
 
     for _ in range(max(1, int(max_internal_attempts))):
-        group_size_min = _minimum_group_size_for_target(int(target))
-        group_size_max = min(5, int(group_size_min) + 2)
-        group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
+        if variant == "marked_group_adjacent_enemy_count":
+            group_size_min = _minimum_group_size_for_adjacent_enemies(int(target))
+            group_size_max = min(8, int(group_size_min) + 3)
+            group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
+            favor_center = bool(int(target) >= 6)
+        elif variant == "marked_group_shared_liberty_count":
+            group_size_min = _minimum_group_size_for_shared_liberties(int(target))
+            group_size_max = min(8, int(group_size_min) + 3)
+            group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
+            favor_center = True
+        else:
+            group_size_min = _minimum_group_size_for_target(int(target))
+            group_size_max = min(6, int(group_size_min) + 2)
+            group_size = int(rng.randint(int(group_size_min), int(group_size_max)))
+            favor_center = bool(int(target) >= 6)
         group = _sample_connected_group(
             rng,
             board_size=int(board_size),
             size=int(group_size),
-            favor_center=bool(int(target) >= 6),
+            favor_center=bool(favor_center),
         )
         if not group:
             continue
         boundary = _boundary_neighbors(group, board_size=int(board_size))
-        if len(boundary) < int(target):
-            continue
+        if variant == "marked_group_liberty_count":
+            if len(boundary) < int(target):
+                continue
+            liberties = tuple(sorted(boundary[index] for index in rng.sample(range(len(boundary)), int(target))))
+            enemy_boundary = tuple(sorted(coord for coord in boundary if coord not in set(liberties)))
+        elif variant == "marked_group_adjacent_enemy_count":
+            if len(boundary) <= int(target):
+                continue
+            enemy_boundary = tuple(sorted(boundary[index] for index in rng.sample(range(len(boundary)), int(target))))
+            enemy_set = set(enemy_boundary)
+            liberties = tuple(sorted(coord for coord in boundary if coord not in enemy_set))
+        else:
+            if len(boundary) < int(target):
+                continue
+            liberties = tuple(sorted(boundary))
+            shared_targets = tuple(sorted(boundary[index] for index in rng.sample(range(len(boundary)), int(target))))
+            enemy_boundary = tuple()
 
-        liberties = tuple(
-            sorted(
-                boundary[index]
-                for index in rng.sample(range(len(boundary)), int(target))
-            )
-        )
         liberty_set = set(liberties)
+        enemy_boundary_set = set(enemy_boundary)
         rows = [[int(EMPTY) for _ in range(int(board_size))] for _ in range(int(board_size))]
         for row, col in group:
             rows[int(row)][int(col)] = int(marked_group_color)
         for row, col in boundary:
-            if (int(row), int(col)) in liberty_set:
+            if (int(row), int(col)) in enemy_boundary_set:
+                rows[int(row)][int(col)] = int(opponent_color)
+        if variant == "marked_group_shared_liberty_count":
+            used_marker_cells: Set[Coord] = set()
+            for liberty in shared_targets:
+                marker_candidates = [
+                    coord
+                    for coord in neighbors(liberty, board_size=int(board_size))
+                    if coord not in set(group)
+                    and coord not in liberty_set
+                    and coord not in used_marker_cells
+                ]
+                if not marker_candidates:
+                    break
+                marker = marker_candidates[int(rng.randrange(len(marker_candidates)))]
+                rows[int(marker[0])][int(marker[1])] = int(opponent_color)
+                used_marker_cells.add((int(marker[0]), int(marker[1])))
+            if len(used_marker_cells) != int(target):
                 continue
-            rows[int(row)][int(col)] = int(opponent_color)
         board = _board_from_rows(rows)
         if not all_groups_have_liberty(board):
             continue
@@ -297,13 +421,32 @@ def build_go_board_state(
             if not all_groups_have_liberty(candidate_board):
                 mutable_rows[int(row)][int(col)] = int(EMPTY)
                 continue
+            candidate_group = connected_group(candidate_board, group[0])
+            if set(candidate_group) != set(group):
+                mutable_rows[int(row)][int(col)] = int(EMPTY)
+                continue
+            if variant == "marked_group_shared_liberty_count":
+                if tuple(sorted(group_liberties(candidate_board, candidate_group))) != tuple(sorted(liberties)):
+                    mutable_rows[int(row)][int(col)] = int(EMPTY)
+                    continue
+                if len(shared_liberty_coords(candidate_board, candidate_group)) != int(target):
+                    mutable_rows[int(row)][int(col)] = int(EMPTY)
+                    continue
             extras_added += 1
         board = _board_from_rows(mutable_rows)
         marked_group = connected_group(board, group[0])
         liberties_now = group_liberties(board, marked_group)
+        adjacent_enemies_now = adjacent_enemy_coords(board, marked_group)
+        shared_liberties_now = shared_liberty_coords(board, marked_group)
         if set(marked_group) != set(group):
             continue
-        if tuple(sorted(liberties_now)) != tuple(sorted(liberties)):
+        if variant == "marked_group_liberty_count" and len(liberties_now) != int(target):
+            continue
+        if variant == "marked_group_adjacent_enemy_count" and len(adjacent_enemies_now) != int(target):
+            continue
+        if variant == "marked_group_shared_liberty_count" and len(shared_liberties_now) != int(target):
+            continue
+        if variant != "marked_group_adjacent_enemy_count" and tuple(sorted(liberties_now)) != tuple(sorted(liberties)):
             continue
 
         return GoBoardState(
@@ -311,12 +454,14 @@ def build_go_board_state(
             marked_group_color=int(marked_group_color),
             marked_group_coords=tuple(sorted(marked_group)),
             liberty_coords=tuple(sorted(liberties_now)),
+            adjacent_enemy_coords=tuple(sorted(adjacent_enemies_now)),
+            shared_liberty_coords=tuple(sorted(shared_liberties_now)),
             stone_specs=_stone_specs(board, marked_group_coords=marked_group),
             scene_variant=str(scene_variant),
         )
 
     raise RuntimeError(
-        f"failed to construct a visible Go board with {target} liberties for {query_variant}/{scene_variant}"
+        f"failed to construct a visible Go board with target {target} for {query_variant}/{color}/{scene_variant}"
     )
 
 
@@ -328,7 +473,9 @@ __all__ = [
     "EMPTY",
     "GoBoardState",
     "GoStoneSpec",
+    "SUPPORTED_GO_PLAYER_COLORS",
     "WHITE",
+    "adjacent_enemy_coords",
     "all_groups_have_liberty",
     "build_go_board_state",
     "color_name",
@@ -339,5 +486,7 @@ __all__ = [
     "liberty_point_ids",
     "neighbors",
     "opponent",
+    "shared_liberty_coords",
+    "stone_ids_for_coords",
     "supported_targets_for_query",
 ]

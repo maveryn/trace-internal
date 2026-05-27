@@ -22,6 +22,7 @@ from ...shared.variant_sampling import has_non_null_param, is_uniform_probabilit
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_coordinate_relation_complexity
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin, MultiFixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.labeled_point_evidence import empty_graph_point_set_evidence_artifacts, graph_point_set_evidence_artifacts
 from ..shared.noise_defaults import load_geometry_noise_defaults
@@ -37,7 +38,7 @@ from ..shared.single_object_scene import (
 )
 
 
-TASK_ID = "task_geometry_coordinate_relation"
+TASK_ID = "geometry_coordinate_relation_base"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "segment_set",
@@ -382,7 +383,7 @@ def _resolve_count_target(
     overridden = any(has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
     if bool(balanced_enabled) and (not overridden) and is_uniform_probability_map(probabilities):
         ordered_support = [int(value) for value in support]
-        selection_index = abs(int(params.get("_sampling_index", instance_seed)))
+        selection_index = abs(int(instance_seed))
         selected = int(ordered_support[int(selection_index) % len(ordered_support)])
     return int(selected), {
         str(key): float(value)
@@ -775,7 +776,7 @@ def _sample_segment_count_scene(
             "matching_segment_ids": list(matching_ids),
         },
         answer_value=int(len(matching_ids)),
-        evidence_type="graph_point_set",
+        evidence_type=str(evidence["evidence_type"]),
         evidence_value=list(evidence["evidence_value"]),
         projected_evidence=dict(evidence["projected_evidence"]),
         witness_symbolic=dict(evidence["witness_symbolic"]),
@@ -920,7 +921,7 @@ def _sample_quadrant_count_scene(
             "matching_points_graph": [list(candidate_point_by_label[str(label)]) for label in matching_labels],
         },
         answer_value=int(len(matching_labels)),
-        evidence_type="graph_point_set",
+        evidence_type=str(evidence["evidence_type"]),
         evidence_value=list(evidence["evidence_value"]),
         projected_evidence=dict(evidence["projected_evidence"]),
         witness_symbolic=dict(evidence["witness_symbolic"]),
@@ -1100,7 +1101,7 @@ def _sample_collinear_count_scene(
             "line_direction_graph": [int(direction[0]), int(direction[1])],
         },
         answer_value=int(len(matching_points)),
-        evidence_type="graph_point_set",
+        evidence_type=str(evidence["evidence_type"]),
         evidence_value=list(evidence["evidence_value"]),
         projected_evidence=dict(evidence["projected_evidence"]),
         witness_symbolic=dict(evidence["witness_symbolic"]),
@@ -1304,7 +1305,7 @@ def _sample_point_in_shape_scene(
             "strict_interior_points_graph": [list(point) for point in interior_points],
         },
         answer_value=int(len(interior_points)),
-        evidence_type="graph_point_set",
+        evidence_type=str(evidence["evidence_type"]),
         evidence_value=list(evidence["evidence_value"]),
         projected_evidence=dict(evidence["projected_evidence"]),
         witness_symbolic=dict(evidence["witness_symbolic"]),
@@ -1313,7 +1314,6 @@ def _sample_point_in_shape_scene(
     )
 
 
-@register_task
 class GeometryCoordinateRelationTask:
     """Reason over coordinate-plane segment and point relations."""
 
@@ -1340,6 +1340,7 @@ class GeometryCoordinateRelationTask:
             scene_render_params = _resolve_scene_render_params(str(query.scene_variant), params=params)
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -1502,15 +1503,17 @@ class GeometryCoordinateRelationTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_integer",
                 "evidence_hint_segment_endpoints",
-                "evidence_hint_collinear_graph_point_set",
-                "evidence_hint_quadrant_graph_point_set",
-                "evidence_hint_graph_point_set",
+                "evidence_hint_collinear_pixel_point_set",
+                "evidence_hint_quadrant_pixel_point_set",
+                "evidence_hint_pixel_point_set",
+                "json_example_segment_count",
+                "json_example_segment_count_answer_only",
                 "object_description_segment_set",
                 "object_description_line_points",
                 "object_description_quadrant_points",
@@ -1533,23 +1536,30 @@ class GeometryCoordinateRelationTask:
         if str(query.query_variant) in SEGMENT_COUNT_QUERY_VARIANTS:
             evidence_hint = str(prompt_defaults["evidence_hint_segment_endpoints"])
         elif str(query.query_variant) == "collinear_count":
-            evidence_hint = str(prompt_defaults["evidence_hint_collinear_graph_point_set"])
+            evidence_hint = str(prompt_defaults["evidence_hint_collinear_pixel_point_set"])
         elif str(query.query_variant) == "same_quadrant_count":
-            evidence_hint = str(prompt_defaults["evidence_hint_quadrant_graph_point_set"])
+            evidence_hint = str(prompt_defaults["evidence_hint_quadrant_pixel_point_set"])
         else:
-            evidence_hint = str(prompt_defaults["evidence_hint_graph_point_set"])
+            evidence_hint = str(prompt_defaults["evidence_hint_pixel_point_set"])
 
         json_example, json_example_answer_only = build_prompt_json_examples(
             evidence_value=rendered_scene.evidence_value,
             answer_type=str(answer_type),
         )
+        if str(query.scene_variant) == "segment_set":
+            configured_json_example = prompt_defaults.get("json_example_segment_count")
+            configured_answer_only_example = prompt_defaults.get("json_example_segment_count_answer_only")
+            if isinstance(configured_json_example, str) and configured_json_example.strip():
+                json_example = str(configured_json_example)
+            if isinstance(configured_answer_only_example, str) and configured_answer_only_example.strip():
+                json_example_answer_only = str(configured_answer_only_example)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            task_variant_key=str(query.query_variant),
+            query_key=str(query.query_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1570,7 +1580,7 @@ class GeometryCoordinateRelationTask:
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_variant": str(query.query_variant),
-            "task_variant": str(query.query_variant),
+            "query_variant": str(query.query_variant),
             "variant_probabilities": dict(query.query_variant_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_variant_probabilities": dict(query.query_variant_probabilities),
@@ -1590,10 +1600,10 @@ class GeometryCoordinateRelationTask:
         execution_trace: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_variant": str(query.query_variant),
-            "task_variant": str(query.query_variant),
+            "query_variant": str(query.query_variant),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_variant_probabilities": dict(query.query_variant_probabilities),
-            "task_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_variant_probabilities": dict(query.query_variant_probabilities),
             "required_evidence_labels": list(rendered_scene.required_evidence_labels),
             "question_format": str(question_format),
         }
@@ -1609,7 +1619,7 @@ class GeometryCoordinateRelationTask:
         scene_relations: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_variant": str(query.query_variant),
-            "task_variant": str(query.query_variant),
+            "query_variant": str(query.query_variant),
         }
         if rendered_scene.matching_labels:
             if str(query.scene_variant) == "segment_set":
@@ -1624,7 +1634,7 @@ class GeometryCoordinateRelationTask:
                 "relations": dict(scene_relations),
             },
             "query_spec": {
-                "task_variant": str(query.query_variant),
+                "query_variant": str(query.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1646,6 +1656,7 @@ class GeometryCoordinateRelationTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
                 "scene_variant": str(query.scene_variant),
             },
             "render_map": dict(rendered_scene.render_map),
@@ -1675,6 +1686,46 @@ class GeometryCoordinateRelationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(query.query_variant),
+            query_variant=str(query.query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
+
+
+@register_task
+class GeometryCoordinateSegmentRelationCountTask(MultiFixedGeometryQueryTaskMixin, GeometryCoordinateRelationTask):
+    """Count segments parallel or perpendicular to a marked reference segment."""
+
+    task_id = "task_geometry__coordinate_plane__segment_relation_count"
+    fixed_query_variants = ("parallel_count", "perpendicular_count")
+    public_scene_id = "coordinate_plane"
+    allowed_scene_variants = ("segment_set",)
+
+
+@register_task
+class GeometryCoordinateCollinearPointCountTask(FixedGeometryQueryTaskMixin, GeometryCoordinateRelationTask):
+    """Count points collinear with the marked reference line."""
+
+    task_id = "task_geometry__coordinate_plane__collinear_point_count"
+    fixed_query_variant = "collinear_count"
+    public_scene_id = "coordinate_plane"
+    allowed_scene_variants = ("line_points",)
+
+
+@register_task
+class GeometryCoordinateSameQuadrantPointCountTask(FixedGeometryQueryTaskMixin, GeometryCoordinateRelationTask):
+    """Count points in the same quadrant as the marked reference point."""
+
+    task_id = "task_geometry__coordinate_plane__same_quadrant_point_count"
+    fixed_query_variant = "same_quadrant_count"
+    public_scene_id = "coordinate_plane"
+    allowed_scene_variants = ("quadrant_points",)
+
+
+@register_task
+class GeometryCoordinatePointInPolygonCountTask(FixedGeometryQueryTaskMixin, GeometryCoordinateRelationTask):
+    """Count labeled lattice points strictly inside the polygon."""
+
+    task_id = "task_geometry__coordinate_plane__point_in_polygon_count"
+    fixed_query_variant = "point_in_shape_count"
+    public_scene_id = "coordinate_plane"
+    allowed_scene_variants = ("polygon_lattice",)

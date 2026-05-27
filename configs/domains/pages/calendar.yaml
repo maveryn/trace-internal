@@ -1,0 +1,97 @@
+generation:
+  shared:
+    scene_variant_weights:
+      classic: 1.0
+      minimal: 1.0
+      outline: 1.0
+    style_variant_weights:
+      studio: 1.0
+      accented: 1.0
+      marker: 1.0
+    accent_color_name_weights:
+      red: 1.0
+      blue: 1.0
+      green: 1.0
+      yellow: 1.0
+      orange: 1.0
+      purple: 1.0
+      brown: 1.0
+      cyan: 1.0
+      magenta: 1.0
+      maroon: 1.0
+    balanced_query_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_accent_color_name_sampling: true
+    year_min: 2022
+    year_max: 2030
+  task_overrides:
+    pages_calendar_month_view_base:
+      query_variant_weights:
+        date_of_weekday_occurrence: 1.0
+        count_marked_day_class: 1.0
+      marked_day_class_weights:
+        weekend: 1.0
+        weekday: 1.0
+      balanced_query_variant_sampling: true
+      balanced_marked_day_class_sampling: true
+      weekend_weekday_indices: [5, 6]
+      date_occurrence_support: [1, 2, 3, 4, 5]
+      marked_weekend_count_support: [0, 1, 2, 3, 4]
+      marked_weekday_count_support: [0, 1, 2, 3, 4, 5, 6]
+      marked_weekday_distractor_support: [1, 2, 3, 4]
+      marked_weekend_distractor_support: [1, 2, 3, 4]
+
+rendering:
+  shared:
+    canvas_width: 860
+    canvas_height: 760
+    outer_margin_px: 34
+    title_height_px: 64
+    title_bottom_gap_px: 14
+    weekday_header_height_px: 34
+    weekday_grid_gap_px: 10
+    cell_gap_px: 8
+    panel_corner_radius_px: 18
+    panel_outline_width_px: 3
+    panel_outline_width_px_min: 2
+    panel_outline_width_px_max: 4
+    cell_corner_radius_px: 12
+    cell_outline_width_px: 2
+    cell_outline_width_px_min: 1
+    cell_outline_width_px_max: 3
+    title_font_size_px: 30
+    weekday_font_size_px: 16
+    date_font_size_px: 22
+    marker_inset_px: 10
+    marker_inset_px_min: 8
+    marker_inset_px_max: 12
+    marker_outline_width_px: 3
+    marker_outline_width_px_min: 2
+    marker_outline_width_px_max: 4
+
+complexity:
+  shared:
+    criteria_weights:
+      calendar_lookup: 0.55
+      visual_scan: 0.20
+      ambiguity: 0.15
+      clutter: 0.10
+
+prompt:
+  shared:
+    bundle_id: pages_calendar_v0
+  task_overrides:
+    pages_calendar_month_view_base:
+      scene_key: month_calendar
+      task_key: calendar_month_query
+      object_description_date_of_weekday_occurrence: one month-view calendar for {month_name_text} {year} with weekday headers and date cells
+      object_description_count_marked_day_class: one month-view calendar for {month_name_text} {year} with weekday headers, date cells, and several marked dates
+      answer_hint_date_of_weekday_occurrence: set "answer" to the integer date number
+      answer_hint_count_marked_day_class: set "answer" to the integer count of marked dates in the requested day class
+      evidence_hint_date_of_weekday_occurrence: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the target date cell
+      evidence_hint_count_marked_day_class: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all marked date cells in the requested day class
+      json_example_date_of_weekday_occurrence: '{"evidence":[[354,256,456,352]],"answer":18}'
+      json_example_answer_only_date_of_weekday_occurrence: '{"answer":18}'
+      json_example_count_marked_day_class: '{"evidence":[[148,352,250,448],[560,352,662,448]],"answer":2}'
+      json_example_answer_only_count_marked_day_class: '{"answer":2}'

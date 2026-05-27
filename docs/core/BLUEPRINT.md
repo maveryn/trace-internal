@@ -11,22 +11,27 @@ TRACE generates grounded visual-reasoning instances with:
 5. sidecar trace for replay/verifier metadata.
 
 ## 2) Taxonomy and config precedence
-Use: `domain -> task_group -> task`.
+Public dataset taxonomy uses: `domain -> scene_id -> task`.
+
+Implementation and config grouping use: `domain -> task_group -> task`.
 
 Rules:
-1. `task_group` is broad reasoning style; intra-task variants stay inside task via `task_variant`.
-2. For geometry graph-paper readout tasks, use `task_group=measurement`; for multi-object geometry ranking/value-choice scenes, use `task_group=comparison`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d` (2D) and `task_group=analytical_3d` (3D solids).
-3. Config precedence: `domain defaults -> task_group defaults -> task/params`.
-4. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (legacy flat section keys are unsupported).
-5. Build-task weights control cross-task sampling; task-variant weights are resolved inside the task from config/params.
-6. Task-id naming is mandatory: `task_<domain>_<task_group>_<task_name>` (all lowercase snake_case).
-7. `task_id` domain/task_group segments must match class `domain` and `task_group`.
-8. Task module naming is mandatory: use file path `trace/tasks/<domain>/<task_group>/<task_name>.py` by default (do not repeat full `task_id` in filename); tile is the current exception and keeps concrete tasks flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
+1. `scene_id` is the visual rendering grammar for the task.
+2. `task_group` is a broad reasoning/config style; intra-task query
+   variants stay inside the task via canonical `query_id` metadata.
+   `query_variant` is an internal replay selector, not a public sampling unit.
+3. For geometry graph-paper readout tasks, use `task_group=measurement`; for multi-object geometry ranking/value-choice scenes, use `task_group=comparison`; for analytical panel-label tasks, use `task_group=analytical`.
+4. Config precedence: `domain defaults -> task_group defaults -> task/params`.
+5. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (flat section keys are unsupported).
+6. Build-task weights control cross-task sampling; query-variant weights are resolved inside the task from config/params.
+7. Task-id naming uses taxonomy-v0 form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use this form.
+8. For taxonomy-v0 ids, the `task_id` domain segment must match class `domain`; `task_group` remains an implementation/config grouping field.
+9. Task module naming is mandatory: use file path `trace/tasks/<domain>/<task_group>/<task_name>.py` by default (do not repeat full `task_id` in filename); `puzzles/cell_board` keeps its scene-specific internals under `trace/tasks/puzzles/cell_board/`.
 
 ## 3) Required artifacts
 ### 3.1 Train instance (lightweight)
 Every record must include:
-1. identity + taxonomy (`instance_id`, `instance_seed`, `domain`, `task_group`, `task`),
+1. identity + taxonomy (`instance_id`, `instance_seed`, `domain`, `scene_id`, `task`, plus source `task_group`),
 2. `prompt` and optional `prompt_variants`,
 3. `images[]` with relative `path` + `image_hash`,
 4. `answer_gt: {type, value}`,
@@ -57,9 +62,9 @@ Required sections:
 ## 4) Prompt contract
 1. Prompt text must live in external bundles under `prompts/`.
 2. Deterministic composition layers:
-   - task family
+   - scene
    - task
-   - optional task variant
+   - optional query layer keyed by `query_id`
    - output mode (`answer_only`, `answer_and_evidence`)
 3. Store both prompt modes per instance in `prompt_variants`.
 4. Record prompt metadata in trace (`bundle/key/variant/count/slots`).
@@ -86,11 +91,23 @@ Required sections:
 5. Hash algorithm is `blake3`.
 6. `instance_id` uses semantic fields + image content hashes (not file paths).
 
+## 6.1 Visual variation invariant
+1. Repeated-unit visual grammars should include non-semantic unit-size jitter whenever the task image is built from repeated cells, tiles, slots, grid squares, hexes, stickers, or voxels.
+2. The first target is a sampled minimum-to-maximum rendered unit-size span of at least `2x` (`max_unit_size / min_unit_size >= 2.0`), for example scale support `0.50..1.00`; narrower ranges are acceptable when readability, scene fit, or evidence integrity requires them, but the exception must be documented.
+3. Logical board-size variation alone does not satisfy this requirement; the same logical scene should be renderable with different repeated-unit sizes.
+4. Unit-size jitter must be explicit and recorded in render metadata, and all evidence bboxes/points must be projected after the final jittered layout is known.
+5. Exemptions or narrower jitter ranges require a documented readability, fit, or verifier-contract reason in the relevant domain/task docs.
+
 ## 7) Sampling policy
 1. Global sampling unit is `task`.
-2. Domain/task-group probabilities are derived by task aggregation.
-3. Task-variant sampling is inside each task (`P(task_variant|task)`), uniform by default unless overridden.
-4. Validate answer distributions per task variant with lightweight anti-degeneracy checks over generated answers: at least 5 unique answers and max single-answer frequency below 25%; numeric 5-bin summaries are still reported for review but are not hard pass/fail gates.
+2. Domain/scene/task-group probabilities are derived by task aggregation.
+3. Query sampling is inside each task (`P(query_id|task)`). Use **query
+   variant** as the prose term for these branches and `query_id` as the
+   canonical field.
+4. Validate answer distributions per query variant / `query_id` with
+   lightweight anti-degeneracy checks over generated answers: at least 5 unique
+   answers and max single-answer frequency below 1/3; numeric 5-bin summaries
+   are still reported for review but are not hard pass/fail gates.
 5. Never relax semantic constraints to force acceptance.
 
 ## 8) Build, validation, and finalize

@@ -1,10 +1,6 @@
 """Single-object geometry area measurement task."""
-
 from __future__ import annotations
-
 from typing import Any, Dict, List, Mapping, Tuple
-
-from ...registry import register_task
 from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.conic_geometry import CircleInstance, EllipseInstance
 from ..shared.graph_paper import resolve_graph_cell_capacity
@@ -21,37 +17,28 @@ from ..shared.polygon_geometry import (
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from .shape_measure_base import GeometryShapeMeasureBase
 
-
-@register_task
 class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
     """Measure 2D area for one polygon/ellipse on graph paper."""
-
-    task_id = "task_geometry_measurement_area"
+    task_id = "source_geometry_measurement_area"
     scene_kind = "geometry_2d_area_measurement"
-    query_template_id = "geometry_2d_area_measure_v1"
+    query_template_id = "shape_measure_area_query_v0"
     answer_component_key = "area_square_units"
     supported_shape_variants = ("triangle", "quadrilateral", "ellipse")
-
     def _answer_scalar_from_polygon_instance(self, instance: PolygonInstance) -> int:
         """Return polygon area answer value."""
         return int(instance.area_square_units)
-
     def _answer_scalar_from_ellipse_instance(self, instance: EllipseInstance) -> int:
         """Return ellipse area `k` coefficient for `kπ`."""
         return int(instance.area_pi_coefficient)
-
     def _answer_scalar_from_circle_instance(self, instance: CircleInstance) -> int:
         """Return circle area `k` coefficient for `kπ` when reused."""
         return int(instance.area_pi_coefficient)
-
     def _pi_variants(self) -> set[str]:
         """Return shape variants that emit π-expression answers."""
         return {"ellipse"}
-
     def _circle_answer_coefficient_scale(self) -> int:
         """Return circle area coefficient scale for `kπ` answers."""
         return 1
-
     def _resolve_required_graph_cells(
         self,
         *,
@@ -81,7 +68,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
         if minimum <= 24:
             return max(int(required), 10)
         raise ValueError("no feasible triangle area values for requested answer_min")
-
     def _resolve_polygon_target_answer(
         self,
         *,
@@ -94,7 +80,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
         render_defaults: Mapping[str, Any],
     ) -> Tuple[int | None, Dict[str, float], List[int], int]:
         """Select triangle-area targets from exact feasible support before layout."""
-
         if str(variant_kind) == "quadrilateral":
             _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
                 params=params,
@@ -131,7 +116,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
                 [int(value) for value in feasible_answers],
                 int(required_graph_cells),
             )
-
         if str(variant_kind) != "triangle":
             return super()._resolve_polygon_target_answer(
                 instance_seed=int(instance_seed),
@@ -174,7 +158,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
             for base_units, apex_x_units, height_units in triangle_specs
         ) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
-
     def _sample_polygon_instance(
         self,
         rng,
@@ -185,7 +168,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
         gen_defaults: Mapping[str, Any],
     ) -> PolygonInstance:
         """Use constructive triangle-area sampling when the task targets triangle area."""
-
         if str(variant_kind) == "triangle" and target_answer_scalar is not None:
             return sample_triangle_instance_with_area_on_graph_paper(
                 rng,
@@ -228,7 +210,6 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
             context=context,
             gen_defaults=gen_defaults,
         )
-
     def _measurement_complexity_components(
         self,
         *,

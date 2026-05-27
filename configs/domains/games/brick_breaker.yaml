@@ -1,0 +1,76 @@
+generation:
+  shared:
+    scene_variant_weights:
+      brick_wall: 1.0
+    query_variant_weights:
+      next_hit_label: 1.0
+      paddle_catch_label: 1.0
+      hit_row_remaining_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      neon: 1.0
+      paper: 1.0
+      blueprint: 1.0
+      arcade: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_brick_row_sampling: true
+    balanced_brick_col_sampling: true
+    balanced_lane_count_sampling: true
+    balanced_row_remaining_count_sampling: true
+    brick_row_count_support:
+      - 4
+      - 5
+    brick_col_count_support:
+      - 5
+      - 6
+    catch_lane_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+    row_remaining_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 740
+    panel_margin_px: 38
+    playfield_width_px: 860
+    playfield_height_px: 640
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    playfield_border_width_px: 5
+    brick_wall_top_px: 46
+    brick_wall_height_px: 270
+    brick_gap_px: 8
+    lane_pad_height_px: 42
+    lane_pad_gap_px: 8
+    ball_radius_px: 16
+    path_width_px: 5
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.34
+      motion_reasoning: 0.38
+      ambiguity: 0.14
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_brick_breaker_v0
+    scene_key: visible_brick_breaker_playfield
+    task_key: brick_breaker_query
+    object_description_brick_wall: a brick-breaker playfield with labeled bricks at the top, a short ball-direction cue, and labeled catch lanes at the bottom
+    brick_breaker_motion_rule_text: The short dashed arrow shows the ball's current straight direction.
+    evidence_hint_next_hit_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the brick hit first after extrapolating the ball direction
+    answer_hint_next_hit_label: set "answer" to the selected brick label as a string
+    evidence_hint_paddle_catch_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected bottom catch lane pad
+    answer_hint_paddle_catch_label: set "answer" to the selected bottom lane label as a string
+    evidence_hint_hit_row_remaining_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the bricks left in the same row after the hit brick is removed
+    answer_hint_hit_row_remaining_count: set "answer" to the number of bricks left in that row after the hit brick is removed

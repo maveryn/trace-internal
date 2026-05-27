@@ -1,0 +1,80 @@
+generation:
+  shared:
+    scene_variant_weights:
+      lane_rack: 1.0
+    query_variant_weights:
+      first_pin_hit_label: 1.0
+      spare_path_label: 1.0
+    style_variant_weights:
+      classic: 1.0
+      cosmic: 1.0
+      paper: 1.0
+      tournament: 1.0
+      retro: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_visible_pin_count_sampling: true
+    balanced_path_option_count_sampling: true
+    balanced_target_pin_sampling: true
+    balanced_target_path_sampling: true
+    visible_pin_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+    path_option_count_support:
+      - 4
+      - 5
+      - 6
+    target_pin_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+    target_path_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 740
+    panel_margin_px: 36
+    lane_width_px: 760
+    lane_height_px: 660
+    lane_border_width_px: 6
+    pin_radius_px: 22
+    ball_radius_px: 24
+    path_width_px: 5
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.32
+      motion_reasoning: 0.42
+      ambiguity: 0.12
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_bowling_v0
+    scene_key: visible_bowling_lane
+    task_key: bowling_lane_query
+    object_description_lane_rack: a bowling lane with a bowling ball, visible labeled pins, and any shown aiming paths
+    bowling_motion_rule_text: The dashed arrow shows the ball's current straight path.
+    spare_path_rule_text: A spare path is correct when its dashed line passes through every remaining standing pin.
+    evidence_hint_first_pin_hit_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path
+    answer_hint_first_pin_hit_label: set "answer" to the selected pin label as a string
+    evidence_hint_spare_path_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected path's circular label marker
+    answer_hint_spare_path_label: set "answer" to the selected numbered path label as a string

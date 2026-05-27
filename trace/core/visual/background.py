@@ -26,6 +26,21 @@ _DEFAULT_BACKGROUND_CONFIG: Dict[str, Any] = {
 }
 
 _ALLOWED_STYLE_KINDS = {"solid", "grid"}
+_GRID_STYLE_VARIANT_KEYS = {
+    "base_color",
+    "line_color",
+    "major_line_color",
+    "axis_color",
+    "center_point_color",
+    "origin_label_color",
+    "color_variation_enabled",
+    "base_color_jitter",
+    "line_color_jitter",
+    "major_line_darken_range",
+    "axis_darken_range",
+    "center_point_darken_extra_range",
+    "origin_label_darken_extra_range",
+}
 _DEFAULT_GRID_STYLE: Dict[str, Any] = {
     "kind": "grid",
     "base_color": list(_DEFAULT_BASE_COLOR),
@@ -192,7 +207,7 @@ def coerce_grid_style_spec(
         fallback_max=0,
     )
 
-    return {
+    out = {
         "kind": "grid",
         "base_color": list(_normalize_rgb(merged.get("base_color"), _DEFAULT_BASE_COLOR)),
         "line_color": list(_normalize_rgb(merged.get("line_color"), (220, 220, 220))),
@@ -238,6 +253,13 @@ def coerce_grid_style_spec(
         ),
         "supersample_scale": max(1, min(4, _to_int(merged.get("supersample_scale"), 1))),
     }
+    raw_origin = merged.get("origin_pixel")
+    if isinstance(raw_origin, (list, tuple)) and len(raw_origin) >= 2:
+        out["origin_pixel"] = [
+            max(0, _to_int(raw_origin[0], 0)),
+            max(0, _to_int(raw_origin[1], 0)),
+        ]
+    return out
 
 
 def _normalize_styles(raw: Any, fallback: Mapping[str, Mapping[str, Any]]) -> Dict[str, Dict[str, Any]]:
@@ -260,8 +282,82 @@ def _normalize_styles(raw: Any, fallback: Mapping[str, Mapping[str, Any]]) -> Di
                 "color": list(_normalize_rgb(spec.get("color"), _DEFAULT_BASE_COLOR)),
             }
         else:
-            out[style_name] = coerce_grid_style_spec(spec)
+            grid_style = coerce_grid_style_spec(spec)
+            variant_specs = _normalize_grid_style_variants(spec.get("style_variants"))
+            if variant_specs:
+                grid_style["style_variants"] = variant_specs
+                grid_style["style_variant_weights"] = _normalize_style_variant_weights(
+                    spec.get("style_variant_weights"),
+                    variant_specs=variant_specs,
+                )
+            out[style_name] = grid_style
     return out
+
+
+def _normalize_grid_style_variants(raw: Any) -> Dict[str, Dict[str, Any]]:
+    """Return color-only grid style variants that cannot alter graph geometry."""
+
+    if not isinstance(raw, Mapping):
+        return {}
+    variants: Dict[str, Dict[str, Any]] = {}
+    for name, spec in raw.items():
+        variant_name = str(name).strip()
+        if not variant_name or not isinstance(spec, Mapping):
+            continue
+        sanitized = {
+            str(key): deepcopy(value)
+            for key, value in spec.items()
+            if str(key) in _GRID_STYLE_VARIANT_KEYS
+        }
+        if sanitized:
+            variants[str(variant_name)] = sanitized
+    return variants
+
+
+def _normalize_style_variant_weights(raw: Any, *, variant_specs: Mapping[str, Mapping[str, Any]]) -> Dict[str, float]:
+    """Normalize optional weights over sanitized style variants."""
+
+    weights = {}
+    if isinstance(raw, Mapping):
+        weights = {str(name): _to_float(raw.get(str(name), 0.0), 0.0) for name in variant_specs.keys()}
+    try:
+        return normalize_positive_weights(weights, default_keys=variant_specs.keys())
+    except ValueError:
+        return {}
+
+
+def _resolve_style_variant(
+    style_spec: Mapping[str, Any],
+    *,
+    rng,
+) -> Dict[str, Any]:
+    """Merge one deterministic color-only style variant into a style spec."""
+
+    variants = style_spec.get("style_variants")
+    if not isinstance(variants, Mapping) or not variants:
+        return dict(style_spec)
+    probabilities = _normalize_style_variant_weights(
+        style_spec.get("style_variant_weights"),
+        variant_specs=variants,
+    )
+    if not probabilities:
+        return {
+            str(key): deepcopy(value)
+            for key, value in style_spec.items()
+            if str(key) not in {"style_variants", "style_variant_weights"}
+        }
+    selected_variant = weighted_choice(rng, probabilities, sort_keys=True)
+    base = {
+        str(key): deepcopy(value)
+        for key, value in style_spec.items()
+        if str(key) not in {"style_variants", "style_variant_weights"}
+    }
+    selected_spec = variants.get(str(selected_variant), {})
+    if isinstance(selected_spec, Mapping):
+        base.update({str(key): deepcopy(value) for key, value in selected_spec.items()})
+    base["style_variant"] = str(selected_variant)
+    base["style_variant_probabilities"] = dict(probabilities)
+    return base
 
 
 def _normalize_weights(raw: Any, styles: Mapping[str, Mapping[str, Any]]) -> Dict[str, float]:
@@ -860,6 +956,24 @@ def _render_style(canvas_width: int, canvas_height: int, style_spec: Mapping[str
             x_fraction=float(resolved_spec.get("origin_fraction_x", 0.5)),
             y_fraction=float(resolved_spec.get("origin_fraction_y", 0.5)),
         )
+        explicit_origin = resolved_spec.get("origin_pixel")
+        if isinstance(explicit_origin, (list, tuple)) and len(explicit_origin) >= 2:
+            centered_origin = (
+                max(
+                    0,
+                    min(
+                        int(render_width) - 1,
+                        _to_int(explicit_origin[0], int(centered_origin[0])) * int(supersample_scale),
+                    ),
+                ),
+                max(
+                    0,
+                    min(
+                        int(render_height) - 1,
+                        _to_int(explicit_origin[1], int(centered_origin[1])) * int(supersample_scale),
+                    ),
+                ),
+            )
         resolved_spec["origin_pixel"] = [int(centered_origin[0]), int(centered_origin[1])]
         _draw_grid_lines(
             draw,
@@ -980,7 +1094,8 @@ def make_background_canvas(
         if not selected_style:
             selected_style = sorted(styles.keys())[0]
 
-    selected_spec = dict(styles[selected_style])
+    variant_rng = spawn_rng(instance_seed, f"visual.background_style_variant.{selected_style}")
+    selected_spec = _resolve_style_variant(styles[selected_style], rng=variant_rng)
     render_rng = spawn_rng(instance_seed, f"visual.background_render.{selected_style}")
     image, resolved_style_spec = _render_style(width, height, selected_spec, rng=render_rng)
     metadata = {

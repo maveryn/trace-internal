@@ -1,0 +1,6 @@
+task: task_puzzles__voxel_cube__cube_projection_match_label
+
+params:
+  view_direction: front
+  projection_match_option_count_min: 5
+  projection_match_option_count_max: 6

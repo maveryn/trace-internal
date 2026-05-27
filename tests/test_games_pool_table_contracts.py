@@ -1,0 +1,269 @@
+"""Contract tests for games Pool-table tasks."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from trace.core.builder import build_dataset
+from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.pool.table_tasks import (
+    GamesPoolBlockingBallCountTask,
+    GamesPoolQualifyingPottableCountTask,
+    GamesPoolTableTask,
+)
+from trace.tasks.games.shared.pool_common import (
+    POOL_POCKETS,
+    PoolBall,
+    PoolPocket,
+    balls_on_segment,
+    object_balls,
+    pocket_by_id,
+    pottable_ball_ids,
+    sorted_ids,
+)
+from tests.helpers import read_jsonl
+
+
+def _balls_from_execution(execution: dict) -> tuple[PoolBall, ...]:
+    return tuple(
+        PoolBall(
+            ball_id=str(row["ball_id"]),
+            number=int(row["number"]),
+            group=str(row["group"]),
+            center=(float(row["center"][0]), float(row["center"][1])),
+            is_cue=bool(row["is_cue"]),
+            is_marked=bool(row["is_marked"]),
+        )
+        for row in execution["balls"]
+    )
+
+
+def _pockets_from_execution(execution: dict) -> tuple[PoolPocket, ...]:
+    return tuple(
+        PoolPocket(
+            pocket_id=str(row["pocket_id"]),
+            display_name=str(row["display_name"]),
+            center=(float(row["center"][0]), float(row["center"][1])),
+        )
+        for row in execution["pockets"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "params", "expected_query", "expected_answer"),
+    (
+        (
+            GamesPoolQualifyingPottableCountTask,
+            {
+                "query_variant": "pottable_ball_count",
+                "target_answer": 4,
+                "object_ball_count": 9,
+                "style_variant": "classic",
+            },
+            "pottable_ball_count",
+            4,
+        ),
+        (
+            GamesPoolQualifyingPottableCountTask,
+            {
+                "query_variant": "legal_group_pottable_count",
+                "target_answer": 3,
+                "object_ball_count": 9,
+                "style_variant": "tournament_blue",
+            },
+            "legal_group_pottable_count",
+            3,
+        ),
+        (
+            GamesPoolBlockingBallCountTask,
+            {"target_answer": 2, "style_variant": "charcoal"},
+            "blocking_ball_count",
+            2,
+        ),
+    ),
+)
+def test_games_pool_table_public_tasks_emit_expected_contract(
+    task_cls: type[GamesPoolTableTask],
+    params: dict[str, int | str],
+    expected_query: str,
+    expected_answer: int,
+) -> None:
+    out = task_cls().generate(61100, params=params, max_attempts=256)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == int(expected_answer)
+    assert out.evidence_gt.type == "bbox_set"
+    assert out.query_variant == "default"
+    assert out.query_id == str(expected_query)
+    assert out.scene_id == "pool"
+    assert trace["query_spec"]["query_id"] == str(expected_query)
+    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
+    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert execution["query_id"] == str(expected_query)
+    assert execution["query_variant"] == "default"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+
+
+def test_games_pool_pottable_ball_count_matches_direct_shot_rules() -> None:
+    out = GamesPoolQualifyingPottableCountTask().generate(
+        61100,
+        params={
+            "query_variant": "pottable_ball_count",
+            "target_answer": 5,
+            "object_ball_count": 10,
+        },
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    balls = _balls_from_execution(execution)
+    pockets = _pockets_from_execution(execution)
+    clearance = float(out.trace_payload["query_spec"]["params"]["line_clearance"])
+    max_angle = float(out.trace_payload["query_spec"]["params"]["max_direct_shot_angle_degrees"])
+    expected_ids = pottable_ball_ids(
+        balls=balls,
+        pockets=pockets,
+        cue_ball_id=str(execution["cue_ball_id"]),
+        clearance=clearance,
+        max_angle_degrees=max_angle,
+    )
+
+    assert len(expected_ids) == int(out.answer_gt.value) == 5
+    assert list(expected_ids) == execution["pottable_ball_ids"]
+    assert list(expected_ids) == execution["evidence_entity_ids"]
+
+
+def test_games_pool_legal_group_pottable_count_matches_current_group_rules() -> None:
+    out = GamesPoolQualifyingPottableCountTask().generate(
+        61100,
+        params={
+            "query_variant": "legal_group_pottable_count",
+            "target_answer": 4,
+            "object_ball_count": 10,
+        },
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    balls = _balls_from_execution(execution)
+    pockets = _pockets_from_execution(execution)
+    clearance = float(out.trace_payload["query_spec"]["params"]["line_clearance"])
+    max_angle = float(out.trace_payload["query_spec"]["params"]["max_direct_shot_angle_degrees"])
+    all_pottable = set(
+        pottable_ball_ids(
+            balls=balls,
+            pockets=pockets,
+            cue_ball_id=str(execution["cue_ball_id"]),
+            clearance=clearance,
+            max_angle_degrees=max_angle,
+        )
+    )
+    expected_ids = sorted_ids(
+        ball.ball_id
+        for ball in object_balls(balls)
+        if str(ball.group) == str(execution["current_player_group"]) and str(ball.ball_id) in all_pottable
+    )
+
+    assert len(expected_ids) == int(out.answer_gt.value) == 4
+    assert list(expected_ids) == execution["legal_pottable_ball_ids"]
+    assert list(expected_ids) == execution["evidence_entity_ids"]
+
+
+def test_games_pool_blocking_ball_count_matches_marked_two_segment_lane() -> None:
+    out = GamesPoolBlockingBallCountTask().generate(
+        61100,
+        params={"target_answer": 3},
+        max_attempts=256,
+    )
+    execution = out.trace_payload["execution_trace"]
+    balls = _balls_from_execution(execution)
+    clearance = float(out.trace_payload["query_spec"]["params"]["line_clearance"])
+    cue = next(ball for ball in balls if str(ball.ball_id) == str(execution["cue_ball_id"]))
+    target = next(ball for ball in balls if str(ball.ball_id) == str(execution["marked_ball_id"]))
+    pocket = pocket_by_id(POOL_POCKETS, str(execution["marked_pocket_id"]))
+    first_segment = balls_on_segment(
+        balls=balls,
+        start=cue.center,
+        end=target.center,
+        ignore_ball_ids=(str(cue.ball_id), str(target.ball_id)),
+        clearance=clearance,
+    )
+    second_segment = balls_on_segment(
+        balls=balls,
+        start=target.center,
+        end=pocket.center,
+        ignore_ball_ids=(str(target.ball_id),),
+        clearance=clearance,
+    )
+    expected_ids = sorted_ids(ball.ball_id for ball in (*first_segment, *second_segment))
+
+    assert len(expected_ids) == int(out.answer_gt.value) == 3
+    assert list(expected_ids) == execution["blocking_ball_ids"]
+    assert list(expected_ids) == execution["evidence_entity_ids"]
+
+
+def test_games_pool_table_supports_requested_answer_ranges() -> None:
+    cases = (
+        (GamesPoolQualifyingPottableCountTask, "pottable_ball_count", range(2, 7)),
+        (GamesPoolQualifyingPottableCountTask, "legal_group_pottable_count", range(1, 5)),
+        (GamesPoolBlockingBallCountTask, range(0, 5)),
+    )
+    for case_index, case in enumerate(cases):
+        if len(case) == 3:
+            task_cls, query_variant, support = case
+        else:
+            task_cls, support = case
+            query_variant = None
+        task = task_cls()
+        for target_answer in support:
+            params: dict[str, int | str] = {"target_answer": int(target_answer)}
+            if query_variant is not None:
+                params["query_variant"] = str(query_variant)
+            out = task.generate(
+                61200 + (case_index * 100) + int(target_answer),
+                params=params,
+                max_attempts=256,
+            )
+            assert int(out.answer_gt.value) == int(target_answer)
+
+
+def test_games_pool_table_is_deterministic() -> None:
+    params = {
+        "query_variant": "blocking_ball_count",
+        "target_answer": 2,
+        "style_variant": "light_rail",
+    }
+    task = GamesPoolTableTask()
+    out_a = task.generate(61150, params=params, max_attempts=256)
+    out_b = task.generate(61150, params=params, max_attempts=256)
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_games_pool_table_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__pool"
+    config = BuildConfig(
+        output_root=str(output_root),
+        dataset_name="build_smoke_task_games__pool",
+        instance_version="v0",
+        image_format="png",
+        tasks=[
+            BuildTaskConfig(task_id="task_games__pool__pottable_ball_count", count=2, params={"target_answer": 3}),
+            BuildTaskConfig(task_id="task_games__pool__blocking_ball_count", count=1, params={"target_answer": 2}),
+        ],
+        max_attempts_per_instance=256,
+        workers=1,
+    )
+    final_path = build_dataset(config, code_hash="games-pool-table-smoke")
+    rows = read_jsonl(final_path / "train_instances.jsonl")
+
+    assert len(rows) == 3
+    assert all(row["domain"] == "games" for row in rows)
+    assert all(row["task_group"] == "pool" for row in rows)

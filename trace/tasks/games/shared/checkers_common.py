@@ -24,6 +24,15 @@ class CheckersMove:
     captured: Coord | None
 
 
+@dataclass(frozen=True)
+class CheckersCaptureChain:
+    """One multi-jump capture chain for a king checker."""
+
+    origin: Coord
+    landings: Tuple[Coord, ...]
+    captured: Tuple[Coord, ...]
+
+
 def player_name(player: int) -> str:
     """Return the prompt-facing player name for one checker color."""
 
@@ -147,10 +156,74 @@ def enumerate_legal_moves(board: Sequence[Sequence[int]], player: int) -> Tuple[
     return tuple(moves)
 
 
+def enumerate_king_capture_chains(
+    board: Sequence[Sequence[int]],
+    *,
+    player: int,
+    origin: Coord,
+) -> Tuple[CheckersCaptureChain, ...]:
+    """Return all terminal capture chains for one king checker.
+
+    Kings may jump diagonally in any direction. Captured pieces are removed
+    before later jumps in the same chain.
+    """
+
+    current = int(player)
+    other = opponent(int(current))
+    start = (int(origin[0]), int(origin[1]))
+    if not _in_bounds(*start) or int(board[start[0]][start[1]]) != int(current):
+        return ()
+
+    paths: List[CheckersCaptureChain] = []
+
+    def _recurse(
+        mutable: list[list[int]],
+        position: Coord,
+        landings: Tuple[Coord, ...],
+        captured: Tuple[Coord, ...],
+    ) -> None:
+        found = False
+        row, col = int(position[0]), int(position[1])
+        for row_delta, col_delta in ((-1, -1), (-1, 1), (1, -1), (1, 1)):
+            capture_row = int(row + row_delta)
+            capture_col = int(col + col_delta)
+            landing_row = int(row + (2 * row_delta))
+            landing_col = int(col + (2 * col_delta))
+            if not _in_bounds(capture_row, capture_col) or not _in_bounds(landing_row, landing_col):
+                continue
+            if int(mutable[capture_row][capture_col]) != int(other):
+                continue
+            if int(mutable[landing_row][landing_col]) != int(EMPTY):
+                continue
+            found = True
+            next_board = [list(int(cell) for cell in row_values) for row_values in mutable]
+            next_board[row][col] = int(EMPTY)
+            next_board[capture_row][capture_col] = int(EMPTY)
+            next_board[landing_row][landing_col] = int(current)
+            _recurse(
+                next_board,
+                (int(landing_row), int(landing_col)),
+                tuple(landings) + ((int(landing_row), int(landing_col)),),
+                tuple(captured) + ((int(capture_row), int(capture_col)),),
+            )
+        if not found:
+            paths.append(
+                CheckersCaptureChain(
+                    origin=start,
+                    landings=tuple(landings),
+                    captured=tuple(captured),
+                )
+            )
+
+    _recurse([list(int(cell) for cell in row) for row in board], start, (), ())
+    return tuple(paths)
+
+
 __all__ = [
     "BLACK",
     "BOARD_SIZE",
     "Board",
+    "CheckersCaptureChain",
     "CheckersMove",
     "Coord",
     "EMPTY",
@@ -158,6 +231,7 @@ __all__ = [
     "allowed_non_king_row",
     "coord_to_cell_id",
     "empty_board",
+    "enumerate_king_capture_chains",
     "enumerate_legal_moves",
     "freeze_board",
     "is_dark_square",

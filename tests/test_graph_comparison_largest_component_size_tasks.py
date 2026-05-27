@@ -7,6 +7,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks.graph.comparison.largest_component_size import GraphComparisonLargestComponentSizeTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -38,13 +39,11 @@ def test_graph_comparison_largest_component_size_contract_matches_trace() -> Non
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "label_set"
-    assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+    assert out.evidence_gt.type == "point_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_largest_component_comparison"
     assert execution["question_format"] == "count_nodes_in_unique_largest_component"
     assert execution["graph_directionality"] == "undirected"
     assert 2 <= int(execution["component_count"]) <= 4
-    assert int(execution["target_largest_component_size"]) == len(out.evidence_gt.value)
     assert len(node_entities) == 9
     assert len(edge_entities) == int(execution["edge_count"])
     assert int(execution["largest_component_count"]) == 1
@@ -60,13 +59,20 @@ def test_graph_comparison_largest_component_size_contract_matches_trace() -> Non
     components = [tuple(component) for component in execution["components_by_label"]]
     component_sizes = [int(size) for size in execution["component_sizes"]]
     matching_labels = [str(value) for value in execution["matching_labels"]]
+    evidence_points = list(out.evidence_gt.value)
     largest_component = next(component for component in components if len(component) == len(matching_labels))
     assert tuple(matching_labels) == largest_component
-    assert matching_labels == list(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(evidence_points)
+    assert int(execution["target_largest_component_size"]) == len(matching_labels)
     assert component_sizes.count(int(out.answer_gt.value)) == 1
-    assert trace["projected_evidence"]["label_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(out.evidence_gt.value)
+    assert trace["witness_symbolic"]["labels"] == matching_labels
+    assert "label_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == evidence_points
+    assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
+    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_points)
+    width, height = trace["render_spec"]["canvas_size"]
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_points)
 
 
 def test_graph_comparison_largest_component_size_prompt_examples_follow_label_variant() -> None:
@@ -83,8 +89,9 @@ def test_graph_comparison_largest_component_size_prompt_examples_follow_label_va
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": ["B", "D", "H", "J"], "answer": 4}
-    assert numbers_example == {"evidence": ["2", "5", "7", "9"], "answer": 4}
+    expected_example = {"evidence": [[180, 220], [310, 180], [430, 260], [520, 340]], "answer": 4}
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_comparison_largest_component_size_supports_numeric_labels_and_named_colors() -> None:
@@ -106,7 +113,9 @@ def test_graph_comparison_largest_component_size_supports_numeric_labels_and_nam
     execution = trace["execution_trace"]
     labels = [entity["label"] for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"]
     assert all(str(label).isdigit() for label in labels)
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda value: int(str(value)))
+    assert trace["witness_symbolic"]["labels"] == sorted(
+        trace["witness_symbolic"]["labels"], key=lambda value: int(str(value))
+    )
     assert execution["label_variant"] == "numbers"
     assert execution["node_shape_variant"] == "hexagon"
     assert execution["layout_transform_variant"] == "rotate_90"
@@ -125,7 +134,7 @@ def test_graph_comparison_largest_component_size_balanced_sampling_defaults() ->
     for index in range(48):
         out = task.generate(
             hash64(19305, "graph_comparison_largest_component_size", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -135,12 +144,12 @@ def test_graph_comparison_largest_component_size_balanced_sampling_defaults() ->
         node_shape_variants[str(execution["node_shape_variant"])] += 1
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
-        assert 5 <= int(execution["node_count"]) <= 10
+        assert 6 <= int(execution["node_count"]) <= 15
         assert 2 <= int(execution["component_count"]) <= 4
-        assert 2 <= int(execution["target_largest_component_size"]) <= 6
+        assert 3 <= int(execution["target_largest_component_size"]) <= 9
     assert set(component_counts.keys()) == {2, 3, 4}
-    assert set(target_sizes.keys()) == {2, 3, 4, 5, 6}
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(target_sizes.keys()) == {3, 4, 5, 6, 7, 8, 9}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}

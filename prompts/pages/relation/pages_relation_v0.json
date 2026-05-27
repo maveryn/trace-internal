@@ -1,0 +1,507 @@
+{
+  "bundle_id": "pages_relation_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "navigation_path_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "command_intent_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "professional_target_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "web_action_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:gui_navigation_paths": [
+      "object_description"
+    ],
+    "scene:gui_command_intents": [
+      "object_description"
+    ],
+    "scene:gui_professional_target_controls": [
+      "object_description"
+    ],
+    "scene:gui_web_action_targets": [
+      "object_description"
+    ],
+    "query:menu_path_target_label": [
+      "path_display",
+      "path_parent",
+      "path_child",
+      "command_label"
+    ],
+    "query:sidebar_tree_target_label": [
+      "path_display",
+      "path_parent",
+      "path_child",
+      "command_label"
+    ],
+    "query:ribbon_group_command_label": [
+      "path_display",
+      "path_parent",
+      "path_child",
+      "command_label"
+    ],
+    "query:command_intent_target_label": [
+      "object_label",
+      "action_label",
+      "instruction_text"
+    ],
+    "query:dual_guide_command_label": [
+      "object_cue_label",
+      "instruction_cue_label",
+      "instruction_text"
+    ],
+    "query:click_target_label": [
+      "instruction_text",
+      "context_label",
+      "action_label"
+    ],
+    "query:type_field_label": [
+      "instruction_text",
+      "context_label",
+      "action_label"
+    ],
+    "query:select_option_label": [
+      "instruction_text",
+      "context_label",
+      "action_label"
+    ],
+    "query:toolbar_palette_control_label": [
+      "instruction_text"
+    ],
+    "query:property_panel_control_label": [
+      "instruction_text"
+    ],
+    "query:canvas_workspace_control_label": [
+      "instruction_text"
+    ],
+    "query:code_workspace_control_label": [
+      "instruction_text"
+    ],
+    "query:file_dialog_control_label": [
+      "instruction_text"
+    ],
+    "query:tool_group_command_label": [
+      "instruction_text"
+    ],
+    "query:mode_toolbar_command_label": [
+      "instruction_text"
+    ],
+    "query:shortcut_hint_tool_label": [
+      "instruction_text"
+    ],
+    "query:enabled_tool_for_context_label": [
+      "instruction_text"
+    ],
+    "query:axis_transform_tool_label": [
+      "instruction_text"
+    ],
+    "query:section_field_control_label": [
+      "instruction_text"
+    ],
+    "query:unit_numeric_input_label": [
+      "instruction_text"
+    ],
+    "query:dropdown_setting_control_label": [
+      "instruction_text"
+    ],
+    "query:state_rule_setting_label": [
+      "instruction_text"
+    ],
+    "query:validation_option_control_label": [
+      "instruction_text"
+    ],
+    "query:axis_handle_for_object_label": [
+      "instruction_text"
+    ],
+    "query:viewport_gizmo_mode_label": [
+      "instruction_text"
+    ],
+    "query:object_overlay_tool_label": [
+      "instruction_text"
+    ],
+    "query:annotation_tool_for_mark_label": [
+      "instruction_text"
+    ],
+    "query:canvas_context_button_label": [
+      "instruction_text"
+    ],
+    "query:run_config_action_label": [
+      "instruction_text"
+    ],
+    "query:project_tree_file_action_label": [
+      "instruction_text"
+    ],
+    "query:editor_tab_status_action_label": [
+      "instruction_text"
+    ],
+    "query:terminal_panel_control_label": [
+      "instruction_text"
+    ],
+    "query:debug_panel_step_control_label": [
+      "instruction_text"
+    ],
+    "query:breadcrumb_folder_action_label": [
+      "instruction_text"
+    ],
+    "query:file_item_action_label": [
+      "instruction_text"
+    ],
+    "query:sidebar_location_target_label": [
+      "instruction_text"
+    ],
+    "query:dialog_footer_control_label": [
+      "instruction_text"
+    ],
+    "query:window_tab_target_label": [
+      "instruction_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "gui_navigation_paths": [
+      "The image shows {object_description}.",
+      "The screen shows {object_description}.",
+      "This screen shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "gui_command_intents": [
+      "The image shows {object_description}.",
+      "The screen shows {object_description}.",
+      "This screen shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "gui_professional_target_controls": [
+      "The image shows {object_description}.",
+      "The screen shows {object_description}.",
+      "This screen shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "gui_web_action_targets": [
+      "The image shows {object_description}.",
+      "The screen shows {object_description}.",
+      "This screen shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "menu_path_target_label": [
+      "Following the menu path \"{path_display}\", which candidate label marks the final command?",
+      "In the open menu path \"{path_display}\", what label is on the target command?",
+      "Use menu \"{path_parent}\" and submenu \"{path_child}\" to find \"{command_label}\". Which candidate label marks it?",
+      "Which labeled control is reached by the menu path \"{path_display}\"?",
+      "Trace \"{path_display}\" in the menu. What candidate label marks the final item?"
+    ],
+    "sidebar_tree_target_label": [
+      "Following the sidebar tree path \"{path_display}\" and the item legend, which candidate label marks the final item?",
+      "In the sidebar section \"{path_parent}\" under \"{path_child}\", use the item legend to find \"{command_label}\". Which label marks it?",
+      "Use the sidebar path \"{path_display}\" and the item legend. What candidate label marks the target item?",
+      "Which labeled control is reached by the sidebar tree path \"{path_display}\" after applying the item legend?",
+      "Trace \"{path_display}\" in the sidebar tree using the item legend. What candidate label marks the final item?"
+    ],
+    "ribbon_group_command_label": [
+      "Following the ribbon path \"{path_display}\", which candidate label marks the final command?",
+      "In ribbon tab \"{path_parent}\" under group \"{path_child}\", which label marks \"{command_label}\"?",
+      "Use the ribbon path \"{path_display}\". What candidate label marks the command?",
+      "Which labeled control is reached by the ribbon path \"{path_display}\"?",
+      "Trace \"{path_display}\" in the ribbon. What candidate label marks the final command?"
+    ],
+    "command_intent_target_label": [
+      "For the static instruction {instruction_text}, which candidate label marks the command cell?",
+      "Which labeled command cell should be used for the instruction {instruction_text}?",
+      "Use the matrix to match the instruction {instruction_text} to the correct action header and object row. What candidate label marks it?",
+      "Find the row and action column implied by the instruction {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the command described by the instruction {instruction_text}."
+    ],
+    "dual_guide_command_label": [
+      "For the static instruction {instruction_text}, which candidate label marks the command cell?",
+      "Use both visible guides to resolve the instruction {instruction_text}. Which labeled command cell is correct?",
+      "Match the action cue and object cue in {instruction_text} to the matrix. What candidate label marks the command?",
+      "Find the guided object row and guided action column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the dual-guide command instruction {instruction_text}."
+    ],
+    "click_target_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text}. Which labeled web control matches the guide cue and page context?",
+      "Use the guide key and page context for this instruction: {instruction_text}. What candidate label marks the target?",
+      "Find the control implied by this guide-cue instruction: {instruction_text}. Which label is shown?",
+      "Choose the candidate label for this guided click target: {instruction_text}."
+    ],
+    "type_field_label": [
+      "Instruction: {instruction_text}. Which candidate label marks the target input?",
+      "Instruction: {instruction_text}. Which labeled input field matches the guide cue and page context?",
+      "Use the guide key and page context for this instruction: {instruction_text}. What candidate label marks the input?",
+      "Find the input implied by this guide-cue instruction: {instruction_text}. Which label is shown?",
+      "Choose the candidate label for this guided text-entry target: {instruction_text}."
+    ],
+    "select_option_label": [
+      "Instruction: {instruction_text}. Which candidate label marks the target option?",
+      "Instruction: {instruction_text}. Which labeled option matches the guide cue and page context?",
+      "Use the guide key and page context for this instruction: {instruction_text}. What candidate label marks the option?",
+      "Find the option implied by this guide-cue instruction: {instruction_text}. Which label is shown?",
+      "Choose the candidate label for this guided selection target: {instruction_text}."
+    ],
+    "toolbar_palette_control_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text} Which candidate label is correct?",
+      "Use the guide, context row, and coded header for this instruction: {instruction_text} What candidate label marks the control?",
+      "Find the row and coded column implied by this instruction: {instruction_text} Which label is shown?",
+      "Choose the candidate label for this control instruction: {instruction_text} What is the label?"
+    ],
+    "property_panel_control_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text} Which candidate label is correct?",
+      "Use the guide, context row, and coded header for this instruction: {instruction_text} What candidate label marks the control?",
+      "Find the row and coded column implied by this instruction: {instruction_text} Which label is shown?",
+      "Choose the candidate label for this control instruction: {instruction_text} What is the label?"
+    ],
+    "canvas_workspace_control_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text} Which candidate label is correct?",
+      "Use the guide, context row, and coded header for this instruction: {instruction_text} What candidate label marks the control?",
+      "Find the row and coded column implied by this instruction: {instruction_text} Which label is shown?",
+      "Choose the candidate label for this control instruction: {instruction_text} What is the label?"
+    ],
+    "code_workspace_control_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text} Which candidate label is correct?",
+      "Use the guide, context row, and coded header for this instruction: {instruction_text} What candidate label marks the control?",
+      "Find the row and coded column implied by this instruction: {instruction_text} Which label is shown?",
+      "Choose the candidate label for this control instruction: {instruction_text} What is the label?"
+    ],
+    "file_dialog_control_label": [
+      "Instruction: {instruction_text} Which candidate label marks the target control?",
+      "Instruction: {instruction_text} Which candidate label is correct?",
+      "Use the guide, context row, and coded header for this instruction: {instruction_text} What candidate label marks the control?",
+      "Find the row and coded column implied by this instruction: {instruction_text} Which label is shown?",
+      "Choose the candidate label for this control instruction: {instruction_text} What is the label?"
+    ],
+    "tool_group_command_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "mode_toolbar_command_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "shortcut_hint_tool_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "enabled_tool_for_context_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "axis_transform_tool_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "section_field_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "unit_numeric_input_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "dropdown_setting_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "state_rule_setting_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "validation_option_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "axis_handle_for_object_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "viewport_gizmo_mode_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "object_overlay_tool_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "annotation_tool_for_mark_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "canvas_context_button_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "run_config_action_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "project_tree_file_action_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "editor_tab_status_action_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "terminal_panel_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "debug_panel_step_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "breadcrumb_folder_action_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "file_item_action_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "sidebar_location_target_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "dialog_footer_control_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ],
+    "window_tab_target_label": [
+      "For the instruction {instruction_text}, which candidate label marks the target control?",
+      "Which labeled control should be used for {instruction_text}?",
+      "Use the guide, context row, and coded header for {instruction_text}. What candidate label marks the control?",
+      "Find the row and coded column implied by {instruction_text}. Which label is shown?",
+      "Choose the candidate label for the control described by {instruction_text}."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

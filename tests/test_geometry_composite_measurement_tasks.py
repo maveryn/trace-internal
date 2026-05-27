@@ -1,0 +1,133 @@
+"""Contracts for refactored analytical measurement geometry tasks."""
+
+from __future__ import annotations
+
+import pytest
+
+from trace.tasks.geometry.measurement.composite_measurement import (
+    GeometryMeasurementAlgebraicAngleValueTask,
+    GeometryMeasurementAngleChainValueTask,
+    GeometryMeasurementAngleBisectorSegmentValueTask,
+    GeometryMeasurementCentroidMedianSegmentValueTask,
+    GeometryMeasurementCompositeAreaValueTask,
+    GeometryMeasurementCompositePerimeterValueTask,
+    GeometryMeasurementParallelSectionLengthValueTask,
+    GeometryMeasurementPythagoreanLengthValueTask,
+)
+
+
+TASK_CLASSES = (
+    GeometryMeasurementAngleChainValueTask,
+    GeometryMeasurementAlgebraicAngleValueTask,
+    GeometryMeasurementParallelSectionLengthValueTask,
+    GeometryMeasurementPythagoreanLengthValueTask,
+    GeometryMeasurementAngleBisectorSegmentValueTask,
+    GeometryMeasurementCentroidMedianSegmentValueTask,
+    GeometryMeasurementCompositeAreaValueTask,
+    GeometryMeasurementCompositePerimeterValueTask,
+)
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
+    task = task_cls()
+    out = task.generate(44001, params={}, max_attempts=20)
+
+    assert out.scene_id == task.scene_id
+    assert out.query_variant == "default"
+    assert out.query_id
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "bbox_set"
+    assert 2 <= len(out.evidence_gt.value) <= 6
+    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert '"answer"' in out.prompt_variants["answer_only"]
+
+    trace = out.trace_payload
+    assert trace["query_spec"]["scene_id"] == task.scene_id
+    assert trace["scene_ir"]["scene_id"] == task.scene_id
+    assert trace["witness_symbolic"]["scene_id"] == task.scene_id
+    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == out.query_id
+    assert trace["execution_trace"]["query_id"] == out.query_id
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_composite_measurement_tasks_are_deterministic(task_cls) -> None:
+    task = task_cls()
+    params = {}
+    out_a = task.generate(44011, params=params, max_attempts=20)
+    out_b = task.generate(44011, params=params, max_attempts=20)
+
+    assert out_a.prompt == out_b.prompt
+    assert out_a.answer_gt == out_b.answer_gt
+    assert out_a.evidence_gt == out_b.evidence_gt
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+
+
+def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
+    task = GeometryMeasurementPythagoreanLengthValueTask()
+    out = task.generate(
+        44021,
+        params={"query_id": "rectangle_triangle_shared_height_length", "case_index": 0},
+        max_attempts=20,
+    )
+
+    assert out.query_id == "rectangle_triangle_shared_height_length"
+    assert out.answer_gt.value == 15
+    assert out.trace_payload["query_spec"]["params"]["query_variant_probabilities"] == {
+        "rectangle_triangle_shared_height_length": 1.0
+    }
+
+
+def test_parallel_section_scale_task_supports_every_query() -> None:
+    task = GeometryMeasurementParallelSectionLengthValueTask()
+    for query_id in ("similar_triangles_side_length", "parallel_section_base_length", "parallel_section_cross_length"):
+        out = task.generate(44025, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
+        assert out.scene_id == "triangle_relations"
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "integer"
+        assert out.evidence_gt.type == "bbox_set"
+
+
+def test_algebraic_triangle_cases_keep_evidence_inside_canvas() -> None:
+    task = GeometryMeasurementAlgebraicAngleValueTask()
+    for query_id in ("triangle_single_extension_expression", "triangle_double_extension_expression"):
+        for case_index in range(6):
+            out = task.generate(
+                44041 + case_index,
+                params={"query_id": query_id, "case_index": case_index},
+                max_attempts=20,
+            )
+            width, height = out.image.size
+            for x0, y0, x1, y1 in out.evidence_gt.value:
+                assert 0.0 <= x0 < x1 <= float(width)
+                assert 0.0 <= y0 < y1 <= float(height)
+                assert (x1 - x0) > 8.0
+                assert (y1 - y0) > 8.0
+
+
+def test_algebraic_angle_uses_varied_expression_forms() -> None:
+    task = GeometryMeasurementAlgebraicAngleValueTask()
+    expressions: set[str] = set()
+    for query_id in ("triangle_single_extension_expression", "triangle_double_extension_expression"):
+        for case_index in range(6):
+            out = task.generate(
+                44101 + case_index,
+                params={"query_id": query_id, "case_index": case_index},
+                max_attempts=20,
+            )
+            trace = out.trace_payload["execution_trace"]
+            expressions.add(trace["expression_angle_ABC"])
+            expressions.add(trace["expression_exterior_BCD"])
+
+    assert any(expr.startswith("x+") for expr in expressions)
+    assert any(expr.startswith("2x") for expr in expressions)
+    assert any(expr.startswith("3x") for expr in expressions)
+    assert any(expr.startswith("4x") for expr in expressions)
+
+
+def test_composite_measurement_tasks_reject_unknown_query_id() -> None:
+    task = GeometryMeasurementAngleChainValueTask()
+    with pytest.raises(ValueError):
+        task.generate(44031, params={"query_id": "not_a_query"}, max_attempts=20)

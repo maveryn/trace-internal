@@ -1,0 +1,111 @@
+generation:
+  shared:
+    accent_color_name_weights:
+      red: 1.0
+      blue: 1.0
+      green: 1.0
+      yellow: 1.0
+      orange: 1.0
+      purple: 1.0
+      brown: 1.0
+      cyan: 1.0
+      magenta: 1.0
+      maroon: 1.0
+    balanced_accent_color_name_sampling: true
+  task_overrides:
+    physics_thermodynamics_pv_diagram_family:
+      scene_variant_weights:
+        clean_grid: 1.0
+        paper_grid: 1.0
+        bold_grid: 1.0
+      query_variant_weights:
+        work_value: 1.0
+        process_sign_choice: 1.0
+      work_mode_weights:
+        single_process: 1.0
+        rectangular_cycle: 0.0
+      target_sign_weights:
+        positive: 1.0
+        negative: 1.0
+        zero: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+        G: 1.0
+        H: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_work_mode_sampling: true
+      balanced_target_sign_sampling: true
+      balanced_correct_option_letter_sampling: true
+      balanced_target_answer_sampling: true
+      pressure_support: [2, 3, 4, 5, 6]
+      volume_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      min_volume_delta: 2
+      max_volume_delta: 6
+      work_answer_support: [-24, -20, -18, -16, -15, -12, -10, -9, -8, -6, -4, 4, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24]
+
+rendering:
+  task_overrides:
+    physics_thermodynamics_pv_diagram_family:
+      canvas_width: 1180
+      canvas_height: 760
+      plot_left_px: 118
+      plot_top_px: 78
+      plot_width_px: 760
+      plot_height_px: 560
+      mini_plot_left_px: 58
+      mini_plot_top_px: 88
+      mini_cell_width_px: 262
+      mini_cell_height_px: 196
+      mini_cell_gap_x_px: 18
+      mini_cell_gap_y_px: 32
+      axis_width_px: 5
+      axis_width_px_min: 4
+      axis_width_px_max: 6
+      grid_line_width_px: 1
+      bold_grid_line_width_px: 2
+      process_line_width_px: 9
+      process_line_width_px_min: 8
+      process_line_width_px_max: 10
+      cycle_line_width_px: 8
+      cycle_line_width_px_min: 7
+      cycle_line_width_px_max: 9
+      arrow_head_length_px: 24
+      arrow_head_width_px: 22
+      label_font_size_px: 24
+      tick_font_size_px: 18
+      state_font_size_px: 25
+      option_font_size_px: 26
+      note_font_size_px: 21
+      label_stroke_width_px: 2
+      pressure_max_kpa: 10
+      volume_max_l: 12
+
+complexity:
+  task_overrides:
+    physics_thermodynamics_pv_diagram_family:
+      criteria_weights:
+        visual_scan: 0.26
+        pv_reasoning: 0.50
+        ambiguity: 0.14
+        output_burden: 0.10
+
+prompt:
+  shared:
+    bundle_id: physics_thermodynamics_v0
+  task_overrides:
+    physics_thermodynamics_pv_diagram_family:
+      scene_key: thermodynamics_pv_diagram
+      task_key: pv_diagram_query
+      object_description_clean_grid: a pressure-volume diagram on a clean grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
+      object_description_paper_grid: a pressure-volume diagram on a paper-style grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
+      object_description_bold_grid: a pressure-volume diagram on a bold grid with pressure in kPa, volume in liters, visible process arrows, and labeled state points or option panels
+      evidence_hint_work_value: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the highlighted PV process or cycle used to compute work
+      evidence_hint_process_sign_choice: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct labeled candidate process
+      answer_hint_work_value: set "answer" to the signed integer work in joules, using work done by the gas as positive
+      answer_hint_process_sign_choice: set "answer" to the option letter of the labeled process with the requested work sign

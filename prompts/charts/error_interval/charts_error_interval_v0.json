@@ -1,0 +1,127 @@
+{
+  "bundle_id": "charts_error_interval_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "error_interval_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:error_interval_scene": [
+      "object_description"
+    ],
+    "query:contains_reference_count": [
+      "reference_value"
+    ],
+    "query:entirely_above_reference_count": [
+      "reference_value"
+    ],
+    "query:entirely_below_reference_count": [
+      "reference_value"
+    ],
+    "query:widest_interval_label": [
+      "relation_phrase"
+    ],
+    "query:narrowest_interval_label": [
+      "relation_phrase"
+    ],
+    "query:second_widest_interval_label": [
+      "relation_phrase"
+    ],
+    "query:second_narrowest_interval_label": [
+      "relation_phrase"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "error_interval_scene": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "contains_reference_count": [
+      "How many category intervals include reference value {reference_value}?",
+      "Count the intervals whose lower-to-upper span contains reference value {reference_value}.",
+      "Using the printed interval endpoints, how many categories include {reference_value}?",
+      "For reference value {reference_value}, how many interval whiskers contain that value?",
+      "How many displayed intervals cover the reference value {reference_value}?"
+    ],
+    "entirely_above_reference_count": [
+      "How many category intervals are entirely above reference value {reference_value}?",
+      "Count the intervals whose lower endpoint is greater than {reference_value}.",
+      "Using the printed endpoints, how many categories have intervals fully above {reference_value}?",
+      "For reference value {reference_value}, how many interval whiskers lie completely above it?",
+      "How many displayed intervals exclude {reference_value} on the high side?"
+    ],
+    "entirely_below_reference_count": [
+      "How many category intervals are entirely below reference value {reference_value}?",
+      "Count the intervals whose upper endpoint is less than {reference_value}.",
+      "Using the printed endpoints, how many categories have intervals fully below {reference_value}?",
+      "For reference value {reference_value}, how many interval whiskers lie completely below it?",
+      "How many displayed intervals exclude {reference_value} on the low side?"
+    ],
+    "widest_interval_label": [
+      "Which category has the {relation_phrase}?",
+      "Using upper minus lower endpoint, what category label has the {relation_phrase}?",
+      "Compare interval widths. Which category has the {relation_phrase}?",
+      "Find the category with the {relation_phrase}. What is its label?",
+      "What category label corresponds to the {relation_phrase}?"
+    ],
+    "narrowest_interval_label": [
+      "Which category has the {relation_phrase}?",
+      "Using upper minus lower endpoint, what category label has the {relation_phrase}?",
+      "Compare interval widths. Which category has the {relation_phrase}?",
+      "Find the category with the {relation_phrase}. What is its label?",
+      "What category label corresponds to the {relation_phrase}?"
+    ],
+    "second_widest_interval_label": [
+      "Which category has the {relation_phrase}?",
+      "Using upper minus lower endpoint, what category label has the {relation_phrase}?",
+      "Compare interval widths. Which category has the {relation_phrase}?",
+      "Find the category with the {relation_phrase}. What is its label?",
+      "What category label corresponds to the {relation_phrase}?"
+    ],
+    "second_narrowest_interval_label": [
+      "Which category has the {relation_phrase}?",
+      "Using upper minus lower endpoint, what category label has the {relation_phrase}?",
+      "Compare interval widths. Which category has the {relation_phrase}?",
+      "Find the category with the {relation_phrase}. What is its label?",
+      "What category label corresponds to the {relation_phrase}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

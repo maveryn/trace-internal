@@ -53,6 +53,7 @@ class PuzzleLogicRenderParams:
     text_color_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
     accent_color_rgb: Tuple[int, int, int]
+    unit_size_jitter: Dict[str, Any]
 
 
 @dataclass(frozen=True)

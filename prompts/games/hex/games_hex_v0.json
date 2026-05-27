@@ -1,0 +1,83 @@
+{
+  "bundle_id": "games_hex_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "hex_connection_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_hex_board": [
+      "object_description"
+    ],
+    "query:winning_move_cell_label": [
+      "hex_rule_text",
+      "red_goal_text",
+      "blue_goal_text",
+      "query_player"
+    ],
+    "query:connection_gap_count": [
+      "hex_rule_text",
+      "red_goal_text",
+      "blue_goal_text",
+      "query_player"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_hex_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "winning_move_cell_label": [
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Which labeled empty cell lets {query_player} win immediately?",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} {query_player} will play one labeled empty cell. Which label completes a winning connection?",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Find the labeled empty cell where {query_player} can move to win now.",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Which candidate cell gives {query_player} a connected path between the required sides?",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Choose the one labeled cell that makes an immediate winning chain for {query_player}."
+    ],
+    "connection_gap_count": [
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} What is the minimum number of empty cells {query_player} must fill to connect the required sides?",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Count the fewest empty cells needed for {query_player} to complete a side-to-side connection.",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} How many empty cells are needed on a shortest connecting route for {query_player}?",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Determine the minimum connection gap for {query_player}.",
+      "{hex_rule_text} {red_goal_text} {blue_goal_text} Find the smallest number of empty cells that would complete {query_player}'s connection."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -7,7 +7,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
+from ...shared.render_variation import resolve_render_int, resolve_render_rgb
 from .common import resolve_puzzle_axis_variant
+from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 
 
 SUPPORTED_PUZZLE_FOLD_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -18,6 +20,12 @@ SUPPORTED_PUZZLE_FOLD_SCENE_VARIANTS: Tuple[str, ...] = (
 SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS: Tuple[str, ...] = (
     "vertical_fold_result",
     "horizontal_fold_result",
+)
+SUPPORTED_PUZZLE_FOLD_CUT_HOLE_SHAPES: Tuple[str, ...] = (
+    "circle",
+    "square",
+    "diamond",
+    "rounded_square",
 )
 FOLD_RESULT_MARK_TYPES: Tuple[str, ...] = (
     "circle",
@@ -80,6 +88,11 @@ class PuzzleFoldResultRenderParams:
     grid_line_rgb: Tuple[int, int, int]
     arrow_rgb: Tuple[int, int, int]
     instruction_fill_rgb: Tuple[int, int, int]
+    cut_hole_fill_rgb: Tuple[int, int, int]
+    cut_hole_outline_rgb: Tuple[int, int, int]
+    cut_hole_shape: str
+    unit_size_scale: float
+    unit_size_jitter: Dict[str, Any]
 
 
 def resolve_fold_result_scene_variant(
@@ -108,36 +121,88 @@ def resolve_fold_result_render_params(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
+    instance_seed: int | None = None,
 ) -> PuzzleFoldResultRenderParams:
     """Resolve rendering params for the fold-result puzzle."""
 
+    def _int(key: str, fallback: int) -> int:
+        return resolve_render_int(
+            params,
+            render_defaults,
+            key,
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzles.fold",
+        )
+
+    def _rgb(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
+        return resolve_render_rgb(
+            params,
+            render_defaults,
+            key,
+            fallback,
+            instance_seed=instance_seed,
+            namespace="puzzles.fold",
+        )
+
+    def _choice(key: str, fallback: str, supported: Sequence[str]) -> str:
+        if params.get(str(key)) is not None:
+            raw = str(params[str(key)])
+        else:
+            options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
+            if options is not None:
+                option_list = [str(item).strip() for item in options if str(item).strip()]
+                if not option_list:
+                    raise ValueError(f"{key}_options must contain at least one string option")
+                seed = 0 if instance_seed is None else int(instance_seed)
+                rng = spawn_rng(seed, f"puzzles.fold:{str(key)}", 12841)
+                raw = option_list[int(rng.randrange(len(option_list)))]
+            else:
+                raw = str(group_default(render_defaults, str(key), str(fallback)))
+        value = str(raw).strip()
+        if value not in set(str(item) for item in supported):
+            raise ValueError(f"{key} must be one of {tuple(supported)}")
+        return value
+
+    unit_size_scale, unit_size_jitter = resolve_puzzle_unit_size_scale(
+        params,
+        render_defaults,
+        instance_seed=instance_seed,
+        namespace="puzzles.fold.unit_size",
+    )
+
     return PuzzleFoldResultRenderParams(
-        canvas_width=int(_resolve_int_param(params, render_defaults, "canvas_width", 1200)),
-        canvas_height=int(_resolve_int_param(params, render_defaults, "canvas_height", 840)),
-        scene_margin_left_px=int(_resolve_int_param(params, render_defaults, "scene_margin_left_px", 64)),
-        scene_margin_right_px=int(_resolve_int_param(params, render_defaults, "scene_margin_right_px", 64)),
-        scene_margin_top_px=int(_resolve_int_param(params, render_defaults, "scene_margin_top_px", 56)),
-        scene_margin_bottom_px=int(_resolve_int_param(params, render_defaults, "scene_margin_bottom_px", 56)),
-        reference_panel_height_px=int(_resolve_int_param(params, render_defaults, "reference_panel_height_px", 332)),
-        reference_panel_padding_px=int(_resolve_int_param(params, render_defaults, "reference_panel_padding_px", 28)),
-        reference_to_options_gap_px=int(_resolve_int_param(params, render_defaults, "reference_to_options_gap_px", 44)),
-        option_gap_px=int(_resolve_int_param(params, render_defaults, "option_gap_px", 18)),
-        option_row_gap_px=int(_resolve_int_param(params, render_defaults, "option_row_gap_px", 18)),
-        option_label_gap_px=int(_resolve_int_param(params, render_defaults, "option_label_gap_px", 16)),
-        paper_corner_radius_px=int(_resolve_int_param(params, render_defaults, "paper_corner_radius_px", 18)),
-        panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", 28)),
-        border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", 3)),
-        option_label_font_size_px=int(_resolve_int_param(params, render_defaults, "option_label_font_size_px", 30)),
-        panel_fill_rgb=tuple(int(v) for v in render_defaults.get("panel_fill_rgb", (248, 249, 252))),
-        paper_fill_rgb=tuple(int(v) for v in render_defaults.get("paper_fill_rgb", (255, 252, 245))),
-        paper_shadow_rgb=tuple(int(v) for v in render_defaults.get("paper_shadow_rgb", (236, 230, 215))),
-        border_color_rgb=tuple(int(v) for v in render_defaults.get("border_color_rgb", (86, 94, 108))),
-        text_color_rgb=tuple(int(v) for v in render_defaults.get("text_color_rgb", (30, 34, 40))),
-        text_stroke_rgb=tuple(int(v) for v in render_defaults.get("text_stroke_rgb", (255, 255, 255))),
-        fold_line_rgb=tuple(int(v) for v in render_defaults.get("fold_line_rgb", (100, 116, 145))),
-        grid_line_rgb=tuple(int(v) for v in render_defaults.get("grid_line_rgb", (209, 214, 223))),
-        arrow_rgb=tuple(int(v) for v in render_defaults.get("arrow_rgb", (54, 102, 180))),
-        instruction_fill_rgb=tuple(int(v) for v in render_defaults.get("instruction_fill_rgb", (238, 243, 250))),
+        canvas_width=_int("canvas_width", 1200),
+        canvas_height=_int("canvas_height", 840),
+        scene_margin_left_px=_int("scene_margin_left_px", 64),
+        scene_margin_right_px=_int("scene_margin_right_px", 64),
+        scene_margin_top_px=_int("scene_margin_top_px", 56),
+        scene_margin_bottom_px=_int("scene_margin_bottom_px", 56),
+        reference_panel_height_px=scale_puzzle_px(_int("reference_panel_height_px", 332), unit_size_scale, min_px=180),
+        reference_panel_padding_px=scale_puzzle_px(_int("reference_panel_padding_px", 28), unit_size_scale, min_px=12),
+        reference_to_options_gap_px=scale_puzzle_px(_int("reference_to_options_gap_px", 44), unit_size_scale, min_px=18),
+        option_gap_px=scale_puzzle_px(_int("option_gap_px", 18), unit_size_scale, min_px=10),
+        option_row_gap_px=scale_puzzle_px(_int("option_row_gap_px", 18), unit_size_scale, min_px=10),
+        option_label_gap_px=scale_puzzle_px(_int("option_label_gap_px", 16), unit_size_scale, min_px=8),
+        paper_corner_radius_px=scale_puzzle_px(_int("paper_corner_radius_px", 18), unit_size_scale, min_px=8),
+        panel_corner_radius_px=_int("panel_corner_radius_px", 28),
+        border_width_px=scale_puzzle_px(_int("border_width_px", 3), unit_size_scale, min_px=2),
+        option_label_font_size_px=scale_puzzle_px(_int("option_label_font_size_px", 30), unit_size_scale, min_px=20),
+        panel_fill_rgb=_rgb("panel_fill_rgb", (248, 249, 252)),
+        paper_fill_rgb=_rgb("paper_fill_rgb", (255, 252, 245)),
+        paper_shadow_rgb=_rgb("paper_shadow_rgb", (236, 230, 215)),
+        border_color_rgb=_rgb("border_color_rgb", (86, 94, 108)),
+        text_color_rgb=_rgb("text_color_rgb", (30, 34, 40)),
+        text_stroke_rgb=_rgb("text_stroke_rgb", (255, 255, 255)),
+        fold_line_rgb=_rgb("fold_line_rgb", (100, 116, 145)),
+        grid_line_rgb=_rgb("grid_line_rgb", (209, 214, 223)),
+        arrow_rgb=_rgb("arrow_rgb", (54, 102, 180)),
+        instruction_fill_rgb=_rgb("instruction_fill_rgb", (238, 243, 250)),
+        cut_hole_fill_rgb=_rgb("cut_hole_fill_rgb", (38, 45, 56)),
+        cut_hole_outline_rgb=_rgb("cut_hole_outline_rgb", (255, 255, 255)),
+        cut_hole_shape=_choice("cut_hole_shape", "circle", SUPPORTED_PUZZLE_FOLD_CUT_HOLE_SHAPES),
+        unit_size_scale=float(unit_size_scale),
+        unit_size_jitter=dict(unit_size_jitter),
     )
 
 
@@ -458,9 +523,24 @@ def _random_result_marks(
     return _canonical_mark_specs(raw, include_source_side=False)
 
 
+def _resolve_correct_option_index(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    option_count: int,
+) -> int:
+    """Resolve a stable correct-option slot from the instance seed."""
+
+    # Use a short cycle larger than the option count so balanced query-variant
+    # seed partitions do not alias directly into one answer letter.
+    cycle_modulus = (int(option_count) * 3) + 2
+    selection_index = abs(int(instance_seed + int(option_count) + 2)) % int(cycle_modulus)
+    return int(selection_index % int(option_count))
+
+
 def build_fold_result_dataset_for_variant(
     *,
-    task_variant: str,
+    query_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -469,8 +549,8 @@ def build_fold_result_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one single-fold paper puzzle with a unique correct folded result."""
 
-    if str(task_variant) not in SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS:
-        raise ValueError(f"unsupported fold-result task variant: {task_variant}")
+    if str(query_variant) not in SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS:
+        raise ValueError(f"unsupported fold-result query variant: {query_variant}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     option_count_min = int(_resolve_int_param(params, gen_defaults, "option_count_min", defaults.option_count_min))
@@ -483,7 +563,7 @@ def build_fold_result_dataset_for_variant(
     mark_count_max = int(_resolve_int_param(params, gen_defaults, "mark_count_max", defaults.mark_count_max))
     mark_count = int(rng.randint(mark_count_min, max(mark_count_min, mark_count_max)))
 
-    axis = "vertical" if str(task_variant) == "vertical_fold_result" else "horizontal"
+    axis = "vertical" if str(query_variant) == "vertical_fold_result" else "horizontal"
     if str(axis) == "vertical":
         direction = str(rng.choice(("left_to_right", "right_to_left")))
     else:
@@ -577,15 +657,11 @@ def build_fold_result_dataset_for_variant(
         seen_signatures.add(signature)
         chosen_distractors.append(fallback)
 
-    explicit_sampling_index = params.get("_sampling_index")
-    if explicit_sampling_index is not None:
-        selection_index = abs(int(explicit_sampling_index))
-    else:
-        # Use a short cycle larger than the option count so balanced task-variant
-        # seed partitions do not alias directly into one answer letter.
-        cycle_modulus = (int(option_count) * 3) + 2
-        selection_index = abs(int(instance_seed + int(option_count) + 2)) % int(cycle_modulus)
-    correct_index = int(selection_index % int(option_count))
+    correct_index = _resolve_correct_option_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        option_count=int(option_count),
+    )
     option_mark_sets: List[List[Dict[str, Any]]] = []
     distractor_iter = iter(chosen_distractors)
     for option_index in range(int(option_count)):

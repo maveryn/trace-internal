@@ -6,7 +6,6 @@ from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -17,7 +16,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.chart_scene import render_labeled_chart_scene
+from ..shared.chart_scene import render_labeled_chart_scene, value_axis_render_metadata
 from ..shared.complexity import (
     build_chart_complexity,
     normalize_int_with_bounds,
@@ -25,7 +24,6 @@ from ..shared.complexity import (
 )
 from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
-    SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
     build_chart_mark_specs,
     build_value_count_dataset_for_variant,
     projected_mark_evidence,
@@ -33,17 +31,31 @@ from ..shared.labeled_chart_common import (
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
+from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
+from ..shared.information_style import prepare_chart_information_scene
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
-TaskVariant = str
+QueryVariant = str
 SceneVariant = str
 
-TASK_ID = "task_charts_counting_value_count"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
-    "above_threshold",
-    "below_threshold",
+TASK_ID = "charts_counting_value_count_base"
+_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+    "threshold_count",
     "in_interval",
+)
+_SUPPORTED_THRESHOLD_COMPARISONS: Tuple[str, ...] = (
+    "greater_than",
+    "less_than",
+)
+_SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
+    "area",
+    "bar",
+    "line",
+    "scatter",
+    "horizontal_bar",
+    "dot_plot",
+    "lollipop",
 )
 
 _DEFAULTS = LabeledChartDefaults()
@@ -56,8 +68,7 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="coun
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="counting", apply_prob=0.0)
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
-    "above_threshold": 0.0,
-    "below_threshold": 0.0,
+    "threshold_count": 0.0,
     "in_interval": 1.0,
 }
 _SCENE_VARIANT_LOADS: Dict[str, float] = {
@@ -65,29 +76,99 @@ _SCENE_VARIANT_LOADS: Dict[str, float] = {
     "horizontal_bar": 0.08,
     "line": 0.18,
     "area": 0.24,
-    "pie": 0.28,
-    "donut": 0.34,
     "dot_plot": 0.44,
     "lollipop": 0.52,
     "scatter": 0.62,
-    "radar": 1.0,
 }
 
 
-def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic chart counting variant."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_TASK_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_VARIANTS,
         task_id=TASK_ID,
-        explicit_key="task_variant",
-        weights_key="task_variant_weights",
-        balance_flag_key="balanced_task_variant_sampling",
-        axis_namespace="task_variant",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        balance_flag_key="balanced_query_variant_sampling",
+        axis_namespace="query_variant",
     )
+
+
+def _uses_uniform_query_variant_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+) -> bool:
+    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+
+    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+        return False
+    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    if not bool(enabled):
+        return False
+    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _support_params_for_query_variant_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    """Use a per-public-variant occurrence index for comparator and answer support cycling."""
+
+    support_params = dict(params)
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is None:
+        return support_params
+    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+        return support_params
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    return support_params
+
+
+def _resolve_threshold_comparison(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    """Resolve the threshold comparator for the merged threshold-count variant."""
+
+    return resolve_chart_axis_variant(
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        instance_seed=int(instance_seed),
+        supported_variants=_SUPPORTED_THRESHOLD_COMPARISONS,
+        task_id=TASK_ID,
+        explicit_key="comparison",
+        weights_key="comparison_weights",
+        balance_flag_key="balanced_comparison_sampling",
+        axis_namespace="threshold_comparison",
+    )
+
+
+def _internal_count_variant(query_variant: str, *, comparison: str | None) -> str:
+    """Map the public query variant plus query parameter to the construction variant."""
+
+    if str(query_variant) == "threshold_count":
+        if str(comparison) == "greater_than":
+            return "above_threshold"
+        if str(comparison) == "less_than":
+            return "below_threshold"
+        raise ValueError(f"unsupported threshold comparison: {comparison}")
+    return str(query_variant)
+
+
+def _comparison_phrase(comparison: str) -> str:
+    """Return prompt wording for one threshold comparison."""
+
+    if str(comparison) == "greater_than":
+        return "greater than"
+    if str(comparison) == "less_than":
+        return "less than"
+    raise ValueError(f"unsupported threshold comparison: {comparison}")
 
 
 def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -97,7 +178,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
+        supported_variants=_SUPPORTED_SCENE_VARIANTS,
         task_id=TASK_ID,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -106,7 +187,6 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-@register_task
 class ChartsCountingValueCountTask:
     """Count labeled chart marks that satisfy a threshold or interval query."""
 
@@ -116,12 +196,24 @@ class ChartsCountingValueCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
+        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        support_params = _support_params_for_query_variant_cycle(
+            params,
+            query_variant_probabilities=query_variant_probabilities,
+        )
+        comparison = None
+        comparison_probabilities: Dict[str, float] = {}
+        if str(query_variant) == "threshold_count":
+            comparison, comparison_probabilities = _resolve_threshold_comparison(
+                support_params,
+                instance_seed=int(instance_seed),
+            )
+        count_variant = _internal_count_variant(str(query_variant), comparison=comparison)
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         values, answer_value, evidence_labels, trace_extras = build_value_count_dataset_for_variant(
-            count_variant=str(task_variant),
+            count_variant=str(count_variant),
             scene_variant=str(scene_variant),
-            params=params,
+            params=support_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
             defaults=_DEFAULTS,
@@ -130,7 +222,7 @@ class ChartsCountingValueCountTask:
 
         labels = [str(label) for label in trace_extras["labels"]]
         mark_style = resolve_chart_mark_colors(
-            params,
+            support_params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -144,17 +236,18 @@ class ChartsCountingValueCountTask:
             mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
-            {**dict(params), **mark_style},
+            {**dict(support_params), **mark_style},
             render_defaults=_RENDER_DEFAULTS,
             defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
         )
 
-        background, background_meta = make_background_canvas(
-            canvas_width=int(render_params.canvas_width),
-            canvas_height=int(render_params.canvas_height),
+        render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
             instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            params=support_params,
+            scene_id="single_series",
+            task_group=self.task_group,
+            render_params=render_params,
         )
         rendered_scene = render_labeled_chart_scene(
             background,
@@ -166,7 +259,7 @@ class ChartsCountingValueCountTask:
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
-            params=params,
+            params=support_params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
@@ -174,49 +267,44 @@ class ChartsCountingValueCountTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_area",
                 "object_description_bar",
-                "object_description_pie",
-                "object_description_donut",
                 "object_description_horizontal_bar",
                 "object_description_line",
                 "object_description_scatter",
-                "object_description_radar",
                 "object_description_dot_plot",
                 "object_description_lollipop",
-                "evidence_hint_above_threshold",
-                "evidence_hint_below_threshold",
+                "evidence_hint_threshold_count",
                 "evidence_hint_in_interval",
-                "json_example_above_threshold",
-                "json_example_below_threshold",
+                "json_example_threshold_count",
                 "json_example_in_interval",
-                "json_example_answer_only_above_threshold",
-                "json_example_answer_only_below_threshold",
+                "json_example_answer_only_threshold_count",
                 "json_example_answer_only_in_interval",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            task_variant_key=str(task_variant),
+            query_key=str(query_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "threshold": str(trace_extras.get("threshold", "")),
+                "threshold_comparison_phrase": _comparison_phrase(str(comparison)) if comparison is not None else "",
                 "interval_min": str(trace_extras.get("interval_min", "")),
                 "interval_max": str(trace_extras.get("interval_max", "")),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -231,7 +319,6 @@ class ChartsCountingValueCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -241,15 +328,18 @@ class ChartsCountingValueCountTask:
             for mark in rendered_scene.mark_traces
         }
         evidence_projection = projected_mark_evidence(rendered_scene, evidence_labels)
+        evidence_points = [list(point) for point in evidence_projection["pixel_point_set"]]
+        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
 
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"chart_{str(scene_variant)}_counting",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "scene_variant": str(scene_variant),
                     "evidence_labels": list(evidence_labels),
+                    **({"comparison_probabilities": dict(comparison_probabilities)} if comparison_probabilities else {}),
                     **{
                         str(key): value
                         for key, value in trace_extras.items()
@@ -258,15 +348,16 @@ class ChartsCountingValueCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "scene_variant": str(scene_variant),
-                    "task_variant_probabilities": dict(task_variant_probabilities),
+                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    **({"comparison_probabilities": dict(comparison_probabilities)} if comparison_probabilities else {}),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "mark_count": int(trace_extras["mark_count"]),
                     "target_answer": int(trace_extras["target_answer"]),
@@ -283,8 +374,10 @@ class ChartsCountingValueCountTask:
                 "canvas_height": int(render_params.canvas_height),
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
+                "information_scene_style": dict(information_style_meta),
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "layout_jitter": dict(render_params.layout_jitter_meta or {}),
                 "text_style": {
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "tick_font_size_px": int(render_params.tick_font_size_px),
@@ -308,6 +401,7 @@ class ChartsCountingValueCountTask:
                 "plot_bbox_px": list(rendered_scene.plot_bbox_px),
                 "y_axis_max": int(rendered_scene.y_axis_max),
                 "y_ticks": [int(value) for value in rendered_scene.y_ticks],
+                **value_axis_render_metadata(rendered_scene),
             },
             "render_map": {
                 "image_id": "img0",
@@ -315,18 +409,19 @@ class ChartsCountingValueCountTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(answer_value),
                 "evidence_labels": list(evidence_labels),
                 "labels": [str(label) for label in labels],
                 "values": [int(value) for value in values],
                 "values_by_label": dict(values_by_label),
+                **({"comparison_probabilities": dict(comparison_probabilities)} if comparison_probabilities else {}),
                 "mark_count": int(trace_extras["mark_count"]),
                 "mark_count_range": list(trace_extras["mark_count_range"]),
                 "target_answer": int(trace_extras["target_answer"]),
                 "target_answer_range": list(trace_extras["target_answer_range"]),
-                "task_variant_probabilities": dict(task_variant_probabilities),
+                "query_variant_probabilities": dict(query_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "numeric_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
@@ -352,11 +447,11 @@ class ChartsCountingValueCountTask:
                 },
             },
             "witness_symbolic": {
-                "type": "label_set",
+                "type": "object_set",
                 "labels": list(evidence_labels),
             },
             "projected_evidence": {
-                "label_set": list(evidence_labels),
+                "point_set": list(evidence_points),
                 **dict(evidence_projection),
             },
         }
@@ -368,7 +463,7 @@ class ChartsCountingValueCountTask:
                     int(trace_extras["mark_count"]),
                     trace_extras["mark_count_range"],
                 ),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
@@ -381,9 +476,20 @@ class ChartsCountingValueCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["ChartsCountingValueCountTask"]
+@register_task
+class ChartsCountingValuePredicateCountTask(MergedChartQueryVariantTaskMixin, ChartsCountingValueCountTask):
+    """Count labeled marks satisfying one sampled value predicate."""
+
+    task_id = "task_charts__single_series__value_predicate_count"
+    allowed_query_variants = ("threshold_count", "in_interval")
+
+
+__all__ = [
+    "ChartsCountingValuePredicateCountTask",
+    "ChartsCountingValueCountTask",
+]

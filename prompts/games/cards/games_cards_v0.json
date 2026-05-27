@@ -1,0 +1,124 @@
+{
+  "bundle_id": "games_cards_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "cards_hand_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_card_hand": [
+      "object_description"
+    ],
+    "query:higher_than_reference_count": [
+      "rank_order_text"
+    ],
+    "query:longest_run_length": [
+      "rank_order_text",
+      "continuation_rule_text"
+    ],
+    "query:blackjack_best_hand_label": [
+      "blackjack_rule_text"
+    ],
+    "query:poker_best_hand_label": [
+      "poker_rule_text"
+    ],
+    "query:trick_taking_winner_label": [
+      "rank_order_text",
+      "trick_rule_text",
+      "trump_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_card_hand": [
+      "The image shows {object_description}.",
+      "The card hand shows {object_description}.",
+      "This card hand shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "same_suit_as_reference_count": [
+      "One card is marked `REF`. How many other cards share the same suit as the reference card?",
+      "How many non-reference cards have the same suit as the card marked `REF`?",
+      "Count the other cards whose suit matches the `REF` card.",
+      "Using the card marked `REF`, how many other cards match its suit?",
+      "What is the number of other visible cards that share the reference card's suit?"
+    ],
+    "higher_than_reference_count": [
+      "{rank_order_text} One card is marked `REF`. How many other cards are ranked higher than the reference card?",
+      "{rank_order_text} Count the non-reference cards that outrank the card marked `REF`.",
+      "{rank_order_text} How many other visible cards have a higher rank than the `REF` card?",
+      "{rank_order_text} Using the card marked `REF`, how many other cards are ranked above it?",
+      "{rank_order_text} What is the number of non-reference cards with rank greater than the `REF` card?"
+    ],
+    "exact_triple_count": [
+      "How many ranks appear exactly three times in this hand?",
+      "Count the exact triples in the hand, where a triple means three cards of the same rank.",
+      "What is the number of ranks that occur exactly three times among the visible cards?",
+      "Looking only at rank matches, how many exact triples are present in this hand?",
+      "How many distinct ranks form exact three-card triples in the displayed hand?"
+    ],
+    "longest_run_length": [
+      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the longest run of consecutive ranks in display order?",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} Count the cards in the longest consecutive run of ranks as the hand is read in display order.",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the unique longest consecutive rank run visible in the hand?",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} Determine the size of the longest consecutive run when the cards are read in display order.",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} How many cards are in the longest consecutive rank run shown by the hand's display order?"
+    ],
+    "blackjack_best_hand_label": [
+      "{blackjack_rule_text} Which option letter labels the best hand?",
+      "{blackjack_rule_text} Choose the option letter for the blackjack hand that wins.",
+      "{blackjack_rule_text} Which option letter has the highest non-bust total?",
+      "{blackjack_rule_text} Select the option letter for the best labeled blackjack hand.",
+      "{blackjack_rule_text} Which option letter would win this blackjack comparison?"
+    ],
+    "poker_best_hand_label": [
+      "{poker_rule_text} Which option letter labels the winning poker hand?",
+      "{poker_rule_text} Select the option letter for the strongest labeled hand.",
+      "{poker_rule_text} Which option letter is best under poker rules?",
+      "{poker_rule_text} Identify the option letter for the winning poker hand.",
+      "{poker_rule_text} Which option letter labels the five-card hand that outranks all the others?"
+    ],
+    "trick_taking_winner_label": [
+      "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the player who wins the trick?",
+      "{rank_order_text} {trick_rule_text} {trump_text} Select the option letter for the winning player.",
+      "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the played card that wins?",
+      "{rank_order_text} {trick_rule_text} {trump_text} Identify the option letter for the player who takes this trick.",
+      "{rank_order_text} {trick_rule_text} {trump_text} Which option letter labels the player with the winning card?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

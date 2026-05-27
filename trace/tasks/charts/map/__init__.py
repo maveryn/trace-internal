@@ -1,0 +1,1 @@
+"""Map-style chart tasks."""

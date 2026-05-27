@@ -181,6 +181,39 @@ def compute_response_mask(data: DataProto):
     return attention_mask[:, -response_length:]
 
 
+def _is_trace_holdout_validation_source(data_source: str) -> bool:
+    return str(data_source).startswith("trace_rlvr_validation_")
+
+
+def _add_trace_validation_average_metrics(
+    metric_dict: dict[str, float],
+    data_src2var2metric2val: dict[str, dict[str, dict[str, float]]],
+) -> None:
+    """Add dataset-macro validation accuracy over external-only and all validation sets."""
+
+    source_items = [(str(source), var2metric2val) for source, var2metric2val in data_src2var2metric2val.items()]
+    groups = {
+        "avg_external": [(source, values) for source, values in source_items if not _is_trace_holdout_validation_source(source)],
+        "avg_all": source_items,
+    }
+    metric_var = "accuracy_on_total"
+    for group_name, items in groups.items():
+        metric_name_to_values: dict[str, list[float]] = defaultdict(list)
+        for _, var2metric2val in items:
+            metric2val = var2metric2val.get(metric_var, {})
+            for metric_name, metric_value in metric2val.items():
+                if not str(metric_name).startswith("mean@"):
+                    continue
+                try:
+                    metric_name_to_values[str(metric_name)].append(float(metric_value))
+                except (TypeError, ValueError):
+                    continue
+        metric_dict[f"val-aux/{group_name}/dataset_count"] = float(len(items))
+        for metric_name, values in sorted(metric_name_to_values.items()):
+            if values:
+                metric_dict[f"val-core/{group_name}/{metric_var}/{metric_name}"] = float(np.mean(values))
+
+
 def compute_advantage(
     data: DataProto,
     adv_estimator: AdvantageEstimator,
@@ -384,6 +417,10 @@ class RayPPOTrainer:
             collate_fn = default_collate_fn
 
         num_workers = self.config.data["dataloader_num_workers"]
+        train_loader_kwargs = {}
+        if num_workers > 0:
+            train_loader_kwargs["prefetch_factor"] = self.config.data.get("dataloader_prefetch_factor", 2)
+            train_loader_kwargs["persistent_workers"] = self.config.data.get("dataloader_persistent_workers", True)
 
         self.train_dataloader = StatefulDataLoader(
             dataset=self.train_dataset,
@@ -392,6 +429,7 @@ class RayPPOTrainer:
             drop_last=True,
             collate_fn=collate_fn,
             sampler=train_sampler,
+            **train_loader_kwargs,
         )
 
         self.val_dataloader = None
@@ -399,6 +437,10 @@ class RayPPOTrainer:
         val_num_workers = self.config.data.get("val_dataloader_num_workers", None)
         if val_num_workers is None:
             val_num_workers = num_workers
+        val_loader_kwargs = {}
+        if val_num_workers > 0:
+            val_loader_kwargs["prefetch_factor"] = self.config.data.get("val_dataloader_prefetch_factor", 2)
+            val_loader_kwargs["persistent_workers"] = self.config.data.get("val_dataloader_persistent_workers", False)
         if self.val_datasets:
             val_batch_size = self.config.data.val_batch_size
             for dataset_name, dataset in self.val_datasets.items():
@@ -410,6 +452,7 @@ class RayPPOTrainer:
                     shuffle=False,
                     drop_last=False,
                     collate_fn=collate_fn,
+                    **val_loader_kwargs,
                 )
         else:
             val_batch_size = self.config.data.val_batch_size  # Prefer config value if set
@@ -423,6 +466,7 @@ class RayPPOTrainer:
                 shuffle=self.config.data.get("validation_shuffle", True),
                 drop_last=False,
                 collate_fn=collate_fn,
+                **val_loader_kwargs,
             )
 
         assert len(self.train_dataloader) >= 1, "Train dataloader is empty!"
@@ -606,9 +650,18 @@ class RayPPOTrainer:
         sample_turns = []
         sample_image_paths = []
         sample_uids = []
+        collect_validation_samples = bool(self.config.trainer.get("validation_data_dir", None)) or (
+            int(self.config.trainer.get("log_val_generations", 0) or 0) > 0
+        )
+
+        trace_val_max_tokens = self.config.data.get("trace_val_max_response_length", None)
+        global_val_max_tokens = self.config.actor_rollout_ref.rollout.val_kwargs.max_tokens
 
         for loader_name, dataloader in self.val_dataloaders.items():
-            print(f"Start validation on {loader_name}...")
+            loader_val_max_tokens = global_val_max_tokens
+            if _is_trace_holdout_validation_source(loader_name) and trace_val_max_tokens is not None:
+                loader_val_max_tokens = int(trace_val_max_tokens)
+            print(f"Start validation on {loader_name}... max_tokens={loader_val_max_tokens}")
             for batch_dict in dataloader:
                 test_batch = DataProto.from_single_dict(batch_dict)
 
@@ -621,30 +674,32 @@ class RayPPOTrainer:
                     repeat_times=self.config.actor_rollout_ref.rollout.val_kwargs.n, interleave=True
                 )
 
-                input_ids = test_batch.batch["input_ids"]
-                input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
-                sample_inputs.extend(input_texts)
                 sample_uids.extend(test_batch.non_tensor_batch["uid"])
 
-                if "extra_info" in test_batch.non_tensor_batch:
-                    for extra_info in test_batch.non_tensor_batch["extra_info"]:
-                        paths = None
-                        if isinstance(extra_info, dict):
-                            if self.image_key and self.image_key in extra_info:
-                                paths = extra_info.get(self.image_key)
-                            elif "images" in extra_info:
-                                paths = extra_info.get("images")
-                        sample_image_paths.append(paths)
-                else:
-                    sample_image_paths.extend([None] * len(input_texts))
+                if collect_validation_samples:
+                    input_ids = test_batch.batch["input_ids"]
+                    input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
+                    sample_inputs.extend(input_texts)
 
-                if "multi_modal_data" in test_batch.batch and "image" in test_batch.batch["multi_modal_data"]:
-                    sample_images.extend(test_batch.batch["multi_modal_data"]["image"])
+                    if "extra_info" in test_batch.non_tensor_batch:
+                        for extra_info in test_batch.non_tensor_batch["extra_info"]:
+                            paths = None
+                            if isinstance(extra_info, dict):
+                                if self.image_key and self.image_key in extra_info:
+                                    paths = extra_info.get(self.image_key)
+                                elif "images" in extra_info:
+                                    paths = extra_info.get("images")
+                            sample_image_paths.append(paths)
+                    else:
+                        sample_image_paths.extend([None] * len(input_texts))
 
-                ground_truths = [
-                    item.non_tensor_batch.get("reward_model", {}).get("ground_truth", None) for item in test_batch
-                ]
-                sample_gts.extend(ground_truths)
+                    if "multi_modal_data" in test_batch.batch and "image" in test_batch.batch["multi_modal_data"]:
+                        sample_images.extend(test_batch.batch["multi_modal_data"]["image"])
+
+                    ground_truths = [
+                        item.non_tensor_batch.get("reward_model", {}).get("ground_truth", None) for item in test_batch
+                    ]
+                    sample_gts.extend(ground_truths)
 
                 test_gen_batch = self._get_gen_batch(test_batch)
                 test_gen_batch.meta_info = {
@@ -655,6 +710,8 @@ class RayPPOTrainer:
                     "validate": True,
                     "global_steps": self.global_steps,
                 }
+                if loader_val_max_tokens is not None:
+                    test_gen_batch.meta_info["max_tokens"] = int(loader_val_max_tokens)
 
                 size_divisor = (
                     self.actor_rollout_wg.world_size
@@ -669,9 +726,10 @@ class RayPPOTrainer:
 
                 test_output_gen_batch = unpad_dataproto(test_output_gen_batch_padded, pad_size=pad_size)
 
-                output_ids = test_output_gen_batch.batch["responses"]
-                output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
-                sample_outputs.extend(output_texts)
+                if collect_validation_samples:
+                    output_ids = test_output_gen_batch.batch["responses"]
+                    output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
+                    sample_outputs.extend(output_texts)
 
                 test_batch = test_batch.union(test_output_gen_batch)
                 test_batch.meta_info["validate"] = True
@@ -699,13 +757,14 @@ class RayPPOTrainer:
 
             print(f"Finish validation on {loader_name}.")
 
-        self._maybe_log_val_generations(
-            inputs=sample_inputs,
-            outputs=sample_outputs,
-            scores=sample_scores,
-            images=sample_images,
-            sample_gts=sample_gts,
-        )
+        if collect_validation_samples:
+            self._maybe_log_val_generations(
+                inputs=sample_inputs,
+                outputs=sample_outputs,
+                scores=sample_scores,
+                images=sample_images,
+                sample_gts=sample_gts,
+            )
 
         val_data_dir = self.config.trainer.get("validation_data_dir", None)
         if val_data_dir:
@@ -742,6 +801,7 @@ class RayPPOTrainer:
                     else:
                         metric_sec = "val-aux"
                     metric_dict[f"{metric_sec}/{data_source}/{var_name}/{metric_name}"] = metric_val
+        _add_trace_validation_average_metrics(metric_dict, data_src2var2metric2val)
 
         if len(sample_turns) > 0:
             sample_turns = np.concatenate(sample_turns)
@@ -767,6 +827,9 @@ class RayPPOTrainer:
         sample_turns = []
         sample_image_paths = []
         sample_uids = []
+        collect_validation_samples = bool(self.config.trainer.get("validation_data_dir", None)) or (
+            int(self.config.trainer.get("log_val_generations", 0) or 0) > 0
+        )
 
         for test_data in self.val_dataloader:
             test_batch = DataProto.from_single_dict(test_data)
@@ -785,31 +848,32 @@ class RayPPOTrainer:
             if self.config.reward_model.enable and test_batch[0].non_tensor_batch["reward_model"]["style"] == "model":
                 return {}
 
-            # Store original inputs
-            input_ids = test_batch.batch["input_ids"]
-            # TODO: Can we keep special tokens except for padding tokens?
-            input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
-            sample_inputs.extend(input_texts)
             sample_uids.extend(test_batch.non_tensor_batch["uid"])
-            if "extra_info" in test_batch.non_tensor_batch:
-                for extra_info in test_batch.non_tensor_batch["extra_info"]:
-                    paths = None
-                    if isinstance(extra_info, dict):
-                        if self.image_key and self.image_key in extra_info:
-                            paths = extra_info.get(self.image_key)
-                        elif "images" in extra_info:
-                            paths = extra_info.get("images")
-                    sample_image_paths.append(paths)
-            else:
-                sample_image_paths.extend([None] * len(input_texts))
-            if "multi_modal_data" in test_batch.batch and "image" in test_batch.batch["multi_modal_data"]:
-                images = test_batch.batch["multi_modal_data"]["image"]
-                sample_images.extend(images)
+            if collect_validation_samples:
+                # Store original inputs.
+                input_ids = test_batch.batch["input_ids"]
+                # TODO: Can we keep special tokens except for padding tokens?
+                input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
+                sample_inputs.extend(input_texts)
+                if "extra_info" in test_batch.non_tensor_batch:
+                    for extra_info in test_batch.non_tensor_batch["extra_info"]:
+                        paths = None
+                        if isinstance(extra_info, dict):
+                            if self.image_key and self.image_key in extra_info:
+                                paths = extra_info.get(self.image_key)
+                            elif "images" in extra_info:
+                                paths = extra_info.get("images")
+                        sample_image_paths.append(paths)
+                else:
+                    sample_image_paths.extend([None] * len(input_texts))
+                if "multi_modal_data" in test_batch.batch and "image" in test_batch.batch["multi_modal_data"]:
+                    images = test_batch.batch["multi_modal_data"]["image"]
+                    sample_images.extend(images)
 
-            ground_truths = [
-                item.non_tensor_batch.get("reward_model", {}).get("ground_truth", None) for item in test_batch
-            ]
-            sample_gts.extend(ground_truths)
+                ground_truths = [
+                    item.non_tensor_batch.get("reward_model", {}).get("ground_truth", None) for item in test_batch
+                ]
+                sample_gts.extend(ground_truths)
 
             test_gen_batch = self._get_gen_batch(test_batch)
             test_gen_batch.meta_info = {
@@ -839,10 +903,11 @@ class RayPPOTrainer:
 
             print("validation generation end")
 
-            # Store generated outputs
-            output_ids = test_output_gen_batch.batch["responses"]
-            output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
-            sample_outputs.extend(output_texts)
+            if collect_validation_samples:
+                # Store generated outputs.
+                output_ids = test_output_gen_batch.batch["responses"]
+                output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
+                sample_outputs.extend(output_texts)
 
             test_batch = test_batch.union(test_output_gen_batch)
             test_batch.meta_info["validate"] = True
@@ -868,7 +933,14 @@ class RayPPOTrainer:
 
             data_source_lst.append(test_batch.non_tensor_batch.get("data_source", ["unknown"] * reward_tensor.shape[0]))
 
-        self._maybe_log_val_generations(inputs=sample_inputs, outputs=sample_outputs, scores=sample_scores, images=sample_images, sample_gts=sample_gts)
+        if collect_validation_samples:
+            self._maybe_log_val_generations(
+                inputs=sample_inputs,
+                outputs=sample_outputs,
+                scores=sample_scores,
+                images=sample_images,
+                sample_gts=sample_gts,
+            )
 
         # dump generations
         val_data_dir = self.config.trainer.get("validation_data_dir", None)
@@ -907,6 +979,7 @@ class RayPPOTrainer:
                     pfx = f"{metric_sec}/{data_source}/{var_name}/{metric_name}"
                     print(f"Metric: {pfx} = {metric_val}")
                     metric_dict[pfx] = metric_val
+        _add_trace_validation_average_metrics(metric_dict, data_src2var2metric2val)
 
         if len(sample_turns) > 0:
             sample_turns = np.concatenate(sample_turns)
@@ -1358,14 +1431,14 @@ class RayPPOTrainer:
                             metrics.update(reduce_numeric_reward_metrics(reward_extra_infos_dict))
                         if "uid" in batch.non_tensor_batch:
                             # TRACE solve-rate metrics should reflect task correctness, not
-                            # format-weighted overall reward. After switching to additive
-                            # format reward, a wrong-but-well-formed answer can still earn a
+                            # optional format-weighted overall reward. If format reward is
+                            # enabled, a wrong-but-well-formed answer can still earn a
                             # positive sequence score, which would make zero_solve_* look
                             # artificially good if we grouped on token_level_scores.
-                            if reward_extra_infos_dict and "task_reward_raw" in reward_extra_infos_dict:
-                                rollout_group_scores = np.asarray(reward_extra_infos_dict["task_reward_raw"], dtype=float)
-                            elif reward_extra_infos_dict and "accuracy" in reward_extra_infos_dict:
+                            if reward_extra_infos_dict and "accuracy" in reward_extra_infos_dict:
                                 rollout_group_scores = np.asarray(reward_extra_infos_dict["accuracy"], dtype=float)
+                            elif reward_extra_infos_dict and "task_reward_raw" in reward_extra_infos_dict:
+                                rollout_group_scores = np.asarray(reward_extra_infos_dict["task_reward_raw"], dtype=float)
                             else:
                                 rollout_group_scores = batch.batch["token_level_scores"].sum(-1).detach().cpu().numpy()
                             metrics.update(

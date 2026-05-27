@@ -8,7 +8,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 3. `trace/core/visual/` — deterministic background + post-image noise.
 4. `trace/tasks/` — task registry + concrete task implementations.
 5. `trace/tasks/shared/` — cross-domain task helpers.
-6. `trace/tasks/<domain>/shared/` — domain/task-family shared helpers.
+6. `trace/tasks/<domain>/shared/` — domain/scene shared helpers.
 7. `prompts/` — external prompt assets.
 8. `configs/` — domain/task-group defaults and build configs.
 
@@ -17,7 +17,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. Resolve deterministic `dataset_id`.
 3. Generate staged instances:
    - task sampling,
-   - task-level parameter injection (including deterministic `_sampling_index` for balance-aware variant samplers),
+   - task-level parameter injection from explicit build config only,
+   - public taxonomy resolution (`domain -> scene_id -> task_id`) with source `task_group` retained for configs,
    - prompt rendering,
    - image rendering + visual variation,
    - reward-contract resolution from public answer/evidence types,
@@ -41,10 +42,11 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 9. `trace/core/build_presets.py` — reusable build recipes, including equal-split all-task configs for training datasets.
 10. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
 11. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
-12. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-13. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
-14. `trace/core/sampling.py` — shared sampling primitives.
-15. `trace/core/json_io.py` — deterministic JSON writing.
+12. `trace/core/taxonomy.py` — public domain/scene mapping plus implementation/config/prompt routing metadata.
+13. `trace/core/strict_repro.py` — strict reproducibility comparisons.
+14. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+15. `trace/core/sampling.py` — shared sampling primitives.
+16. `trace/core/json_io.py` — deterministic JSON writing.
 
 ### Prompt + visual
 1. `trace/core/prompts/assets.py` — bundle loading/cache.
@@ -59,126 +61,31 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 1. `trace/tasks/registry.py` — registration and creation.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
-4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/temporal/shared/*` for time-format plus clock/calendar/schedule/timeline rendering helpers, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers/Mancala rendering, rule helpers, styling, sampling, complexity, and visual defaults).
+4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); `puzzles/cell_board` keeps scene-specific internals under `trace/tasks/puzzles/cell_board/`.
+5. `trace/tasks/<domain>/shared/*` — domain/scene shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/pages/shared/*` plus `trace/tasks/puzzles/shared/*` for page and puzzle scene renderers, `trace/tasks/shared/time_artifact_*.py` for reusable clock/calendar/schedule/timeline plumbing, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers/Darts rendering, rule helpers, styling, sampling, complexity, and visual defaults).
 
-## 4) Current active tasks
-1. Tile:
-   - `trace/tasks/tile/count_color_count.py`
-   - `trace/tasks/tile/count_color_components.py`
-   - `trace/tasks/tile/count_largest_component_size.py`
-   - `trace/tasks/tile/path_shortest_path.py`
-   - `trace/tasks/tile/path_reachable_target_count.py`
-   - `trace/tasks/tile/pattern_match3_run_count.py`
-   - `trace/tasks/tile/reachability_region_size.py`
-   - `trace/tasks/tile/relation_min_distance.py`
-   - `trace/tasks/tile/symmetry_violation_count.py`
-   - `trace/tasks/tile/transition_gravity_max_drop.py`
-2. Geometry:
-   - `trace/tasks/geometry/measurement/value.py`
-   - `trace/tasks/geometry/comparison/value.py`
-   - `trace/tasks/geometry/counting/value.py`
-   - `trace/tasks/geometry/analytical_2d/value.py`
-   - `trace/tasks/geometry/analytical_3d/value.py`
-   - `trace/tasks/geometry/transformation/match.py`
-   - `trace/tasks/geometry/similarity/count.py`
-   - `trace/tasks/geometry/coordinate/relation.py`
-3. Icons:
-   - `trace/tasks/icons/counting/reference_match_count.py`
-   - `trace/tasks/icons/counting/size_relation.py`
-   - `trace/tasks/icons/counting/singleton_type.py`
-   - `trace/tasks/icons/pattern/structured_violation.py`
-   - `trace/tasks/icons/relation/relative_position_type.py`
-   - `trace/tasks/icons/relation/between_two_anchors_count.py`
-   - `trace/tasks/icons/relation/mirror_symmetry.py`
-   - `trace/tasks/icons/relation/occlusion_order.py`
-   - `trace/tasks/icons/sequence/missing_count.py`
-   - `trace/tasks/icons/transformation/pair_count.py`
-4. Charts:
-   - `trace/tasks/charts/statistics/summary_value.py`
-   - `trace/tasks/charts/statistics/summary_label.py`
-   - `trace/tasks/charts/counting/value_count.py`
-   - `trace/tasks/charts/readout/subset_value.py`
-   - `trace/tasks/charts/multiseries/pairwise_comparison_count.py`
-   - `trace/tasks/charts/distribution/histogram_count.py`
-   - `trace/tasks/charts/distribution/boxplot_label.py`
-   - `trace/tasks/charts/distribution/density_label.py`
-   - `trace/tasks/charts/trend/structure_value.py`
-   - `trace/tasks/charts/composition/subset_value.py`
-5. Tables:
-   - `trace/tasks/tables/statistics/summary_label.py`
-   - `trace/tasks/tables/statistics/summary_value.py`
-   - `trace/tasks/tables/statistics/filtered_subset_value.py`
-   - `trace/tasks/tables/statistics/filtered_subset_label.py`
-   - `trace/tasks/tables/counting/value_count.py`
-   - `trace/tasks/tables/readout/subset_value.py`
-   - `trace/tasks/tables/relation/row_compare_label.py`
-   - `trace/tasks/tables/relation/extremum_transfer_value.py`
-   - `trace/tasks/tables/ranking/label.py`
-   - `trace/tasks/tables/temporal/value.py`
-6. Graph:
-   - `trace/tasks/graph/counting/degree_count.py`
-   - `trace/tasks/graph/counting/articulation_point_count.py`
-   - `trace/tasks/graph/counting/bridge_count.py`
-   - `trace/tasks/graph/comparison/largest_component_size.py`
-   - `trace/tasks/graph/optimization/minimum_spanning_tree_weight.py`
-   - `trace/tasks/graph/order/topological_position.py`
-   - `trace/tasks/graph/path/shortest_path_length.py`
-   - `trace/tasks/graph/relation/reachable_count.py`
-   - `trace/tasks/graph/relation/same_component_count.py`
-   - `trace/tasks/graph/relation/unique_cycle_size.py`
-7. Temporal:
-   - `trace/tasks/temporal/calendar/month_view.py`
-   - `trace/tasks/temporal/clock/readout.py`
-   - `trace/tasks/temporal/clock/compare.py`
-   - `trace/tasks/temporal/schedule/day_planner.py`
-   - `trace/tasks/temporal/timeline/milestones.py`
-8. Puzzles:
-   - `trace/tasks/puzzles/arithmetic/equation_value.py`
-   - `trace/tasks/puzzles/arithmetic/balance_value.py`
-   - `trace/tasks/puzzles/arithmetic/grid_value.py`
-   - `trace/tasks/puzzles/logic/grid_completion_label.py`
-   - `trace/tasks/puzzles/logic/adjacency_completion_label.py`
-   - `trace/tasks/puzzles/spatial/fold_result_label.py`
-   - `trace/tasks/puzzles/spatial/cube_removal_count.py`
-   - `trace/tasks/puzzles/spatial/assembly_label.py`
-   - `trace/tasks/puzzles/spatial/overlay_result_label.py`
-   - `trace/tasks/puzzles/topology/bead_equivalence_count.py`
-9. Documents:
-   - `trace/tasks/documents/arithmetic/section_expression_value.py`
-   - `trace/tasks/documents/layout/section_membership_label.py`
-   - `trace/tasks/documents/readout/field_value.py`
-   - `trace/tasks/documents/relation/section_extremum_value.py`
-   - `trace/tasks/documents/selection/checkbox_count.py`
-10. Diagrams:
-   - `trace/tasks/diagrams/cycle/offset_stage_label.py`
-   - `trace/tasks/diagrams/flow/next_step_label.py`
-   - `trace/tasks/diagrams/hierarchy/ancestor_label.py`
-   - `trace/tasks/diagrams/schematic/callout_target_label.py`
-   - `trace/tasks/diagrams/set_diagram/region_sum_value.py`
-11. Physics:
-   - `trace/tasks/physics/circuits/equivalent_resistance.py`
-   - `trace/tasks/physics/mechanics/force_diagram.py`
-   - `trace/tasks/physics/mechanics/lever_balance.py`
-   - `trace/tasks/physics/mechanics/spring_extension.py`
-   - `trace/tasks/physics/optics/ray_trace.py`
-12. Games:
-   - `trace/tasks/games/bingo/completed_line_count.py`
-   - `trace/tasks/games/cards/hand_count.py`
-   - `trace/tasks/games/checkers/move_count.py`
-   - `trace/tasks/games/connect_four/move_count.py`
-   - `trace/tasks/games/dominoes/chain_count.py`
-   - `trace/tasks/games/dots_and_boxes/capture_count.py`
-   - `trace/tasks/games/go/group_liberty_count.py`
-   - `trace/tasks/games/mancala/move_count.py`
-   - `trace/tasks/games/nine_mens_morris/pieces_in_mill_count.py`
-   - `trace/tasks/games/reversi/move_count.py`
+## 4) Active Task Inventory
+The active public task surface is generated from the live registry and taxonomy.
+Do not enumerate current tasks or scenes in this architecture document.
+
+Use `docs/ACTIVE_TASK_INVENTORY.md` for the committed generated inventory of
+`domain -> scene_id -> task_id`. Regenerate it with:
+
+```bash
+PYTHONPATH=. python scripts/generate_active_task_inventory.py
+```
+
+Architecture docs should describe module boundaries, lifecycle, and invariants.
+Task additions/removals should update task docs, taxonomy/registry, and the
+generated inventory instead of duplicating task lists here.
+
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.
-3. Answer/evidence/witness are consistent from one execution trace.
-4. Shared helpers are reused before adding task-local utilities.
-5. Builder parallelism changes throughput only; dataset identity and finalized row ordering stay invariant for fixed build-critical config.
+3. Public records expose `domain`, `scene_id`, and `task`; source `task_group` remains readable during the taxonomy transition.
+4. Answer/evidence/witness are consistent from one execution trace.
+5. Shared helpers are reused before adding task-local utilities.
+6. Builder parallelism changes throughput only; dataset identity and finalized row ordering stay invariant for fixed build-critical config.
 
 ## 6) When to update this doc
 Update when:

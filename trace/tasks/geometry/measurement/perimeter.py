@@ -1,10 +1,6 @@
 """Single-object geometry perimeter measurement task."""
-
 from __future__ import annotations
-
 from typing import Any, Dict, List, Mapping, Tuple
-
-from ...registry import register_task
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.conic_geometry import CircleInstance, EllipseInstance
@@ -18,36 +14,28 @@ from ..shared.polygon_geometry import (
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from .shape_measure_base import GeometryShapeMeasureBase
 
-
-@register_task
 class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
     """Measure 2D perimeter/circumference for one polygon/circle on graph paper."""
-
-    task_id = "task_geometry_measurement_perimeter"
+    task_id = "source_geometry_measurement_perimeter"
     scene_kind = "geometry_2d_perimeter_measurement"
-    query_template_id = "geometry_2d_perimeter_measure_v1"
+    query_template_id = "shape_measure_perimeter_query_v0"
     answer_component_key = "perimeter_units"
     supported_shape_variants = ("triangle", "quadrilateral", "circle")
-
     def _answer_scalar_from_polygon_instance(self, instance: PolygonInstance) -> int:
         """Return polygon perimeter answer value."""
         return int(instance.perimeter_units)
-
     def _answer_scalar_from_ellipse_instance(self, instance: EllipseInstance) -> int:
         """Raise because ellipse perimeter is intentionally out of scope."""
         raise ValueError(
             "ellipse perimeter answers are intentionally excluded; "
             "use circle variant for π-based perimeter measurement"
         )
-
     def _answer_scalar_from_circle_instance(self, instance: CircleInstance) -> int:
         """Return circle circumference `k` coefficient for `kπ`."""
         return int(instance.circumference_pi_coefficient)
-
     def _circle_answer_coefficient_scale(self) -> int:
         """Return circle circumference coefficient scale for `kπ` answers."""
         return 2
-
     def _resolve_polygon_target_answer(
         self,
         *,
@@ -60,7 +48,6 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         render_defaults: Mapping[str, Any],
     ) -> Tuple[int | None, Dict[str, float], List[int], int]:
         """Select triangle-perimeter targets from exact feasible support before layout."""
-
         if str(variant_kind) != "triangle":
             return super()._resolve_polygon_target_answer(
                 instance_seed=int(instance_seed),
@@ -103,7 +90,6 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
             for base_units, apex_x_units, height_units in triangle_specs
         ) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
-
     def _resolve_circle_target_answer(
         self,
         *,
@@ -116,7 +102,6 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         render_defaults: Mapping[str, Any],
     ) -> Tuple[int | None, Dict[str, float], List[int], int]:
         """Select one circumference coefficient before scene layout."""
-
         if str(variant_kind) != "circle":
             return super()._resolve_circle_target_answer(
                 instance_seed=int(instance_seed),
@@ -156,7 +141,6 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         selected_answer = int(feasible_coefficients[int(sampling_index) % len(feasible_coefficients)])
         required_graph_cells = int(selected_answer) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_coefficients], int(required_graph_cells)
-
     def _sample_polygon_instance(
         self,
         rng,
@@ -167,7 +151,6 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         gen_defaults: Mapping[str, Any],
     ) -> PolygonInstance:
         """Use constructive triangle-perimeter sampling when the task targets triangle perimeter."""
-
         if str(variant_kind) == "triangle" and target_answer_scalar is not None:
             return sample_triangle_instance_with_perimeter_on_graph_paper(
                 rng,
@@ -185,11 +168,9 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
             context=context,
             gen_defaults=gen_defaults,
         )
-
     def _pi_variants(self) -> set[str]:
         """Return shape variants that emit π-expression answers."""
         return {"circle"}
-
     def _measurement_complexity_components(
         self,
         *,

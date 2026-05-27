@@ -97,6 +97,8 @@ def extract_background_anchor_colors(background_meta: Mapping[str, Any] | None) 
     for key in (
         "color",
         "base_color",
+        "background_rgb",
+        "background_accent_rgb",
         "line_color",
         "major_line_color",
         "axis_color",

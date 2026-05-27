@@ -1,0 +1,120 @@
+{
+  "bundle_id": "puzzles_cell_board_count_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "color_count_query": [
+      "How many tiles are colored {query_color}?",
+      "Count the number of {query_color} tiles on the board.",
+      "Determine how many board tiles have color {query_color}.",
+      "Find the total number of tiles colored {query_color}.",
+      "How many board cells are {query_color}?"
+    ],
+    "color_cell_count_query": [
+      "How many cells are {query_color}?",
+      "Count the number of {query_color} cells on the board.",
+      "Determine how many board cells have color {query_color}.",
+      "Find the total number of cells colored {query_color}.",
+      "How many board cells are colored {query_color}?"
+    ],
+    "row_color_cell_count_query": [
+      "How many {query_color} cells are in row {query_row}?",
+      "Count the number of {query_color} cells in row {query_row}.",
+      "Determine how many cells in row {query_row} have color {query_color}.",
+      "Find the total number of {query_color} cells in row {query_row}.",
+      "In row {query_row}, how many cells are colored {query_color}?"
+    ],
+    "column_color_cell_count_query": [
+      "How many {query_color} cells are in column {query_column}?",
+      "Count the number of {query_color} cells in column {query_column}.",
+      "Determine how many cells in column {query_column} have color {query_color}.",
+      "Find the total number of {query_color} cells in column {query_column}.",
+      "In column {query_column}, how many cells are colored {query_color}?"
+    ],
+    "edge_color_cell_count_query": [
+      "How many {query_color} cells are on the outer edge of the board?",
+      "Count the number of {query_color} cells on the board's outer edge.",
+      "Determine how many outer-edge cells have color {query_color}.",
+      "Find the total number of edge cells colored {query_color}.",
+      "Along the outer border of the board, how many cells are {query_color}?"
+    ],
+    "color_component_count_query": [
+      "How many connected components of {query_color} are there using 4-neighbor connectivity?",
+      "Count the number of 4-neighbor connected components formed by the {query_color} tiles.",
+      "Determine how many 4-neighbor connected groups the {query_color} tiles form.",
+      "Using 4-neighbor connectivity, how many connected groups of {query_color} tiles are on the board?",
+      "Find the total number of 4-neighbor connected components made by the {query_color} tiles."
+    ],
+    "largest_component_size_query": [
+      "What is the size of the largest 4-neighbor connected component of {query_color}?",
+      "Determine how many tiles are in the largest 4-neighbor connected group of {query_color}.",
+      "Count the tiles in the largest 4-neighbor connected component formed by {query_color}.",
+      "Using 4-neighbor connectivity, what is the size of the largest connected group of {query_color} tiles?",
+      "Find the number of tiles in the largest 4-neighbor connected component made by the {query_color} tiles."
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:rectangular_tile_board": [
+      "rows",
+      "cols"
+    ],
+    "task:color_count_query": [
+      "query_color"
+    ],
+    "task:color_cell_count_query": [
+      "query_color"
+    ],
+    "task:row_color_cell_count_query": [
+      "query_color",
+      "query_row"
+    ],
+    "task:column_color_cell_count_query": [
+      "query_color",
+      "query_column"
+    ],
+    "task:edge_color_cell_count_query": [
+      "query_color"
+    ],
+    "task:color_component_count_query": [
+      "query_color"
+    ],
+    "task:largest_component_size_query": [
+      "query_color"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "rectangular_tile_board": [
+      "The image shows one rectangular tile board with {rows} rows and {cols} columns.",
+      "The board is a {rows} by {cols} rectangular tile grid.",
+      "This tile board has {rows} rows and {cols} columns.",
+      "The grid shows a rectangular tile board with {rows} rows and {cols} columns.",
+      "The board layout is a {rows}-row by {cols}-column tile grid."
+    ]
+  }
+}

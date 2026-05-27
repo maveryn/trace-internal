@@ -1,0 +1,97 @@
+{
+  "bundle_id": "illustrations_relation_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "named_object_side_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "furniture_side_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:mixed_object_canvas": [
+      "object_count"
+    ],
+    "scene:indoor_room_canvas": [
+      "room_setting"
+    ],
+    "query:named_object_side_count": [
+      "reference_object_name",
+      "relation_word"
+    ],
+    "query:furniture_side_count": [
+      "object_name",
+      "furniture_name",
+      "relation_word"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "mixed_object_canvas": [
+      "The scene shows {object_count} illustrated objects.",
+      "The image shows {object_count} synthetic object drawings.",
+      "The picture shows {object_count} drawn objects on a simple background.",
+      "The canvas contains {object_count} illustrated objects.",
+      "This scene contains {object_count} recognizable object drawings."
+    ],
+    "indoor_room_canvas": [
+      "The image shows {room_setting}.",
+      "The scene shows objects arranged in {room_setting}.",
+      "The picture shows illustrated objects in {room_setting}.",
+      "The canvas shows {room_setting}.",
+      "This is {room_setting}."
+    ]
+  },
+  "query_templates": {
+    "named_object_side_count": [
+      "How many objects are {relation_word} the only {reference_object_name}?",
+      "Count the objects {relation_word} the only {reference_object_name}.",
+      "What is the number of objects {relation_word} the only {reference_object_name}?",
+      "How many illustrated objects lie {relation_word} the only {reference_object_name}?",
+      "Find every object {relation_word} the only {reference_object_name}. What is the count?"
+    ],
+    "furniture_side_count": [
+      "How many {object_name} objects are {relation_word} the {furniture_name}?",
+      "Count the {object_name} objects {relation_word} the {furniture_name}.",
+      "What is the number of {object_name} objects {relation_word} the {furniture_name}?",
+      "How many drawn {object_name} objects lie {relation_word} the {furniture_name}?",
+      "Find every {object_name} {relation_word} the {furniture_name}. What is the count?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
 from .dots_boxes_common import DotsAndBoxesBoardState, DotsAndBoxesBoxInstance, DotsAndBoxesEdgeInstance
+from .layout import apply_games_layout_jitter_to_bbox
 from .style import DotsAndBoxesTheme, build_games_dots_and_boxes_theme
 
 
@@ -29,6 +30,7 @@ class DotsAndBoxesRenderParams:
     dot_radius_px: int
     dash_length_px: int
     dash_gap_px: int
+    layout_jitter_meta: Dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -111,6 +113,60 @@ def _draw_dashed_line(
         distance = segment_end + float(dash_gap_px)
 
 
+def _draw_board_treatment(
+    image: Image.Image,
+    *,
+    board_bbox: Tuple[float, float, float, float],
+    radius_px: int,
+    theme: DotsAndBoxesTheme,
+) -> None:
+    """Draw optional inner fill and surface pattern for one board style."""
+
+    draw = ImageDraw.Draw(image)
+    left, top, right, bottom = board_bbox
+    if theme.board_inner_fill_rgb is not None:
+        inset = 10.0
+        draw.rounded_rectangle(
+            [left + inset, top + inset, right - inset, bottom - inset],
+            radius=max(6, int(radius_px) - 8),
+            fill=tuple(int(value) for value in theme.board_inner_fill_rgb),
+        )
+    if theme.board_pattern_rgb is None or int(theme.board_pattern_alpha) <= 0:
+        return
+
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    overlay_draw = ImageDraw.Draw(overlay)
+    color = (
+        int(theme.board_pattern_rgb[0]),
+        int(theme.board_pattern_rgb[1]),
+        int(theme.board_pattern_rgb[2]),
+        int(theme.board_pattern_alpha),
+    )
+    pattern = str(theme.board_rendering)
+    if pattern == "notebook":
+        spacing = 38.0
+        y = float(top + 78.0)
+        while y < float(bottom - 18.0):
+            overlay_draw.line([(left + 18.0, y), (right - 18.0, y)], fill=color, width=1)
+            y += spacing
+        x = float(left + 86.0)
+        overlay_draw.line([(x, top + 18.0), (x, bottom - 18.0)], fill=color, width=2)
+    elif pattern == "wood":
+        spacing = 58.0
+        x = float(left + 24.0)
+        while x < float(right - 18.0):
+            overlay_draw.line([(x, top + 18.0), (x + 24.0, bottom - 18.0)], fill=color, width=3)
+            x += spacing
+    else:
+        overlay_draw.rounded_rectangle(
+            [left + 12.0, top + 12.0, right - 12.0, bottom - 12.0],
+            radius=max(6, int(radius_px) - 10),
+            outline=color,
+            width=2,
+        )
+    image.alpha_composite(overlay)
+
+
 def _edge_bbox(
     edge: DotsAndBoxesEdgeInstance,
     *,
@@ -153,7 +209,13 @@ def render_dots_and_boxes_scene(
     board_top = float((int(params.canvas_height) - int(params.board_height_px)) / 2)
     board_right = float(board_left + int(params.board_width_px))
     board_bottom = float(board_top + int(params.board_height_px))
-    board_bbox = (round(board_left, 3), round(board_top, 3), round(board_right, 3), round(board_bottom, 3))
+    board_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=(board_left, board_top, board_right, board_bottom),
+        canvas_width=int(params.canvas_width),
+        canvas_height=int(params.canvas_height),
+        jitter=params.layout_jitter_meta,
+    )
+    board_left, board_top, board_right, board_bottom = [float(value) for value in board_bbox]
 
     _draw_shadow(
         image,
@@ -167,6 +229,12 @@ def render_dots_and_boxes_scene(
         fill=tuple(int(value) for value in theme.board_fill_rgb),
         outline=tuple(int(value) for value in theme.board_border_rgb),
         width=int(theme.board_border_width_px),
+    )
+    _draw_board_treatment(
+        image,
+        board_bbox=board_bbox,
+        radius_px=int(params.board_corner_radius_px),
+        theme=theme,
     )
 
     title_text = "Dots and Boxes"
@@ -232,6 +300,13 @@ def render_dots_and_boxes_scene(
 
     edge_bboxes_px: Dict[str, List[float]] = {}
     for edge in board_state.edges:
+        edge_bboxes_px[str(edge.edge_id)] = list(
+            _edge_bbox(
+                edge,
+                dot_xy=dot_xy,
+                pad_px=float(max(theme.edge_width_px, theme.highlight_width_px) + 8),
+            )
+        )
         if not bool(edge.is_drawn) and not bool(edge.is_highlighted):
             continue
         start_xy = dot_xy[(int(edge.dot_start[0]), int(edge.dot_start[1]))]
@@ -252,20 +327,19 @@ def render_dots_and_boxes_scene(
                 width_px=int(theme.highlight_width_px),
                 fill_rgb=tuple(int(value) for value in theme.highlight_rgb),
             )
-        edge_bboxes_px[str(edge.edge_id)] = list(
-            _edge_bbox(
-                edge,
-                dot_xy=dot_xy,
-                pad_px=float(max(theme.edge_width_px, theme.highlight_width_px) + 8),
-            )
-        )
 
     for dot_row in range(int(board_state.box_rows) + 1):
         for dot_col in range(int(board_state.box_cols) + 1):
             cx, cy = dot_xy[(dot_row, dot_col)]
             radius = float(params.dot_radius_px)
+            dot_bbox = [cx - radius, cy - radius, cx + radius, cy + radius]
+            if str(theme.dot_rendering) == "outlined" and theme.dot_outline_rgb is not None:
+                draw.ellipse(
+                    [dot_bbox[0] - 1.5, dot_bbox[1] - 1.5, dot_bbox[2] + 1.5, dot_bbox[3] + 1.5],
+                    fill=tuple(int(value) for value in theme.dot_outline_rgb),
+                )
             draw.ellipse(
-                [cx - radius, cy - radius, cx + radius, cy + radius],
+                dot_bbox,
                 fill=tuple(int(value) for value in theme.dot_rgb),
             )
 
@@ -281,13 +355,21 @@ def render_dots_and_boxes_scene(
                 "column_index": int(box.column_index),
             }
         )
-    scene_entities.append(
-        {
-            "entity_id": str(board_state.highlighted_edge_id),
-            "kind": "dots_and_boxes_highlighted_edge",
-            "bbox": list(edge_bboxes_px[str(board_state.highlighted_edge_id)]),
-        }
+    highlighted_edge_ids = tuple(
+        str(edge_id)
+        for edge_id in getattr(board_state, "highlighted_edge_ids", ())
+        if str(edge_id)
     )
+    if not highlighted_edge_ids and str(board_state.highlighted_edge_id):
+        highlighted_edge_ids = (str(board_state.highlighted_edge_id),)
+    for edge_id in highlighted_edge_ids:
+        scene_entities.append(
+            {
+                "entity_id": str(edge_id),
+                "kind": "dots_and_boxes_highlighted_edge",
+                "bbox": list(edge_bboxes_px[str(edge_id)]),
+            }
+        )
 
     return RenderedDotsAndBoxesScene(
         image=image.convert("RGB"),
@@ -298,6 +380,8 @@ def render_dots_and_boxes_scene(
             "box_bboxes_px": box_bboxes_px,
             "edge_bboxes_px": edge_bboxes_px,
             "highlighted_edge_id": str(board_state.highlighted_edge_id),
+            "highlighted_edge_ids": [str(edge_id) for edge_id in highlighted_edge_ids],
+            "layout_jitter": dict(layout_jitter),
         },
     )
 

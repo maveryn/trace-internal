@@ -22,6 +22,8 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_reversi_move_complexity
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
+from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.reversi_common import (
     BLACK,
     WHITE,
@@ -33,13 +35,14 @@ from ..shared.reversi_common import (
     player_name,
     simulate_random_state,
 )
+from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.reversi_scene import ReversiRenderParams, render_reversi_board_scene
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
-from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
+from ..shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
-TASK_ID = "task_games_reversi_move_count"
+TASK_ID = "games_reversi_move_count_base"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "compact_board",
     "classic_board",
@@ -57,7 +60,7 @@ class _TaskDefaults:
 
     legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     corner_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
-    flip_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
+    flip_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     canvas_width: int = 900
     canvas_height: int = 900
     panel_margin_px: int = 48
@@ -117,18 +120,19 @@ def _resolve_query_variant(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `task_variant` as an alias."""
+    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("task_variant") is not None:
-        alias_params["query_variant"] = alias_params["task_variant"]
+    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
+        alias_params["query_variant"] = alias_params["query_variant"]
     return resolve_games_query_variant(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=tuple(str(value) for value in supported_query_variants),
     )
 
 
@@ -157,6 +161,132 @@ def _resolve_named_axis(
     )
 
 
+def _uses_uniform_query_cycle(
+    params: Mapping[str, Any],
+    probabilities: Mapping[str, float],
+    *,
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
+) -> bool:
+    """Return true when the query axis is using the default balanced cycle."""
+
+    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+        return False
+    enabled = bool(
+        params.get(
+            "balanced_query_variant_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+        )
+    )
+    if not enabled:
+        return False
+    positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(tuple(supported_query_variants)):
+        return False
+    return max(positives) - min(positives) <= 1e-9
+
+
+def _params_for_query_occurrence_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
+) -> Dict[str, Any]:
+    """Use a per-query occurrence index for axes balanced under the query cycle."""
+
+    cycle_params = dict(params)
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is None:
+        return cycle_params
+    if not _uses_uniform_query_cycle(
+        params,
+        query_variant_probabilities,
+        supported_query_variants=supported_query_variants,
+    ):
+        return cycle_params
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    return cycle_params
+
+
+def _scene_variant_params_for_query_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
+) -> Dict[str, Any]:
+    """Decorrelate balanced scene cycling from balanced query cycling."""
+
+    if params.get("scene_variant") is not None:
+        return dict(params)
+    enabled = bool(
+        params.get(
+            "balanced_scene_variant_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_scene_variant_sampling", True),
+        )
+    )
+    if not enabled:
+        return dict(params)
+    raw_weights = params.get(
+        "scene_variant_weights",
+        group_default(_GEN_DEFAULTS, "scene_variant_weights", {key: 1.0 for key in SUPPORTED_SCENE_VARIANTS}),
+    )
+    if not isinstance(raw_weights, Mapping):
+        return dict(params)
+    positives = [
+        float(raw_weights.get(str(value), 0.0))
+        for value in SUPPORTED_SCENE_VARIANTS
+        if float(raw_weights.get(str(value), 0.0)) > 0.0
+    ]
+    if len(positives) != len(SUPPORTED_SCENE_VARIANTS):
+        return dict(params)
+    if max(positives) - min(positives) > 1e-9:
+        return dict(params)
+    return _params_for_query_occurrence_cycle(
+        params,
+        query_variant_probabilities=query_variant_probabilities,
+        supported_query_variants=supported_query_variants,
+    )
+
+
+def _style_variant_params_for_query_cycle(
+    params: Mapping[str, Any],
+    *,
+    query_variant_probabilities: Mapping[str, float],
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
+) -> Dict[str, Any]:
+    """Decorrelate balanced style cycling from balanced query cycling."""
+
+    if params.get("style_variant") is not None:
+        return dict(params)
+    enabled = bool(
+        params.get(
+            "balanced_style_variant_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_style_variant_sampling", True),
+        )
+    )
+    if not enabled:
+        return dict(params)
+    raw_weights = params.get(
+        "style_variant_weights",
+        group_default(_GEN_DEFAULTS, "style_variant_weights", {key: 1.0 for key in SUPPORTED_REVERSI_STYLE_VARIANTS}),
+    )
+    if not isinstance(raw_weights, Mapping):
+        return dict(params)
+    positives = [
+        float(raw_weights.get(str(value), 0.0))
+        for value in SUPPORTED_REVERSI_STYLE_VARIANTS
+        if float(raw_weights.get(str(value), 0.0)) > 0.0
+    ]
+    if len(positives) != len(SUPPORTED_REVERSI_STYLE_VARIANTS):
+        return dict(params)
+    if max(positives) - min(positives) > 1e-9:
+        return dict(params)
+    return _params_for_query_occurrence_cycle(
+        params,
+        query_variant_probabilities=query_variant_probabilities,
+        supported_query_variants=supported_query_variants,
+    )
+
+
 def _target_support_key(query_variant: str) -> str:
     """Return the configured answer-support key for one query variant."""
 
@@ -173,16 +303,26 @@ def _board_size_for_scene(scene_variant: str) -> int:
     return 6 if str(scene_variant) == "compact_board" else 8
 
 
-def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
+def _resolve_axes(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    supported_query_variants: Sequence[str] = SUPPORTED_QUERY_VARIANTS,
+) -> _ResolvedAxes:
     """Resolve all semantic and visual sampling axes for one Reversi instance."""
 
     query_variant, query_variant_probabilities = _resolve_query_variant(
         instance_seed=int(instance_seed),
         params=params,
+        supported_query_variants=supported_query_variants,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
-        params=params,
+        params=_scene_variant_params_for_query_cycle(
+            params,
+            query_variant_probabilities=query_variant_probabilities,
+            supported_query_variants=supported_query_variants,
+        ),
         namespace="scene_variant",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -191,24 +331,33 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     style_variant, style_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
-        params=params,
+        params=_style_variant_params_for_query_cycle(
+            params,
+            query_variant_probabilities=query_variant_probabilities,
+            supported_query_variants=supported_query_variants,
+        ),
         namespace="style_variant",
         explicit_key="style_variant",
         weights_key="style_variant_weights",
         balance_flag_key="balanced_style_variant_sampling",
-        supported=SUPPORTED_GAMES_STYLE_VARIANTS,
+        supported=SUPPORTED_REVERSI_STYLE_VARIANTS,
     )
     target_support_key = _target_support_key(str(query_variant))
+    target_params = _params_for_query_occurrence_cycle(
+        params,
+        query_variant_probabilities=query_variant_probabilities,
+        supported_query_variants=supported_query_variants,
+    )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
-        params=params,
+        params=target_params,
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
         namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
         balanced_flag_key="balanced_target_answer_sampling",
-        namespace_explicit_sampling_index=True,
+        namespace_support_permutation=True,
     )
     target_answer_support = resolve_integer_support(
         params,
@@ -230,9 +379,24 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
 
 
-def _render_params(params: Mapping[str, Any]) -> ReversiRenderParams:
+def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ReversiRenderParams:
     """Resolve Reversi rendering parameters from config/defaults."""
 
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace="games.reversi.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
+            params,
+            _RENDER_DEFAULTS,
+            instance_seed=int(instance_seed),
+            namespace="games.reversi.layout",
+        ),
+        unit_scale_meta,
+    )
     return ReversiRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -250,29 +414,39 @@ def _render_params(params: Mapping[str, Any]) -> ReversiRenderParams:
             )
         ),
         header_gap_px=int(params.get("header_gap_px", group_default(_RENDER_DEFAULTS, "header_gap_px", _DEFAULTS.header_gap_px))),
-        max_board_size_px=int(
-            params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px))
+        max_board_size_px=scale_games_px(
+            params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
+            unit_scale,
+            min_px=360,
         ),
-        board_corner_radius_px=int(
+        board_corner_radius_px=scale_games_px(
             params.get(
                 "board_corner_radius_px",
                 group_default(_RENDER_DEFAULTS, "board_corner_radius_px", _DEFAULTS.board_corner_radius_px),
-            )
+            ),
+            unit_scale,
+            min_px=10,
         ),
-        board_frame_width_px=int(
+        board_frame_width_px=scale_games_px(
             params.get(
                 "board_frame_width_px",
                 group_default(_RENDER_DEFAULTS, "board_frame_width_px", _DEFAULTS.board_frame_width_px),
-            )
+            ),
+            unit_scale,
+            min_px=7,
         ),
-        cell_line_width_px=int(
-            params.get("cell_line_width_px", group_default(_RENDER_DEFAULTS, "cell_line_width_px", _DEFAULTS.cell_line_width_px))
+        cell_line_width_px=scale_games_px(
+            params.get("cell_line_width_px", group_default(_RENDER_DEFAULTS, "cell_line_width_px", _DEFAULTS.cell_line_width_px)),
+            unit_scale,
+            min_px=1,
         ),
-        marked_square_outline_width_px=int(
+        marked_square_outline_width_px=scale_games_px(
             params.get(
                 "marked_square_outline_width_px",
                 group_default(_RENDER_DEFAULTS, "marked_square_outline_width_px", _DEFAULTS.marked_square_outline_width_px),
-            )
+            ),
+            unit_scale,
+            min_px=3,
         ),
         disc_inset_fraction=float(
             params.get(
@@ -286,6 +460,7 @@ def _render_params(params: Mapping[str, Any]) -> ReversiRenderParams:
                 group_default(_RENDER_DEFAULTS, "player_badge_font_size_px", _DEFAULTS.player_badge_font_size_px),
             )
         ),
+        layout_jitter_meta=layout_jitter,
     )
 
 
@@ -398,36 +573,28 @@ def _construct_corner_move_board(*, rng, board_size: int, current_player: int, t
     )
 
 
-def _flip_blueprints(target_answer: int) -> Tuple[Tuple[int, ...], ...]:
-    """Return supported flip-length partitions for one marked-move target count."""
-
-    return {
-        1: ((1,),),
-        2: ((2,), (1, 1)),
-        3: ((3,), (2, 1), (1, 1, 1)),
-        4: ((3, 1), (2, 2), (2, 1, 1)),
-        5: ((3, 2), (2, 2, 1)),
-    }[int(target_answer)]
-
-
 def _construct_flip_count_board(*, rng, board_size: int, current_player: int, target_answer: int) -> _SampledReversiScene:
-    """Construct one board with a marked move that flips an exact number of discs."""
+    """Construct a simple marked move that flips an exact number of discs."""
 
     board = _empty_board(int(board_size))
     opponent = int(WHITE if int(current_player) == int(BLACK) else BLACK)
-    anchor_specs = (
-        ((1, 1), ((0, 1), (1, 0), (1, 1))),
-        ((1, int(board_size) - 2), ((0, -1), (1, 0), (1, -1))),
-        ((int(board_size) - 2, 1), ((0, 1), (-1, 0), (-1, 1))),
-        ((int(board_size) - 2, int(board_size) - 2), ((0, -1), (-1, 0), (-1, -1))),
+    edge_specs = (
+        ((0, 0), (0, 1), (1, 0)),
+        ((0, int(board_size) - 1), (1, 0), (0, -1)),
+        ((int(board_size) - 1, int(board_size) - 1), (0, -1), (-1, 0)),
+        ((int(board_size) - 1, 0), (-1, 0), (0, 1)),
     )
-    marked_move, supported_dirs = anchor_specs[int(rng.randrange(len(anchor_specs)))]
-    blueprint = _flip_blueprints(int(target_answer))[int(rng.randrange(len(_flip_blueprints(int(target_answer)))))]
-    shuffled_dirs = list(supported_dirs)
-    rng.shuffle(shuffled_dirs)
-    chosen_dirs = shuffled_dirs[: len(blueprint)]
+    marked_move, primary_direction, secondary_direction = edge_specs[int(rng.randrange(len(edge_specs)))]
+
+    if int(target_answer) <= int(board_size) - 2:
+        line_specs = ((primary_direction, int(target_answer)),)
+    else:
+        # A 6x6 board cannot fit five or more flips in one line, so keep it to
+        # two easy-to-scan edge lines rather than several short directions.
+        line_specs = ((primary_direction, 3), (secondary_direction, int(target_answer) - 3))
+
     flipped_coords: List[Coord] = []
-    for direction, length in zip(chosen_dirs, blueprint):
+    for direction, length in line_specs:
         row_delta, col_delta = int(direction[0]), int(direction[1])
         for step in range(1, int(length) + 1):
             flipped_coord = (
@@ -499,17 +666,21 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
     )
 
 
-@register_task
 class GamesReversiMoveCountTask:
     """Return one grounded counting query over a visible Reversi board."""
 
     task_id = TASK_ID
     domain = "games"
     task_group = "reversi"
+    supported_query_variants: Tuple[str, ...] = SUPPORTED_QUERY_VARIANTS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        axes = _resolve_axes(int(instance_seed), params=params)
-        render_params = _render_params(params)
+        axes = _resolve_axes(
+            int(instance_seed),
+            params=params,
+            supported_query_variants=tuple(self.supported_query_variants),
+        )
+        render_params = _render_params(params, instance_seed=int(instance_seed))
 
         sampled_scene: _SampledReversiScene | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -553,7 +724,7 @@ class GamesReversiMoveCountTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -578,9 +749,9 @@ class GamesReversiMoveCountTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            task_variant_key=str(axes.query_variant),
+            query_key=str(axes.query_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -604,7 +775,7 @@ class GamesReversiMoveCountTask:
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
         complexity = build_games_reversi_move_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
-            task_id=self.task_id,
+            task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
             query_variant=str(axes.query_variant),
             board_size=int(axes.board_size),
@@ -629,7 +800,7 @@ class GamesReversiMoveCountTask:
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
                     "query_variant": str(axes.query_variant),
-                    "task_variant": str(axes.query_variant),
+                    "query_variant": str(axes.query_variant),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(axes.board_size),
                     "current_player": str(current_player_name),
@@ -641,7 +812,7 @@ class GamesReversiMoveCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(axes.query_variant),
+                "query_variant": str(axes.query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -649,11 +820,11 @@ class GamesReversiMoveCountTask:
                 "params": {
                     "scene_variant": str(axes.scene_variant),
                     "query_variant": str(axes.query_variant),
-                    "task_variant": str(axes.query_variant),
+                    "query_variant": str(axes.query_variant),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "task_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size": int(axes.board_size),
                     "current_player": str(current_player_name),
@@ -667,12 +838,13 @@ class GamesReversiMoveCountTask:
                 "style_variant": str(axes.style_variant),
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
+                "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
                 "query_variant": str(axes.query_variant),
-                "task_variant": str(axes.query_variant),
+                "query_variant": str(axes.query_variant),
                 "style_variant": str(axes.style_variant),
                 "board_size": int(axes.board_size),
                 "current_player": str(current_player_name),
@@ -695,7 +867,7 @@ class GamesReversiMoveCountTask:
                 "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
             "witness_symbolic": {
-                "type": "id_set",
+                "type": "object_set",
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
             "projected_evidence": {
@@ -704,7 +876,7 @@ class GamesReversiMoveCountTask:
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=answer_gt,
@@ -714,8 +886,35 @@ class GamesReversiMoveCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(axes.query_variant),
+            query_variant=str(axes.query_variant),
+            scene_id="reversi",
+            query_id=str(axes.query_variant),
+        )
+        return rewrite_public_query_output(
+            output,
+            query_id=str(axes.query_variant),
+            query_variant_probabilities=axes.query_variant_probabilities,
         )
 
 
-__all__ = ["GamesReversiMoveCountTask"]
+@register_task
+class GamesReversiLegalDestinationCountTask(GamesReversiMoveCountTask):
+    """Count all legal destination squares or legal corner destinations."""
+
+    task_id = "task_games__reversi__legal_destination_count"
+    supported_query_variants = ("legal_move_count", "corner_move_count")
+
+
+@register_task
+class GamesReversiFlipCountForMarkedMoveTask(FixedQueryVariantTaskMixin, GamesReversiMoveCountTask):
+    """Count discs flipped by the marked Reversi move."""
+
+    task_id = "task_games__reversi__marked_move_flip_count"
+    fixed_query_variant = "flip_count_for_marked_move"
+    supported_query_variants = ("flip_count_for_marked_move",)
+
+
+__all__ = [
+    "GamesReversiFlipCountForMarkedMoveTask",
+    "GamesReversiLegalDestinationCountTask",
+]

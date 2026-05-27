@@ -29,12 +29,12 @@ PYTHONPATH=. python scripts/build_dataset.py --config configs/examples/minimal_b
 Use task-review workflow outputs under `task-reviews/`.
 
 ```bash
-PYTHONPATH=. python scripts/run_task_review.py --tasks task_geometry_measurement_angle --mode full
+PYTHONPATH=. python scripts/run_task_review.py --tasks source_geometry_measurement_angle --mode full
 ```
 
 This writes:
 - `task-reviews/<task_id>/random_review_100.json`
 - `task-reviews/<task_id>/distribution_review.json`
-- `task-reviews/<task_id>/<task_id>.xlsx` (one sheet per task variant)
+- `task-reviews/<task_id>/<task_id>.xlsx` (one sheet per query branch)
 - `task-reviews/<task_id>/manifest.json`
 - `task-reviews/review_summary.json`

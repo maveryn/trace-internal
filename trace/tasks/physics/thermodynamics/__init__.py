@@ -1,0 +1,1 @@
+"""Physics thermodynamics task implementations."""

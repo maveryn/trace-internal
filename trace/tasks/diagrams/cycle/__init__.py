@@ -1,1 +1,0 @@
-"""Cycle-family diagrams tasks."""

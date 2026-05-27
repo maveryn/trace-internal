@@ -1,0 +1,70 @@
+{
+  "bundle_id": "charts_table_ranking_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "kth_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:styled_table_ranking": [
+      "object_description"
+    ],
+    "query:kth_rank_in_column": [
+      "query_column",
+      "query_rank",
+      "rank_direction",
+      "unanswerable_instruction"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "styled_table_ranking": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "kth_rank_in_column": [
+      "Which row has the {query_rank} {rank_direction} value in the {query_column} column? {unanswerable_instruction}",
+      "Find the row label with the {query_rank} {rank_direction} value in the {query_column} column. {unanswerable_instruction}",
+      "Which row is {query_rank} {rank_direction} by {query_column} value? {unanswerable_instruction}",
+      "What row name corresponds to the {query_rank} {rank_direction} value in {query_column}? {unanswerable_instruction}",
+      "Identify the row with the {query_rank} {rank_direction} {query_column} value. {unanswerable_instruction}"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

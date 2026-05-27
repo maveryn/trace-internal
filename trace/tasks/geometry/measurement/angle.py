@@ -1,18 +1,14 @@
 """Single-object geometry angle-measurement task."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from functools import lru_cache
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -51,10 +47,8 @@ from ..shared.single_object_scene import (
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
-
 _INTERSECTION_SOURCE_KIND = "intersection_lines"
 _SOURCE_KINDS: Tuple[str, str] = ("primitive_angle", _INTERSECTION_SOURCE_KIND)
-
 
 def _scene_variant_for_source_kind(source_kind: str) -> str:
     """Map one source-kind category to task-level `scene_variant`."""
@@ -65,11 +59,9 @@ def _scene_variant_for_source_kind(source_kind: str) -> str:
         return "intersection_angle"
     raise ValueError(f"unsupported source_kind for scene_variant mapping: {kind}")
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable defaults for single-object angle measurement."""
-
     canvas_size_min: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = MEASUREMENT_SHARED_DEFAULTS.graph_cells_min
@@ -86,18 +78,15 @@ class _TaskDefaults:
     label_font_size_max: int = MEASUREMENT_SHARED_DEFAULTS.label_font_size_max
     label_stroke_width: int = MEASUREMENT_SHARED_DEFAULTS.label_stroke_width
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_measurement_angle",
+    task_id="source_geometry_measurement_angle",
 )
-
 
 def _measurement_complexity_components(*, source_kind: str, angle_degrees: float) -> Dict[str, float]:
     """Return normalized measurement complexity components for angle measurement."""
-
     normalized_source_kind = str(source_kind)
     canonical_angles = (30.0, 45.0, 60.0, 90.0, 120.0, 135.0, 150.0)
     nearest_canonical = min(abs(float(angle_degrees) - candidate) for candidate in canonical_angles)
@@ -110,11 +99,9 @@ def _measurement_complexity_components(*, source_kind: str, angle_degrees: float
         "ambiguity": min(1.0, 0.22 + (0.38 * right_angle_centering) + (0.12 * canonical_distance)),
     }
 
-
 def _angle_question_text(*, label_a: str, label_v: str, label_b: str) -> str:
     """Return canonical angle-measure question text for one label triplet."""
     return f"What is the measure of angle {str(label_a)}{str(label_v)}{str(label_b)} in degrees?"
-
 
 def _resolve_source_kind(
     rng,
@@ -124,14 +111,12 @@ def _resolve_source_kind(
     """Resolve shape source kind with near-uniform category sampling by default."""
     supported_kinds = [str(kind) for kind in _SOURCE_KINDS]
     supported_set = set(supported_kinds)
-
     explicit_source = params.get("source_kind")
     if explicit_source is not None:
         selected = str(explicit_source).strip()
         if selected not in supported_set:
             raise ValueError(f"unsupported source_kind: {selected}")
         return selected, {kind: (1.0 if kind == selected else 0.0) for kind in sorted(supported_set)}
-
     explicit_variant = params.get("scene_variant")
     if explicit_variant is not None:
         selected_variant = str(explicit_variant).strip()
@@ -142,7 +127,6 @@ def _resolve_source_kind(
                 kind: (1.0 if kind == _INTERSECTION_SOURCE_KIND else 0.0) for kind in sorted(supported_set)
             }
         raise ValueError(f"unsupported scene_variant: {selected_variant}")
-
     raw_weights = params.get(
         "source_kind_weights",
         group_default(
@@ -162,7 +146,6 @@ def _resolve_source_kind(
     selected_kind = weighted_choice(rng, probabilities, sort_keys=True)
     return str(selected_kind), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
-
 def _angle_candidates(*, min_angle: int, max_angle: int, angle_step: int) -> List[int]:
     """Return sorted feasible angle candidates for one configured range."""
     step = int(angle_step)
@@ -178,7 +161,6 @@ def _angle_candidates(*, min_angle: int, max_angle: int, angle_step: int) -> Lis
     if not candidates:
         raise ValueError("no feasible target angles for configured range")
     return candidates
-
 
 def _resolve_target_angle(
     rng,
@@ -196,7 +178,6 @@ def _resolve_target_angle(
         candidates = sorted({int(value) for value in candidate_values})
         if not candidates:
             raise ValueError("candidate_values must include at least one angle")
-
     explicit = params.get("target_angle")
     if explicit is not None:
         target = int(explicit)
@@ -204,7 +185,6 @@ def _resolve_target_angle(
             raise ValueError("target_angle is outside configured angle range")
         probabilities = {str(value): (1.0 if value == target else 0.0) for value in candidates}
         return int(target), probabilities
-
     raw_weights = params.get(
         "target_angle_weights",
         group_default(_GEN_DEFAULTS, "target_angle_weights", {str(value): 1.0 for value in candidates}),
@@ -227,7 +207,6 @@ def _resolve_target_angle(
     selected_value = int(selected_key)
     return selected_value, {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))}
 
-
 def _is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
     """Return true when all positive probabilities are approximately equal."""
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
@@ -235,11 +214,9 @@ def _is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: floa
         return False
     return max(positives) - min(positives) <= float(tol)
 
-
 def _has_non_null_param(params: Mapping[str, Any], key: str) -> bool:
     """Return true when one non-null key override is provided."""
     return key in params and params.get(key) is not None
-
 
 def _resolve_balanced_source_and_target(
     *,
@@ -253,7 +230,6 @@ def _resolve_balanced_source_and_target(
     angle_candidates: Sequence[int],
 ) -> Tuple[str, Dict[str, float], int, Dict[str, float]]:
     """Apply deterministic balanced defaults over source+target when not overridden.
-
     Policy:
     - enabled by default via `balanced_sampling=true`,
     - never overrides explicit user controls (`source_kind`, `scene_variant`,
@@ -267,7 +243,6 @@ def _resolve_balanced_source_and_target(
     target_probs = {str(key): float(value) for key, value in target_angle_probabilities.items()}
     if not bool(enabled):
         return resolved_source, source_probs, resolved_target, target_probs
-
     source_overridden = any(
         _has_non_null_param(params, key) for key in ("source_kind", "scene_variant", "source_kind_weights")
     )
@@ -278,9 +253,7 @@ def _resolve_balanced_source_and_target(
     angle_values = [int(value) for value in angle_candidates]
     if not source_values or not angle_values:
         return resolved_source, source_probs, resolved_target, target_probs
-
-    sampling_index = params.get("_sampling_index", instance_seed)
-    seed_value = abs(int(sampling_index))
+    seed_value = abs(int(instance_seed))
     if (not source_overridden) and (not target_overridden) and source_uniform and target_uniform:
         source_count = int(len(source_values))
         angle_count = int(len(angle_values))
@@ -296,12 +269,10 @@ def _resolve_balanced_source_and_target(
         resolved_target = int(angle_values[int(seed_value % len(angle_values))])
     return resolved_source, source_probs, resolved_target, target_probs
 
-
 def _offset_span_units(offsets: Sequence[int]) -> int:
     """Return inclusive span (`max-min`) across integer offsets."""
     values = [int(value) for value in offsets]
     return int(max(values) - min(values))
-
 
 def _intersection_offsets_for_angle_source(
     *,
@@ -317,7 +288,6 @@ def _intersection_offsets_for_angle_source(
         (vb_x, vb_y),
         (-vb_x, -vb_y),
     ]
-
 
 @lru_cache(maxsize=128)
 def _primitive_feasible_angles_for_offset_limit(
@@ -350,7 +320,6 @@ def _primitive_feasible_angles_for_offset_limit(
         if accepted:
             feasible.append(int(angle_value))
     return tuple(feasible)
-
 
 @lru_cache(maxsize=128)
 def _intersection_feasible_angles_for_offset_limit(
@@ -390,7 +359,6 @@ def _intersection_feasible_angles_for_offset_limit(
             feasible.append(int(angle_value))
     return tuple(feasible)
 
-
 @lru_cache(maxsize=512)
 def _required_graph_cells_for_primitive_target(
     *,
@@ -422,7 +390,6 @@ def _required_graph_cells_for_primitive_target(
         for vector_a, vector_b, _raw in pairs
     )
     return int(min_offset_units + 4)
-
 
 @lru_cache(maxsize=512)
 def _required_graph_cells_for_intersection_target(
@@ -461,7 +428,6 @@ def _required_graph_cells_for_intersection_target(
     if min_offset_units is None:
         raise ValueError("target_angle has no line-intersection offset candidates")
     return int(min_offset_units + 2)
-
 
 def _build_primitive_scene(
     rng,
@@ -555,7 +521,6 @@ def _build_primitive_scene(
         "target_labels": [str(label_a), str(label_v), str(label_b)],
     }
 
-
 def _build_intersection_scene(
     rng,
     *,
@@ -591,7 +556,6 @@ def _build_intersection_scene(
     pairs = list(catalog[int(target_angle)])
     if not pairs:
         raise ValueError("no vector pairs available for target_angle")
-
     max_span_units = max(1, int(canvas_size // max(1, int(graph_spacing))) - 2)
     pair_candidates: List[Tuple[Tuple[int, int], Tuple[int, int], float, List[Tuple[int, int]]]] = []
     for vector_a, vector_b, raw_angle in pairs:
@@ -613,7 +577,6 @@ def _build_intersection_scene(
         )
     if not pair_candidates:
         raise ValueError("no feasible line-intersection vector candidates for current canvas/grid settings")
-
     for _ in range(260):
         vector_a, vector_b, raw_angle, offsets = rng.choice(pair_candidates)
         try:
@@ -628,7 +591,6 @@ def _build_intersection_scene(
             )
         except ValueError:
             continue
-
         point_a = offset_point_by_grid_vector((float(vertex[0]), float(vertex[1])), vector_a, spacing=int(graph_spacing))
         point_a_opposite = offset_point_by_grid_vector(
             (float(vertex[0]), float(vertex[1])),
@@ -641,7 +603,6 @@ def _build_intersection_scene(
             (-int(vector_b[0]), -int(vector_b[1])),
             spacing=int(graph_spacing),
         )
-
         line_px = max(1, int(line_width) * int(scene_scale))
         draw.line(
             [
@@ -661,7 +622,6 @@ def _build_intersection_scene(
             fill=tuple(int(value) for value in shape_style.line_color),
             width=int(line_px),
         )
-
         labels = alphabetic_labels(3, start_index=int(rng.randrange(26)))
         label_a, label_v, label_b = (str(labels[0]), str(labels[1]), str(labels[2]))
         draw_labeled_angle(
@@ -697,7 +657,6 @@ def _build_intersection_scene(
             ],
             canvas_size=int(canvas_size) * int(scene_scale),
         )
-
         return {
             "scene_variant": "intersection_angle",
             "source_kind": _INTERSECTION_SOURCE_KIND,
@@ -747,22 +706,16 @@ def _build_intersection_scene(
             ],
             "target_labels": [label_a, label_v, label_b],
         }
-
     raise ValueError("failed to sample line-intersection angle scene")
 
-
-@register_task
 class GeometryAngleMeasure2DTask:
     """Measure one 2D angle from primitive or intersection sources."""
-
-    task_id = "task_geometry_measurement_angle"
+    task_id = "source_geometry_measurement_angle"
     domain = "geometry"
     task_group = "measurement"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic angle-measurement instance."""
         scene_rng = spawn_rng(instance_seed, "scene")
-
         min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
         max_angle = int(params.get("max_angle", group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
         angle_step = int(params.get("angle_step", group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
@@ -822,7 +775,6 @@ class GeometryAngleMeasure2DTask:
             raise ValueError("max_abs_vector_component must be >= 4")
         if float(min_ray_length_units) < 0.0:
             raise ValueError("min_ray_length_units must be >= 0")
-
         supported_source_kinds = [str(kind) for kind in _SOURCE_KINDS]
         catalog = primitive_angle_pair_catalog(
             angle_step=int(angle_step),
@@ -850,7 +802,6 @@ class GeometryAngleMeasure2DTask:
             )
         primitive_offset_limit = max(1, int(graph_cells_cap) - 4)
         shape_offset_limit = max(1, int(graph_cells_cap) - 2)
-
         def _resolve_source_candidates(kind: str) -> List[int]:
             resolved_kind = str(kind)
             if resolved_kind == "primitive_angle":
@@ -880,7 +831,6 @@ class GeometryAngleMeasure2DTask:
                 )
                 return [int(value) for value in intersection_candidates] if intersection_candidates else list(angle_candidates)
             raise ValueError(f"unsupported source_kind: {resolved_kind}")
-
         target_candidates_for_source = _resolve_source_candidates(str(source_kind))
         target_angle, target_angle_probabilities = _resolve_target_angle(
             scene_rng,
@@ -907,8 +857,7 @@ class GeometryAngleMeasure2DTask:
         )
         target_candidates_for_source = _resolve_source_candidates(str(source_kind))
         if int(target_angle) not in set(target_candidates_for_source):
-            sampling_index = params.get("_sampling_index", instance_seed)
-            selected = int(target_candidates_for_source[abs(int(sampling_index)) % len(target_candidates_for_source)])
+            selected = int(target_candidates_for_source[abs(int(instance_seed)) % len(target_candidates_for_source)])
             target_angle = int(selected)
             target_angle_probabilities = {
                 str(value): (1.0 if int(value) == int(selected) else 0.0) for value in target_candidates_for_source
@@ -969,6 +918,7 @@ class GeometryAngleMeasure2DTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -1059,10 +1009,8 @@ class GeometryAngleMeasure2DTask:
                 last_error = exc
                 continue
         if scene_payload is None or context is None or image is None or background_meta is None or shape_style is None:
-            raise RuntimeError("failed to generate task_geometry_measurement_angle instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_measurement_angle instance") from last_error
         question_text = str(scene_payload["question_text"])
-
         evidence_points = scene_payload.get("evidence_points", [])
         if not isinstance(evidence_points, list) or len(evidence_points) != 3:
             raise RuntimeError("angle evidence points must include [ray_endpoint_a, vertex, ray_endpoint_b]")
@@ -1086,10 +1034,9 @@ class GeometryAngleMeasure2DTask:
             not isinstance(evidence_value, list)
             or len(evidence_value) != 3
             or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, int) for point in evidence_value for coord in point)
+            or any(not isinstance(coord, (int, float)) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("angle triplet evidence must include three integer graph-lattice points")
-
+            raise RuntimeError("angle triplet evidence must include three pixel points")
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -1097,12 +1044,11 @@ class GeometryAngleMeasure2DTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -1114,7 +1060,7 @@ class GeometryAngleMeasure2DTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_scene_key = str(prompt_defaults["scene_key"])
         prompt_task_key = str(prompt_defaults["task_key"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
@@ -1126,7 +1072,7 @@ class GeometryAngleMeasure2DTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_family_key=prompt_task_family_key,
+            scene_key=prompt_scene_key,
             task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -1142,17 +1088,16 @@ class GeometryAngleMeasure2DTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         raw_angle_degrees = float(scene_payload["raw_angle_degrees"])
         answer_value = int(target_angle)
         if abs(float(raw_angle_degrees) - float(answer_value)) > 0.05 + 1e-9:
             raise RuntimeError("resolved angle exceeds nearest-integer rounding tolerance")
         scene_variant_value = str(scene_payload["scene_variant"])
         source_kind_value = str(scene_payload["source_kind"])
-        task_variant_probabilities: Dict[str, float] = {}
+        query_variant_probabilities: Dict[str, float] = {}
         for source_kind_key, probability in source_kind_probabilities.items():
             variant_key = _scene_variant_for_source_kind(str(source_kind_key))
-            task_variant_probabilities[str(variant_key)] = float(task_variant_probabilities.get(str(variant_key), 0.0)) + float(probability)
+            query_variant_probabilities[str(variant_key)] = float(query_variant_probabilities.get(str(variant_key), 0.0)) + float(probability)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "geometry_2d_angle_measurement",
@@ -1169,8 +1114,8 @@ class GeometryAngleMeasure2DTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(scene_variant_value),
-                "template_id": "geometry_angle_measure_v1",
+                "query_variant": str(scene_variant_value),
+                "template_id": "geometry_angle_measure_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -1202,6 +1147,7 @@ class GeometryAngleMeasure2DTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {"image_id": "img0", "anchors": {"target": dict(scene_payload["anchor"])}},
             "execution_trace": {
@@ -1216,12 +1162,11 @@ class GeometryAngleMeasure2DTask:
                 "question_format": "numeric_open",
                 "feasible_target_angles": [int(value) for value in target_candidates_for_source],
                 "feasible_answer_values": [int(value) for value in target_candidates_for_source],
-                "task_variant_probabilities": {str(key): float(value) for key, value in sorted(task_variant_probabilities.items())},
+                "query_variant_probabilities": {str(key): float(value) for key, value in sorted(query_variant_probabilities.items())},
             },
             "witness_symbolic": dict(evidence["witness_symbolic"]),
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
-
         complexity_components = _measurement_complexity_components(
             source_kind=source_kind_value,
             angle_degrees=answer_value,
@@ -1237,7 +1182,6 @@ class GeometryAngleMeasure2DTask:
                 evidence_point_count=3,
             ),
         )
-
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
@@ -1247,6 +1191,6 @@ class GeometryAngleMeasure2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(scene_variant_value),
+            query_variant=str(scene_variant_value),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

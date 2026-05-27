@@ -4,20 +4,90 @@ generation:
     mark_count_max: 10
     value_min: 1
     value_max: 20
-    task_variant_weights:
-      peak_count: 1.0
-      trough_count: 1.0
-      longest_increasing_streak: 1.0
-      longest_decreasing_streak: 1.0
-    scene_variant_weights:
-      area: 1.0
-      bar: 1.0
-      horizontal_bar: 1.0
-      line: 1.0
-      dot_plot: 1.0
-      lollipop: 1.0
-    balanced_task_variant_sampling: true
+    balanced_query_variant_sampling: true
     balanced_scene_variant_sampling: true
+  task_overrides:
+    charts_trend_value_base:
+      structure_mark_count_min: 6
+      structure_mark_count_max: 10
+      structure_value_min: 1
+      structure_value_max: 99
+      structure_value_window_span_min: 20
+      structure_value_window_span_max: 25
+      interval_mark_count_min: 8
+      interval_mark_count_max: 14
+      interval_value_window_span_min: 25
+      interval_value_window_span_max: 25
+      interval_value_min: 1
+      interval_value_max: 80
+      interval_gap_min: 2
+      interval_gap_max: 6
+      change_abs_min: 5
+      change_abs_max: 60
+      percent_change_min: -75
+      percent_change_max: 150
+      percent_change_step: 5
+      average_rate_abs_min: 2
+      average_rate_abs_max: 12
+      query_variant_weights:
+        turning_point_count: 1.0
+        longest_monotone_streak: 1.0
+        endpoint_change_value: 1.0
+        interval_rate_value: 1.0
+        threshold_crossing: 1.0
+      turning_point_type_weights:
+        peak: 1.0
+        trough: 1.0
+      streak_direction_weights:
+        increasing: 1.0
+        decreasing: 1.0
+      endpoint_change_kind_weights:
+        absolute: 1.0
+        signed: 1.0
+        percent: 1.0
+      balanced_endpoint_change_kind_sampling: true
+      threshold_mark_count_min: 8
+      threshold_mark_count_max: 14
+      threshold_value_window_enabled: false
+      threshold_value_window_span_min: 25
+      threshold_value_window_span_max: 25
+      threshold_value_min: 1
+      threshold_value_max: 80
+      threshold_threshold_edge_margin: 8
+      threshold_threshold_min: 20
+      threshold_threshold_max: 60
+      threshold_crossing_index_min: 2
+      threshold_crossing_index_max: 10
+      threshold_observed_count_min: 3
+      threshold_observed_count_max: 5
+      threshold_projection_count_min: 4
+      threshold_projection_count_max: 6
+      threshold_projection_step_min: 1
+      threshold_projection_step_max: 5
+      crossing_mode_weights:
+        observed: 3.0
+        linear_projection: 1.0
+      balanced_crossing_mode_sampling: true
+      crossing_direction_weights:
+        above: 1.0
+        below: 1.0
+      balanced_crossing_direction_sampling: true
+      scene_variant_weights:
+        area: 1.0
+        bar: 1.0
+        horizontal_bar: 1.0
+        line: 1.0
+        dot_plot: 1.0
+        lollipop: 1.0
+    task_charts__single_series__interval_change_value:
+      query_variant_weights:
+        endpoint_change_value: 1.0
+        interval_rate_value: 0.0
+      endpoint_change_kind_weights:
+        absolute: 1.0
+        signed: 1.0
+        percent: 0.0
+      balanced_endpoint_change_kind_sampling: true
 
 rendering:
   shared:
@@ -41,15 +111,18 @@ rendering:
     mark_color_channel_max: 220
     mark_color_min_distance: 40.0
     mark_color_distance_space: lab
-    axis_color_rgb: [74, 78, 86]
-    grid_color_rgb: [224, 227, 232]
-    text_color_rgb: [38, 41, 48]
-    text_stroke_rgb: [255, 255, 255]
-    plot_fill_rgb: [255, 255, 255]
+  task_overrides:
+    charts_trend_value_base:
+      canvas_width: 1000
+      canvas_height: 640
+      label_font_size_px: 20
+      tick_font_size_px: 17
+      value_axis_major_tick_step: 10
+      guide_line_mode: always
 
 complexity:
   task_overrides:
-    task_charts_trend_structure_value:
+    charts_trend_value_base:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.45
@@ -57,27 +130,42 @@ complexity:
 
 prompt:
   shared:
-    bundle_id: charts_trend_v1
-    task_family_key: ordered_chart_trend
-    task_key: structure_value_query
+    bundle_id: charts_trend_v0
+    scene_key: ordered_chart_trend
+    task_key: trend_value_query
+    threshold_task_key: threshold_crossing_label_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
-    answer_hint: set "answer" to the requested count or streak length as an integer
-    object_description_area: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_bar: an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis
-    object_description_horizontal_bar: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis
-    object_description_line: an ordered labeled line chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_dot_plot: an ordered labeled dot plot with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    object_description_lollipop: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
-    evidence_hint_peak_count: set "evidence" to an array containing the labels of all local peaks
-    evidence_hint_trough_count: set "evidence" to an array containing the labels of all local troughs
-    evidence_hint_longest_increasing_streak: set "evidence" to an array containing all labels in the unique longest strictly increasing streak
-    evidence_hint_longest_decreasing_streak: set "evidence" to an array containing all labels in the unique longest strictly decreasing streak
-    json_example_peak_count: '{"evidence":["C","Q"],"answer":2}'
-    json_example_trough_count: '{"evidence":["F","M"],"answer":2}'
-    json_example_longest_increasing_streak: '{"evidence":["B","M","Q","T"],"answer":4}'
-    json_example_longest_decreasing_streak: '{"evidence":["A","C","F"],"answer":3}'
-    json_example_answer_only_peak_count: '{"answer":2}'
-    json_example_answer_only_trough_count: '{"answer":2}'
-    json_example_answer_only_longest_increasing_streak: '{"answer":4}'
-    json_example_answer_only_longest_decreasing_streak: '{"answer":3}'
+    answer_hint: set "answer" to the requested trend value as an integer
+    answer_hint_crossing_label: set "answer" to the requested crossing label as a string
+    unanswerable_instruction: If no shown or projected label satisfies the threshold rule, answer exactly "unanswerable".
+    object_description_area: an ordered labeled area chart where point labels identify y-values from left to right
+    object_description_bar: an ordered labeled bar chart where each bar height is read from the vertical axis from left to right
+    object_description_horizontal_bar: an ordered labeled horizontal bar chart where each bar length is read from the horizontal axis from top to bottom
+    object_description_line: an ordered labeled line chart where point labels identify y-values from left to right
+    object_description_dot_plot: an ordered labeled dot plot where point labels identify y-values from left to right
+    object_description_lollipop: an ordered labeled lollipop chart where point labels identify y-values from left to right
+    evidence_hint_turning_point_count: set "evidence" to an array of [x,y] pixel points for all local turning points matching the requested type
+    evidence_hint_longest_monotone_streak: set "evidence" to an array of [x,y] pixel points for all marks in the unique longest strictly monotone streak matching the requested direction
+    evidence_hint_endpoint_change_value: set "evidence" to an array of [x,y] pixel points for every mark from the first queried label through the second queried label
+    evidence_hint_interval_rate_value: set "evidence" to an array of [x,y] pixel points for every mark from the first queried label through the second queried label
+    evidence_hint_first_crosses_above_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark
+    evidence_hint_first_crosses_below_threshold: set "evidence" to an array of [x,y] pixel points for marks up to and including the first threshold-crossing mark
+    evidence_hint_linear_projection_crosses_above: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label
+    evidence_hint_linear_projection_crosses_below: set "evidence" to an array of [x,y] pixel points for the last two plotted marks from the linear series and future label slots up to and including the first threshold-crossing label
+    json_example_turning_point_count: '{"evidence":[[220,180],[520,210]],"answer":2}'
+    json_example_longest_monotone_streak: '{"evidence":[[180,420],[300,350],[420,260],[540,170]],"answer":4}'
+    json_example_endpoint_change_value: '{"evidence":[[160,420],[260,360],[360,300],[460,220]],"answer":20}'
+    json_example_interval_rate_value: '{"evidence":[[200,420],[300,360],[400,300],[500,240]],"answer":6}'
+    json_example_first_crosses_above_threshold: '{"evidence":[[160,420],[260,360],[360,240]],"answer":"C"}'
+    json_example_first_crosses_below_threshold: '{"evidence":[[180,180],[280,260],[380,390]],"answer":"F"}'
+    json_example_linear_projection_crosses_above: '{"evidence":[[300,320],[420,260],[540,180]],"answer":"M"}'
+    json_example_linear_projection_crosses_below: '{"evidence":[[300,180],[420,260],[540,340]],"answer":"Q"}'
+    json_example_answer_only_turning_point_count: '{"answer":2}'
+    json_example_answer_only_longest_monotone_streak: '{"answer":4}'
+    json_example_answer_only_endpoint_change_value: '{"answer":20}'
+    json_example_answer_only_interval_rate_value: '{"answer":6}'
+    json_example_answer_only_first_crosses_above_threshold: '{"answer":"C"}'
+    json_example_answer_only_first_crosses_below_threshold: '{"answer":"F"}'
+    json_example_answer_only_linear_projection_crosses_above: '{"answer":"M"}'
+    json_example_answer_only_linear_projection_crosses_below: '{"answer":"Q"}'

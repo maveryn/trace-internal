@@ -1,0 +1,87 @@
+{
+  "bundle_id": "games_brick_breaker_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "brick_breaker_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_brick_breaker_playfield": [
+      "object_description"
+    ],
+    "query:next_hit_label": [
+      "brick_breaker_motion_rule_text"
+    ],
+    "query:paddle_catch_label": [
+      "brick_breaker_motion_rule_text"
+    ],
+    "query:hit_row_remaining_count": [
+      "brick_breaker_motion_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_brick_breaker_playfield": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "next_hit_label": [
+      "{brick_breaker_motion_rule_text} Which labeled brick will the ball hit first?",
+      "Extrapolate the dashed arrow from the ball. {brick_breaker_motion_rule_text} What is the label of the first brick on that line?",
+      "{brick_breaker_motion_rule_text} Extend that direction and identify the labeled brick reached before any other brick.",
+      "The ball moves along the dashed arrow. Which labeled brick is hit first?",
+      "{brick_breaker_motion_rule_text} Report the label on the first brick the ball would reach if that direction continues."
+    ],
+    "paddle_catch_label": [
+      "{brick_breaker_motion_rule_text} Which labeled bottom catch lane should the paddle cover?",
+      "Extrapolate the dashed arrow from the ball to the bottom. Which catch-lane label does it reach?",
+      "{brick_breaker_motion_rule_text} If the ball keeps moving that way, what bottom lane label should catch it?",
+      "The ball continues along the dashed arrow. Which labeled bottom lane should the paddle be in?",
+      "{brick_breaker_motion_rule_text} Report the label of the bottom catch lane where the ball arrives."
+    ],
+    "hit_row_remaining_count": [
+      "{brick_breaker_motion_rule_text} After the ball hits that brick, how many bricks are left in the same row?",
+      "Extrapolate the dashed arrow to the brick it hits. After removing that hit brick, how many bricks remain in that brick's row?",
+      "{brick_breaker_motion_rule_text} Count the bricks left in the hit brick's row after the hit brick is removed.",
+      "The ball continues along the dashed arrow and removes one brick. How many bricks remain in that same row?",
+      "{brick_breaker_motion_rule_text} Report the number of bricks still present in the row of the brick that gets hit."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

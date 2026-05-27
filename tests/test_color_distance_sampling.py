@@ -5,6 +5,8 @@ from __future__ import annotations
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.color_distance import (
     color_distance,
+    coerce_rgb,
+    normalize_rgb,
     sample_color_palette_with_distance_constraints,
     sample_color_with_distance_constraints,
 )
@@ -87,3 +89,9 @@ def test_single_color_sampling_uses_global_default_min_distance() -> None:
         distance_space="lab",
     )
     assert all(color_distance(sampled, anchor, distance_space="lab") >= 60.0 for anchor in anchors)
+
+
+def test_rgb_normalization_and_coercion() -> None:
+    assert normalize_rgb([300, -4, 12.8]) == (255, 0, 12)
+    assert coerce_rgb([301, -1, 42, 99], (1, 2, 3)) == (255, 0, 42)
+    assert coerce_rgb("not-rgb", (11, 12, 13)) == (11, 12, 13)

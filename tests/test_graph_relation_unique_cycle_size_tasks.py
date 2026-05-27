@@ -9,6 +9,7 @@ import networkx as nx
 
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.unique_cycle_size import GraphRelationUniqueCycleSizeTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -48,16 +49,15 @@ def test_graph_relation_unique_cycle_size_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "label_set"
-    assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+    assert out.evidence_gt.type == "point_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_unique_cycle_relation"
     assert execution["question_format"] == "count_nodes_in_unique_cycle"
     assert execution["graph_directionality"] == "undirected"
-    assert int(execution["target_cycle_size"]) == len(out.evidence_gt.value)
     assert len(node_entities) == 9
     assert len(edge_entities) == int(execution["edge_count"])
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert "exactly one cycle" in str(out.prompt_variants["answer_only"]).lower()
+    assert trace["query_spec"]["prompt_variant"]["query_key"] == "unique_cycle_size"
+    assert "cycle" in str(out.prompt_variants["answer_only"]).lower()
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -71,11 +71,18 @@ def test_graph_relation_unique_cycle_size_contract_matches_trace() -> None:
     cycle_basis = nx.cycle_basis(graph)
     assert len(cycle_basis) == 1
     cycle_labels = sorted((str(label) for label in cycle_basis[0]), key=lambda value: int(value) if str(value).isdigit() else str(value))
-    assert cycle_labels == list(out.evidence_gt.value)
+    evidence_points = list(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(cycle_labels) == len(evidence_points)
+    assert int(execution["target_cycle_size"]) == len(cycle_labels)
     assert cycle_labels == [str(value) for value in execution["matching_labels"]]
-    assert trace["projected_evidence"]["label_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(out.evidence_gt.value)
+    assert trace["witness_symbolic"]["labels"] == cycle_labels
+    assert "label_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == evidence_points
+    assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
+    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_points)
+    width, height = trace["render_spec"]["canvas_size"]
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_points)
 
 
 def test_graph_relation_unique_cycle_size_prompt_examples_follow_label_variant() -> None:
@@ -92,8 +99,9 @@ def test_graph_relation_unique_cycle_size_prompt_examples_follow_label_variant()
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": ["B", "D", "H", "J"], "answer": 4}
-    assert numbers_example == {"evidence": ["2", "5", "7", "9"], "answer": 4}
+    expected_example = {"evidence": [[180, 220], [310, 180], [430, 260], [520, 340]], "answer": 4}
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_relation_unique_cycle_size_supports_numeric_labels_and_named_colors() -> None:
@@ -114,7 +122,9 @@ def test_graph_relation_unique_cycle_size_supports_numeric_labels_and_named_colo
     execution = trace["execution_trace"]
     labels = [entity["label"] for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"]
     assert all(str(label).isdigit() for label in labels)
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda value: int(str(value)))
+    assert trace["witness_symbolic"]["labels"] == sorted(
+        trace["witness_symbolic"]["labels"], key=lambda value: int(str(value))
+    )
     assert execution["label_variant"] == "numbers"
     assert execution["node_shape_variant"] == "hexagon"
     assert execution["layout_transform_variant"] == "rotate_90"
@@ -132,7 +142,7 @@ def test_graph_relation_unique_cycle_size_balanced_sampling_defaults() -> None:
     for index in range(48):
         out = task.generate(
             hash64(19505, "graph_relation_unique_cycle_size", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -145,7 +155,7 @@ def test_graph_relation_unique_cycle_size_balanced_sampling_defaults() -> None:
         assert 3 <= int(execution["target_cycle_size"]) <= 7
         assert int(execution["target_cycle_size"]) <= int(execution["node_count"]) - 1
     assert set(target_sizes.keys()).issuperset({3, 4, 5, 6, 7} & set(target_sizes.keys()))
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}

@@ -1,0 +1,81 @@
+{
+  "bundle_id": "games_pacman_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pacman_maze_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_pacman_maze": [
+      "object_description"
+    ],
+    "query:path_pellet_count": [],
+    "query:next_item_label": [],
+    "query:pellet_count_before_ghost": [],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_pacman_maze": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "path_pellet_count": [
+      "How many normal pellets lie on the highlighted route?",
+      "Count the normal pellets that are on the highlighted route.",
+      "Following the highlighted route from Pac-Man, how many normal pellets are on that route?",
+      "Determine the number of normal pellets placed on the highlighted route.",
+      "Report the count of normal pellets that lie directly on the highlighted route."
+    ],
+    "next_item_label": [
+      "Follow the highlighted route from Pac-Man. Which labeled bonus item is reached first?",
+      "Which labeled bonus item comes first along the highlighted route from Pac-Man?",
+      "Starting at Pac-Man and moving along the highlighted route, report the first bonus item label reached.",
+      "Among the labeled bonus items, which one is encountered first on the highlighted route?",
+      "Report the label of the first bonus item reached when following the highlighted route from Pac-Man."
+    ],
+    "pellet_count_before_ghost": [
+      "Follow the highlighted route from Pac-Man. How many normal pellets are reached before the first ghost on that route?",
+      "Starting at Pac-Man, count the normal pellets on the highlighted route before the first ghost is reached.",
+      "How many normal pellets come before the first ghost when following the highlighted route from Pac-Man?",
+      "Report the number of normal pellets Pac-Man would reach on the highlighted route before reaching the first ghost.",
+      "Count only the normal pellets before the first ghost along the highlighted route from Pac-Man."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

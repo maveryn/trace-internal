@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.drawing import draw_centered_text as _draw_centered_text, draw_rounded_rect as _rounded_rect
 from ...shared.text_rendering import load_font
 from .symbol_rendering import PUZZLE_OBJECT_COLOR_BY_TYPE, draw_puzzle_shape_icon
 
@@ -61,59 +62,6 @@ class RenderedPuzzleBalanceScene:
     entities: List[Dict[str, Any]]
     scene_bbox_px: List[float]
     box_bbox_map: Dict[str, List[float]]
-
-
-def _rounded_rect(
-    draw: ImageDraw.ImageDraw,
-    bbox: Tuple[float, float, float, float],
-    *,
-    radius: int,
-    fill: Sequence[int],
-    outline: Sequence[int],
-    width: int,
-) -> None:
-    """Draw one rounded rectangle with deterministic styling."""
-
-    draw.rounded_rectangle(
-        bbox,
-        radius=int(radius),
-        fill=tuple(int(value) for value in fill),
-        outline=tuple(int(value) for value in outline),
-        width=int(width),
-    )
-
-
-def _draw_centered_text(
-    draw: ImageDraw.ImageDraw,
-    *,
-    text: str,
-    center: Tuple[float, float],
-    font,
-    fill: Sequence[int],
-    stroke_fill: Sequence[int],
-    stroke_width: int = 1,
-) -> List[float]:
-    """Draw centered text and return its drawn bbox."""
-
-    bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
-    left, top, right, bottom = [float(value) for value in bbox]
-    cx, cy = float(center[0]), float(center[1])
-    tx = float(cx - (0.5 * (left + right)))
-    ty = float(cy - (0.5 * (top + bottom)))
-    draw.text(
-        (tx, ty),
-        str(text),
-        fill=tuple(int(v) for v in fill),
-        font=font,
-        stroke_width=max(0, int(stroke_width)),
-        stroke_fill=tuple(int(v) for v in stroke_fill),
-    )
-    return [
-        round(float(tx + left), 3),
-        round(float(ty + top), 3),
-        round(float(tx + right), 3),
-        round(float(ty + bottom), 3),
-    ]
 
 
 def _draw_balance_token(
@@ -220,7 +168,6 @@ def render_puzzle_balance_scene(
     right_widths = []
     panel_item_gaps = []
     panel_relation_gaps = []
-    panel_total_widths = []
     for panel in panels:
         relation_gap_offset = int(panel.get("relation_gap_offset_px", 0))
         panel_item_gap = float(max(0, int(render_params.item_gap_px) + (2 * int(relation_gap_offset))))
@@ -233,22 +180,30 @@ def render_puzzle_balance_scene(
         right_widths.append(float(right_width))
         panel_item_gaps.append(float(panel_item_gap))
         panel_relation_gaps.append(float(panel_relation_gap))
-        panel_total_widths.append(float(left_width + panel_relation_gap + equal_token_width + panel_relation_gap + right_width))
     max_left_width = max(left_widths) if left_widths else 0.0
     max_right_width = max(right_widths) if right_widths else 0.0
 
-    panel_content_width = max(panel_total_widths) if panel_total_widths else float(max_left_width + scale_side_gap + equal_token_width + scale_side_gap + max_right_width)
-    query_row_width = float(query_box_width + scale_side_gap + equal_token_width + scale_side_gap + query_box_width)
-    content_width = float(max(panel_content_width, query_row_width))
+    max_relation_gap = max(panel_relation_gaps) if panel_relation_gaps else float(scale_side_gap)
+    left_extent = float(max(max_left_width + max_relation_gap, query_box_width + scale_side_gap))
+    right_extent = float(max(max_right_width + max_relation_gap, query_box_width + scale_side_gap))
+    content_width = float(left_extent + equal_token_width + right_extent)
     content_height = float(
         len(panels) * box_height
         + max(0, len(panels) - 1) * panel_gap
         + query_gap
         + query_box_height
     )
-    content_left = float(render_params.scene_margin_left_px + max(0.0, 0.5 * ((render_params.canvas_width - render_params.scene_margin_left_px - render_params.scene_margin_right_px) - content_width)))
-    content_top = float(render_params.scene_margin_top_px + max(0.0, 0.5 * ((render_params.canvas_height - render_params.scene_margin_top_px - render_params.scene_margin_bottom_px) - content_height)))
-    center_x = float(content_left + 0.5 * content_width)
+    available_width = float(render_params.canvas_width - render_params.scene_margin_left_px - render_params.scene_margin_right_px)
+    if float(content_width) <= float(available_width):
+        content_left = float(render_params.scene_margin_left_px + (0.5 * (float(available_width) - float(content_width))))
+    else:
+        content_left = float(max(0.0, 0.5 * (float(render_params.canvas_width) - float(content_width))))
+    available_height = float(render_params.canvas_height - render_params.scene_margin_top_px - render_params.scene_margin_bottom_px)
+    if float(content_height) <= float(available_height):
+        content_top = float(render_params.scene_margin_top_px + (0.5 * (float(available_height) - float(content_height))))
+    else:
+        content_top = float(max(0.0, 0.5 * (float(render_params.canvas_height) - float(content_height))))
+    center_x = float(content_left + left_extent + (0.5 * equal_token_width))
 
     panel_bbox: Tuple[float, float, float, float] | None = None
     if selected_variant == "balance_card":
@@ -275,6 +230,16 @@ def render_puzzle_balance_scene(
     for panel_index, panel in enumerate(panels):
         left_items = [dict(item) for item in panel.get("left_items", ())]
         right_items = [dict(item) for item in panel.get("right_items", ())]
+        left_operators = [str(operator) for operator in panel.get("left_operators", ())]
+        right_operators = [str(operator) for operator in panel.get("right_operators", ())]
+        if not left_operators and len(left_items) > 1:
+            left_operators = ["+" for _ in range(len(left_items) - 1)]
+        if not right_operators and len(right_items) > 1:
+            right_operators = ["+" for _ in range(len(right_items) - 1)]
+        if len(left_operators) != max(0, len(left_items) - 1):
+            raise ValueError("left_operators must have one fewer entry than left_items")
+        if len(right_operators) != max(0, len(right_items) - 1):
+            raise ValueError("right_operators must have one fewer entry than right_items")
         left_width = float(left_widths[int(panel_index)])
         right_width = float(right_widths[int(panel_index)])
         panel_item_gap = float(panel_item_gaps[int(panel_index)])
@@ -283,9 +248,9 @@ def render_puzzle_balance_scene(
         left_start_x = float(center_x - (0.5 * equal_token_width) - panel_relation_gap - left_width)
         right_start_x = float(center_x + (0.5 * equal_token_width) + panel_relation_gap)
 
-        for side_name, items, start_x in (
-            ("left", left_items, left_start_x),
-            ("right", right_items, right_start_x),
+        for side_name, items, operators, start_x in (
+            ("left", left_items, left_operators, left_start_x),
+            ("right", right_items, right_operators, right_start_x),
         ):
             current_x = float(start_x)
             for item_index, item in enumerate(items):
@@ -353,26 +318,27 @@ def render_puzzle_balance_scene(
                     }
                 )
                 if int(item_index) < len(items) - 1:
-                    plus_center_x = float(current_x + box_width + (0.5 * panel_item_gap))
-                    plus_bbox = _draw_balance_token(
+                    operator_symbol = str(operators[int(item_index)])
+                    operator_center_x = float(current_x + box_width + (0.5 * panel_item_gap))
+                    operator_bbox = _draw_balance_token(
                         draw,
-                        text="+",
-                        center=(plus_center_x, row_center_y),
+                        text=str(operator_symbol),
+                        center=(operator_center_x, row_center_y),
                         width_px=panel_item_gap,
                         height_px=box_height,
                         color_rgb=render_params.border_color_rgb,
                         stroke_width=max(1, int(render_params.border_width_px)),
                     )
-                    scene_union_boxes.append(list(plus_bbox))
+                    scene_union_boxes.append(list(operator_bbox))
                     entities.append(
                         {
-                            "entity_id": f"balance_plus_{int(panel_index)}_{str(side_name)}_{int(item_index)}",
+                            "entity_id": f"balance_operator_{int(panel_index)}_{str(side_name)}_{int(item_index)}",
                             "entity_type": "puzzle_balance_operator",
-                            "bbox_px": list(plus_bbox),
+                            "bbox_px": list(operator_bbox),
                             "attrs": {
                                 "panel_index": int(panel_index),
                                 "side": str(side_name),
-                                "operator_symbol": "+",
+                                "operator_symbol": str(operator_symbol),
                                 "after_item_index": int(item_index),
                                 "relation_gap_offset_px": int(panel.get("relation_gap_offset_px", 0)),
                             },
@@ -424,7 +390,7 @@ def render_puzzle_balance_scene(
     query_object_box_id = str(query_spec["query_object_box_id"])
     query_box_id = str(query_spec["query_box_id"])
     query_object_type = str(query_spec["object_type"])
-    query_row_left = float(center_x - (0.5 * query_row_width))
+    query_row_left = float(center_x - (0.5 * equal_token_width) - scale_side_gap - query_box_width)
     query_top = float(current_y - panel_gap + query_gap)
     query_object_bbox = (
         float(query_row_left),

@@ -1,0 +1,91 @@
+generation:
+  shared:
+    scene_variant_weights:
+      standard_table: 1.0
+    query_variant_weights:
+      pottable_ball_count: 1.0
+      legal_group_pottable_count: 1.0
+      blocking_ball_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      tournament_blue: 1.0
+      burgundy: 1.0
+      charcoal: 1.0
+      light_rail: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_object_ball_count_sampling: true
+    balanced_target_answer_sampling: true
+    object_ball_count_support:
+      - 7
+      - 8
+      - 9
+      - 10
+    pottable_ball_count_support:
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+    legal_group_pottable_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+    blocking_ball_count_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+    line_clearance: 0.055
+    max_direct_shot_angle_degrees: 45.0
+    min_ball_distance: 0.075
+rendering:
+  shared:
+    canvas_width: 1120
+    canvas_height: 760
+    panel_margin_px: 42
+    table_width_px: 940
+    table_height_px: 520
+    rail_width_px: 44
+    pocket_radius_px: 24
+    ball_radius_px: 18
+    ball_number_font_size_px: 15
+    badge_font_size_px: 22
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      geometry_reasoning: 0.38
+      ambiguity: 0.18
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_pool_v0
+    scene_key: visible_pool_table
+    task_key: pool_table_query
+    object_description_standard_table: a pool table with a cue ball, numbered object
+      balls, six pockets, and any marked shot indicators
+    direct_shot_rule_text: A direct shot is possible only when the cue ball,
+      object ball, and pocket form a clear, roughly aligned no-bank path; rail
+      bounces, bank shots, and pockets at a sharp cut angle do not count.
+    legal_group_rule_text: In 8-ball, solids are balls 1 through 7 and stripes
+      are balls 9 through 15. The current player group is shown on the table.
+      The 8 ball does not belong to either group.
+    marked_shot_rule_text: The marked shot lane goes from the cue ball to the
+      marked object ball and then from that ball to the marked pocket.
+    evidence_hint_pottable_ball_count: set "evidence" to bounding boxes [x0,
+      y0, x1, y1] for every directly pottable object ball
+    evidence_hint_legal_group_pottable_count: set "evidence" to bounding boxes
+      [x0, y0, x1, y1] for every directly pottable ball in the current player's
+      group
+    evidence_hint_blocking_ball_count: set "evidence" to bounding boxes [x0,
+      y0, x1, y1] for every ball that blocks the marked shot lane
+    answer_hint_pottable_ball_count: set "answer" to the number of object balls
+      that can be potted by a direct shot
+    answer_hint_legal_group_pottable_count: set "answer" to the number of directly
+      pottable balls in the current player's group
+    answer_hint_blocking_ball_count: set "answer" to the number of balls blocking
+      the marked shot lane

@@ -11,6 +11,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.reversi.move_count import GamesReversiMoveCountTask
 from trace.tasks.games.shared.reversi_common import corner_coords
+from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from tests.helpers import read_jsonl
 
 
@@ -59,7 +60,7 @@ def test_games_reversi_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
+    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
@@ -104,6 +105,53 @@ def test_games_reversi_move_count_flip_query_marks_move_and_keeps_evidence_on_fl
     assert len(execution["marked_move_flip_coords"]) == 4
 
 
+def test_games_reversi_move_count_query_cycle_covers_answer_scene_and_style_support() -> None:
+    task = GamesReversiMoveCountTask()
+    answers_by_variant: dict[str, set[int]] = {
+        "legal_move_count": set(),
+        "corner_move_count": set(),
+        "flip_count_for_marked_move": set(),
+    }
+    scenes_by_variant: dict[str, set[str]] = {
+        "legal_move_count": set(),
+        "corner_move_count": set(),
+        "flip_count_for_marked_move": set(),
+    }
+    styles_by_variant: dict[str, set[str]] = {
+        "legal_move_count": set(),
+        "corner_move_count": set(),
+        "flip_count_for_marked_move": set(),
+    }
+
+    for sampling_index in range(63):
+        out = task.generate(
+            28101 + int(sampling_index),
+            params={},
+            max_attempts=192,
+        )
+        query_variant = str(out.query_id)
+        execution = out.trace_payload["execution_trace"]
+        answers_by_variant[query_variant].add(int(out.answer_gt.value))
+        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
+        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+
+    assert answers_by_variant == {
+        "legal_move_count": {0, 1, 2, 3, 4, 5, 6},
+        "corner_move_count": {0, 1, 2, 3, 4},
+        "flip_count_for_marked_move": {2, 3, 4, 5, 6},
+    }
+    assert scenes_by_variant == {
+        "legal_move_count": {"compact_board", "classic_board"},
+        "corner_move_count": {"compact_board", "classic_board"},
+        "flip_count_for_marked_move": {"compact_board", "classic_board"},
+    }
+    assert styles_by_variant == {
+        "legal_move_count": set(SUPPORTED_REVERSI_STYLE_VARIANTS),
+        "corner_move_count": set(SUPPORTED_REVERSI_STYLE_VARIANTS),
+        "flip_count_for_marked_move": set(SUPPORTED_REVERSI_STYLE_VARIANTS),
+    }
+
+
 def test_games_reversi_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "compact_board",
@@ -122,15 +170,15 @@ def test_games_reversi_move_count_is_deterministic() -> None:
 
 
 def test_games_reversi_move_count_prompt_bundle_requires_rule_text_for_query_specific_prompts() -> None:
-    bundle = json.loads(Path("prompts/games/reversi/games_reversi_v1.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/games/reversi/games_reversi_v0.json").read_text(encoding="utf-8"))
     required = bundle["required_slots_by_key"]
-    assert required["task_variant:legal_move_count"] == ["current_player_name", "legal_move_rule_text"]
-    assert required["task_variant:corner_move_count"] == [
+    assert required["query:legal_move_count"] == ["current_player_name", "legal_move_rule_text"]
+    assert required["query:corner_move_count"] == [
         "current_player_name",
         "legal_move_rule_text",
         "corner_rule_text",
     ]
-    assert required["task_variant:flip_count_for_marked_move"] == [
+    assert required["query:flip_count_for_marked_move"] == [
         "current_player_name",
         "legal_move_rule_text",
         "marked_move_rule_text",
@@ -139,15 +187,15 @@ def test_games_reversi_move_count_prompt_bundle_requires_rule_text_for_query_spe
 
 
 def test_games_reversi_move_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_games_reversi_move_count"
+    output_root = tmp_path / "task_games__reversi__legal_destination_count"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_games_reversi_move_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_games__reversi__legal_destination_count",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_games_reversi_move_count",
+                task_id="task_games__reversi__legal_destination_count",
                 count=4,
                 params={},
             )
@@ -164,7 +212,7 @@ def test_games_reversi_move_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "reversi" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_games_reversi_move_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_games__reversi__legal_destination_count"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

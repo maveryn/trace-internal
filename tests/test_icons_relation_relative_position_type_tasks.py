@@ -67,7 +67,7 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     task = IconsRelationRelativePositionTypeTask()
     out = task.generate(
         14610,
-        params={"task_variant": "right_of_anchor", "target_count": 2, "distractor_count": 3},
+        params={"query_variant": "right_of_anchor", "target_count": 2, "distractor_count": 3},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -84,7 +84,12 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_anchor_relation_type"
     assert execution["question_format"] == "count_matching_scene_icons_by_reference_and_anchor_relation"
-    assert execution["task_variant"] == "right_of_anchor"
+    assert out.query_variant == "default"
+    assert out.query_id == "right_of_anchor"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "right_of_anchor"
+    assert execution["internal_query_variant"] == "right_of_anchor"
+    assert execution["direction"] == "right"
     assert int(execution["object_count"]) == 5
     assert int(execution["target_count"]) == 2
     assert int(execution["distractor_count"]) == 3
@@ -137,7 +142,7 @@ def test_icons_relation_relative_position_type_supports_zero_matches() -> None:
     task = IconsRelationRelativePositionTypeTask()
     out = task.generate(
         14611,
-        params={"task_variant": "above_anchor", "target_count": 0, "distractor_count": 4},
+        params={"query_variant": "above_anchor", "target_count": 0, "distractor_count": 4},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -160,11 +165,17 @@ def test_icons_relation_relative_position_type_balanced_sampling_defaults() -> N
     task = IconsRelationRelativePositionTypeTask()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()
-    variant_counts: Counter[str] = Counter()
-    for index in range(60):
+    direction_counts: Counter[str] = Counter()
+    direction_target_counts: dict[str, Counter[int]] = {
+        "left": Counter(),
+        "right": Counter(),
+        "above": Counter(),
+        "below": Counter(),
+    }
+    for index in range(96):
         out = task.generate(
             hash64(14613, "icons_relation_relative_position_type", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
@@ -172,25 +183,30 @@ def test_icons_relation_relative_position_type_balanced_sampling_defaults() -> N
         distractor_count = int(execution["distractor_count"])
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        variant_counts[str(execution["task_variant"])] += 1
+        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) in {"left_of_anchor", "right_of_anchor", "above_anchor", "below_anchor"}
+        direction = str(execution["direction"])
+        direction_counts[direction] += 1
+        direction_target_counts[direction][target_count] += 1
         assert 0 <= target_count <= 5
         assert max(1, target_count + 1) <= distractor_count <= 10
         assert int(execution["object_count"]) == int(target_count) + int(distractor_count)
     assert set(target_counts.keys()) == set(range(0, 6))
-    assert set(variant_counts.keys()) == {
-        "left_of_anchor",
-        "right_of_anchor",
-        "above_anchor",
-        "below_anchor",
+    assert set(direction_counts.keys()) == {
+        "left",
+        "right",
+        "above",
+        "below",
     }
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert max(variant_counts.values()) - min(variant_counts.values()) <= 1
+    assert all(direction_target_counts[direction] for direction in direction_target_counts)
+    assert sum(target_counts.values()) == 96
+    assert sum(direction_counts.values()) == 96
     for target_count in range(0, 6):
         observed = []
         for index in range(120):
             out = task.generate(
                 hash64(14614, "icons_relation_relative_position_type_feasible_distractors", index),
-                params={"_sampling_index": index, "target_count": target_count},
+                params={"target_count": target_count},
                 max_attempts=200,
             )
             observed.append(int(out.trace_payload["execution_trace"]["distractor_count"]))

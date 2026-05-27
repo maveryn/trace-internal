@@ -1,15 +1,11 @@
 """Single-object geometry length measurement task."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_default,
@@ -70,7 +66,6 @@ from ..shared.single_object_scene import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
-
 _POLYGON_VARIANT_TO_SIDES: Dict[str, int] = {
     "triangle": 3,
     "quadrilateral": 4,
@@ -80,11 +75,9 @@ _POLYGON_VARIANTS = set(_POLYGON_VARIANT_TO_SIDES)
 _CIRCLE_VARIANTS = {"circle_radius", "circle_diameter"}
 _ELLIPSE_VARIANTS = {"ellipse_major_axis", "ellipse_minor_axis"}
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable defaults for geometry length measurement."""
-
     canvas_size_min: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = MEASUREMENT_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = MEASUREMENT_SHARED_DEFAULTS.graph_cells_min
@@ -106,14 +99,12 @@ class _TaskDefaults:
     ellipse_axis_max: int = MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_max
     ellipse_allow_circle: bool = MEASUREMENT_SHARED_DEFAULTS.ellipse_allow_circle
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_measurement_length",
+    task_id="source_geometry_measurement_length",
 )
-
 
 def _required_prompt_text(prompt_defaults: Mapping[str, Any], *, preferred_keys: Sequence[str], context: str) -> str:
     """Return first available non-empty prompt text among ordered key candidates."""
@@ -121,7 +112,6 @@ def _required_prompt_text(prompt_defaults: Mapping[str, Any], *, preferred_keys:
         if str(key) in prompt_defaults:
             return str(required_group_default(prompt_defaults, str(key), context=context))
     raise ValueError(f"missing required prompt key in {context}: one of {list(preferred_keys)}")
-
 
 def _resolve_supported_polygon_sides(params: Mapping[str, Any], *, gen_defaults: Mapping[str, Any]) -> List[int]:
     """Resolve allowed polygon side counts for polygon-length variants."""
@@ -136,7 +126,6 @@ def _resolve_supported_polygon_sides(params: Mapping[str, Any], *, gen_defaults:
         raise ValueError("polygon_allowed_sides must include at least one of [3, 4, 5]")
     return [int(item) for item in out]
 
-
 def _supported_variants_for_allowed_sides(allowed_polygon_sides: Sequence[int]) -> List[str]:
     """Return ordered supported variants for configured polygon sides."""
     variants = ["segment"]
@@ -145,7 +134,6 @@ def _supported_variants_for_allowed_sides(allowed_polygon_sides: Sequence[int]) 
             variants.append(str(variant))
     variants.extend(["circle_radius", "circle_diameter", "ellipse_major_axis", "ellipse_minor_axis"])
     return variants
-
 
 def _answer_bounds(
     params: Mapping[str, Any],
@@ -158,14 +146,13 @@ def _answer_bounds(
         gen_defaults,
         min_key="answer_min",
         max_key="answer_max",
-        context="generation defaults for task_geometry_measurement_length",
+        context="generation defaults for source_geometry_measurement_length",
     )
     resolved_min = int(_DEFAULTS.answer_min if answer_min is None else answer_min)
     resolved_max = int(_DEFAULTS.answer_max if answer_max is None else answer_max)
     if int(resolved_min) > int(resolved_max):
         raise ValueError("answer_min must be <= answer_max")
     return int(resolved_min), int(resolved_max)
-
 
 def _measurement_complexity_components(
     *,
@@ -174,7 +161,6 @@ def _measurement_complexity_components(
     answer_max: int,
 ) -> Dict[str, float]:
     """Return normalized measurement complexity components for length measurement."""
-
     normalized_variant = str(variant_kind)
     variant_visual_scan = {
         "segment": 0.25,
@@ -219,7 +205,6 @@ def _measurement_complexity_components(
         ),
     }
 
-
 def _circle_radii_for_variant(
     *,
     variant_kind: str,
@@ -239,7 +224,6 @@ def _circle_radii_for_variant(
             continue
         out.append(int(radius))
     return out
-
 
 def _ellipse_pairs_for_variant(
     *,
@@ -268,7 +252,6 @@ def _ellipse_pairs_for_variant(
             continue
         out.append((int(semi_x), int(semi_y)))
     return out
-
 
 def _resolve_required_graph_cells(
     *,
@@ -308,7 +291,6 @@ def _resolve_required_graph_cells(
         return int((2 * int(min_extent)) + 2)
     return 0
 
-
 def _resolve_circle_target_radius(
     *,
     instance_seed: int,
@@ -320,11 +302,9 @@ def _resolve_circle_target_radius(
     render_defaults: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float], List[int]]:
     """Select one circle radius from the feasible answer set before scene layout.
-
     Sampling the target answer before scene construction avoids over-sampling
     small circles, which otherwise fit more often than larger ones.
     """
-
     raw_radii = _circle_radii_for_variant(
         variant_kind=str(variant_kind),
         answer_min=int(answer_min),
@@ -346,16 +326,13 @@ def _resolve_circle_target_radius(
     ]
     if not feasible_radii:
         raise ValueError("no circle radii fit within configured graph-cell limits")
-
     answer_values = [
         int(radius) if str(variant_kind) == "circle_radius" else int(2 * int(radius))
         for radius in feasible_radii
     ]
     probabilities = {str(value): (1.0 / float(len(answer_values))) for value in answer_values}
-    sampling_index = params.get("_sampling_index", instance_seed)
-    selected_index = abs(int(sampling_index)) % len(feasible_radii)
+    selected_index = abs(int(instance_seed)) % len(feasible_radii)
     return int(feasible_radii[selected_index]), probabilities, [int(value) for value in answer_values]
-
 
 def _resolve_ellipse_target_pair(
     *,
@@ -368,11 +345,9 @@ def _resolve_ellipse_target_pair(
     render_defaults: Mapping[str, Any],
 ) -> Tuple[Tuple[int, int], Dict[str, float], List[int]]:
     """Select one ellipse semiaxis pair from a uniformly sampled target answer.
-
     As with circles, sampling the target answer before scene placement prevents
     layout feasibility from overrepresenting smaller axis lengths.
     """
-
     raw_pairs = _ellipse_pairs_for_variant(
         variant_kind=str(variant_kind),
         answer_min=int(answer_min),
@@ -394,17 +369,15 @@ def _resolve_ellipse_target_pair(
     ]
     if not feasible_pairs:
         raise ValueError("no ellipse semiaxis pairs fit within configured graph-cell limits")
-
     answer_to_pairs: Dict[int, List[Tuple[int, int]]] = {}
     for semi_x, semi_y in feasible_pairs:
         major = int(2 * max(int(semi_x), int(semi_y)))
         minor = int(2 * min(int(semi_x), int(semi_y)))
         answer_value = int(major if str(variant_kind) == "ellipse_major_axis" else minor)
         answer_to_pairs.setdefault(int(answer_value), []).append((int(semi_x), int(semi_y)))
-
     answer_values = sorted(int(value) for value in answer_to_pairs.keys())
     probabilities = {str(value): (1.0 / float(len(answer_values))) for value in answer_values}
-    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    sampling_index = abs(int(instance_seed))
     selected_answer = int(answer_values[int(sampling_index) % len(answer_values)])
     candidate_pairs = sorted(
         list(answer_to_pairs[int(selected_answer)]),
@@ -412,7 +385,6 @@ def _resolve_ellipse_target_pair(
     )
     pair_index = (int(sampling_index) // max(1, len(answer_values))) % len(candidate_pairs)
     return tuple(candidate_pairs[int(pair_index)]), probabilities, [int(value) for value in answer_values]
-
 
 def _resolve_polygon_target_side_length(
     *,
@@ -424,14 +396,12 @@ def _resolve_polygon_target_side_length(
     render_defaults: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float], List[int], int]:
     """Select one polygon-side answer from the feasible support before layout.
-
     Sampling the target side length before scene construction prevents shorter,
     easier-to-fit polygon sides from becoming overrepresented by layout
     feasibility. The returned graph-cell requirement is derived from the same
     support probe so scene-size sampling preserves feasibility for the chosen
     target.
     """
-
     polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
     _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
         params=params,
@@ -451,7 +421,7 @@ def _resolve_polygon_target_side_length(
     if not feasible_answers:
         raise ValueError("no polygon side lengths fit within configured answer and graph-cell limits")
     probabilities = {str(value): (1.0 / float(len(feasible_answers))) for value in feasible_answers}
-    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    sampling_index = abs(int(instance_seed))
     selected_answer = int(feasible_answers[int(sampling_index) % len(feasible_answers)])
     required_graph_cells = required_graph_cells_for_polygon_side_length(
         sides=int(polygon_sides),
@@ -463,7 +433,6 @@ def _resolve_polygon_target_side_length(
     )
     return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
 
-
 def _prompt_family_for_variant(variant_kind: str) -> str:
     """Return prompt-family suffix for one length variant."""
     variant = str(variant_kind)
@@ -474,7 +443,6 @@ def _prompt_family_for_variant(variant_kind: str) -> str:
     if variant in _ELLIPSE_VARIANTS:
         return "ellipse"
     return "segment"
-
 
 def _question_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
     """Return ordered prompt question-key candidates for one length variant."""
@@ -493,7 +461,6 @@ def _question_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
         return ("question_text_ellipse_minor_axis", "question_text_ellipse", "question_text")
     return ("question_text",)
 
-
 def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
     """Return ordered evidence-hint key candidates for one length variant."""
     variant = str(variant_kind)
@@ -506,7 +473,6 @@ def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, .
     if variant in _ELLIPSE_VARIANTS:
         return ("evidence_hint_ellipse_axis", "evidence_hint_point_map", "evidence_hint")
     return ("evidence_hint_point_map", "evidence_hint")
-
 
 def _json_example_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
     """Return ordered JSON example key candidates for one length variant."""
@@ -525,7 +491,6 @@ def _json_example_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ..
         return ("json_example_ellipse_minor_axis_integer", "json_example_integer", "json_example")
     return ("json_example_integer", "json_example")
 
-
 def _format_question(template: str, *, label_a: str | None = None, label_b: str | None = None) -> str:
     """Format one question template with optional side/segment labels."""
     slot_values = {
@@ -537,7 +502,6 @@ def _format_question(template: str, *, label_a: str | None = None, label_b: str 
     except KeyError as exc:  # pragma: no cover - fail-fast defensive path
         raise ValueError(f"unsupported question placeholder in template: {exc}") from exc
 
-
 def _segment_anchor(point_a: Sequence[float], point_b: Sequence[float]) -> Dict[str, Any]:
     """Build deterministic render anchor for a measured segment."""
     return {
@@ -546,14 +510,12 @@ def _segment_anchor(point_a: Sequence[float], point_b: Sequence[float]) -> Dict[
         "coord_space": "pixel",
     }
 
-
 def _graph_segment_length_units(point_a: Sequence[float], point_b: Sequence[float], *, spacing: int) -> int:
     """Return integer segment length in graph units for two pixel-space points."""
     spacing_px = max(1, int(spacing))
     unit_a = (float(point_a[0]) / float(spacing_px), float(point_a[1]) / float(spacing_px))
     unit_b = (float(point_b[0]) / float(spacing_px), float(point_b[1]) / float(spacing_px))
     return int(segment_length_units(unit_a, unit_b))
-
 
 def _graph_draw_bounds(*, canvas_size: int, graph_frame: Mapping[str, Any]) -> Tuple[float, float, float, float]:
     """Return drawable graph-paper bounds as `[left, top, right, bottom]` in pixels."""
@@ -565,7 +527,6 @@ def _graph_draw_bounds(*, canvas_size: int, graph_frame: Mapping[str, Any]) -> T
     bottom = float(max(int(margin), int(size) - 1 - int(margin)))
     return (left, top, right, bottom)
 
-
 def _point_inside_bounds(point: Sequence[float], *, bounds: Sequence[float]) -> bool:
     """Return true when one pixel point lies inside inclusive bounds."""
     left, top, right, bottom = [float(value) for value in bounds]
@@ -573,22 +534,17 @@ def _point_inside_bounds(point: Sequence[float], *, bounds: Sequence[float]) -> 
     y_value = float(point[1])
     return left <= x_value <= right and top <= y_value <= bottom
 
-
 def _all_points_inside_bounds(points: Sequence[Sequence[float]], *, bounds: Sequence[float]) -> bool:
     """Return true when every point lies inside inclusive bounds."""
     return all(_point_inside_bounds(point, bounds=bounds) for point in points)
 
-
-@register_task
 class GeometryLengthMeasure2DTask:
     """Measure one integer length from a single geometry object on graph paper."""
-
-    task_id = "task_geometry_measurement_length"
+    task_id = "source_geometry_measurement_length"
     domain = "geometry"
     task_group = "measurement"
     scene_kind = "geometry_2d_length_measurement"
-    query_template_id = "geometry_2d_length_measure_v1"
-
+    query_template_id = "shape_measure_length_query_v0"
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic length-measurement instance."""
         scene_rng = spawn_rng(instance_seed, "scene")
@@ -673,7 +629,6 @@ class GeometryLengthMeasure2DTask:
             required_graph_cells = int((2 * int(selected_circle_radius_units)) + 2)
         if selected_ellipse_pair_units is not None:
             required_graph_cells = int((2 * max(int(selected_ellipse_pair_units[0]), int(selected_ellipse_pair_units[1]))) + 2)
-
         context_params = dict(params)
         if int(required_graph_cells) > 0:
             if "graph_cells" in context_params:
@@ -698,9 +653,9 @@ class GeometryLengthMeasure2DTask:
                 resolved_max_cells = int(current_max_cells)
                 context_params["graph_cells_min"] = int(resolved_min_cells)
                 context_params["graph_cells_max"] = int(resolved_max_cells)
-
         context = resolve_graph_scene_context(
             scene_rng,
+            instance_seed=int(instance_seed),
             params=context_params,
             render_defaults=_RENDER_DEFAULTS,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
@@ -739,7 +694,6 @@ class GeometryLengthMeasure2DTask:
             max_key="label_stroke_width_max",
             minimum_value=1,
         )
-
         image, draw, background_meta = make_graph_scene_canvas(
             instance_seed=int(instance_seed),
             context=context,
@@ -755,7 +709,6 @@ class GeometryLengthMeasure2DTask:
             canvas_size=int(context.canvas_size),
             graph_frame=context.graph_frame,
         )
-
         entity: Dict[str, Any] | None = None
         anchor: Dict[str, Any] | None = None
         evidence: Dict[str, Any] | None = None
@@ -765,7 +718,6 @@ class GeometryLengthMeasure2DTask:
         polygon_sides: int | None = None
         variant_detail: Dict[str, Any] = {}
         last_error: Exception | None = None
-
         for _ in range(max(1, int(max_attempts))):
             try:
                 if str(variant_kind) == "segment":
@@ -840,7 +792,6 @@ class GeometryLengthMeasure2DTask:
                     )
                     variant_detail = {"segment_labels": [str(candidate.labels[0]), str(candidate.labels[1])]}
                     break
-
                 if str(variant_kind) in _POLYGON_VARIANTS:
                     polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
                     if selected_polygon_target_length_units is None:
@@ -954,7 +905,6 @@ class GeometryLengthMeasure2DTask:
                         ],
                     }
                     break
-
                 if str(variant_kind) in _CIRCLE_VARIANTS:
                     if selected_circle_radius_units is None:
                         raise RuntimeError("circle variant must resolve one target radius before scene layout")
@@ -1066,7 +1016,6 @@ class GeometryLengthMeasure2DTask:
                         "answer_scalar_probabilities": dict(circle_answer_probabilities),
                     }
                     break
-
                 if str(variant_kind) in _ELLIPSE_VARIANTS:
                     if selected_ellipse_pair_units is None:
                         raise RuntimeError("ellipse variant must resolve one target pair before scene layout")
@@ -1188,12 +1137,10 @@ class GeometryLengthMeasure2DTask:
                         "answer_scalar_probabilities": dict(ellipse_answer_probabilities),
                     }
                     break
-
                 raise ValueError(f"unsupported shape variant: {variant_kind}")
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             answer_scalar is None
             or entity is None
@@ -1203,7 +1150,6 @@ class GeometryLengthMeasure2DTask:
             or question_text is None
         ):
             raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
-
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -1211,12 +1157,11 @@ class GeometryLengthMeasure2DTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -1224,7 +1169,7 @@ class GeometryLengthMeasure2DTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_scene_key = str(prompt_defaults["scene_key"])
         prompt_task_key = str(prompt_defaults["task_key"])
         evidence_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
@@ -1246,12 +1191,11 @@ class GeometryLengthMeasure2DTask:
             preferred_keys=("json_example_answer_only_integer", "json_example_answer_only"),
             context=f"prompt defaults for {self.task_id}",
         )
-
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_family_key=prompt_task_family_key,
+            scene_key=prompt_scene_key,
             task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -1267,7 +1211,6 @@ class GeometryLengthMeasure2DTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         complexity_components = _measurement_complexity_components(
             variant_kind=str(variant_kind),
             answer_scalar=int(answer_scalar),
@@ -1284,7 +1227,6 @@ class GeometryLengthMeasure2DTask:
                 evidence_point_count=(len(evidence["evidence_value"]) if isinstance(evidence["evidence_value"], list) else 1),
             ),
         )
-
         trace_payload = {
             "scene_ir": {
                 "scene_kind": str(self.scene_kind),
@@ -1301,7 +1243,7 @@ class GeometryLengthMeasure2DTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(variant_kind),
+                "query_variant": str(variant_kind),
                 "template_id": str(self.query_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1327,6 +1269,7 @@ class GeometryLengthMeasure2DTask:
                 },
                 "graph_coordinate_frame": dict(context.graph_frame),
                 "graph_paper_grid": graph_paper_grid_from_frame(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {"image_id": "img0", "anchors": {"target_1": dict(anchor)}},
             "execution_trace": {
@@ -1342,7 +1285,6 @@ class GeometryLengthMeasure2DTask:
             "witness_symbolic": dict(evidence["witness_symbolic"]),
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
-
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_scalar)),
@@ -1352,6 +1294,6 @@ class GeometryLengthMeasure2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(variant_kind),
+            query_variant=str(variant_kind),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

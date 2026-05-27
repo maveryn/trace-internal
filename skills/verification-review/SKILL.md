@@ -24,7 +24,7 @@ Use this after task or infrastructure changes, especially when answer support or
    - numeric summary fields when relevant
 5. If distribution fails, debug support skew before adding more rejection loops.
    - Prefer target-first or constructive samplers.
-   - Validate fallback deterministic selectors against the actual review seed stream when `_sampling_index` is absent.
+   - Validate fallback deterministic selectors against the actual review seed stream.
 
 ## Acceptance checks
 - Tests pass.

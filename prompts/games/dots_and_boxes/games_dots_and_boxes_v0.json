@@ -1,0 +1,81 @@
+{
+  "bundle_id": "games_dots_and_boxes_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "dots_and_boxes_capture_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_dots_and_boxes_board": [
+      "object_description"
+    ],
+    "query:three_sided_box_count": [],
+    "query:capture_move_count": [],
+    "query:highlighted_candidate_capture_count": [],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_dots_and_boxes_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "three_sided_box_count": [
+      "How many boxes currently have exactly three drawn sides?",
+      "Count the boxes that have exactly three sides already drawn.",
+      "How many box cells are one edge away from being completed?",
+      "Find the number of boxes with exactly three visible sides drawn.",
+      "How many boxes on the board have three drawn boundary edges?"
+    ],
+    "capture_move_count": [
+      "How many missing edges would complete at least one box if drawn?",
+      "Count the undrawn edge positions that would finish a box immediately.",
+      "How many possible next edge draws would capture a box right away?",
+      "Find the number of missing edges that complete one or more boxes.",
+      "How many gaps on the board are immediate box-completing moves?"
+    ],
+    "highlighted_candidate_capture_count": [
+      "Among the highlighted missing edges, how many would complete at least one box if drawn?",
+      "Count the highlighted gaps that would finish a box immediately.",
+      "How many highlighted candidate edges are box-completing moves?",
+      "Find the number of highlighted missing edges that complete one or more boxes.",
+      "Of the highlighted edge positions, how many would capture a box right away?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -52,26 +52,10 @@ def _semantic_body(text: str) -> str:
     return text[: match.start()].strip()
 
 
-def _sampling_index(output: Any, instance_seed: int) -> int:
-    """Return the recorded sampling index when available, otherwise use the seed."""
-    trace_payload = getattr(output, "trace_payload", {})
-    if isinstance(trace_payload, Mapping):
-        query_spec = trace_payload.get("query_spec", {})
-        if isinstance(query_spec, Mapping):
-            params = query_spec.get("params", {})
-            if isinstance(params, Mapping) and "_sampling_index" in params:
-                try:
-                    return int(params["_sampling_index"])
-                except (TypeError, ValueError):
-                    pass
-    return int(instance_seed)
-
-
 def _prompt_rows_for_output(output: Any, instance_seed: int) -> list[dict[str, Any]]:
     """Convert one generated task output into per-prompt-variant audit rows."""
     rows: list[dict[str, Any]] = []
     prompt_variants = output.prompt_variants or {"active": output.prompt}
-    sample_index = _sampling_index(output, instance_seed)
     for mode, prompt in sorted(prompt_variants.items()):
         body = _semantic_body(prompt)
         counts = _term_counts(body)
@@ -80,8 +64,7 @@ def _prompt_rows_for_output(output: Any, instance_seed: int) -> list[dict[str, A
             {
                 "task": getattr(output, "task_id", "") or "",
                 "mode": mode,
-                "task_variant": output.task_variant,
-                "sample_index": sample_index,
+                "query_variant": output.query_variant,
                 "instance_seed": int(instance_seed),
                 "word_count": _word_count(prompt),
                 "body_word_count": _word_count(body),
@@ -111,7 +94,7 @@ def _iter_prompt_rows(task_ids: Iterable[str], *, samples_per_task: int, max_att
         while emitted < samples_per_task and sample_index < samples_per_task * 8:
             seed = hash64(20260415, f"prompt_concision.{task_id}", sample_index)
             try:
-                output = task.generate(seed, params={"_sampling_index": sample_index}, max_attempts=max_attempts)
+                output = task.generate(seed, params={}, max_attempts=max_attempts)
             except Exception as exc:  # pragma: no cover - audit-only resilience
                 failures.append(f"{sample_index}: {exc}")
                 sample_index += 1
@@ -126,7 +109,7 @@ def _iter_prompt_rows(task_ids: Iterable[str], *, samples_per_task: int, max_att
             yield {
                 "task": task_id,
                 "mode": "<generation_failed>",
-                "task_variant": "",
+                "query_variant": "",
                 "sample_index": -1,
                 "instance_seed": -1,
                 "word_count": 0,
@@ -140,8 +123,8 @@ def _collect_prompt_sample(output: Any, instance_seed: int) -> dict[str, Any]:
     """Collector callback used by variant-aware sampling."""
     return {
         "task": getattr(output, "task_id", "") or "",
-        "task_variant": str(getattr(output, "task_variant", "") or ""),
-        "sample_index": _sampling_index(output, instance_seed),
+        "query_variant": str(getattr(output, "query_variant", "") or ""),
+        "sample_index": int(instance_seed),
         "instance_seed": int(instance_seed),
         "rows": _prompt_rows_for_output(output, instance_seed),
     }
@@ -184,7 +167,7 @@ def _iter_variant_prompt_rows(
                 {
                     "task": task_id,
                     "mode": "<generation_failed>",
-                    "task_variant": "",
+                    "query_variant": "",
                     "sample_index": -1,
                     "instance_seed": -1,
                     "word_count": 0,
@@ -238,7 +221,7 @@ def _write_markdown(
     )[:top_k]
 
     task_counts = Counter(row["task"] for row in rows)
-    variant_counts = Counter((row["task"], row["task_variant"]) for row in rows if str(row["mode"]) != "<generation_failed>")
+    variant_counts = Counter((row["task"], row["query_variant"]) for row in rows if str(row["mode"]) != "<generation_failed>")
     incomplete_coverage = [
         row
         for row in (coverage_rows or [])
@@ -249,7 +232,7 @@ def _write_markdown(
         "",
         f"- rendered prompts: `{len(rows)}`",
         f"- tasks covered: `{len(task_counts)}`",
-        f"- observed task variants covered: `{len(variant_counts)}`",
+        f"- observed query variants covered: `{len(variant_counts)}`",
         "",
         "## Variant Coverage",
         "",
@@ -297,7 +280,7 @@ def _write_markdown(
             [
                 f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
                 "",
-                f"- `task_variant`: `{row['task_variant']}`",
+                f"- `query_variant`: `{row['query_variant']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                 f"- `word_count`: `{row['word_count']}`",
                 f"- `body_word_count`: `{row['body_word_count']}`",
@@ -315,7 +298,7 @@ def _write_markdown(
             [
                 f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
                 "",
-                f"- `task_variant`: `{row['task_variant']}`",
+                f"- `query_variant`: `{row['query_variant']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                 f"- `word_count`: `{row['word_count']}`",
                 f"- `body_word_count`: `{row['body_word_count']}`",
@@ -333,14 +316,14 @@ def _write_markdown(
             rows,
             key=lambda value: (
                 str(value["task"]),
-                str(value["task_variant"]),
+                str(value["query_variant"]),
                 str(value["mode"]),
                 int(value.get("sample_index", 0)),
             ),
         ):
             lines.extend(
                 [
-                    f"### {row['task']} / {row['task_variant']} / {row['mode']} / sample {row['sample_index']}",
+                    f"### {row['task']} / {row['query_variant']} / {row['mode']} / sample {row['sample_index']}",
                     "",
                     f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                     f"- `word_count`: `{row['word_count']}`",

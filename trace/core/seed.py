@@ -7,7 +7,7 @@ from random import Random
 from blake3 import blake3
 
 
-SEED_DERIVATION_VERSION = "v1"
+SEED_DERIVATION_VERSION = "v0"
 _JSON_SAFE_INT_MAX = (1 << 53) - 1
 
 

@@ -28,6 +28,7 @@ from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
+from trace.core.taxonomy import resolve_task_query_id, resolve_task_taxonomy
 
 
 _PREVIEW_MAX_SIDE = 384
@@ -35,11 +36,13 @@ _EXCEL_HEADERS: List[str] = [
     "image",
     "evidence_image",
     "task",
-    "task_variant",
-    "prompt",
-    "prompt_answer_only",
-    "answer",
-    "answer_evidence",
+    "query_variant",
+    "scene_id",
+    "query_id",
+    "prompt_answer",
+    "ground_truth_answer",
+    "prompt_answer_and_evidence",
+    "ground_truth_answer_and_evidence",
     "answer_type",
     "evidence_type",
     "instance_seed",
@@ -52,18 +55,20 @@ _EXCEL_COLUMN_WIDTHS: Dict[str, float] = {
     "B": 54,
     "C": 28,
     "D": 24,
-    "E": 40,
-    "F": 34,
-    "G": 20,
-    "H": 20,
-    "I": 14,
-    "J": 16,
-    "K": 16,
-    "L": 24,
-    "M": 28,
+    "E": 24,
+    "F": 24,
+    "G": 34,
+    "H": 22,
+    "I": 40,
+    "J": 24,
+    "K": 14,
+    "L": 16,
+    "M": 24,
+    "N": 28,
+    "O": 28,
 }
 
-_WRAP_COLUMNS = {"C", "D", "E", "F", "G", "L", "M"}
+_WRAP_COLUMNS = {"C", "D", "E", "F", "G", "H", "I", "J", "M", "N", "O"}
 
 
 def _parse_cli() -> argparse.Namespace:
@@ -76,6 +81,11 @@ def _parse_cli() -> argparse.Namespace:
         "--review-label",
         default="",
         help="Optional label suffix for the workbook, e.g. level0_200",
+    )
+    parser.add_argument(
+        "--calibration-baseline",
+        default="v0",
+        help="Calibration artifact baseline label to write into the review manifest.",
     )
     return parser.parse_args()
 
@@ -115,6 +125,16 @@ def _dedupe_sheet_title(base: str, used: set[str]) -> str:
             used.add(attempt)
             return attempt
         index += 1
+
+
+def _review_variant_key(*, query_variant: str, query_id: str) -> str:
+    """Return the review grouping key for one exported task instance."""
+
+    query_variant_text = str(query_variant).strip()
+    query_id_text = str(query_id).strip()
+    if query_variant_text in {"", "default"} and query_id_text:
+        return query_id_text
+    return query_variant_text
 
 
 def _ensure_link_or_copy(source: Path, destination: Path) -> None:
@@ -242,11 +262,13 @@ def _populate_inspection_sheet(
 
         values = [
             row.get("task", ""),
-            row.get("task_variant", ""),
-            row.get("prompt", ""),
-            row.get("prompt_answer_only", ""),
-            _json_cell(row.get("answer")),
-            _json_cell(row.get("answer_evidence")),
+            row.get("query_variant", ""),
+            row.get("scene_id", ""),
+            row.get("query_id", ""),
+            row.get("prompt_answer", row.get("prompt_answer_only", "")),
+            _json_cell(row.get("ground_truth_answer", row.get("answer_only"))),
+            row.get("prompt_answer_and_evidence", row.get("prompt", "")),
+            _json_cell(row.get("ground_truth_answer_and_evidence", row.get("answer"))),
             row.get("answer_type", ""),
             row.get("evidence_type", ""),
             int(row.get("instance_seed", 0)),
@@ -273,18 +295,18 @@ def _write_inspection_excel(
     variant_to_sheet: Dict[str, str] = {}
 
     sorted_variants = sorted(str(variant) for variant in rows_by_variant.keys()) or [""]
-    for index, task_variant in enumerate(sorted_variants):
-        base_title = str(task_variant).strip() or "default"
+    for index, query_variant in enumerate(sorted_variants):
+        base_title = str(query_variant).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if index == 0:
             sheet = workbook.active
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(task_variant)] = str(sheet_title)
+        variant_to_sheet[str(query_variant)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
-            rows=list(rows_by_variant.get(str(task_variant), [])),
+            rows=list(rows_by_variant.get(str(query_variant), [])),
             out_root=out_root,
             image_buffers=image_buffers,
         )
@@ -305,11 +327,12 @@ def main() -> int:
     if task_id != inferred_task_id:
         raise ValueError(f"--task-id {task_id} does not match parquet task {inferred_task_id}")
 
-    domain_match = re.match(r"^task_([a-z0-9]+)_", task_id)
-    domain = str(domain_match.group(1)) if domain_match else "unknown"
-    task_dir = out_root / domain / task_id
+    taxonomy = resolve_task_taxonomy(str(task_id))
+    task_dir = out_root / str(taxonomy.domain) / str(taxonomy.scene_id) / task_id
     images_dir = task_dir / "images"
     data_dir = task_dir / "data"
+    shutil.rmtree(images_dir, ignore_errors=True)
+    shutil.rmtree(data_dir, ignore_errors=True)
     images_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
 
@@ -334,8 +357,16 @@ def main() -> int:
 
         query_spec = trace_record.get("query_spec", {}) if isinstance(trace_record, Mapping) else {}
         execution_trace = trace_record.get("execution_trace", {}) if isinstance(trace_record, Mapping) else {}
-        task_variant = str(query_spec.get("task_variant") or execution_trace.get("task_variant") or "").strip()
-        variant_dir = task_variant or "default"
+        query_variant = str(query_spec.get("query_variant") or execution_trace.get("query_variant") or "").strip()
+        scene_id = str(instance.get("scene_id") or query_spec.get("scene_id") or taxonomy.scene_id)
+        query_id = str(
+            instance.get("query_id")
+            or query_spec.get("query_id")
+            or execution_trace.get("query_id")
+            or resolve_task_query_id(query_variant=query_variant, trace_payload=trace_record)
+        )
+        review_variant = _review_variant_key(query_variant=query_variant, query_id=query_id)
+        variant_dir = review_variant or "default"
         variant_index = int(per_variant_counts[variant_dir])
         per_variant_counts[variant_dir] += 1
 
@@ -353,6 +384,9 @@ def main() -> int:
 
         answer_gt = dict(instance.get("answer_gt", {}) or {})
         evidence_gt = dict(instance.get("evidence_gt", {}) or {})
+        answer_only_ground_truth = {
+            "answer": answer_gt.get("value"),
+        }
         canonical_answer = {
             "evidence": evidence_gt.get("value"),
             "answer": answer_gt.get("value"),
@@ -366,11 +400,16 @@ def main() -> int:
 
         data_payload = {
             "task": task_id,
-            "task_variant": task_variant,
+            "domain": str(taxonomy.domain),
+            "scene_id": scene_id,
+            "query_variant": query_variant,
+            "query_id": query_id,
             "instance_seed": int(instance.get("instance_seed", 0)),
             "instance_id": instance.get("instance_id"),
             "prompt": prompt_answer_and_evidence,
+            "prompt_answer": prompt_answer_only,
             "prompt_answer_only": prompt_answer_only,
+            "prompt_answer_and_evidence": prompt_answer_and_evidence,
             "prompt_variants": prompt_variants,
             "answer_gt": answer_gt,
             "evidence_gt": evidence_gt,
@@ -390,12 +429,18 @@ def main() -> int:
         data_path.write_text(json.dumps(data_payload, ensure_ascii=False, indent=2), encoding="utf-8")
         rel_data_path = data_path.relative_to(out_root).as_posix()
 
-        rows_by_variant[task_variant].append(
+        rows_by_variant[review_variant].append(
             {
                 "task": task_id,
-                "task_variant": task_variant,
+                "query_variant": query_variant,
+                "scene_id": scene_id,
+                "query_id": query_id,
                 "prompt": prompt_answer_and_evidence,
+                "prompt_answer": prompt_answer_only,
                 "prompt_answer_only": prompt_answer_only,
+                "prompt_answer_and_evidence": prompt_answer_and_evidence,
+                "ground_truth_answer": answer_only_ground_truth,
+                "ground_truth_answer_and_evidence": canonical_answer,
                 "answer": canonical_answer,
                 "answer_evidence": evidence_gt.get("value"),
                 "answer_type": str(answer_gt.get("type", "")),
@@ -412,6 +457,9 @@ def main() -> int:
 
     manifest = {
         "task_id": task_id,
+        "domain": str(taxonomy.domain),
+        "scene_id": str(taxonomy.scene_id),
+        "calibration_baseline": str(args.calibration_baseline),
         "review_label": review_label,
         "inspection_count": int(sum(len(rows) for rows in rows_by_variant.values())),
         "variants": {

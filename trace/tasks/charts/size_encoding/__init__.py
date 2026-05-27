@@ -1,0 +1,1 @@
+"""Size-encoded chart tasks."""

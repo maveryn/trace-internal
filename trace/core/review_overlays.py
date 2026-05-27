@@ -130,6 +130,20 @@ def _extract_edge_segments(value: Any) -> List[Tuple[Tuple[float, float], Tuple[
     return []
 
 
+def _draw_bbox_outline(
+    draw: PILImageDraw.ImageDraw,
+    bbox: Tuple[float, float, float, float],
+    *,
+    color: Tuple[int, int, int],
+    line_width: int,
+) -> None:
+    """Draw one high-contrast bbox outline that remains visible on colored UI regions."""
+    x0, y0, x1, y1 = bbox
+    shadow_width = max(int(line_width) + 4, 5)
+    draw.rectangle([x0, y0, x1, y1], outline=(0, 0, 0, 230), width=shadow_width)
+    draw.rectangle([x0, y0, x1, y1], outline=(color[0], color[1], color[2], 255), width=max(1, int(line_width)))
+
+
 def resolve_overlay_evidence(
     *,
     evidence_type: str,
@@ -141,44 +155,21 @@ def resolve_overlay_evidence(
     if not isinstance(projected, Mapping):
         return str(evidence_type), evidence_value
 
-    if str(evidence_type) == "graph_point":
-        point_set = projected.get("pixel_point_set")
-        if isinstance(point_set, list) and point_set:
-            return "point", point_set[0]
-        point_map = projected.get("pixel_point_map")
-        if isinstance(point_map, Mapping) and point_map:
-            return "point", next(iter(point_map.values()))
-    if str(evidence_type) in {"grid_point_set", "grid_point_path"}:
-        pixel_key = "pixel_point_path" if str(evidence_type) == "grid_point_path" else "pixel_point_set"
+    evidence_kind = str(evidence_type)
+    if evidence_kind in {"bbox_sequence", "bbox_set", "point_pair_set", "point_sequence", "point_set"}:
+        if evidence_kind in projected:
+            return evidence_kind, projected.get(evidence_kind)
+        pixel_key = f"pixel_{evidence_kind}"
         if pixel_key in projected:
-            return str(pixel_key), projected.get(pixel_key)
-    if str(evidence_type) == "graph_point_set" and "pixel_point_set" in projected:
-        return "pixel_point_set", projected.get("pixel_point_set")
-    if str(evidence_type) == "grid_point_map" and "pixel_point_map" in projected:
-        return "pixel_point_map", projected.get("pixel_point_map")
-    if str(evidence_type) == "label_set":
-        if "bbox_set" in projected:
-            return "bbox_set", projected.get("bbox_set")
-        if "pixel_point_map" in projected:
-            return "pixel_point_map", projected.get("pixel_point_map")
-    if str(evidence_type) in {"label_path", "label_sequence"} and "pixel_point_path" in projected:
-        return "pixel_point_path", projected.get("pixel_point_path")
-    if str(evidence_type) == "edge_set" and "pixel_edge_set" in projected:
-        return "pixel_edge_set", projected.get("pixel_edge_set")
-    if str(evidence_type) in {"integer", "integer_list"}:
-        if "bbox_set" in projected:
-            return "bbox_set", projected.get("bbox_set")
-        if "pixel_point_map" in projected:
-            return "pixel_point_map", projected.get("pixel_point_map")
+            return evidence_kind, projected.get(pixel_key)
     return str(evidence_type), evidence_value
 
 
 def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evidence_value: Any) -> PILImage.Image:
     """Render one evidence-overlay image for manual review workbooks.
 
-    Review overlays operate in pixel space. If the primary evidence contract uses
-    graph-unit coordinates, callers must first pass the payload through
-    `resolve_overlay_evidence(...)` so the marker positions align with the image.
+    Review overlays operate in pixel space. Callers should pass public image-level
+    evidence payloads or projected public pixel evidence.
     """
 
     image = source.convert("RGB")
@@ -190,7 +181,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
     label_offset_y = float(radius) + 3.0
     evidence_kind = str(evidence_type)
 
-    if evidence_kind in {"point_map", "pixel_point_map", "grid_point_map", "annotation_centers", "pixel_annotation_centers"}:
+    if evidence_kind in {"point_map", "pixel_point_map", "annotation_centers", "pixel_annotation_centers"}:
         point_map = _extract_point_map(evidence_value)
         for idx, (label, point) in enumerate(point_map.items()):
             x, y = point
@@ -204,9 +195,15 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
             draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if evidence_kind in {"point", "graph_point", "point_set", "pixel_point_set", "graph_point_set", "point_path", "pixel_point_path"}:
+    if evidence_kind in {
+        "point",
+        "point_set",
+        "pixel_point_set",
+        "point_sequence",
+        "pixel_point_sequence",
+    }:
         points = _extract_points(evidence_value)
-        if evidence_kind in {"point_path", "pixel_point_path"} and len(points) >= 2:
+        if evidence_kind in {"point_sequence", "pixel_point_sequence"} and len(points) >= 2:
             draw.line(points, fill=(220, 20, 60, 180), width=line_width)
         for idx, (x, y) in enumerate(points):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
@@ -218,7 +215,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
             )
         return image
 
-    if evidence_kind in {"edge_set", "pixel_edge_set"}:
+    if evidence_kind == "point_pair_set":
         edge_segments = _extract_edge_segments(evidence_value)
         for idx, (left, right) in enumerate(edge_segments):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
@@ -232,11 +229,11 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
                 )
         return image
 
-    if evidence_kind in {"bbox", "bbox_set"}:
+    if evidence_kind in {"bbox", "bbox_sequence", "bbox_set"}:
         bboxes = _extract_bboxes(evidence_value)
-        for idx, (x0, y0, x1, y1) in enumerate(bboxes):
+        for idx, bbox in enumerate(bboxes):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.rectangle([x0, y0, x1, y1], outline=(color[0], color[1], color[2], 255), width=line_width)
+            _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
         return image
 
     for idx, (x, y) in enumerate(_extract_points(evidence_value)):
@@ -247,7 +244,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
             outline=(0, 0, 0, 255),
             width=3,
         )
-    for idx, (x0, y0, x1, y1) in enumerate(_extract_bboxes(evidence_value)):
+    for idx, bbox in enumerate(_extract_bboxes(evidence_value)):
         color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-        draw.rectangle([x0, y0, x1, y1], outline=(color[0], color[1], color[2], 255), width=line_width)
+        _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
     return image

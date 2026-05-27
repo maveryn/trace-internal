@@ -6,7 +6,7 @@ from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 import hashlib
-from typing import Iterable, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import cairosvg
 from PIL import Image, ImageOps
@@ -66,7 +66,11 @@ def icon_svg_path(icon_id: str) -> Path:
 def load_icon_manifest(manifest_name: str) -> Tuple[str, ...]:
     """Load one curated icon manifest as a deterministic tuple of ids."""
 
-    key = _MANIFEST_MAP.get(str(manifest_name), str(manifest_name))
+    manifest_key = str(manifest_name).strip()
+    key = _MANIFEST_MAP.get(manifest_key)
+    if key is None:
+        supported = ", ".join(available_manifests())
+        raise ValueError(f"unsupported icon manifest {manifest_name!r}; supported manifests: {supported}")
     path = _ASSET_ROOT / str(key)
     if not path.exists():
         raise FileNotFoundError(path)

@@ -1,0 +1,78 @@
+generation:
+  shared:
+    scene_variant_weights:
+      putting_course: 1.0
+    query_variant_weights:
+      first_obstacle_label: 1.0
+      shot_path_label: 1.0
+    style_variant_weights:
+      classic: 1.0
+      desert: 1.0
+      neon: 1.0
+      garden: 1.0
+      blueprint: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_obstacle_count_sampling: true
+    balanced_path_option_count_sampling: true
+    balanced_target_obstacle_label_sampling: true
+    balanced_target_path_sampling: true
+    obstacle_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    path_option_count_support:
+      - 4
+      - 5
+      - 6
+    target_obstacle_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      - G
+      - H
+    target_path_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 740
+    panel_margin_px: 34
+    course_width_px: 820
+    course_height_px: 640
+    course_border_width_px: 7
+    ball_radius_px: 18
+    hole_radius_px: 20
+    obstacle_radius_px: 34
+    path_width_px: 6
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      motion_reasoning: 0.36
+      path_reasoning: 0.22
+      output_burden: 0.12
+prompt:
+  shared:
+    bundle_id: games_minigolf_v0
+    scene_key: visible_minigolf_course
+    task_key: minigolf_course_query
+    object_description_putting_course: a mini-golf putting course with a ball, a hole, visible obstacles, and any shown shot cues
+    minigolf_cue_rule_text: The dashed cue shows the starting direction of the putt; extend it as a straight line.
+    minigolf_bank_rule_text: A shot travels straight and bounces off course walls like a mirror before continuing.
+    evidence_hint_first_obstacle_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the first labeled obstacle hit by the extended cue
+    answer_hint_first_obstacle_label: set "answer" to the selected obstacle label as a string
+    evidence_hint_shot_path_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected numbered shot marker
+    answer_hint_shot_path_label: set "answer" to the selected numbered shot label as a string

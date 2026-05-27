@@ -1,0 +1,370 @@
+{
+  "bundle_id": "charts_composition_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "small_multiples_aggregate_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "share_arithmetic_value_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "sunburst_hierarchy_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "treemap_composition_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:composition_small_multiples": [
+      "object_description"
+    ],
+    "scene:composition_share_arithmetic": [
+      "object_description"
+    ],
+    "scene:composition_sunburst_hierarchy": [
+      "object_description"
+    ],
+    "scene:composition_treemap": [
+      "object_description"
+    ],
+    "query:top_k_by_segment_then_sum_other_segment_count": [
+      "top_k",
+      "rank_segment",
+      "target_segment"
+    ],
+    "query:conditioned_panel_sum_from_percent": [
+      "condition_segment",
+      "threshold",
+      "target_segment"
+    ],
+    "query:average_top_k_minus_average_bottom_k": [
+      "top_k",
+      "bottom_k",
+      "rank_segment",
+      "target_segment"
+    ],
+    "query:composition_shift_l1_distance": [
+      "start_panel",
+      "end_panel",
+      "segment_list"
+    ],
+    "query:contiguous_chart_order_sum": [
+      "chart_order_phrase",
+      "start_category",
+      "end_category"
+    ],
+    "query:positional_segment_share_sum": [
+      "positional_instruction"
+    ],
+    "query:chart_order_share_to_count": [
+      "chart_order_phrase",
+      "start_category",
+      "end_category"
+    ],
+    "query:chart_order_remaining_count": [
+      "chart_order_phrase",
+      "start_category",
+      "end_category"
+    ],
+    "query:sector_share_to_angle": [
+      "chart_order_phrase",
+      "start_category",
+      "end_category"
+    ],
+    "query:chart_order_adjacent_transfer_gap": [
+      "source_order_direction",
+      "source_category",
+      "transfer_delta"
+    ],
+    "query:parent_total_from_leaves_value": [
+      "parent_label"
+    ],
+    "query:highest_parent_total_label": [],
+    "query:lowest_parent_total_label": [],
+    "query:leaf_threshold_count_under_parent": [
+      "parent_label",
+      "comparison_phrase",
+      "threshold_value"
+    ],
+    "query:leaf_range_count_under_parent": [
+      "parent_label",
+      "lower_value",
+      "upper_value"
+    ],
+    "query:treemap_group_total_value": [
+      "parent_label"
+    ],
+    "query:treemap_repeated_leaf_sum_value": [
+      "leaf_label"
+    ],
+    "query:treemap_repeated_leaf_average_value": [
+      "leaf_label"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "composition_small_multiples": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ],
+    "composition_share_arithmetic": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ],
+    "composition_sunburst_hierarchy": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ],
+    "composition_treemap": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "top_k_by_segment_then_sum_other_segment_count": [
+      "Identify the {top_k} panels with the highest Segment {rank_segment} percentage. Using only those panels, what is the total count for Segment {target_segment}?",
+      "Find the top {top_k} panels by Segment {rank_segment}. What is the sum of the Segment {target_segment} counts in those panels?",
+      "Rank the panels by Segment {rank_segment} percentage and keep the highest {top_k}. What total count of Segment {target_segment} do they contain?",
+      "Among the {top_k} panels where Segment {rank_segment} is largest, sum the counts for Segment {target_segment}. What is the result?",
+      "Using the {top_k} panels with the highest Segment {rank_segment} share, compute the combined Segment {target_segment} count."
+    ],
+    "conditioned_panel_sum_from_percent": [
+      "Across panels where Segment {condition_segment} is greater than {threshold}%, what is the total count for Segment {target_segment}?",
+      "Select every panel with Segment {condition_segment} above {threshold}%. Sum the Segment {target_segment} counts in those panels.",
+      "Filter to panels whose Segment {condition_segment} percentage exceeds {threshold}. What combined count belongs to Segment {target_segment}?",
+      "For the panels with Segment {condition_segment} more than {threshold}%, add the Segment {target_segment} counts. What is the total?",
+      "Using only panels where Segment {condition_segment} is over {threshold}%, compute the total count for Segment {target_segment}."
+    ],
+    "average_top_k_minus_average_bottom_k": [
+      "Find the {top_k} panels with the highest Segment {rank_segment} percentage and the {bottom_k} panels with the lowest Segment {rank_segment} percentage. What is the difference between their average Segment {target_segment} percentages?",
+      "Rank panels by Segment {rank_segment}. Subtract the average Segment {target_segment} percentage of the lowest {bottom_k} panels from that of the highest {top_k} panels.",
+      "Compare the highest {top_k} and lowest {bottom_k} panels by Segment {rank_segment}. What is the difference in average Segment {target_segment} percentage?",
+      "Using Segment {rank_segment} to choose the top {top_k} and bottom {bottom_k} panels, compute top average Segment {target_segment} minus bottom average Segment {target_segment}.",
+      "What is the gap between the average Segment {target_segment} percentage for the top {top_k} panels and the bottom {bottom_k} panels after ranking by Segment {rank_segment}?"
+    ],
+    "composition_shift_l1_distance": [
+      "Between panels {start_panel} and {end_panel}, what is the sum of absolute percentage-point changes across all segments?",
+      "Compare panel {start_panel} with panel {end_panel}. Add the absolute percentage-point differences for every segment. What is the total?",
+      "For panels {start_panel} and {end_panel}, compute the total absolute change across segments {segment_list}.",
+      "Sum the absolute segment-percentage differences from panel {start_panel} to panel {end_panel}. What value do you get?",
+      "Across all segments, what is the total absolute percentage-point shift between {start_panel} and {end_panel}?"
+    ],
+    "ranked_position_set_sum": [
+      "Rank the categories by share from largest to smallest. What is the combined share of the categories at ranks {rank_position_list_text}?",
+      "After sorting categories from highest share to lowest share, sum the categories ranked {rank_position_list_text}. What is the total?",
+      "Use the table to order categories by share. What total share belongs to the categories in positions {rank_position_list_text}?",
+      "Sum the shares for the categories ranked {rank_position_list_text} by share. What is the combined percentage?",
+      "Find the categories in rank positions {rank_position_list_text}. What is their total share?"
+    ],
+    "conditional_share_sum": [
+      "What is the total share of categories whose share is greater than category {lower_reference_category}'s share and less than category {upper_reference_category}'s share?",
+      "Use category {lower_reference_category} and category {upper_reference_category} as share bounds. Sum every category strictly between those two shares.",
+      "Add the shares for all categories with values greater than {lower_reference_category}'s share and lower than {upper_reference_category}'s share. What is the total?",
+      "Filter to categories whose percentage is between category {lower_reference_category} and category {upper_reference_category}, excluding the reference categories. What is their combined share?",
+      "Using the table values, what total percentage comes from categories strictly above {lower_reference_category}'s share and strictly below {upper_reference_category}'s share?"
+    ],
+    "contiguous_chart_order_sum": [
+      "Moving {chart_order_phrase} around the chart, what is the combined share from category {start_category} through category {end_category}, inclusive?",
+      "Use the {chart_order_phrase} chart order. Add every category from {start_category} through {end_category}, including both endpoints.",
+      "Starting at category {start_category} and moving {chart_order_phrase} through category {end_category}, what total share is covered?",
+      "Read the contiguous chart segment from {start_category} to {end_category} while moving {chart_order_phrase}. What is the sum of those shares?",
+      "What is the combined percentage for the {chart_order_phrase} run beginning with {start_category} and ending with {end_category}?"
+    ],
+    "rank_conditioned_transfer_gap": [
+      "Rank categories by share, breaking ties alphabetically. If {transfer_delta} percentage points moved from the {source_rank_text} category to the {target_rank_text} category, what would be the absolute difference between those two categories afterward?",
+      "Sort the categories by share, breaking ties alphabetically. Move {transfer_delta} share points from the {source_rank_text} category to the {target_rank_text} category. What is their resulting absolute gap?",
+      "Use the ranked shares, with alphabetical tie-breaking, to identify the {source_rank_text} and {target_rank_text} categories. After transferring {transfer_delta} points from the first to the second, what absolute difference remains?",
+      "After ordering categories by share and breaking ties alphabetically, suppose the {source_rank_text} category loses {transfer_delta} points and the {target_rank_text} category gains them. What is their new absolute difference?",
+      "Find the {source_rank_text} and {target_rank_text} categories using alphabetical tie-breaking, then move {transfer_delta} share points from the first category to the second. What is the final absolute share gap?"
+    ],
+    "threshold_conditioned_transfer_gap": [
+      "Use the largest category below {source_threshold}% as the source and the smallest category above {target_threshold}% as the target. If {transfer_delta} percentage points move from source to target, what is their absolute difference afterward?",
+      "Identify the category with the largest share less than {source_threshold}% and the category with the smallest share greater than {target_threshold}%. After moving {transfer_delta} points from the first to the second, what absolute gap remains?",
+      "Find the source category: largest below {source_threshold}%. Find the target category: smallest above {target_threshold}%. Transfer {transfer_delta} share points from source to target. What is their final absolute difference?",
+      "Using the table, select the largest share under {source_threshold}% and the smallest share over {target_threshold}%. What is the absolute difference after a {transfer_delta}-point transfer from the first to the second?",
+      "After choosing source as the largest category below {source_threshold}% and target as the smallest category above {target_threshold}%, move {transfer_delta} points from source to target. What is the resulting absolute share gap?"
+    ],
+    "chart_order_adjacent_transfer_gap": [
+      "Use category {source_category} as the source and the category immediately {source_order_direction} from it as the target. If {transfer_delta} points move from source to target, what is their absolute difference afterward?",
+      "Find category {source_category}, then find the adjacent category immediately {source_order_direction} from it. Move {transfer_delta} percentage points from {source_category} to that adjacent category. What absolute gap remains?",
+      "In chart order, transfer {transfer_delta} points from category {source_category} to its immediate {source_order_direction} neighbor. What is their final absolute difference?",
+      "Around the chart, choose source category {source_category} and target its immediate {source_order_direction} neighbor. After moving {transfer_delta} points from source to target, what share gap remains?",
+      "Locate category {source_category} and the category directly {source_order_direction} from it. If {transfer_delta} points move from {source_category} to that neighbor, what is their absolute difference afterward?"
+    ],
+    "selected_share_to_count": [
+      "Using the displayed total count, rank categories by share from largest to smallest. What count is represented by the combined share of the categories at ranks {rank_position_list_text}?",
+      "Sort the category shares from highest to lowest. Convert the combined share for ranks {rank_position_list_text} into a count using the displayed total. What is the count?",
+      "Find the categories ranked {rank_position_list_text} by share. Using the displayed total count, how many items do those categories represent together?",
+      "Use the total count shown in the chart. After ranking categories by share, what count corresponds to the categories in positions {rank_position_list_text}?",
+      "What total count is covered by the categories ranked {rank_position_list_text}, using their combined percentage share and the displayed total count?"
+    ],
+    "chart_order_share_to_count": [
+      "Moving {chart_order_phrase} around the chart, what count is represented by the categories from {start_category} through {end_category}, inclusive?",
+      "Use the {chart_order_phrase} chart order. Convert the combined share from {start_category} through {end_category}, including both endpoints, into a count.",
+      "Starting at {start_category} and moving {chart_order_phrase} through {end_category}, how many items do those categories represent together?",
+      "Find the contiguous chart segment from {start_category} to {end_category} while moving {chart_order_phrase}. Using the displayed total count, what count does it represent?",
+      "What count corresponds to the {chart_order_phrase} run beginning with {start_category} and ending with {end_category}?"
+    ],
+    "excluded_share_to_remaining_count": [
+      "Using the displayed total count, exclude categories whose shares are greater than category {lower_reference_category}'s share and less than category {upper_reference_category}'s share. What count remains?",
+      "Use category {lower_reference_category} and category {upper_reference_category} as share bounds. Remove every category strictly between those shares, then convert the remaining share to a count using the displayed total.",
+      "Find all categories with values greater than {lower_reference_category}'s share and lower than {upper_reference_category}'s share. Excluding those categories, what count remains from the displayed total?",
+      "Filter out the categories whose percentage lies strictly between category {lower_reference_category}'s share and category {upper_reference_category}'s share. Using the total count shown, what is the remaining count?",
+      "Using the table values and displayed total count, remove categories strictly above {lower_reference_category}'s share and strictly below {upper_reference_category}'s share. What count is left?"
+    ],
+    "chart_order_remaining_count": [
+      "Moving {chart_order_phrase} around the chart, exclude the categories from {start_category} through {end_category}, inclusive. What count remains?",
+      "Use the {chart_order_phrase} chart order. Remove the segment from {start_category} through {end_category}, including both endpoints, then convert the remaining share to a count.",
+      "Starting at {start_category} and moving {chart_order_phrase} through {end_category}, leave out those categories. How many items remain from the displayed total?",
+      "Find the contiguous chart segment from {start_category} to {end_category} while moving {chart_order_phrase}. After excluding it, what remaining count is represented?",
+      "What count is left after removing the {chart_order_phrase} run beginning with {start_category} and ending with {end_category}?"
+    ],
+    "sector_share_to_angle": [
+      "Moving {chart_order_phrase} around the chart, what central angle in degrees is covered from category {start_category} through category {end_category}, inclusive?",
+      "Use the {chart_order_phrase} chart order. Convert the combined share from {start_category} through {end_category}, including both endpoints, into a central angle in degrees.",
+      "Starting at category {start_category} and moving {chart_order_phrase} through category {end_category}, what central angle does that sector span cover?",
+      "Read the contiguous chart segment from {start_category} to {end_category} while moving {chart_order_phrase}. What is its central angle in degrees?",
+      "What central angle corresponds to the {chart_order_phrase} run beginning with {start_category} and ending with {end_category}?"
+    ],
+    "positional_segment_share_sum": [
+      "{positional_instruction} What is the combined share of the target segments?",
+      "Use the circular segment positions. {positional_instruction} Add the target segment shares.",
+      "Follow the positional instruction around the chart: {positional_instruction} What total share do those target segments have?",
+      "From the pie or donut layout, identify the requested segments. {positional_instruction} What is their combined percentage?",
+      "Use the chart order, then read exact values from the table. {positional_instruction} What is the total share?"
+    ],
+    "ranked_group_share_gap": [
+      "Rank categories by share from largest to smallest. What is the share gap between the top {group_size} categories and the bottom {group_size} categories?",
+      "After ranking all categories by share, subtract the combined share of the lowest {group_size} categories from the combined share of the highest {group_size} categories. What is the result?",
+      "Use the share table to find the highest {group_size} categories and lowest {group_size} categories. By how many percentage points does the high group exceed the low group?",
+      "Compare the combined share of the largest {group_size} ranked categories with the smallest {group_size} ranked categories. What is the difference?",
+      "Sort categories by share. What is top-{group_size} total share minus bottom-{group_size} total share?"
+    ],
+    "parent_total_from_leaves_value": [
+      "For parent category {parent_label}, sum all outer leaf values under it. What is the total?",
+      "Under parent category {parent_label}, add every printed outer leaf value. What total do they make?",
+      "Use the outer leaves belonging to parent category {parent_label}. What is their combined value?",
+      "What is the sum of the printed outer leaf values under parent category {parent_label}?",
+      "For {parent_label}, compute the total from all of its outer leaf values."
+    ],
+    "highest_parent_total_label": [
+      "Using the printed outer leaf values, which parent category has the highest total?",
+      "Sum the outer leaf values for each parent category. Which parent category has the largest total?",
+      "Compare parent-category totals from their outer leaf values. Which parent category is highest?",
+      "Which parent category has the greatest sum of printed outer leaf values?",
+      "After adding the outer leaf values within each parent category, which parent category is largest?"
+    ],
+    "lowest_parent_total_label": [
+      "Using the printed outer leaf values, which parent category has the lowest total?",
+      "Sum the outer leaf values for each parent category. Which parent category has the smallest total?",
+      "Compare parent-category totals from their outer leaf values. Which parent category is lowest?",
+      "Which parent category has the least sum of printed outer leaf values?",
+      "After adding the outer leaf values within each parent category, which parent category is smallest?"
+    ],
+    "leaf_threshold_count_under_parent": [
+      "Under parent category {parent_label}, how many outer leaves have values {comparison_phrase} {threshold_value}?",
+      "Count the outer leaves under {parent_label} whose printed values are {comparison_phrase} {threshold_value}.",
+      "For parent category {parent_label}, how many printed outer leaf values are {comparison_phrase} {threshold_value}?",
+      "Within {parent_label}, count the outer leaf values that are {comparison_phrase} {threshold_value}.",
+      "How many outer leaves belonging to {parent_label} have printed values {comparison_phrase} {threshold_value}?"
+    ],
+    "leaf_range_count_under_parent": [
+      "Under parent category {parent_label}, how many outer leaves have values from {lower_value} through {upper_value}, inclusive?",
+      "Count the outer leaves under {parent_label} whose printed values are between {lower_value} and {upper_value}, inclusive.",
+      "For parent category {parent_label}, how many printed outer leaf values fall in the inclusive range {lower_value} to {upper_value}?",
+      "Within {parent_label}, count the outer leaf values from {lower_value} through {upper_value}.",
+      "How many outer leaves belonging to {parent_label} have printed values in [{lower_value}, {upper_value}]?"
+    ],
+    "treemap_group_total_value": [
+      "For parent category {parent_label}, sum all child rectangle values. What is the total?",
+      "Inside parent category {parent_label}, add every printed child value. What total do they make?",
+      "Use the child rectangles belonging to parent category {parent_label}. What is their combined value?",
+      "What is the sum of the printed child values inside parent category {parent_label}?",
+      "For {parent_label}, compute the total from all of its child rectangle values."
+    ],
+    "treemap_repeated_leaf_sum_value": [
+      "Across all parent categories, what is the total value for child label {leaf_label}?",
+      "Find every child rectangle labeled {leaf_label} and add their printed values. What is the total?",
+      "Using all parent rectangles, sum the values of child label {leaf_label}.",
+      "What combined value comes from every occurrence of child label {leaf_label}?",
+      "For child label {leaf_label}, add its value across the treemap. What is the result?"
+    ],
+    "treemap_repeated_leaf_average_value": [
+      "Across all parent categories, what is the average value for child label {leaf_label}?",
+      "Find every child rectangle labeled {leaf_label}. What is the average of their printed values?",
+      "Using all parent rectangles, compute the mean value of child label {leaf_label}.",
+      "What average value comes from every occurrence of child label {leaf_label}?",
+      "For child label {leaf_label}, average its values across the treemap. What is the result?"
+    ],
+    "known_part_to_group_count": [
+      "The chart shows a known count for category {known_count_category}. Infer the total count, then rank categories by share. What count is represented by the categories at ranks {rank_position_list_text}?",
+      "Using the displayed known count for category {known_count_category}, recover the total count. Then convert the combined share of ranks {rank_position_list_text} into a count.",
+      "Category {known_count_category} has a displayed count. Use it with that category's share to infer the whole, then compute the count for ranked positions {rank_position_list_text}.",
+      "First infer the total from the known count shown for {known_count_category}. After sorting categories by share, what count is represented by the categories at ranks {rank_position_list_text}?",
+      "Use category {known_count_category}'s shown count and share to infer the total. What count corresponds to the categories ranked {rank_position_list_text}?"
+    ],
+    "cumulative_share_threshold_count": [
+      "Rank categories by share from largest to smallest. How many categories are needed for the cumulative share to reach at least {threshold_value}%?",
+      "Starting from the largest share and moving downward, count the fewest categories whose combined share is at least {threshold_value}%. What is the count?",
+      "Sort the categories from highest share to lowest. What minimum number of top categories reaches or exceeds {threshold_value}% combined share?",
+      "Using descending share order, keep adding categories until the total is at least {threshold_value}%. How many categories are included?",
+      "What is the smallest prefix length of the largest-ranked categories whose cumulative share is at least {threshold_value}%?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

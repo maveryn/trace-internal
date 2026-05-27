@@ -1,0 +1,81 @@
+{
+  "bundle_id": "physics_electrostatics_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "electrostatics_field_map_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:electrostatics_field_map": [
+      "object_description"
+    ],
+    "query:field_direction_choice": [
+      "direction_mode_phrase"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "electrostatics_field_map": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The electrostatics diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "field_direction_choice": [
+      "Which candidate arrow shows the direction of {direction_mode_phrase}?",
+      "At point P, choose the option arrow that matches {direction_mode_phrase}.",
+      "Using the signs and positions of the charges, which labeled arrow gives the direction of {direction_mode_phrase}?",
+      "Which option A-H points in the direction of {direction_mode_phrase}?",
+      "Infer the net direction from the charges. Which candidate arrow represents {direction_mode_phrase}?"
+    ],
+    "zero_field_point_label": [
+      "Which labeled point A-F has zero net electric field?",
+      "Using the shown charge strengths and positions, which candidate point has zero electric field?",
+      "Choose the labeled point where the electric fields from the fixed charges cancel.",
+      "Among points A-F, which one is the zero-field point?",
+      "Which candidate point is located where the net electric field is zero?"
+    ],
+    "potential_value": [
+      "Using k=1 and the shown distances, what is the signed electric potential at P?",
+      "Compute the electric potential at P from the visible charges and distances, with k=1.",
+      "What signed integer value gives V at P when V=sum(q/r)?",
+      "Using the displayed q and r labels, determine the signed potential at P.",
+      "Read the field map and compute the electric potential at P with k=1."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

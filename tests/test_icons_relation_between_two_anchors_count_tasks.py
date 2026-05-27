@@ -29,24 +29,24 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
-def _center_in_strip(entity: dict, anchor_a: dict, anchor_b: dict, task_variant: str, margin_px: int) -> bool:
+def _center_in_strip(entity: dict, anchor_a: dict, anchor_b: dict, strip_axis: str, margin_px: int) -> bool:
     cx, cy = [float(value) for value in entity["center_xy"]]
     ax, ay = [float(value) for value in anchor_a["center_xy"]]
     bx, by = [float(value) for value in anchor_b["center_xy"]]
-    if str(task_variant) == "inside_vertical_strip":
+    if str(strip_axis) == "vertical":
         left, right = sorted((float(ax), float(bx)))
         return float(left + margin_px) <= float(cx) <= float(right - margin_px)
-    if str(task_variant) == "inside_horizontal_strip":
+    if str(strip_axis) == "horizontal":
         top, bottom = sorted((float(ay), float(by)))
         return float(top + margin_px) <= float(cy) <= float(bottom - margin_px)
-    raise ValueError(f"unsupported task_variant: {task_variant}")
+    raise ValueError(f"unsupported strip_axis: {strip_axis}")
 
 
 def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> None:
     task = IconsRelationBetweenTwoAnchorsCountTask()
     out = task.generate(
         14910,
-        params={"task_variant": "inside_vertical_strip", "target_count": 2, "distractor_count": 4},
+        params={"query_variant": "inside_vertical_strip", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -64,7 +64,12 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_two_anchor_strip_relation"
     assert execution["question_format"] == "count_scene_icon_centers_in_strip_between_two_anchors"
-    assert execution["task_variant"] == "inside_vertical_strip"
+    assert out.query_variant == "default"
+    assert out.query_id == "inside_vertical_strip"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "inside_vertical_strip"
+    assert execution["internal_query_variant"] == "inside_vertical_strip"
+    assert execution["strip_axis"] == "vertical"
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
     assert int(execution["distractor_count"]) == 4
@@ -94,7 +99,7 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
         assert str(entity["icon_id"]) != anchor_icon_id
         is_match = bool(entity["is_match"])
         assert is_match == (int(index) in matching_indices)
-        in_strip = _center_in_strip(entity, anchor_a, anchor_b, "inside_vertical_strip", 14)
+        in_strip = _center_in_strip(entity, anchor_a, anchor_b, "vertical", 14)
         assert bool(entity["center_in_strip"]) == bool(in_strip)
         assert bool(in_strip) == bool(is_match)
         for highlight in anchor_highlights:
@@ -107,7 +112,7 @@ def test_icons_relation_between_two_anchors_count_supports_zero_matches() -> Non
     task = IconsRelationBetweenTwoAnchorsCountTask()
     out = task.generate(
         14911,
-        params={"task_variant": "inside_horizontal_strip", "target_count": 0, "distractor_count": 4},
+        params={"query_variant": "inside_horizontal_strip", "target_count": 0, "distractor_count": 4},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -130,11 +135,15 @@ def test_icons_relation_between_two_anchors_count_balanced_sampling_defaults() -
     task = IconsRelationBetweenTwoAnchorsCountTask()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()
-    variant_counts: Counter[str] = Counter()
+    strip_axis_counts: Counter[str] = Counter()
+    axis_target_counts: dict[str, Counter[int]] = {
+        "vertical": Counter(),
+        "horizontal": Counter(),
+    }
     for index in range(60):
         out = task.generate(
             hash64(14913, "icons_relation_between_two_anchors_count", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
@@ -142,11 +151,17 @@ def test_icons_relation_between_two_anchors_count_balanced_sampling_defaults() -
         distractor_count = int(execution["distractor_count"])
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        variant_counts[str(execution["task_variant"])] += 1
+        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) in {"inside_vertical_strip", "inside_horizontal_strip"}
+        strip_axis = str(execution["strip_axis"])
+        strip_axis_counts[strip_axis] += 1
+        axis_target_counts[strip_axis][target_count] += 1
         assert 0 <= target_count <= 5
         assert 1 <= distractor_count <= 10
         assert int(execution["object_count"]) == int(target_count) + int(distractor_count)
     assert set(target_counts.keys()) == set(range(0, 6))
-    assert set(variant_counts.keys()) == {"inside_vertical_strip", "inside_horizontal_strip"}
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert max(variant_counts.values()) - min(variant_counts.values()) <= 1
+    assert set(strip_axis_counts.keys()) == {"vertical", "horizontal"}
+    assert set(axis_target_counts["vertical"].keys()) == set(range(0, 6))
+    assert set(axis_target_counts["horizontal"].keys()) == set(range(0, 6))
+    assert sum(target_counts.values()) == 60
+    assert sum(strip_axis_counts.values()) == 60

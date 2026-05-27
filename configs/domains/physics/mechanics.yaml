@@ -13,59 +13,101 @@ generation:
       maroon: 1.0
     balanced_accent_color_name_sampling: true
   task_overrides:
-    task_physics_mechanics_force_diagram:
+    task_physics__pulley__pulley_mechanical_advantage:
       scene_variant_weights:
-        free_body_box: 1.0
-        textured_block: 1.0
+        open_block: 1.0
+        compact_block: 1.0
+        tall_block: 1.0
       query_variant_weights:
-        net_horizontal_force: 1.0
-        net_vertical_force: 1.0
-        balancing_force_horizontal: 1.0
-        balancing_force_vertical: 1.0
+        force_relation: 1.0
+      solve_for_weights:
+        effort_force: 1.0
+        load_force: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_variant_sampling: true
-      balanced_target_force_sampling: true
-      target_force_support: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-      balancing_force_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-      force_magnitude_min: 1
-      force_magnitude_max: 12
-    task_physics_mechanics_lever_balance:
+      balanced_solve_for_sampling: true
+      balanced_target_answer_sampling: true
+      balanced_connected_support_count_sampling: false
+      balanced_disconnected_segment_count_sampling: false
+      connected_support_count_support: [2, 3, 4, 5, 6]
+      disconnected_segment_count_support: [0, 1, 2, 3, 4]
+      effort_force_support: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+      load_force_support: [8, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36, 39, 40, 42, 44, 45, 48, 50, 51, 52, 54, 55, 56, 60, 64, 65, 66, 68, 70, 72, 75, 78, 80, 84, 85, 90, 96, 102, 108]
+      effort_force_min: 4
+      effort_force_max: 18
+    physics_mechanics_lever_balance_family:
       scene_variant_weights:
         center_fulcrum: 1.0
         offset_fulcrum: 1.0
         textured_beam: 1.0
       query_variant_weights:
-        left_torque: 1.0
-        right_torque: 1.0
+        side_torque: 1.0
         missing_weight_to_balance: 1.0
+      torque_side_weights:
+        left: 1.0
+        right: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_variant_sampling: true
+      balanced_torque_side_sampling: true
       balanced_target_answer_sampling: true
-      distance_support: [1, 2, 3, 4]
+      distance_support: [1, 2, 3, 4, 5, 6, 7, 8]
       torque_answer_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
-      missing_weight_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      missing_weight_support: [1, 2, 3, 4, 5, 6]
       weight_value_min: 1
       weight_value_max: 9
-      max_side_weights: 2
-    task_physics_mechanics_spring_extension:
+      max_side_weights: 4
+      missing_weight_max_side_weights: 2
+      missing_weight_scene_variant_weights:
+        textured_beam: 1.0
+    physics_mechanics_spring_extension_family:
       scene_variant_weights:
         paired_springs: 1.0
         staggered_springs: 1.0
         textured_spring: 1.0
       query_variant_weights:
-        missing_weight_for_extension: 1.0
-        missing_extension_for_weight: 1.0
+        missing_value: 1.0
         extension_difference: 1.0
+      solve_for_weights:
+        weight: 1.0
+        extension: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_variant_sampling: true
+      balanced_solve_for_sampling: true
       balanced_target_answer_sampling: true
       scale_factor_support: [1, 2, 3]
+      extension_difference_scale_factor_support: [2]
       missing_weight_support: [1, 2, 3, 4, 5, 6, 7, 8]
       missing_extension_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-      extension_difference_support: [1, 2, 3, 4, 5, 6, 7, 8]
+      extension_difference_support: [2, 4, 8, 10, 12]
       weight_value_min: 1
-      weight_value_max: 9
-      extension_value_max: 12
+      weight_value_max: 12
+      extension_value_max: 14
+    physics_mechanics_sticky_collision_family:
+      scene_variant_weights:
+        wide_table: 1.0
+        compact_table: 1.0
+        gridded_table: 1.0
+      query_variant_weights:
+        direction_choice: 1.0
+        velocity_component: 1.0
+      component_axis_weights:
+        x: 1.0
+        y: 1.0
+      correct_option_letter_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_component_axis_sampling: true
+      balanced_correct_option_letter_sampling: true
+      balanced_target_answer_sampling: true
+      component_answer_support: [-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]
+      mass_support: [1, 2, 3, 4, 5, 6]
+      speed_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 rendering:
   shared:
@@ -80,6 +122,8 @@ rendering:
     object_corner_radius_px: 18
     arrow_length_px: 104
     arrow_width_px: 8
+    arrow_width_px_min: 7
+    arrow_width_px_max: 9
     arrow_head_length_px: 22
     arrow_head_width_px: 18
     arrow_gap_px: 18
@@ -87,31 +131,41 @@ rendering:
     label_gap_px: 28
     label_font_size_px: 24
     label_stroke_width_px: 3
+    label_stroke_width_px_min: 2
+    label_stroke_width_px_max: 4
     label_box_padding_px: 6
     texture_line_width_px: 3
+    texture_line_width_px_min: 2
+    texture_line_width_px_max: 4
     texture_spacing_px: 18
   task_overrides:
-    task_physics_mechanics_lever_balance:
-      canvas_width: 920
-      canvas_height: 560
-      beam_width_px: 580
+    physics_mechanics_lever_balance_family:
+      canvas_width: 1280
+      canvas_height: 640
+      beam_width_px: 1140
       beam_height_px: 22
+      beam_height_px_min: 20
+      beam_height_px_max: 24
       beam_corner_radius_px: 10
-      beam_center_y_px: 306
+      beam_center_y_px: 350
       fulcrum_width_px: 110
       fulcrum_height_px: 84
       fulcrum_offset_px: 76
-      slot_spacing_px: 62
-      distance_support: [1, 2, 3, 4]
+      slot_spacing_px: 66
+      distance_support: [1, 2, 3, 4, 5, 6, 7, 8]
       weight_box_width_px: 58
       weight_box_height_px: 52
       weight_box_gap_px: 8
       weight_font_size_px: 26
       distance_font_size_px: 22
       label_stroke_width_px: 3
+      label_stroke_width_px_min: 2
+      label_stroke_width_px_max: 4
       texture_line_width_px: 2
+      texture_line_width_px_min: 1
+      texture_line_width_px_max: 3
       texture_spacing_px: 18
-    task_physics_mechanics_spring_extension:
+    physics_mechanics_spring_extension_family:
       canvas_width: 980
       canvas_height: 660
       card_width_px: 304
@@ -122,85 +176,190 @@ rendering:
       stagger_offset_y_px: 28
       card_corner_radius_px: 24
       card_outline_width_px: 4
+      card_outline_width_px_min: 3
+      card_outline_width_px_max: 5
       support_width_px: 164
       support_height_px: 16
       support_corner_radius_px: 8
       anchor_y_gap_px: 22
       hanger_line_width_px: 4
+      hanger_line_width_px_min: 3
+      hanger_line_width_px_max: 5
       ruler_top_gap_px: 18
       ruler_right_gap_px: 42
-      ruler_value_max: 12
+      ruler_value_max: 14
       ruler_unit_px: 25
       ruler_width_px: 4
+      ruler_width_px_min: 3
+      ruler_width_px_max: 5
       ruler_tick_long_px: 20
       ruler_tick_short_px: 12
       ruler_font_size_px: 19
       spring_neutral_units: 2
       spring_line_width_px: 5
+      spring_line_width_px_min: 4
+      spring_line_width_px_max: 6
       spring_half_width_px: 16
       spring_turn_count: 8
       weight_box_width_px: 78
       weight_box_height_px: 54
       weight_font_size_px: 28
-      marker_height_px: 10
+      marker_height_px: 22
       marker_width_px: 52
       missing_tag_width_px: 52
       missing_tag_height_px: 34
       missing_tag_top_gap_px: 22
       label_stroke_width_px: 3
+      label_stroke_width_px_min: 2
+      label_stroke_width_px_max: 4
       texture_line_width_px: 2
+      texture_line_width_px_min: 1
+      texture_line_width_px_max: 3
       texture_spacing_px: 18
+    task_physics__pulley__pulley_mechanical_advantage:
+      canvas_width: 1280
+      canvas_height: 760
+      top_block_x_px: 250
+      top_block_y_px: 94
+      top_block_width_px: 780
+      top_block_height_px: 72
+      lower_block_y_px: 430
+      compact_lower_block_y_px: 390
+      tall_lower_block_y_px: 470
+      lower_block_height_px: 72
+      support_segment_gap_px: 48
+      rope_width_px: 7
+      rope_width_px_min: 6
+      rope_width_px_max: 8
+      pulley_radius_px: 20
+      pulley_hub_radius_px: 6
+      load_width_px: 170
+      load_height_px: 74
+      load_top_gap_px: 34
+      connector_width_px: 5
+      connector_width_px_min: 4
+      connector_width_px_max: 6
+      effort_arrow_x_gap_px: 92
+      effort_arrow_length_px: 144
+      label_font_size_px: 28
+      small_label_font_size_px: 24
+      label_stroke_width_px: 3
+      label_stroke_width_px_min: 2
+      label_stroke_width_px_max: 4
+      texture_line_width_px: 2
+      texture_line_width_px_min: 1
+      texture_line_width_px_max: 3
+      texture_spacing_px: 18
+      cut_endpoint_radius_px: 6
+    physics_mechanics_sticky_collision_family:
+      canvas_width: 1180
+      canvas_height: 760
+      table_left_px: 52
+      table_top_px: 48
+      table_width_px: 1076
+      table_height_px: 506
+      table_corner_radius_px: 22
+      collision_center_x_px: 436
+      collision_center_y_px: 304
+      compact_collision_center_x_px: 420
+      compact_collision_center_y_px: 292
+      horizontal_start_distance_px: 300
+      vertical_start_distance_px: 200
+      compact_start_distance_delta_px: -20
+      puck_radius_px: 42
+      stuck_radius_px: 50
+      motion_arrow_width_px: 8
+      motion_arrow_width_px_min: 7
+      motion_arrow_width_px_max: 9
+      final_arrow_width_px: 8
+      final_arrow_width_px_min: 7
+      final_arrow_width_px_max: 9
+      arrow_head_length_px: 24
+      arrow_head_width_px: 22
+      label_font_size_px: 23
+      puck_font_size_px: 30
+      option_font_size_px: 24
+      label_stroke_width_px: 2
+      label_stroke_width_px_min: 1
+      label_stroke_width_px_max: 3
+      option_panel_top_px: 584
+      option_cell_left_px: 82
+      option_cell_width_px: 164
+      option_arrow_length_px: 74
+      option_arrow_width_px: 7
+      option_arrow_width_px_min: 6
+      option_arrow_width_px_max: 8
+      option_arrow_head_length_px: 20
+      option_arrow_head_width_px: 18
+      grid_spacing_px: 44
 
 complexity:
   shared: {}
   task_overrides:
-    task_physics_mechanics_force_diagram:
+    task_physics__pulley__pulley_mechanical_advantage:
       criteria_weights:
-        visual_scan: 0.28
-        force_reasoning: 0.48
+        visual_scan: 0.30
+        pulley_reasoning: 0.46
         ambiguity: 0.14
         output_burden: 0.10
-    task_physics_mechanics_lever_balance:
+    physics_mechanics_lever_balance_family:
       criteria_weights:
         visual_scan: 0.26
         torque_reasoning: 0.50
         ambiguity: 0.14
         output_burden: 0.10
-    task_physics_mechanics_spring_extension:
+    physics_mechanics_spring_extension_family:
+      criteria_weights:
+        visual_scan: 0.05
+        proportional_reasoning: 0.60
+        ambiguity: 0.10
+        output_burden: 0.25
+    physics_mechanics_sticky_collision_family:
       criteria_weights:
         visual_scan: 0.28
-        proportional_reasoning: 0.48
+        collision_reasoning: 0.48
         ambiguity: 0.14
         output_burden: 0.10
 
 prompt:
   shared:
-    bundle_id: physics_mechanics_v1
+    bundle_id: physics_mechanics_v0
   task_overrides:
-    task_physics_mechanics_force_diagram:
-      task_family_key: axis_aligned_force_diagram
-      task_key: force_diagram_query
-      object_description_free_body_box: one isolated block with labeled horizontal and vertical force arrows
-      object_description_textured_block: one textured block with labeled horizontal and vertical force arrows
-      evidence_hint_net_force: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis
-      evidence_hint_balancing_force: set "evidence" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow
-      answer_hint: set "answer" to the requested force magnitude as a non-negative integer number of newtons
-    task_physics_mechanics_lever_balance:
-      task_family_key: lever_balance_diagram
+    physics_mechanics_lever_balance_family:
+      scene_key: lever_balance_diagram
       task_key: lever_balance_query
       object_description_center_fulcrum: a horizontal lever beam with a central fulcrum, numbered distance marks, and weight blocks on both sides
       object_description_offset_fulcrum: a horizontal lever beam with an offset fulcrum, numbered distance marks, and weight blocks on both sides
       object_description_textured_beam: a textured lever beam with a fulcrum, numbered distance marks, and weight blocks on both sides
-      evidence_hint_torque: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum
-      evidence_hint_missing_weight: set "evidence" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block
+      evidence_hint_torque: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all weight blocks on the queried side of the fulcrum
+      evidence_hint_missing_weight: set "evidence" to an array containing the bounding box [x0, y0, x1, y1] of the marked `?` weight block
       answer_hint: set "answer" to the requested integer torque or missing weight value
-    task_physics_mechanics_spring_extension:
-      task_family_key: paired_spring_diagram
+    task_physics__pulley__pulley_mechanical_advantage:
+      scene_key: pulley_system_diagram
+      task_key: pulley_mechanical_advantage_query
+      object_description_open_block: one open block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
+      object_description_compact_block: one compact block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
+      object_description_tall_block: one tall block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
+      evidence_hint_effort_force: set "evidence" to [x0, y0, x1, y1] boxes for the full supporting strands, shown load-force label, and marked `?` effort label; exclude cut strands
+      evidence_hint_load_force: set "evidence" to [x0, y0, x1, y1] boxes for the full supporting strands, shown effort-force label, and marked `?` load label; exclude cut strands
+      answer_hint: set "answer" to the requested integer force value
+    physics_mechanics_spring_extension_family:
+      scene_key: paired_spring_diagram
       task_key: spring_extension_query
       object_description_paired_springs: two identical hanging springs shown in side-by-side cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_staggered_springs: two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_textured_spring: two identical hanging springs shown in textured cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
-      evidence_hint_missing_weight: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for the reference weight block, the reference extension marker, the marked red `?` weight block, and the queried extension marker
-      evidence_hint_missing_extension: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for the reference weight block, the reference extension marker, the shown query weight block, and the marked red `?` extension tag
-      evidence_hint_difference: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared
+      evidence_hint_missing_weight: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the reference weight block, the reference extension marker, the marked red `?` weight block, and the queried extension marker
+      evidence_hint_missing_extension: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the reference weight block, the reference extension marker, the shown query weight block, and the marked red `?` extension tag
+      evidence_hint_difference: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the two shown extension markers being compared
       answer_hint: set "answer" to the requested integer weight, extension, or extension difference value
+    physics_mechanics_sticky_collision_family:
+      scene_key: sticky_collision_diagram
+      task_key: sticky_collision_query
+      object_description_wide_table: a collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
+      object_description_compact_table: a compact collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
+      object_description_gridded_table: a gridded collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
+      evidence_hint_direction_choice: set "evidence" to an array containing the bounding box [x0, y0, x1, y1] of the correct candidate direction arrow
+      evidence_hint_velocity_component: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the queried component's momentum witnesses and the combined-mass label
+      answer_hint_direction_choice: set "answer" to the option letter of the correct candidate arrow
+      answer_hint_component: set "answer" to the requested signed integer velocity component in m/s

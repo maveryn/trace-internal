@@ -1,2 +1,2 @@
-"""Multiseries charts task family."""
+"""Multiseries charts task group."""
 

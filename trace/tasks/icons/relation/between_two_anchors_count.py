@@ -45,14 +45,18 @@ from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_
 from ..shared.icon_task_rendering import (
     icon_render_style_trace,
     resolve_icon_render_params,
+    resolve_icon_rgb_param,
     sample_icon_instance_noise,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 
 
+_PUBLIC_QUERY_VARIANT = "between_anchors_strip_count"
 _RELATION_VARIANTS: Tuple[str, ...] = (
     "inside_vertical_strip",
     "inside_horizontal_strip",
 )
+_STRIP_AXES: Tuple[str, ...] = ("vertical", "horizontal")
 
 
 @dataclass(frozen=True)
@@ -114,7 +118,7 @@ class _ScenePayload:
     object_count: int
     target_count: int
     distractor_count: int
-    task_variant: str
+    query_variant: str
     anchor_icon_id: str
     anchor_tint_rgb: Tuple[int, int, int]
     anchor_rotation_degrees: int
@@ -136,8 +140,63 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_relation_between_two_anchors_count",
+    task_id="task_icons__two_anchor__between_anchors_count",
 )
+
+
+def _strip_axis_to_variant(strip_axis: str) -> str:
+    """Map public strip axis to the construction variant."""
+
+    if str(strip_axis) == "vertical":
+        return "inside_vertical_strip"
+    if str(strip_axis) == "horizontal":
+        return "inside_horizontal_strip"
+    raise ValueError(f"unsupported strip_axis: {strip_axis}")
+
+
+def _variant_to_strip_axis(query_variant: str) -> str:
+    """Map source construction variant to the public strip axis."""
+
+    if str(query_variant) == "inside_vertical_strip":
+        return "vertical"
+    if str(query_variant) == "inside_horizontal_strip":
+        return "horizontal"
+    raise ValueError(f"unsupported strip relation variant: {query_variant}")
+
+
+def _resolve_strip_axis(scene_rng, *, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    """Resolve vertical-vs-horizontal strip axis."""
+
+    axis_params = dict(params)
+    if axis_params.get("strip_axis") is None and axis_params.get("axis") is not None:
+        axis_params["strip_axis"] = axis_params["axis"]
+    explicit_variant = axis_params.get("query_variant")
+    if axis_params.get("strip_axis") is None and explicit_variant is not None:
+        variant = str(explicit_variant).strip()
+        if variant in set(_RELATION_VARIANTS):
+            axis_params["strip_axis"] = _variant_to_strip_axis(variant)
+        elif variant == str(_PUBLIC_QUERY_VARIANT):
+            axis_params.pop("query_variant", None)
+    selected_axis, axis_probabilities = resolve_variant(
+        scene_rng,
+        params=axis_params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=_STRIP_AXES,
+        explicit_key="strip_axis",
+        weights_key="strip_axis_weights",
+    )
+    selected_axis = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=axis_params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_axis),
+        variant_probabilities=axis_probabilities,
+        supported_variants=_STRIP_AXES,
+        balance_flag_key="balanced_strip_axis_sampling",
+        explicit_key="strip_axis",
+        weights_key="strip_axis_weights",
+    )
+    return str(selected_axis), dict(axis_probabilities)
 
 
 def _bbox_center(box: Sequence[int | float]) -> Tuple[float, float]:
@@ -166,7 +225,7 @@ def _center_in_strip(
     center_xy: Sequence[float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    task_variant: str,
+    query_variant: str,
     margin_px: int,
 ) -> bool:
     """Return whether one candidate center lies safely inside the requested strip."""
@@ -175,13 +234,13 @@ def _center_in_strip(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         return float(left + margin) <= float(cx) <= float(right - margin)
-    if str(task_variant) == "inside_horizontal_strip":
+    if str(query_variant) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         return float(top + margin) <= float(cy) <= float(bottom - margin)
-    raise ValueError(f"unsupported task_variant: {task_variant}")
+    raise ValueError(f"unsupported query_variant: {query_variant}")
 
 
 def _center_outside_strip(
@@ -189,7 +248,7 @@ def _center_outside_strip(
     center_xy: Sequence[float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    task_variant: str,
+    query_variant: str,
     margin_px: int,
 ) -> bool:
     """Return whether one candidate center lies safely outside the requested strip."""
@@ -198,13 +257,13 @@ def _center_outside_strip(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         return float(cx) <= float(left - margin) or float(cx) >= float(right + margin)
-    if str(task_variant) == "inside_horizontal_strip":
+    if str(query_variant) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         return float(cy) <= float(top - margin) or float(cy) >= float(bottom + margin)
-    raise ValueError(f"unsupported task_variant: {task_variant}")
+    raise ValueError(f"unsupported query_variant: {query_variant}")
 
 
 def _target_region_bbox(
@@ -212,7 +271,7 @@ def _target_region_bbox(
     content_bbox: Sequence[int | float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    task_variant: str,
+    query_variant: str,
     margin_px: int,
     sprite_size: Sequence[int | float],
 ) -> Tuple[int, int, int, int] | None:
@@ -225,7 +284,7 @@ def _target_region_bbox(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         region = (
             int(round(max(float(x0), float(left + margin - half_w)))),
@@ -233,7 +292,7 @@ def _target_region_bbox(
             int(round(min(float(x1), float(right - margin + half_w)))),
             int(round(float(y1))),
         )
-    elif str(task_variant) == "inside_horizontal_strip":
+    elif str(query_variant) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         region = (
             int(round(float(x0))),
@@ -242,7 +301,7 @@ def _target_region_bbox(
             int(round(min(float(y1), float(bottom - margin + half_h)))),
         )
     else:
-        raise ValueError(f"unsupported task_variant: {task_variant}")
+        raise ValueError(f"unsupported query_variant: {query_variant}")
     if int(region[2]) - int(region[0]) <= int(sprite_w) or int(region[3]) - int(region[1]) <= int(sprite_h):
         return None
     return tuple(int(value) for value in region)
@@ -253,7 +312,7 @@ def _sample_anchor_pair_bboxes(
     *,
     content_bbox: Sequence[int | float],
     sprite_size: Tuple[int, int],
-    task_variant: str,
+    query_variant: str,
     span_ratio_min: float,
     span_ratio_max: float,
     outside_ratio_min: float,
@@ -270,7 +329,7 @@ def _sample_anchor_pair_bboxes(
     outside_ratio = max(0.0, float(outside_ratio_min))
     edge_padding = max(0, int(edge_padding_px))
 
-    if str(task_variant) == "inside_vertical_strip":
+    if str(query_variant) == "inside_vertical_strip":
         span_min = max(float(sprite_w) + 32.0, float(span_ratio_min) * float(width))
         span_max = min(float(span_ratio_max) * float(width), float(width) - 2.0 * float(outside_ratio * width))
         if span_min > span_max:
@@ -289,7 +348,7 @@ def _sample_anchor_pair_bboxes(
         center_y = float(rng.uniform(float(center_y_min), float(center_y_max)))
         anchor_a_center = (float(left_center_x), float(center_y))
         anchor_b_center = (float(right_center_x), float(center_y))
-    elif str(task_variant) == "inside_horizontal_strip":
+    elif str(query_variant) == "inside_horizontal_strip":
         span_min = max(float(sprite_h) + 32.0, float(span_ratio_min) * float(height))
         span_max = min(float(span_ratio_max) * float(height), float(height) - 2.0 * float(outside_ratio * height))
         if span_min > span_max:
@@ -309,7 +368,7 @@ def _sample_anchor_pair_bboxes(
         anchor_a_center = (float(center_x), float(top_center_y))
         anchor_b_center = (float(center_x), float(bottom_center_y))
     else:
-        raise ValueError(f"unsupported task_variant: {task_variant}")
+        raise ValueError(f"unsupported query_variant: {query_variant}")
 
     def _center_to_bbox(center_xy: Sequence[float]) -> Tuple[int, int, int, int]:
         center_x, center_y = float(center_xy[0]), float(center_xy[1])
@@ -329,7 +388,7 @@ def _sample_scene(
     rng,
     *,
     instance_seed: int,
-    task_variant: str,
+    query_variant: str,
     object_count: int,
     target_count: int,
     distractor_count: int,
@@ -380,12 +439,12 @@ def _sample_scene(
     anchor_nominal_size = int(rng.randint(int(render_params["scene_icon_size_min_px"]), int(render_params["scene_icon_size_max_px"])))
     anchor_noise_edits_a, anchor_noise_seed_a = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"task_icons_relation_between_two_anchors_count:{task_variant}:anchor_a",
+        namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:anchor_a",
         render_params=render_params,
     )
     anchor_noise_edits_b, anchor_noise_seed_b = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"task_icons_relation_between_two_anchors_count:{task_variant}:anchor_b",
+        namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:anchor_b",
         render_params=render_params,
     )
 
@@ -423,7 +482,7 @@ def _sample_scene(
         rng,
         content_bbox=scene_content_bbox,
         sprite_size=anchor_sprite_a.size,
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         span_ratio_min=float(render_params["strip_span_ratio_min"]),
         span_ratio_max=float(render_params["strip_span_ratio_max"]),
         outside_ratio_min=float(render_params["strip_outside_ratio_min"]),
@@ -495,7 +554,7 @@ def _sample_scene(
         rotation_degrees = int(rng.choice(rotation_candidates))
         noise_edits, noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"task_icons_relation_between_two_anchors_count:{task_variant}:scene_icon_{int(index)}",
+            namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:scene_icon_{int(index)}",
             render_params=render_params,
         )
         sprite = None
@@ -520,7 +579,7 @@ def _sample_scene(
                         content_bbox=scene_content_bbox,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        task_variant=str(task_variant),
+                        query_variant=str(query_variant),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                         sprite_size=candidate_sprite.size,
                     )
@@ -543,7 +602,7 @@ def _sample_scene(
                         center_xy=center_xy,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        task_variant=str(task_variant),
+                        query_variant=str(query_variant),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                     ):
                         continue
@@ -552,7 +611,7 @@ def _sample_scene(
                         center_xy=center_xy,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        task_variant=str(task_variant),
+                        query_variant=str(query_variant),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                     ):
                         continue
@@ -571,7 +630,7 @@ def _sample_scene(
             center_xy=center_xy,
             anchor_a_center_xy=anchor_a_center_xy,
             anchor_b_center_xy=anchor_b_center_xy,
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             margin_px=int(render_params["strip_boundary_margin_px"]),
         )
         if bool(is_target):
@@ -642,7 +701,7 @@ def _sample_scene(
             object_count=int(object_count),
             target_count=int(target_count),
             distractor_count=int(distractor_count),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             anchor_icon_id=str(anchor_icon_id),
             anchor_tint_rgb=tuple(int(channel) for channel in anchor_tint_rgb),
             anchor_rotation_degrees=int(anchor_rotation_degrees) % 360,
@@ -667,7 +726,7 @@ def _sample_scene(
 class IconsRelationBetweenTwoAnchorsCountTask:
     """Count scene icons whose centers lie in the strip between two anchors."""
 
-    task_id = "task_icons_relation_between_two_anchors_count"
+    task_id = "task_icons__two_anchor__between_anchors_count"
     domain = "icons"
     task_group = "relation"
 
@@ -675,25 +734,14 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         """Generate one deterministic two-anchor strip relation instance."""
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
-        selected_variant, variant_probabilities = resolve_variant(
+        strip_axis, strip_axis_probabilities = _resolve_strip_axis(
             scene_rng,
             params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            supported_variants=_RELATION_VARIANTS,
-            explicit_key="task_variant",
-            weights_key="variant_weights",
-        )
-        task_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
-            params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            selected_variant=str(selected_variant),
-            variant_probabilities=variant_probabilities,
-            supported_variants=_RELATION_VARIANTS,
-            balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
-            weights_key="variant_weights",
         )
+        query_variant = _strip_axis_to_variant(str(strip_axis))
+        public_query_variant = str(_PUBLIC_QUERY_VARIANT)
+        counting_params = dict(params)
         (
             object_count,
             object_count_probabilities,
@@ -704,7 +752,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         ) = resolve_counting_target_and_distractor_triplet(
             scene_rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=counting_params,
             gen_defaults=_GEN_DEFAULTS,
             fallback_total_min=_DEFAULTS.object_count_min,
             fallback_total_max=_DEFAULTS.object_count_max,
@@ -717,12 +765,11 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
         )
         for extra_key, fallback_value in (
             ("anchor_highlight_padding_px", _DEFAULTS.anchor_highlight_padding_px),
             ("anchor_highlight_radius_px", _DEFAULTS.anchor_highlight_radius_px),
-            ("anchor_outline_rgb", _DEFAULTS.anchor_outline_rgb),
-            ("anchor_label_color_rgb", _DEFAULTS.anchor_label_color_rgb),
             ("anchor_label_font_size_px", _DEFAULTS.anchor_label_font_size_px),
             ("strip_boundary_margin_px", _DEFAULTS.strip_boundary_margin_px),
             ("strip_span_ratio_min", _DEFAULTS.strip_span_ratio_min),
@@ -734,6 +781,20 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 str(extra_key),
                 group_default(_RENDER_DEFAULTS, str(extra_key), fallback_value),
             )
+        render_params["anchor_outline_rgb"] = resolve_icon_rgb_param(
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="anchor_outline_rgb",
+            fallback=_DEFAULTS.anchor_outline_rgb,
+            instance_seed=int(instance_seed),
+        )
+        render_params["anchor_label_color_rgb"] = resolve_icon_rgb_param(
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="anchor_label_color_rgb",
+            fallback=_DEFAULTS.anchor_label_color_rgb,
+            instance_seed=int(instance_seed),
+        )
 
         pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
         rotation_candidates = _resolve_rotation_candidates(params)
@@ -746,7 +807,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 scene_payload, image = _sample_scene(
                     scene_rng,
                     instance_seed=int(instance_seed),
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     object_count=int(object_count),
                     target_count=int(target_count),
                     distractor_count=int(distractor_count),
@@ -759,13 +820,13 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_relation_between_two_anchors_count instance") from last_error
+            raise RuntimeError("failed to generate task_icons__two_anchor__between_anchors_count instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -780,7 +841,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         question_text = str(
             required_group_default(
                 _PROMPT_DEFAULTS,
-                f"question_text_{task_variant}",
+                f"question_text_{strip_axis}_strip",
                 context=f"prompt defaults for {self.task_id}",
             )
         )
@@ -788,7 +849,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -817,7 +878,9 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 ],
                 "relations": {
                     "counting_target": "candidate_icon_centers_in_strip_between_two_anchors",
-                    "task_variant": str(scene_payload.task_variant),
+                    "query_variant": str(public_query_variant),
+                    "internal_query_variant": str(scene_payload.query_variant),
+                    "strip_axis": str(strip_axis),
                     "anchor_icon_id": str(scene_payload.anchor_icon_id),
                     "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
                     "strip_boundary_margin_px": int(scene_payload.strip_boundary_margin_px),
@@ -828,7 +891,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(scene_payload.task_variant),
+                "query_variant": str(public_query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -848,6 +911,9 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                     ),
                     "pool_manifest": str(pool_manifest),
                     "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
+                    "strip_axis": str(strip_axis),
+                    "strip_axis_probabilities": dict(strip_axis_probabilities),
+                    "internal_query_variant": str(scene_payload.query_variant),
                     "strip_boundary_margin_px": int(render_params["strip_boundary_margin_px"]),
                     "strip_span_ratio_min": float(render_params["strip_span_ratio_min"]),
                     "strip_span_ratio_max": float(render_params["strip_span_ratio_max"]),
@@ -881,7 +947,9 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             },
             "execution_trace": {
                 "scene_variant": "scene_two_anchors_strip",
-                "task_variant": str(scene_payload.task_variant),
+                "query_variant": str(public_query_variant),
+                "internal_query_variant": str(scene_payload.query_variant),
+                "strip_axis": str(strip_axis),
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -905,10 +973,12 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
                 "question_format": "count_scene_icon_centers_in_strip_between_two_anchors",
                 "strip_boundary_margin_px": int(scene_payload.strip_boundary_margin_px),
-                "variant_probabilities": dict(variant_probabilities),
+                "strip_axis_probabilities": dict(strip_axis_probabilities),
             },
             "witness_symbolic": {
-                "task_variant": str(scene_payload.task_variant),
+                "query_variant": str(public_query_variant),
+                "internal_query_variant": str(scene_payload.query_variant),
+                "strip_axis": str(strip_axis),
                 "anchor_a_center_xy": [float(scene_payload.anchor_a_center_xy[0]), float(scene_payload.anchor_a_center_xy[1])],
                 "anchor_b_center_xy": [float(scene_payload.anchor_b_center_xy[0]), float(scene_payload.anchor_b_center_xy[1])],
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
@@ -921,7 +991,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         complexity = build_icons_relation_between_two_anchors_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
-            task_variant=str(scene_payload.task_variant),
+            query_variant=str(scene_payload.query_variant),
             object_count=int(scene_payload.object_count),
             target_count=int(scene_payload.target_count),
             object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
@@ -939,7 +1009,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             scene_instances=scene_payload.scene_instances,
             render_params=render_params,
         )
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
@@ -949,7 +1019,16 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(scene_payload.task_variant),
+            query_variant=str(public_query_variant),
+        )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(scene_payload.query_variant),
+            scene_id="two_anchor",
+            query_probabilities={
+                _strip_axis_to_variant(str(key)): float(value)
+                for key, value in strip_axis_probabilities.items()
+            },
         )
 
 

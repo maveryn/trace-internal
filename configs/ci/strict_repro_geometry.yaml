@@ -1,49 +1,41 @@
 output_root: ./out
 
 dataset_name: strict_repro_geometry
-instance_version: v1
+instance_version: v0
 image_format: png
 strict_repro: true
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry_measurement_value
+  - task_id: task_geometry__graph_paper__angle_value
     count: 8
     params:
       scene_variant: angle
-      query_variant: angle
-  - task_id: task_geometry_transformation_match
+  - task_id: task_geometry__shape_gallery__transformation_match_label
     count: 8
     params:
       scene_variant: triangle
-      query_variant: reflection_match
-  - task_id: task_geometry_similarity_count
+  - task_id: task_geometry__shape_gallery__shape_relation_count
     count: 8
     params:
       scene_variant: quadrilateral
-      query_variant: similar_count
-  - task_id: task_geometry_measurement_value
+  - task_id: task_geometry__graph_paper__circle_circumference_value
     count: 8
     params:
       scene_variant: circle
-      query_variant: perimeter
-  - task_id: task_geometry_comparison_value
+  - task_id: task_geometry__graph_paper__area_extremum_label
     count: 8
     params:
       scene_variant: rectangle
-      query_variant: largest_area
-  - task_id: task_geometry_counting_value
+      extremum_direction: largest
+  - task_id: task_geometry__graph_paper__triangle_type_count
     count: 8
     params:
       scene_variant: triangle
-      query_variant: right_triangle
-  - task_id: task_geometry_analytical_2d_value
+      triangle_type: right
+  - task_id: task_geometry__function_panels__relation_property_label
     count: 8
-    params:
-      scene_variant: composite_region
-      query_variant: composite_area
-  - task_id: task_geometry_analytical_3d_value
+  - task_id: task_geometry__function_panels__intersection_property_label
     count: 8
-    params:
-      scene_variant: cylinder
-      query_variant: volume
+  - task_id: task_geometry__circle_theorem__secant_secant_length_value
+    count: 8

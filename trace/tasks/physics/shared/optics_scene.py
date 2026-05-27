@@ -34,7 +34,6 @@ class OpticsTargetSpec:
     hit: bool
     bbox_px: List[float]
     point_px: List[float]
-    graph_point: List[int]
 
 
 @dataclass(frozen=True)
@@ -46,7 +45,6 @@ class OpticsBounceSpec:
     row: int
     bbox_px: List[float]
     point_px: List[float]
-    graph_point: List[int]
 
 
 @dataclass(frozen=True)
@@ -119,12 +117,6 @@ def _graph_origin(
     )
 
 
-def _graph_point(*, col: int, row: int, board_rows: int) -> List[int]:
-    """Return one integer graph-point coordinate for a board cell center."""
-
-    return [int(col), int((int(board_rows) - 1) - int(row))]
-
-
 def render_optics_ray_scene(
     *,
     background: Image.Image,
@@ -140,12 +132,13 @@ def render_optics_ray_scene(
     exit_point_px: Tuple[float, float],
     evidence_entity_ids: Sequence[str],
     query_variant: str,
+    diagram_style: Any | None = None,
 ) -> RenderedOpticsScene:
     """Render one graph-paper optics scene with hidden full path semantics."""
 
     canvas = background.convert("RGB")
     draw = ImageDraw.Draw(canvas)
-    theme = build_physics_optics_theme(str(accent_color_name))
+    theme = build_physics_optics_theme(str(accent_color_name), diagram_style=diagram_style)
     board_left = float(render_defaults["board_left_px"])
     board_top = float(render_defaults["board_top_px"])
     board_cols = int(render_defaults["board_cols"])
@@ -332,7 +325,6 @@ def render_optics_ray_scene(
                 "meta": {
                     "col": int(col),
                     "row": int(row),
-                    "graph_point": _graph_point(col=int(col), row=int(row), board_rows=int(board_rows)),
                     "orientation": str(orientation),
                     "hit": bool(hit),
                 },
@@ -361,7 +353,6 @@ def render_optics_ray_scene(
                 row=int(row),
                 bbox_px=list(bbox),
                 point_px=[round(float(point_px[0]), 3), round(float(point_px[1]), 3)],
-                graph_point=_graph_point(col=int(col), row=int(row), board_rows=int(board_rows)),
             )
         )
         scene_entities.append(
@@ -372,7 +363,6 @@ def render_optics_ray_scene(
                 "meta": {
                     "col": int(col),
                     "row": int(row),
-                    "graph_point": _graph_point(col=int(col), row=int(row), board_rows=int(board_rows)),
                 },
             }
         )
@@ -402,7 +392,6 @@ def render_optics_ray_scene(
                 width=max(2, int(round(0.08 * cell_size))),
             )
             target_id = str(item["target_id"])
-            graph_point = _graph_point(col=col, row=row, board_rows=int(board_rows))
             target_specs.append(
                 OpticsTargetSpec(
                     target_id=target_id,
@@ -411,7 +400,6 @@ def render_optics_ray_scene(
                     hit=bool(hit),
                     bbox_px=list(bbox),
                     point_px=[round(float(center[0]), 3), round(float(center[1]), 3)],
-                    graph_point=list(graph_point),
                 )
             )
             scene_entities.append(
@@ -419,7 +407,7 @@ def render_optics_ray_scene(
                     "entity_id": target_id,
                     "entity_type": "physics_optics_target_point",
                     "bbox_px": list(bbox),
-                    "meta": {"col": col, "row": row, "graph_point": list(graph_point), "hit": bool(hit)},
+                    "meta": {"col": col, "row": row, "hit": bool(hit)},
                 }
             )
 
@@ -457,6 +445,8 @@ def render_optics_ray_scene(
         ],
         "evidence_entity_ids": [str(item) for item in evidence_entity_ids],
     }
+    if diagram_style is not None:
+        render_map["technical_diagram_frame_mode"] = str(getattr(diagram_style, "frame_mode", "none"))
     return RenderedOpticsScene(
         image=canvas,
         mirror_specs=list(mirror_specs),

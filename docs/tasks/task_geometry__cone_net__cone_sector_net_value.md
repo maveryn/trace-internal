@@ -1,0 +1,38 @@
+# `task_geometry__cone_net__cone_sector_net_value`
+
+## Contract
+1. Domain: `geometry`
+2. Task group: `measurement`
+3. Scene id: `cone_net`
+4. Public query variant: `default`
+5. Query id: `base_radius_from_sector_angle` or `height_from_sector_angle`
+6. Answer type: `number`
+7. Evidence type: `bbox_set`
+
+## Prompt Bundle
+- Bundle id: `geometry_cone_sector_net_v0`
+- Prompt modes: `answer_only` and `answer_and_evidence`
+- Prompt variants must be selected through the external prompt bundle metadata and recorded in trace payloads.
+
+## Behavior
+Compute either the base radius or the height of a cone formed from a circular
+sector net. The sector radius is the cone slant height, and the sector arc
+becomes the cone base circumference. Height queries first derive the base
+radius, then use the right-triangle relation between height, radius, and slant
+height. Answers are numeric and rounded to one decimal place.
+
+## Evidence
+Prompt-facing evidence is a `bbox_set`: one pixel bounding box around the
+target cue, one around the slant-height label, and one around the sector-angle
+label. It excludes decorative fold arrows and nonnumeric cone labels. Verifier
+evidence is projected from the same generated scene metadata used to compute
+the answer.
+
+## Determinism
+Generation is deterministic for a fixed seed, params, config, and prompt
+bundle version. Sampling axes, query ids, prompt bundle ids, and render choices
+must be recorded in trace metadata.
+
+## Source
+- Config: `configs/domains/geometry/measurement.yaml`
+- Task module: `trace/tasks/geometry/measurement/cone_sector_net.py`

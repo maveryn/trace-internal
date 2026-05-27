@@ -1,0 +1,80 @@
+generation:
+  shared:
+    row_count_min: 6
+    row_count_max: 10
+    column_count_min: 8
+    column_count_max: 12
+    calendar_row_count_min: 5
+    calendar_row_count_max: 8
+    heat_bin_count: 5
+    query_variant_weights:
+      axis_condition_extremum_label: 1.0
+      axis_cell_extremum_label: 1.0
+      condition_run_extremum_label: 1.0
+    scene_variant_weights:
+      intensity_heatmap: 1.0
+      signed_change_heatmap: 1.0
+      calendar_heatmap: 1.0
+    condition_kind_weights:
+      hot: 1.0
+      cool: 1.0
+      increase: 1.0
+      decrease: 1.0
+    extremum_direction_weights:
+      hottest: 1.0
+      coolest: 1.0
+    query_axis_weights:
+      row: 1.0
+      column: 1.0
+    balanced_query_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_condition_kind_sampling: true
+    balanced_extremum_direction_sampling: true
+    balanced_query_axis_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 1260
+    canvas_height: 820
+    outer_margin_px: 42
+    panel_padding_px: 28
+    title_band_height_px: 68
+    legend_height_px: 72
+    row_label_width_px: 150
+    col_label_height_px: 46
+    cell_gap_px: 4
+    cell_border_width_px: 2
+    title_font_size_px: 30
+    axis_font_size_px: 20
+    legend_font_size_px: 18
+    grid_border_rgb: [80, 92, 104]
+    cell_border_rgb: [255, 255, 255]
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.45
+      reasoning_load: 0.45
+      scene_variant_load: 0.10
+
+prompt:
+  shared:
+    bundle_id: charts_heatmap_v0
+    scene_key: heatmap
+    task_key: heatmap_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description_intensity_heatmap: labeled grid cells where darker colors indicate higher intensity and lighter colors indicate lower intensity
+    object_description_signed_change_heatmap: labeled grid cells where blue colors indicate decreases, neutral colors indicate no clear change, and orange-red colors indicate increases
+    object_description_calendar_heatmap: a week-by-week calendar grid where darker colors indicate higher activity and lighter colors indicate lower activity
+    answer_hint_label: set "answer" to the exact visible row or column label as a string
+    unanswerable_instruction: If the requested label or color condition is not shown, answer exactly "unanswerable".
+    evidence_hint_axis_condition_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the matching cells in the winning row or column
+    evidence_hint_axis_cell_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for all candidate cells in the named row or column
+    evidence_hint_condition_run_extremum_label: set "evidence" to an array of [x0,y0,x1,y1] pixel boxes for the winning consecutive run of cells, from left to right
+    json_example_axis_condition_extremum_label: '{"evidence":[[210,160,270,214],[336,160,396,214],[462,160,522,214]],"answer":"Cedar"}'
+    json_example_axis_cell_extremum_label: '{"evidence":[[390,156,450,210],[390,216,450,270],[390,276,450,330]],"answer":"Orly"}'
+    json_example_condition_run_extremum_label: '{"evidence":[[520,420,580,474],[583,420,643,474],[646,420,706,474]],"answer":"Mesa"}'
+    json_example_answer_only_axis_condition_extremum_label: '{"answer":"Cedar"}'
+    json_example_answer_only_axis_cell_extremum_label: '{"answer":"Orly"}'
+    json_example_answer_only_condition_run_extremum_label: '{"answer":"Mesa"}'

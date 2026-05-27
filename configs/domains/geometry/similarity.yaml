@@ -14,7 +14,7 @@ generation:
       - [2, 1]
       - [1, 2]
   task_overrides:
-    task_geometry_similarity_count:
+    geometry_similarity_count_base:
       scene_variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
@@ -44,12 +44,14 @@ rendering:
 
 prompt:
   shared:
-    bundle_id: geometry_similarity_v1
-    task_family_key: similarity_graph_scene
+    bundle_id: geometry_similarity_v0
+    scene_key: similarity_graph_scene
     task_key: similarity_count_query
     object_description: a Reference polygon and five labeled candidate polygons A through E
-    evidence_hint_template: 'set "evidence" to an array of every labeled polygon that matches the Reference among A through E'
+    evidence_hint_template: 'set "evidence" to an array of pixel boxes [x0,y0,x1,y1] around every candidate polygon that matches the Reference among A through E'
     answer_hint: 'set "answer" to the integer count of the matching labeled polygons'
+    json_example: '{"evidence":[[110,120,180,190],[250,120,320,190]],"answer":2}'
+    json_example_answer_only: '{"answer":2}'
 
 complexity:
   shared:

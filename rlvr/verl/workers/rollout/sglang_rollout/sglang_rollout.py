@@ -712,6 +712,8 @@ class SGLangRollout(BaseRollout):
                     "n": 1,  # if validate, already repeat in ray_trainer
                 }
             )
+            if self.config.val_kwargs.max_tokens is not None:
+                request_sampling_params["max_new_tokens"] = int(self.config.val_kwargs.max_tokens)
 
         # Update with any additional kwargs
         request_sampling_params.update(kwargs)
@@ -838,6 +840,8 @@ class SGLangRollout(BaseRollout):
                     "n": 1,  # if validate, already repeat in ray_trainer
                 }
             )
+            if self.config.val_kwargs.max_tokens is not None:
+                request_sampling_params["max_new_tokens"] = int(self.config.val_kwargs.max_tokens)
 
         # Update with any additional kwargs
         request_sampling_params.update(kwargs)

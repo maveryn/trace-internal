@@ -1,15 +1,11 @@
 """Non-grid geometry counting task over multiple labeled quadrilaterals."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Tuple
-
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -46,9 +42,10 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
+    bounds_from_points,
+    bounds_have_clearance,
     resolve_counting_cardinality_pair,
 )
-
 _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "square",
     "rectangle_non_square",
@@ -56,11 +53,9 @@ _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "parallelogram_only",
 )
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for quadrilateral-counting generation."""
-
     canvas_size_min: int = COUNTING_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COUNTING_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = 26
@@ -77,22 +72,18 @@ class _TaskDefaults:
     min_side_gap_units: float = 0.8
     min_slant_units: float = 1.0
 
-
 @dataclass(frozen=True)
 class _QuadrilateralSceneObject:
     """One placed quadrilateral object in the counting scene."""
-
     polygon: PolygonSceneObject
     quadrilateral_kind: str
     side_lengths: Tuple[float, float, float, float]
     angles_degrees: Tuple[float, float, float, float]
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-quadrilateral counting instance."""
-
-    task_variant: str
+    query_variant: str
     object_count: int
     target_count: int
     objects: Tuple[_QuadrilateralSceneObject, ...]
@@ -100,72 +91,65 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_counting_quadrilateral",
+    task_id="source_geometry_counting_quadrilateral",
 )
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="counting")
 _NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="counting")
 
-
 def _quadrilateral_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:
-    """Return a roomy hidden-grid slot bank for 5-7 quadrilateral objects."""
-
-    half_span = max(13, int(graph_cells // 2))
-    outer_x = max(7, min(int(round(float(half_span) * 0.76)), int(half_span - 3)))
-    inner_x = max(2, min(int(round(float(half_span) * 0.24)), max(2, int(outer_x - 3))))
-    row_y = max(5, min(int(round(float(half_span) * 0.40)), int(half_span - 3)))
+    """Return a roomy hidden-grid slot bank for up to 12 quadrilateral objects."""
+    half_span = max(18, int(graph_cells // 2))
+    outer_x = max(8, min(int(round(float(half_span) * 0.78)), int(half_span - 4)))
+    inner_x = max(4, min(int(round(float(half_span) * 0.28)), max(4, int(outer_x - 5))))
+    row_y = max(7, min(int(round(float(half_span) * 0.48)), int(half_span - 4)))
     base_slots = [
         (-int(outer_x), int(row_y)),
         (-int(inner_x), int(row_y)),
         (int(inner_x), int(row_y)),
         (int(outer_x), int(row_y)),
+        (-int(outer_x), 0),
+        (-int(inner_x), 0),
+        (int(inner_x), 0),
+        (int(outer_x), 0),
         (-int(outer_x), -int(row_y)),
-        (0, -int(row_y)),
+        (-int(inner_x), -int(row_y)),
+        (int(inner_x), -int(row_y)),
         (int(outer_x), -int(row_y)),
     ]
     rng.shuffle(base_slots)
     return list(base_slots[: int(object_count)])
 
-
-def _variant_class_label(task_variant: str) -> str:
+def _variant_class_label(query_variant: str) -> str:
     """Return a normalized human-readable quadrilateral class label."""
+    return str(query_variant)
 
-    return str(task_variant)
-
-
-def _matches_variant(kind: str, task_variant: str) -> bool:
+def _matches_variant(kind: str, query_variant: str) -> bool:
     """Return whether one quadrilateral kind matches the requested class."""
+    return str(kind) == str(query_variant)
 
-    return str(kind) == str(task_variant)
-
-
-def _positive_sampler_names(task_variant: str) -> Tuple[str, ...]:
+def _positive_sampler_names(query_variant: str) -> Tuple[str, ...]:
     """Return likely-positive prototype sampler names for one variant."""
-
     mapping = {
         "square": ("square",),
         "rectangle_non_square": ("rectangle_non_square",),
         "rhombus_non_square": ("rhombus_non_square",),
         "parallelogram_only": ("parallelogram_only",),
     }
-    return tuple(mapping[str(task_variant)])
+    return tuple(mapping[str(query_variant)])
 
-
-def _negative_sampler_names(task_variant: str) -> Tuple[str, ...]:
+def _negative_sampler_names(query_variant: str) -> Tuple[str, ...]:
     """Return likely-negative sampler names for one variant."""
-
     mapping = {
         "square": ("rectangle_non_square", "rhombus_non_square", "parallelogram_only"),
         "rectangle_non_square": ("square", "rhombus_non_square", "parallelogram_only"),
         "rhombus_non_square": ("square", "rectangle_non_square", "parallelogram_only"),
         "parallelogram_only": ("square", "rectangle_non_square", "rhombus_non_square"),
     }
-    return tuple(mapping[str(task_variant)])
-
+    return tuple(mapping[str(query_variant)])
 
 def _sample_prototype_by_name(
     rng,
@@ -177,7 +161,6 @@ def _sample_prototype_by_name(
     min_slant_units: float,
 ) -> QuadrilateralPrototype:
     """Dispatch one named quadrilateral prototype sampler."""
-
     if str(sampler_name) == "square":
         return sample_square_prototype(
             rng,
@@ -208,11 +191,10 @@ def _sample_prototype_by_name(
         )
     raise ValueError(f"unsupported quadrilateral sampler: {sampler_name}")
 
-
 def _sample_quadrilateral_for_match(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     positive: bool,
     min_extent_units: float,
     max_extent_units: float,
@@ -220,11 +202,10 @@ def _sample_quadrilateral_for_match(
     min_slant_units: float,
 ) -> QuadrilateralPrototype:
     """Sample one quadrilateral prototype that either matches or rejects the query class."""
-
     preferred = (
-        _positive_sampler_names(str(task_variant))
+        _positive_sampler_names(str(query_variant))
         if bool(positive)
-        else _negative_sampler_names(str(task_variant))
+        else _negative_sampler_names(str(query_variant))
     )
     fallback = tuple(_SUPPORTED_VARIANTS)
     last_error: Exception | None = None
@@ -243,10 +224,9 @@ def _sample_quadrilateral_for_match(
             except Exception as exc:
                 last_error = exc
                 continue
-            if bool(_matches_variant(str(prototype.quadrilateral_kind), str(task_variant))) == bool(positive):
+            if bool(_matches_variant(str(prototype.quadrilateral_kind), str(query_variant))) == bool(positive):
                 return prototype
     raise RuntimeError("failed to sample quadrilateral prototype for counting scene") from last_error
-
 
 def _place_quadrilateral_object(
     prototype: QuadrilateralPrototype,
@@ -256,7 +236,6 @@ def _place_quadrilateral_object(
     context: GraphSceneContext,
 ) -> _QuadrilateralSceneObject:
     """Project one centered quadrilateral prototype into pixel space at the requested slot."""
-
     pixel_vertices = tuple(
         graph_units_to_pixel(
             (float(slot_units[0]) + float(x), float(slot_units[1]) + float(y)),
@@ -281,11 +260,10 @@ def _place_quadrilateral_object(
         angles_degrees=tuple(float(value) for value in prototype.angles_degrees),
     )
 
-
 def _sample_scene(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -299,11 +277,10 @@ def _sample_scene(
     object_label_offset_px: float,
     draw,
     shape_style,
+    draw_object_labels: bool = True,
 ) -> _ScenePayload:
     """Sample and draw one multi-quadrilateral counting scene."""
-
     from ...shared.geometry_primitives import point_inside_square_canvas
-
     last_error: Exception | None = None
     for _ in range(600):
         labels = list(assign_counting_labels(rng, object_count=int(object_count)))
@@ -319,7 +296,7 @@ def _sample_scene(
             for label, slot in zip(labels, slots):
                 prototype = _sample_quadrilateral_for_match(
                     rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     positive=str(label) in positives,
                     min_extent_units=float(min_extent_units),
                     max_extent_units=float(max_extent_units),
@@ -339,7 +316,6 @@ def _sample_scene(
         except Exception as exc:
             last_error = exc
             continue
-
         render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
         vertex_padding_px = max(4.0, 0.7 * float(context.graph_spacing) * float(context.scene_scale))
         if not all(
@@ -352,7 +328,12 @@ def _sample_scene(
             for point in obj.polygon.vertices
         ):
             continue
-
+        object_bounds = [bounds_from_points(obj.polygon.vertices) for obj in objects]
+        if not bounds_have_clearance(
+            object_bounds,
+            min_clearance_px=max(6.0, 0.35 * float(context.graph_spacing)),
+        ):
+            continue
         label_centers = draw_polygon_objects(
             draw,
             objects=[obj.polygon for obj in objects],
@@ -363,10 +344,11 @@ def _sample_scene(
             object_label_offset_px=float(object_label_offset_px),
             render_canvas_size=int(render_canvas_size),
             shape_style=shape_style,
+            draw_object_labels=bool(draw_object_labels),
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -374,33 +356,28 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
             },
         )
     raise RuntimeError("failed to sample quadrilateral-counting scene") from last_error
 
-
-@register_task
 class GeometryCountingQuadrilateralTask:
     """Count how many labeled quadrilaterals belong to one requested class."""
-
-    task_id = "task_geometry_counting_quadrilateral"
+    task_id = "source_geometry_counting_quadrilateral"
     domain = "geometry"
     task_group = "counting"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic multi-quadrilateral counting instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
         selected_variant, variant_probabilities = resolve_variant(
             scene_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
-        task_variant = apply_balanced_variant_sampling(
+        query_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -408,7 +385,7 @@ class GeometryCountingQuadrilateralTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -419,7 +396,6 @@ class GeometryCountingQuadrilateralTask:
             fallback_object_min=_DEFAULTS.object_count_min,
             fallback_object_max=_DEFAULTS.object_count_max,
         )
-
         min_extent_units = float(
             params.get("min_extent_units", group_default(_GEN_DEFAULTS, "min_extent_units", _DEFAULTS.min_extent_units))
         )
@@ -437,7 +413,6 @@ class GeometryCountingQuadrilateralTask:
         )
         if float(min_extent_units) <= 0.0 or float(min_extent_units) >= float(max_extent_units):
             raise ValueError("min_extent_units must be > 0 and < max_extent_units")
-
         context = None
         image = None
         background_meta = None
@@ -450,6 +425,7 @@ class GeometryCountingQuadrilateralTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=_BACKGROUND_DEFAULTS,
@@ -511,7 +487,7 @@ class GeometryCountingQuadrilateralTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -525,6 +501,7 @@ class GeometryCountingQuadrilateralTask:
                     object_label_offset_px=float(object_label_offset_px),
                     draw=draw_attempt,
                     shape_style=shape_style_attempt,
+                    draw_object_labels=bool(params.get("draw_object_labels", True)),
                 )
                 context = context_attempt
                 image = image_attempt
@@ -538,7 +515,6 @@ class GeometryCountingQuadrilateralTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -549,8 +525,7 @@ class GeometryCountingQuadrilateralTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_counting_quadrilateral instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_counting_quadrilateral instance") from last_error
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -558,12 +533,11 @@ class GeometryCountingQuadrilateralTask:
             background_meta=background_meta,
             noise_defaults=_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -579,12 +553,12 @@ class GeometryCountingQuadrilateralTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(task_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -600,10 +574,8 @@ class GeometryCountingQuadrilateralTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="label_set", value=list(scene_payload.matching_labels))
-
         class_by_label = {
             str(obj.polygon.label): {
                 "quadrilateral_kind": str(obj.quadrilateral_kind),
@@ -629,18 +601,18 @@ class GeometryCountingQuadrilateralTask:
                 ],
                 "relations": {
                     "counting_target": "quadrilateral_class",
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -657,8 +629,10 @@ class GeometryCountingQuadrilateralTask:
                 "text_style": {
                     "font_size_px": int(label_font_size_px),
                     "stroke_width_px": int(label_stroke_width_scene),
+                    "draw_object_labels": bool(params.get("draw_object_labels", True)),
                 },
                 "layout_coordinate_frame": dict(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -666,9 +640,9 @@ class GeometryCountingQuadrilateralTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(task_variant),
-                "task_variant": str(task_variant),
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "scene_variant": str(query_variant),
+                "query_variant": str(query_variant),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -679,11 +653,11 @@ class GeometryCountingQuadrilateralTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
-                "label_set": list(scene_payload.matching_labels),
+                "labels": list(scene_payload.matching_labels),
             },
         }
         return TaskOutput(
@@ -701,9 +675,9 @@ class GeometryCountingQuadrilateralTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="quadrilateral",
-                task_variant=str(task_variant),
+                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

@@ -6,11 +6,14 @@ import json
 import os
 import math
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
 
 from tqdm.auto import tqdm
+
+from .taxonomy import resolve_task_query_id, resolve_task_taxonomy
 
 
 PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
@@ -40,7 +43,7 @@ _ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
     re.IGNORECASE,
 )
 _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
-    r'^Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer\.\s*$',
+    r'^Use a valid JSON object with keys (?:"evidence" and "answer" in that order|"answer" and "evidence") for the final answer\.\s*$',
     re.IGNORECASE,
 )
 
@@ -388,6 +391,162 @@ def _build_curriculum_assignments(records: list[Mapping[str, Any]]) -> dict[str,
     return assignments
 
 
+def _json_mapping(value: Any) -> Mapping[str, Any] | None:
+    if isinstance(value, Mapping):
+        return value
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped and stripped[0] in "{[":
+            parsed = json.loads(stripped)
+            return parsed if isinstance(parsed, Mapping) else None
+    return None
+
+
+def _trace_shard_path(dataset_root: Path, shard_id: str) -> Path:
+    traces_root = dataset_root / "traces"
+    candidate = traces_root / shard_id
+    if candidate.exists():
+        return candidate
+    if not shard_id.endswith(".zst"):
+        zstd_candidate = traces_root / f"{shard_id}.zst"
+        if zstd_candidate.exists():
+            return zstd_candidate
+    raise FileNotFoundError(f"TRACE sidecar shard not found: {candidate}")
+
+
+def _iter_trace_shard_records(path: Path) -> Iterable[dict[str, Any]]:
+    if path.suffix == ".zst":
+        import io
+        import zstandard as zstd
+
+        with path.open("rb") as handle:
+            stream = zstd.ZstdDecompressor().stream_reader(handle)
+            with io.TextIOWrapper(stream, encoding="utf-8") as text:
+                for line in text:
+                    yield json.loads(line)
+        return
+
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            yield json.loads(line)
+
+
+def _query_fields_from_trace_record(trace_record: Mapping[str, Any]) -> dict[str, str]:
+    query_spec = trace_record.get("query_spec") if isinstance(trace_record.get("query_spec"), Mapping) else {}
+    execution_trace = (
+        trace_record.get("execution_trace") if isinstance(trace_record.get("execution_trace"), Mapping) else {}
+    )
+    render_spec = trace_record.get("render_spec") if isinstance(trace_record.get("render_spec"), Mapping) else {}
+    scene_ir = trace_record.get("scene_ir") if isinstance(trace_record.get("scene_ir"), Mapping) else {}
+    taxonomy = trace_record.get("taxonomy") if isinstance(trace_record.get("taxonomy"), Mapping) else {}
+
+    query_query_variant = query_spec.get("query_variant")
+    execution_query_variant = execution_trace.get("query_variant")
+    if query_query_variant is not None and execution_query_variant is not None:
+        if str(query_query_variant) != str(execution_query_variant):
+            raise ValueError(
+                "TRACE sidecar query_variant mismatch: "
+                f"query_spec={query_query_variant!r} execution_trace={execution_query_variant!r}"
+            )
+
+    query_variant = query_query_variant if query_query_variant is not None else execution_query_variant
+    scene_variant = render_spec.get("scene_variant")
+    if scene_variant is None:
+        scene_variant = execution_trace.get("scene_variant")
+
+    scene_id = taxonomy.get("scene_id") or query_spec.get("scene_id") or render_spec.get("scene_id")
+    if scene_id is None:
+        scene_id = scene_ir.get("scene_id")
+    query_id = (
+        taxonomy.get("query_id")
+        or query_spec.get("query_id")
+        or execution_trace.get("query_id")
+        or resolve_task_query_id(query_variant="" if query_variant is None else str(query_variant), trace_payload=trace_record)
+    )
+
+    return {
+        "scene_variant": "" if scene_variant is None else str(scene_variant),
+        "scene_id": "" if scene_id is None else str(scene_id),
+        "query_id": "" if query_id is None else str(query_id),
+    }
+
+
+def _fields_from_train_record(record: Mapping[str, Any]) -> dict[str, str]:
+    task_id = str(record.get("task", "")).strip()
+    taxonomy = resolve_task_taxonomy(
+        task_id,
+        source_domain=str(record.get("domain", "")),
+        source_task_group=str(record.get("task_group", "")),
+    )
+    return {
+        "scene_variant": str(record.get("scene_variant", "") or ""),
+        "scene_id": str(record.get("scene_id", "") or taxonomy.scene_id),
+        "query_id": str(record.get("query_id", "") or resolve_task_query_id()),
+    }
+
+
+def _build_variant_field_assignments(
+    records: list[Mapping[str, Any]],
+    *,
+    dataset_root: Path,
+) -> dict[str, dict[str, str]]:
+    """Recover task/scene variant columns from mandatory sidecar traces."""
+
+    instance_to_ref: dict[str, tuple[str, int]] = {}
+    line_refs_by_shard: dict[str, dict[int, list[str]]] = defaultdict(lambda: defaultdict(list))
+    direct_assignments: dict[str, dict[str, str]] = {}
+    records_by_instance: dict[str, Mapping[str, Any]] = {}
+    for record in records:
+        instance_id = str(record.get("instance_id", "")).strip()
+        if not instance_id:
+            continue
+        records_by_instance[instance_id] = record
+
+        trace_ref = _json_mapping(record.get("trace_ref"))
+        if not trace_ref:
+            direct_assignments[instance_id] = _fields_from_train_record(record)
+            continue
+        shard_id = str(trace_ref.get("shard_id", "")).strip()
+        line_index = trace_ref.get("line_index")
+        if not shard_id or line_index is None:
+            raise ValueError(f"TRACE trace_ref for {instance_id} is missing shard_id/line_index")
+        parsed_line_index = int(line_index)
+        instance_to_ref[instance_id] = (shard_id, parsed_line_index)
+        line_refs_by_shard[shard_id][parsed_line_index].append(instance_id)
+
+    assignments = dict(direct_assignments)
+    for shard_id, instances_by_line in sorted(line_refs_by_shard.items()):
+        try:
+            shard_path = _trace_shard_path(dataset_root, shard_id)
+        except FileNotFoundError:
+            for instance_ids in instances_by_line.values():
+                for instance_id in instance_ids:
+                    assignments[instance_id] = _fields_from_train_record(records_by_instance.get(instance_id, {}))
+            continue
+        shard_target_count = sum(len(instance_ids) for instance_ids in instances_by_line.values())
+        shard_found_count = 0
+        for line_index, trace_record in enumerate(_iter_trace_shard_records(shard_path)):
+            instance_ids = instances_by_line.get(line_index)
+            if not instance_ids:
+                continue
+            variant_fields = _query_fields_from_trace_record(trace_record)
+            for instance_id in instance_ids:
+                fallback_fields = _fields_from_train_record(records_by_instance.get(instance_id, {}))
+                assignments[instance_id] = {
+                    key: str(variant_fields.get(key, "") or fallback_fields.get(key, ""))
+                    for key in ("scene_variant", "scene_id", "query_id")
+                }
+                shard_found_count += 1
+            if shard_found_count >= shard_target_count:
+                break
+
+    missing = sorted(set(instance_to_ref) - set(assignments))
+    if missing:
+        sample = ", ".join(missing[:5])
+        raise ValueError(f"failed to recover TRACE variant fields for {len(missing)} rows, sample: {sample}")
+    return assignments
+
+
 def build_rlvr_row(
     train_record: Mapping[str, Any],
     *,
@@ -427,13 +586,22 @@ def build_rlvr_row(
         "answer_only": prompt_columns["prompt_answer"],
         "answer_and_evidence": prompt_columns["prompt_answer_and_evidence"],
     }[prompt_variant]
+    task_id = str(train_record.get("task", ""))
+    taxonomy = resolve_task_taxonomy(
+        task_id,
+        source_domain=str(train_record.get("domain", "")),
+        source_task_group=str(train_record.get("task_group", "")),
+    )
 
     return {
         "uid": instance_id,
         "instance_id": instance_id,
-        "domain": str(train_record.get("domain", "")),
+        "domain": taxonomy.domain,
         "task_group": str(train_record.get("task_group", "")),
-        "task": str(train_record.get("task", "")),
+        "task": task_id,
+        "scene_id": str(train_record.get("scene_id", "") or taxonomy.scene_id),
+        "query_id": str(train_record.get("query_id", "") or resolve_task_query_id()),
+        "scene_variant": str(train_record.get("scene_variant", "") or ""),
         "complexity_score": _extract_complexity_score(train_record),
         "prompt": prompt,
         **prompt_columns,
@@ -573,6 +741,9 @@ def export_trace_dataset_to_rlvr(
     if _EXPORT_PROGRESS_ENABLED:
         tqdm.write(f"Assign curriculum bins for {len(records)} rows")
     curriculum_assignments = _build_curriculum_assignments(records)
+    if _EXPORT_PROGRESS_ENABLED:
+        tqdm.write(f"Recover variant fields for {len(records)} rows")
+    variant_assignments = _build_variant_field_assignments(records, dataset_root=dataset_root)
     rows = []
     with tqdm(
         total=len(records),
@@ -592,6 +763,7 @@ def export_trace_dataset_to_rlvr(
                         image_path_mode=image_path_mode,
                         image_storage_mode=image_storage_mode,
                     ),
+                    **variant_assignments[str(record.get("instance_id", "")).strip()],
                     **curriculum_assignments[str(record.get("instance_id", "")).strip()],
                 }
             )

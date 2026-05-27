@@ -9,6 +9,7 @@ import networkx as nx
 
 from trace.core.seed import hash64
 from trace.tasks.graph.counting.bridge_count import GraphCountingBridgeCountTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -48,12 +49,10 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "edge_set"
-    assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+    assert out.evidence_gt.type == "point_pair_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_bridge_counting"
     assert execution["question_format"] == "count_bridge_edges"
     assert execution["graph_directionality"] == "undirected"
-    assert int(execution["target_count"]) == len(out.evidence_gt.value)
     assert len(node_entities) == 9
     assert len(edge_entities) == int(execution["edge_count"])
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -74,12 +73,22 @@ def test_graph_counting_bridge_count_contract_matches_trace() -> None:
             int(pair[1]) if str(pair[1]).isdigit() else str(pair[1]),
         ),
     )
-    evidence_edges = [tuple(str(value) for value in edge) for edge in out.evidence_gt.value]
-    assert bridge_edges == evidence_edges
+    evidence_point_pairs = list(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(bridge_edges) == len(evidence_point_pairs)
+    assert int(execution["target_count"]) == len(bridge_edges)
     assert bridge_edges == [tuple(str(value) for value in edge) for edge in execution["matching_edges"]]
-    assert trace["projected_evidence"]["edge_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_edge_set"]) == len(out.evidence_gt.value)
-    assert sum(1 for edge in edge_entities if bool(edge["is_bridge"])) == len(out.evidence_gt.value)
+    assert trace["witness_symbolic"]["type"] == "edge_pair_set"
+    assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in bridge_edges]
+    assert "edge_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_pair_set"
+    assert trace["projected_evidence"]["point_pair_set"] == evidence_point_pairs
+    assert sum(1 for edge in edge_entities if bool(edge["is_bridge"])) == len(evidence_point_pairs)
+    width, height = trace["render_spec"]["canvas_size"]
+    for pair in evidence_point_pairs:
+        assert len(pair) == 2
+        for point in pair:
+            assert 0 <= float(point[0]) <= float(width)
+            assert 0 <= float(point[1]) <= float(height)
 
 
 def test_graph_counting_bridge_count_prompt_examples_follow_label_variant() -> None:
@@ -96,8 +105,9 @@ def test_graph_counting_bridge_count_prompt_examples_follow_label_variant() -> N
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": [["B", "D"], ["D", "G"]], "answer": 2}
-    assert numbers_example == {"evidence": [["2", "5"], ["5", "8"]], "answer": 2}
+    expected_example = {"evidence": [[[180, 220], [310, 180]], [[310, 180], [430, 260]]], "answer": 2}
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_counting_bridge_count_supports_numeric_labels_and_named_colors() -> None:
@@ -135,7 +145,7 @@ def test_graph_counting_bridge_count_balanced_sampling_defaults() -> None:
     for index in range(54):
         out = task.generate(
             hash64(19605, "graph_counting_bridge_count", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -145,9 +155,9 @@ def test_graph_counting_bridge_count_balanced_sampling_defaults() -> None:
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
         assert 5 <= int(execution["node_count"]) <= 10
-        assert 0 <= int(execution["target_count"]) <= 8
-    assert set(target_counts.keys()) == set(range(0, 9))
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+        assert 0 <= int(execution["target_count"]) <= 5
+    assert set(target_counts.keys()) == set(range(0, 6))
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}

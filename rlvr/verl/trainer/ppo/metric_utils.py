@@ -26,6 +26,8 @@ import torch
 from verl import DataProto
 from verl.utils.import_utils import deprecated
 
+_TRACE_EVIDENCE_LOG_TYPES = ("bbox_set", "point_pair_set", "point_sequence", "point_set")
+
 
 @deprecated("verl.utils.metric.reduce_metrics")
 def reduce_metrics(metrics: dict[str, list[Any]]) -> dict[str, Any]:
@@ -233,6 +235,8 @@ def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]])
 
     reduced: dict[str, float] = {}
     for key, values in reward_extra_infos_dict.items():
+        if key.startswith("evidence_type_"):
+            continue
         numeric_values: list[float] = []
         for value in values:
             if isinstance(value, bool):
@@ -246,6 +250,30 @@ def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]])
                 break
         if numeric_values:
             reduced[f"reward/{key}"] = float(np.mean(numeric_values))
+
+    evidence_rewards = reward_extra_infos_dict.get("evidence_reward")
+    if evidence_rewards is None:
+        return reduced
+    try:
+        evidence_values = np.asarray(evidence_rewards, dtype=float)
+    except (TypeError, ValueError):
+        return reduced
+
+    for evidence_type in _TRACE_EVIDENCE_LOG_TYPES:
+        masks = reward_extra_infos_dict.get(f"evidence_type_{evidence_type}")
+        if masks is None:
+            continue
+        try:
+            mask_values = np.asarray(masks, dtype=float)
+        except (TypeError, ValueError):
+            continue
+        if mask_values.shape != evidence_values.shape:
+            continue
+        count = float(np.sum(mask_values))
+        reduced[f"reward/evidence_count/{evidence_type}"] = count
+        reduced[f"reward/evidence_fraction/{evidence_type}"] = float(count / max(1, len(mask_values)))
+        if count > 0:
+            reduced[f"reward/evidence_reward/{evidence_type}"] = float(np.sum(evidence_values * mask_values) / count)
     return reduced
 
 

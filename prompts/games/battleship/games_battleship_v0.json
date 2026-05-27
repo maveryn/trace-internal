@@ -1,0 +1,77 @@
+{
+  "bundle_id": "games_battleship_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "battleship_grid_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:visible_battleship_grid": [
+      "object_description"
+    ],
+    "query:sunk_ship_count": [
+      "battleship_rule_text"
+    ],
+    "query:partial_ship_count": [
+      "battleship_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "visible_battleship_grid": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "sunk_ship_count": [
+      "{battleship_rule_text} How many ships are sunk?",
+      "{battleship_rule_text} Count the ships whose entire shape is covered by red hit markers.",
+      "{battleship_rule_text} How many fleet ships have every cell hit?",
+      "{battleship_rule_text} Determine the number of sunk ships on the board.",
+      "{battleship_rule_text} Count only the fully hit ships."
+    ],
+    "partial_ship_count": [
+      "{battleship_rule_text} How many ships are partially hit but not sunk?",
+      "{battleship_rule_text} Count ships with at least one red hit marker and at least one unhit cell.",
+      "{battleship_rule_text} How many fleet ships are damaged but still not sunk?",
+      "{battleship_rule_text} Determine the number of ships that have some, but not all, cells hit.",
+      "{battleship_rule_text} Count only the not-yet-sunk ships that already have a red hit marker."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

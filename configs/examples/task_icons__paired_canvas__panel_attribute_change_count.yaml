@@ -1,0 +1,5 @@
+task_id: task_icons__paired_canvas__panel_attribute_change_count
+params:
+  query_id: color_changed_count
+  target_count: 2
+  distractor_count: 3

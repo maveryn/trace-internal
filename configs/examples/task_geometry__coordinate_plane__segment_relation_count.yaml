@@ -1,0 +1,5 @@
+task_id: task_geometry__coordinate_plane__segment_relation_count
+params:
+  scene_variant: segment_set
+  query_variant: perpendicular_count
+  target_count: 2

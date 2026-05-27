@@ -1,0 +1,98 @@
+{
+  "bundle_id": "games_match3_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "match3_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:match3_grid": [
+      "object_description"
+    ],
+    "query:cleared_count_after_marked_swap": [
+      "match3_rule_text"
+    ],
+    "query:created_run_count_after_marked_swap": [
+      "match3_rule_text"
+    ],
+    "query:max_clear_swap_label": [
+      "match3_rule_text"
+    ],
+    "query:target_clear_swap_label": [
+      "match3_rule_text",
+      "target_clear_count"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "match3_grid": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This board shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "cleared_count_after_marked_swap": [
+      "{match3_rule_text} Following the marked swap arrow, how many gems are cleared?",
+      "{match3_rule_text} Count the gems cleared by the marked swap.",
+      "{match3_rule_text} What is the immediate clear count for the marked swap?",
+      "{match3_rule_text} After the marked swap, how many gems disappear in the immediate clear?",
+      "{match3_rule_text} Determine the number of gems cleared by the marked adjacent swap."
+    ],
+    "created_run_count_after_marked_swap": [
+      "{match3_rule_text} Following the marked swap arrow, how many matching runs are created?",
+      "{match3_rule_text} Count the horizontal or vertical runs created by the marked swap.",
+      "{match3_rule_text} What is the immediate created-run count for the marked swap?",
+      "{match3_rule_text} After the marked swap, how many matching runs of three or more are present?",
+      "{match3_rule_text} Determine the number of matching runs created by the marked adjacent swap."
+    ],
+    "max_clear_swap_label": [
+      "{match3_rule_text} Which labeled swap arrow clears the most gems?",
+      "{match3_rule_text} Choose the arrow letter whose swap gives the largest immediate clear count.",
+      "{match3_rule_text} Among the labeled swap arrows, which one clears the maximum number of gems?",
+      "{match3_rule_text} Report the label of the swap arrow with the largest clear count.",
+      "{match3_rule_text} Which labeled adjacent swap removes the most gems immediately?"
+    ],
+    "target_clear_swap_label": [
+      "{match3_rule_text} Which labeled swap arrow clears exactly {target_clear_count} gems?",
+      "{match3_rule_text} Choose the arrow letter whose swap has immediate clear count {target_clear_count}.",
+      "{match3_rule_text} Among the labeled swap arrows, which one clears {target_clear_count} gems?",
+      "{match3_rule_text} Report the label of the swap arrow that clears exactly {target_clear_count} gems.",
+      "{match3_rule_text} Which labeled adjacent swap removes exactly {target_clear_count} gems immediately?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

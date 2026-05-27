@@ -1,0 +1,74 @@
+{
+  "bundle_id": "physics_thermodynamics_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "pv_diagram_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:thermodynamics_pv_diagram": [
+      "object_description"
+    ],
+    "query:process_sign_choice": [
+      "target_sign"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "thermodynamics_pv_diagram": [
+      "The image shows {object_description}.",
+      "The diagram shows {object_description}.",
+      "This figure shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The pressure-volume diagram shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "work_value": [
+      "For the highlighted horizontal process, compute pressure times (final volume minus initial volume). What is the signed work in joules? Use 1 kPa*L = 1 J.",
+      "Using the highlighted PV process, compute P x (V_final - V_initial). What signed integer work is done by the gas in joules?",
+      "Read the pressure and the initial and final volumes on the highlighted process. What is the signed work P x delta V in joules?",
+      "For the highlighted horizontal process, determine the signed work done by the gas. Expansion is positive and compression is negative.",
+      "What integer value gives the gas work for the highlighted PV path, using pressure times change in volume?"
+    ],
+    "process_sign_choice": [
+      "Which labeled process A-H has {target_sign} work done by the gas?",
+      "Choose the option letter for the PV process whose gas work is {target_sign}.",
+      "Among the labeled candidate processes, which one has {target_sign} work done by the gas?",
+      "Using the direction of volume change on each mini PV diagram, which option has {target_sign} gas work?",
+      "Which labeled PV process matches the requested work sign: {target_sign}?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,101 @@
+{
+  "bundle_id": "games_tetris_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "tetris_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:tetris_board": [
+      "object_description"
+    ],
+    "query:max_clear_with_next_piece": [
+      "next_piece_rule_text",
+      "line_clear_rule_text"
+    ],
+    "query:no_clear_result": [
+      "fixed_drop_rule_text",
+      "line_clear_rule_text"
+    ],
+    "query:single_clear_result": [
+      "fixed_drop_rule_text",
+      "line_clear_rule_text"
+    ],
+    "query:multi_clear_result": [
+      "fixed_drop_rule_text",
+      "line_clear_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "tetris_board": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This Tetris scene shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "max_clear_with_next_piece": [
+      "{next_piece_rule_text} {line_clear_rule_text} What is the maximum number of rows this next piece can clear?",
+      "{next_piece_rule_text} {line_clear_rule_text} Considering every rotation and horizontal position, how many rows can be cleared at most?",
+      "{next_piece_rule_text} {line_clear_rule_text} What is the largest possible line-clear count for the shown next piece?",
+      "{next_piece_rule_text} {line_clear_rule_text} Choose the best legal placement mentally and report the maximum rows cleared.",
+      "{next_piece_rule_text} {line_clear_rule_text} If the next piece is placed optimally, how many rows clear?"
+    ],
+    "no_clear_result": [
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Report the labeled board showing the final state.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Select the correct resulting board."
+    ],
+    "single_clear_result": [
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Report the labeled board showing the final state.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Select the correct resulting board."
+    ],
+    "multi_clear_result": [
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Report the labeled board showing the final state.",
+      "{fixed_drop_rule_text} {line_clear_rule_text} Select the correct resulting board."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

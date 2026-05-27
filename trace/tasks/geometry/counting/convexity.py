@@ -1,16 +1,12 @@
 """Non-grid geometry counting task over labeled convex and concave polygons."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -41,18 +37,17 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
+    bounds_from_points,
+    bounds_have_clearance,
     bulky_counting_slot_centers_graph_units,
     resolve_counting_cardinality_pair,
 )
-
 _SUPPORTED_VARIANTS: Tuple[str, ...] = ("convex_polygon", "concave_polygon")
 _SUPPORTED_SIDE_COUNTS: Tuple[int, ...] = (4, 5, 6)
-
 
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for polygon-convexity counting generation."""
-
     canvas_size_min: int = COUNTING_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COUNTING_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = 28
@@ -65,32 +60,26 @@ class _TaskDefaults:
     object_count_min: int = 6
     object_count_max: int = 9
 
-
 @dataclass(frozen=True)
 class _PolygonPrototype:
     """One centered polygon prototype used by the convexity counting task."""
-
     prototype_id: str
     polygon_sides: int
     convexity_kind: str
     unit_vertices: Tuple[Tuple[int, int], ...]
 
-
 @dataclass(frozen=True)
 class _PolygonSceneObject:
     """One placed polygon object in the convexity counting scene."""
-
     polygon: PolygonSceneObject
     polygon_sides: int
     convexity_kind: str
     prototype_id: str
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one polygon-convexity counting instance."""
-
-    task_variant: str
+    query_variant: str
     object_count: int
     target_count: int
     objects: Tuple[_PolygonSceneObject, ...]
@@ -98,26 +87,22 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_counting_convexity",
+    task_id="source_geometry_counting_convexity",
 )
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="counting")
 _NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="counting")
 
-
 def _polygon_centroid(vertices: Sequence[Tuple[float, float]]) -> Tuple[float, float]:
     """Return one lightweight polygon centroid approximation for label placement."""
-
     total = max(1, len(vertices))
     return (
         sum(float(point[0]) for point in vertices) / float(total),
         sum(float(point[1]) for point in vertices) / float(total),
     )
-
 
 def _validate_prototype(
     prototype_id: str,
@@ -126,7 +111,6 @@ def _validate_prototype(
     unit_vertices: Sequence[Tuple[int, int]],
 ) -> _PolygonPrototype:
     """Validate one integer prototype against the shared convexity classifier."""
-
     classification = str(classify_polygon_convexity(unit_vertices))
     if classification != str(convexity_kind):
         raise ValueError(
@@ -138,7 +122,6 @@ def _validate_prototype(
         convexity_kind=str(convexity_kind),
         unit_vertices=tuple((int(x_value), int(y_value)) for x_value, y_value in unit_vertices),
     )
-
 
 _PROTOTYPES_BY_KEY: Dict[Tuple[str, int], Tuple[_PolygonPrototype, ...]] = {
     ("convex", 4): (
@@ -240,16 +223,13 @@ _PROTOTYPES_BY_KEY: Dict[Tuple[str, int], Tuple[_PolygonPrototype, ...]] = {
     ),
 }
 
-
-def _variant_class_label(task_variant: str) -> str:
+def _variant_class_label(query_variant: str) -> str:
     """Return one normalized convexity class label for prompts and trace."""
-
     mapping = {
         "convex_polygon": "convex",
         "concave_polygon": "concave",
     }
-    return str(mapping[str(task_variant)])
-
+    return str(mapping[str(query_variant)])
 
 def _resolve_side_count_weights(
     *,
@@ -257,7 +237,6 @@ def _resolve_side_count_weights(
     gen_defaults: Mapping[str, Any],
 ) -> Dict[str, float]:
     """Return normalized side-count weights for convexity scenes."""
-
     raw_weights = params.get(
         "side_count_weights",
         gen_defaults.get("side_count_weights", {str(value): 1.0 for value in _SUPPORTED_SIDE_COUNTS}),
@@ -275,7 +254,6 @@ def _resolve_side_count_weights(
     )
     return {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))}
 
-
 def _sample_prototype(
     rng,
     *,
@@ -283,7 +261,6 @@ def _sample_prototype(
     side_count_probabilities: Mapping[str, float],
 ) -> _PolygonPrototype:
     """Sample one prototype with the requested convexity class."""
-
     side_count = int(weighted_choice(rng, side_count_probabilities, sort_keys=True))
     candidates = list(_PROTOTYPES_BY_KEY[(str(convexity_kind), int(side_count))])
     prototype = rng.choice(candidates)
@@ -298,7 +275,6 @@ def _sample_prototype(
         unit_vertices=transformed_vertices,
     )
 
-
 def _place_polygon_object(
     prototype: _PolygonPrototype,
     *,
@@ -307,7 +283,6 @@ def _place_polygon_object(
     context: GraphSceneContext,
 ) -> _PolygonSceneObject:
     """Project one local polygon prototype into pixel space at one slot."""
-
     pixel_vertices = tuple(
         graph_units_to_pixel(
             (float(slot_units[0]) + float(x_value), float(slot_units[1]) + float(y_value)),
@@ -329,12 +304,9 @@ def _place_polygon_object(
         prototype_id=str(prototype.prototype_id),
     )
 
-
 def _object_fits_canvas(obj: _PolygonSceneObject, *, context: GraphSceneContext) -> bool:
     """Return whether one placed polygon stays inside the render canvas."""
-
     from ...shared.geometry_primitives import point_inside_square_canvas
-
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     padding_px = max(4.0, 0.7 * float(context.graph_spacing) * float(context.scene_scale))
     return all(
@@ -346,11 +318,10 @@ def _object_fits_canvas(obj: _PolygonSceneObject, *, context: GraphSceneContext)
         for point in obj.polygon.vertices
     )
 
-
 def _sample_scene(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -361,10 +332,10 @@ def _sample_scene(
     side_count_probabilities: Mapping[str, float],
     draw,
     shape_style,
+    draw_object_labels: bool = True,
 ) -> _ScenePayload:
     """Sample and draw one polygon-convexity counting scene."""
-
-    target_class = str(_variant_class_label(str(task_variant)))
+    target_class = str(_variant_class_label(str(query_variant)))
     opposite_class = "concave" if str(target_class) == "convex" else "convex"
     last_error: Exception | None = None
     for _ in range(700):
@@ -400,6 +371,12 @@ def _sample_scene(
             continue
         if not all(_object_fits_canvas(obj, context=context) for obj in objects):
             continue
+        object_bounds = [bounds_from_points(obj.polygon.vertices) for obj in objects]
+        if not bounds_have_clearance(
+            object_bounds,
+            min_clearance_px=max(6.0, 0.35 * float(context.graph_spacing)),
+        ):
+            continue
         label_centers = draw_polygon_objects(
             draw,
             objects=[obj.polygon for obj in objects],
@@ -410,10 +387,11 @@ def _sample_scene(
             object_label_offset_px=float(object_label_offset_px),
             render_canvas_size=int(context.canvas_size) * int(context.scene_scale),
             shape_style=shape_style,
+            draw_object_labels=bool(draw_object_labels),
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -421,33 +399,28 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
             },
         )
     raise RuntimeError("failed to sample polygon-convexity counting scene") from last_error
 
-
-@register_task
 class GeometryCountingConvexityTask:
     """Count how many labeled polygons are convex or concave."""
-
-    task_id = "task_geometry_counting_convexity"
+    task_id = "source_geometry_counting_convexity"
     domain = "geometry"
     task_group = "counting"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic polygon-convexity counting instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
         selected_variant, variant_probabilities = resolve_variant(
             scene_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
-        task_variant = apply_balanced_variant_sampling(
+        query_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -455,7 +428,7 @@ class GeometryCountingConvexityTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -467,7 +440,6 @@ class GeometryCountingConvexityTask:
             fallback_object_max=_DEFAULTS.object_count_max,
         )
         side_count_probabilities = _resolve_side_count_weights(params=params, gen_defaults=_GEN_DEFAULTS)
-
         context = None
         image = None
         background_meta = None
@@ -480,6 +452,7 @@ class GeometryCountingConvexityTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=_BACKGROUND_DEFAULTS,
@@ -541,7 +514,7 @@ class GeometryCountingConvexityTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -552,6 +525,7 @@ class GeometryCountingConvexityTask:
                     side_count_probabilities=side_count_probabilities,
                     draw=draw_attempt,
                     shape_style=shape_style_attempt,
+                    draw_object_labels=bool(params.get("draw_object_labels", True)),
                 )
                 context = context_attempt
                 image = image_attempt
@@ -565,7 +539,6 @@ class GeometryCountingConvexityTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -576,8 +549,7 @@ class GeometryCountingConvexityTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_counting_convexity instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_counting_convexity instance") from last_error
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -585,12 +557,11 @@ class GeometryCountingConvexityTask:
             background_meta=background_meta,
             noise_defaults=_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -604,12 +575,12 @@ class GeometryCountingConvexityTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(task_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -625,10 +596,8 @@ class GeometryCountingConvexityTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="label_set", value=list(scene_payload.matching_labels))
-
         class_by_label = {
             str(obj.polygon.label): {
                 "convexity_kind": str(obj.convexity_kind),
@@ -656,18 +625,18 @@ class GeometryCountingConvexityTask:
                 ],
                 "relations": {
                     "counting_target": "polygon_convexity",
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -685,8 +654,10 @@ class GeometryCountingConvexityTask:
                 "text_style": {
                     "font_size_px": int(label_font_size_px),
                     "stroke_width_px": int(label_stroke_width_scene),
+                    "draw_object_labels": bool(params.get("draw_object_labels", True)),
                 },
                 "layout_coordinate_frame": dict(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -694,9 +665,9 @@ class GeometryCountingConvexityTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(task_variant),
-                "task_variant": str(task_variant),
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "scene_variant": str(query_variant),
+                "query_variant": str(query_variant),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -707,11 +678,11 @@ class GeometryCountingConvexityTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
-                "label_set": list(scene_payload.matching_labels),
+                "labels": list(scene_payload.matching_labels),
             },
         }
         return TaskOutput(
@@ -729,9 +700,9 @@ class GeometryCountingConvexityTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="convexity",
-                task_variant=str(task_variant),
+                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

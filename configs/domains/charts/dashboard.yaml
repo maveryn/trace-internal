@@ -1,0 +1,126 @@
+generation:
+  shared:
+    panel_count_min: 4
+    panel_count_max: 9
+    category_count_min: 4
+    category_count_max: 12
+    value_min: 12
+    value_max: 92
+    panel_kind_weights:
+      bar: 1.0
+      line: 1.0
+      donut: 1.0
+      radar: 1.0
+    rank_n_support: [1, 2, 3]
+    condition_count_support: [1, 2, 3, 4, 5]
+    query_variant_weights:
+      source_rank_target_value: 1.0
+      source_rank_difference_value: 1.0
+      dual_source_target_sum_value: 1.0
+      dual_condition_count: 1.0
+      panel_gap_extremum_category_label: 1.0
+    rank_direction_weights:
+      largest: 1.0
+      smallest: 1.0
+    gap_extremum_weights:
+      largest: 1.0
+      smallest: 1.0
+    condition_comparison_weights:
+      greater_than: 1.0
+      less_than: 1.0
+    balanced_query_variant_sampling: true
+  task_overrides:
+    task_charts__dashboard__dual_source_target_sum_value:
+      panel_count_max: 5
+      category_count_max: 10
+      rank_n_support: [1]
+      panel_kind_weights:
+        bar: 1.0
+        line: 0.0
+        donut: 0.0
+        radar: 0.0
+
+rendering:
+  shared:
+    canvas_width: 1260
+    canvas_height: 1000
+    panel_gap_px: 18
+    dashboard_margin_px: 24
+    title_height_px: 44
+    panel_padding_px: 16
+    panel_border_width_px: 2
+    axis_line_width_px: 2
+    grid_line_width_px: 1
+    bar_min_height_px: 12
+    point_radius_px: 5
+    line_width_px: 3
+    title_font_size_px: 24
+    panel_title_font_size_px: 18
+    label_font_size_px: 12
+    value_font_size_px: 12
+    tick_font_size_px: 11
+    context_text_enabled: true
+    context_text_layout_mode: reserved_context
+    context_text_top_reserved_px: 68
+    context_text_bottom_reserved_px: 28
+    context_text_sidebar_gap_px: 14
+    context_text_bottom_band_gap_px: 14
+    context_text_box_count_min: 1
+    context_text_box_count_max: 3
+    context_text_sidebar_width_min_px: 210
+    context_text_sidebar_width_max_px: 280
+    context_text_bottom_band_height_min_px: 118
+    context_text_bottom_band_height_max_px: 178
+    context_text_placement_weights:
+      right_sidebar: 0.45
+      left_sidebar: 0.25
+      bottom_band: 0.30
+    dashboard_title_drop_probability: 0.18
+    connector_color_rgb: [80, 87, 99]
+    donut_hole_fill_rgb: [255, 255, 255]
+    category_palette_rgb:
+      - [35, 99, 180]
+      - [218, 88, 72]
+      - [54, 145, 95]
+      - [140, 88, 184]
+      - [218, 143, 44]
+      - [72, 156, 190]
+      - [187, 84, 130]
+      - [106, 122, 58]
+      - [98, 112, 214]
+      - [35, 157, 170]
+      - [197, 104, 38]
+      - [82, 121, 111]
+      - [165, 78, 168]
+      - [126, 133, 39]
+      - [186, 70, 98]
+      - [69, 132, 204]
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.42
+      reasoning_load: 0.42
+      scene_variant_load: 0.16
+
+prompt:
+  shared:
+    bundle_id: charts_dashboard_v0
+    scene_key: dashboard_mixed_chart
+    task_key: dashboard_cross_panel_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    answer_hint_value: set "answer" to the requested integer value
+    answer_hint_count: set "answer" to the requested integer count
+    answer_hint_label: set "answer" to the requested visible category label as a string
+    unanswerable_instruction: If either named panel is not shown, answer exactly "unanswerable".
+    evidence_hint_value: set "evidence" to an array of [x0,y0,x1,y1] boxes around the chart marks or value labels used in the calculation
+    evidence_hint_count: set "evidence" to an array of [x0,y0,x1,y1] boxes for each counted category mark or label
+    evidence_hint_label: set "evidence" to an array of [x0,y0,x1,y1] boxes around the compared category marks in the two panels
+    json_example_value: '{"evidence":[[180,220,236,286],[860,260,924,318]],"answer":47}'
+    json_example_count: '{"evidence":[[190,240,246,292],[790,245,846,298]],"answer":3}'
+    json_example_label: '{"evidence":[[175,240,230,292],[805,250,862,306]],"answer":"C"}'
+    json_example_answer_only_value: '{"answer":47}'
+    json_example_answer_only_count: '{"answer":3}'
+    json_example_answer_only_label: '{"answer":"C"}'
+    object_description_mixed_dashboard: a dashboard with {panel_count} titled panels named {panel_name_list}. Styles may be bar, line, donut, or radar, and a style may repeat. All panels share the same {category_count} category labels and colors, with exact integer values shown

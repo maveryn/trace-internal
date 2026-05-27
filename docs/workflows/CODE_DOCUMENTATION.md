@@ -19,3 +19,4 @@
 4. Shared-helper placement/API changes -> `docs/workflows/SHARED_UTILITIES.md`
 5. Validation/build behavior changes -> `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`
 6. Task behavior changes -> `docs/tasks/<task_id>.md`, `docs/workflows/TASK_AUTHORING.md`, `docs/project/STATUS.md`
+7. Docs/skills navigation or source-of-truth ownership changes -> `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md` and `skills/README.md`

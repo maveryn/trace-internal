@@ -1,0 +1,17 @@
+# `task_puzzles__agent_automaton__agent_cell_flip_count`
+
+## Summary
+1. Domain: `puzzles`
+2. Task group: `automaton`
+3. Task id: `task_puzzles__agent_automaton__agent_cell_flip_count`
+4. Scene id: `agent_automaton`
+5. Goal: simulate a turning agent automaton and count updates satisfying a state or marked-region condition.
+
+## Contract
+1. Public `query_variant`: `default`
+2. `query_id`: `target_state_flip_count|marked_region_flip_count`
+3. Rule branch: `rule_variant=binary_rule|three_state_rule`
+4. Answer type: `integer`
+5. Evidence type: `bbox_set`
+6. Evidence target: starting-agent bbox followed by source-grid or marked-region bbox
+7. Scene variants: `clean_grid|lab_panel|notebook_grid`

@@ -18,11 +18,11 @@ def test_distribution_checks_pass_balanced_categorical_answers() -> None:
 
 def test_distribution_checks_fail_on_max_answer_frequency() -> None:
     rows = []
-    rows.extend({"answer_type": "integer", "answer_value": 1} for _ in range(30))
+    rows.extend({"answer_type": "integer", "answer_value": 1} for _ in range(36))
     for value in range(2, 10):
         rows.extend({"answer_type": "integer", "answer_value": value} for _ in range(8))
     report = evaluate_answer_distribution(rows)
-    assert report["sample_count"] == 94
+    assert report["sample_count"] == 100
     assert report["checks"]["max_answer_frequency"]["pass"] is False
     assert report["pass"] is False
 

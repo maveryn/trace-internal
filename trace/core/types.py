@@ -68,6 +68,8 @@ class TrainInstance:
     domain: str
     task_group: str
     task: str
+    scene_id: str
+    query_id: str
     prompt: str
     images: List[ImageRecord]
     answer_gt: TypedValue
@@ -86,6 +88,8 @@ class TrainInstance:
             "domain": self.domain,
             "task_group": self.task_group,
             "task": self.task,
+            "scene_id": self.scene_id,
+            "query_id": self.query_id,
             "prompt": self.prompt,
             "prompt_variants": dict(self.prompt_variants),
             "images": [image.to_dict() for image in self.images],
@@ -110,6 +114,7 @@ class TraceInstance:
     execution_trace: Dict[str, Any]
     witness_symbolic: Dict[str, Any]
     projected_evidence: Dict[str, Any]
+    taxonomy: Dict[str, Any] | None = None
     seed_map: Dict[str, int] | None = None
     answer_gt: TypedValue | None = None
     evidence_gt: TypedValue | None = None
@@ -126,6 +131,8 @@ class TraceInstance:
             "witness_symbolic": self.witness_symbolic,
             "projected_evidence": self.projected_evidence,
         }
+        if self.taxonomy is not None:
+            data["taxonomy"] = dict(self.taxonomy)
         if self.seed_map is not None:
             data["seed_map"] = dict(self.seed_map)
         if self.answer_gt is not None:
@@ -145,6 +152,8 @@ class CurriculumIndex:
     domain: str
     task_group: str
     task: str
+    scene_id: str
+    query_id: str
     task_complexity: TaskComplexity
 
     def to_dict(self) -> Dict[str, Any]:
@@ -153,5 +162,7 @@ class CurriculumIndex:
             "domain": self.domain,
             "task_group": self.task_group,
             "task": self.task,
+            "scene_id": self.scene_id,
+            "query_id": self.query_id,
             "task_complexity": self.task_complexity.to_dict(),
         }

@@ -18,7 +18,7 @@ If the task is domain-specific, also open the matching domain setup doc and `ski
 ## Implementation workflow
 1. Choose module placement before writing code.
    - Default task layout: `trace/tasks/<domain>/<task_group>/<task_name>.py`
-   - Tile exception: `trace/tasks/tile/<task_group>_<task_name>.py`
+   - Cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`
 2. Search for reusable helpers before adding new logic:
    - `trace/core/`
    - `trace/tasks/shared/`

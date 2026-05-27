@@ -65,7 +65,7 @@ Interpretation:
 - Keep criteria interpretable; a reviewer should understand why a value increased.
 - Put raw measurements in trace/debug payloads if they are worth keeping.
 
-## Migration rule for legacy tasks
+## Migrating task-local formulas
 Many current tasks still use ad hoc scalar formulas. When touching one:
 1. identify the real difficulty knobs,
 2. name the normalized criteria,

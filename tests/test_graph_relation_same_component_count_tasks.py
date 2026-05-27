@@ -7,6 +7,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks.graph.relation.same_component_count import GraphRelationSameComponentCountTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -38,18 +39,17 @@ def test_graph_relation_same_component_count_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "label_set"
-    assert int(out.answer_gt.value) == len(out.evidence_gt.value)
+    assert out.evidence_gt.type == "point_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_same_component_relation"
     assert execution["question_format"] == "count_nodes_in_same_component_including_query"
     assert execution["graph_directionality"] == "undirected"
     assert 2 <= int(execution["component_count"]) <= 4
-    assert int(execution["target_component_size"]) == len(out.evidence_gt.value)
-    assert str(execution["query_label"]) in out.evidence_gt.value
+    assert str(execution["query_label"]) in execution["matching_labels"]
     assert len(node_entities) == 8
     assert len(edge_entities) == int(execution["edge_count"])
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-    assert "including node" in str(out.prompt_variants["answer_only"]).lower()
+    assert trace["query_spec"]["prompt_variant"]["query_key"] == "same_component_count"
+    assert "component" in str(out.prompt_variants["answer_only"]).lower()
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
         "topology_reasoning",
@@ -62,12 +62,19 @@ def test_graph_relation_same_component_count_contract_matches_trace() -> None:
     components = [tuple(component) for component in execution["components_by_label"]]
     query_label = str(execution["query_label"])
     matching_labels = [str(value) for value in execution["matching_labels"]]
+    evidence_points = list(out.evidence_gt.value)
     matching_component = next(component for component in components if query_label in component)
     assert tuple(matching_labels) == matching_component
-    assert matching_labels == list(out.evidence_gt.value)
-    assert trace["projected_evidence"]["label_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
-    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(out.evidence_gt.value)
+    assert int(out.answer_gt.value) == len(matching_labels) == len(evidence_points)
+    assert int(execution["target_component_size"]) == len(matching_labels)
+    assert trace["witness_symbolic"]["labels"] == matching_labels
+    assert "label_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == evidence_points
+    assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
+    assert len(trace["projected_evidence"]["pixel_bbox_set"]) == len(evidence_points)
+    width, height = trace["render_spec"]["canvas_size"]
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_points)
     for label in matching_labels:
         assert str(label) in adjacency_by_label
 
@@ -86,8 +93,9 @@ def test_graph_relation_same_component_prompt_examples_follow_label_variant() ->
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": ["B", "F", "H"], "answer": 3}
-    assert numbers_example == {"evidence": ["2", "7", "9"], "answer": 3}
+    expected_example = {"evidence": [[180, 220], [310, 180], [430, 260]], "answer": 3}
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_relation_same_component_supports_numeric_labels_and_named_colors() -> None:
@@ -109,7 +117,9 @@ def test_graph_relation_same_component_supports_numeric_labels_and_named_colors(
     execution = trace["execution_trace"]
     labels = [entity["label"] for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"]
     assert all(str(label).isdigit() for label in labels)
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda value: int(str(value)))
+    assert trace["witness_symbolic"]["labels"] == sorted(
+        trace["witness_symbolic"]["labels"], key=lambda value: int(str(value))
+    )
     assert execution["label_variant"] == "numbers"
     assert execution["node_shape_variant"] == "hexagon"
     assert execution["layout_transform_variant"] == "rotate_90"
@@ -125,10 +135,14 @@ def test_graph_relation_same_component_balanced_sampling_defaults() -> None:
     node_shape_variants: Counter[str] = Counter()
     layout_variants: Counter[str] = Counter()
     topology_profiles: Counter[str] = Counter()
-    for index in range(48):
+    node_counts_by_answer: dict[int, Counter[int]] = {}
+    topology_profiles_by_answer: dict[int, Counter[str]] = {}
+    layout_variants_by_answer: dict[int, Counter[str]] = {}
+    label_variants_by_answer: dict[int, Counter[str]] = {}
+    for index in range(120):
         out = task.generate(
             hash64(19205, "graph_relation_same_component_count", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -138,12 +152,21 @@ def test_graph_relation_same_component_balanced_sampling_defaults() -> None:
         node_shape_variants[str(execution["node_shape_variant"])] += 1
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
-        assert 5 <= int(execution["node_count"]) <= 10
+        node_counts_by_answer.setdefault(int(execution["target_component_size"]), Counter())[int(execution["node_count"])] += 1
+        topology_profiles_by_answer.setdefault(int(execution["target_component_size"]), Counter())[str(execution["topology_profile"])] += 1
+        layout_variants_by_answer.setdefault(int(execution["target_component_size"]), Counter())[str(execution["layout_variant_requested"])] += 1
+        label_variants_by_answer.setdefault(int(execution["target_component_size"]), Counter())[str(execution["label_variant"])] += 1
+        assert 6 <= int(execution["node_count"]) <= 15
         assert 2 <= int(execution["component_count"]) <= 4
-        assert 1 <= int(execution["target_component_size"]) <= 6
+        assert 2 <= int(execution["target_component_size"]) <= 7
     assert set(component_counts.keys()) == {2, 3, 4}
-    assert set(target_sizes.keys()) == {1, 2, 3, 4, 5, 6}
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(target_sizes.keys()) == {2, 3, 4, 5, 6, 7}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}
+    for answer in range(2, 8):
+        assert len(node_counts_by_answer[answer]) >= 2
+        assert len(topology_profiles_by_answer[answer]) >= 2
+        assert len(layout_variants_by_answer[answer]) >= 2
+        assert len(label_variants_by_answer[answer]) == 3

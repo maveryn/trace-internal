@@ -1,0 +1,121 @@
+generation:
+  shared:
+    category_count_min: 6
+    category_count_max: 10
+    mark_count_min: 4
+    mark_count_max: 16
+    unit_scale_values: [1, 2, 3, 4, 5]
+    difference_mark_min: 2
+    difference_mark_max: 10
+    threshold_answer_min: 1
+    threshold_answer_max: 5
+    balanced_query_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_threshold_direction_sampling: true
+    balanced_glyph_sampling: true
+    query_variant_weights:
+      category_total_value: 1.0
+      group_difference_value: 1.0
+      threshold_count: 1.0
+    scene_variant_weights:
+      waffle_grid_blocks: 1.0
+      pictogram_rows: 1.0
+    threshold_direction_weights:
+      greater_than: 1.0
+      less_than: 1.0
+    glyph_weights:
+      circle: 1.0
+      square: 1.0
+      star: 1.0
+      person: 1.0
+      car: 1.0
+      leaf: 1.0
+      coin: 1.0
+      book: 1.0
+
+rendering:
+  shared:
+    canvas_width: 1320
+    canvas_height: 900
+    outer_margin_px: 44
+    bottom_margin_px: 48
+    title_band_height_px: 70
+    legend_height_px: 58
+    row_gap_px: 8
+    label_width_px: 178
+    mark_gap_px: 6
+    mark_columns_max: 10
+    mark_size_max_px: 34
+    row_corner_radius_px: 8
+    panel_outline_width_px: 2
+    title_font_size_px: 28
+    label_font_size_px: 22
+    legend_font_size_px: 20
+    value_font_size_px: 15
+    category_palette_rgb:
+      - [37, 99, 235]
+      - [220, 84, 45]
+      - [16, 132, 96]
+      - [139, 92, 246]
+      - [202, 138, 4]
+      - [14, 116, 144]
+      - [190, 58, 90]
+      - [86, 105, 38]
+      - [91, 76, 181]
+      - [181, 94, 36]
+    panel_fill_rgb_options:
+      - [255, 255, 255]
+      - [252, 254, 255]
+      - [255, 253, 248]
+      - [250, 252, 250]
+    legend_fill_rgb_options:
+      - [248, 250, 252]
+      - [246, 249, 252]
+      - [251, 248, 242]
+      - [246, 250, 247]
+    panel_outline_rgb_options:
+      - [194, 202, 214]
+      - [187, 201, 214]
+      - [206, 198, 187]
+      - [190, 207, 198]
+    text_rgb_options:
+      - [36, 42, 52]
+      - [42, 47, 58]
+      - [48, 44, 38]
+      - [36, 48, 46]
+    muted_text_rgb_options:
+      - [86, 95, 108]
+      - [82, 98, 110]
+      - [100, 91, 82]
+    text_stroke_rgb_options:
+      - [255, 255, 255]
+      - [252, 254, 255]
+    mark_outline_rgb_options:
+      - [50, 58, 68]
+      - [62, 68, 78]
+      - [70, 64, 58]
+
+prompt:
+  shared:
+    bundle_id: charts_pictogram_v0
+    scene_key: pictogram_scene
+    task_key: pictogram_quantity_query
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
+    object_description_waffle_grid_blocks: a repeated-mark quantity chart where each colored block represents the unit scale shown in the legend
+    object_description_pictogram_rows: a repeated-mark pictogram where each icon represents the unit scale shown in the legend
+    evidence_hint: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] around the category row or rows used for the answer
+    answer_hint: set "answer" to the requested integer value
+    json_example_category_total_value: '{"evidence":[[92,180,1160,248]],"answer":42}'
+    json_example_group_difference_value: '{"evidence":[[92,270,1160,338],[92,430,1160,498]],"answer":18}'
+    json_example_threshold_count: '{"evidence":[[92,180,1160,248],[92,350,1160,418],[92,520,1160,588]],"answer":3}'
+    json_example_answer_only_category_total_value: '{"answer":42}'
+    json_example_answer_only_group_difference_value: '{"answer":18}'
+    json_example_answer_only_threshold_count: '{"answer":3}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.38
+      reasoning_load: 0.42
+      scene_variant_load: 0.20

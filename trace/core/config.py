@@ -51,7 +51,7 @@ def load_build_config(path: str | Path) -> BuildConfig:
     return BuildConfig(
         output_root=str(data["output_root"]),
         dataset_name=str(data["dataset_name"]),
-        instance_version=str(data.get("instance_version", "v1")),
+        instance_version=str(data.get("instance_version", "v0")),
         image_format=str(data.get("image_format", "png")).lower(),
         tasks=tasks,
         num_instances=(int(data["num_instances"]) if data.get("num_instances") is not None else None),

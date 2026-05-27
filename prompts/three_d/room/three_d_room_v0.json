@@ -1,0 +1,169 @@
+{
+  "bundle_id": "three_d_room_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "wall_mounted_object_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "wall_object_camera_distance_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "wall_object_same_wall_reference_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "wall_object_side_relation_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:room": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "room": [
+      "The image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "This 3D view shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The rendered scene shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "closest_to_camera": [
+      "Which lettered wall-mounted object is closest to the camera?",
+      "From this room view, which lettered object on a wall is nearest to the camera?",
+      "Using the perspective depth cues, choose the wall object letter closest to the camera.",
+      "Which lettered object mounted on a wall is closest to the viewer?",
+      "Among the lettered wall-mounted objects, which one is nearest to the camera?"
+    ],
+    "same_wall_as_reference": [
+      "Which lettered wall-mounted object is on the same wall as the {reference_name}?",
+      "Choose the letter for the wall-mounted object on the same wall as the {reference_name}.",
+      "Which lettered object shares a wall with the {reference_name}?",
+      "From this room view, which wall object letter shares the wall with the {reference_name}?",
+      "Which lettered wall-mounted object is mounted on the same wall as the {reference_name}?"
+    ],
+    "left_of_reference_on_wall": [
+      "Which lettered wall-mounted object is to the left of the {reference_name} along the same wall?",
+      "Choose the letter for the object to the left of the {reference_name} on that wall.",
+      "Using the wall plane, which lettered object is left of the {reference_name}?",
+      "Which lettered object sits left of the {reference_name} along the wall?",
+      "On the wall with the {reference_name}, which lettered object is to its left?"
+    ],
+    "right_of_reference_on_wall": [
+      "Which lettered wall-mounted object is to the right of the {reference_name} along the same wall?",
+      "Choose the letter for the object to the right of the {reference_name} on that wall.",
+      "Using the wall plane, which lettered object is right of the {reference_name}?",
+      "Which lettered object sits right of the {reference_name} along the wall?",
+      "On the wall with the {reference_name}, which lettered object is to its right?"
+    ],
+    "tv_wall_mounted_count": [
+      "How many TVs are hanging on the walls?",
+      "How many TVs are mounted on the room walls?",
+      "Count the TVs that are attached to a wall.",
+      "How many wall-mounted TVs are visible?",
+      "What is the number of TVs hanging on the walls?"
+    ],
+    "clock_wall_mounted_count": [
+      "How many clocks are hanging on the walls?",
+      "How many clocks are mounted on the room walls?",
+      "Count the clocks that are attached to a wall.",
+      "How many wall-mounted clocks are visible?",
+      "What is the number of clocks hanging on the walls?"
+    ],
+    "picture_frame_wall_mounted_count": [
+      "How many picture frames are hanging on the walls?",
+      "How many picture frames are mounted on the room walls?",
+      "Count the picture frames that are attached to a wall.",
+      "How many wall-mounted picture frames are visible?",
+      "What is the number of picture frames hanging on the walls?"
+    ],
+    "mirror_wall_mounted_count": [
+      "How many mirrors are hanging on the walls?",
+      "How many mirrors are mounted on the room walls?",
+      "Count the mirrors that are attached to a wall.",
+      "How many wall-mounted mirrors are visible?",
+      "What is the number of mirrors hanging on the walls?"
+    ],
+    "wall_shelf_wall_mounted_count": [
+      "How many wall shelves are mounted on the walls?",
+      "How many shelves are attached to the room walls?",
+      "Count the shelves that are mounted on a wall.",
+      "How many wall-mounted shelves are visible?",
+      "What is the number of shelves attached to the walls?"
+    ],
+    "wall_fan_wall_mounted_count": [
+      "How many wall-mounted fans are visible?",
+      "How many fans are mounted on the room walls?",
+      "Count the fans that are attached to a wall.",
+      "How many wall fans are on the walls?",
+      "What is the number of fans mounted on the walls?"
+    ],
+    "air_conditioner_wall_mounted_count": [
+      "How many air conditioners are mounted on the walls?",
+      "How many wall-mounted air conditioners are visible?",
+      "Count the air conditioners that are attached to a wall.",
+      "How many AC units are on the room walls?",
+      "What is the number of air conditioners mounted on the walls?"
+    ],
+    "hanging_plant_wall_mounted_count": [
+      "How many hanging plants are on the walls?",
+      "How many hanging plants are attached to the room walls?",
+      "Count the plants that are hanging from a wall.",
+      "How many wall-mounted hanging plants are visible?",
+      "What is the number of hanging plants on the walls?"
+    ],
+    "hanging_coat_wall_mounted_count": [
+      "How many coats are hanging on the walls?",
+      "How many coats are hanging from wall hooks?",
+      "Count the coats that are attached to a wall hook.",
+      "How many wall-hanging coats are visible?",
+      "What is the number of coats hanging on the walls?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

@@ -1,0 +1,153 @@
+"""Contract tests for games Mini-golf course tasks."""
+
+from __future__ import annotations
+
+import math
+from pathlib import Path
+
+import pytest
+
+from trace.core.builder import build_dataset
+from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.minigolf.course_tasks import (
+    GamesMinigolfCourseTask,
+    GamesMinigolfFirstObstacleLabelTask,
+    GamesMinigolfShotPathLabelTask,
+    _first_hit_obstacle_id,
+    _trace_shot_path,
+)
+from trace.tasks.games.shared.minigolf_common import MinigolfObstacle
+from tests.helpers import read_jsonl
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "params", "expected_query"),
+    (
+        (
+            GamesMinigolfFirstObstacleLabelTask,
+            {"target_obstacle_label": "F", "obstacle_count": 8, "style_variant": "garden"},
+            "first_obstacle_label",
+        ),
+        (
+            GamesMinigolfShotPathLabelTask,
+            {"path_option_count": 6, "target_path_index": 4, "style_variant": "blueprint"},
+            "shot_path_label",
+        ),
+    ),
+)
+def test_games_minigolf_public_tasks_emit_expected_contract(
+    task_cls: type[GamesMinigolfCourseTask],
+    params: dict[str, int | str],
+    expected_query: str,
+) -> None:
+    out = task_cls().generate(97000, params=params, max_attempts=512)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+
+    assert out.answer_gt.type == "string"
+    assert out.evidence_gt.type == "bbox_set"
+    assert len(out.evidence_gt.value) == 1
+    assert out.query_variant == "default"
+    assert out.query_id == expected_query
+    assert out.scene_id == "minigolf"
+    assert trace["query_spec"]["query_id"] == expected_query
+    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == expected_query
+    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert execution["query_id"] == expected_query
+    assert execution["query_variant"] == "default"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert len(execution["evidence_entity_ids"]) == 1
+
+
+def test_games_minigolf_first_obstacle_matches_first_ray_hit() -> None:
+    out = GamesMinigolfFirstObstacleLabelTask().generate(
+        97010,
+        params={"target_obstacle_label": "H", "obstacle_count": 8},
+        max_attempts=512,
+    )
+    execution = out.trace_payload["execution_trace"]
+    target_id = str(execution["target_obstacle_id"])
+    shown_path = execution["hidden_paths_norm"]["shown_path"]
+    start = tuple(float(value) for value in shown_path[0])
+    end = tuple(float(value) for value in shown_path[-1])
+    angle = math.atan2(float(end[1]) - float(start[1]), float(end[0]) - float(start[0]))
+    obstacles = tuple(
+        MinigolfObstacle(
+            obstacle_id=str(obstacle["obstacle_id"]),
+            label=str(obstacle["label"]),
+            kind=str(obstacle["kind"]),
+            x_norm=float(obstacle["x_norm"]),
+            y_norm=float(obstacle["y_norm"]),
+            radius_norm=float(obstacle["radius_norm"]),
+            color_index=0,
+        )
+        for obstacle in execution["obstacles"]
+    )
+
+    first_hit = _first_hit_obstacle_id(origin=start, angle_rad=angle, obstacles=obstacles)
+    assert str(first_hit) == target_id
+    assert str(out.answer_gt.value) == str(execution["target_obstacle_label"])
+    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert 4 <= len(execution["obstacles"]) <= 8
+
+
+def test_games_minigolf_shot_path_has_one_hole_reaching_option() -> None:
+    out = GamesMinigolfShotPathLabelTask().generate(
+        97020,
+        params={"path_option_count": 6, "target_path_index": 5},
+        max_attempts=512,
+    )
+    execution = out.trace_payload["execution_trace"]
+    target_id = str(execution["target_path_id"])
+    ball = tuple(float(value) for value in execution["ball_xy_norm"])
+    hole = tuple(float(value) for value in execution["hole_xy_norm"])
+    obstacles = tuple(
+        MinigolfObstacle(
+            obstacle_id=str(obstacle["obstacle_id"]),
+            label=str(obstacle["label"]),
+            kind=str(obstacle["kind"]),
+            x_norm=float(obstacle["x_norm"]),
+            y_norm=float(obstacle["y_norm"]),
+            radius_norm=float(obstacle["radius_norm"]),
+            color_index=0,
+        )
+        for obstacle in execution["obstacles"]
+    )
+    success_ids: list[str] = []
+    for option in execution["shot_options"]:
+        reaches_hole, _blocked_by, _path = _trace_shot_path(
+            ball_xy=ball,
+            angle_rad=float(option["angle_rad"]),
+            hole_xy=hole,
+            obstacles=obstacles,
+        )
+        if reaches_hole:
+            success_ids.append(str(option["path_id"]))
+
+    assert success_ids == [target_id]
+    assert str(out.answer_gt.value) == str(execution["target_path_label"])
+    assert list(execution["evidence_entity_ids"]) == [target_id]
+    assert 4 <= len(execution["shot_options"]) <= 6
+
+
+def test_games_minigolf_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_games__minigolf"
+    config = BuildConfig(
+        output_root=str(output_root),
+        dataset_name="build_smoke_task_games__minigolf",
+        instance_version="v0",
+        image_format="png",
+        tasks=[
+            BuildTaskConfig(task_id="task_games__minigolf__first_obstacle_label", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__minigolf__shot_path_label", count=1, params={}),
+        ],
+        max_attempts_per_instance=512,
+        workers=1,
+    )
+    final_path = build_dataset(config, code_hash="games-minigolf-smoke")
+    rows = read_jsonl(final_path / "train_instances.jsonl")
+
+    assert len(rows) == 2
+    assert all(row["domain"] == "games" for row in rows)
+    assert all(row["task_group"] == "minigolf" for row in rows)

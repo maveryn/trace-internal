@@ -35,6 +35,17 @@ class RenderedPuzzleBlockComparisonScene:
     structure_bbox_map: Dict[str, List[float]]
 
 
+@dataclass(frozen=True)
+class RenderedPuzzleBlockStructureScene:
+    """Rendered single block-stack scene plus traced geometry."""
+
+    image: Any
+    entities: List[Dict[str, Any]]
+    scene_bbox_px: List[float]
+    structure_bbox_px: List[float]
+    structure_bbox_map: Dict[str, List[float]]
+
+
 def _scene_panel_style(
     scene_variant: str,
     *,
@@ -98,16 +109,26 @@ def _raw_projected_points(points_3d: Iterable[Point3]) -> Dict[Point3, Point2]:
     return {tuple(float(value) for value in point): iso_project_point_3d(point) for point in points_3d}
 
 
+def _maybe_mirror_projected_points(projected: Mapping[Point3, Point2], *, mirror_x: bool) -> Dict[Point3, Point2]:
+    """Optionally mirror a projected stack for a second readable isometric orientation."""
+
+    if not bool(mirror_x):
+        return {key: (float(value[0]), float(value[1])) for key, value in projected.items()}
+    return {key: (-float(value[0]), float(value[1])) for key, value in projected.items()}
+
+
 def _fit_projected_points_with_shared_scale(
     points_3d: Iterable[Point3],
     *,
     target_bbox: Sequence[float],
     shared_raw_width: float,
     shared_raw_height: float,
+    mirror_x: bool = False,
+    voxel_scale: float = 1.0,
 ) -> Dict[Point3, Point2]:
     """Project and fit one 3D point set into the target bbox with a shared scale."""
 
-    projected = _raw_projected_points(points_3d)
+    projected = _maybe_mirror_projected_points(_raw_projected_points(points_3d), mirror_x=bool(mirror_x))
     x_values = [float(point[0]) for point in projected.values()]
     y_values = [float(point[1]) for point in projected.values()]
     min_x, max_x = min(x_values), max(x_values)
@@ -121,6 +142,7 @@ def _fit_projected_points_with_shared_scale(
         float(usable_width / max(1e-6, float(shared_raw_width))),
         float(usable_height / max(1e-6, float(shared_raw_height))),
     )
+    scale *= max(0.50, min(1.00, float(voxel_scale)))
     target_center_x = 0.5 * (float(left) + float(right))
     target_center_y = 0.5 * (float(top) + float(bottom))
     return {
@@ -140,6 +162,7 @@ def _build_structure_faces(
     render_params: PuzzleBlockStackRenderParams,
     shared_raw_width: float,
     shared_raw_height: float,
+    mirror_x: bool = False,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[float]]:
     """Build visible face draw specs, entities, and one structure bbox."""
 
@@ -151,6 +174,8 @@ def _build_structure_faces(
         target_bbox=target_bbox,
         shared_raw_width=float(shared_raw_width),
         shared_raw_height=float(shared_raw_height),
+        mirror_x=bool(mirror_x),
+        voxel_scale=float(render_params.voxel_scale),
     )
 
     faces: List[Dict[str, Any]] = []
@@ -234,12 +259,16 @@ def render_puzzle_block_comparison_scene(
     remaining_height_rows: Sequence[Sequence[int]],
     remaining_cube_records: Sequence[Mapping[str, Any]],
     render_params: PuzzleBlockStackRenderParams,
+    original_caption: str = "Original",
+    remaining_caption: str = "After",
 ) -> RenderedPuzzleBlockComparisonScene:
     """Render one original-vs-remaining block comparison scene."""
 
     canvas = background.copy().convert("RGB")
     draw = ImageDraw.Draw(canvas)
     border_width = max(1, int(render_params.border_width_px))
+    face_outline_width = max(1, int(render_params.border_width_px))
+    mirror_x = bool(int(render_params.view_orientation_index) % 2)
 
     scene_left = float(render_params.scene_margin_left_px)
     scene_top = float(render_params.scene_margin_top_px)
@@ -287,8 +316,8 @@ def render_puzzle_block_comparison_scene(
 
     original_vertices = _visible_face_vertices(original_cube_records)
     remaining_vertices = _visible_face_vertices(remaining_cube_records)
-    raw_original = _raw_projected_points(original_vertices)
-    raw_remaining = _raw_projected_points(remaining_vertices)
+    raw_original = _maybe_mirror_projected_points(_raw_projected_points(original_vertices), mirror_x=bool(mirror_x))
+    raw_remaining = _maybe_mirror_projected_points(_raw_projected_points(remaining_vertices), mirror_x=bool(mirror_x))
     shared_raw_width = max(
         max(float(point[0]) for point in raw_original.values()) - min(float(point[0]) for point in raw_original.values()),
         max(float(point[0]) for point in raw_remaining.values()) - min(float(point[0]) for point in raw_remaining.values()),
@@ -307,6 +336,7 @@ def render_puzzle_block_comparison_scene(
         render_params=render_params,
         shared_raw_width=float(shared_raw_width),
         shared_raw_height=float(shared_raw_height),
+        mirror_x=bool(mirror_x),
     )
     remaining_faces, remaining_face_entities, remaining_structure_bbox = _build_structure_faces(
         structure_id="remaining_structure",
@@ -315,6 +345,7 @@ def render_puzzle_block_comparison_scene(
         render_params=render_params,
         shared_raw_width=float(shared_raw_width),
         shared_raw_height=float(shared_raw_height),
+        mirror_x=bool(mirror_x),
     )
 
     all_faces = []
@@ -338,12 +369,17 @@ def render_puzzle_block_comparison_scene(
         draw.polygon(
             polygon,
             fill=tuple(int(value) for value in face["fill_rgb"]),
-            outline=tuple(int(value) for value in render_params.border_color_rgb),
+        )
+        draw.line(
+            list(polygon) + [polygon[0]],
+            fill=tuple(int(value) for value in render_params.border_color_rgb),
+            width=int(face_outline_width),
+            joint="curve",
         )
 
     original_caption_bbox = draw_centered_text(
         draw,
-        text="Original",
+        text=str(original_caption),
         center=(0.5 * (float(left_target_bbox[0]) + float(left_target_bbox[2])), 0.5 * (caption_band_top + caption_band_bottom)),
         font=caption_font,
         fill=render_params.caption_fill_rgb,
@@ -352,7 +388,7 @@ def render_puzzle_block_comparison_scene(
     )
     remaining_caption_bbox = draw_centered_text(
         draw,
-        text="After",
+        text=str(remaining_caption),
         center=(0.5 * (float(right_target_bbox[0]) + float(right_target_bbox[2])), 0.5 * (caption_band_top + caption_band_bottom)),
         font=caption_font,
         fill=render_params.caption_fill_rgb,
@@ -412,13 +448,13 @@ def render_puzzle_block_comparison_scene(
             "entity_id": "original_caption",
             "entity_type": "puzzle_block_caption",
             "bbox_px": list(original_caption_bbox),
-            "attrs": {"structure_role": "original", "text": "Original"},
+            "attrs": {"structure_role": "original", "text": str(original_caption)},
         },
         {
             "entity_id": "remaining_caption",
             "entity_type": "puzzle_block_caption",
             "bbox_px": list(remaining_caption_bbox),
-            "attrs": {"structure_role": "remaining", "text": "After"},
+            "attrs": {"structure_role": "remaining", "text": str(remaining_caption)},
         },
         {
             "entity_id": "block_transition_arrow",
@@ -440,8 +476,133 @@ def render_puzzle_block_comparison_scene(
     )
 
 
+def render_puzzle_block_structure_scene(
+    background,
+    *,
+    scene_variant: str,
+    structure_height_rows: Sequence[Sequence[int]],
+    structure_cube_records: Sequence[Mapping[str, Any]],
+    render_params: PuzzleBlockStackRenderParams,
+    structure_id: str = "cube_structure",
+    caption: str = "Structure",
+) -> RenderedPuzzleBlockStructureScene:
+    """Render one fixed-view isometric cube structure."""
+
+    canvas = background.copy().convert("RGB")
+    draw = ImageDraw.Draw(canvas)
+    border_width = max(1, int(render_params.border_width_px))
+    face_outline_width = max(1, int(render_params.border_width_px))
+    mirror_x = bool(int(render_params.view_orientation_index) % 2)
+
+    scene_left = float(render_params.scene_margin_left_px)
+    scene_top = float(render_params.scene_margin_top_px)
+    scene_right = float(render_params.canvas_width - render_params.scene_margin_right_px)
+    scene_bottom = float(render_params.canvas_height - render_params.scene_margin_bottom_px)
+    scene_bbox = [
+        round(float(scene_left), 3),
+        round(float(scene_top), 3),
+        round(float(scene_right), 3),
+        round(float(scene_bottom), 3),
+    ]
+
+    scene_fill, scene_outline = _scene_panel_style(str(scene_variant), render_params=render_params)
+    if scene_fill is not None or scene_outline is not None:
+        draw_rounded_rect(
+            draw,
+            tuple(float(value) for value in scene_bbox),
+            radius=int(render_params.panel_corner_radius_px),
+            fill=scene_fill if scene_fill is not None else (255, 255, 255),
+            outline=scene_outline if scene_outline is not None else (255, 255, 255),
+            width=max(1, int(border_width if scene_outline is not None else 1)),
+        )
+
+    caption_font = load_font(int(render_params.caption_font_size_px), bold=True)
+    caption_band_top = float(scene_top + int(render_params.structure_padding_px))
+    caption_band_bottom = float(caption_band_top + int(render_params.caption_font_size_px))
+    content_top = float(caption_band_bottom + int(render_params.caption_gap_px))
+    content_bbox = (
+        float(scene_left + int(render_params.structure_padding_px)),
+        float(content_top),
+        float(scene_right - int(render_params.structure_padding_px)),
+        float(scene_bottom - int(render_params.structure_padding_px)),
+    )
+
+    structure_vertices = _visible_face_vertices(structure_cube_records)
+    raw_points = _maybe_mirror_projected_points(_raw_projected_points(structure_vertices), mirror_x=bool(mirror_x))
+    shared_raw_width = max(
+        1e-6,
+        max(float(point[0]) for point in raw_points.values()) - min(float(point[0]) for point in raw_points.values()),
+    )
+    shared_raw_height = max(
+        1e-6,
+        max(float(point[1]) for point in raw_points.values()) - min(float(point[1]) for point in raw_points.values()),
+    )
+    faces, face_entities, structure_bbox = _build_structure_faces(
+        structure_id=str(structure_id),
+        cube_records=structure_cube_records,
+        target_bbox=content_bbox,
+        render_params=render_params,
+        shared_raw_width=float(shared_raw_width),
+        shared_raw_height=float(shared_raw_height),
+        mirror_x=bool(mirror_x),
+    )
+
+    for face in faces:
+        polygon = [(float(point[0]), float(point[1])) for point in face["polygon"]]
+        draw.polygon(
+            polygon,
+            fill=tuple(int(value) for value in face["fill_rgb"]),
+        )
+        draw.line(
+            list(polygon) + [polygon[0]],
+            fill=tuple(int(value) for value in render_params.border_color_rgb),
+            width=int(face_outline_width),
+            joint="curve",
+        )
+
+    caption_bbox = draw_centered_text(
+        draw,
+        text=str(caption),
+        center=(0.5 * (float(content_bbox[0]) + float(content_bbox[2])), 0.5 * (caption_band_top + caption_band_bottom)),
+        font=caption_font,
+        fill=render_params.caption_fill_rgb,
+        stroke_fill=render_params.caption_stroke_rgb,
+        stroke_width=1,
+    )
+    structure_bbox_map = {str(structure_id): list(structure_bbox)}
+    entities: List[Dict[str, Any]] = [
+        {
+            "entity_id": str(structure_id),
+            "entity_type": "puzzle_block_structure",
+            "bbox_px": list(structure_bbox),
+            "attrs": {
+                "structure_role": "single",
+                "row_count": int(len(structure_height_rows)),
+                "col_count": int(len(structure_height_rows[0])) if structure_height_rows else 0,
+            },
+        },
+        {
+            "entity_id": "structure_caption",
+            "entity_type": "puzzle_block_caption",
+            "bbox_px": list(caption_bbox),
+            "attrs": {"structure_role": "single", "text": str(caption)},
+        },
+    ]
+    entities.extend(face_entities)
+
+    return RenderedPuzzleBlockStructureScene(
+        image=canvas,
+        entities=entities,
+        scene_bbox_px=list(scene_bbox),
+        structure_bbox_px=list(structure_bbox),
+        structure_bbox_map=structure_bbox_map,
+    )
+
+
 __all__ = [
     "RenderedPuzzleBlockComparisonScene",
+    "RenderedPuzzleBlockStructureScene",
     "SUPPORTED_PUZZLE_BLOCK_SCENE_VARIANTS",
     "render_puzzle_block_comparison_scene",
+    "render_puzzle_block_structure_scene",
 ]

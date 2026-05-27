@@ -1,0 +1,120 @@
+"""Contracts for incircle tangent-segment geometry tasks."""
+
+from __future__ import annotations
+
+import pytest
+
+from trace.tasks.geometry.measurement.tangent_polygon_incircle import (
+    SCENE_ID,
+    GeometryIncircleRadiusFromAreaValueTask,
+    GeometryIncircleTangentPerimeterValueTask,
+)
+
+TASK_CLASSES = (
+    GeometryIncircleTangentPerimeterValueTask,
+    GeometryIncircleRadiusFromAreaValueTask,
+)
+
+QUERY_IDS_BY_TASK = {
+    GeometryIncircleTangentPerimeterValueTask: (
+        "triangle_perimeter_from_tangent_segments",
+    ),
+    GeometryIncircleRadiusFromAreaValueTask: (
+        "inradius_from_area_and_tangent_segments",
+    ),
+}
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
+    task = task_cls()
+    out = task.generate(57001, params={}, max_attempts=20)
+
+    assert out.scene_id == SCENE_ID
+    assert out.query_variant == "default"
+    assert out.query_id
+    assert out.answer_gt.type == "number"
+    assert out.evidence_gt.type == "bbox_set"
+    assert len(out.evidence_gt.value) in {3, 4}
+    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert '"answer"' in out.prompt_variants["answer_only"]
+
+    trace = out.trace_payload
+    assert trace["query_spec"]["scene_id"] == SCENE_ID
+    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == out.query_id
+    assert trace["execution_trace"]["query_id"] == out.query_id
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["execution_trace"]["semiperimeter"] > 0
+    assert trace["execution_trace"]["area"] > 0
+    if out.query_id == "triangle_perimeter_from_tangent_segments":
+        assert out.answer_gt.value == pytest.approx(
+            2.0 * trace["execution_trace"]["semiperimeter"]
+        )
+    else:
+        assert out.answer_gt.value == pytest.approx(
+            round(
+                trace["execution_trace"]["area"]
+                / (
+                    trace["execution_trace"]["tangent_a"]
+                    + trace["execution_trace"]["tangent_b"]
+                    + trace["execution_trace"]["tangent_c"]
+                ),
+                1,
+            )
+        )
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_tangent_polygon_incircle_tasks_are_deterministic(task_cls) -> None:
+    task = task_cls()
+    params = {}
+    out_a = task.generate(57011, params=params, max_attempts=20)
+    out_b = task.generate(57011, params=params, max_attempts=20)
+
+    assert out_a.prompt == out_b.prompt
+    assert out_a.answer_gt == out_b.answer_gt
+    assert out_a.evidence_gt == out_b.evidence_gt
+    assert (
+        out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    )
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_tangent_polygon_incircle_tasks_support_every_explicit_query(task_cls) -> None:
+    task = task_cls()
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(
+            57021 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "number"
+        assert out.trace_payload["query_spec"]["params"][
+            "query_variant_probabilities"
+        ] == {query_id: 1.0}
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_tangent_polygon_incircle_evidence_stays_inside_canvas(task_cls) -> None:
+    task = task_cls()
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(
+            57041 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        width, height = out.image.size
+        for x0, y0, x1, y1 in out.evidence_gt.value:
+            assert 0.0 <= x0 < x1 <= float(width)
+            assert 0.0 <= y0 < y1 <= float(height)
+            assert (x1 - x0) > 8.0
+            assert (y1 - y0) > 8.0
+
+
+def test_tangent_polygon_incircle_tasks_reject_unknown_query_id() -> None:
+    task = GeometryIncircleTangentPerimeterValueTask()
+    with pytest.raises(ValueError):
+        task.generate(57031, params={"query_id": "not_a_query"}, max_attempts=20)

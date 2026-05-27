@@ -1,0 +1,197 @@
+{
+  "bundle_id": "charts_distribution_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "histogram_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "boxplot_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "boxplot_median_rank_difference_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "boxplot_paired_median_shift_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "violin_label_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:distribution_chart": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "distribution_chart": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "interval_mass": [
+      "What is the total count {interval_relation_phrase} the value interval {query_interval_label}?",
+      "Sum the bar counts {interval_relation_phrase} the value interval {query_interval_label}.",
+      "Compute the total count {interval_relation_phrase} {query_interval_label}.",
+      "How many items fall {interval_relation_phrase} the interval {query_interval_label}?",
+      "Find the total count for bars {interval_relation_phrase} {query_interval_label}."
+    ],
+    "bin_count_between_values": [
+      "How many histogram bars lie inside the value interval {query_interval_label}?",
+      "Count the histogram bars covered by the value interval {query_interval_label}.",
+      "Determine how many x-axis values fall inside {query_interval_label}.",
+      "What is the count of bars in the value interval {query_interval_label}?",
+      "Find how many histogram bars fall inside {query_interval_label}."
+    ],
+    "rank_item_bin_label": [
+      "If the histogram counts are expanded from left to right, which x-axis value contains item number {target_rank}?",
+      "Number the counted items from left to right across the histogram. Which x-axis value contains item {target_rank}?",
+      "Using cumulative counts from left to right, what x-axis value contains the {target_rank}th item?",
+      "Treat each bar count as repeated items ordered left to right. Which x-axis value holds item number {target_rank}?",
+      "Scan the histogram cumulatively from left to right. Which x-axis value contains item {target_rank}?"
+    ],
+    "median_reference_label": [
+      "Using label {reference_label} as the reference, which label has the median furthest {median_reference_direction_word} {reference_label}'s {reference_quartile_name}?",
+      "Find the boxplot label whose median is the greatest amount {median_reference_direction_word} label {reference_label}'s {reference_quartile_name}.",
+      "Determine which labeled boxplot has the largest positive gap {median_reference_gap_phrase}.",
+      "Relative to label {reference_label}'s {reference_quartile_name}, which label has the median furthest {median_reference_direction_word} it?",
+      "Identify the boxplot label whose median sits furthest {median_reference_direction_word} label {reference_label}'s {reference_quartile_name}."
+    ],
+    "iqr_extremum_label": [
+      "Which label has the {extremum_direction} interquartile range?",
+      "Find the label of the boxplot with the {iqr_width_phrase} interquartile range.",
+      "Determine which labeled boxplot has the {extremum_direction} IQR.",
+      "What label corresponds to the {extremum_direction} interquartile range?",
+      "Identify the boxplot label with the {iqr_width_phrase} box."
+    ],
+    "median_top_second_difference_value": [
+      "What is the difference between the highest median and the second-highest median?",
+      "Subtract the second-highest median from the highest median. What value do you get?",
+      "Find the median value gap between the top-ranked boxplot and the second-ranked boxplot.",
+      "Compute the difference from the highest boxplot median to the second-highest boxplot median.",
+      "What integer difference separates the largest median from the second-largest median?"
+    ],
+    "median_top_third_difference_value": [
+      "What is the difference between the highest median and the third-highest median?",
+      "Subtract the third-highest median from the highest median. What value do you get?",
+      "Find the median value gap between the top-ranked boxplot and the third-ranked boxplot.",
+      "Compute the difference from the highest boxplot median to the third-highest boxplot median.",
+      "What integer difference separates the largest median from the third-largest median?"
+    ],
+    "median_top_bottom_difference_value": [
+      "What is the difference between the highest median and the lowest median?",
+      "Subtract the lowest median from the highest median. What value do you get?",
+      "Find the median value gap between the top-ranked boxplot and the bottom-ranked boxplot.",
+      "Compute the difference from the highest boxplot median to the lowest boxplot median.",
+      "What integer difference separates the largest median from the smallest median?"
+    ],
+    "paired_median_greatest_increase_label": [
+      "Compare each label's median in the After panel with the same label's median in the Before panel. Which label has the greatest median increase?",
+      "Using After minus Before for each label, which label has the largest median increase?",
+      "Which label's boxplot in the After panel has the biggest median gain over its matching boxplot in the Before panel?",
+      "Find the label with the greatest increase from its Before median to its After median.",
+      "Which matched label shows the largest upward median shift from Before to After?"
+    ],
+    "paired_median_greatest_decrease_label": [
+      "Compare each label's median in the Before panel with the same label's median in the After panel. Which label has the greatest median decrease?",
+      "Using Before minus After for each label, which label has the largest median decrease?",
+      "Which label's boxplot in the After panel drops the most below its matching boxplot in the Before panel?",
+      "Find the label with the greatest decrease from its Before median to its After median.",
+      "Which matched label shows the largest downward median shift from Before to After?"
+    ],
+    "paired_median_greatest_absolute_change_label": [
+      "Compare each label's median in the Before and After panels. Which label has the greatest absolute median change?",
+      "Which matched label has the largest absolute difference between its Before and After medians?",
+      "Find the label whose two boxplot medians are farthest apart.",
+      "Which label shows the largest median change in either direction between Before and After?",
+      "Determine the label with the greatest absolute shift from its Before median to its After median."
+    ],
+    "highest_mode": [
+      "Which label has the highest density peak on the vertical axis?",
+      "Find the violin plot whose widest peak occurs at the highest value.",
+      "Which label's main density peak is highest on the value axis?",
+      "Identify the label with the uppermost density peak.",
+      "Which violin has its main thickest part at the highest value?"
+    ],
+    "lowest_mode": [
+      "Which label has the lowest density peak on the vertical axis?",
+      "Find the violin plot whose widest peak occurs at the lowest value.",
+      "Which label's main density peak is lowest on the value axis?",
+      "Identify the label with the lowermost density peak.",
+      "Which violin has its main thickest part at the lowest value?"
+    ],
+    "bimodal_label": [
+      "Which label has two clear density peaks?",
+      "Find the violin plot with two separated thick regions.",
+      "Which label shows a bimodal shape with two visible lobes?",
+      "Identify the violin plot that has two distinct density peaks.",
+      "Which label's distribution has two clear bulges?"
+    ],
+    "widest_support": [
+      "Which label spans the largest vertical value range from bottom to top?",
+      "Find the violin plot with the widest support range.",
+      "Which label covers the greatest vertical distance between its lower and upper ends?",
+      "Identify the violin plot whose shape stretches across the largest value range.",
+      "Which label has the largest bottom-to-top range?"
+    ],
+    "narrowest_support": [
+      "Which label spans the smallest vertical value range from bottom to top?",
+      "Find the violin plot with the narrowest support range.",
+      "Which label covers the least vertical distance between its lower and upper ends?",
+      "Identify the violin plot whose shape stretches across the smallest value range.",
+      "Which label has the smallest bottom-to-top range?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

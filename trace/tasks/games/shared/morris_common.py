@@ -8,8 +8,6 @@ from typing import Dict, FrozenSet, List, Mapping, Sequence, Tuple
 
 SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
 SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS: Tuple[str, ...] = (
-    "white_pieces_in_mill_count",
-    "black_pieces_in_mill_count",
     "all_pieces_in_mill_count",
 )
 
@@ -196,42 +194,28 @@ def _choose_one_union_set(rng, *, size: int, forbidden_nodes: FrozenSet[int]) ->
     return frozenset(eligible[int(rng.randrange(len(eligible)))])
 
 
+def _normalize_query_variant_and_color(query_variant: str, player_color: str | None = None) -> Tuple[str, str | None]:
+    """Return canonical query variant plus optional color."""
+
+    variant = str(query_variant)
+    if variant == "all_pieces_in_mill_count":
+        color = None
+    else:
+        raise ValueError(f"unsupported nine-men's-morris query variant: {query_variant}")
+    return str(variant), color
+
+
 def _sample_mill_sets(
     rng,
     *,
     query_variant: str,
+    player_color: str | None = None,
     target_answer: int,
 ) -> Tuple[FrozenSet[int], FrozenSet[int]]:
     """Sample disjoint white/black mill unions for one query variant and target answer."""
 
     target = int(target_answer)
-    variant = str(query_variant)
-
-    if variant == "white_pieces_in_mill_count":
-        for _ in range(256):
-            white_nodes = _choose_one_union_set(rng, size=int(target), forbidden_nodes=frozenset())
-            if white_nodes is None:
-                continue
-            candidate_sizes = [0, 3, 5, 6, 7, 8, 9]
-            rng.shuffle(candidate_sizes)
-            for black_size in candidate_sizes:
-                black_nodes = _choose_one_union_set(rng, size=int(black_size), forbidden_nodes=white_nodes)
-                if black_nodes is not None:
-                    return frozenset(white_nodes), frozenset(black_nodes)
-        raise RuntimeError(f"failed to sample white mill set for target {target}")
-
-    if variant == "black_pieces_in_mill_count":
-        for _ in range(256):
-            black_nodes = _choose_one_union_set(rng, size=int(target), forbidden_nodes=frozenset())
-            if black_nodes is None:
-                continue
-            candidate_sizes = [0, 3, 5, 6, 7, 8, 9]
-            rng.shuffle(candidate_sizes)
-            for white_size in candidate_sizes:
-                white_nodes = _choose_one_union_set(rng, size=int(white_size), forbidden_nodes=black_nodes)
-                if white_nodes is not None:
-                    return frozenset(white_nodes), frozenset(black_nodes)
-        raise RuntimeError(f"failed to sample black mill set for target {target}")
+    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
 
     feasible_pairs: List[Tuple[int, int]] = []
     for white_size in _WHITE_SUPPORT:
@@ -288,20 +272,22 @@ def build_nine_mens_morris_board_state(
     rng,
     query_variant: str,
     target_answer: int,
+    player_color: str | None = None,
 ) -> NineMensMorrisBoardState:
     """Build one visible nine-men's-morris board for the requested query/answer."""
 
     target = int(target_answer)
-    variant = str(query_variant)
-    if variant == "white_pieces_in_mill_count" and target not in _WHITE_SUPPORT:
-        raise ValueError(f"unsupported white target_answer: {target}")
-    if variant == "black_pieces_in_mill_count" and target not in _BLACK_SUPPORT:
-        raise ValueError(f"unsupported black target_answer: {target}")
+    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
     if variant == "all_pieces_in_mill_count" and target not in _ALL_SUPPORT:
         raise ValueError(f"unsupported all-color target_answer: {target}")
 
     for _ in range(512):
-        white_mill_nodes, black_mill_nodes = _sample_mill_sets(rng, query_variant=variant, target_answer=int(target))
+        white_mill_nodes, black_mill_nodes = _sample_mill_sets(
+            rng,
+            query_variant=variant,
+            player_color=color,
+            target_answer=int(target),
+        )
         occupancy_by_node: Dict[int, str] = {int(node): "white" for node in white_mill_nodes}
         occupancy_by_node.update({int(node): "black" for node in black_mill_nodes})
 
@@ -319,10 +305,6 @@ def build_nine_mens_morris_board_state(
         white_count = len(final_analysis.white_piece_ids_in_mill)
         black_count = len(final_analysis.black_piece_ids_in_mill)
         all_count = len(final_analysis.all_piece_ids_in_mill)
-        if variant == "white_pieces_in_mill_count" and int(white_count) != int(target):
-            continue
-        if variant == "black_pieces_in_mill_count" and int(black_count) != int(target):
-            continue
         if variant == "all_pieces_in_mill_count" and int(all_count) != int(target):
             continue
 
@@ -357,25 +339,22 @@ def build_nine_mens_morris_board_state(
     raise RuntimeError(f"failed to build nine-men's-morris board for {variant} target {target}")
 
 
-def evidence_piece_ids(board_state: NineMensMorrisBoardState, *, query_variant: str) -> Tuple[str, ...]:
+def evidence_piece_ids(
+    board_state: NineMensMorrisBoardState,
+    *,
+    query_variant: str,
+    player_color: str | None = None,
+) -> Tuple[str, ...]:
     """Return prompt-facing evidence piece ids for one query variant."""
 
-    variant = str(query_variant)
-    if variant == "white_pieces_in_mill_count":
-        return tuple(str(piece_id) for piece_id in board_state.white_piece_ids_in_mill)
-    if variant == "black_pieces_in_mill_count":
-        return tuple(str(piece_id) for piece_id in board_state.black_piece_ids_in_mill)
+    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
     return tuple(str(piece_id) for piece_id in board_state.all_piece_ids_in_mill)
 
 
-def supported_targets_for_query(query_variant: str) -> Tuple[int, ...]:
+def supported_targets_for_query(query_variant: str, *, player_color: str | None = None) -> Tuple[int, ...]:
     """Return the feasible answer support for one query variant."""
 
-    variant = str(query_variant)
-    if variant == "white_pieces_in_mill_count":
-        return _WHITE_SUPPORT
-    if variant == "black_pieces_in_mill_count":
-        return _BLACK_SUPPORT
+    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
     return _ALL_SUPPORT
 
 

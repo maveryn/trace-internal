@@ -1,0 +1,92 @@
+{
+  "bundle_id": "charts_table_counting_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "value_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:styled_table_counting": [
+      "object_description"
+    ],
+    "query:threshold_count": [
+      "query_column",
+      "threshold_value",
+      "comparison_phrase"
+    ],
+    "query:in_interval": [
+      "query_column",
+      "interval_min",
+      "interval_max"
+    ],
+    "query:categorical_value_count": [
+      "query_column",
+      "target_category"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "styled_table_counting": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The image shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "threshold_count": [
+      "How many rows have a value {comparison_phrase} {threshold_value} in the {query_column} column?",
+      "Count the rows whose {query_column} value is {comparison_phrase} {threshold_value}.",
+      "How many entries in the {query_column} column are {comparison_phrase} {threshold_value}?",
+      "Determine how many rows show {query_column} {comparison_phrase} {threshold_value}.",
+      "Find the number of rows with {query_column} values {comparison_phrase} {threshold_value}."
+    ],
+    "in_interval": [
+      "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the {query_column} column?",
+      "Count the rows whose {query_column} value falls within [{interval_min}, {interval_max}], inclusive.",
+      "How many entries in the {query_column} column lie between {interval_min} and {interval_max}, inclusive?",
+      "Determine how many rows show {query_column} within the inclusive range [{interval_min}, {interval_max}].",
+      "Find the number of rows with {query_column} values in [{interval_min}, {interval_max}], inclusive."
+    ],
+    "categorical_value_count": [
+      "How many rows have {target_category} in the {query_column} column?",
+      "Count the rows whose {query_column} entry is exactly {target_category}.",
+      "How many entries in the {query_column} column are {target_category}?",
+      "Determine how many rows show {query_column} equal to {target_category}.",
+      "Find the number of rows with {target_category} listed in the {query_column} column."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

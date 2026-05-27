@@ -22,7 +22,11 @@ class TaskOutput:
     trace_payload: Dict[str, Any]
     complexity: TaskComplexity
     task_versions: Dict[str, str]
-    task_variant: str = "default"
+    # Internal generator selector used by wrappers and review replay.
+    # Public dataset identity is `query_id`.
+    query_variant: str = ""
+    scene_id: str = ""
+    query_id: str = ""
     prompt_variants: Dict[str, str] = field(default_factory=dict)
 
 
@@ -32,6 +36,7 @@ class Task(Protocol):
     task_id: str
     domain: str
     task_group: str
+    default_dataset_enabled: bool
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic task output for the given seed and params."""

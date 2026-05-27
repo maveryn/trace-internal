@@ -2,15 +2,112 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.geometry_primitives import Point
 from ..shared.graph_rendering import graph_units_to_pixel
 from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 
 COMPARISON_QUERY_TYPES: Tuple[str, str] = ("largest", "smallest")
-COMPARISON_ANSWER_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+COMPARISON_ANSWER_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
+COMPARISON_REGION_SHAPE_FAMILIES: Tuple[str, str] = ("rectangle", "triangle")
+
+
+def trace_numeric_value(value: float, *, precision: int = 6):
+    """Return a JSON-friendly numeric value without noisy float tails."""
+
+    numeric = round(float(value), int(precision))
+    if float(numeric).is_integer():
+        return int(numeric)
+    return float(numeric)
+
+
+def resolve_region_shape_family(params: Mapping[str, Any], *, fallback: str = "rectangle") -> str:
+    """Resolve the polygon family used by area/perimeter comparison scenes."""
+
+    selected = str(params.get("shape_family", fallback)).strip().lower()
+    if selected not in set(COMPARISON_REGION_SHAPE_FAMILIES):
+        raise ValueError(f"unsupported comparison shape_family: {selected}")
+    return str(selected)
+
+
+def _orientation(a: Point, b: Point, c: Point) -> float:
+    return (
+        (float(b[0]) - float(a[0])) * (float(c[1]) - float(a[1]))
+        - (float(b[1]) - float(a[1])) * (float(c[0]) - float(a[0]))
+    )
+
+
+def _point_segment_distance(point: Point, segment_a: Point, segment_b: Point) -> float:
+    px, py = float(point[0]), float(point[1])
+    ax, ay = float(segment_a[0]), float(segment_a[1])
+    bx, by = float(segment_b[0]), float(segment_b[1])
+    dx = bx - ax
+    dy = by - ay
+    denom = (dx * dx) + (dy * dy)
+    if denom <= 1e-9:
+        return math.hypot(px - ax, py - ay)
+    t_value = max(0.0, min(1.0, (((px - ax) * dx) + ((py - ay) * dy)) / denom))
+    closest = (ax + (t_value * dx), ay + (t_value * dy))
+    return math.hypot(px - closest[0], py - closest[1])
+
+
+def _segments_intersect(segment_a: Tuple[Point, Point], segment_b: Tuple[Point, Point]) -> bool:
+    a0, a1 = segment_a
+    b0, b1 = segment_b
+    o1 = _orientation(a0, a1, b0)
+    o2 = _orientation(a0, a1, b1)
+    o3 = _orientation(b0, b1, a0)
+    o4 = _orientation(b0, b1, a1)
+    return (float(o1) * float(o2) < 0.0) and (float(o3) * float(o4) < 0.0)
+
+
+def _segment_clearance(segment_a: Tuple[Point, Point], segment_b: Tuple[Point, Point]) -> float:
+    return min(
+        _point_segment_distance(segment_a[0], segment_b[0], segment_b[1]),
+        _point_segment_distance(segment_a[1], segment_b[0], segment_b[1]),
+        _point_segment_distance(segment_b[0], segment_a[0], segment_a[1]),
+        _point_segment_distance(segment_b[1], segment_a[0], segment_a[1]),
+    )
+
+
+def _polygon_edges(vertices: Sequence[Point]) -> Tuple[Tuple[Point, Point], ...]:
+    points = tuple((float(point[0]), float(point[1])) for point in vertices)
+    if len(points) < 3:
+        raise ValueError("polygon clearance requires at least three vertices")
+    return tuple((points[index], points[(index + 1) % len(points)]) for index in range(len(points)))
+
+
+def polygon_has_clearance(
+    candidate_vertices: Sequence[Point],
+    existing_polygons: Sequence[Sequence[Point]],
+    *,
+    min_segment_clearance_px: float,
+    min_vertex_clearance_px: float,
+) -> bool:
+    """Return whether one polygon is separated from already placed polygons."""
+
+    candidate_edges = _polygon_edges(candidate_vertices)
+    candidate_points = tuple((float(point[0]), float(point[1])) for point in candidate_vertices)
+    for existing_vertices in existing_polygons:
+        existing_edges = _polygon_edges(existing_vertices)
+        existing_points = tuple((float(point[0]), float(point[1])) for point in existing_vertices)
+        for candidate_edge in candidate_edges:
+            for existing_edge in existing_edges:
+                if _segments_intersect(candidate_edge, existing_edge):
+                    return False
+                if _segment_clearance(candidate_edge, existing_edge) < float(min_segment_clearance_px):
+                    return False
+        for point_a in candidate_points:
+            for point_b in existing_points:
+                if math.hypot(float(point_a[0]) - float(point_b[0]), float(point_a[1]) - float(point_b[1])) < float(
+                    min_vertex_clearance_px
+                ):
+                    return False
+    return True
 
 
 def resolve_comparison_query_type(
@@ -167,7 +264,7 @@ def apply_balanced_comparison_axes(
     if not bool(enabled):
         return resolved_query, query_probs, resolved_count, count_probs
 
-    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    sampling_index = abs(int(instance_seed))
     query_overridden = any(has_non_null_param(params, key) for key in ("query_type", "query_type_weights"))
     if (not query_overridden) and is_uniform_probability_map(query_probs):
         resolved_query = str(query_types[int(sampling_index) % len(tuple(query_types))])
@@ -184,19 +281,23 @@ def apply_balanced_comparison_axes(
 def slot_centers_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:
     """Resolve a subset of well-separated graph-unit slot centers."""
 
-    half_span = max(6, int(graph_cells // 2))
-    x_step = min(max(4, int(round(float(graph_cells) * 0.26))), max(4, int(half_span - 3)))
-    y_step = min(max(4, int(round(float(graph_cells) * 0.20))), max(4, int(half_span - 3)))
-    all_slots = [
-        (-int(x_step), int(y_step)),
-        (0, int(y_step)),
-        (int(x_step), int(y_step)),
-        (-int(x_step), -int(y_step)),
-        (0, -int(y_step)),
-        (int(x_step), -int(y_step)),
+    count = int(object_count)
+    half_span = max(8, int(graph_cells // 2))
+    columns = max(2, min(4, int((count + 1) // 2)))
+    x_limit = min(max(7, int(round(float(graph_cells) * 0.38))), max(7, int(half_span - 3)))
+    y_step = min(max(6, int(round(float(graph_cells) * 0.30))), max(6, int(half_span - 4)))
+    if columns == 2:
+        x_values = [-int(x_limit), int(x_limit)]
+    else:
+        x_values = [
+            int(round(-float(x_limit) + (2.0 * float(x_limit) * float(index) / float(columns - 1))))
+            for index in range(columns)
+        ]
+    all_slots = [(int(x), int(y_step)) for x in x_values] + [
+        (int(x), -int(y_step)) for x in x_values
     ]
     rng.shuffle(all_slots)
-    return list(all_slots[: int(object_count)])
+    return list(all_slots[:count])
 
 
 def bulky_slot_centers_graph_units(
@@ -211,29 +312,37 @@ def bulky_slot_centers_graph_units(
     angle or segment scenes, so they use a wider two-column slot bank.
     """
 
-    half_span = max(8, int(graph_cells // 2))
-    x_step = min(max(6, int(round(float(graph_cells) * 0.34))), max(6, int(half_span - 3)))
-    y_step = min(max(5, int(round(float(graph_cells) * 0.30))), max(5, int(half_span - 3)))
-    all_slots = [
-        (-int(x_step), int(y_step)),
-        (int(x_step), int(y_step)),
-        (-int(x_step), 0),
-        (int(x_step), 0),
-        (-int(x_step), -int(y_step)),
-        (int(x_step), -int(y_step)),
+    count = int(object_count)
+    half_span = max(10, int(graph_cells // 2))
+    columns = max(2, min(4, int((count + 1) // 2)))
+    x_limit = min(max(9, int(round(float(graph_cells) * 0.38))), max(9, int(half_span - 3)))
+    y_step = min(max(7, int(round(float(graph_cells) * 0.28))), max(7, int(half_span - 4)))
+    if columns == 2:
+        x_values = [-int(x_limit), int(x_limit)]
+    else:
+        x_values = [
+            int(round(-float(x_limit) + (2.0 * float(x_limit) * float(index) / float(columns - 1))))
+            for index in range(columns)
+        ]
+    all_slots = [(int(x), int(y_step)) for x in x_values] + [
+        (int(x), -int(y_step)) for x in x_values
     ]
     rng.shuffle(all_slots)
-    return list(all_slots[: int(object_count)])
+    return list(all_slots[:count])
 
 
 __all__ = [
     "COMPARISON_ANSWER_LABEL_POOL",
+    "COMPARISON_REGION_SHAPE_FAMILIES",
     "COMPARISON_QUERY_TYPES",
     "apply_balanced_comparison_axes",
     "bulky_slot_centers_graph_units",
     "graph_units_to_pixel",
+    "polygon_has_clearance",
     "resolve_comparison_object_count",
     "resolve_comparison_query_type",
     "resolve_comparison_winner_label",
+    "resolve_region_shape_family",
     "slot_centers_graph_units",
+    "trace_numeric_value",
 ]

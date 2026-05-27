@@ -1,6 +1,6 @@
 ---
 name: task-unit-audit
-description: Use when auditing whether a TRACE task is the right unit for uniform task-level sampling, especially to decide whether tasks should be kept, broadened, merged, split, or retired based on visual-grounding breadth and within-task variety.
+description: Use when auditing whether a TRACE task is the right unit for uniform task-level sampling, especially to decide whether tasks should be kept, broadened, merged, split, or removed based on visual-grounding breadth and within-task variety.
 ---
 
 # Task-Unit Audit

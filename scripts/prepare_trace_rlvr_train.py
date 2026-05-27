@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and export an equal-split TRACE dataset for RLVR training."""
+"""Build and export a default-task TRACE dataset for RLVR training."""
 
 from __future__ import annotations
 
@@ -12,7 +12,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from trace.core.build_presets import build_equal_split_all_tasks_config
+from trace.core.build_presets import (
+    build_equal_split_all_tasks_config,
+    build_variant_weighted_all_tasks_config,
+)
 from trace.core.builder import BuildError, build_dataset, resolve_build_paths
 from trace.core.rlvr_export import export_trace_dataset_to_rlvr, resolve_export_output_path
 
@@ -30,7 +33,7 @@ def _remove_path(path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build an equal-split all-task TRACE dataset and export it to RLVR parquet"
+        description="Build a default-task TRACE dataset and export it to RLVR parquet"
     )
     parser.add_argument("--output-root", default="./out", help="TRACE build output root")
     parser.add_argument(
@@ -42,9 +45,27 @@ def main() -> int:
         "--num-instances",
         type=int,
         default=128000,
-        help="Total TRACE instances to generate; must divide evenly across active tasks",
+        help="Total TRACE instances to generate; equal mode requires divisibility across active tasks",
     )
-    parser.add_argument("--instance-version", default="v1", help="TRACE instance ABI version")
+    parser.add_argument(
+        "--task-sampling-policy",
+        choices=("equal", "variant_aware"),
+        default="equal",
+        help="Task-level sampling policy: equal per-task counts or counts scaled by active query-variant support",
+    )
+    parser.add_argument(
+        "--variant-weight-alpha",
+        type=float,
+        default=0.0,
+        help="Variant-aware task weight alpha: weight = 1 + alpha * (active_variant_count - 1)",
+    )
+    parser.add_argument(
+        "--variant-count-probe-samples",
+        type=int,
+        default=8,
+        help="Deterministic per-task probes used to resolve active variant counts for variant-aware sampling",
+    )
+    parser.add_argument("--instance-version", default="v0", help="TRACE instance ABI version")
     parser.add_argument("--image-format", default="png", help="TRACE image format")
     parser.add_argument(
         "--max-attempts-per-instance",
@@ -110,23 +131,45 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    config = build_equal_split_all_tasks_config(
-        output_root=str(args.output_root),
-        dataset_name=str(args.dataset_name),
-        num_instances=int(args.num_instances),
-        instance_version=str(args.instance_version),
-        image_format=str(args.image_format),
-        strict_repro=False,
-        max_attempts_per_instance=int(args.max_attempts_per_instance),
-        sampling_seed=int(args.sampling_seed),
-        workers=int(args.workers),
-        max_in_flight=int(args.max_in_flight),
-    )
+    if str(args.task_sampling_policy) == "variant_aware":
+        config = build_variant_weighted_all_tasks_config(
+            output_root=str(args.output_root),
+            dataset_name=str(args.dataset_name),
+            num_instances=int(args.num_instances),
+            variant_weight_alpha=float(args.variant_weight_alpha),
+            instance_version=str(args.instance_version),
+            image_format=str(args.image_format),
+            strict_repro=False,
+            max_attempts_per_instance=int(args.max_attempts_per_instance),
+            sampling_seed=int(args.sampling_seed),
+            workers=int(args.workers),
+            max_in_flight=int(args.max_in_flight),
+            variant_count_probe_samples=int(args.variant_count_probe_samples),
+        )
+    else:
+        config = build_equal_split_all_tasks_config(
+            output_root=str(args.output_root),
+            dataset_name=str(args.dataset_name),
+            num_instances=int(args.num_instances),
+            instance_version=str(args.instance_version),
+            image_format=str(args.image_format),
+            strict_repro=False,
+            max_attempts_per_instance=int(args.max_attempts_per_instance),
+            sampling_seed=int(args.sampling_seed),
+            workers=int(args.workers),
+            max_in_flight=int(args.max_in_flight),
+        )
     task_count = len(config.tasks)
     per_task_count = int(config.tasks[0].count or 0) if config.tasks else 0
+    min_task_count = min((int(task.count or 0) for task in config.tasks), default=0)
+    max_task_count = max((int(task.count or 0) for task in config.tasks), default=0)
+    min_task_weight = min((float(task.weight or 1.0) for task in config.tasks), default=0.0)
+    max_task_weight = max((float(task.weight or 1.0) for task in config.tasks), default=0.0)
     print(
-        f"TRACE build: tasks={task_count} per_task={per_task_count} total={args.num_instances} "
-        f"workers={args.workers} max_in_flight={args.max_in_flight}"
+        f"TRACE build: tasks={task_count} policy={args.task_sampling_policy} per_task={per_task_count} "
+        f"task_count_range={min_task_count}..{max_task_count} "
+        f"task_weight_range={min_task_weight:.3f}..{max_task_weight:.3f} "
+        f"total={args.num_instances} workers={args.workers} max_in_flight={args.max_in_flight}"
     )
 
     rlvr_output = (

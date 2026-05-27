@@ -8,25 +8,22 @@ generation:
     ellipse_axis_max: 10
     ellipse_allow_circle: false
   task_overrides:
-    task_geometry_measurement_value:
+    geometry_measurement_value_base:
       query_variant_weights:
         angle: 1.0
-        length: 1.0
         area: 1.0
         perimeter: 1.0
         slope: 1.0
       scene_variant_weights:
         angle: 1.0
-        segment: 1.0
         triangle: 1.0
         quadrilateral: 1.0
-        pentagon: 1.0
         circle: 1.0
         ellipse: 1.0
         line: 1.0
       balanced_query_variant_sampling: true
       balanced_scene_variant_sampling: true
-    task_geometry_measurement_angle:
+    source_geometry_measurement_angle:
       min_angle: 30
       max_angle: 150
       angle_step: 1
@@ -37,7 +34,7 @@ generation:
       source_kind_weights:
         primitive_angle: 1.0
         intersection_lines: 1.0
-    task_geometry_measurement_area:
+    source_geometry_measurement_area:
       answer_min: 8
       answer_max: 96
       balanced_variant_sampling: true
@@ -46,7 +43,7 @@ generation:
         quadrilateral: 1.0
         ellipse: 1.0
       ellipse_allow_circle: true
-    task_geometry_measurement_perimeter:
+    source_geometry_measurement_perimeter:
       answer_min: 8
       answer_max: 64
       balanced_variant_sampling: true
@@ -54,7 +51,7 @@ generation:
         triangle: 1.0
         quadrilateral: 1.0
         circle: 1.0
-    task_geometry_measurement_length:
+    source_geometry_measurement_length:
       answer_min: 2
       answer_max: 20
       balanced_variant_sampling: true
@@ -70,7 +67,7 @@ generation:
       segment_length_min: 2
       segment_length_max: 20
       segment_vector_max_abs_component: 20
-    task_geometry_measurement_slope:
+    source_geometry_measurement_slope:
       slope_tenths_min: -40
       slope_tenths_max: 40
       balanced_sampling: true
@@ -88,81 +85,557 @@ rendering:
     label_stroke_width: 1
     label_stroke_width_min: 1
     label_stroke_width_max: 2
-
+  task_overrides:
+    task_geometry__angle_relations__angle_chain_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__angle_relations__algebraic_angle_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__triangle_relations__parallel_section_length_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__triangle_relations__pythagorean_length_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__triangle_relations__angle_bisector_segment_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__triangle_relations__centroid_median_segment_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__area_partition__parallelogram_area_partition_total_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__area_partition__triangle_area_partition_total_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__trapezoid_extension__trapezoid_extension_length_value:
+      canvas_width: 780
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__trapezoid_extension__trapezoid_extension_area_value:
+      canvas_width: 780
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__composite_shape__composite_area_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__composite_shape__composite_perimeter_value:
+      canvas_width: 720
+      canvas_height: 560
+      label_font_size: 22
+      point_label_font_size: 18
+    task_geometry__composite_shape__curvilinear_composite_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__composite_shape__curvilinear_composite_perimeter_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__composite_shape__curvilinear_missing_side_from_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__composite_shape__curvilinear_sector_angle_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__sector__sector_measure_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__sector__sector_angle_relation_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__triangle_relations__right_triangle_missing_side_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__triangle_relations__right_triangle_angle_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__paper_fold__paper_fold_angle_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+      point_label_font_size: 17
+    task_geometry__concentric_chord__concentric_circle_chord_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__tangent_packing__tangent_packing_length_value:
+      canvas_width: 780
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__tangent_packing__tangent_packing_shaded_area_value:
+      canvas_width: 780
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__incircle_tangents__incircle_tangent_perimeter_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__incircle_tangents__incircle_radius_from_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__pythagorean_dissection__pythagorean_square_area_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__cone_net__cone_sector_net_value:
+      canvas_width: 760
+      canvas_height: 560
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__cuboid_views__cuboid_projection_surface_area_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_revolution__revolution_cylinder_volume_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_revolution__revolution_cone_volume_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_revolution__revolution_double_cone_volume_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_revolution__revolution_frustum_volume_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_formula__solid_formula_missing_dimension_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    task_geometry__solid_cross_section__solid_cross_section_area_value:
+      canvas_width: 820
+      canvas_height: 580
+      label_font_size: 22
+      small_label_font_size: 18
+    source_geometry_measurement_perimeter:
+      graph_cells_max: 24
 prompt:
   shared:
-    bundle_id: geometry_measurement_v1
-    task_family_key: measurement_single_object
+    bundle_id: geometry_measurement_v0
+    scene_key: measurement_single_object
     task_key: measurement_query
     object_description_segment: a labeled line segment
     object_description_polygon: a polygon
     object_description_ellipse: an ellipse
     object_description_circle: a circle
-    evidence_hint_point_map: set "evidence" to a JSON object mapping each required label to one graph-unit coordinate [x, y]
+    evidence_hint_point_map: set "evidence" to a JSON object mapping each required label to one pixel point [x,y]
     evidence_hint_segment: provide exactly two labels for the measured segment endpoints
     evidence_hint_polygon_side: provide exactly two labels for the measured polygon side endpoints
     evidence_hint_circle_center: provide exactly one label for the circle center point
     evidence_hint_ellipse_axis: provide exactly two labels for the measured ellipse-axis endpoints
     answer_hint_integer: set "answer" to the measurement value as an integer
     answer_hint_pi: set "answer" to the measurement value in the form kπ (for example 12π)
-    json_example_integer: '{"evidence":{"A":[0,0],"B":[4,0]},"answer":4}'
-    json_example_pi: '{"evidence":{"A":[0,0],"B":[3,0]},"answer":"6π"}'
+    json_example_integer: '{"evidence":{"A":[120,180],"B":[260,180]},"answer":4}'
+    json_example_pi: '{"evidence":{"A":[160,220],"B":[280,220]},"answer":"6π"}'
     json_example_answer_only_integer: '{"answer":8}'
     json_example_answer_only_pi: '{"answer":"12π"}'
   task_overrides:
-    task_geometry_measurement_angle:
-      bundle_id: geometry_angle_measure_v1
+    source_geometry_measurement_angle:
+      bundle_id: geometry_angle_measure_v0
       task_key: measurement_angle_value
-      evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints'
+      evidence_hint: 'set "evidence" to an array of exactly three pixel points [x,y] for the queried angle: the vertex and the two ray endpoints'
       answer_hint: set "answer" to the angle value rounded to the nearest integer
-      json_example: '{"evidence":[[0,2],[0,0],[3,0]],"answer":90}'
+      json_example: '{"evidence":[[180,120],[180,240],[300,240]],"answer":90}'
       json_example_answer_only: '{"answer":45}'
-    task_geometry_measurement_area:
+    source_geometry_measurement_area:
       question_text_polygon: What is the area of the polygon in square units?
       question_text_ellipse: What is the area of the ellipse in square units? Express the answer in the form kπ.
-      evidence_hint_polygon: set "evidence" to an array of graph-paper points for all polygon vertices
-      evidence_hint_ellipse: set "evidence" to one graph-paper point [x, y] for the ellipse center
-      json_example_triangle: '{"evidence":[[0,0],[4,0],[0,3]],"answer":6}'
-      json_example_quadrilateral: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}'
-      json_example_ellipse: '{"evidence":[[0,0]],"answer":"6π"}'
-      json_example_integer: '{"evidence":[[0,0],[4,0],[0,3]],"answer":6}'
-      json_example_pi: '{"evidence":[[0,0]],"answer":"6π"}'
-    task_geometry_measurement_perimeter:
+      evidence_hint_polygon: set "evidence" to an array of pixel points [x,y] for all polygon vertices
+      evidence_hint_ellipse: set "evidence" to an array containing one pixel point [x,y] for the ellipse center
+      json_example_triangle: '{"evidence":[[120,220],[260,220],[120,340]],"answer":6}'
+      json_example_quadrilateral: '{"evidence":[[120,180],[280,180],[280,260],[120,260]],"answer":8}'
+      json_example_ellipse: '{"evidence":[[220,220]],"answer":"6π"}'
+      json_example_integer: '{"evidence":[[120,220],[260,220],[120,340]],"answer":6}'
+      json_example_pi: '{"evidence":[[220,220]],"answer":"6π"}'
+    source_geometry_measurement_perimeter:
       question_text_polygon: What is the perimeter of the polygon in graph units?
       question_text_circle: What is the circumference of the circle in graph units? Express the answer in the form kπ.
-      evidence_hint_polygon: set "evidence" to an array of graph-paper points for all polygon vertices
-      evidence_hint_circle: set "evidence" to one graph-paper point [x, y] for the circle center
-      json_example_triangle: '{"evidence":[[0,0],[4,0],[0,3]],"answer":12}'
-      json_example_quadrilateral: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":12}'
-      json_example_circle: '{"evidence":[[0,0]],"answer":"8π"}'
-      json_example_integer: '{"evidence":[[0,0],[4,0],[0,3]],"answer":12}'
-      json_example_pi: '{"evidence":[[0,0]],"answer":"8π"}'
-    task_geometry_measurement_length:
+      evidence_hint_polygon: set "evidence" to an array of pixel points [x,y] for all polygon vertices
+      evidence_hint_circle: set "evidence" to an array containing one pixel point [x,y] for the circle center
+      json_example_triangle: '{"evidence":[[120,220],[260,220],[120,340]],"answer":12}'
+      json_example_quadrilateral: '{"evidence":[[120,180],[280,180],[280,260],[120,260]],"answer":12}'
+      json_example_circle: '{"evidence":[[220,220]],"answer":"8π"}'
+      json_example_integer: '{"evidence":[[120,220],[260,220],[120,340]],"answer":12}'
+      json_example_pi: '{"evidence":[[220,220]],"answer":"8π"}'
+    source_geometry_measurement_length:
       question_template_segment: What is the length of segment {label_a}{label_b} in graph units?
       question_template_polygon_side: What is the length of side {label_a}{label_b} in graph units?
       question_text_circle_radius: What is the radius of the circle in graph units?
       question_text_circle_diameter: What is the diameter of the circle in graph units?
       question_text_ellipse_major_axis: What is the length of the major axis of the ellipse in graph units?
       question_text_ellipse_minor_axis: What is the length of the minor axis of the ellipse in graph units?
-      evidence_hint_segment: set "evidence" to an array of exactly two graph-paper points for the measured segment endpoints
-      evidence_hint_polygon_side: set "evidence" to an array of exactly two graph-paper points for the measured polygon-side endpoints
-      evidence_hint_circle_center: set "evidence" to an array of exactly one graph-paper point for the circle center
-      evidence_hint_ellipse_axis: set "evidence" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints
-      json_example_segment_integer: '{"evidence":[[1,2],[6,2]],"answer":5}'
-      json_example_polygon_side_integer: '{"evidence":[[0,0],[3,4]],"answer":5}'
-      json_example_circle_radius_integer: '{"evidence":[[0,0]],"answer":4}'
-      json_example_circle_diameter_integer: '{"evidence":[[0,0]],"answer":8}'
-      json_example_ellipse_major_axis_integer: '{"evidence":[[-4,0],[4,0]],"answer":8}'
-      json_example_ellipse_minor_axis_integer: '{"evidence":[[0,-3],[0,3]],"answer":6}'
-      json_example_integer: '{"evidence":[[1,2],[6,2]],"answer":5}'
-    task_geometry_measurement_slope:
+      evidence_hint_segment: set "evidence" to an array of exactly two pixel points [x,y] for the measured segment endpoints
+      evidence_hint_polygon_side: set "evidence" to an array of exactly two pixel points [x,y] for the measured polygon-side endpoints
+      evidence_hint_circle_center: set "evidence" to an array containing exactly one pixel point [x,y] for the circle center
+      evidence_hint_ellipse_axis: set "evidence" to an array of exactly two pixel points [x,y] for the measured ellipse-axis endpoints
+      json_example_segment_integer: '{"evidence":[[120,180],[280,180]],"answer":5}'
+      json_example_polygon_side_integer: '{"evidence":[[140,180],[260,300]],"answer":5}'
+      json_example_circle_radius_integer: '{"evidence":[[220,220]],"answer":4}'
+      json_example_circle_diameter_integer: '{"evidence":[[220,220]],"answer":8}'
+      json_example_ellipse_major_axis_integer: '{"evidence":[[140,220],[300,220]],"answer":8}'
+      json_example_ellipse_minor_axis_integer: '{"evidence":[[220,160],[220,280]],"answer":6}'
+      json_example_integer: '{"evidence":[[120,180],[280,180]],"answer":5}'
+    source_geometry_measurement_slope:
       object_description: a straight line
       question_text: What is the slope of the line?
-      evidence_hint: set "evidence" to one graph-paper point [x, y] where the line crosses the x-axis
+      evidence_hint: set "evidence" to an array containing one pixel point [x,y] where the line crosses the x-axis
       answer_hint: set "answer" to the slope value rounded to one decimal place
-      json_example: '{"evidence":[2,0],"answer":-1.5}'
+      json_example: '{"evidence":[[220,300]],"answer":-1.5}'
       json_example_answer_only: '{"answer":-1.5}'
-
+    task_geometry__angle_relations__angle_chain_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: angle_relation_scene
+      task_key: analytical_measurement_value_query
+      object_description: labeled angle relations and constraint marks
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__angle_relations__algebraic_angle_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: angle_relation_scene
+      task_key: analytical_measurement_value_query
+      object_description: labeled angle relations with algebraic expressions
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__triangle_relations__parallel_section_length_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: parallel_section_scene
+      task_key: analytical_measurement_value_query
+      object_description: a triangle with a segment parallel to one side
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__triangle_relations__pythagorean_length_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: pythagorean_length_scene
+      task_key: analytical_measurement_value_query
+      object_description: labeled right-triangle length relationships
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__triangle_relations__angle_bisector_segment_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: triangle_special_segment_scene
+      task_key: analytical_measurement_value_query
+      object_description: a triangle with a marked special segment
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__triangle_relations__centroid_median_segment_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: triangle_special_segment_scene
+      task_key: analytical_measurement_value_query
+      object_description: a triangle with a marked special segment
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__area_partition__parallelogram_area_partition_total_area_value:
+      bundle_id: geometry_area_partition_v0
+      scene_key: parallelogram_area_partition_scene
+      task_key: area_partition_value_query
+      object_description: a parallelogram partitioned by diagonals and optional midpoint marks, with one shaded region and its area labeled
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target total-area cue, the shaded region, the shaded-area label, and the visible partition marks
+      answer_hint_number: set "answer" to the total area as an integer
+      json_example: '{"evidence":[[520,498,650,526],[120,160,360,420],[500,70,650,98],[120,150,640,430]],"answer":186}'
+      json_example_answer_only: '{"answer":186}'
+    task_geometry__area_partition__triangle_area_partition_total_area_value:
+      bundle_id: geometry_area_partition_v0
+      scene_key: triangle_area_partition_scene
+      task_key: area_partition_value_query
+      object_description: a triangle partitioned by a median, a midsegment, or medians meeting at a centroid, with one shaded region and its area labeled
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target total-area cue, the shaded region, the shaded-area label, and the visible partition marks
+      answer_hint_number: set "answer" to the total area as an integer
+      json_example: '{"evidence":[[520,498,650,526],[120,160,360,420],[500,70,650,98],[120,150,640,430]],"answer":186}'
+      json_example_answer_only: '{"answer":186}'
+    task_geometry__trapezoid_extension__trapezoid_extension_length_value:
+      bundle_id: geometry_trapezoid_extension_v0
+      scene_key: trapezoid_extension_scene
+      task_key: trapezoid_extension_value_query
+      object_description: a solid trapezoid completed into a parallelogram by a dashed extension
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target length cue, the original trapezoid, the dashed parallelogram completion, and the supporting visible labels needed for the computation
+      answer_hint_number: set "answer" to the requested length as an integer
+      json_example: '{"evidence":[[500,188,552,216],[85,160,655,430],[345,160,695,430],[210,70,640,210]],"answer":8}'
+      json_example_answer_only: '{"answer":8}'
+    task_geometry__trapezoid_extension__trapezoid_extension_area_value:
+      bundle_id: geometry_trapezoid_extension_v0
+      scene_key: trapezoid_extension_scene
+      task_key: trapezoid_extension_value_query
+      object_description: a solid trapezoid completed into a parallelogram by a dashed extension
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target area cue, the original trapezoid, the dashed parallelogram completion, and the supporting visible labels needed for the computation
+      answer_hint_number: set "answer" to the trapezoid area as an integer
+      json_example: '{"evidence":[[450,492,650,526],[85,160,655,430],[345,160,695,430],[210,70,640,210]],"answer":84}'
+      json_example_answer_only: '{"answer":84}'
+    task_geometry__composite_shape__composite_area_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: rectilinear_composite_scene
+      task_key: analytical_measurement_value_query
+      object_description: a straight-edged composite shape with measurement labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target region followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__composite_shape__composite_perimeter_value:
+      bundle_id: geometry_analytical_measurement_v0
+      scene_key: rectilinear_composite_scene
+      task_key: analytical_measurement_value_query
+      object_description: a straight-edged composite shape with measurement labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target boundary followed by the supporting visible labels or constraint marks needed for the computation
+      answer_hint_integer: set "answer" to the requested value as an integer
+    task_geometry__composite_shape__curvilinear_composite_area_value:
+      bundle_id: geometry_curvilinear_composite_v0
+      scene_key: curvilinear_composite_scene
+      task_key: curvilinear_value_query
+      object_description: a shaded composite shape with straight and curved boundaries plus measurement labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible measurement label boxes needed for the computation
+      answer_hint_number: set "answer" to the requested value rounded to one decimal place
+      json_example: '{"evidence":[[120,280,240,306],[42,120,78,240],[300,110,360,136]],"answer":42.5}'
+      json_example_answer_only: '{"answer":42.5}'
+    task_geometry__composite_shape__curvilinear_composite_perimeter_value:
+      bundle_id: geometry_curvilinear_composite_v0
+      scene_key: curvilinear_composite_scene
+      task_key: curvilinear_value_query
+      object_description: a shaded composite shape with straight sides, curved boundary arcs, and measurement labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible straight-boundary and arc label boxes needed for the computation
+      answer_hint_number: set "answer" to the requested value rounded to one decimal place
+      json_example: '{"evidence":[[120,280,240,306],[300,110,420,136]],"answer":31.4}'
+      json_example_answer_only: '{"answer":31.4}'
+    task_geometry__composite_shape__curvilinear_missing_side_from_area_value:
+      bundle_id: geometry_curvilinear_composite_v0
+      scene_key: curvilinear_composite_scene
+      task_key: curvilinear_value_query
+      object_description: a shaded composite shape with one side marked by a question mark and enough labels to compute it
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the unknown-side cue and supporting visible label boxes needed for the computation
+      answer_hint_number: set "answer" to the missing side length rounded to one decimal place
+      json_example: '{"evidence":[[120,280,240,306],[42,120,78,240],[300,110,360,136],[160,52,280,82]],"answer":12.0}'
+      json_example_answer_only: '{"answer":12.0}'
+    task_geometry__composite_shape__curvilinear_sector_angle_value:
+      bundle_id: geometry_curvilinear_composite_v0
+      scene_key: curvilinear_composite_scene
+      task_key: curvilinear_value_query
+      object_description: a circular sector with a marked central angle and formula labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the marked angle cue followed by the visible radius and arc or area labels needed for the computation
+      answer_hint_number: set "answer" to the angle measure in degrees rounded to one decimal place
+      json_example: '{"evidence":[[190,150,224,184],[96,236,174,264],[420,180,520,208],[420,220,500,248]],"answer":90.0}'
+      json_example_answer_only: '{"answer":90.0}'
+    task_geometry__sector__sector_measure_value:
+      bundle_id: geometry_sector_formula_v0
+      scene_key: sector_formula_scene
+      task_key: sector_formula_value_query
+      object_description: a circular sector with radius, central-angle, arc, and area labels as needed
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible label boxes needed for the computation
+      answer_hint_number: set "answer" to the requested value rounded to one decimal place
+      json_example: '{"evidence":[[116,260,184,290],[250,236,286,266]],"answer":42.4}'
+      json_example_answer_only: '{"answer":42.4}'
+    task_geometry__sector__sector_angle_relation_value:
+      bundle_id: geometry_sector_formula_v0
+      scene_key: sector_formula_scene
+      task_key: sector_formula_value_query
+      object_description: a circular sector with a marked central angle or adjacent angle relation
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the marked angle cue and visible label boxes needed for the computation
+      answer_hint_number: set "answer" to the angle measure in degrees rounded to one decimal place
+      json_example: '{"evidence":[[300,210,334,244],[116,260,184,290],[540,200,630,230],[540,280,620,310],[540,240,650,270]],"answer":54.1}'
+      json_example_answer_only: '{"answer":54.1}'
+    task_geometry__triangle_relations__right_triangle_missing_side_value:
+      bundle_id: geometry_right_triangle_trig_v0
+      scene_key: right_triangle_trig_scene
+      task_key: right_triangle_trig_value_query
+      object_description: a right-triangle trigonometry diagram with one side marked by a question mark
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the unknown-side cue, marked angle label, and visible side-label box needed for the computation
+      answer_hint_number: set "answer" to the missing side length rounded to one decimal place
+      json_example: '{"evidence":[[420,210,520,238],[150,340,260,376],[300,440,390,468]],"answer":12.7}'
+      json_example_answer_only: '{"answer":12.7}'
+    task_geometry__triangle_relations__right_triangle_angle_value:
+      bundle_id: geometry_right_triangle_trig_v0
+      scene_key: right_triangle_trig_scene
+      task_key: right_triangle_trig_value_query
+      object_description: a right-triangle trigonometry diagram with side labels and a marked angle
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the marked angle cue and visible side-label boxes needed for the computation
+      answer_hint_number: set "answer" to the angle measure in degrees rounded to one decimal place
+      json_example: '{"evidence":[[150,340,210,376],[300,440,390,468],[420,210,520,238]],"answer":36.9}'
+      json_example_answer_only: '{"answer":36.9}'
+    task_geometry__paper_fold__paper_fold_angle_value:
+      bundle_id: geometry_paper_fold_measurement_v0
+      scene_key: paper_fold_measurement_scene
+      task_key: paper_fold_measurement_value_query
+      object_description: a folded paper corner where the crease bisects the marked angle, with dashed original edges, a folded edge, and angle labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target x angle cue followed by the supporting visible angle label
+      answer_hint_number: set "answer" to the angle measure in degrees rounded to one decimal place
+      json_example: '{"evidence":[[260,210,292,242],[180,150,245,180]],"answer":58.0}'
+      json_example_answer_only: '{"answer":58.0}'
+    task_geometry__concentric_chord__concentric_circle_chord_value:
+      bundle_id: geometry_concentric_circle_chord_v0
+      scene_key: concentric_circle_chord_scene
+      task_key: concentric_circle_chord_value_query
+      object_description: two concentric circles with a chord of the outer circle tangent to the inner circle
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible label boxes needed for the requested computation
+      answer_hint_number: set "answer" to the requested length rounded to one decimal place
+      json_example: '{"evidence":[[410,220,470,248],[260,170,320,198]],"answer":24.0}'
+      json_example_answer_only: '{"answer":24.0}'
+    task_geometry__tangent_packing__tangent_packing_length_value:
+      bundle_id: geometry_circle_square_tangent_packing_v0
+      scene_key: tangent_packing_scene
+      task_key: tangent_packing_value_query
+      object_description: circles and squares tangent to a square, circular, or rectangular container
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target length cue, the tangent-packing diagram, and the supporting visible label boxes needed for the computation
+      answer_hint_number: set "answer" to the requested length rounded to one decimal place
+      json_example: '{"evidence":[[520,250,570,280],[170,110,500,440],[180,430,490,510]],"answer":6.0}'
+      json_example_answer_only: '{"answer":6.0}'
+    task_geometry__tangent_packing__tangent_packing_shaded_area_value:
+      bundle_id: geometry_circle_square_tangent_packing_v0
+      scene_key: tangent_packing_scene
+      task_key: tangent_packing_value_query
+      object_description: a shaded tangent-packing region formed by circles, squares, and rectangular containers
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target shaded-area cue, the shaded tangent-packing diagram, and the supporting visible label boxes needed for the computation
+      answer_hint_number: set "answer" to the shaded area rounded to one decimal place
+      json_example: '{"evidence":[[540,88,675,120],[170,110,500,440],[180,430,490,510]],"answer":30.9}'
+      json_example_answer_only: '{"answer":30.9}'
+    task_geometry__solid_formula__solid_formula_missing_dimension_value:
+      bundle_id: geometry_solid_formula_v0
+      scene_key: solid_formula_scene
+      task_key: solid_formula_value_query
+      object_description: a compound solid with one dimension marked by a question mark and enough formula labels to compute it
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the unknown-dimension label followed by the visible measurement label boxes needed for the computation
+      answer_hint_number: set "answer" to the missing dimension rounded to one decimal place
+      json_example: '{"evidence":[[430,132,482,160],[96,70,206,118],[626,250,704,278]],"answer":4.5}'
+      json_example_answer_only: '{"answer":4.5}'
+    task_geometry__solid_cross_section__solid_cross_section_area_value:
+      bundle_id: geometry_solid_cross_section_v0
+      scene_key: solid_cross_section_scene
+      task_key: solid_cross_section_value_query
+      object_description: a cone or square pyramid cut by a plane parallel to its base, with the cross-section marked and the needed dimensions labeled
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target area cue, the marked cross-section, and the visible measurement label boxes needed for the computation
+      answer_hint_number: set "answer" to the marked cross-section area rounded to one decimal place
+      json_example: '{"evidence":[[390,184,430,212],[330,205,490,240],[560,440,640,468],[620,210,700,238],[318,120,380,148]],"answer":38.5}'
+      json_example_answer_only: '{"answer":38.5}'
+    task_geometry__incircle_tangents__incircle_tangent_perimeter_value:
+      bundle_id: geometry_tangent_polygon_incircle_v0
+      scene_key: tangent_polygon_incircle_scene
+      task_key: tangent_polygon_incircle_value_query
+      object_description: triangle ABC with an incircle tangent to all three sides and equal tangent-segment labels from each vertex
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible tangent-segment label boxes needed for the computation
+      answer_hint_number: set "answer" to the perimeter rounded to one decimal place
+      json_example: '{"evidence":[[120,430,230,458],[520,430,630,458],[320,60,430,88]],"answer":42.0}'
+      json_example_answer_only: '{"answer":42.0}'
+    task_geometry__incircle_tangents__incircle_radius_from_area_value:
+      bundle_id: geometry_tangent_polygon_incircle_v0
+      scene_key: tangent_polygon_incircle_scene
+      task_key: tangent_polygon_incircle_value_query
+      object_description: triangle ABC with an incircle tangent to all three sides, equal tangent-segment labels from each vertex, and an area label
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible tangent-segment and area label boxes needed for the computation
+      answer_hint_number: set "answer" to the incircle radius rounded to one decimal place
+      json_example: '{"evidence":[[120,430,230,458],[520,430,630,458],[320,60,430,88],[560,80,660,108]],"answer":4.0}'
+      json_example_answer_only: '{"answer":4.0}'
+    task_geometry__pythagorean_dissection__pythagorean_square_area_value:
+      bundle_id: geometry_pythagorean_square_dissection_v0
+      scene_key: pythagorean_square_dissection_scene
+      task_key: pythagorean_square_dissection_value_query
+      object_description: an outer square dissected into four congruent right triangles around a central tilted square, with one side split into two labeled triangle legs
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the visible outer-square side label and the two triangle-leg labels needed for the computation
+      answer_hint_number: set "answer" to the central square area rounded to one decimal place
+      json_example: '{"evidence":[[300,40,450,68],[210,105,280,133],[360,105,455,133]],"answer":169.0}'
+      json_example_answer_only: '{"answer":169.0}'
+    task_geometry__cone_net__cone_sector_net_value:
+      bundle_id: geometry_cone_sector_net_v0
+      scene_key: cone_sector_net_scene
+      task_key: cone_sector_net_value_query
+      object_description: a circular sector net folded into a cone, with the sector radius labeled as the cone slant height and a marked central angle
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target cue, the slant-height label, and the sector-angle label
+      answer_hint_number: set "answer" to the requested cone measure rounded to one decimal place
+      json_example: '{"evidence":[[610,430,660,458],[120,340,190,368],[230,230,320,258]],"answer":5.0}'
+      json_example_answer_only: '{"answer":5.0}'
+    task_geometry__cuboid_views__cuboid_projection_surface_area_value:
+      bundle_id: geometry_cuboid_orthographic_views_v0
+      scene_key: cuboid_orthographic_views_scene
+      task_key: cuboid_orthographic_value_query
+      object_description: front, right, and top orthographic rectangular views of one cuboid, each labeled with that view's perimeter
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target surface-area cue followed by the visible top-view, front-view, and right-view perimeter labels
+      answer_hint_number: set "answer" to the cuboid total surface area as an integer
+      json_example: '{"evidence":[[620,100,690,136],[210,500,280,528],[580,500,650,528],[70,360,140,388]],"answer":148}'
+      json_example_answer_only: '{"answer":148}'
+    task_geometry__solid_revolution__revolution_cylinder_volume_value:
+      bundle_id: geometry_solid_revolution_v0
+      scene_key: solid_revolution_scene
+      task_key: solid_revolution_value_query
+      object_description: a rectangle rotated 360° about its marked center line to form a cylinder, with height and either a diameter or diagonal label
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target volume cue followed by the visible diameter-or-diagonal label and the height label
+      answer_hint_number: set "answer" to the resulting cylinder volume rounded to one decimal place
+      json_example: '{"evidence":[[620,108,680,136],[220,460,280,488],[120,260,180,288]],"answer":251.3}'
+      json_example_answer_only: '{"answer":251.3}'
+    task_geometry__solid_revolution__revolution_cone_volume_value:
+      bundle_id: geometry_solid_revolution_v0
+      scene_key: solid_revolution_scene
+      task_key: solid_revolution_value_query
+      object_description: a right triangle rotated 360° about one leg to form a cone, with height and slant-height labels
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target volume cue followed by the visible slant-height and height labels
+      answer_hint_number: set "answer" to the resulting cone volume rounded to one decimal place
+      json_example: '{"evidence":[[620,108,680,136],[220,460,280,488],[120,260,180,288]],"answer":150.8}'
+      json_example_answer_only: '{"answer":150.8}'
+    task_geometry__solid_revolution__revolution_double_cone_volume_value:
+      bundle_id: geometry_solid_revolution_v0
+      scene_key: solid_revolution_scene
+      task_key: solid_revolution_value_query
+      object_description: a triangle rotated 360° about its marked side to form two congruent cones
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target volume cue followed by the visible radius and one-cone-height labels
+      answer_hint_number: set "answer" to the resulting double-cone volume rounded to one decimal place
+      json_example: '{"evidence":[[620,108,680,136],[220,320,280,348],[120,260,180,288]],"answer":201.1}'
+      json_example_answer_only: '{"answer":201.1}'
+    task_geometry__solid_revolution__revolution_frustum_volume_value:
+      bundle_id: geometry_solid_revolution_v0
+      scene_key: solid_revolution_scene
+      task_key: solid_revolution_value_query
+      object_description: a right trapezoid rotated 360° about its marked side to form a frustum
+      evidence_hint: set "evidence" to a JSON array of pixel bounding boxes [x0,y0,x1,y1] for the target volume cue followed by the visible top-radius, bottom-radius, and height labels
+      answer_hint_number: set "answer" to the resulting frustum volume rounded to one decimal place
+      json_example: '{"evidence":[[620,108,680,136],[210,90,270,118],[220,460,290,488],[120,260,180,288]],"answer":245.0}'
+      json_example_answer_only: '{"answer":245.0}'
 complexity:
   shared:
     criteria_weights:

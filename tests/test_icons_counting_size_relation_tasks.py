@@ -48,9 +48,13 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
     assert len(out.evidence_gt.value) == 3
     assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_counting_size_relation"
+    assert out.query_variant == "default"
+    assert out.query_id == "size_smaller"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "size_smaller"
     assert execution["question_format"] == "count_matching_scene_icons_by_size_relation"
     assert execution["size_relation"] == "smaller"
-    assert int(execution["size_relation_min_delta_px"]) == 12
+    assert int(execution["size_relation_min_delta_px"]) == 18
     assert int(execution["reference_nominal_size_px"]) == int(reference_entity["nominal_size_px"])
     assert int(reference_entity["nominal_size_px"]) >= 64
     assert int(reference_entity["nominal_size_px"]) <= 96
@@ -77,11 +81,11 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
         assert tuple(int(channel) for channel in entity["tint_rgb"]) in sampled_palette
         assert isinstance(entity["noise_edits"], list)
         size_delta = abs(int(entity["nominal_size_px"]) - int(reference_size))
-        assert size_delta >= 12
+        assert size_delta >= 18
         if int(index) in matching_indices:
-            assert int(entity["nominal_size_px"]) <= int(reference_size) - 12
+            assert int(entity["nominal_size_px"]) <= int(reference_size) - 18
         else:
-            assert int(entity["nominal_size_px"]) >= int(reference_size) + 12
+            assert int(entity["nominal_size_px"]) >= int(reference_size) + 18
     for left_index, left in enumerate(scene_entities):
         for right in scene_entities[left_index + 1 :]:
             assert _overlap_fraction_smaller(left["bbox_xyxy"], right["bbox_xyxy"]) <= 0.10 + 1e-6
@@ -91,7 +95,7 @@ def test_icons_counting_size_relation_supports_zero_matches() -> None:
     task = IconsCountingSizeRelationTask()
     out = task.generate(
         14611,
-        params={"target_count": 0, "distractor_count": 5, "size_relation": "larger"},
+        params={"target_count_min": 0, "target_count": 0, "distractor_count": 5, "size_relation": "larger"},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -123,7 +127,7 @@ def test_icons_counting_size_relation_balanced_sampling_defaults() -> None:
     for index in range(60):
         out = task.generate(
             hash64(14613, "icons_counting_size_relation", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
@@ -134,13 +138,11 @@ def test_icons_counting_size_relation_balanced_sampling_defaults() -> None:
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
         size_relations[str(execution["size_relation"])] += 1
-        assert 0 <= target_count <= 8
-        assert 1 <= distractor_count <= 8
+        assert 1 <= target_count <= 5
+        assert 1 <= distractor_count <= 6
         assert int(object_count) == int(target_count) + int(distractor_count)
     assert min(object_counts.keys()) >= 1
-    assert max(object_counts.keys()) <= 16
-    assert set(target_counts.keys()) == set(range(0, 9))
-    assert set(distractor_counts.keys()) == set(range(1, 9))
-    assert max(target_counts.values()) - min(target_counts.values()) <= 1
-    assert max(distractor_counts.values()) - min(distractor_counts.values()) <= 1
-    assert size_relations == Counter({"larger": 30, "smaller": 30}) or size_relations == Counter({"smaller": 30, "larger": 30})
+    assert max(object_counts.keys()) <= 14
+    assert set(target_counts.keys()) == set(range(1, 6))
+    assert set(distractor_counts.keys()) == set(range(1, 7))
+    assert set(size_relations.keys()) == {"larger", "smaller"}

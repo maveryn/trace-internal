@@ -1,0 +1,198 @@
+{
+  "bundle_id": "charts_map_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "map_region_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:region_map": [
+      "object_description"
+    ],
+    "scene:marker_map": [
+      "object_description"
+    ],
+    "query:numeric_threshold_region_count": [
+      "region_noun",
+      "threshold_phrase"
+    ],
+    "query:numeric_interval_region_count": [
+      "region_noun",
+      "interval_phrase"
+    ],
+    "query:categorical_region_count": [
+      "region_noun",
+      "category_label"
+    ],
+    "query:continent_region_count": [
+      "region_noun",
+      "continent_label"
+    ],
+    "query:continent_category_region_count": [
+      "region_noun",
+      "continent_label",
+      "category_label"
+    ],
+    "query:continent_threshold_region_count": [
+      "region_noun",
+      "continent_label",
+      "threshold_phrase"
+    ],
+    "query:border_neighbor_count": [
+      "region_noun"
+    ],
+    "query:adjacent_same_category_count": [
+      "region_noun"
+    ],
+    "query:adjacent_category_count": [
+      "region_noun",
+      "category_label"
+    ],
+    "query:adjacent_numeric_threshold_count": [
+      "region_noun",
+      "threshold_phrase"
+    ],
+    "query:marker_region_threshold_count": [
+      "region_noun",
+      "threshold_phrase"
+    ],
+    "query:marker_region_extremum_label": [
+      "extremum_word"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "region_map": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This is {object_description}.",
+      "The visual is {object_description}."
+    ],
+    "marker_map": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The map shows {object_description}.",
+      "This image shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "numeric_threshold_region_count": [
+      "How many {region_noun} have values {threshold_phrase}?",
+      "Count the {region_noun} with values {threshold_phrase}.",
+      "Using the value legend, how many {region_noun} are {threshold_phrase}?",
+      "What number of {region_noun} fall in value bins {threshold_phrase}?",
+      "From the map legend, count {region_noun} whose values are {threshold_phrase}."
+    ],
+    "numeric_interval_region_count": [
+      "How many {region_noun} have values {interval_phrase}?",
+      "Count the {region_noun} with values {interval_phrase}.",
+      "Using the value legend, how many {region_noun} are {interval_phrase}?",
+      "What number of {region_noun} fall in value bins {interval_phrase}?",
+      "From the map legend, count {region_noun} whose values are {interval_phrase}."
+    ],
+    "categorical_region_count": [
+      "How many {region_noun} are in the \"{category_label}\" category?",
+      "Count the {region_noun} assigned to \"{category_label}\".",
+      "Using the category legend, how many {region_noun} fall under \"{category_label}\"?",
+      "What number of {region_noun} match the category \"{category_label}\"?",
+      "From the map legend, count {region_noun} in category \"{category_label}\"."
+    ],
+    "continent_region_count": [
+      "How many colored {region_noun} are in {continent_label}?",
+      "Count the colored {region_noun} located in {continent_label}.",
+      "Using the world map, how many colored {region_noun} are in {continent_label}?",
+      "What number of colored {region_noun} fall within {continent_label}?",
+      "From the map, count the colored {region_noun} in {continent_label}."
+    ],
+    "continent_category_region_count": [
+      "How many {region_noun} in {continent_label} are in the \"{category_label}\" category?",
+      "Count the {region_noun} located in {continent_label} and assigned to \"{category_label}\".",
+      "Using the category legend, how many {region_noun} in {continent_label} fall under \"{category_label}\"?",
+      "What number of {region_noun} are both in {continent_label} and in category \"{category_label}\"?",
+      "From the map legend, count {region_noun} in {continent_label} with category \"{category_label}\"."
+    ],
+    "continent_threshold_region_count": [
+      "How many {region_noun} in {continent_label} have values {threshold_phrase}?",
+      "Count the {region_noun} located in {continent_label} with values {threshold_phrase}.",
+      "Using the value legend, how many {region_noun} in {continent_label} are {threshold_phrase}?",
+      "What number of {region_noun} are both in {continent_label} and in value bins {threshold_phrase}?",
+      "From the map legend, count {region_noun} in {continent_label} whose values are {threshold_phrase}."
+    ],
+    "border_neighbor_count": [
+      "How many {region_noun} share a land border with the highlighted country? Do not count the highlighted country itself.",
+      "Count the {region_noun} that touch the highlighted country by land border. Do not include the highlighted country.",
+      "Using the highlighted country as the reference, how many {region_noun} share a land border with it?",
+      "What number of {region_noun} have a land border with the highlighted country?",
+      "From the map, count the {region_noun} directly bordering the highlighted country."
+    ],
+    "adjacent_same_category_count": [
+      "How many colored {region_noun} touching the highlighted region by edge or corner have the same category as the highlighted region?",
+      "Count the colored {region_noun} touching the highlighted region by edge or corner that share its category.",
+      "Using the category legend, how many edge-or-corner neighboring colored {region_noun} match the highlighted region's category?",
+      "What number of colored {region_noun} touching the highlighted region by edge or corner are in the same category?",
+      "From the map, count edge-or-corner neighboring colored {region_noun} with the same category as the highlighted region."
+    ],
+    "adjacent_category_count": [
+      "How many colored {region_noun} touching the highlighted region by edge or corner are in the \"{category_label}\" category?",
+      "Count the colored {region_noun} touching the highlighted region by edge or corner that are assigned to \"{category_label}\".",
+      "Using the category legend, how many edge-or-corner neighboring colored {region_noun} fall under \"{category_label}\"?",
+      "What number of colored {region_noun} touching the highlighted region by edge or corner match category \"{category_label}\"?",
+      "From the map legend, count edge-or-corner neighboring colored {region_noun} in category \"{category_label}\"."
+    ],
+    "adjacent_numeric_threshold_count": [
+      "How many colored {region_noun} touching the highlighted region by edge or corner have values {threshold_phrase}?",
+      "Count the colored {region_noun} touching the highlighted region by edge or corner with values {threshold_phrase}.",
+      "Using the value legend, how many edge-or-corner neighboring colored {region_noun} are {threshold_phrase}?",
+      "What number of colored {region_noun} touching the highlighted region by edge or corner fall in value bins {threshold_phrase}?",
+      "From the map legend, count edge-or-corner neighboring colored {region_noun} whose values are {threshold_phrase}."
+    ],
+    "marker_region_threshold_count": [
+      "How many {region_noun} have marker values {threshold_phrase}?",
+      "Count the {region_noun} whose markers encode values {threshold_phrase}.",
+      "Using the marker bubbles, how many {region_noun} have values {threshold_phrase}?",
+      "What number of {region_noun} have marker-encoded values {threshold_phrase}?",
+      "From the marker layer, count {region_noun} with values {threshold_phrase}."
+    ],
+    "marker_region_extremum_label": [
+      "Which visible region label has the {extremum_word} marker value?",
+      "Using the marker bubbles, report the label with the {extremum_word} value.",
+      "What is the visible label whose marker encodes the {extremum_word} value?",
+      "Find the map label with the {extremum_word} marker value and return that label.",
+      "From the marker layer, which visible label has the {extremum_word} value?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

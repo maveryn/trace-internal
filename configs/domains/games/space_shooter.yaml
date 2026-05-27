@@ -1,0 +1,94 @@
+generation:
+  shared:
+    scene_variant_weights:
+      defense_wave: 1.0
+    query_variant_weights:
+      clear_shot_count: 1.0
+      projectile_intercept_count: 1.0
+      highest_threat_label: 1.0
+      safe_lane_count: 1.0
+    style_variant_weights:
+      neon: 1.0
+      deep_space: 1.0
+      vector: 1.0
+      amber: 1.0
+      terminal: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_lane_count_sampling: true
+    balanced_enemy_count_sampling: true
+    balanced_target_answer_sampling: true
+    lane_count_support:
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    enemy_count_support:
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+    clear_shot_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    projectile_intercept_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    safe_lane_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+rendering:
+  shared:
+    canvas_width: 1060
+    canvas_height: 820
+    panel_margin_px: 42
+    playfield_width_px: 940
+    playfield_height_px: 720
+    playfield_border_width_px: 5
+    lane_pad_height_px: 38
+    lane_pad_gap_px: 10
+    enemy_width_px: 62
+    enemy_height_px: 48
+    projectile_width_px: 18
+    projectile_height_px: 42
+    blocker_width_px: 70
+    blocker_height_px: 42
+    player_ship_width_px: 72
+    player_ship_height_px: 58
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.32
+      spatial_reasoning: 0.36
+      threat_reasoning: 0.18
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_space_shooter_v0
+    scene_key: visible_space_shooter_playfield
+    task_key: space_shooter_query
+    object_description_defense_wave: a retro space-shooter playfield with labeled enemy ships, enemy shots, shields or asteroids, a player ship, and bottom lane pads
+    space_shooter_lane_rule_text: Bottom lane pads define the vertical lanes. Enemy ships and enemy shots stay in their own lane.
+    evidence_hint_clear_shot_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for the enemy ships counted as clear shots
+    answer_hint_clear_shot_count: set "answer" to the number of enemy ships that have no enemy ship, shield, or asteroid below them in the same lane
+    evidence_hint_projectile_intercept_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for enemy shots aligned with the player ship
+    answer_hint_projectile_intercept_count: set "answer" to the number of enemy shots in the same lane as the player ship
+    evidence_hint_highest_threat_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected enemy ship
+    answer_hint_highest_threat_label: set "answer" to the selected enemy label as a string
+    evidence_hint_safe_lane_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for the safe bottom lane pads
+    answer_hint_safe_lane_count: set "answer" to the number of bottom lane pads with no enemy shot in that lane and no asteroid on that pad

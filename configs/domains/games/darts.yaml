@@ -1,0 +1,86 @@
+generation:
+  shared:
+    scene_variant_weights:
+      single_board: 1.0
+    query_variant_weights:
+      total_score: 1.0
+      ring_count: 1.0
+      threshold_score_count: 1.0
+    style_variant_weights:
+      classic: 1.0
+      soft: 1.0
+      outlined: 1.0
+    target_ring_weights:
+      single: 1.0
+      double: 1.0
+      triple: 1.0
+      bull: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_dart_count_sampling: true
+    balanced_target_ring_sampling: true
+    balanced_target_threshold_sampling: true
+    count_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    total_score_dart_count_support:
+    - 1
+    count_query_dart_count_support:
+    - 5
+    - 6
+    - 7
+    - 8
+    target_threshold_support:
+    - 20
+    - 25
+    - 30
+    - 40
+    - 50
+rendering:
+  shared:
+    canvas_width: 1040
+    canvas_height: 980
+    board_center_x_px: 520
+    board_center_y_px: 464
+    board_radius_px: 330
+    marker_radius_px: 17
+    number_font_size_px: 36
+    title_font_size_px: 30
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.28
+      board_reasoning: 0.34
+      arithmetic_load: 0.26
+      output_burden: 0.12
+prompt:
+  shared:
+    bundle_id: games_darts_v0
+    scene_key: visible_dartboard
+    task_key: darts_score_query
+    object_description_single_board: a labeled dartboard with marked darts
+    scoring_rule_text: A dart in a numbered single area scores that number; a dart
+      in the double ring scores twice the number; a dart in the triple ring scores
+      three times the number; the outer bull scores 25 and the inner bull scores 50.
+    ring_rule_text: The double and triple rings are the wide colored rings. The bull
+      is the center area. The single area is any numbered area outside the double
+      and triple rings.
+    evidence_hint_total_score: set "evidence" to an array of bounding boxes [x0, y0,
+      x1, y1] for the marked dart
+    evidence_hint_ring_count: set "evidence" to an array of bounding boxes [x0, y0,
+      x1, y1] for every marked dart in the requested ring or area
+    evidence_hint_threshold_score_count: set "evidence" to an array of bounding boxes
+      [x0, y0, x1, y1] for every marked dart whose score is at least the requested
+      threshold
+    answer_hint_total_score: set "answer" to the option letter shown in the image
+      for the total score
+    answer_hint_ring_count: set "answer" to the number of marked darts in the requested
+      ring or area; use 0 if none are in that area
+    answer_hint_threshold_score_count: set "answer" to the number of marked darts
+      whose score is at least the requested threshold

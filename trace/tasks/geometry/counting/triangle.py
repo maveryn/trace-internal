@@ -1,13 +1,9 @@
 """Non-grid geometry counting task over multiple labeled triangles."""
-
 from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
-
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -36,13 +32,14 @@ from ..shared.single_object_scene import (
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
+    bounds_from_points,
+    bounds_have_clearance,
     resolve_counting_cardinality_pair,
 )
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-
 _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "equilateral_triangle",
     "isosceles_triangle",
@@ -52,11 +49,9 @@ _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "obtuse_triangle",
 )
 
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for triangle-counting generation."""
-
     canvas_size_min: int = COUNTING_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COUNTING_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = 24
@@ -75,34 +70,28 @@ class _TaskDefaults:
     max_acute_angle_degrees: float = 80.0
     min_side_gap_units: float = 0.8
 
-
 @dataclass(frozen=True)
 class _TrianglePrototype:
     """Centered local triangle geometry plus its classification metadata."""
-
     local_vertices: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
     side_kind: str
     angle_kind: str
     angles_degrees: Tuple[float, float, float]
     side_lengths: Tuple[float, float, float]
 
-
 @dataclass(frozen=True)
 class _TriangleSceneObject:
     """One placed triangle object in the counting scene."""
-
     polygon: PolygonSceneObject
     side_kind: str
     angle_kind: str
     angles_degrees: Tuple[float, float, float]
     side_lengths: Tuple[float, float, float]
 
-
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-triangle counting instance."""
-
-    task_variant: str
+    query_variant: str
     object_count: int
     target_count: int
     objects: Tuple[_TriangleSceneObject, ...]
@@ -110,29 +99,30 @@ class _ScenePayload:
     object_label_centers: Dict[str, List[float]]
     render_anchor: Dict[str, Any]
 
-
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_counting_triangle",
+    task_id="source_geometry_counting_triangle",
 )
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="counting")
 _NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="counting")
 
-
 def _triangle_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:
-    """Return a roomy hidden-grid slot bank for 5-8 triangle objects."""
-
-    half_span = max(12, int(graph_cells // 2))
-    outer_x = max(6, min(int(round(float(half_span) * 0.76)), int(half_span - 3)))
-    inner_x = max(2, min(int(round(float(half_span) * 0.26)), max(2, int(outer_x - 3))))
-    row_y = max(5, min(int(round(float(half_span) * 0.42)), int(half_span - 3)))
+    """Return a roomy hidden-grid slot bank for up to 12 triangle objects."""
+    half_span = max(16, int(graph_cells // 2))
+    outer_x = max(8, min(int(round(float(half_span) * 0.78)), int(half_span - 4)))
+    inner_x = max(4, min(int(round(float(half_span) * 0.28)), max(4, int(outer_x - 5))))
+    row_y = max(7, min(int(round(float(half_span) * 0.48)), int(half_span - 4)))
     base_slots = [
         (-int(outer_x), int(row_y)),
         (-int(inner_x), int(row_y)),
         (int(inner_x), int(row_y)),
         (int(outer_x), int(row_y)),
+        (-int(outer_x), 0),
+        (-int(inner_x), 0),
+        (int(inner_x), 0),
+        (int(outer_x), 0),
         (-int(outer_x), -int(row_y)),
         (-int(inner_x), -int(row_y)),
         (int(inner_x), -int(row_y)),
@@ -141,30 +131,23 @@ def _triangle_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> 
     rng.shuffle(base_slots)
     return list(base_slots[: int(object_count)])
 
-
 def _center_vertices(vertices: Sequence[Tuple[float, float]]) -> Tuple[Tuple[float, float], ...]:
     """Translate vertices so their centroid sits at the origin."""
-
     cx = sum(float(x) for x, _ in vertices) / float(len(vertices))
     cy = sum(float(y) for _, y in vertices) / float(len(vertices))
     return tuple((float(x) - float(cx), float(y) - float(cy)) for x, y in vertices)
 
-
 def _side_lengths(vertices: Sequence[Tuple[float, float]]) -> Tuple[float, float, float]:
     """Return triangle side lengths opposite vertices A, B, C."""
-
     point_a, point_b, point_c = vertices
     side_a = math.hypot(float(point_b[0]) - float(point_c[0]), float(point_b[1]) - float(point_c[1]))
     side_b = math.hypot(float(point_a[0]) - float(point_c[0]), float(point_a[1]) - float(point_c[1]))
     side_c = math.hypot(float(point_a[0]) - float(point_b[0]), float(point_a[1]) - float(point_b[1]))
     return (float(side_a), float(side_b), float(side_c))
 
-
 def _triangle_angles_degrees(vertices: Sequence[Tuple[float, float]]) -> Tuple[float, float, float]:
     """Return the three interior angles in degrees."""
-
     side_a, side_b, side_c = _side_lengths(vertices)
-
     def _angle(opposite: float, adjacent_a: float, adjacent_b: float) -> float:
         cosine = (
             (float(adjacent_a) * float(adjacent_a))
@@ -173,16 +156,13 @@ def _triangle_angles_degrees(vertices: Sequence[Tuple[float, float]]) -> Tuple[f
         ) / max(1e-9, 2.0 * float(adjacent_a) * float(adjacent_b))
         cosine = max(-1.0, min(1.0, float(cosine)))
         return math.degrees(math.acos(float(cosine)))
-
     angle_a = _angle(side_a, side_b, side_c)
     angle_b = _angle(side_b, side_a, side_c)
     angle_c = 180.0 - float(angle_a) - float(angle_b)
     return (float(angle_a), float(angle_b), float(angle_c))
 
-
 def _classify_side_kind(side_lengths: Sequence[float], *, min_side_gap_units: float) -> str:
     """Return one side-based triangle class label."""
-
     lengths = [float(value) for value in side_lengths]
     pair_diffs = [
         abs(lengths[0] - lengths[1]),
@@ -197,10 +177,8 @@ def _classify_side_kind(side_lengths: Sequence[float], *, min_side_gap_units: fl
         return "isosceles"
     return "scalene"
 
-
 def _classify_angle_kind(angles_degrees: Sequence[float], *, right_angle_margin_degrees: float) -> str:
     """Return one angle-based triangle class label."""
-
     max_angle = max(float(value) for value in angles_degrees)
     margin = float(right_angle_margin_degrees)
     if abs(float(max_angle) - 90.0) <= 1e-4:
@@ -211,7 +189,6 @@ def _classify_angle_kind(angles_degrees: Sequence[float], *, right_angle_margin_
         return "obtuse"
     return "near_right"
 
-
 def _build_triangle_prototype(
     vertices: Sequence[Tuple[float, float]],
     *,
@@ -219,7 +196,6 @@ def _build_triangle_prototype(
     right_angle_margin_degrees: float,
 ) -> _TrianglePrototype:
     """Compute canonical metadata for one centered triangle."""
-
     centered = _center_vertices(vertices)
     lengths = _side_lengths(centered)
     angles = _triangle_angles_degrees(centered)
@@ -233,10 +209,8 @@ def _build_triangle_prototype(
         side_lengths=tuple(float(value) for value in lengths),
     )
 
-
 def _sample_equilateral_triangle(rng, *, min_side_units: float, max_side_units: float, **_kwargs: Any) -> _TrianglePrototype:
     """Return one equilateral triangle prototype."""
-
     side = float(rng.uniform(float(min_side_units), float(max_side_units)))
     height = float(side * math.sqrt(3.0) / 2.0)
     return _build_triangle_prototype(
@@ -244,7 +218,6 @@ def _sample_equilateral_triangle(rng, *, min_side_units: float, max_side_units: 
         min_side_gap_units=0.0,
         right_angle_margin_degrees=1.0,
     )
-
 
 def _sample_isosceles_triangle(
     rng,
@@ -256,7 +229,6 @@ def _sample_isosceles_triangle(
     **_kwargs: Any,
 ) -> _TrianglePrototype:
     """Return one isosceles but non-equilateral triangle prototype."""
-
     for _ in range(400):
         base = float(rng.uniform(float(min_side_units), float(max_side_units)))
         height = float(rng.uniform(float(min_side_units) * 0.75, float(max_side_units) * 1.05))
@@ -269,7 +241,6 @@ def _sample_isosceles_triangle(
             return prototype
     raise ValueError("failed to sample isosceles triangle prototype")
 
-
 def _sample_scalene_triangle(
     rng,
     *,
@@ -280,7 +251,6 @@ def _sample_scalene_triangle(
     **_kwargs: Any,
 ) -> _TrianglePrototype:
     """Return one clear scalene triangle prototype."""
-
     for _ in range(500):
         base = float(rng.uniform(float(min_side_units), float(max_side_units)))
         height = float(rng.uniform(float(min_side_units) * 0.75, float(max_side_units) * 1.05))
@@ -294,7 +264,6 @@ def _sample_scalene_triangle(
             return prototype
     raise ValueError("failed to sample scalene triangle prototype")
 
-
 def _sample_right_triangle(
     rng,
     *,
@@ -305,7 +274,6 @@ def _sample_right_triangle(
     **_kwargs: Any,
 ) -> _TrianglePrototype:
     """Return one right triangle prototype."""
-
     for _ in range(400):
         base = float(rng.uniform(float(min_side_units), float(max_side_units)))
         height = float(rng.uniform(float(min_side_units), float(max_side_units)))
@@ -320,7 +288,6 @@ def _sample_right_triangle(
             return prototype
     raise ValueError("failed to sample right triangle prototype")
 
-
 def _sample_acute_triangle(
     rng,
     *,
@@ -332,7 +299,6 @@ def _sample_acute_triangle(
     **_kwargs: Any,
 ) -> _TrianglePrototype:
     """Return one visibly acute triangle prototype."""
-
     for _ in range(600):
         base = float(rng.uniform(float(min_side_units), float(max_side_units)))
         apex_x = float(rng.uniform(-0.12 * float(base), 0.12 * float(base)))
@@ -346,7 +312,6 @@ def _sample_acute_triangle(
             return prototype
     raise ValueError("failed to sample acute triangle prototype")
 
-
 def _sample_obtuse_triangle(
     rng,
     *,
@@ -358,7 +323,6 @@ def _sample_obtuse_triangle(
     **_kwargs: Any,
 ) -> _TrianglePrototype:
     """Return one visibly obtuse triangle prototype."""
-
     for _ in range(600):
         base = float(rng.uniform(float(min_side_units), float(max_side_units)))
         height = float(rng.uniform(float(min_side_units) * 0.7, float(max_side_units)))
@@ -372,7 +336,6 @@ def _sample_obtuse_triangle(
             return prototype
     raise ValueError("failed to sample obtuse triangle prototype")
 
-
 _SAMPLERS = {
     "equilateral": _sample_equilateral_triangle,
     "isosceles": _sample_isosceles_triangle,
@@ -382,11 +345,9 @@ _SAMPLERS = {
     "obtuse": _sample_obtuse_triangle,
 }
 
-
-def _triangle_matches_variant(prototype: _TrianglePrototype, task_variant: str) -> bool:
+def _triangle_matches_variant(prototype: _TrianglePrototype, query_variant: str) -> bool:
     """Return whether one prototype satisfies the requested counting predicate."""
-
-    variant = str(task_variant)
+    variant = str(query_variant)
     if variant == "equilateral_triangle":
         return str(prototype.side_kind) == "equilateral"
     if variant == "isosceles_triangle":
@@ -399,12 +360,10 @@ def _triangle_matches_variant(prototype: _TrianglePrototype, task_variant: str) 
         return str(prototype.angle_kind) == "acute"
     if variant == "obtuse_triangle":
         return str(prototype.angle_kind) == "obtuse"
-    raise ValueError(f"unsupported task_variant: {task_variant}")
+    raise ValueError(f"unsupported query_variant: {query_variant}")
 
-
-def _positive_sampler_names(task_variant: str) -> Tuple[str, ...]:
+def _positive_sampler_names(query_variant: str) -> Tuple[str, ...]:
     """Return likely-positive prototype sampler names for one variant."""
-
     mapping = {
         "equilateral_triangle": ("equilateral",),
         "isosceles_triangle": ("isosceles",),
@@ -413,12 +372,10 @@ def _positive_sampler_names(task_variant: str) -> Tuple[str, ...]:
         "acute_triangle": ("acute", "equilateral"),
         "obtuse_triangle": ("obtuse",),
     }
-    return tuple(mapping[str(task_variant)])
+    return tuple(mapping[str(query_variant)])
 
-
-def _negative_sampler_names(task_variant: str) -> Tuple[str, ...]:
+def _negative_sampler_names(query_variant: str) -> Tuple[str, ...]:
     """Return likely-negative sampler names for one variant."""
-
     mapping = {
         "equilateral_triangle": ("isosceles", "scalene", "right", "obtuse"),
         "isosceles_triangle": ("equilateral", "scalene", "right", "obtuse", "acute"),
@@ -427,13 +384,12 @@ def _negative_sampler_names(task_variant: str) -> Tuple[str, ...]:
         "acute_triangle": ("right", "obtuse"),
         "obtuse_triangle": ("acute", "right", "equilateral"),
     }
-    return tuple(mapping[str(task_variant)])
-
+    return tuple(mapping[str(query_variant)])
 
 def _sample_triangle_for_match(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     positive: bool,
     min_side_units: float,
     max_side_units: float,
@@ -443,11 +399,10 @@ def _sample_triangle_for_match(
     min_obtuse_angle_degrees: float,
 ) -> _TrianglePrototype:
     """Sample one triangle prototype that either matches or rejects the query class."""
-
     preferred = (
-        _positive_sampler_names(str(task_variant))
+        _positive_sampler_names(str(query_variant))
         if bool(positive)
-        else _negative_sampler_names(str(task_variant))
+        else _negative_sampler_names(str(query_variant))
     )
     fallback = tuple(_SAMPLERS.keys())
     last_error: Exception | None = None
@@ -468,14 +423,12 @@ def _sample_triangle_for_match(
             except Exception as exc:
                 last_error = exc
                 continue
-            if bool(_triangle_matches_variant(prototype, str(task_variant))) == bool(positive):
+            if bool(_triangle_matches_variant(prototype, str(query_variant))) == bool(positive):
                 return prototype
     raise RuntimeError("failed to sample triangle prototype for counting scene") from last_error
 
-
-def _variant_class_label(task_variant: str) -> str:
+def _variant_class_label(query_variant: str) -> str:
     """Return a normalized human-readable triangle class label."""
-
     mapping = {
         "equilateral_triangle": "equilateral",
         "isosceles_triangle": "isosceles_but_not_equilateral",
@@ -484,8 +437,7 @@ def _variant_class_label(task_variant: str) -> str:
         "acute_triangle": "acute",
         "obtuse_triangle": "obtuse",
     }
-    return str(mapping[str(task_variant)])
-
+    return str(mapping[str(query_variant)])
 
 def _place_triangle_object(
     prototype: _TrianglePrototype,
@@ -495,7 +447,6 @@ def _place_triangle_object(
     context: GraphSceneContext,
 ) -> _TriangleSceneObject:
     """Project one centered triangle prototype into pixel space at the requested slot."""
-
     pixel_vertices = tuple(
         graph_units_to_pixel(
             (float(slot_units[0]) + float(x), float(slot_units[1]) + float(y)),  # type: ignore[arg-type]
@@ -521,11 +472,10 @@ def _place_triangle_object(
         side_lengths=tuple(float(value) for value in prototype.side_lengths),
     )
 
-
 def _sample_scene(
     rng,
     *,
-    task_variant: str,
+    query_variant: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -541,9 +491,9 @@ def _sample_scene(
     object_label_offset_px: float,
     draw,
     shape_style,
+    draw_object_labels: bool = True,
 ) -> _ScenePayload:
     """Sample and draw one multi-triangle counting scene."""
-
     last_error: Exception | None = None
     for _ in range(600):
         labels = list(assign_counting_labels(rng, object_count=int(object_count)))
@@ -559,7 +509,7 @@ def _sample_scene(
             for label, slot in zip(labels, slots):
                 prototype = _sample_triangle_for_match(
                     rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     positive=str(label) in positives,
                     min_side_units=float(min_side_units),
                     max_side_units=float(max_side_units),
@@ -581,11 +531,9 @@ def _sample_scene(
         except Exception as exc:
             last_error = exc
             continue
-
         render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
         vertex_padding_px = max(4.0, 0.65 * float(context.graph_spacing) * float(context.scene_scale))
         from ...shared.geometry_primitives import point_inside_square_canvas
-
         if not all(
             point_inside_square_canvas(
                 (float(point[0]) * float(context.scene_scale), float(point[1]) * float(context.scene_scale)),
@@ -596,7 +544,12 @@ def _sample_scene(
             for point in obj.polygon.vertices
         ):
             continue
-
+        object_bounds = [bounds_from_points(obj.polygon.vertices) for obj in objects]
+        if not bounds_have_clearance(
+            object_bounds,
+            min_clearance_px=max(6.0, 0.35 * float(context.graph_spacing)),
+        ):
+            continue
         label_centers = draw_polygon_objects(
             draw,
             objects=[obj.polygon for obj in objects],
@@ -607,10 +560,11 @@ def _sample_scene(
             object_label_offset_px=float(object_label_offset_px),
             render_canvas_size=int(render_canvas_size),
             shape_style=shape_style,
+            draw_object_labels=bool(draw_object_labels),
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -618,33 +572,28 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
             },
         )
     raise RuntimeError("failed to sample triangle-counting scene") from last_error
 
-
-@register_task
 class GeometryCountingTriangleTask:
     """Count how many labeled triangles belong to one requested class."""
-
-    task_id = "task_geometry_counting_triangle"
+    task_id = "source_geometry_counting_triangle"
     domain = "geometry"
     task_group = "counting"
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic multi-triangle counting instance."""
-
         scene_rng = spawn_rng(int(instance_seed), "scene")
         selected_variant, variant_probabilities = resolve_variant(
             scene_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
-        task_variant = apply_balanced_variant_sampling(
+        query_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -652,7 +601,7 @@ class GeometryCountingTriangleTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
+            explicit_key="query_variant",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -663,7 +612,6 @@ class GeometryCountingTriangleTask:
             fallback_object_min=_DEFAULTS.object_count_min,
             fallback_object_max=_DEFAULTS.object_count_max,
         )
-
         min_side_units = float(
             params.get("min_side_units", group_default(_GEN_DEFAULTS, "min_side_units", _DEFAULTS.min_side_units))
         )
@@ -696,7 +644,6 @@ class GeometryCountingTriangleTask:
         )
         if float(min_side_units) <= 0.0 or float(min_side_units) >= float(max_side_units):
             raise ValueError("min_side_units must be > 0 and < max_side_units")
-
         context_params = dict(params)
         context = None
         image = None
@@ -710,6 +657,7 @@ class GeometryCountingTriangleTask:
         for _ in range(max(1, int(max_attempts))):
             context_attempt = resolve_graph_scene_context(
                 scene_rng,
+                instance_seed=int(instance_seed),
                 params=context_params,
                 render_defaults=_RENDER_DEFAULTS,
                 background_defaults=_BACKGROUND_DEFAULTS,
@@ -771,7 +719,7 @@ class GeometryCountingTriangleTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    task_variant=str(task_variant),
+                    query_variant=str(query_variant),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -787,6 +735,7 @@ class GeometryCountingTriangleTask:
                     object_label_offset_px=float(object_label_offset_px),
                     draw=draw_attempt,
                     shape_style=shape_style_attempt,
+                    draw_object_labels=bool(context_params.get("draw_object_labels", True)),
                 )
                 context = context_attempt
                 image = image_attempt
@@ -800,7 +749,6 @@ class GeometryCountingTriangleTask:
             except Exception as exc:
                 last_error = exc
                 continue
-
         if (
             scene_payload is None
             or context is None
@@ -811,8 +759,7 @@ class GeometryCountingTriangleTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_counting_triangle instance") from last_error
-
+            raise RuntimeError("failed to generate source_geometry_counting_triangle instance") from last_error
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
             instance_seed=int(instance_seed),
@@ -820,12 +767,11 @@ class GeometryCountingTriangleTask:
             background_meta=background_meta,
             noise_defaults=_NOISE_DEFAULTS,
         )
-
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -843,12 +789,12 @@ class GeometryCountingTriangleTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(task_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -864,10 +810,8 @@ class GeometryCountingTriangleTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="label_set", value=list(scene_payload.matching_labels))
-
         class_by_label = {
             str(obj.polygon.label): {
                 "side_kind": str(obj.side_kind),
@@ -895,18 +839,18 @@ class GeometryCountingTriangleTask:
                 ],
                 "relations": {
                     "counting_target": "triangle_class",
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "task_variant": str(task_variant),
+                    "query_variant": str(query_variant),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -923,8 +867,10 @@ class GeometryCountingTriangleTask:
                 "text_style": {
                     "font_size_px": int(label_font_size_px),
                     "stroke_width_px": int(label_stroke_width_scene),
+                    "draw_object_labels": bool(context_params.get("draw_object_labels", True)),
                 },
                 "layout_coordinate_frame": dict(context.graph_frame),
+                **dict(context.graph_layout_metadata),
             },
             "render_map": {
                 "image_id": "img0",
@@ -932,9 +878,9 @@ class GeometryCountingTriangleTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(task_variant),
-                "task_variant": str(task_variant),
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "scene_variant": str(query_variant),
+                "query_variant": str(query_variant),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -945,11 +891,11 @@ class GeometryCountingTriangleTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(_variant_class_label(str(task_variant))),
+                "counting_class": str(_variant_class_label(str(query_variant))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
-                "label_set": list(scene_payload.matching_labels),
+                "labels": list(scene_payload.matching_labels),
             },
         }
         return TaskOutput(
@@ -967,9 +913,9 @@ class GeometryCountingTriangleTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="triangle",
-                task_variant=str(task_variant),
+                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

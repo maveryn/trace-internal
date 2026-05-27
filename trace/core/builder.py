@@ -8,7 +8,7 @@ import os
 import random
 import shutil
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping
 
@@ -20,6 +20,7 @@ from ..tasks.base import TaskOutput
 from . import error_codes
 from .canonical import canonical_json_bytes
 from .config import BuildConfig, BuildTaskConfig
+from .evidence_sanitization import sanitize_trace_payload_for_public_evidence
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
 from .json_io import write_json_file
@@ -27,6 +28,7 @@ from .reward_contracts import resolve_reward_contract
 from .sampling import normalize_positive_weights, weighted_choice
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
+from .taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
 from .trace_store import TraceShardWriter
 from .type_registry import DEFAULT_REGISTRY_PATH, TypeRegistry, load_type_registry
 from .types import CurriculumIndex, ImageRecord, TraceInstance, TrainInstance
@@ -52,6 +54,7 @@ class _BuildStageResult:
     evidence_format_map: Dict[str, str]
     domain_sampling_probabilities: Dict[str, float]
     task_group_sampling_probabilities: Dict[str, float]
+    scene_sampling_probabilities: Dict[str, float]
     warnings: List[str]
 
 
@@ -207,7 +210,18 @@ def _build_task_attempt_spec(
 
     instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
     params = dict(task_cfg.params)
-    params["_sampling_index"] = int(seed_index)
+    calibration_sample = bool(params.pop("_trace_calibration_sample", False))
+    forbidden = [
+        key
+        for key in params
+        if str(key).endswith("sampling_index") or str(key).endswith("sample_cursor")
+    ]
+    if forbidden:
+        raise BuildError(
+            f"build params for {task_cfg.task_id} use manual sampler controls: {sorted(str(key) for key in forbidden)}"
+        )
+    if calibration_sample:
+        params["_sample_cursor"] = int(seed_index)
     return _TaskAttemptSpec(
         task_id=str(task_cfg.task_id),
         instance_seed=int(instance_seed),
@@ -313,17 +327,27 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
     return target_counts, task_probabilities, "weighted_task_sampler"
 
 
-def _aggregate_sampling_probabilities(task_probabilities: Mapping[str, float]) -> tuple[Dict[str, float], Dict[str, float]]:
-    """Aggregate domain/task-group probabilities from task-level weights."""
+def _aggregate_sampling_probabilities(
+    task_probabilities: Mapping[str, float],
+) -> tuple[Dict[str, float], Dict[str, float], Dict[str, float]]:
+    """Aggregate public domain/scene and source task-group probabilities from task weights."""
     domain_probs: Dict[str, float] = {}
     task_group_probs: Dict[str, float] = {}
+    scene_probs: Dict[str, float] = {}
     for task_id, probability in task_probabilities.items():
         task = create_task(task_id)
-        domain = str(getattr(task, "domain"))
+        taxonomy = resolve_task_taxonomy(
+            str(task_id),
+            source_domain=str(getattr(task, "domain", "")),
+            source_task_group=str(getattr(task, "task_group", "")),
+        )
+        domain = str(taxonomy.domain)
         task_group = str(getattr(task, "task_group"))
+        scene_id = str(taxonomy.scene_id)
         domain_probs[domain] = domain_probs.get(domain, 0.0) + float(probability)
         task_group_probs[task_group] = task_group_probs.get(task_group, 0.0) + float(probability)
-    return dict(sorted(domain_probs.items())), dict(sorted(task_group_probs.items()))
+        scene_probs[scene_id] = scene_probs.get(scene_id, 0.0) + float(probability)
+    return dict(sorted(domain_probs.items())), dict(sorted(task_group_probs.items())), dict(sorted(scene_probs.items()))
 
 
 def _finalize_generated_output(
@@ -340,7 +364,25 @@ def _finalize_generated_output(
 ) -> tuple[Dict[str, Any], Dict[str, Any], str]:
     """Finalize one generated task output into train/trace records."""
 
-    task_variant_used = str(getattr(generated, "task_variant", "default") or "default")
+    query_variant_used = str(getattr(generated, "query_variant", "") or "")
+    taxonomy = resolve_task_taxonomy(
+        str(task.task_id),
+        source_domain=str(getattr(task, "domain", "")),
+        source_task_group=str(getattr(task, "task_group", "")),
+    )
+    canonical_domain = str(taxonomy.domain)
+    scene_id = str(getattr(generated, "scene_id", "") or taxonomy.scene_id)
+    if scene_id != taxonomy.scene_id:
+        taxonomy = resolve_task_taxonomy(
+            str(task.task_id),
+            source_domain=str(getattr(task, "domain", "")),
+            source_task_group=str(getattr(task, "task_group", "")),
+        )
+        taxonomy = replace(taxonomy, scene_id=scene_id)
+    query_id = str(
+        getattr(generated, "query_id", "")
+        or resolve_task_query_id(query_variant=query_variant_used, trace_payload=generated.trace_payload)
+    )
     if not type_registry.validate_answer_type(generated.answer_gt.type):
         raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
     if not type_registry.validate_evidence_type(generated.evidence_gt.type):
@@ -353,7 +395,7 @@ def _finalize_generated_output(
     except ValueError as exc:
         raise BuildError(str(exc)) from exc
 
-    image_rel_path = Path("images") / task.domain / task.task_id / f"{accepted_index:06d}.{config.image_format}"
+    image_rel_path = Path("images") / canonical_domain / task.task_id / f"{accepted_index:06d}.{config.image_format}"
     image_abs_path = stage_root / image_rel_path
     _save_image(generated.image, image_abs_path, config.image_format)
     image_hash = blake3_file(image_abs_path)
@@ -368,9 +410,11 @@ def _finalize_generated_output(
     partial_record = {
         "instance_version": config.instance_version,
         "instance_seed": int(instance_seed),
-        "domain": task.domain,
+        "domain": canonical_domain,
         "task_group": task.task_group,
         "task": task.task_id,
+        "scene_id": scene_id,
+        "query_id": query_id,
         "prompt": generated.prompt,
         "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
         "images": [image_record.to_dict()],
@@ -385,15 +429,23 @@ def _finalize_generated_output(
     }
     instance_id = compute_instance_id(partial_record)
 
-    trace_payload = dict(generated.trace_payload)
+    trace_payload = sanitize_trace_payload_for_public_evidence(
+        generated.trace_payload,
+        evidence_gt=generated.evidence_gt,
+    )
     _validate_trace_payload_keys(
         task_id=str(task.task_id),
         instance_seed=int(instance_seed),
         trace_payload=trace_payload,
     )
-    query_spec = trace_payload.get("query_spec")
-    if isinstance(query_spec, dict):
-        query_spec.setdefault("task_variant", task_variant_used)
+    trace_payload = inject_taxonomy_metadata(
+        trace_payload,
+        task_id=str(task.task_id),
+        taxonomy=taxonomy,
+        query_id=query_id,
+        registered_domain=str(getattr(task, "domain", "")),
+        registered_task_group=str(getattr(task, "task_group", "")),
+    )
 
     trace_instance = TraceInstance(
         instance_id=instance_id,
@@ -404,6 +456,7 @@ def _finalize_generated_output(
         execution_trace=trace_payload["execution_trace"],
         witness_symbolic=trace_payload["witness_symbolic"],
         projected_evidence=trace_payload["projected_evidence"],
+        taxonomy=trace_payload.get("taxonomy") if isinstance(trace_payload.get("taxonomy"), dict) else None,
         answer_gt=generated.answer_gt,
         evidence_gt=generated.evidence_gt,
         reward_contract=reward_contract,
@@ -414,9 +467,11 @@ def _finalize_generated_output(
         instance_version=config.instance_version,
         instance_id=instance_id,
         instance_seed=int(instance_seed),
-        domain=task.domain,
+        domain=canonical_domain,
         task_group=task.task_group,
         task=task.task_id,
+        scene_id=scene_id,
+        query_id=query_id,
         prompt=generated.prompt,
         prompt_variants=dict(getattr(generated, "prompt_variants", {}) or {}),
         images=[image_record],
@@ -433,9 +488,11 @@ def _finalize_generated_output(
     )
     curriculum_record = CurriculumIndex(
         instance_id=instance_id,
-        domain=task.domain,
+        domain=canonical_domain,
         task_group=task.task_group,
         task=task.task_id,
+        scene_id=scene_id,
+        query_id=query_id,
         task_complexity=generated.complexity,
     ).to_dict()
     return train.to_dict(), curriculum_record, str(generated.evidence_gt.type)
@@ -631,7 +688,7 @@ def _build_staging(
     stage_root.mkdir(parents=True, exist_ok=True)
 
     target_counts_by_task, task_probabilities, sampler_mode = _resolve_task_targets(config)
-    domain_probs, task_group_probs = _aggregate_sampling_probabilities(task_probabilities)
+    domain_probs, task_group_probs, scene_probs = _aggregate_sampling_probabilities(task_probabilities)
 
     warning_messages: List[str] = []
     instances: List[Dict[str, Any]] = []
@@ -752,6 +809,7 @@ def _build_staging(
         evidence_format_map=dict(sorted(evidence_format_map.items())),
         domain_sampling_probabilities=domain_probs,
         task_group_sampling_probabilities=task_group_probs,
+        scene_sampling_probabilities=scene_probs,
         warnings=warning_messages,
     )
 
@@ -836,12 +894,13 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
         )
 
         build_report = {
-            "build_report_schema_version": "v1",
+            "build_report_schema_version": "v0",
             "dataset_id": dataset_id,
             "sampler": {
                 "mode": primary.sampler_mode,
                 "task_sampling_probabilities": primary.task_sampling_probabilities,
                 "domain_sampling_probabilities": primary.domain_sampling_probabilities,
+                "scene_sampling_probabilities": primary.scene_sampling_probabilities,
                 "task_group_sampling_probabilities": primary.task_group_sampling_probabilities,
             },
             "accepted_counts_by_task": primary.accepted_by_task,

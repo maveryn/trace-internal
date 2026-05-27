@@ -26,15 +26,15 @@ def test_icons_sequence_missing_count_deterministic() -> None:
 
 
 def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons_sequence_missing_count"
+    output_root = tmp_path / "task_icons__sequence_strip__missing_count_value"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons_sequence_missing_count",
-        instance_version="v1",
+        dataset_name="build_smoke_task_icons__sequence_strip__missing_count_value",
+        instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons_sequence_missing_count",
+                task_id="task_icons__sequence_strip__missing_count_value",
                 count=4,
                 params={},
             )
@@ -51,7 +51,7 @@ def test_icons_sequence_missing_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "sequence" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons_sequence_missing_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_icons__sequence_strip__missing_count_value"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

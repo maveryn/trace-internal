@@ -1,0 +1,207 @@
+{
+  "bundle_id": "puzzles_notation_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "music_notation_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:music_staff": [
+      "object_description"
+    ],
+    "query:note_name_label": [
+      "target_marker"
+    ],
+    "query:interval_name_label": [],
+    "query:same_pitch_truth_label": [],
+    "query:transposed_pitch_truth_label": [
+      "interval_name"
+    ],
+    "query:key_signature_label": [],
+    "query:scale_validation_truth_label": [
+      "target_key"
+    ],
+    "query:scale_degree_function_label": [
+      "target_key",
+      "target_marker"
+    ],
+    "query:chord_quality_label": [
+      "target_marker"
+    ],
+    "query:roman_numeral_label": [
+      "target_key",
+      "target_marker"
+    ],
+    "query:chord_inversion_label": [
+      "target_marker"
+    ],
+    "query:dominant_count_value": [
+      "target_key"
+    ],
+    "query:time_signature_label": [],
+    "query:bar_count_value": [],
+    "query:duration_equivalence_label": [
+      "target_marker"
+    ],
+    "query:meter_type_label": [],
+    "query:articulation_symbol_label": [
+      "target_marker"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "music_staff": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This music-notation item shows {object_description}.",
+      "The visual shows {object_description}.",
+      "The sheet-music panel shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "note_name_label": [
+      "What is the note name of the note marked {target_marker}?",
+      "Name the note marked {target_marker}.",
+      "Which pitch name is shown by the note marked {target_marker}?",
+      "Read the marked staff note {target_marker}. What is its note name?",
+      "Identify the note marked {target_marker} by pitch name."
+    ],
+    "interval_name_label": [
+      "Name the interval between the two marked notes.",
+      "What interval is formed by the two marked notes?",
+      "Identify the interval shown between the marked notes.",
+      "Read the two marked notes and give the interval name.",
+      "Which interval name describes the marked note pair?"
+    ],
+    "same_pitch_truth_label": [
+      "Do the notes marked A and B sound at the same pitch?",
+      "Are the two marked notes A and B the same pitch?",
+      "Determine whether A and B show the same pitch.",
+      "True or false: marked notes A and B sound at the same pitch.",
+      "Check the two marked notes. Are they pitch-equivalent?"
+    ],
+    "transposed_pitch_truth_label": [
+      "True or false: note B is note A transposed up by a {interval_name}.",
+      "Does note B correctly show note A moved up by a {interval_name}?",
+      "Check the transposition from A to B. Is it a {interval_name} upward?",
+      "Determine whether the marked transposition from A to B is a {interval_name}.",
+      "Is the note marked B the correct upward {interval_name} from note A?"
+    ],
+    "key_signature_label": [
+      "What key is represented by the visible key signature?",
+      "Name the major key shown by the key signature.",
+      "Which major key does the key signature indicate?",
+      "Read the key signature and give the key name.",
+      "Identify the key shown by the accidentals at the start of the staff."
+    ],
+    "scale_validation_truth_label": [
+      "True or false: the notes form a correctly written {target_key} scale.",
+      "Do the displayed notes correctly spell the {target_key} scale?",
+      "Check the displayed scale against {target_key}. Is it correct?",
+      "Are the scale notes correct for {target_key}?",
+      "Determine whether this is a correctly written {target_key} scale."
+    ],
+    "scale_degree_function_label": [
+      "In {target_key}, what is the scale-degree function of the note marked {target_marker}?",
+      "Name the scale-degree function of marked note {target_marker} in {target_key}.",
+      "Using the key {target_key}, identify the function of note {target_marker}.",
+      "What scale-degree name does note {target_marker} have in {target_key}?",
+      "Read marked note {target_marker} relative to {target_key}. What is its scale-degree function?"
+    ],
+    "chord_quality_label": [
+      "What is the quality of the chord marked {target_marker}?",
+      "Name the chord quality of marked chord {target_marker}.",
+      "Identify the quality of the marked chord.",
+      "Which chord-quality name describes chord {target_marker}?",
+      "Read the marked chord and give its quality."
+    ],
+    "roman_numeral_label": [
+      "In {target_key}, what roman numeral names the chord marked {target_marker}?",
+      "Name the roman numeral of marked chord {target_marker} in {target_key}.",
+      "Using the key {target_key}, identify the roman numeral for chord {target_marker}.",
+      "What roman numeral describes the marked chord in {target_key}?",
+      "Read chord {target_marker} relative to {target_key} and give its roman numeral."
+    ],
+    "chord_inversion_label": [
+      "What inversion is the chord marked {target_marker} in?",
+      "Name the inversion of marked chord {target_marker}.",
+      "Identify the inversion shown by the marked chord.",
+      "Which inversion name describes chord {target_marker}?",
+      "Read the marked chord and give its inversion."
+    ],
+    "dominant_count_value": [
+      "In {target_key}, how many of the numbered chords are dominant chords?",
+      "Count the numbered dominant chords in {target_key}.",
+      "Using {target_key}, how many shown chords function as V?",
+      "How many numbered chords are dominants in the key {target_key}?",
+      "Find the count of dominant chords among the numbered chords in {target_key}."
+    ],
+    "time_signature_label": [
+      "What time signature matches the total duration of the shown bar?",
+      "Choose the time signature for the single displayed bar.",
+      "Read the rhythm in the bar. What time signature fits it?",
+      "Which time signature accounts for the note durations in the shown bar?",
+      "Give the time signature represented by the shown bar."
+    ],
+    "bar_count_value": [
+      "How many bars are shown?",
+      "Count the visible measures in the staff excerpt.",
+      "How many complete bars appear in the notation panel?",
+      "What is the number of shown bars?",
+      "Count the bar ranges shown in the excerpt."
+    ],
+    "duration_equivalence_label": [
+      "Which option has the same duration as the note marked {target_marker}?",
+      "Select the option whose duration matches marked note {target_marker}.",
+      "Which labeled option is duration-equivalent to note {target_marker}?",
+      "Find the option with the same note value as {target_marker}.",
+      "Choose the matching duration for the marked note {target_marker}."
+    ],
+    "meter_type_label": [
+      "Is the shown meter simple or compound?",
+      "Classify the visible time signature as simple or compound.",
+      "What meter type is indicated by the time signature?",
+      "Read the time signature and name its meter type.",
+      "Does the displayed meter belong to simple or compound meter?"
+    ],
+    "articulation_symbol_label": [
+      "What articulation or expression symbol is attached to note {target_marker}?",
+      "Name the symbol shown with marked note {target_marker}.",
+      "Identify the articulation mark on note {target_marker}.",
+      "Which symbol is shown above the note marked {target_marker}?",
+      "Read the mark on note {target_marker} and give its name."
+    ]
+  },
+  "allow_empty_task_templates": true
+}

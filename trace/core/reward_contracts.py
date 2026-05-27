@@ -6,35 +6,25 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping
 
 
-REWARD_CONTRACT_VERSION = "v1"
-ANSWER_REWARD_CONTRACT_ID = "answer_exact_match_v1"
+REWARD_CONTRACT_VERSION = "v0"
+ANSWER_REWARD_CONTRACT_ID = "answer_exact_match_v0"
 
 EVIDENCE_REWARD_CONTRACT_IDS = frozenset(
     {
-        "bbox_set_iou_v1",
-        "numeric_exact_v1",
-        "symbolic_set_exact_v1",
-        "sequence_exact_v1",
-        "point_set_match_v1",
+        "bbox_sequence_soft_iou_v0",
+        "bbox_set_soft_iou_v0",
+        "point_pair_set_soft_distance_v0",
+        "point_sequence_soft_distance_v0",
+        "point_set_soft_distance_v0",
     }
 )
 
 _EVIDENCE_REWARD_BY_TYPE = {
-    "bbox_set": "bbox_set_iou_v1",
-    "integer": "numeric_exact_v1",
-    "integer_list": "numeric_exact_v1",
-    "label_set": "symbolic_set_exact_v1",
-    "edge_set": "symbolic_set_exact_v1",
-    "id_set": "symbolic_set_exact_v1",
-    "label_sequence": "sequence_exact_v1",
-    "label_path": "sequence_exact_v1",
-    "id_path": "sequence_exact_v1",
-    "grid_point_path": "sequence_exact_v1",
-    "point_path": "sequence_exact_v1",
-    "graph_point": "point_set_match_v1",
-    "graph_point_set": "point_set_match_v1",
-    "grid_point_set": "point_set_match_v1",
-    "point_set": "point_set_match_v1",
+    "bbox_sequence": "bbox_sequence_soft_iou_v0",
+    "bbox_set": "bbox_set_soft_iou_v0",
+    "point_pair_set": "point_pair_set_soft_distance_v0",
+    "point_sequence": "point_sequence_soft_distance_v0",
+    "point_set": "point_set_soft_distance_v0",
 }
 
 

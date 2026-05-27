@@ -6,40 +6,46 @@ Prompt text is externalized and deterministic.
 1. Task modules must not hardcode user-facing prompt strings.
 2. Bundles live under `prompts/<domain>/<task_group>/<bundle_id>.json`.
 3. Composition layers:
-   - task family,
+   - scene,
    - task,
-   - optional task variant,
+   - optional query,
    - output mode (`answer_only`, `answer_and_evidence`).
 4. Selection is deterministic from seed namespaces.
 5. Each required template list must contain exactly 5 high-quality variants.
 6. All active tasks must provide task-specific JSON-format guidance in both output modes:
    - `answer_only` uses `{"answer": ...}`
-   - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
-   - the generic schema sentence is supplied by RLVR system prompts and stripped from rendered user prompts
+   - `answer_and_evidence` uses `{"answer": ..., "evidence": ...}`
+   - the final JSON-object instruction is supplied by RLVR system prompts and the generic schema sentence is stripped from rendered user prompts
    - rendered output-mode instructions should keep task-specific `evidence_hint` / `answer_hint` lines and JSON examples, not tell the model to respond with only that object or suppress intermediate reasoning
 7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config for compatibility, with task-level `evidence_hint`/`answer_hint`/example overrides).
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
 9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
-10. For reference-panel tasks, keep the task-family layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
-11. When only some task variants need a slot, declare it under `required_slots_by_key["task_variant:<variant>"]` rather than under the shared `task:<task_key>` entry.
+10. For reference-panel tasks, keep the scene layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
+11. When only some query branches need a slot, declare it under `required_slots_by_key["query:<query_key>"]` rather than under the shared `task:<task_key>` entry.
+12. Scene templates should read like ordinary visual framing: use stems such as `The image shows ...`, `The chart shows ...`, `The table shows ...`, `The diagram shows ...`, or `The board shows ...`.
+13. Do not use telegraphic or imperative scene stems such as `Shown is`, `Displayed is`, `Use this`, `Read this`, `Look at`, `The image contains`, or `The chart is`.
+14. If the query layer already contains the complete question, set the task layer to empty templates with `allow_empty_task_templates: true` instead of adding filler like `Use the visual to answer`.
 
-## 2) Bundle schema (v1)
+## 2) Bundle schema (v0)
 Required fields:
 1. `bundle_id`
 2. `schema_version`
-3. `task_family_templates`
+3. `scene_templates`
 4. `task_templates`
 5. `answer_or_evidence_templates`
 6. `required_slots_by_key`
-7. Optional: `task_variant_templates`
+7. Optional: `query_templates`
+8. Optional: `allow_empty_task_templates`; use only when the query layer is the full question and any visible task-layer text would be redundant. The bundle must still provide exactly 5 task-template entries so deterministic variant metadata stays stable.
 
 ## 3) Metadata requirements
 Trace `query_spec.prompt_variant` should include:
-1. bundle/key identifiers (`task_family_key`, `task_key`, optional `task_variant_key`),
+1. bundle/key identifiers (`scene_key`, `task_key`, optional `query_key`),
 2. selected variant indices,
 3. variant counts,
 4. slot values for declared required slots,
 5. output-mode key/index when mode templates exist.
+
+For wrapper tasks that reuse another task group's prompt bundle, `query_spec.prompt_variant` may also include `prompt_domain` and `prompt_task_group`. Validation uses those optional fields to locate the prompt bundle while the train record keeps the wrapper task's own `domain` and `task_group`.
 
 Train records should store:
 1. active `prompt`,
@@ -56,191 +62,36 @@ Train records should store:
 1. Prefer 5 strong variants over larger padded lists.
 2. Keep stems natural and image-focused; avoid awkward scaffolding such as “single/exactly one object” unless the distinction is semantically necessary.
 3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
-4. Keep task/task-variant wording focused on the semantic query; format instructions belong in the output-mode layer.
+4. Keep task/query wording focused on the semantic query; format instructions belong in the output-mode layer.
 5. Keep layer responsibilities non-overlapping:
-   - family layer: scene context only,
+   - scene layer: visual context only,
    - task layer: operation hint only when needed,
-   - task-variant layer or `question_text`: the actual question,
+   - query layer or `question_text`: the actual question,
    - output-mode layer: field hints and JSON examples only.
 6. Avoid repeating broad nouns such as image, chart, table, diagram, board, question, or answer across adjacent prompt layers.
-7. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-variant 1 --include-all-prompts` so observed task variants are sampled and written to `samples/prompt_concision_audit_all.md`.
+7. Scene-layer wording should establish only the visible scaffold; it should not restate the task operation or tell the model how to answer.
+8. Task templates that wrap `{question_text}` should stay short, for example `{question_text}` or `Question: {question_text}`. Avoid wrappers that repeat the scene noun unless the task genuinely needs that extra context.
+9. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-variant 1 --include-all-prompts` so observed query branches are sampled and written to `samples/prompt_concision_audit_all.md`.
 
 ## 5) Active bundles/tasks
-Active bundles:
-1. Geometry:
-   - `prompts/geometry/comparison/geometry_comparison_v1.json`
-   - `prompts/geometry/coordinate/geometry_coordinate_v1.json`
-   - `prompts/geometry/counting/geometry_counting_v1.json`
-   - `prompts/geometry/measurement/geometry_angle_measure_v1.json`
-   - `prompts/geometry/measurement/geometry_measurement_v1.json`
-   - `prompts/geometry/similarity/geometry_similarity_v1.json`
-   - `prompts/geometry/transformation/geometry_transformation_v1.json`
-   - `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
-   - `prompts/geometry/analytical_2d/geometry_analytical_composite_area_v1.json`
-   - `prompts/geometry/analytical_2d/geometry_analytical_length_v1.json`
-   - `prompts/geometry/analytical_2d/geometry_analytical_perimeter_v1.json`
-   - `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
-   - `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
-2. Icons:
-   - `prompts/icons/counting/icons_counting_v1.json`
-   - `prompts/icons/pattern/icons_pattern_v1.json`
-   - `prompts/icons/relation/icons_relation_v1.json`
-   - `prompts/icons/sequence/icons_sequence_v1.json`
-   - `prompts/icons/transformation/icons_transformation_v1.json`
-3. Graph:
-   - `prompts/graph/counting/graph_counting_v1.json`
-   - `prompts/graph/comparison/graph_comparison_v1.json`
-   - `prompts/graph/order/graph_order_v1.json`
-   - `prompts/graph/optimization/graph_optimization_v1.json`
-   - `prompts/graph/path/graph_path_v1.json`
-   - `prompts/graph/relation/graph_relation_v1.json`
-4. Tile:
-   - `prompts/tile/count/tile_count_v1.json`
-   - `prompts/tile/path/tile_path_v1.json`
-   - `prompts/tile/pattern/tile_pattern_v1.json`
-   - `prompts/tile/reachability/tile_reachability_v1.json`
-   - `prompts/tile/relation/tile_relation_v1.json`
-   - `prompts/tile/symmetry/tile_symmetry_v1.json`
-   - `prompts/tile/transition/tile_transition_v1.json`
-5. Charts:
-   - `prompts/charts/statistics/charts_statistics_v1.json`
-   - `prompts/charts/counting/charts_counting_v1.json`
-   - `prompts/charts/readout/charts_readout_v1.json`
-   - `prompts/charts/multiseries/charts_multiseries_v1.json`
-   - `prompts/charts/distribution/charts_distribution_v1.json`
-   - `prompts/charts/trend/charts_trend_v1.json`
-   - `prompts/charts/composition/charts_composition_v2.json`
-6. Tables:
-   - `prompts/tables/statistics/tables_statistics_v1.json`
-   - `prompts/tables/counting/tables_counting_v1.json`
-   - `prompts/tables/readout/tables_readout_v1.json`
-   - `prompts/tables/relation/tables_relation_v1.json`
-   - `prompts/tables/ranking/tables_ranking_v1.json`
-   - `prompts/tables/temporal/tables_temporal_v1.json`
-7. Temporal:
-   - `prompts/temporal/calendar/temporal_calendar_v1.json`
-   - `prompts/temporal/clock/temporal_clock_v1.json`
-   - `prompts/temporal/schedule/temporal_schedule_v1.json`
-   - `prompts/temporal/timeline/temporal_timeline_v1.json`
-8. Puzzles:
-   - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
-   - `prompts/puzzles/logic/puzzles_logic_v1.json`
-   - `prompts/puzzles/spatial/puzzles_spatial_v1.json`
-   - `prompts/puzzles/topology/puzzles_topology_v1.json`
-9. Documents:
-   - `prompts/documents/arithmetic/documents_arithmetic_v1.json`
-   - `prompts/documents/layout/documents_layout_v1.json`
-   - `prompts/documents/readout/documents_readout_v1.json`
-   - `prompts/documents/relation/documents_relation_v1.json`
-   - `prompts/documents/selection/documents_selection_v1.json`
-10. Diagrams:
-   - `prompts/diagrams/cycle/diagrams_cycle_v1.json`
-   - `prompts/diagrams/flow/diagrams_flow_v1.json`
-   - `prompts/diagrams/hierarchy/diagrams_hierarchy_v1.json`
-   - `prompts/diagrams/schematic/diagrams_schematic_v1.json`
-   - `prompts/diagrams/set_diagram/diagrams_set_diagram_v1.json`
-11. Games:
-   - `prompts/games/bingo/games_bingo_v1.json`
-   - `prompts/games/cards/games_cards_v1.json`
-   - `prompts/games/checkers/games_checkers_v1.json`
-   - `prompts/games/connect_four/games_connect_four_v1.json`
-   - `prompts/games/dominoes/games_dominoes_v1.json`
-   - `prompts/games/dots_and_boxes/games_dots_and_boxes_v1.json`
-   - `prompts/games/go/games_go_v1.json`
-   - `prompts/games/mancala/games_mancala_v1.json`
-   - `prompts/games/nine_mens_morris/games_nine_mens_morris_v1.json`
-   - `prompts/games/reversi/games_reversi_v1.json`
-12. Physics:
-   - `prompts/physics/mechanics/physics_mechanics_v1.json`
-   - `prompts/physics/circuits/physics_circuits_v1.json`
-   - `prompts/physics/optics/physics_optics_v1.json`
-Active task-to-bundle mapping:
-1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
-2. Geometry counting task (`task_geometry_counting_value`) delegates to `geometry_counting_v1`
-3. Geometry measurement task (`task_geometry_measurement_value`) delegates by compatible scene/query pair to:
-   - `geometry_angle_measure_v1`
-   - `geometry_measurement_v1`
-4. Geometry analytical 2D task (`task_geometry_analytical_2d_value`) delegates by compatible scene/query pair to:
-   - `geometry_analytical_area_v1`
-   - `geometry_analytical_composite_area_v1`
-   - `geometry_analytical_length_v1`
-   - `geometry_analytical_perimeter_v1`
-5. Geometry analytical 3D task (`task_geometry_analytical_3d_value`) delegates by compatible scene/query pair to:
-   - `geometry_analytical_volume_v1`
-   - `geometry_analytical_surface_area_v1`
-6. Geometry transformation task (`task_geometry_transformation_match`) delegates to `geometry_transformation_v1`
-7. Geometry similarity task (`task_geometry_similarity_count`) delegates to `geometry_similarity_v1`
-8. Geometry coordinate task (`task_geometry_coordinate_relation`) delegates to `geometry_coordinate_v1`
-9. Icons:
-   - `task_icons_counting_reference_match_count|size_relation|singleton_type` -> `icons_counting_v1`
-   - `task_icons_pattern_structured_violation` -> `icons_pattern_v1`
-   - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
-   - `task_icons_sequence_missing_count` -> `icons_sequence_v1`
-   - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
-10. Graph:
-   - `task_graph_counting_degree_count|articulation_point_count|bridge_count` -> `graph_counting_v1`
-   - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
-   - `task_graph_order_topological_position` -> `graph_order_v1`
-   - `task_graph_optimization_minimum_spanning_tree_weight` -> `graph_optimization_v1`
-   - `task_graph_path_shortest_path_length` -> `graph_path_v1`
-   - `task_graph_relation_same_component_count|reachable_count|unique_cycle_size` -> `graph_relation_v1`
-11. Temporal:
-   - `task_temporal_clock_readout|task_temporal_clock_compare` -> `temporal_clock_v1`
-   - `task_temporal_calendar_month_view` -> `temporal_calendar_v1`
-   - `task_temporal_schedule_day_planner` -> `temporal_schedule_v1`
-   - `task_temporal_timeline_milestones` -> `temporal_timeline_v1`
-12. Tile:
-   - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
-   - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`
-   - `task_tile_pattern_match3_run_count` -> `tile_pattern_v1`
-   - `task_tile_reachability_region_size` -> `tile_reachability_v1`
-   - `task_tile_relation_min_distance` -> `tile_relation_v1`
-   - `task_tile_symmetry_violation_count` -> `tile_symmetry_v1`
-   - `task_tile_transition_gravity_max_drop` -> `tile_transition_v1`
-13. Charts:
-   - `task_charts_statistics_summary_value|summary_label` -> `charts_statistics_v1`
-   - `task_charts_counting_value_count` -> `charts_counting_v1`
-   - `task_charts_readout_subset_value` -> `charts_readout_v1`
-   - `task_charts_multiseries_pairwise_comparison_count` -> `charts_multiseries_v1`
-   - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
-   - `task_charts_trend_structure_value` -> `charts_trend_v1`
-   - `task_charts_composition_subset_value` -> `charts_composition_v2`
-14. Tables:
-   - `task_tables_statistics_summary_label|summary_value|filtered_subset_value|filtered_subset_label` -> `tables_statistics_v1`
-   - `task_tables_counting_value_count` -> `tables_counting_v1`
-   - `task_tables_readout_subset_value` -> `tables_readout_v1`
-   - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
-   - `task_tables_ranking_label` -> `tables_ranking_v1`
-   - `task_tables_temporal_value` -> `tables_temporal_v1`
-15. Puzzles:
-   - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value|task_puzzles_arithmetic_grid_value` -> `puzzles_arithmetic_v1`
-   - `task_puzzles_logic_grid_completion_label|task_puzzles_logic_adjacency_completion_label` -> `puzzles_logic_v1`
-   - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label|task_puzzles_spatial_overlay_result_label` -> `puzzles_spatial_v1`
-   - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
-16. Diagrams:
-   - `task_diagrams_flow_next_step_label` -> `diagrams_flow_v1`
-   - `task_diagrams_hierarchy_ancestor_label` -> `diagrams_hierarchy_v1`
-   - `task_diagrams_cycle_offset_stage_label` -> `diagrams_cycle_v1`
-   - `task_diagrams_set_diagram_region_sum_value` -> `diagrams_set_diagram_v1`
-   - `task_diagrams_schematic_callout_target_label` -> `diagrams_schematic_v1`
-17. Documents:
-   - `task_documents_arithmetic_section_expression_value` -> `documents_arithmetic_v1`
-   - `task_documents_layout_section_membership_label` -> `documents_layout_v1`
-   - `task_documents_readout_field_value` -> `documents_readout_v1`
-   - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`
-   - `task_documents_selection_checkbox_count` -> `documents_selection_v1`
-18. Games:
-   - `task_games_bingo_completed_line_count` -> `games_bingo_v1`
-   - `task_games_cards_hand_count` -> `games_cards_v1`
-   - `task_games_checkers_move_count` -> `games_checkers_v1`
-   - `task_games_connect_four_move_count` -> `games_connect_four_v1`
-   - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
-   - `task_games_dots_and_boxes_capture_count` -> `games_dots_and_boxes_v1`
-   - `task_games_go_group_liberty_count` -> `games_go_v1`
-   - `task_games_mancala_move_count` -> `games_mancala_v1`
-   - `task_games_nine_mens_morris_pieces_in_mill_count` -> `games_nine_mens_morris_v1`
-   - `task_games_reversi_move_count` -> `games_reversi_v1`
-19. Physics:
-   - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`
-   - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`
-   - `task_physics_optics_ray_trace` -> `physics_optics_v1`
+Active prompt bundle usage is derived from `configs/domains/**/*.yaml`
+`bundle_id` references. Do not maintain an exhaustive task-to-bundle map in
+this document; that map drifts quickly as tasks are split, merged, or moved.
+
+Use these source-of-truth surfaces instead:
+1. Config references in `configs/domains/<domain>/<task_group>.yaml`.
+2. Prompt assets in `prompts/<domain>/<task_group>/<bundle_id>.json`.
+3. Runtime prompt metadata in `query_spec.prompt_variant`.
+4. Active task inventory in `docs/ACTIVE_TASK_INVENTORY.md`.
+5. Task-level contracts in `docs/tasks/<task_id>.md`.
+
+Validation:
+```bash
+PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_prompt_system.py tests/test_docs_consistency.py
+```
+
+For prompt wording reviews, use:
+```bash
+PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-variant 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
+```

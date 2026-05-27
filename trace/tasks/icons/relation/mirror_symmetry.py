@@ -34,7 +34,9 @@ from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scen
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import panel_geometry_to_trace
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
-from ..shared.icon_task_rendering import resolve_icon_render_params, sample_icon_instance_noise
+from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.public_query_task import rewrite_icons_query_output
 
 
 _SYMMETRY_VARIANTS: Tuple[str, ...] = (
@@ -44,6 +46,7 @@ _SYMMETRY_VARIANTS: Tuple[str, ...] = (
     "mirror_diagonal_anti",
     "mirror_both_axes",
 )
+_PUBLIC_QUERY_VARIANT = "mirror_symmetry_count"
 
 _EXACT_SYMMETRY_SIGNATURES: Dict[str, Tuple[bool, bool, bool, bool]] = {
     "mirror_vertical": (True, False, False, False),
@@ -112,7 +115,7 @@ class _ScenePayload:
     object_count: int
     target_count: int
     distractor_count: int
-    task_variant: str
+    query_variant: str
     cell_labels: Tuple[str, ...]
     matching_labels: Tuple[str, ...]
     scene_cell_symmetry_ids: Tuple[str, ...]
@@ -126,7 +129,7 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "relation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_relation_mirror_symmetry",
+    task_id="task_icons__mirror_grid__mirror_symmetry_count",
 )
 
 
@@ -136,16 +139,7 @@ def _resolve_fixed_grid_cardinalities(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float], int, Dict[str, float], int, Dict[str, float]]:
-    """Resolve mirror-grid counts with stable balancing over the small `0..4` answer support.
-
-    This task keeps the Scene grid fixed at six labeled cells. Under the task-review
-    sampler we do not receive `_sampling_index`, so the generic hash-based counting
-    helper can produce slightly lopsided realized counts over only five answers.
-    For this fixed-support task we instead cycle the target count over feasible
-    values using `_sampling_index` when present and otherwise the deterministic
-    `instance_seed` itself. That preserves exact cycling in dataset builds and keeps
-    review-time answer distributions stable without changing the visible task.
-    """
+    """Resolve mirror-grid counts with stable seeded selection over the small support."""
 
     (
         object_count,
@@ -227,7 +221,7 @@ def _resolve_fixed_grid_cardinalities(
             dict(distractor_count_probabilities),
         )
 
-    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    sampling_index = abs(int(instance_seed))
     selected_target = int(supported_targets[int(sampling_index) % len(supported_targets)])
     selected_distractor = int(object_count) - int(selected_target)
     if int(selected_distractor) not in supported_distractors:
@@ -246,6 +240,41 @@ def _resolve_fixed_grid_cardinalities(
     )
 
 
+def _resolve_mirror_signature(scene_rng, *, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    """Resolve the sampled mirror signature while accepting source variant overrides."""
+
+    signature_params = dict(params)
+    if signature_params.get("mirror_signature_weights") is None and signature_params.get("variant_weights") is not None:
+        signature_params["mirror_signature_weights"] = signature_params["variant_weights"]
+    explicit_variant = signature_params.get("query_variant")
+    if signature_params.get("mirror_signature") is None and explicit_variant is not None:
+        variant = str(explicit_variant).strip()
+        if variant in set(_SYMMETRY_VARIANTS):
+            signature_params["mirror_signature"] = str(variant)
+        elif variant == str(_PUBLIC_QUERY_VARIANT):
+            signature_params.pop("query_variant", None)
+    selected_signature, signature_probabilities = resolve_variant(
+        scene_rng,
+        params=signature_params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=_SYMMETRY_VARIANTS,
+        explicit_key="mirror_signature",
+        weights_key="mirror_signature_weights",
+    )
+    selected_signature = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=signature_params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_signature),
+        variant_probabilities=dict(signature_probabilities),
+        supported_variants=_SYMMETRY_VARIANTS,
+        balance_flag_key="balanced_variant_sampling",
+        explicit_key="mirror_signature",
+        weights_key="mirror_signature_weights",
+    )
+    return str(selected_signature), dict(signature_probabilities)
+
+
 def _resolve_rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
     """Resolve the supported icon rotations for symmetry cells."""
 
@@ -261,25 +290,31 @@ def _resolve_rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
     return values
 
 
-def _resolve_render_params(params: Mapping[str, Any]) -> Dict[str, Any]:
+def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
     """Resolve render params, including grid-cell extras for symmetry scenes."""
 
     render_params = resolve_icon_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
         fallback_defaults=_DEFAULTS,
+        instance_seed=int(instance_seed),
     )
     render_params["cell_padding_px"] = int(
         params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px))
     )
-    render_params["cell_border_rgb"] = tuple(
-        params.get("cell_border_rgb", group_default(_RENDER_DEFAULTS, "cell_border_rgb", _DEFAULTS.cell_border_rgb))
+    render_params["cell_border_rgb"] = resolve_icon_rgb_param(
+        params=params,
+        render_defaults=_RENDER_DEFAULTS,
+        key="cell_border_rgb",
+        fallback=_DEFAULTS.cell_border_rgb,
+        instance_seed=int(instance_seed),
     )
-    render_params["cell_label_color_rgb"] = tuple(
-        params.get(
-            "cell_label_color_rgb",
-            group_default(_RENDER_DEFAULTS, "cell_label_color_rgb", _DEFAULTS.cell_label_color_rgb),
-        )
+    render_params["cell_label_color_rgb"] = resolve_icon_rgb_param(
+        params=params,
+        render_defaults=_RENDER_DEFAULTS,
+        key="cell_label_color_rgb",
+        fallback=_DEFAULTS.cell_label_color_rgb,
+        instance_seed=int(instance_seed),
     )
     render_params["cell_label_font_size_px"] = int(
         params.get(
@@ -1004,7 +1039,7 @@ def _sample_scene(
     rng,
     *,
     instance_seed: int,
-    task_variant: str,
+    query_variant: str,
     object_count: int,
     target_count: int,
     render_params: Mapping[str, Any],
@@ -1049,7 +1084,7 @@ def _sample_scene(
 
     labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
-    other_symmetries = [str(value) for value in _SYMMETRY_VARIANTS if str(value) != str(task_variant)]
+    other_symmetries = [str(value) for value in _SYMMETRY_VARIANTS if str(value) != str(query_variant)]
     distractor_variants: List[str] = []
     distractor_count = int(object_count) - int(target_count)
     if int(distractor_count) >= 1:
@@ -1086,11 +1121,11 @@ def _sample_scene(
     ref_content_bbox = tuple(int(value) for value in prepared.reference_cell.content_bbox_xyxy)
     ref_width = int(ref_content_bbox[2] - ref_content_bbox[0])
     ref_height = int(ref_content_bbox[3] - ref_content_bbox[1])
-    if str(task_variant) == "mirror_both_axes":
+    if str(query_variant) == "mirror_both_axes":
         reference_patch, reference_placements, reference_icon_count = _render_both_axes_patch(
             rng,
             instance_seed=int(instance_seed),
-            namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{task_variant}:reference",
+            namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{query_variant}:reference",
             width=int(ref_width),
             height=int(ref_height),
             pool=pool,
@@ -1102,10 +1137,10 @@ def _sample_scene(
         reference_patch, reference_placements, reference_icon_count = _render_symmetric_patch(
             rng,
             instance_seed=int(instance_seed),
-            namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{task_variant}:reference",
+            namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{query_variant}:reference",
             width=int(ref_width),
             height=int(ref_height),
-            symmetry_variant=str(task_variant),
+            symmetry_variant=str(query_variant),
             pool=pool,
             palette=sampled_palette_rgb,
             rotation_candidates=render_params["rotation_candidates_degrees"],
@@ -1115,7 +1150,7 @@ def _sample_scene(
     reference_signature = _symmetry_signature(reference_patch)
     reference_payload = {
         "panel": "reference",
-        "symmetry_id": str(task_variant),
+        "symmetry_id": str(query_variant),
         "cell_bbox_xyxy": list(prepared.reference_cell.cell_bbox_xyxy),
         "content_bbox_xyxy": list(prepared.reference_cell.content_bbox_xyxy),
         "icon_count": int(reference_icon_count),
@@ -1136,7 +1171,7 @@ def _sample_scene(
     distractor_cursor = 0
     for index, prepared_cell in enumerate(prepared.scene_cells):
         if int(index) in match_indices:
-            cell_variant = str(task_variant)
+            cell_variant = str(query_variant)
             is_match = True
             matching_labels.append(str(prepared_cell.label))
         else:
@@ -1151,7 +1186,7 @@ def _sample_scene(
             patch, placements, icon_count = _render_both_axes_patch(
                 rng,
                 instance_seed=int(instance_seed),
-                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{task_variant}:scene_{int(index)}",
+                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{query_variant}:scene_{int(index)}",
                 width=int(patch_width),
                 height=int(patch_height),
                 pool=pool,
@@ -1163,7 +1198,7 @@ def _sample_scene(
             patch, placements, icon_count = _render_symmetric_patch(
                 rng,
                 instance_seed=int(instance_seed),
-                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{task_variant}:scene_{int(index)}",
+                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{query_variant}:scene_{int(index)}",
                 width=int(patch_width),
                 height=int(patch_height),
                 symmetry_variant=str(cell_variant),
@@ -1176,7 +1211,7 @@ def _sample_scene(
             patch, placements, icon_count = _render_nonsymmetric_patch(
                 rng,
                 instance_seed=int(instance_seed),
-                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{task_variant}:scene_{int(index)}",
+                namespace=f"{IconsRelationMirrorSymmetryTask.task_id}:{query_variant}:scene_{int(index)}",
                 width=int(patch_width),
                 height=int(patch_height),
                 pool=pool,
@@ -1212,7 +1247,7 @@ def _sample_scene(
         object_count=int(object_count),
         target_count=int(target_count),
         distractor_count=int(distractor_count),
-        task_variant=str(task_variant),
+        query_variant=str(query_variant),
         cell_labels=tuple(str(value) for value in labels),
         matching_labels=tuple(sorted(str(value) for value in matching_labels)),
         scene_cell_symmetry_ids=tuple(str(value) for value in scene_cell_symmetry_ids),
@@ -1227,7 +1262,7 @@ def _sample_scene(
 class IconsRelationMirrorSymmetryTask:
     """Count labeled Scene cells whose mirror symmetry matches the Reference."""
 
-    task_id = "task_icons_relation_mirror_symmetry"
+    task_id = "task_icons__mirror_grid__mirror_symmetry_count"
     domain = "icons"
     task_group = "relation"
 
@@ -1235,25 +1270,12 @@ class IconsRelationMirrorSymmetryTask:
         """Generate one deterministic mirror-symmetry relation instance."""
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
-        selected_variant, variant_probabilities = resolve_variant(
+        selected_signature, signature_probabilities = _resolve_mirror_signature(
             scene_rng,
             params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            supported_variants=_SYMMETRY_VARIANTS,
-            explicit_key="task_variant",
-            weights_key="variant_weights",
-        )
-        selected_variant = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
-            params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            selected_variant=str(selected_variant),
-            variant_probabilities=dict(variant_probabilities),
-            supported_variants=_SYMMETRY_VARIANTS,
-            balance_flag_key="balanced_variant_sampling",
-            explicit_key="task_variant",
-            weights_key="variant_weights",
         )
+        cardinality_params = dict(params)
         (
             object_count,
             object_count_probabilities,
@@ -1264,9 +1286,9 @@ class IconsRelationMirrorSymmetryTask:
         ) = _resolve_fixed_grid_cardinalities(
             scene_rng,
             instance_seed=int(instance_seed),
-            params=params,
+            params=cardinality_params,
         )
-        render_params = _resolve_render_params(params)
+        render_params = _resolve_render_params(params, instance_seed=int(instance_seed))
         pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
 
         scene_payload = None
@@ -1277,7 +1299,7 @@ class IconsRelationMirrorSymmetryTask:
                 scene_payload, image = _sample_scene(
                     scene_rng,
                     instance_seed=int(instance_seed),
-                    task_variant=str(selected_variant),
+                    query_variant=str(selected_signature),
                     object_count=int(object_count),
                     target_count=int(target_count),
                     render_params=render_params,
@@ -1288,13 +1310,13 @@ class IconsRelationMirrorSymmetryTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_relation_mirror_symmetry instance") from last_error
+            raise RuntimeError("failed to generate task_icons__mirror_grid__mirror_symmetry_count instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -1311,7 +1333,7 @@ class IconsRelationMirrorSymmetryTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -1329,15 +1351,24 @@ class IconsRelationMirrorSymmetryTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_labels = list(scene_payload.matching_labels)
+        evidence_artifacts = matching_scene_cell_bbox_evidence(
+            scene_cells=scene_payload.scene_cells,
+            matching_labels=evidence_labels,
+        )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
+        evidence_gt = TypedValue(
+            type=str(evidence_artifacts["evidence_type"]),
+            value=list(evidence_artifacts["evidence_value"]),
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_reference_grid_mirror_symmetry_count",
                 "entities": [dict(scene_payload.reference_cell), *[dict(item) for item in scene_payload.scene_cells]],
                 "relations": {
                     "counting_target": "same_mirror_symmetry_as_reference",
-                    "reference_symmetry_id": str(scene_payload.task_variant),
+                    "query_variant": str(_PUBLIC_QUERY_VARIANT),
+                    "reference_symmetry_id": str(scene_payload.query_variant),
+                    "mirror_signature": str(scene_payload.query_variant),
                     "matching_cell_labels": list(scene_payload.matching_labels),
                 },
                 "frames": {
@@ -1346,7 +1377,7 @@ class IconsRelationMirrorSymmetryTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(scene_payload.task_variant),
+                "query_variant": str(_PUBLIC_QUERY_VARIANT),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1359,7 +1390,9 @@ class IconsRelationMirrorSymmetryTask:
                     "distractor_count": int(distractor_count),
                     "distractor_count_probabilities": dict(distractor_count_probabilities),
                     "pool_manifest": str(pool_manifest),
-                    "variant_probabilities": dict(variant_probabilities),
+                    "mirror_signature": str(scene_payload.query_variant),
+                    "mirror_signature_probabilities": dict(signature_probabilities),
+                    "internal_query_variant": str(scene_payload.query_variant),
                 },
             },
             "render_spec": {
@@ -1381,7 +1414,9 @@ class IconsRelationMirrorSymmetryTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_grid",
-                "task_variant": str(scene_payload.task_variant),
+                "query_variant": str(_PUBLIC_QUERY_VARIANT),
+                "internal_query_variant": str(scene_payload.query_variant),
+                "mirror_signature": str(scene_payload.query_variant),
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -1392,25 +1427,26 @@ class IconsRelationMirrorSymmetryTask:
                 "matching_cell_labels": list(scene_payload.matching_labels),
                 "scene_cell_symmetry_ids": list(scene_payload.scene_cell_symmetry_ids),
                 "question_format": "count_scene_cells_matching_reference_mirror_symmetry",
+                "mirror_signature_probabilities": dict(signature_probabilities),
             },
             "witness_symbolic": {
-                "reference_symmetry_id": str(scene_payload.task_variant),
-                "matching_cell_labels": list(scene_payload.matching_labels),
+                "query_variant": str(_PUBLIC_QUERY_VARIANT),
+                "reference_symmetry_id": str(scene_payload.query_variant),
+                "mirror_signature": str(scene_payload.query_variant),
+                **dict(evidence_artifacts["witness_symbolic"]),
             },
-            "projected_evidence": {
-                "label_set": list(scene_payload.matching_labels),
-            },
+            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }
         complexity = build_icons_relation_mirror_symmetry_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
-            task_variant=str(scene_payload.task_variant),
+            query_variant=str(scene_payload.query_variant),
             object_count=int(scene_payload.object_count),
             target_count=int(scene_payload.target_count),
             scene_cells=scene_payload.scene_cells,
             render_params=render_params,
         )
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
             evidence_gt=evidence_gt,
@@ -1419,8 +1455,14 @@ class IconsRelationMirrorSymmetryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(scene_payload.task_variant),
+            query_variant=str(_PUBLIC_QUERY_VARIANT),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
+        )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(scene_payload.query_variant),
+            scene_id="mirror_grid",
+            query_probabilities=signature_probabilities,
         )
 
 

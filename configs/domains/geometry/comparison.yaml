@@ -1,27 +1,28 @@
 generation:
   shared:
     object_count_min: 4
-    object_count_max: 6
+    object_count_max: 8
     balanced_sampling: true
     min_normalized_gap: 0.2
   task_overrides:
-    task_geometry_comparison_value:
+    geometry_comparison_value_base:
       query_variant_weights:
-        largest_angle: 1.0
-        smallest_angle: 1.0
-        largest_length: 1.0
-        smallest_length: 1.0
-        largest_area: 1.0
-        smallest_area: 1.0
-        largest_perimeter: 1.0
-        smallest_perimeter: 1.0
+        angle_extremum: 1.0
+        length_extremum: 1.0
+        area_extremum: 1.0
+        perimeter_extremum: 1.0
+      extremum_direction_weights:
+        largest: 1.0
+        smallest: 1.0
       scene_variant_weights:
         angle: 1.0
         segment: 1.0
         rectangle: 1.0
+        triangle: 1.0
       balanced_query_variant_sampling: true
+      balanced_extremum_direction_sampling: true
       balanced_scene_variant_sampling: true
-    task_geometry_comparison_angle:
+    source_geometry_comparison_angle:
       min_angle: 30
       max_angle: 150
       angle_step: 1
@@ -36,12 +37,19 @@ generation:
         "4": 1.0
         "5": 1.0
         "6": 1.0
-    task_geometry_comparison_area:
+        "7": 1.0
+        "8": 1.0
+    source_geometry_comparison_area:
       min_rectangle_width: 2
       max_rectangle_width: 6
       min_rectangle_height: 2
       max_rectangle_height: 6
+      min_triangle_base: 2
+      max_triangle_base: 6
+      min_triangle_height: 2
+      max_triangle_height: 6
       min_absolute_gap_square_units: 6.0
+      min_absolute_triangle_area_gap_square_units: 4.0
       query_type_weights:
         largest: 1.0
         smallest: 1.0
@@ -49,12 +57,19 @@ generation:
         "4": 1.0
         "5": 1.0
         "6": 1.0
-    task_geometry_comparison_perimeter:
+        "7": 1.0
+        "8": 1.0
+    source_geometry_comparison_perimeter:
       min_rectangle_width: 2
       max_rectangle_width: 6
       min_rectangle_height: 2
       max_rectangle_height: 6
+      min_triangle_base: 2
+      max_triangle_base: 6
+      min_triangle_height: 2
+      max_triangle_height: 6
       min_absolute_gap_units: 4.0
+      min_absolute_triangle_perimeter_gap_units: 3.0
       query_type_weights:
         largest: 1.0
         smallest: 1.0
@@ -62,7 +77,9 @@ generation:
         "4": 1.0
         "5": 1.0
         "6": 1.0
-    task_geometry_comparison_length:
+        "7": 1.0
+        "8": 1.0
+    source_geometry_comparison_length:
       min_segment_length: 2
       max_segment_length: 10
       max_abs_vector_component: 10
@@ -74,11 +91,13 @@ generation:
         "4": 1.0
         "5": 1.0
         "6": 1.0
+        "7": 1.0
+        "8": 1.0
 
 rendering:
   shared:
-    graph_cells_min: 18
-    graph_cells_max: 24
+    graph_cells_min: 24
+    graph_cells_max: 30
     line_width: 4
     line_width_min: 2
     line_width_max: 5
@@ -92,33 +111,43 @@ rendering:
 
 prompt:
   shared:
-    bundle_id: geometry_comparison_v1
-    task_family_key: comparison_graph_scene
+    bundle_id: geometry_comparison_v0
+    scene_key: comparison_graph_scene
     task_key: comparison_query
   task_overrides:
-    task_geometry_comparison_angle:
+    source_geometry_comparison_angle:
       object_description: several labeled angles
       question_text_largest: Which labeled angle has the greatest measure?
       question_text_smallest: Which labeled angle has the smallest measure?
-      evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints'
+      evidence_hint: 'set "evidence" to an array of exactly three pixel points [x,y] for the winning angle: the vertex and the two ray endpoints'
       answer_hint: 'set "answer" to the single-letter label of the correct angle'
-    task_geometry_comparison_area:
+    source_geometry_comparison_area:
       object_description: several labeled rectangles
+      object_description_triangle: several labeled triangles
       question_text_largest: Which labeled rectangle has the greatest area?
       question_text_smallest: Which labeled rectangle has the smallest area?
-      evidence_hint: 'set "evidence" to an array of exactly four graph-paper points for the winning rectangle vertices'
+      question_text_largest_triangle: Which labeled triangle has the greatest area?
+      question_text_smallest_triangle: Which labeled triangle has the smallest area?
+      evidence_hint: 'set "evidence" to an array of exactly four pixel points [x,y] for the winning rectangle vertices'
+      evidence_hint_triangle: 'set "evidence" to an array of exactly three pixel points [x,y] for the winning triangle vertices'
       answer_hint: 'set "answer" to the single-letter label of the correct rectangle'
-    task_geometry_comparison_perimeter:
+      answer_hint_triangle: 'set "answer" to the single-letter label of the correct triangle'
+    source_geometry_comparison_perimeter:
       object_description: several labeled rectangles
+      object_description_triangle: several labeled triangles
       question_text_largest: Which labeled rectangle has the greatest perimeter?
       question_text_smallest: Which labeled rectangle has the smallest perimeter?
-      evidence_hint: 'set "evidence" to an array of exactly four graph-paper points for the winning rectangle vertices'
+      question_text_largest_triangle: Which labeled triangle has the greatest perimeter?
+      question_text_smallest_triangle: Which labeled triangle has the smallest perimeter?
+      evidence_hint: 'set "evidence" to an array of exactly four pixel points [x,y] for the winning rectangle vertices'
+      evidence_hint_triangle: 'set "evidence" to an array of exactly three pixel points [x,y] for the winning triangle vertices'
       answer_hint: 'set "answer" to the single-letter label of the correct rectangle'
-    task_geometry_comparison_length:
+      answer_hint_triangle: 'set "answer" to the single-letter label of the correct triangle'
+    source_geometry_comparison_length:
       object_description: several labeled line segments
       question_text_largest: Which labeled segment is the longest?
       question_text_smallest: Which labeled segment is the shortest?
-      evidence_hint: 'set "evidence" to an array of exactly two graph-paper points for the winning segment endpoints'
+      evidence_hint: 'set "evidence" to an array of exactly two pixel points [x,y] for the winning segment endpoints'
       answer_hint: 'set "answer" to the single-letter label of the correct segment'
 
 complexity:

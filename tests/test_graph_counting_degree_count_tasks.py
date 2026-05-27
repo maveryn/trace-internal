@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 
 from trace.core.seed import hash64
 from trace.tasks.graph.counting.degree_count import GraphCountingDegreeCountTask
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -22,7 +23,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     out = task.generate(
         19101,
         params={
-            "task_variant": "degree_count",
+            "query_variant": "degree_count",
             "node_count": 7,
             "query_degree": 2,
             "target_count": 2,
@@ -39,12 +40,15 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
-    assert out.evidence_gt.type == "label_set"
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value)
+    assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_degree_counting"
     assert execution["question_format"] == "count_nodes_with_degree"
-    assert execution["task_variant"] == "degree_count"
+    assert out.query_variant == "default"
+    assert out.query_id == "undirected_degree_count"
+    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "undirected_degree_count"
+    assert execution["internal_query_variant"] == "degree_count"
     assert execution["graph_directionality"] == "undirected"
     assert execution["degree_mode"] == "degree"
     assert int(execution["node_count"]) == 7
@@ -52,7 +56,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     assert int(execution["target_count"]) == 2
     assert execution["layout_variant_requested"] == "shell"
     assert execution["topology_profile"] == "balanced"
-    assert execution["label_variant"] in {"letters", "numbers"}
+    assert execution["label_variant"] in {"letters", "numbers", "named"}
     assert execution["node_shape_variant"] in {"circle", "rounded_square", "hexagon"}
     assert execution["layout_transform_variant"] in {
         "identity",
@@ -63,7 +67,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
         "mirror_up_down",
     }
     assert execution["node_color_name"]
-    assert trace["query_spec"]["params"]["task_variant_probabilities"]
+    assert trace["query_spec"]["params"]["query_variant_probabilities"]
     assert len(node_entities) == 7
     assert len(edge_entities) == int(execution["edge_count"])
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -88,11 +92,17 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
             assert str(label) in adjacency_by_label[str(neighbor)]
 
     matching_labels = [str(value) for value in execution["matching_labels"]]
-    assert matching_labels == list(out.evidence_gt.value)
+    evidence_points = list(out.evidence_gt.value)
+    assert matching_labels == trace["witness_symbolic"]["labels"]
+    assert int(out.answer_gt.value) == len(matching_labels) == len(evidence_points)
     assert all(int(degrees_by_label[str(label)]) == 2 for label in matching_labels)
-    assert trace["projected_evidence"]["label_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_point_set"]) == 2
+    assert "label_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == evidence_points
+    assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
     assert len(trace["projected_evidence"]["pixel_bbox_set"]) == 2
+    width, height = trace["render_spec"]["canvas_size"]
+    assert all(0 <= float(point[0]) <= float(width) and 0 <= float(point[1]) <= float(height) for point in evidence_points)
     assert trace["render_spec"]["style"]["node_shape_variant"] == execution["node_shape_variant"]
     assert trace["render_spec"]["style"]["node_color_name"] == execution["node_color_name"]
     assert int(trace["render_spec"]["style"]["resolved_label_font_size_px"]) > 0
@@ -104,14 +114,20 @@ def test_graph_counting_degree_count_prompt_example_matches_contract() -> None:
     task = GraphCountingDegreeCountTask()
     out = task.generate(
         19102,
-        params={"task_variant": "degree_count", "node_count": 8, "query_degree": 1, "target_count": 2, "label_variant": "letters"},
+        params={
+            "query_variant": "degree_count",
+            "node_count": 8,
+            "query_degree": 1,
+            "target_count": 2,
+            "label_variant": "letters",
+        },
         max_attempts=80,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": 2}
     assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == ["B", "F"]
+    assert answer_and_evidence["evidence"] == [[180, 220], [310, 180]]
     assert answer_and_evidence["answer"] == 2
 
 
@@ -120,7 +136,7 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     out = task.generate(
         19104,
         params={
-            "task_variant": "degree_count",
+            "query_variant": "degree_count",
             "node_count": 10,
             "query_degree": 1,
             "target_count": 3,
@@ -135,7 +151,9 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     execution = trace["execution_trace"]
     labels = [entity["label"] for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_node"]
     assert all(str(label).isdigit() for label in labels)
-    assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda value: int(str(value)))
+    assert trace["witness_symbolic"]["labels"] == sorted(
+        trace["witness_symbolic"]["labels"], key=lambda value: int(str(value))
+    )
     assert execution["label_variant"] == "numbers"
     assert execution["node_shape_variant"] == "hexagon"
     assert execution["layout_transform_variant"] == "rotate_90"
@@ -143,14 +161,14 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     assert trace["render_spec"]["style"]["node_shape_variant"] == "hexagon"
     assert tuple(trace["render_spec"]["style"]["node_fill_rgb"]) == tuple(named_color("orange"))
     prompt_example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-    assert prompt_example["evidence"] == ["2", "7"]
+    assert prompt_example["evidence"] == [[180, 220], [310, 180]]
     assert prompt_example["answer"] == 2
 
 
 def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> None:
     task = GraphCountingDegreeCountTask()
     common_params = {
-        "task_variant": "degree_count",
+        "query_variant": "degree_count",
         "node_count": 10,
         "query_degree": 1,
         "target_count": 3,
@@ -168,11 +186,12 @@ def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> Non
 
 def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semantics() -> None:
     task = GraphCountingDegreeCountTask()
-    for variant in ("in_degree_count", "out_degree_count"):
+    for degree_mode in ("in_degree", "out_degree"):
         out = task.generate(
-            19107 if variant == "in_degree_count" else 19108,
+            19107 if degree_mode == "in_degree" else 19108,
             params={
-                "task_variant": variant,
+                "query_variant": "directed_degree_count",
+                "degree_mode": degree_mode,
                 "node_count": 8,
                 "query_degree": 1,
                 "target_count": 2,
@@ -181,37 +200,56 @@ def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semanti
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
-        assert execution["task_variant"] == variant
+        assert out.query_variant == "default"
+        assert out.query_id == f"directed_{degree_mode}_count"
+        assert execution["query_variant"] == "default"
+        assert execution["query_id"] == f"directed_{degree_mode}_count"
+        assert execution["internal_query_variant"] == "directed_degree_count"
         assert execution["graph_directionality"] == "directed"
         assert execution["degree_mode"] in {"in_degree", "out_degree"}
         assert trace["query_spec"]["params"]["graph_directionality"] == "directed"
         assert trace["scene_ir"]["relations"]["graph_directionality"] == "directed"
         assert any(bool(entity["directed"]) for entity in trace["scene_ir"]["entities"] if entity["entity_kind"] == "graph_edge")
-        if variant == "in_degree_count":
+        if degree_mode == "in_degree":
             assert execution["degree_mode"] == "in_degree"
             queried = {str(key): int(value) for key, value in execution["in_degrees_by_label"].items()}
         else:
             assert execution["degree_mode"] == "out_degree"
             queried = {str(key): int(value) for key, value in execution["out_degrees_by_label"].items()}
-        assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda value: int(str(value)) if str(value).isdigit() else str(value))
-        assert all(int(queried[str(label)]) == 1 for label in out.evidence_gt.value)
-
-
-def test_graph_counting_degree_count_directed_variants_cap_node_count_at_nine() -> None:
-    task = GraphCountingDegreeCountTask()
-    for variant in ("in_degree_count", "out_degree_count"):
-        out = task.generate(
-            19109 if variant == "in_degree_count" else 19110,
-            params={"task_variant": variant},
-            max_attempts=120,
+        matching_labels = [str(value) for value in execution["matching_labels"]]
+        assert trace["witness_symbolic"]["labels"] == sorted(
+            trace["witness_symbolic"]["labels"], key=lambda value: int(str(value)) if str(value).isdigit() else str(value)
         )
-        assert 5 <= int(out.trace_payload["execution_trace"]["node_count"]) <= 9
+        assert len(out.evidence_gt.value) == len(matching_labels)
+        assert all(int(queried[str(label)]) == 1 for label in matching_labels)
+
+
+def test_graph_counting_degree_count_directed_variants_use_full_node_range() -> None:
+    task = GraphCountingDegreeCountTask()
+    node_counts: Counter[int] = Counter()
+    for degree_mode in ("in_degree", "out_degree"):
+        for index in range(80):
+            out = task.generate(
+                hash64(19109 if degree_mode == "in_degree" else 19110, degree_mode, index),
+                params={
+                    "query_variant": "directed_degree_count",
+                    "degree_mode": degree_mode,
+                },
+                max_attempts=120,
+            )
+            node_count = int(out.trace_payload["execution_trace"]["node_count"])
+            assert 5 <= node_count <= 10
+            node_counts[node_count] += 1
+    assert 10 in node_counts
 
 
 def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
     task = GraphCountingDegreeCountTask()
-    task_variants: Counter[str] = Counter()
+    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
+    degree_modes: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
+    targets_by_mode: defaultdict[str, Counter[int]] = defaultdict(Counter)
     query_degrees: Counter[int] = Counter()
     layout_variants: Counter[str] = Counter()
     topology_profiles: Counter[str] = Counter()
@@ -219,34 +257,51 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
     node_shape_variants: Counter[str] = Counter()
     layout_transform_variants: Counter[str] = Counter()
     node_colors: Counter[str] = Counter()
-    for index in range(60):
+    for index in range(120):
         out = task.generate(
             hash64(19103, "graph_counting_degree_count", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
-        task_variants[str(execution["task_variant"])] += 1
+        query_variants[str(execution["query_variant"])] += 1
+        query_ids[str(execution["query_id"])] += 1
+        degree_modes[str(execution["degree_mode"])] += 1
         target_counts[int(execution["target_count"])] += 1
-        query_degrees[int(execution["query_degree"])] += 1
+        targets_by_mode[str(execution["degree_mode"])][int(execution["target_count"])] += 1
+        if "query_degree" in execution:
+            query_degrees[int(execution["query_degree"])] += 1
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
         label_variants[str(execution["label_variant"])] += 1
         node_shape_variants[str(execution["node_shape_variant"])] += 1
         layout_transform_variants[str(execution["layout_transform_variant"])] += 1
         node_colors[str(execution["node_color_name"])] += 1
-        if str(execution["graph_directionality"]) == "directed":
-            assert 5 <= int(execution["node_count"]) <= 9
-        else:
-            assert 5 <= int(execution["node_count"]) <= 10
-        assert 0 <= int(execution["query_degree"]) <= 4
-        assert 0 <= int(execution["target_count"]) <= 5
-    assert set(task_variants.keys()) == {"degree_count", "in_degree_count", "out_degree_count"}
-    assert set(target_counts.keys()) == set(range(0, 6))
-    assert set(query_degrees.keys()) == set(range(0, 5))
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+        assert 5 <= int(execution["node_count"]) <= 10
+        if "query_degree" in execution:
+            assert 0 <= int(execution["query_degree"]) <= 4
+        assert 0 <= int(execution["target_count"]) <= 6
+    assert set(query_variants.keys()) == {"default"}
+    assert set(query_ids.keys()) == {
+        "undirected_degree_count",
+        "directed_in_degree_count",
+        "directed_out_degree_count",
+        "undirected_degree_one_filter_remaining_count",
+        "directed_in_degree_one_filter_remaining_count",
+        "directed_out_degree_one_filter_remaining_count",
+        "directed_source_count",
+        "directed_sink_count",
+    }
+    assert set(degree_modes.keys()) == {"degree", "in_degree", "out_degree"}
+    assert min(target_counts.keys()) == 0
+    assert max(target_counts.keys()) <= 6
+    for degree_mode in ("degree", "in_degree", "out_degree"):
+        assert len(targets_by_mode[degree_mode]) >= 4
+    assert set(query_degrees.keys()).issubset(set(range(0, 5)))
+    assert {0, 1}.issubset(set(query_degrees.keys()))
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
     assert set(layout_transform_variants.keys()) == {
         "identity",
@@ -268,3 +323,17 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         "magenta",
         "maroon",
     }
+
+
+def test_graph_counting_degree_count_node_support_is_not_locked_to_smallest_feasible_count() -> None:
+    task = GraphCountingDegreeCountTask()
+    node_counts: Counter[int] = Counter()
+    for index in range(120):
+        out = task.generate(
+            hash64(19111, "graph_counting_degree_count_node_balance", index),
+            params={"query_variant": "degree_count"},
+            max_attempts=120,
+        )
+        node_counts[int(out.trace_payload["execution_trace"]["node_count"])] += 1
+    assert set(node_counts) >= {5, 6, 7, 8, 9, 10}
+    assert node_counts[5] < 90

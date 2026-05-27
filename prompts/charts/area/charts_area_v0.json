@@ -1,0 +1,91 @@
+{
+  "bundle_id": "charts_area_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "area_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:area": [
+      "object_description"
+    ],
+    "query:interval_area_value": [
+      "start_label",
+      "end_label"
+    ],
+    "query:stacked_band_interval_sum_value": [
+      "category_label",
+      "start_label",
+      "end_label"
+    ],
+    "query:stacked_dominance_label": [
+      "start_label",
+      "end_label"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "area": [
+      "The image shows {object_description}.",
+      "The image shows {object_description}.",
+      "This is {object_description}.",
+      "The figure shows {object_description}.",
+      "The chart panel shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "interval_area_value": [
+      "Using displayed x-axis order from {start_label} through {end_label}, compute the area under the filled curve by summing (left value + right value) / 2 for each adjacent pair.",
+      "From {start_label} through {end_label}, use each neighboring pair of point values in order; add (left + right) / 2 for every pair to get the total area.",
+      "Compute the area under the area chart from {start_label} to {end_label}: for each adjacent x-axis pair, average the two point values, then sum those averages.",
+      "What is the total area under the filled curve over {start_label} through {end_label}? Use unit width, so each adjacent pair contributes (left value + right value) / 2.",
+      "Use the point values from {start_label} through {end_label} in displayed order; sum (neighboring value pair total) / 2 across the interval."
+    ],
+    "stacked_band_interval_sum_value": [
+      "For category {category_label}, what is the sum of its band values from {start_label} through {end_label}, inclusive, in displayed x-axis order?",
+      "Add the band values for {category_label} across displayed x-axis labels {start_label} through {end_label}; what is the total?",
+      "Using the legend to find {category_label}, compute its total band value from {start_label} to {end_label} in displayed x-axis order.",
+      "What is the inclusive displayed-interval sum for category {category_label} between {start_label} and {end_label}?",
+      "Find category {category_label} in the stacked area chart and sum its shown band values from {start_label} through {end_label} in displayed x-axis order."
+    ],
+    "stacked_dominance_label": [
+      "From {start_label} through {end_label} in displayed x-axis order, which category has the largest total band value?",
+      "Across the displayed interval {start_label} through {end_label}, identify the category with the greatest sum of shown band values.",
+      "Which legend category contributes the highest total from {start_label} to {end_label} in displayed x-axis order?",
+      "Sum each category's band values over {start_label} through {end_label} in displayed x-axis order; which category is largest?",
+      "Over the inclusive displayed x-axis interval {start_label} to {end_label}, which category has the dominant total?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

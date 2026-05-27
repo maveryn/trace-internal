@@ -2,13 +2,42 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from typing import Any, Dict, Mapping, Tuple
 
+from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
+from ...shared.color_format import rgb_to_hex
 from ...shared.config_defaults import group_default
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.named_colors import named_color
+from ...shared.variant_sampling import (
+    apply_balanced_variant_sampling,
+    has_non_null_param,
+    is_uniform_probability_map,
+    resolve_variant,
+)
 from .graph_scene import GraphRenderParams
-from .style import build_graph_named_color_theme
+from .information_style import (
+    graph_surface_roles_from_information_style,
+    infer_graph_scene_id,
+    resolve_graph_information_style,
+)
+from .label_assets import default_graph_label_bucket_weights, resolve_graph_edge_label_support
+from .style import (
+    SUPPORTED_GRAPH_PANEL_STYLE_VARIANTS,
+    SUPPORTED_GRAPH_THEME_TONES,
+    apply_graph_panel_style,
+    build_graph_named_color_theme,
+)
+
+
+def format_graph_prompt_label(label: str, *, label_variant: str) -> str:
+    """Return a prompt-facing node label, quoting named text labels."""
+
+    text = str(label)
+    if str(label_variant) == "named":
+        return f'"{text}"'
+    return text
 
 
 def resolve_graph_named_variant(
@@ -24,7 +53,7 @@ def resolve_graph_named_variant(
     task_id: str,
     namespace: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced named graph-task variant axis."""
+    """Resolve one balanced named graph-query variant axis."""
 
     selected_variant, probabilities = resolve_variant(
         rng,
@@ -49,6 +78,263 @@ def resolve_graph_named_variant(
     return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
+def resolve_graph_static_node_color_name(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    fallback: str,
+    supported: Sequence[str],
+    key: str = "node_color_name",
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve one explicitly configured graph theme color and probability map."""
+
+    raw = params.get(str(key), group_default(gen_defaults, str(key), str(fallback)))
+    color_name = str(raw).strip().lower()
+    supported_names = tuple(str(name) for name in supported)
+    if color_name not in set(supported_names):
+        raise ValueError(f"unsupported {key}: {raw}")
+    return str(color_name), {
+        str(name): (1.0 if str(name) == str(color_name) else 0.0)
+        for name in supported_names
+    }
+
+
+def resolve_graph_balanced_node_color_name(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    task_id: str,
+    supported: Sequence[str],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve the common balanced non-semantic graph node-color axis."""
+
+    color_rng = spawn_rng(int(instance_seed), f"{str(task_id)}.node_color_name")
+    return resolve_graph_named_variant(
+        color_rng,
+        params=params,
+        gen_defaults=gen_defaults,
+        explicit_key="node_color_name",
+        weights_key="node_color_name_weights",
+        balance_flag_key="balanced_node_color_name_sampling",
+        supported=tuple(str(item) for item in supported),
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        namespace="node_color_name",
+    )
+
+
+def resolve_graph_edge_label_support_from_params(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    task_id: str,
+    default_support_size: int = 6,
+    default_min_chars: int = 3,
+    default_max_chars: int = 12,
+) -> Tuple[Tuple[str, ...], Dict[str, Any]]:
+    """Resolve visible edge-text label support from explicit params or shared label assets."""
+
+    raw_support = params.get("edge_label_support", group_default(gen_defaults, "edge_label_support", None))
+    if raw_support is not None:
+        if isinstance(raw_support, str):
+            support = tuple(str(item).strip().lower() for item in raw_support.split(",") if str(item).strip())
+        else:
+            support = tuple(str(item).strip().lower() for item in raw_support if str(item).strip())
+        if len(set(support)) != len(support) or len(support) < 2:
+            raise ValueError("edge_label_support must contain at least two unique labels")
+        return tuple(str(label) for label in support), {
+            "edge_label_source_kind": "explicit_support",
+            "edge_label_bucket": "",
+            "edge_label_manifest": "",
+            "edge_label_filter": {},
+            "edge_label_bucket_probabilities": {},
+        }
+
+    support_size = int(
+        params.get(
+            "edge_label_support_size",
+            group_default(gen_defaults, "edge_label_support_size", int(default_support_size)),
+        )
+    )
+    min_chars = int(
+        params.get(
+            "edge_label_min_chars",
+            group_default(gen_defaults, "edge_label_min_chars", int(default_min_chars)),
+        )
+    )
+    max_chars = int(
+        params.get(
+            "edge_label_max_chars",
+            group_default(gen_defaults, "edge_label_max_chars", int(default_max_chars)),
+        )
+    )
+    raw_bucket_weights = params.get(
+        "edge_label_bucket_weights",
+        group_default(gen_defaults, "edge_label_bucket_weights", default_graph_label_bucket_weights()),
+    )
+    bucket_weights = dict(raw_bucket_weights) if isinstance(raw_bucket_weights, Mapping) else default_graph_label_bucket_weights()
+    resolved = resolve_graph_edge_label_support(
+        spawn_rng(int(instance_seed), f"{str(task_id)}.edge_label_bucket"),
+        support_size=int(support_size),
+        min_chars=int(min_chars),
+        max_chars=int(max_chars),
+        bucket_weights=bucket_weights,
+    )
+    return tuple(str(label) for label in resolved.labels), {
+        "edge_label_source_kind": str(resolved.label_source_kind),
+        "edge_label_bucket": str(resolved.label_bucket),
+        "edge_label_manifest": str(resolved.label_manifest),
+        "edge_label_filter": dict(resolved.label_filter),
+        "edge_label_bucket_probabilities": dict(resolved.label_bucket_probabilities),
+    }
+
+
+def graph_int_support(
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+    key: str,
+    fallback_min: int,
+    fallback_max: int,
+) -> Tuple[int, ...]:
+    """Resolve an inclusive integer support from graph task params/defaults."""
+
+    lower = int(params.get(f"{key}_min", group_default(defaults, f"{key}_min", fallback_min)))
+    upper = int(params.get(f"{key}_max", group_default(defaults, f"{key}_max", fallback_max)))
+    if upper < lower:
+        raise ValueError(f"{key} support is empty")
+    return tuple(range(int(lower), int(upper) + 1))
+
+
+def graph_balanced_axis_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    probabilities: Mapping[str, float],
+    balance_flag_key: str,
+    explicit_keys: Sequence[str],
+    weights_key: str,
+) -> int:
+    """Return the active balanced count for one already-resolved graph axis."""
+
+    enabled = bool(params.get(str(balance_flag_key), group_default(gen_defaults, str(balance_flag_key), True)))
+    if not bool(enabled):
+        return 1
+    if any(has_non_null_param(params, key) for key in (*tuple(str(key) for key in explicit_keys), str(weights_key))):
+        return 1
+    if not is_uniform_probability_map(probabilities):
+        return 1
+    active_count = sum(1 for value in probabilities.values() if float(value) > 0.0)
+    return max(1, int(active_count))
+
+
+def graph_query_probabilities_from_alias_map(
+    probabilities: Mapping[str, float],
+    alias_map: Mapping[str, str],
+) -> Dict[str, float]:
+    """Convert internal graph-axis probabilities to public query-id probabilities."""
+
+    return {
+        str(alias_map[str(key)]): float(probability)
+        for key, probability in probabilities.items()
+        if str(key) in alias_map
+    }
+
+
+def graph_uniform_label_probability_map(values: Sequence[str], *, selected: str | None = None) -> Dict[str, float]:
+    """Return a deterministic uniform probability map over graph text labels."""
+
+    support = tuple(str(value) for value in values)
+    if not support:
+        return {}
+    if selected is not None:
+        return {str(selected): 1.0}
+    probability = 1.0 / float(len(support))
+    return {str(value): float(probability) for value in support}
+
+
+def graph_edge_label_entries(edge_attribute_labels_by_label: Mapping[Tuple[str, str], str]) -> Tuple[Dict[str, Any], ...]:
+    """Return JSON-friendly visible edge-label metadata entries."""
+
+    return tuple(
+        {
+            "edge": [str(left), str(right)],
+            "edge_label": str(edge_label),
+        }
+        for (left, right), edge_label in edge_attribute_labels_by_label.items()
+    )
+
+
+def graph_palette_rgb_by_name(names: Sequence[str]) -> Dict[str, Dict[str, Any]]:
+    """Return trace metadata for named graph colors."""
+
+    return {
+        str(name): {
+            "rgb": list(named_color(str(name))),
+            "hex": str(rgb_to_hex(named_color(str(name)))),
+        }
+        for name in names
+    }
+
+
+def graph_semantic_node_style_by_label(
+    *,
+    node_color_names_by_label: Mapping[str, str],
+    theme_tone: str,
+) -> Dict[str, Dict[str, Any]]:
+    """Resolve per-node render styles from shared named graph colors."""
+
+    style_by_color: Dict[str, Dict[str, Any]] = {}
+    for color_name in sorted(set(str(value) for value in node_color_names_by_label.values())):
+        color_theme = build_graph_named_color_theme(str(color_name), theme_tone=str(theme_tone))
+        style_by_color[str(color_name)] = {
+            "color_name": str(color_name),
+            "fill_rgb": tuple(int(value) for value in color_theme.node_fill_rgb),
+            "border_rgb": tuple(int(value) for value in color_theme.node_border_rgb),
+            "label_text_rgb": tuple(int(value) for value in color_theme.label_text_rgb),
+            "label_stroke_rgb": tuple(int(value) for value in color_theme.label_stroke_rgb),
+        }
+    return {
+        str(label): dict(style_by_color[str(color_name)])
+        for label, color_name in node_color_names_by_label.items()
+    }
+
+
+def resolve_forced_graph_edit_operation(
+    params: Mapping[str, Any],
+    *,
+    operation_from_query_alias: Callable[[Any], str | None],
+) -> str | None:
+    """Return an explicitly requested edge-edit operation, if present."""
+
+    for key in ("edit_operation", "edge_edit_operation", "query_id", "query_variant", "query_variant"):
+        value = params.get(str(key))
+        if value is None:
+            continue
+        operation = operation_from_query_alias(value)
+        if operation is None:
+            if str(key) in {"edit_operation", "edge_edit_operation"}:
+                raise ValueError(f"unsupported edge-edit operation: {value}")
+            continue
+        return str(operation)
+    return None
+
+
+def resolve_forced_graph_query_id(
+    params: Mapping[str, Any],
+    *,
+    query_id_from_alias: Callable[[Any], str | None],
+) -> str | None:
+    """Resolve an explicitly requested graph query id, if present."""
+
+    for key in ("query_id", "query_variant", "query_variant"):
+        query_id = query_id_from_alias(params.get(str(key)))
+        if query_id is not None:
+            return str(query_id)
+    return None
+
+
 def resolve_graph_render_params(
     params: Mapping[str, Any],
     *,
@@ -58,6 +344,7 @@ def resolve_graph_render_params(
     fallback_defaults: Any,
     node_color_name: str,
     node_shape_variant: str,
+    edge_routing_variant: str = "straight",
 ) -> GraphRenderParams:
     """Resolve one concrete graph render-parameter set for a graph task."""
 
@@ -75,10 +362,63 @@ def resolve_graph_render_params(
     )
     render_rng = spawn_rng(int(instance_seed), f"{str(task_id)}.render")
     node_radius = int(render_rng.randint(int(radius_min), int(max(radius_min, radius_max))))
+    explicit_tone = str(params.get("theme_tone", "")).strip().lower()
+    if explicit_tone in SUPPORTED_GRAPH_THEME_TONES:
+        theme_tone = str(explicit_tone)
+    else:
+        raw_tone_weights = params.get(
+            "theme_tone_weights",
+            group_default(render_defaults, "theme_tone_weights", {str(key): 1.0 for key in SUPPORTED_GRAPH_THEME_TONES}),
+        )
+        tone_weights = dict(raw_tone_weights) if isinstance(raw_tone_weights, Mapping) else {}
+        tone_probabilities = normalize_positive_weights(
+            {str(key): float(tone_weights.get(str(key), 0.0)) for key in SUPPORTED_GRAPH_THEME_TONES},
+            default_keys=SUPPORTED_GRAPH_THEME_TONES,
+        )
+        theme_tone = weighted_choice(
+            spawn_rng(int(instance_seed), f"{str(task_id)}.render.theme_tone"),
+            tone_probabilities,
+            sort_keys=True,
+        )
     try:
-        color_theme = build_graph_named_color_theme(str(node_color_name))
+        color_theme = build_graph_named_color_theme(str(node_color_name), theme_tone=str(theme_tone))
     except Exception:
         color_theme = None
+
+    explicit_panel_style = str(params.get("panel_style_variant", "")).strip().lower()
+    if explicit_panel_style in SUPPORTED_GRAPH_PANEL_STYLE_VARIANTS:
+        panel_style_variant = str(explicit_panel_style)
+    else:
+        raw_panel_style_weights = params.get(
+            "panel_style_variant_weights",
+            group_default(
+                render_defaults,
+                "panel_style_variant_weights",
+                {str(key): 1.0 for key in SUPPORTED_GRAPH_PANEL_STYLE_VARIANTS},
+            ),
+        )
+        panel_style_weights = dict(raw_panel_style_weights) if isinstance(raw_panel_style_weights, Mapping) else {}
+        panel_style_probabilities = normalize_positive_weights(
+            {str(key): float(panel_style_weights.get(str(key), 0.0)) for key in SUPPORTED_GRAPH_PANEL_STYLE_VARIANTS},
+            default_keys=SUPPORTED_GRAPH_PANEL_STYLE_VARIANTS,
+        )
+        panel_style_variant = weighted_choice(
+            spawn_rng(int(instance_seed), f"{str(task_id)}.render.panel_style_variant"),
+            panel_style_probabilities,
+            sort_keys=True,
+        )
+    if color_theme is not None:
+        color_theme = apply_graph_panel_style(color_theme, panel_style_variant=str(panel_style_variant))
+    graph_scene_id = infer_graph_scene_id(str(task_id))
+    information_style, information_style_meta = resolve_graph_information_style(
+        instance_seed=int(instance_seed),
+        params=params,
+        scene_id=str(graph_scene_id),
+        task_group=str(params.get("task_group", "shared")),
+        protected_colors=(tuple(int(value) for value in named_color(str(node_color_name))),),
+        allow_dark=False,
+    )
+    information_roles = graph_surface_roles_from_information_style(information_style)
 
     def _render_value(key: str) -> Any:
         return params.get(key, group_default(render_defaults, key, getattr(fallback_defaults, key)))
@@ -91,31 +431,20 @@ def resolve_graph_render_params(
         panel_corner_radius_px=int(_render_value("panel_corner_radius_px")),
         panel_title_font_size_px=int(_render_value("panel_title_font_size_px")),
         node_shape_variant=str(node_shape_variant),
+        edge_routing_variant=str(edge_routing_variant),
         node_radius_px=int(node_radius),
         edge_width_px=int(_render_value("edge_width_px")),
         arrow_length_px=int(_render_value("arrow_length_px")),
         arrow_width_px=int(_render_value("arrow_width_px")),
         node_border_width_px=int(_render_value("node_border_width_px")),
         label_font_size_px=int(_render_value("label_font_size_px")),
-        background_color_rgb=tuple(
-            int(value)
-            for value in (
-                color_theme.background_color_rgb if color_theme is not None else _render_value("background_color_rgb")
-            )
-        ),
-        panel_fill_rgb=tuple(
-            int(value) for value in (color_theme.panel_fill_rgb if color_theme is not None else _render_value("panel_fill_rgb"))
-        ),
-        panel_border_rgb=tuple(
-            int(value)
-            for value in (color_theme.panel_border_rgb if color_theme is not None else _render_value("panel_border_rgb"))
-        ),
-        title_color_rgb=tuple(
-            int(value) for value in (color_theme.title_color_rgb if color_theme is not None else _render_value("title_color_rgb"))
-        ),
-        edge_color_rgb=tuple(
-            int(value) for value in (color_theme.edge_color_rgb if color_theme is not None else _render_value("edge_color_rgb"))
-        ),
+        theme_tone=str(theme_tone),
+        panel_style_variant=str(panel_style_variant),
+        background_color_rgb=tuple(int(value) for value in information_roles["background_color_rgb"]),
+        panel_fill_rgb=tuple(int(value) for value in information_roles["panel_fill_rgb"]),
+        panel_border_rgb=tuple(int(value) for value in information_roles["panel_border_rgb"]),
+        title_color_rgb=tuple(int(value) for value in information_roles["title_color_rgb"]),
+        edge_color_rgb=tuple(int(value) for value in information_roles["edge_color_rgb"]),
         node_fill_rgb=tuple(
             int(value) for value in (color_theme.node_fill_rgb if color_theme is not None else _render_value("node_fill_rgb"))
         ),
@@ -123,17 +452,26 @@ def resolve_graph_render_params(
             int(value)
             for value in (color_theme.node_border_rgb if color_theme is not None else _render_value("node_border_rgb"))
         ),
-        label_text_rgb=tuple(
-            int(value) for value in (color_theme.label_text_rgb if color_theme is not None else _render_value("label_text_rgb"))
-        ),
-        label_stroke_rgb=tuple(
-            int(value)
-            for value in (color_theme.label_stroke_rgb if color_theme is not None else _render_value("label_stroke_rgb"))
-        ),
+        label_text_rgb=tuple(int(value) for value in information_roles["label_text_rgb"]),
+        label_stroke_rgb=tuple(int(value) for value in information_roles["label_stroke_rgb"]),
+        information_scene_style=dict(information_style_meta),
     )
 
 
 __all__ = [
+    "format_graph_prompt_label",
+    "graph_balanced_axis_count",
+    "graph_edge_label_entries",
+    "graph_int_support",
+    "graph_palette_rgb_by_name",
+    "graph_query_probabilities_from_alias_map",
+    "graph_semantic_node_style_by_label",
+    "graph_uniform_label_probability_map",
+    "resolve_forced_graph_edit_operation",
+    "resolve_forced_graph_query_id",
+    "resolve_graph_balanced_node_color_name",
+    "resolve_graph_edge_label_support_from_params",
     "resolve_graph_named_variant",
     "resolve_graph_render_params",
+    "resolve_graph_static_node_color_name",
 ]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import math
 import re
 from collections.abc import Sequence
 from numbers import Integral, Real
@@ -19,9 +20,23 @@ from .trace_mode import resolve_trace_reward_mode
 
 
 _CODE_BLOCK_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL | re.IGNORECASE)
+_FINAL_CODE_BLOCK_RE = re.compile(r"```(?:json)?\s*(.*?)\s*```\s*\Z", re.DOTALL | re.IGNORECASE)
 _ANSWER_TAG_RE = re.compile(r"<answer>(.*?)</answer>", re.DOTALL | re.IGNORECASE)
 
 _TRACE_ANSWER_SCORING_MODES = {"exact_json", "legacy_strict"}
+_TRACE_EVIDENCE_REWARD_FORMULAS = {"gated", "additive"}
+_POINT_MATCH_FALLBACK_HALF_LIFE_PX = 32.0
+_POINT_MATCH_HALF_LIFE_FRACTION = 0.035
+_POINT_MATCH_HALF_LIFE_MIN_PX = 20.0
+_POINT_MATCH_HALF_LIFE_MAX_PX = 80.0
+_EVIDENCE_CONTRACT_BY_TYPE = {
+    "bbox_sequence": "bbox_sequence_soft_iou_v1",
+    "bbox_set": "bbox_set_soft_iou_v1",
+    "point_pair_set": "point_pair_set_soft_distance_v1",
+    "point_sequence": "point_sequence_soft_distance_v1",
+    "point_set": "point_set_soft_distance_v1",
+}
+_TRACE_EVIDENCE_LOG_TYPES = ("bbox_set", "point_pair_set", "point_sequence", "point_set")
 
 
 def _is_non_string_sequence(value: Any) -> bool:
@@ -43,8 +58,8 @@ def _parse_json_like(value: Any) -> Any | None:
     return value
 
 
-def _extract_brace_objects(text: str) -> list[str]:
-    objects: list[str] = []
+def _extract_brace_object_spans(text: str) -> list[tuple[int, int, str]]:
+    objects: list[tuple[int, int, str]] = []
     depth = 0
     start_index: int | None = None
     in_string = False
@@ -71,10 +86,33 @@ def _extract_brace_objects(text: str) -> list[str]:
         if char == "}" and depth > 0:
             depth -= 1
             if depth == 0 and start_index is not None:
-                objects.append(text[start_index : index + 1])
+                objects.append((start_index, index + 1, text[start_index : index + 1]))
                 start_index = None
 
     return objects
+
+
+def _extract_brace_objects(text: str) -> list[str]:
+    return [obj for _, _, obj in _extract_brace_object_spans(text)]
+
+
+def _extract_final_json_object(response: str) -> tuple[str | None, bool]:
+    stripped = response.rstrip()
+    if not stripped:
+        return None, False
+    final_code_block = _FINAL_CODE_BLOCK_RE.search(stripped)
+    if final_code_block is not None:
+        content = final_code_block.group(1).strip()
+        if content:
+            return content, True
+    for start, end, candidate in reversed(_extract_brace_object_spans(stripped)):
+        if end != len(stripped):
+            continue
+        prefix = stripped[:start].rstrip()
+        if prefix.endswith("```"):
+            return candidate.strip(), True
+        return candidate.strip(), True
+    return None, False
 
 
 def _collect_json_candidates(response: str) -> list[str]:
@@ -123,6 +161,26 @@ def _normalize_trace_answer_scoring(trace_answer_scoring: str | None) -> str:
     return resolved
 
 
+def _normalize_trace_evidence_reward_formula(trace_evidence_reward_formula: str | None) -> str:
+    normalized = str(trace_evidence_reward_formula or "gated").strip().lower()
+    aliases = {
+        "answer_gated": "gated",
+        "gated": "gated",
+        "gated_evidence": "gated",
+        "separate": "additive",
+        "additive": "additive",
+        "linear": "additive",
+    }
+    resolved = aliases.get(normalized)
+    if resolved is None:
+        raise ValueError(
+            "TRACE evidence reward formula must be one of "
+            f"{sorted(_TRACE_EVIDENCE_REWARD_FORMULAS)!r}; aliases {sorted(aliases)!r} are accepted. "
+            f"got {trace_evidence_reward_formula!r}"
+        )
+    return resolved
+
+
 def _required_trace_answer_keys(trace_reward_mode: str) -> set[str]:
     if trace_reward_mode == "answer":
         return {"answer"}
@@ -130,14 +188,8 @@ def _required_trace_answer_keys(trace_reward_mode: str) -> set[str]:
 
 
 def _extract_trace_sections(response: str) -> tuple[str | None, str | None, bool]:
-    if len(_ANSWER_TAG_RE.findall(response)) != 1:
-        return None, None, False
-
-    answer_block = _ANSWER_TAG_RE.search(response)
-    if answer_block is None:
-        return None, None, False
-    answer_text = answer_block.group(1).strip()
-    if not answer_text:
+    answer_text, structure_ok = _extract_final_json_object(response)
+    if not structure_ok or not answer_text:
         return None, None, False
     return None, answer_text, True
 
@@ -185,7 +237,7 @@ def evaluate_trace_response_format(
 
     schema_ok = set(payload.keys()) == _required_trace_answer_keys(normalized_mode)
     return {
-        "format": 1.0 if schema_ok else 0.5,
+        "format": 1.0 if schema_ok else 0.0,
         "structure_ok": True,
         "json_ok": True,
         "schema_ok": schema_ok,
@@ -210,20 +262,73 @@ def _normalize_scalar_number(value: Any) -> float | int | None:
     return None
 
 
-def _normalize_numeric_evidence(value: Any) -> list[float | int] | None:
+def _normalize_image_size(value: Any) -> tuple[float, float] | None:
     parsed = _parse_json_like(value)
-    scalar = _normalize_scalar_number(parsed)
-    if scalar is not None:
-        return [scalar]
-    if not _is_non_string_sequence(parsed):
+    if isinstance(parsed, dict):
+        for key in ("source_image_size", "image_size", "image_sizes", "canvas_size", "img_size"):
+            if key in parsed:
+                nested = _normalize_image_size(parsed.get(key))
+                if nested is not None:
+                    return nested
+        width = None
+        height = None
+        for key in ("width", "w", "image_width", "canvas_width"):
+            if key in parsed:
+                width = _normalize_scalar_number(parsed.get(key))
+                break
+        for key in ("height", "h", "image_height", "canvas_height"):
+            if key in parsed:
+                height = _normalize_scalar_number(parsed.get(key))
+                break
+        if width is not None and height is not None and float(width) > 0.0 and float(height) > 0.0:
+            return float(width), float(height)
         return None
-    out: list[float | int] = []
-    for item in list(parsed):
-        normalized = _normalize_scalar_number(item)
+
+    if _is_non_string_sequence(parsed):
+        items = list(parsed)
+        if len(items) == 2:
+            width = _normalize_scalar_number(items[0])
+            height = _normalize_scalar_number(items[1])
+            if width is not None and height is not None and float(width) > 0.0 and float(height) > 0.0:
+                return float(width), float(height)
+        for item in items:
+            nested = _normalize_image_size(item)
+            if nested is not None:
+                return nested
+    return None
+
+
+def _clamp(value: float, lower: float, upper: float) -> float:
+    return float(min(max(float(value), float(lower)), float(upper)))
+
+
+def _resolve_point_half_life_px(
+    *,
+    point_half_life_px: float | None,
+    image_size: Any | None = None,
+    image_sizes: Any | None = None,
+    metadata: Any | None = None,
+    extra_info: Any | None = None,
+) -> float:
+    if point_half_life_px is not None:
+        resolved = float(point_half_life_px)
+        if resolved <= 0.0:
+            raise ValueError(f"TRACE point_half_life_px must be positive, got {point_half_life_px}")
+        return resolved
+
+    for candidate in (image_size, image_sizes, metadata, extra_info):
+        normalized = _normalize_image_size(candidate)
         if normalized is None:
-            return None
-        out.append(normalized)
-    return out
+            continue
+        width, height = normalized
+        diagonal = math.hypot(float(width), float(height))
+        if diagonal > 0.0:
+            return _clamp(
+                _POINT_MATCH_HALF_LIFE_FRACTION * diagonal,
+                _POINT_MATCH_HALF_LIFE_MIN_PX,
+                _POINT_MATCH_HALF_LIFE_MAX_PX,
+            )
+    return float(_POINT_MATCH_FALLBACK_HALF_LIFE_PX)
 
 
 def _canonical_scalar_symbol(value: Any) -> str:
@@ -287,31 +392,6 @@ def _serialize_candidate(value: Any) -> str:
         return str(value)
 
 
-def _normalize_symbolic_set(value: Any, *, evidence_type: str) -> set[Any] | None:
-    parsed = _parse_json_like(value)
-    if parsed is None:
-        return None
-    if isinstance(parsed, (set, frozenset)):
-        parsed = list(parsed)
-    elif not _is_non_string_sequence(parsed):
-        parsed = [parsed]
-
-    normalized: set[Any] = set()
-    if evidence_type == "edge_set":
-        for item in list(parsed):
-            if not _is_non_string_sequence(item):
-                return None
-            endpoints = list(item)
-            if len(endpoints) != 2:
-                return None
-            normalized.add(tuple(sorted((_canonical_scalar_symbol(endpoints[0]), _canonical_scalar_symbol(endpoints[1])))))
-        return normalized
-
-    for item in list(parsed):
-        normalized.add(_canonical_scalar_symbol(item))
-    return normalized
-
-
 def _normalize_coord_pair(value: Any) -> tuple[float | int, float | int] | None:
     if not _is_non_string_sequence(value):
         return None
@@ -325,38 +405,39 @@ def _normalize_coord_pair(value: Any) -> tuple[float | int, float | int] | None:
     return (x, y)
 
 
-def _normalize_sequence(value: Any, *, evidence_type: str) -> list[Any] | None:
-    parsed = _parse_json_like(value)
-    if not _is_non_string_sequence(parsed):
-        return None
-    items = list(parsed)
-    normalized: list[Any] = []
-    is_coord_sequence = evidence_type in {"grid_point_path", "point_path"}
-    for item in items:
-        if is_coord_sequence:
-            coord = _normalize_coord_pair(item)
-            if coord is None:
-                return None
-            normalized.append(coord)
-        else:
-            normalized.append(_canonical_scalar_symbol(item))
-    return normalized
-
-
-def _normalize_point_set(value: Any) -> set[tuple[float | int, float | int]] | None:
+def _normalize_point_list(value: Any) -> list[tuple[float, float]] | None:
     parsed = _parse_json_like(value)
     single = _normalize_coord_pair(parsed)
     if single is not None:
-        return {single}
+        return [(float(single[0]), float(single[1]))]
     if not _is_non_string_sequence(parsed):
         return None
-    normalized: set[tuple[float | int, float | int]] = set()
+    normalized: list[tuple[float, float]] = []
     for item in list(parsed):
         coord = _normalize_coord_pair(item)
         if coord is None:
             return None
-        normalized.add(coord)
+        normalized.append((float(coord[0]), float(coord[1])))
     return normalized
+
+
+def _normalize_point_pair_list(value: Any) -> list[tuple[tuple[float, float], tuple[float, float]]] | None:
+    parsed = _parse_json_like(value)
+    if not _is_non_string_sequence(parsed):
+        return None
+    pairs: list[tuple[tuple[float, float], tuple[float, float]]] = []
+    for item in list(parsed):
+        if not _is_non_string_sequence(item):
+            return None
+        endpoints = list(item)
+        if len(endpoints) != 2:
+            return None
+        left = _normalize_coord_pair(endpoints[0])
+        right = _normalize_coord_pair(endpoints[1])
+        if left is None or right is None:
+            return None
+        pairs.append(((float(left[0]), float(left[1])), (float(right[0]), float(right[1]))))
+    return pairs
 
 
 def _normalize_bbox(value: Any) -> list[float] | None:
@@ -447,11 +528,9 @@ def _greedy_assignment(iou_matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return np.array(selected_rows, dtype=np.int64), np.array(selected_cols, dtype=np.int64)
 
 
-def _score_bbox_set_iou(
+def _score_bbox_set_soft_iou(
     pred_boxes: list[list[float]],
     gt_boxes: list[list[float]],
-    *,
-    iou_threshold: float,
 ) -> tuple[float, int, float]:
     if not pred_boxes and not gt_boxes:
         return 1.0, 0, 0.0
@@ -471,13 +550,137 @@ def _score_bbox_set_iou(
     matched_ious: list[float] = []
     for row, col in zip(row_ind, col_ind):
         iou = float(iou_matrix[row, col])
-        if iou >= iou_threshold:
-            matched_ious.append(iou)
+        matched_ious.append(iou)
     if not matched_ious:
         return 0.0, 0, 0.0
     score = float(sum(matched_ious) / max(len(pred_boxes), len(gt_boxes), 1))
     mean_iou = float(sum(matched_ious) / len(matched_ious))
     return score, len(matched_ious), mean_iou
+
+
+def _score_bbox_sequence_soft_iou(
+    pred_boxes: list[list[float]],
+    gt_boxes: list[list[float]],
+) -> tuple[float, int, float]:
+    if not pred_boxes and not gt_boxes:
+        return 1.0, 0, 0.0
+    if not pred_boxes or not gt_boxes:
+        return 0.0, 0, 0.0
+    ious = [_bbox_iou(pred_box, gt_box) for pred_box, gt_box in zip(pred_boxes, gt_boxes)]
+    if not ious:
+        return 0.0, 0, 0.0
+    score = float(sum(ious) / max(len(pred_boxes), len(gt_boxes), 1))
+    mean_iou = float(sum(ious) / len(ious))
+    return score, len(ious), mean_iou
+
+
+def _point_distance(point_a: tuple[float, float], point_b: tuple[float, float]) -> float:
+    return float(((float(point_a[0]) - float(point_b[0])) ** 2 + (float(point_a[1]) - float(point_b[1])) ** 2) ** 0.5)
+
+
+def _point_soft_similarity(distance: float, *, half_life_px: float) -> float:
+    half_life = max(float(half_life_px), 1e-6)
+    return float(math.exp(-math.log(2.0) * ((float(distance) / half_life) ** 2)))
+
+
+def _score_point_set_soft_distance(
+    pred_points: list[tuple[float, float]],
+    gt_points: list[tuple[float, float]],
+    *,
+    half_life_px: float,
+) -> tuple[float, int, float]:
+    if not pred_points and not gt_points:
+        return 1.0, 0, 0.0
+    if not pred_points or not gt_points:
+        return 0.0, 0, 0.0
+
+    distance_matrix = np.zeros((len(pred_points), len(gt_points)), dtype=np.float32)
+    for row, pred_point in enumerate(pred_points):
+        for col, gt_point in enumerate(gt_points):
+            distance_matrix[row, col] = _point_distance(pred_point, gt_point)
+
+    if linear_sum_assignment is None:
+        row_ind, col_ind = _greedy_assignment(-distance_matrix)
+    else:
+        row_ind, col_ind = linear_sum_assignment(distance_matrix)
+
+    similarities = [
+        _point_soft_similarity(float(distance_matrix[row, col]), half_life_px=half_life_px)
+        for row, col in zip(row_ind, col_ind)
+    ]
+    if not similarities:
+        return 0.0, 0, 0.0
+    score = float(sum(similarities) / max(len(pred_points), len(gt_points), 1))
+    mean_similarity = float(sum(similarities) / len(similarities))
+    return score, len(similarities), mean_similarity
+
+
+def _score_point_sequence_soft_distance(
+    pred_points: list[tuple[float, float]],
+    gt_points: list[tuple[float, float]],
+    *,
+    half_life_px: float,
+) -> tuple[float, int, float]:
+    if not pred_points and not gt_points:
+        return 1.0, 0, 0.0
+    if not pred_points or not gt_points:
+        return 0.0, 0, 0.0
+    similarities = []
+    for pred_point, gt_point in zip(pred_points, gt_points):
+        distance = _point_distance(pred_point, gt_point)
+        similarities.append(_point_soft_similarity(float(distance), half_life_px=half_life_px))
+    if not similarities:
+        return 0.0, 0, 0.0
+    score = float(sum(similarities) / max(len(pred_points), len(gt_points), 1))
+    mean_similarity = float(sum(similarities) / len(similarities))
+    return score, len(similarities), mean_similarity
+
+
+def _point_pair_distance(
+    pred_pair: tuple[tuple[float, float], tuple[float, float]],
+    gt_pair: tuple[tuple[float, float], tuple[float, float]],
+) -> float:
+    direct = max(
+        _point_distance(pred_pair[0], gt_pair[0]),
+        _point_distance(pred_pair[1], gt_pair[1]),
+    )
+    flipped = max(
+        _point_distance(pred_pair[0], gt_pair[1]),
+        _point_distance(pred_pair[1], gt_pair[0]),
+    )
+    return float(min(direct, flipped))
+
+
+def _score_point_pair_set_soft_distance(
+    pred_pairs: list[tuple[tuple[float, float], tuple[float, float]]],
+    gt_pairs: list[tuple[tuple[float, float], tuple[float, float]]],
+    *,
+    half_life_px: float,
+) -> tuple[float, int, float]:
+    if not pred_pairs and not gt_pairs:
+        return 1.0, 0, 0.0
+    if not pred_pairs or not gt_pairs:
+        return 0.0, 0, 0.0
+
+    distance_matrix = np.zeros((len(pred_pairs), len(gt_pairs)), dtype=np.float32)
+    for row, pred_pair in enumerate(pred_pairs):
+        for col, gt_pair in enumerate(gt_pairs):
+            distance_matrix[row, col] = _point_pair_distance(pred_pair, gt_pair)
+
+    if linear_sum_assignment is None:
+        row_ind, col_ind = _greedy_assignment(-distance_matrix)
+    else:
+        row_ind, col_ind = linear_sum_assignment(distance_matrix)
+
+    similarities = [
+        _point_soft_similarity(float(distance_matrix[row, col]), half_life_px=half_life_px)
+        for row, col in zip(row_ind, col_ind)
+    ]
+    if not similarities:
+        return 0.0, 0, 0.0
+    score = float(sum(similarities) / max(len(pred_pairs), len(gt_pairs), 1))
+    mean_similarity = float(sum(similarities) / len(similarities))
+    return score, len(similarities), mean_similarity
 
 
 def _score_trace_answer(
@@ -494,7 +697,14 @@ def _score_trace_answer(
         score, extracted, _, _ = strict_score_response(response=answer_text, ground_truth=answer_gt.get("value"))
         return float(score), bool(extracted)
 
-    normalized_pred = _canonical_jsonable(_parse_json_like(answer_value))
+    answer_type = str(answer_gt.get("type", "")).strip()
+    if isinstance(answer_value, str) and answer_type == "string":
+        parsed_answer_value = answer_value
+    else:
+        parsed_answer_value = _parse_json_like(answer_value) if isinstance(answer_value, str) else answer_value
+        if parsed_answer_value is None and isinstance(answer_value, str):
+            parsed_answer_value = answer_value
+    normalized_pred = _canonical_jsonable(parsed_answer_value)
     normalized_gt = _canonical_jsonable(answer_gt.get("value"))
     return (1.0 if normalized_pred == normalized_gt else 0.0), True
 
@@ -504,7 +714,7 @@ def _score_trace_evidence(
     evidence_gt: dict[str, Any],
     reward_contract: dict[str, Any],
     *,
-    bbox_iou_threshold: float,
+    point_half_life_px: float,
 ) -> tuple[float, bool, dict[str, Any]]:
     if not isinstance(evidence_gt, dict) or "type" not in evidence_gt:
         return 0.0, False, {"reason": "missing_evidence_gt"}
@@ -515,46 +725,93 @@ def _score_trace_evidence(
     evidence_gt_value = evidence_gt.get("value")
     evidence_contract = reward_contract.get("evidence") if isinstance(reward_contract.get("evidence"), dict) else {}
     evidence_contract_id = str(evidence_contract.get("id", "")).strip()
+    evidence_contract_type = str(evidence_contract.get("type", "")).strip()
+    expected_contract_id = _EVIDENCE_CONTRACT_BY_TYPE.get(evidence_type)
+    if expected_contract_id is None:
+        return 0.0, False, {"reason": f"unsupported_evidence_type:{evidence_type}"}
+    if evidence_contract_type and evidence_contract_type != evidence_type:
+        return 0.0, False, {"reason": "evidence_contract_type_mismatch"}
+    if evidence_contract_id != expected_contract_id:
+        return 0.0, False, {"reason": "evidence_contract_id_mismatch"}
 
-    if evidence_contract_id == "numeric_exact_v1":
-        pred = _normalize_numeric_evidence(evidence_value)
-        gt = _normalize_numeric_evidence(evidence_gt_value)
-        if pred is None or gt is None:
-            return 0.0, False, {"reason": "numeric_parse_failed"}
-        return (1.0 if pred == gt else 0.0), True, {"pred_len": len(pred), "gt_len": len(gt)}
-
-    if evidence_contract_id == "symbolic_set_exact_v1":
-        pred = _normalize_symbolic_set(evidence_value, evidence_type=evidence_type)
-        gt = _normalize_symbolic_set(evidence_gt_value, evidence_type=evidence_type)
-        if pred is None or gt is None:
-            return 0.0, False, {"reason": "symbolic_set_parse_failed"}
-        return (1.0 if pred == gt else 0.0), True, {"pred_size": len(pred), "gt_size": len(gt)}
-
-    if evidence_contract_id == "sequence_exact_v1":
-        pred = _normalize_sequence(evidence_value, evidence_type=evidence_type)
-        gt = _normalize_sequence(evidence_gt_value, evidence_type=evidence_type)
-        if pred is None or gt is None:
-            return 0.0, False, {"reason": "sequence_parse_failed"}
-        return (1.0 if pred == gt else 0.0), True, {"pred_len": len(pred), "gt_len": len(gt)}
-
-    if evidence_contract_id == "point_set_match_v1":
-        pred = _normalize_point_set(evidence_value)
-        gt = _normalize_point_set(evidence_gt_value)
+    if evidence_contract_id == "point_set_soft_distance_v1":
+        pred = _normalize_point_list(evidence_value)
+        gt = _normalize_point_list(evidence_gt_value)
         if pred is None or gt is None:
             return 0.0, False, {"reason": "point_set_parse_failed"}
-        return (1.0 if pred == gt else 0.0), True, {"pred_size": len(pred), "gt_size": len(gt)}
+        score, assigned_count, assigned_similarity_mean = _score_point_set_soft_distance(
+            pred,
+            gt,
+            half_life_px=point_half_life_px,
+        )
+        return score, True, {
+            "pred_size": len(pred),
+            "gt_size": len(gt),
+            "assigned_count": int(assigned_count),
+            "assigned_similarity_mean": float(assigned_similarity_mean),
+            "point_half_life_px": float(point_half_life_px),
+        }
 
-    if evidence_contract_id == "bbox_set_iou_v1":
+    if evidence_contract_id == "point_sequence_soft_distance_v1":
+        pred = _normalize_point_list(evidence_value)
+        gt = _normalize_point_list(evidence_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "point_sequence_parse_failed"}
+        score, assigned_count, assigned_similarity_mean = _score_point_sequence_soft_distance(
+            pred,
+            gt,
+            half_life_px=point_half_life_px,
+        )
+        return score, True, {
+            "pred_len": len(pred),
+            "gt_len": len(gt),
+            "assigned_count": int(assigned_count),
+            "assigned_similarity_mean": float(assigned_similarity_mean),
+            "point_half_life_px": float(point_half_life_px),
+        }
+
+    if evidence_contract_id == "point_pair_set_soft_distance_v1":
+        pred = _normalize_point_pair_list(evidence_value)
+        gt = _normalize_point_pair_list(evidence_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "point_pair_set_parse_failed"}
+        score, assigned_count, assigned_similarity_mean = _score_point_pair_set_soft_distance(
+            pred,
+            gt,
+            half_life_px=point_half_life_px,
+        )
+        return score, True, {
+            "pred_size": len(pred),
+            "gt_size": len(gt),
+            "assigned_count": int(assigned_count),
+            "assigned_similarity_mean": float(assigned_similarity_mean),
+            "point_half_life_px": float(point_half_life_px),
+        }
+
+    if evidence_contract_id == "bbox_set_soft_iou_v1":
         pred = _normalize_bbox_set(evidence_value)
         gt = _normalize_bbox_set(evidence_gt_value)
         if pred is None or gt is None:
             return 0.0, False, {"reason": "bbox_parse_failed"}
-        score, matched_count, matched_iou_mean = _score_bbox_set_iou(pred, gt, iou_threshold=bbox_iou_threshold)
+        score, assigned_count, assigned_iou_mean = _score_bbox_set_soft_iou(pred, gt)
         return score, True, {
             "pred_size": len(pred),
             "gt_size": len(gt),
-            "matched_count": matched_count,
-            "matched_iou_mean": matched_iou_mean,
+            "assigned_count": assigned_count,
+            "assigned_iou_mean": assigned_iou_mean,
+        }
+
+    if evidence_contract_id == "bbox_sequence_soft_iou_v1":
+        pred = _normalize_bbox_set(evidence_value)
+        gt = _normalize_bbox_set(evidence_gt_value)
+        if pred is None or gt is None:
+            return 0.0, False, {"reason": "bbox_sequence_parse_failed"}
+        score, assigned_count, assigned_iou_mean = _score_bbox_sequence_soft_iou(pred, gt)
+        return score, True, {
+            "pred_len": len(pred),
+            "gt_len": len(gt),
+            "assigned_count": assigned_count,
+            "assigned_iou_mean": assigned_iou_mean,
         }
 
     return 0.0, False, {"reason": f"unsupported_evidence_contract:{evidence_contract_id}"}
@@ -592,18 +849,33 @@ def score_trace_response(
     answer_gt: dict[str, Any],
     evidence_gt: dict[str, Any],
     reward_contract: dict[str, Any],
-    bbox_iou_threshold: float = 0.5,
+    bbox_iou_threshold: float | None = None,
+    point_half_life_px: float | None = None,
+    image_size: Any | None = None,
+    image_sizes: Any | None = None,
+    metadata: Any | None = None,
+    extra_info: Any | None = None,
     answer_weight: float = 0.5,
     evidence_weight: float = 0.5,
     trace_reward_mode: str = "answer_and_evidence",
     trace_answer_scoring: str = "exact_json",
-    format_weight: float = 0.1,
+    trace_evidence_reward_formula: str = "gated",
+    format_weight: float = 0.0,
 ) -> dict[str, float]:
     if format_weight < 0.0 or format_weight > 1.0:
         raise ValueError(f"TRACE format_weight must be in [0, 1], got {format_weight}")
+    resolved_point_half_life_px = _resolve_point_half_life_px(
+        point_half_life_px=point_half_life_px,
+        image_size=image_size,
+        image_sizes=image_sizes,
+        metadata=metadata,
+        extra_info=extra_info,
+    )
 
     normalized_mode = _normalize_trace_reward_mode(trace_reward_mode)
     normalized_answer_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
+    normalized_evidence_formula = _normalize_trace_evidence_reward_formula(trace_evidence_reward_formula)
+    evidence_type = str(evidence_gt.get("type", "")).strip() if isinstance(evidence_gt, dict) else ""
     format_details = evaluate_trace_response_format(response, trace_reward_mode=normalized_mode)
     payload = format_details.get("payload") if isinstance(format_details.get("payload"), dict) else None
 
@@ -630,7 +902,7 @@ def score_trace_response(
             evidence_value,
             evidence_gt,
             reward_contract,
-            bbox_iou_threshold=bbox_iou_threshold,
+            point_half_life_px=resolved_point_half_life_px,
         )
 
     total_weight = float(answer_weight + evidence_weight)
@@ -640,12 +912,15 @@ def score_trace_response(
     normalized_evidence_weight = float(evidence_weight / total_weight)
     if normalized_mode == "answer":
         raw_task_reward = float(answer_score)
+    elif normalized_evidence_formula == "additive":
+        raw_task_reward = float(
+            (normalized_answer_weight * answer_score) + (normalized_evidence_weight * evidence_score)
+        )
     else:
         raw_task_reward = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
 
-    # Match Vero-style reward composition: correctness and format are additive
-    # components. Do not hard-gate correctness on format, because early policy
-    # outputs often contain a recoverable answer before they learn the wrapper.
+    # Keep format as a logged diagnostic by default. Callers can still opt into
+    # additive format reward by passing a positive format_weight.
     effective_task_reward = raw_task_reward
     overall = float(((1.0 - format_weight) * effective_task_reward) + (format_weight * float(format_details["format"])))
     result = {
@@ -655,6 +930,7 @@ def score_trace_response(
         "answer_reward": float(answer_score),
         "evidence_reward": float(evidence_score),
         "task_reward_raw": float(raw_task_reward),
+        "task_reward_effective": float(effective_task_reward),
         "task_reward_gated": float(effective_task_reward),
         "format_weight": float(format_weight),
         "trace_reward_mode_answer": 1.0 if normalized_mode == "answer" else 0.0,
@@ -662,18 +938,24 @@ def score_trace_response(
         "trace_reward_mode_answer_and_evidence": 1.0 if normalized_mode == "answer_and_evidence" else 0.0,
         "trace_answer_scoring_exact_json": 1.0 if normalized_answer_scoring == "exact_json" else 0.0,
         "trace_answer_scoring_legacy_strict": 1.0 if normalized_answer_scoring == "legacy_strict" else 0.0,
+        "trace_evidence_reward_formula_gated": 1.0 if normalized_evidence_formula == "gated" else 0.0,
+        "trace_evidence_reward_formula_additive": 1.0 if normalized_evidence_formula == "additive" else 0.0,
+        "trace_answer_weight": float(normalized_answer_weight),
+        "trace_evidence_weight": float(normalized_evidence_weight),
         "format_structure_ok": 1.0 if format_details["structure_ok"] else 0.0,
         "format_json_ok": 1.0 if format_details["json_ok"] else 0.0,
         "format_schema_ok": 1.0 if format_details["schema_ok"] else 0.0,
         "answer_parse_ok": 1.0 if answer_parse_ok else 0.0,
         "evidence_parse_ok": 1.0 if evidence_parse_ok else 0.0,
         "json_found": 1.0 if json_found else 0.0,
-        # Keep zero_reward aligned with task correctness semantics. With
-        # additive format reward, overall can be positive even when the answer
-        # is wrong, so overall <= 0 no longer means "zero task reward".
+        # Keep zero_reward aligned with task correctness semantics. If callers
+        # opt into additive format reward, overall can be positive even when the
+        # answer is wrong, so overall <= 0 is not a stable zero-solve signal.
         "zero_reward": 1.0 if effective_task_reward <= 0.0 else 0.0,
         "trace_reward": 1.0,
     }
+    for logged_evidence_type in _TRACE_EVIDENCE_LOG_TYPES:
+        result[f"evidence_type_{logged_evidence_type}"] = 1.0 if evidence_type == logged_evidence_type else 0.0
     for key, value in evidence_details.items():
         if isinstance(value, (int, float)):
             result[f"evidence_{key}"] = float(value)

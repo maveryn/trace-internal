@@ -43,6 +43,7 @@ from ..shared.icon_task_rendering import (
     resolve_icon_cell_render_params,
     sample_icon_instance_noise,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for icon sequence missing-count scenes."""
@@ -131,7 +132,7 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "sequence")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_sequence_missing_count",
+    task_id="task_icons__sequence_strip__missing_count_value",
 )
 
 def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
@@ -170,16 +171,18 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
     base_index = int(resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace="task_icons_sequence_missing_count:sequence_spec",
+        namespace="task_icons__sequence_strip__missing_count_value:sequence_spec",
     ))
     explicit_target = params.get("target_count")
     if explicit_target is None:
-        target_count = int(target_support[int(base_index % len(target_support))])
+        target_position = int(base_index % len(target_support))
+        target_count = int(target_support[target_position])
         target_probabilities = uniform_probability_map(target_support)
     else:
         target_count = int(explicit_target)
         if target_count not in target_support:
             raise ValueError("explicit target_count is outside configured support")
+        target_position = int(target_support.index(int(target_count)))
         target_probabilities = uniform_probability_map(target_support, selected=int(target_count))
 
     explicit_length = params.get("sequence_length")
@@ -195,7 +198,7 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
 
     explicit_missing = params.get("missing_cell_index")
     explicit_step = params.get("step_delta")
-    feasible: List[Tuple[int, int, Tuple[int, ...]]] = []
+    feasible_by_missing: Dict[int, List[Tuple[int, Tuple[int, ...]]]] = {}
     for missing_cell_index in range(int(sequence_length)):
         if explicit_missing is not None and int(explicit_missing) != int(missing_cell_index):
             continue
@@ -209,11 +212,18 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
                     for index in range(int(sequence_length))
                 )
                 if all(int(target_min) <= int(value) <= int(target_max) for value in counts):
-                    feasible.append((int(missing_cell_index), int(step_delta), tuple(int(value) for value in counts)))
-    if not feasible:
+                    feasible_by_missing.setdefault(int(missing_cell_index), []).append(
+                        (int(step_delta), tuple(int(value) for value in counts))
+                    )
+    if not feasible_by_missing:
         raise ValueError("no feasible arithmetic sequence support for the requested parameters")
+    feasible_missing_indices = tuple(sorted(int(value) for value in feasible_by_missing))
     combo_offset = int(base_index // max(1, len(target_support) * len(length_support)))
-    missing_cell_index, step_delta, counts = feasible[int(combo_offset % len(feasible))]
+    missing_index = int((target_position + combo_offset) % len(feasible_missing_indices))
+    missing_cell_index = int(feasible_missing_indices[missing_index])
+    step_options = tuple(feasible_by_missing[int(missing_cell_index)])
+    step_index = int((base_index // max(1, len(feasible_missing_indices))) % len(step_options))
+    step_delta, counts = step_options[int(step_index)]
     return _SequenceSpec(
         sequence_length=int(sequence_length),
         target_count=int(target_count),
@@ -381,7 +391,7 @@ def _sample_scene(
 class IconsSequenceMissingCountTask:
     """Infer the missing icon count in a single-panel sequence row."""
 
-    task_id = "task_icons_sequence_missing_count"
+    task_id = "task_icons__sequence_strip__missing_count_value"
     domain = "icons"
     task_group = "sequence"
 
@@ -394,6 +404,7 @@ class IconsSequenceMissingCountTask:
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
+            instance_seed=int(instance_seed),
         )
         if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
             raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")
@@ -420,13 +431,13 @@ class IconsSequenceMissingCountTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_sequence_missing_count instance") from last_error
+            raise RuntimeError("failed to generate task_icons__sequence_strip__missing_count_value instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_family_key",
+                "scene_key",
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
@@ -443,7 +454,7 @@ class IconsSequenceMissingCountTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
-            task_family_key=str(prompt_defaults["task_family_key"]),
+            scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -461,7 +472,7 @@ class IconsSequenceMissingCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.missing_cell_bbox,))
-        task_variant = "arithmetic_progression"
+        query_variant = "arithmetic_progression"
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         trace_payload = {
@@ -484,7 +495,7 @@ class IconsSequenceMissingCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -538,7 +549,7 @@ class IconsSequenceMissingCountTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_sequence_row",
-                "task_variant": str(task_variant),
+                "query_variant": str(query_variant),
                 "sequence_length": int(scene_payload.sequence_length),
                 "sequence_length_probabilities": dict(sequence_spec.sequence_length_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -575,7 +586,7 @@ class IconsSequenceMissingCountTask:
             scene_icon_instances=scene_payload.scene_icon_instances,
             render_params=render_params,
         )
-        return TaskOutput(
+        output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
             evidence_gt=evidence_gt,
@@ -584,8 +595,13 @@ class IconsSequenceMissingCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant=str(task_variant),
+            query_variant=str(query_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
+        )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(query_variant),
+            scene_id="sequence_strip",
         )
 
 

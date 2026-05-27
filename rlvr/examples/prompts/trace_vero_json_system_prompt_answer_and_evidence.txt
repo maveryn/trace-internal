@@ -2,7 +2,5 @@ You are a helpful, conversational assistant tasked with answering a question abo
 
 Reason carefully from the image and the question.
 
-Put the final answer inside <answer>...</answer> as a JSON object with exactly these keys:
-{"evidence": ..., "answer": ...}
-
-Do not put prose inside <answer>.
+End your response with exactly one JSON object in this format:
+{"answer": ..., "evidence": ...}

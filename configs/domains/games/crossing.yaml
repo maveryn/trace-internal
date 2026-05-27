@@ -1,0 +1,92 @@
+generation:
+  shared:
+    scene_variant_weights:
+      traffic_crossing: 1.0
+    query_variant_weights:
+      safe_start_label: 1.0
+      collision_time_value: 1.0
+      moving_object_count: 1.0
+      goal_reachable_label: 1.0
+    style_variant_weights:
+      day: 1.0
+      night: 1.0
+      retro: 1.0
+      paper: 1.0
+      construction: 1.0
+    balanced_scene_variant_sampling: true
+    balanced_query_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_lane_count_sampling: true
+    balanced_row_count_sampling: true
+    balanced_route_option_count_sampling: true
+    balanced_target_answer_sampling: true
+    balanced_target_label_sampling: true
+    lane_count_support:
+      - 5
+      - 6
+      - 7
+      - 8
+    row_count_support:
+      - 5
+      - 6
+      - 7
+    route_option_count_support:
+      - 4
+      - 5
+      - 6
+    collision_time_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    collision_time_max_extra_per_row: 1
+    moving_object_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    moving_object_max_extra_per_row: 1
+    target_label_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 780
+    panel_margin_px: 40
+    playfield_width_px: 860
+    playfield_height_px: 680
+    border_width_px: 5
+    safe_band_height_px: 82
+    vehicle_width_px: 70
+    vehicle_height_px: 42
+    path_width_px: 5
+    label_font_size_px: 24
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.30
+      motion_reasoning: 0.34
+      route_reasoning: 0.22
+      output_burden: 0.14
+prompt:
+  shared:
+    bundle_id: games_crossing_v0
+    scene_key: visible_crossing_lane
+    task_key: crossing_query
+    object_description_traffic_crossing: a lane-crossing game board with moving objects, direction arrows, start pads, and optional route lines
+    crossing_motion_rule_text: At tick 1, the runner enters the bottom traffic row; at each next tick, the runner moves one row upward. Each moving object shifts one lane cell per tick in its arrow direction. Objects that reach an edge leave the board.
+    evidence_hint_safe_start_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected start pad
+    answer_hint_safe_start_label: set "answer" to the selected start-pad label as a string
+    evidence_hint_collision_time_value: set "evidence" to bounding boxes [x0, y0, x1, y1] for the first colliding moving object and the matching numbered route cell
+    answer_hint_collision_time_value: set "answer" to the smallest tick number where a moving object reaches the matching numbered route cell
+    evidence_hint_moving_object_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for the moving objects that intersect the marked route
+    answer_hint_moving_object_count: set "answer" to the number of moving objects that intersect the marked route; the value is between 1 and 5
+    evidence_hint_goal_reachable_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected route option
+    answer_hint_goal_reachable_label: set "answer" to the selected route label as a string

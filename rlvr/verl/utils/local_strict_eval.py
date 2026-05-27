@@ -10,18 +10,18 @@ import numpy as np
 from mathruler.grader import extract_boxed_content, grade_answer
 
 NO_ANSWER = "__NO_ANSWER__"
-CHOICE_LETTERS = "ABCDEFG"
-MCQ_LETTER_RE = re.compile(r"^\s*\(?([A-Ga-g])\)?\s*[\).:]?\s*$")
-LEADING_LETTER_RE = re.compile(r"^\s*\(?([A-Ga-g])\)?\s*[\).:\-]\s*(.+?)\s*$")
+CHOICE_LETTERS = "ABCDEFGHIJKL"
+MCQ_LETTER_RE = re.compile(r"^\s*\(?([A-La-l])\)?\s*[\).:]?\s*$")
+LEADING_LETTER_RE = re.compile(r"^\s*\(?([A-La-l])\)?\s*[\).:\-]\s*(.+?)\s*$")
 DOUBLE_LEADING_LETTER_RE = re.compile(
-    r"^\s*\(?([A-Ga-g])\)?\s*[\).:\-]\s*\(?([A-Ga-g])\)?\s*[\).:\-]\s*(.*?)\s*$"
+    r"^\s*\(?([A-La-l])\)?\s*[\).:\-]\s*\(?([A-La-l])\)?\s*[\).:\-]\s*(.*?)\s*$"
 )
 ANS_PREFIX_RE = re.compile(r"(?is)\b(?:final\s*answer|answer|option|choice)\b\s*[:：\-]?\s*(.+)$")
 SENTENCEY_RE = re.compile(r"(?i)\b(?:therefore|because|since|hence|thus|we have|let us|so that|this means)\b")
 YES_NO_RE = re.compile(r"(?i)\b(yes|no|true|false)\b")
 INT_RE = re.compile(r"[-+]?\d+")
 NUMBER_OR_FRAC_RE = re.compile(r"[-+]?\d+\s*/\s*\d+|[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
-OPTION_LINE_RE = re.compile(r"(?mi)^\s*([A-G])\s*[\).:]\s*(.+?)\s*$")
+OPTION_LINE_RE = re.compile(r"(?mi)^\s*([A-L])\s*[\).:]\s*(.+?)\s*$")
 POINT_TOKEN_RE = re.compile(r"-?\d+(?:\.\d+)?%?")
 
 
@@ -303,7 +303,7 @@ def _index_list_similarity(pred_list: list[int], gt_list: list[int], mode: str =
     pred_set = set(int(v) for v in pred_list)
     gt_set = set(int(v) for v in gt_list)
     if mode == "exact":
-        return 1.0 if pred_set == gt_set else 0.0
+        return 1.0 if [int(v) for v in pred_list] == [int(v) for v in gt_list] else 0.0
     if not pred_set and not gt_set:
         return 1.0
     if mode == "f1":
@@ -559,7 +559,7 @@ def _extract_mcq_letter(text: str) -> str | None:
     if re.search(r"(?i)\b(or|and|either|neither)\b", s):
         return None
     m = re.search(
-        r"(?is)\b(?:final\s*answer|answer|option|choice)\b[^A-G]{0,16}\(?([A-Ga-g])\)?\b",
+        r"(?is)\b(?:final\s*answer|answer|option|choice)\b[^A-L]{0,16}\(?([A-La-l])\)?\b",
         s,
     )
     if m:

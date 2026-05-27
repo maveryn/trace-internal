@@ -11,6 +11,7 @@ from trace.core.seed import hash64
 from trace.tasks.graph.optimization.minimum_spanning_tree_weight import (
     GraphOptimizationMinimumSpanningTreeWeightTask,
 )
+from trace.tasks.graph.shared.graph_sampling import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.graph.shared.graph_scene import _segment_intersects_bbox
 from trace.tasks.shared.named_colors import named_color
 
@@ -53,7 +54,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "edge_set"
+    assert out.evidence_gt.type == "point_pair_set"
     assert trace["scene_ir"]["scene_kind"] == "graph_minimum_spanning_tree_weight"
     assert execution["question_format"] == "sum_unique_mst_weights"
     assert execution["graph_directionality"] == "undirected"
@@ -79,13 +80,23 @@ def test_graph_optimization_minimum_spanning_tree_weight_contract_matches_trace(
             int(pair[1]) if str(pair[1]).isdigit() else str(pair[1]),
         ),
     )
-    evidence_edges = [tuple(str(value) for value in edge) for edge in out.evidence_gt.value]
-    assert mst_edges == evidence_edges
+    evidence_point_pairs = list(out.evidence_gt.value)
+    assert mst_edges == [tuple(str(value) for value in edge) for edge in execution["minimum_spanning_tree_edges"]]
+    assert trace["witness_symbolic"]["type"] == "edge_pair_set"
+    assert trace["witness_symbolic"]["edges"] == [list(edge) for edge in mst_edges]
+    assert len(evidence_point_pairs) == len(mst_edges)
     assert int(out.answer_gt.value) == int(sum(int(data["weight"]) for _, _, data in mst_graph.edges(data=True)))
     assert int(out.answer_gt.value) == int(execution["minimum_spanning_tree_total_weight"])
-    assert trace["projected_evidence"]["edge_set"] == out.evidence_gt.value
-    assert len(trace["projected_evidence"]["pixel_edge_set"]) == len(out.evidence_gt.value)
-    assert sum(1 for edge in edge_entities if bool(edge["is_in_minimum_spanning_tree"])) == len(out.evidence_gt.value)
+    assert "edge_set" not in trace["projected_evidence"]
+    assert trace["projected_evidence"]["type"] == "point_pair_set"
+    assert trace["projected_evidence"]["point_pair_set"] == evidence_point_pairs
+    assert sum(1 for edge in edge_entities if bool(edge["is_in_minimum_spanning_tree"])) == len(evidence_point_pairs)
+    width, height = trace["render_spec"]["canvas_size"]
+    for pair in evidence_point_pairs:
+        assert len(pair) == 2
+        for point in pair:
+            assert 0 <= float(point[0]) <= float(width)
+            assert 0 <= float(point[1]) <= float(height)
     all_weights = [int(edge["weight"]) for edge in edge_entities]
     assert len(all_weights) == len(set(all_weights))
     assert all(1 <= int(weight) <= 9 for weight in all_weights)
@@ -106,8 +117,12 @@ def test_graph_optimization_minimum_spanning_tree_weight_prompt_examples_follow_
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": [["B", "D"], ["D", "G"], ["C", "G"]], "answer": 12}
-    assert numbers_example == {"evidence": [["2", "5"], ["5", "8"], ["3", "8"]], "answer": 12}
+    expected_example = {
+        "evidence": [[[180, 220], [310, 180]], [[310, 180], [430, 260]], [[430, 260], [520, 340]]],
+        "answer": 12,
+    }
+    assert letters_example == expected_example
+    assert numbers_example == expected_example
 
 
 def test_graph_optimization_minimum_spanning_tree_weight_supports_numeric_labels_and_named_colors() -> None:
@@ -115,7 +130,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_supports_numeric_labels
     out = task.generate(
         19604,
         params={
-            "node_count": 8,
+            "node_count": 7,
             "extra_edge_count": 1,
             "label_variant": "numbers",
             "node_shape_variant": "hexagon",
@@ -147,7 +162,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_balanced_sampling_defau
     for index in range(48):
         out = task.generate(
             hash64(19605, "graph_optimization_minimum_spanning_tree_weight", index),
-            params={"_sampling_index": index},
+            params={},
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
@@ -158,14 +173,14 @@ def test_graph_optimization_minimum_spanning_tree_weight_balanced_sampling_defau
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
         node_colors[str(execution["node_color_name"])] += 1
-        assert 5 <= int(execution["node_count"]) <= 8
+        assert 4 <= int(execution["node_count"]) <= 7
         assert 1 <= int(execution["extra_edge_count"]) <= 2
         assert 1 <= int(execution["edge_weight_min"]) <= int(execution["edge_weight_max"]) <= 9
-    assert set(node_counts.keys()) == {5, 6, 7, 8}
+    assert set(node_counts.keys()) == {4, 5, 6, 7}
     assert set(extra_edge_counts.keys()) == {1, 2}
-    assert set(label_variants.keys()) == {"letters", "numbers"}
+    assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
-    assert set(layout_variants.keys()) == {"circular", "shell", "spring"}
+    assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {"balanced", "hub_heavy", "low_degree"}
     assert set(node_colors.keys()) == {
         "red",
@@ -186,7 +201,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_weight_labels_avoid_edg
     out = task.generate(
         5710676742424900,
         params={
-            "node_count": 8,
+            "node_count": 7,
             "extra_edge_count": 2,
             "layout_variant": "shell",
             "topology_profile": "hub_heavy",

@@ -213,6 +213,9 @@ out/
 nohup.out
 checkpoints/
 
+# External asset bundles
+assets/external/kenney/raw/
+
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
 rlvr/val_dataloaders.txt

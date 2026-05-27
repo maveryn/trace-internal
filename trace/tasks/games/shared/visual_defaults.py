@@ -16,9 +16,31 @@ def solid_table_background_fallback() -> Dict[str, Any]:
             "felt_green": {
                 "kind": "solid",
                 "color": [42, 92, 74],
+            },
+            "felt_deep_green": {
+                "kind": "solid",
+                "color": [34, 78, 66],
+            },
+            "felt_blue_green": {
+                "kind": "solid",
+                "color": [43, 88, 94],
+            },
+            "felt_olive": {
+                "kind": "solid",
+                "color": [68, 90, 58],
+            },
+            "table_slate": {
+                "kind": "solid",
+                "color": [58, 72, 78],
             }
         },
-        "weights": {"felt_green": 1.0},
+        "weights": {
+            "felt_green": 1.0,
+            "felt_deep_green": 1.0,
+            "felt_blue_green": 1.0,
+            "felt_olive": 1.0,
+            "table_slate": 1.0,
+        },
     }
 
 
@@ -49,4 +71,3 @@ __all__ = [
     "load_games_noise_defaults",
     "solid_table_background_fallback",
 ]
-

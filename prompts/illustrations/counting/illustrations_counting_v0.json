@@ -1,0 +1,798 @@
+{
+  "bundle_id": "illustrations_counting_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "type_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "visible_part_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "feature_relation_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "building_window_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "container_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "object_type_on_surface_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "shop_category_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "customer_at_shop_type_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "shop_color_attribute_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "shop_selling_object_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "library_book_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_activity_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "playground_equipment_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_using_equipment_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_in_park_zone_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "person_at_boarding_area_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "luggage_in_boarding_area_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "queue_person_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "worker_safety_gear_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "material_stack_type_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "equipment_in_zone_count_task": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:mixed_object_canvas": [
+      "object_count"
+    ],
+    "scene:environment_object_canvas": [
+      "object_count",
+      "environment_setting"
+    ],
+    "scene:indoor_room_canvas": [
+      "room_setting"
+    ],
+    "scene:urban_market_canvas": [
+      "shop_count"
+    ],
+    "scene:library_canvas": [
+      "section_count"
+    ],
+    "scene:park_playground_canvas": [
+      "person_count"
+    ],
+    "scene:transit_terminal_canvas": [
+      "person_count"
+    ],
+    "scene:construction_site_canvas": [
+      "worker_count"
+    ],
+    "query:type_count": [
+      "object_name"
+    ],
+    "query:visible_part_count": [
+      "part_plural"
+    ],
+    "query:feature_side_object_count": [
+      "relation_word",
+      "feature_name"
+    ],
+    "query:on_feature_object_count": [
+      "feature_phrase"
+    ],
+    "query:crossing_feature_count": [
+      "crossing_name",
+      "crossed_feature_name"
+    ],
+    "query:building_window_count": [
+      "window_phrase"
+    ],
+    "query:container_object_count": [
+      "container_name"
+    ],
+    "query:object_type_on_surface_count": [
+      "object_name",
+      "surface_name"
+    ],
+    "query:shop_category_count": [
+      "shop_label"
+    ],
+    "query:customer_at_shop_type_count": [
+      "shop_label"
+    ],
+    "query:signboard_color_count": [
+      "surface_name",
+      "color_label"
+    ],
+    "query:awning_color_count": [
+      "surface_name",
+      "color_label"
+    ],
+    "query:facade_color_count": [
+      "surface_name",
+      "color_label"
+    ],
+    "query:shop_selling_object_count": [
+      "item_name"
+    ],
+    "query:books_in_section_count": [
+      "section_name"
+    ],
+    "query:book_color_in_section_count": [
+      "color_label",
+      "section_name"
+    ],
+    "query:upright_book_in_section_count": [
+      "orientation_name",
+      "section_name"
+    ],
+    "query:horizontal_book_in_section_count": [
+      "orientation_name",
+      "section_name"
+    ],
+    "query:sitting_person_count": [
+      "activity_phrase"
+    ],
+    "query:walking_person_count": [
+      "activity_phrase"
+    ],
+    "query:standing_person_count": [
+      "activity_phrase"
+    ],
+    "query:playing_ball_person_count": [
+      "activity_phrase"
+    ],
+    "query:slide_count": [
+      "equipment_name"
+    ],
+    "query:swing_set_count": [
+      "equipment_name"
+    ],
+    "query:seesaw_count": [
+      "equipment_name"
+    ],
+    "query:climbing_frame_count": [
+      "equipment_name"
+    ],
+    "query:person_using_slide_count": [
+      "equipment_name"
+    ],
+    "query:person_using_swing_set_count": [
+      "equipment_name"
+    ],
+    "query:person_using_seesaw_count": [
+      "equipment_name"
+    ],
+    "query:playground_area_person_count": [
+      "zone_name"
+    ],
+    "query:picnic_area_person_count": [
+      "zone_name"
+    ],
+    "query:garden_area_person_count": [
+      "zone_name"
+    ],
+    "query:boarding_area_a_person_count": [
+      "area_name"
+    ],
+    "query:boarding_area_b_person_count": [
+      "area_name"
+    ],
+    "query:boarding_area_c_person_count": [
+      "area_name"
+    ],
+    "query:boarding_area_d_person_count": [
+      "area_name"
+    ],
+    "query:suitcase_in_boarding_area_count": [
+      "luggage_name",
+      "area_name"
+    ],
+    "query:backpack_in_boarding_area_count": [
+      "luggage_name",
+      "area_name"
+    ],
+    "query:luggage_cart_in_boarding_area_count": [
+      "luggage_name",
+      "area_name"
+    ],
+    "query:security_queue_person_count": [
+      "service_point_name"
+    ],
+    "query:ticket_counter_queue_person_count": [
+      "service_point_name"
+    ],
+    "query:gate_queue_person_count": [
+      "service_point_name"
+    ],
+    "query:hard_hat_color_worker_count": [
+      "color_label"
+    ],
+    "query:vest_color_worker_count": [
+      "color_label"
+    ],
+    "query:tool_holding_worker_count": [],
+    "query:brick_stack_count": [
+      "material_name"
+    ],
+    "query:pipe_bundle_count": [
+      "material_name"
+    ],
+    "query:lumber_stack_count": [
+      "material_name"
+    ],
+    "query:cement_bag_stack_count": [
+      "material_name"
+    ],
+    "query:vehicle_in_excavation_zone_count": [
+      "zone_name"
+    ],
+    "query:vehicle_in_loading_zone_count": [
+      "zone_name"
+    ],
+    "query:vehicle_in_roadwork_zone_count": [
+      "zone_name"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "mixed_object_canvas": [
+      "The scene shows {object_count} illustrated objects.",
+      "The image shows {object_count} synthetic object drawings.",
+      "The picture shows {object_count} drawn objects on a simple background.",
+      "The canvas contains {object_count} illustrated objects.",
+      "This scene contains {object_count} recognizable object drawings."
+    ],
+    "environment_object_canvas": [
+      "The image shows {environment_setting} with {object_count} foreground objects.",
+      "The scene contains {object_count} foreground object drawings in {environment_setting}.",
+      "The picture shows {object_count} illustrated foreground objects in {environment_setting}.",
+      "The canvas shows {environment_setting}, including {object_count} foreground objects.",
+      "This illustrated outdoor scene has {object_count} foreground objects in {environment_setting}."
+    ],
+    "indoor_room_canvas": [
+      "The image shows {room_setting}.",
+      "The scene shows objects arranged in {room_setting}.",
+      "The picture shows illustrated objects in {room_setting}.",
+      "The canvas shows {room_setting}.",
+      "This is {room_setting}."
+    ],
+    "urban_market_canvas": [
+      "The image shows an illustrated urban market with {shop_count} shops and stalls.",
+      "The scene shows {shop_count} market shops and stalls.",
+      "The picture shows a busy market street with {shop_count} shops and stalls.",
+      "The canvas contains {shop_count} illustrated shops and stalls in a market.",
+      "This market scene contains {shop_count} shops and stalls."
+    ],
+    "library_canvas": [
+      "The image shows an illustrated library with {section_count} labeled shelf sections.",
+      "The scene shows a library room containing {section_count} labeled book sections.",
+      "The picture shows {section_count} labeled library shelf sections.",
+      "The canvas contains a library with {section_count} labeled shelf sections.",
+      "This library scene contains {section_count} labeled book sections."
+    ],
+    "park_playground_canvas": [
+      "The image shows an illustrated park playground with {person_count} people.",
+      "The scene shows {person_count} people in a park playground.",
+      "The picture shows a synthetic park scene with {person_count} people.",
+      "The canvas contains an illustrated playground park with {person_count} people.",
+      "This park playground scene contains {person_count} people."
+    ],
+    "transit_terminal_canvas": [
+      "The image shows an illustrated transit terminal with {person_count} people and labeled boarding areas.",
+      "The scene shows {person_count} people in a transit terminal with labeled boarding areas.",
+      "The picture shows a synthetic terminal scene with {person_count} people.",
+      "The canvas contains an illustrated transit terminal with {person_count} people.",
+      "This transit terminal scene contains {person_count} people and labeled boarding areas."
+    ],
+    "construction_site_canvas": [
+      "The image shows an illustrated construction site with {worker_count} workers.",
+      "The scene shows {worker_count} workers at a construction site.",
+      "The picture shows a synthetic construction site with {worker_count} workers.",
+      "The canvas contains an illustrated construction site with workers, materials, and equipment.",
+      "This construction-site scene contains {worker_count} visible workers."
+    ]
+  },
+  "query_templates": {
+    "type_count": [
+      "How many {object_name} objects are shown?",
+      "Count the objects of type {object_name}.",
+      "What is the total number of {object_name} objects?",
+      "How many drawn objects have type {object_name}?",
+      "Find every {object_name}. What is the count?"
+    ],
+    "visible_part_count": [
+      "How many visible {part_plural} are shown?",
+      "Count the visible {part_plural} in the image.",
+      "What is the total number of visible {part_plural}?",
+      "How many {part_plural} can be seen?",
+      "Find all visible {part_plural}. What is the count?"
+    ],
+    "feature_side_object_count": [
+      "How many foreground objects are {relation_word} the {feature_name}?",
+      "Count the foreground objects {relation_word} the {feature_name}.",
+      "What is the number of foreground objects {relation_word} the {feature_name}?",
+      "How many illustrated foreground objects lie {relation_word} the {feature_name}?",
+      "Find the foreground objects {relation_word} the {feature_name}. What is the count?"
+    ],
+    "on_feature_object_count": [
+      "How many foreground objects are {feature_phrase}?",
+      "Count the foreground objects {feature_phrase}.",
+      "What is the number of foreground objects {feature_phrase}?",
+      "How many illustrated foreground objects are {feature_phrase}?",
+      "Find every foreground object {feature_phrase}. What is the count?"
+    ],
+    "crossing_feature_count": [
+      "How many {crossing_name} cross the {crossed_feature_name}?",
+      "Count the {crossing_name} crossing the {crossed_feature_name}.",
+      "What is the number of {crossing_name} across the {crossed_feature_name}?",
+      "How many visible {crossing_name} are placed over or across the {crossed_feature_name}?",
+      "Find every {crossing_name} crossing the {crossed_feature_name}. What is the count?"
+    ],
+    "building_window_count": [
+      "How many lit windows are shown on the buildings?",
+      "Count the lit windows in the building fronts.",
+      "What is the total number of lit building windows?",
+      "How many lit windows can be seen across the buildings?",
+      "Find every lit building window. What is the count?"
+    ],
+    "container_object_count": [
+      "How many objects are inside the blue-outlined {container_name}?",
+      "Count the objects inside the blue-outlined {container_name}.",
+      "What is the number of objects in the blue-outlined {container_name}?",
+      "How many small objects are placed inside the blue-outlined {container_name}?",
+      "Find every object inside the blue-outlined {container_name}. What is the count?"
+    ],
+    "object_type_on_surface_count": [
+      "How many {object_name} objects are on the {surface_name}?",
+      "Count the {object_name} objects on the {surface_name}.",
+      "What is the number of {object_name} objects on the {surface_name}?",
+      "How many drawn {object_name} objects are placed on the {surface_name}?",
+      "Find every {object_name} on the {surface_name}. What is the count?"
+    ],
+    "shop_category_count": [
+      "How many shops or stalls are labeled {shop_label}?",
+      "Count the shops and stalls with the {shop_label} sign.",
+      "What is the number of shops or stalls labeled {shop_label}?",
+      "How many market shops or stalls have a {shop_label} sign?",
+      "Find every shop or stall labeled {shop_label}. What is the count?"
+    ],
+    "customer_at_shop_type_count": [
+      "How many customers are at shops or stalls labeled {shop_label}?",
+      "Count the customers standing at {shop_label} shops or stalls.",
+      "What is the number of customers at shops or stalls labeled {shop_label}?",
+      "How many visible customers are in front of {shop_label} shops or stalls?",
+      "Find every customer at a {shop_label} shop or stall. What is the count?"
+    ],
+    "signboard_color_count": [
+      "How many shops or stalls have a {color_label} {surface_name}?",
+      "Count the shops and stalls whose {surface_name} is {color_label}.",
+      "What is the number of shops or stalls with a {color_label} {surface_name}?",
+      "How many market shops or stalls use {color_label} on the {surface_name}?",
+      "Find every shop or stall with a {color_label} {surface_name}. What is the count?"
+    ],
+    "awning_color_count": [
+      "How many shops or stalls have a {color_label} {surface_name}?",
+      "Count the shops and stalls whose {surface_name} is {color_label}.",
+      "What is the number of shops or stalls with a {color_label} {surface_name}?",
+      "How many market shops or stalls use {color_label} on the {surface_name}?",
+      "Find every shop or stall with a {color_label} {surface_name}. What is the count?"
+    ],
+    "facade_color_count": [
+      "How many shops or stalls have a {color_label} {surface_name}?",
+      "Count the shops and stalls whose {surface_name} is {color_label}.",
+      "What is the number of shops or stalls with a {color_label} {surface_name}?",
+      "How many market shops or stalls use {color_label} on the {surface_name}?",
+      "Find every shop or stall with a {color_label} {surface_name}. What is the count?"
+    ],
+    "shop_selling_object_count": [
+      "How many shops or stalls sell {item_name}?",
+      "Count the shops and stalls that sell {item_name}.",
+      "What is the number of shops or stalls selling {item_name}?",
+      "How many market shops or stalls have {item_name} for sale?",
+      "Find every shop or stall that sells {item_name}. What is the count?"
+    ],
+    "books_in_section_count": [
+      "How many books are in the {section_name} section?",
+      "Count the books in the {section_name} section.",
+      "What is the number of books in the {section_name} section?",
+      "How many visible books are shelved under {section_name}?",
+      "Find every book in the {section_name} section. What is the count?"
+    ],
+    "book_color_in_section_count": [
+      "How many {color_label} books are in the {section_name} section?",
+      "Count the {color_label} books in the {section_name} section.",
+      "What is the number of {color_label} books in the {section_name} section?",
+      "How many books colored {color_label} are shelved under {section_name}?",
+      "Find every {color_label} book in the {section_name} section. What is the count?"
+    ],
+    "upright_book_in_section_count": [
+      "How many upright books are in the {section_name} section?",
+      "Count the upright books in the {section_name} section.",
+      "What is the number of upright books in the {section_name} section?",
+      "How many books standing upright are shelved under {section_name}?",
+      "Find every upright book in the {section_name} section. What is the count?"
+    ],
+    "horizontal_book_in_section_count": [
+      "How many horizontal books are in the {section_name} section?",
+      "Count the horizontal books in the {section_name} section.",
+      "What is the number of horizontal books in the {section_name} section?",
+      "How many books lying horizontally are shelved under {section_name}?",
+      "Find every horizontal book in the {section_name} section. What is the count?"
+    ],
+    "sitting_person_count": [
+      "How many people are sitting?",
+      "Count the people shown sitting.",
+      "What is the number of sitting people?",
+      "How many people are seated in the park?",
+      "Find every sitting person. What is the count?"
+    ],
+    "walking_person_count": [
+      "How many people are walking?",
+      "Count the people shown walking.",
+      "What is the number of walking people?",
+      "How many people are walking through the park?",
+      "Find every walking person. What is the count?"
+    ],
+    "standing_person_count": [
+      "How many people are standing?",
+      "Count the people shown standing.",
+      "What is the number of standing people?",
+      "How many people are standing in the park?",
+      "Find every standing person. What is the count?"
+    ],
+    "playing_ball_person_count": [
+      "How many people are playing with a ball?",
+      "Count the people shown playing with a ball.",
+      "What is the number of people playing with a ball?",
+      "How many people are playing ball in the park?",
+      "Find every person playing with a ball. What is the count?"
+    ],
+    "slide_count": [
+      "How many slides are shown?",
+      "Count the slides in the playground.",
+      "What is the number of slides?",
+      "How many playground slides can be seen?",
+      "Find every slide. What is the count?"
+    ],
+    "swing_set_count": [
+      "How many swing sets are shown?",
+      "Count the swing sets in the playground.",
+      "What is the number of swing sets?",
+      "How many playground swing sets can be seen?",
+      "Find every swing set. What is the count?"
+    ],
+    "seesaw_count": [
+      "How many seesaws are shown?",
+      "Count the seesaws in the playground.",
+      "What is the number of seesaws?",
+      "How many playground seesaws can be seen?",
+      "Find every seesaw. What is the count?"
+    ],
+    "climbing_frame_count": [
+      "How many climbing frames are shown?",
+      "Count the climbing frames in the playground.",
+      "What is the number of climbing frames?",
+      "How many playground climbing frames can be seen?",
+      "Find every climbing frame. What is the count?"
+    ],
+    "person_using_slide_count": [
+      "How many people are using the slides?",
+      "Count the people using the slides.",
+      "What is the number of people using the slides?",
+      "How many people are shown on the slides?",
+      "Find every person using a slide. What is the count?"
+    ],
+    "person_using_swing_set_count": [
+      "How many people are using the swings?",
+      "Count the people using the swings.",
+      "What is the number of people using the swings?",
+      "How many people are shown on the swings?",
+      "Find every person using a swing. What is the count?"
+    ],
+    "person_using_seesaw_count": [
+      "How many people are using the seesaws?",
+      "Count the people using the seesaws.",
+      "What is the number of people using the seesaws?",
+      "How many people are shown on the seesaws?",
+      "Find every person using a seesaw. What is the count?"
+    ],
+    "playground_area_person_count": [
+      "How many people are in the playground area?",
+      "Count the people inside the playground area.",
+      "What is the number of people in the playground area?",
+      "How many people are shown within the playground area?",
+      "Find every person in the playground area. What is the count?"
+    ],
+    "picnic_area_person_count": [
+      "How many people are in the picnic area?",
+      "Count the people inside the picnic area.",
+      "What is the number of people in the picnic area?",
+      "How many people are shown within the picnic area?",
+      "Find every person in the picnic area. What is the count?"
+    ],
+    "garden_area_person_count": [
+      "How many people are in the garden area?",
+      "Count the people inside the garden area.",
+      "What is the number of people in the garden area?",
+      "How many people are shown within the garden area?",
+      "Find every person in the garden area. What is the count?"
+    ],
+    "boarding_area_a_person_count": [
+      "How many people are in Boarding Area A?",
+      "Count the people inside Boarding Area A.",
+      "What is the number of people in Boarding Area A?",
+      "How many people are shown within Boarding Area A?",
+      "Find every person in Boarding Area A. What is the count?"
+    ],
+    "boarding_area_b_person_count": [
+      "How many people are in Boarding Area B?",
+      "Count the people inside Boarding Area B.",
+      "What is the number of people in Boarding Area B?",
+      "How many people are shown within Boarding Area B?",
+      "Find every person in Boarding Area B. What is the count?"
+    ],
+    "boarding_area_c_person_count": [
+      "How many people are in Boarding Area C?",
+      "Count the people inside Boarding Area C.",
+      "What is the number of people in Boarding Area C?",
+      "How many people are shown within Boarding Area C?",
+      "Find every person in Boarding Area C. What is the count?"
+    ],
+    "boarding_area_d_person_count": [
+      "How many people are in Boarding Area D?",
+      "Count the people inside Boarding Area D.",
+      "What is the number of people in Boarding Area D?",
+      "How many people are shown within Boarding Area D?",
+      "Find every person in Boarding Area D. What is the count?"
+    ],
+    "suitcase_in_boarding_area_count": [
+      "How many loose {luggage_name} are in {area_name}?",
+      "Count the loose {luggage_name} inside {area_name}.",
+      "What is the number of loose {luggage_name} in {area_name}?",
+      "How many loose {luggage_name} are shown within {area_name}?",
+      "Find all loose {luggage_name} in {area_name}. What is the count?"
+    ],
+    "backpack_in_boarding_area_count": [
+      "How many loose {luggage_name} are in {area_name}?",
+      "Count the loose {luggage_name} inside {area_name}.",
+      "What is the number of loose {luggage_name} in {area_name}?",
+      "How many loose {luggage_name} are shown within {area_name}?",
+      "Find all loose {luggage_name} in {area_name}. What is the count?"
+    ],
+    "luggage_cart_in_boarding_area_count": [
+      "How many {luggage_name} are in {area_name}?",
+      "Count the {luggage_name} inside {area_name}.",
+      "What is the number of {luggage_name} in {area_name}?",
+      "How many {luggage_name} are shown within {area_name}?",
+      "Find all {luggage_name} in {area_name}. What is the count?"
+    ],
+    "security_queue_person_count": [
+      "How many people are in the {service_point_name}?",
+      "Count the people standing in the {service_point_name}.",
+      "What is the number of people in the {service_point_name}?",
+      "How many people are shown within the {service_point_name}?",
+      "Find every person in the {service_point_name}. What is the count?"
+    ],
+    "ticket_counter_queue_person_count": [
+      "How many people are in the {service_point_name}?",
+      "Count the people standing in the {service_point_name}.",
+      "What is the number of people in the {service_point_name}?",
+      "How many people are shown within the {service_point_name}?",
+      "Find every person in the {service_point_name}. What is the count?"
+    ],
+    "gate_queue_person_count": [
+      "How many people are in the {service_point_name}?",
+      "Count the people standing in the {service_point_name}.",
+      "What is the number of people in the {service_point_name}?",
+      "How many people are shown within the {service_point_name}?",
+      "Find every person in the {service_point_name}. What is the count?"
+    ],
+    "hard_hat_color_worker_count": [
+      "How many workers are wearing {color_label} hard hats?",
+      "Count the workers with {color_label} hard hats.",
+      "What is the number of workers wearing {color_label} hard hats?",
+      "How many visible workers have a {color_label} hard hat?",
+      "Find every worker wearing a {color_label} hard hat. What is the count?"
+    ],
+    "vest_color_worker_count": [
+      "How many workers are wearing {color_label} safety vests?",
+      "Count the workers with {color_label} safety vests.",
+      "What is the number of workers wearing {color_label} safety vests?",
+      "How many visible workers have a {color_label} safety vest?",
+      "Find every worker wearing a {color_label} safety vest. What is the count?"
+    ],
+    "tool_holding_worker_count": [
+      "How many workers are holding a tool?",
+      "Count the workers holding tools.",
+      "What is the number of workers shown with a tool in hand?",
+      "How many visible workers are carrying a tool?",
+      "Find every worker holding a tool. What is the count?"
+    ],
+    "brick_stack_count": [
+      "How many {material_name} are shown?",
+      "Count the {material_name}.",
+      "What is the number of {material_name}?",
+      "How many visible {material_name} are in the site?",
+      "Find every {material_name}. What is the count?"
+    ],
+    "pipe_bundle_count": [
+      "How many {material_name} are shown?",
+      "Count the {material_name}.",
+      "What is the number of {material_name}?",
+      "How many visible {material_name} are in the site?",
+      "Find every {material_name}. What is the count?"
+    ],
+    "lumber_stack_count": [
+      "How many {material_name} are shown?",
+      "Count the {material_name}.",
+      "What is the number of {material_name}?",
+      "How many visible {material_name} are in the site?",
+      "Find every {material_name}. What is the count?"
+    ],
+    "cement_bag_stack_count": [
+      "How many {material_name} are shown?",
+      "Count the {material_name}.",
+      "What is the number of {material_name}?",
+      "How many visible {material_name} are in the site?",
+      "Find every {material_name}. What is the count?"
+    ],
+    "vehicle_in_excavation_zone_count": [
+      "How many construction vehicles or equipment items are in the {zone_name}?",
+      "Count the construction vehicles or equipment items inside the {zone_name}.",
+      "What is the number of construction vehicles or equipment items in the {zone_name}?",
+      "How many visible construction vehicles or equipment items are within the {zone_name}?",
+      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+    ],
+    "vehicle_in_loading_zone_count": [
+      "How many construction vehicles or equipment items are in the {zone_name}?",
+      "Count the construction vehicles or equipment items inside the {zone_name}.",
+      "What is the number of construction vehicles or equipment items in the {zone_name}?",
+      "How many visible construction vehicles or equipment items are within the {zone_name}?",
+      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+    ],
+    "vehicle_in_roadwork_zone_count": [
+      "How many construction vehicles or equipment items are in the {zone_name}?",
+      "Count the construction vehicles or equipment items inside the {zone_name}.",
+      "What is the number of construction vehicles or equipment items in the {zone_name}?",
+      "How many visible construction vehicles or equipment items are within the {zone_name}?",
+      "Find every construction vehicle or equipment item in the {zone_name}. What is the count?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

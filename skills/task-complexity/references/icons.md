@@ -32,9 +32,11 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons_counting_reference_match_count`
-- `task_icons_counting_size_relation`
-- `task_icons_counting_singleton_type`
+- `task_icons__reference_canvas__attribute_match_count`
+- `task_icons__reference_canvas__size_relation_count`
+- `task_icons__icon_field__type_frequency_count`
+- named-field counting tasks on `named_field`
+- paired-panel counting tasks on `paired_canvas`
 
 What to measure:
 - icon count / cell count,
@@ -43,11 +45,11 @@ What to measure:
 - number of queried attributes.
 
 Specific notes:
-- `task_icons_counting_reference_match_count`
-  - `match_type|match_color|match_orientation` should keep `semantic_match` low-to-medium.
-  - `match_attribute_binding` should push `semantic_match` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
+- `task_icons__reference_canvas__attribute_match_count`
+  - `match_type|match_color|match_rotation` should keep `semantic_match` low-to-medium.
+  - bound type+color+rotation matching should push `semantic_match` and `ambiguity` high based on near-match distractor mix.
 - `size_relation` should raise `ambiguity` when the minimum size gap is small and clutter rises.
-- `singleton_type` should raise `ambiguity` with more distinct scene types and more repeated groups while keeping `semantic_match` low because the predicate still groups on icon identity alone.
+- `type_frequency_count` should raise `ambiguity` with more distinct scene types and more repeated groups while keeping `semantic_match` low because the predicate still groups on icon identity alone.
 
 ### `relation`
 ```yaml
@@ -58,13 +60,16 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons_relation_relative_position_type`
-- `task_icons_relation_between_two_anchors_count`
-- `task_icons_relation_occlusion_order`
-- `task_icons_relation_mirror_symmetry`
+- `task_icons__reference_canvas__anchor_position_count`
+- `task_icons__two_anchor__between_anchors_count`
+- `task_icons__overlap_grid__occlusion_order_count`
+- `task_icons__mirror_grid__mirror_symmetry_count`
+- `task_icons__mirror_grid__reflection_match_label`
+- `task_icons__named_field__reference_distance_rank_label`
+- `task_icons__paired_canvas__original_attribute_label`
 
 Task-specific notes:
-- `relative_position_type`
+- `anchor_position_count`
   - measure same-type wrong-side distractors,
   - different-type queried-side distractors,
   - anchor-boundary clearance,
@@ -87,7 +92,10 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons_transformation_pair_count`
+- `task_icons__pair_grid__pair_geometric_transform_count`
+- `task_icons__pair_grid__pair_attribute_rule_count`
+- `task_icons__paired_canvas__panel_attribute_change_count`
+- `task_icons__paired_canvas__panel_movement_direction_count`
 
 What to measure:
 - transform family difficulty,
@@ -104,7 +112,7 @@ clutter: 0.10
 ```
 
 Use for:
-- `task_icons_sequence_missing_count`
+- `task_icons__sequence_strip__missing_count_value`
 
 What to measure:
 - row length,
@@ -122,7 +130,9 @@ clutter: 0.10
 ```
 
 Use for:
-- `task_icons_pattern_structured_violation`
+- `task_icons__pattern_grid__color_pattern_violation_index`
+- `task_icons__pattern_grid__size_pattern_violation_index`
+- `task_icons__sequence_strip__rotation_sequence_violation_index`
 
 What to measure:
 - grid size / visible cell inventory,

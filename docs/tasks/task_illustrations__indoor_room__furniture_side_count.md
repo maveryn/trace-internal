@@ -1,6 +1,6 @@
 # task_illustrations__indoor_room__furniture_side_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -14,16 +14,16 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 The task renders an indoor room with furniture and small objects arranged around
 the furniture.
 
-The public task uses `query_variant=default` and records
+The task records
 `query_id=furniture_side_count`. The query asks how many objects of a named type
-are left, right, above, or below a named furniture item. Calibrated instances
+are left, right, above, or below a named furniture item. Current sampling
 use answer support `1..6`.
 
 ## Answer Contract
 - `answer_gt.type = integer`
 - value is the number of queried object instances satisfying the requested
   spatial relation to the furniture
-- calibrated answer support is `1..6`
+- configured answer support is `1..6`
 
 ## Evidence Contract
 - `evidence_gt.type = bbox_set`
@@ -40,7 +40,7 @@ use answer support `1..6`.
 ## Prompt Contract
 - `scene_key = indoor_room_canvas`
 - `task_key = furniture_side_count_task`
-- `query_key = furniture_side_count`
+- `query_id = furniture_side_count`
 - prompts ask for named objects in the requested relation to furniture
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

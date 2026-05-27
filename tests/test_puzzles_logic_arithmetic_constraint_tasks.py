@@ -22,19 +22,19 @@ def test_arithmetic_constraint_task_emits_public_contract() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id in set(SUPPORTED_QUERY_IDS)
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= 2
     assert sorted(out.prompt_variants) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert trace["render_spec"]["scene_id"] == SCENE_ID
     assert trace["render_map"]["evidence_source"] == "item_bboxes_px"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert execution["scene_id"] == SCENE_ID
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == out.query_id
     assert execution["supporting_item_ids"]
     assert len(out.evidence_gt.value) == len(execution["supporting_item_ids"])
@@ -53,7 +53,7 @@ def test_forced_arithmetic_constraint_queries_are_valid() -> None:
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             2026052310 + index,
-            params={"query_variant": query_id},
+            params={"query_id": query_id},
             max_attempts=120,
         )
         trace = out.trace_payload["execution_trace"]
@@ -89,7 +89,7 @@ def test_forced_arithmetic_constraint_queries_are_valid() -> None:
 def test_arithmetic_constraint_task_is_deterministic() -> None:
     task = PuzzlesLogicArithmeticConstraintValueTask()
     params = {
-        "query_variant": "paired_cluster_sum_relation_value",
+        "query_id": "paired_cluster_sum_relation_value",
         "scene_variant": "constraint_card",
     }
     out_a = task.generate(2026052399, params=params, max_attempts=120)

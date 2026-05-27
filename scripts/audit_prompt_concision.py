@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Iterable
 
-from trace.core.task_review_sampling import collect_variant_samples
+from trace.core.task_review_sampling import collect_query_id_samples
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY, create_task
 
@@ -64,7 +64,7 @@ def _prompt_rows_for_output(output: Any, instance_seed: int) -> list[dict[str, A
             {
                 "task": getattr(output, "task_id", "") or "",
                 "mode": mode,
-                "query_variant": output.query_variant,
+                "query_id": output.query_id,
                 "instance_seed": int(instance_seed),
                 "word_count": _word_count(prompt),
                 "body_word_count": _word_count(body),
@@ -109,7 +109,7 @@ def _iter_prompt_rows(task_ids: Iterable[str], *, samples_per_task: int, max_att
             yield {
                 "task": task_id,
                 "mode": "<generation_failed>",
-                "query_variant": "",
+                "query_id": "",
                 "sample_index": -1,
                 "instance_seed": -1,
                 "word_count": 0,
@@ -123,7 +123,7 @@ def _collect_prompt_sample(output: Any, instance_seed: int) -> dict[str, Any]:
     """Collector callback used by variant-aware sampling."""
     return {
         "task": getattr(output, "task_id", "") or "",
-        "query_variant": str(getattr(output, "query_variant", "") or ""),
+        "query_id": str(getattr(output, "query_id", "") or ""),
         "sample_index": int(instance_seed),
         "instance_seed": int(instance_seed),
         "rows": _prompt_rows_for_output(output, instance_seed),
@@ -146,9 +146,9 @@ def _iter_variant_prompt_rows(
     for index, task_id in enumerate(task_id_list, start=1):
         if progress:
             print(f"[{index}/{len(task_id_list)}] sampling {task_id}", file=sys.stderr, flush=True)
-        collected = collect_variant_samples(
+        collected = collect_query_id_samples(
             task_id=str(task_id),
-            target_count_per_variant=int(samples_per_variant),
+            target_count_per_query_id=int(samples_per_variant),
             seed=int(hash64(20260415, f"prompt_concision.variant.{task_id}", 0)),
             max_attempts_per_instance=int(max_attempts),
             max_total_samples_per_task=int(max_total_samples_per_task),
@@ -156,7 +156,7 @@ def _iter_variant_prompt_rows(
             collector=_collect_prompt_sample,
         )
         task_row_count_before = len(rows)
-        for samples in collected["samples_by_variant"].values():
+        for samples in collected["samples_by_query_id"].values():
             for sample in samples:
                 for row in sample["rows"]:
                     row["task"] = task_id
@@ -167,7 +167,7 @@ def _iter_variant_prompt_rows(
                 {
                     "task": task_id,
                     "mode": "<generation_failed>",
-                    "query_variant": "",
+                    "query_id": "",
                     "sample_index": -1,
                     "instance_seed": -1,
                     "word_count": 0,
@@ -179,19 +179,19 @@ def _iter_variant_prompt_rows(
         coverage_rows.append(
             {
                 "task": task_id,
-                "expected_variants": list(collected.get("expected_variants", [])),
-                "generated_variant_counts": dict(collected.get("generated_variant_counts", {})),
-                "collected_variant_counts": dict(collected.get("collected_variant_counts", {})),
-                "incomplete_variants": list(collected.get("incomplete_variants", [])),
+                "expected_query_ids": list(collected.get("expected_query_ids", [])),
+                "generated_query_id_counts": dict(collected.get("generated_query_id_counts", {})),
+                "collected_query_id_counts": dict(collected.get("collected_query_id_counts", {})),
+                "incomplete_query_ids": list(collected.get("incomplete_query_ids", [])),
                 "generation_error_counts": dict(collected.get("generation_error_counts", {})),
                 "total_generated": int(collected.get("total_generated", 0)),
             }
         )
         if progress:
-            incomplete = list(collected.get("incomplete_variants", []))
+            incomplete = list(collected.get("incomplete_query_ids", []))
             print(
                 f"[{index}/{len(task_id_list)}] done {task_id}: "
-                f"variants={len(collected.get('expected_variants', []))}, "
+                f"variants={len(collected.get('expected_query_ids', []))}, "
                 f"generated={collected.get('total_generated', 0)}, incomplete={len(incomplete)}",
                 file=sys.stderr,
                 flush=True,
@@ -221,18 +221,18 @@ def _write_markdown(
     )[:top_k]
 
     task_counts = Counter(row["task"] for row in rows)
-    variant_counts = Counter((row["task"], row["query_variant"]) for row in rows if str(row["mode"]) != "<generation_failed>")
+    variant_counts = Counter((row["task"], row["query_id"]) for row in rows if str(row["mode"]) != "<generation_failed>")
     incomplete_coverage = [
         row
         for row in (coverage_rows or [])
-        if row.get("incomplete_variants") or row.get("generation_error_counts")
+        if row.get("incomplete_query_ids") or row.get("generation_error_counts")
     ]
     lines = [
         "# Prompt Concision Audit",
         "",
         f"- rendered prompts: `{len(rows)}`",
         f"- tasks covered: `{len(task_counts)}`",
-        f"- observed query variants covered: `{len(variant_counts)}`",
+        f"- observed query ids covered: `{len(variant_counts)}`",
         "",
         "## Variant Coverage",
         "",
@@ -244,14 +244,14 @@ def _write_markdown(
             [
                 f"- tasks with incomplete variants or generation errors: `{len(incomplete_coverage)}`",
                 "",
-                "| task | expected_variants | collected_variant_counts | generated | issues |",
+                "| task | expected_query_ids | collected_query_id_counts | generated | issues |",
                 "| --- | --- | --- | ---: | --- |",
             ]
         )
         for row in coverage_rows:
             issues: list[str] = []
-            if row.get("incomplete_variants"):
-                issues.append(f"incomplete={row['incomplete_variants']}")
+            if row.get("incomplete_query_ids"):
+                issues.append(f"incomplete={row['incomplete_query_ids']}")
             if row.get("generation_error_counts"):
                 issues.append(f"errors={row['generation_error_counts']}")
             lines.append(
@@ -259,8 +259,8 @@ def _write_markdown(
                 + " | ".join(
                     [
                         str(row["task"]),
-                        "`" + ", ".join(str(value) for value in row.get("expected_variants", [])) + "`",
-                        "`" + str(dict(row.get("collected_variant_counts", {}))) + "`",
+                        "`" + ", ".join(str(value) for value in row.get("expected_query_ids", [])) + "`",
+                        "`" + str(dict(row.get("collected_query_id_counts", {}))) + "`",
                         str(row.get("total_generated", 0)),
                         "`" + ("; ".join(issues) if issues else "") + "`",
                     ]
@@ -280,7 +280,7 @@ def _write_markdown(
             [
                 f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
                 "",
-                f"- `query_variant`: `{row['query_variant']}`",
+                f"- `query_id`: `{row['query_id']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                 f"- `word_count`: `{row['word_count']}`",
                 f"- `body_word_count`: `{row['body_word_count']}`",
@@ -298,7 +298,7 @@ def _write_markdown(
             [
                 f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
                 "",
-                f"- `query_variant`: `{row['query_variant']}`",
+                f"- `query_id`: `{row['query_id']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                 f"- `word_count`: `{row['word_count']}`",
                 f"- `body_word_count`: `{row['body_word_count']}`",
@@ -316,14 +316,14 @@ def _write_markdown(
             rows,
             key=lambda value: (
                 str(value["task"]),
-                str(value["query_variant"]),
+                str(value["query_id"]),
                 str(value["mode"]),
                 int(value.get("sample_index", 0)),
             ),
         ):
             lines.extend(
                 [
-                    f"### {row['task']} / {row['query_variant']} / {row['mode']} / sample {row['sample_index']}",
+                    f"### {row['task']} / {row['query_id']} / {row['mode']} / sample {row['sample_index']}",
                     "",
                     f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                     f"- `word_count`: `{row['word_count']}`",

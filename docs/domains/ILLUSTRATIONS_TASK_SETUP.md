@@ -18,9 +18,11 @@ free-form captions.
    `docs/ACTIVE_TASK_INVENTORY.md`.
 
 ## Calibration state
-Accepted illustration tasks have qwen25vl7b solve-rate calibration artifacts.
-Current retained artifacts use `100` prompts with `24` rollouts per prompt
-unless a task note says otherwise. The current domain inventory is generated in
+Illustration tasks are pending fresh `v0` task review and qwen25vl7b
+solve-rate calibration unless `plans/PROGRESS_SUMMARY.md` records regenerated
+baseline-tagged artifacts for a task. Current retained solve-rate artifacts
+must use `100` prompts with `24` rollouts per prompt unless a task note says
+otherwise. The current domain inventory is generated in
 `docs/ACTIVE_TASK_INVENTORY.md`; task-level retained solve-rate artifacts and
 status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
@@ -62,7 +64,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    anchored-piece boards and a 3x3 rotated-tile grid, and
    `missing_patch` shows a source image with a missing
    region plus labeled patch options. These tasks may draw their source image
-   from accepted illustration scene renderers but ask scene-agnostic visual
+   from current illustration scene renderers but ask scene-agnostic visual
    comparison or reconstruction questions. Missing-patch sources exclude
    `object_field` and `market`; jigsaw-order sources
    exclude `object_field`.
@@ -207,7 +209,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 ## Task Contracts
 
 ### `task_illustrations__environment__feature_relation_count`
-1. The task uses public query variants `feature_side_object_count`,
+1. The task records query ids `feature_side_object_count`,
    `on_feature_object_count`, and `crossing_feature_count`.
 2. It renders `environment` and asks for counts relative to a
    road or river: foreground objects above/below the feature, foreground objects
@@ -230,14 +232,14 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 ### Indoor-room tasks
 1. `task_illustrations__indoor_room__container_object_count` counts objects inside
    a blue-outlined named container: basket, box, or drawer. Evidence is one bbox
-   per counted object; the calibrated answer support is `0..4`.
+   per counted object; the configured answer support is `0..4`.
 2. `task_illustrations__indoor_room__surface_object_count` counts objects
    of one named type on one named surface. Distractors include the same object
    type elsewhere and other object types on the queried surface.
 3. `task_illustrations__indoor_room__furniture_side_count` counts objects of one
    named type left/right/above/below a named furniture item: table, sofa, or
    cabinet. Distractors include the same object type on another side and other
-   object types on the queried side. The calibrated answer support is `1..6`,
+   object types on the queried side. The configured answer support is `1..6`,
    with task-local sampling decoupled across answer, furniture/relation, object
    type, object count, and room theme.
 4. All indoor answers are constructed by semantic placement metadata and all
@@ -245,7 +247,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Urban-market tasks
 1. `task_illustrations__market__shop_attribute_count` counts shops or
-   stalls by internal `query_id`. Query variants cover shop/stall sign
+   stalls by internal `query_id`. Query ids cover shop/stall sign
    category, signboard/awning/facade color, and named item sold. Category and
    selling-object queries use one shop/stall bbox per counted shop; color
    queries use the queried colored surface bbox.
@@ -264,7 +266,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Library tasks
 1. `task_illustrations__library__section_book_count` counts books in one
-   labeled shelf section. Public query variants count all books, books with a
+   labeled shelf section. Query ids count all books, books with a
    queried canonical color, upright books, or horizontal books. Prompt color
    names include hex codes. Evidence is one bbox per counted book.
 2. Library scenes include people, reading tables, plants, lamps, and desk-book
@@ -273,14 +275,14 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Park/playground tasks
 1. `task_illustrations__park_playground__person_count` counts people by internal
-   `query_id`. Query variants cover activity, semantic zone, and equipment use:
+   `query_id`. Query ids cover activity, semantic zone, and equipment use:
    `sitting_person_count`, `walking_person_count`, `standing_person_count`,
    `playing_ball_person_count`, `playground_area_person_count`,
    `picnic_area_person_count`, `garden_area_person_count`,
    `person_using_slide_count`, `person_using_swing_set_count`, and
    `person_using_seesaw_count`.
 2. `task_illustrations__park_playground__playground_equipment_count` counts named
-   equipment items. Public query variants are `slide_count`,
+   equipment items. Query ids are `slide_count`,
    `swing_set_count`, `seesaw_count`, and `climbing_frame_count`.
 3. Each person has exactly one activity id in the render trace. The renderer
    uses fixed symbolic pose templates so sitting, walking, standing, and
@@ -292,13 +294,13 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Transit-terminal tasks
 1. `task_illustrations__transit_terminal__entity_location_count` counts
-   terminal entities by internal `query_id`. Query variants cover people in
+   terminal entities by internal `query_id`. Query ids cover people in
    Boarding Areas A-D, loose suitcases/backpacks/luggage carts in a boarding
    area, and people standing in the security, ticket-counter, or gate queue.
 2. The transit scene samples rail-station, bus-terminal, and airport-concourse
    visual settings plus multiple boarding-area layouts. The semantic area id is
    assigned by the task sampler and preserved in each rendered person record.
-   Current calibration samples `14..22` people with queried area counts `2..8`.
+   Current sampling uses `14..22` people with queried area counts `2..8`.
 3. Evidence is one final-image pixel bbox per counted entity. Person queries use
    person bboxes; loose-luggage tasks use loose luggage bboxes. Vehicles, signs,
    clocks, info kiosks, benches, queue ropes, and boarding-area surfaces are
@@ -320,9 +322,9 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    rendering.
 
 ### `task_illustrations__object_field__visible_part_count`
-1. `task_illustrations__object_field__visible_part_count` uses public
-   `query_variant=default` and records `query_id=visible_part_count`.
-2. The prompt asks for the count of one visible part kind from the calibrated
+1. `task_illustrations__object_field__visible_part_count` records
+   `query_id=visible_part_count`.
+2. The prompt asks for the count of one visible part kind from the configured
    support: doors, eyes, handles, tails, or wings. Current scenes use `6..9`
    objects and answer support `1..6`.
 3. Answer contract:
@@ -335,7 +337,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Shared visual tasks
 1. `task_illustrations__difference_pair__object_difference_count` shows Scene A/B panels
-   and counts object-level changes. Public query variants are
+   and counts object-level changes. Query ids are
    `added_object_count`, `removed_object_count`, `changed_color_object_count`,
    and `moved_object_count`. Evidence is one bbox per changed object, using
    Scene B boxes except for removed objects, which use Scene A boxes.
@@ -349,7 +351,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    into a labeled 3x3 grid, with exactly one tile rotated in place. The answer
    is the rotated tile label, and evidence is the tile bbox.
 4. `task_illustrations__missing_patch__missing_patch_label` shows a source image with a
-   blacked-out missing region and four labeled patch options. Public variants
+   blacked-out missing region and four labeled patch options. Query ids
    use plain rectangular patches, rotation/reflection-allowed patches, and an
    axis-aligned rectangular cutout. Evidence contains the missing-region bbox
    and selected option bbox.
@@ -359,29 +361,29 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    label, and evidence is the odd panel bbox.
 6. These tasks intentionally test image comparison/reconstruction rather than
    scene-specific world knowledge. Source images for jigsaw and missing-patch
-   tasks are sampled from existing accepted illustration renderers to keep
+   tasks are sampled from current illustration renderers to keep
    visual variety high while preserving a synthetic-only pipeline.
 
 ### Counterfactual object tasks
 1. `task_illustrations__single_object_figure__visible_part_count` renders one large
-   stylized object in scene `single_object_figure`. Public
-   variants ask for visible legs on a bird or quadruped, visible wings on an
+   stylized object in scene `single_object_figure`. Query ids ask for visible
+   legs on a bird or quadruped, visible wings on an
    airplane or butterfly, visible bicycle wheels, visible traffic-light lenses,
    visible clover leaves, star points, glove fingers, fork tines, snowflake
    arms, or chair legs. The rendered visible count may differ from the familiar
    canonical count; evidence is one bbox per counted visible part.
 2. `task_illustrations__source_scene_edit__object_count_after_edit` renders one
-   accepted source illustration scene in scene `source_scene_edit`.
-   Public variants ask for the resulting target-object count after `K=1..3`
+   current source illustration scene in scene `source_scene_edit`.
+   Query ids ask for the resulting target-object count after `K=1..3`
    objects are hypothetically added or removed. Evidence is the bbox set of all
    currently visible target objects before the hypothetical edit.
 
 ### Other mixed-object tasks
 1. `task_illustrations__object_field__object_type_count` counts objects of one named object
    type. The named type is sampled from renderer object ids with prompt-facing
-   display names. Default calibration samples use `11..20` total objects and
+   display names. Default sampling uses `11..20` total objects and
    target counts over `1..10`; the target-count cycle is independent of the
-   object-type cycle so exact 100-row calibration samples cover the full answer
+   object-type cycle so exact 100-row review samples cover the full answer
    support.
 2. `task_illustrations__object_field__named_object_side_count` counts objects
    left/right/above/below the only instance of a named object type. The

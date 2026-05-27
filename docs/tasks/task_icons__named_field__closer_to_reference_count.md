@@ -1,6 +1,6 @@
 # `task_icons__named_field__closer_to_reference_count`
 
-Status: accepted.
+Status: pending v0 review/calibration artifact refresh.
 
 ## Identity
 - domain: `icons`
@@ -50,7 +50,6 @@ than to the other reference.
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
 
-## Calibration
-- qwen25vl7b `100 x 24`, seed `20260507`: hard `0.130`, easy `0.020`,
-  mean solve rate `0.250`, response cap `0.000`, prompt max `121`
-- distribution gate: `5` unique answers, max answer frequency `0.280`
+## Current Review Status
+Current v0 review and solve-rate artifacts are pending. Use
+`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.

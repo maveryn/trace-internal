@@ -744,7 +744,7 @@ class GeometryComparisonLengthTask:
                 },
             },
             "query_spec": {
-                "query_variant": "segment_set",
+                "query_id": "segment_set",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -814,6 +814,6 @@ class GeometryComparisonLengthTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="segment_set",
+            query_id="segment_set",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

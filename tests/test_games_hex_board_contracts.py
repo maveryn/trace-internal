@@ -40,12 +40,12 @@ def test_games_hex_winning_move_cell_label_emits_expected_contract() -> None:
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "winning_move_cell_label"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "winning_move_cell_label"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -88,13 +88,13 @@ def test_games_hex_connection_gap_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "connection_gap_count"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "connection_gap_count"
     assert execution["query_id"] == "connection_gap_count"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
 
@@ -155,7 +155,7 @@ def test_games_hex_board_query_cycle_covers_answer_board_player_and_style_suppor
 
 
 def test_games_hex_board_is_deterministic() -> None:
-    params = {"query_variant": "winning_move_cell_label", "target_label": "C", "board_size": 6}
+    params = {"query_id": "winning_move_cell_label", "target_label": "C", "board_size": 6}
     task = GamesHexBoardTask()
     out_a = task.generate(51241, params=params, max_attempts=128)
     out_b = task.generate(51241, params=params, max_attempts=128)

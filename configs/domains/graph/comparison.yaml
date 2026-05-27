@@ -1,8 +1,8 @@
 generation:
   shared:
-    query_variant_weights:
+    query_id_weights:
       largest_component_size: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     node_count_min: 6
     node_count_max: 15
     component_count_min: 2

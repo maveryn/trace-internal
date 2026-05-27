@@ -3,7 +3,7 @@
 1. Domain: `games`
 2. Scene id: `ultimate_tictactoe`
 3. Source task group: `ultimate_tictactoe`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `x_won_board_count`, `o_won_board_count`, `neither_won_board_count`, `drawn_board_count`
 
 ## Contract

@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.pages.relation.command_intent_target_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     PagesRelationCommandIntentTargetLabelTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -21,11 +21,11 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
     scene_variants = ("office_document", "creative_workspace", "developer_ide", "cad_workspace", "scientific_plotter")
     style_variants = ("standard", "compact", "contrast", "standard", "compact")
 
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             79100 + index,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variants[index],
                 "style_variant": style_variants[index],
             },
@@ -38,10 +38,10 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
 
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
         assert str(execution["style_variant"]) == str(style_variants[index])
         assert trace["scene_ir"]["scene_kind"] == "gui_command_intent"
@@ -54,7 +54,7 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         assert str(target["action_cue_label"]) == str(execution["instruction_cue_label"])
         assert str(target["action_code_label"]) == str(execution["instruction_code_label"])
         assert str(execution["instruction_text"]).strip()
-        if str(query_variant) == "dual_guide_command_label":
+        if str(query_id) == "dual_guide_command_label":
             assert str(execution["object_cue_label"]) in str(execution["instruction_text"])
             assert str(execution["object_label"]) not in str(execution["instruction_text"])
         else:
@@ -64,7 +64,7 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         assert int(execution["total_control_count"]) == 25
         assert out.evidence_gt.value == [record["bbox_px"] for record in evidence_supports] + [target["bbox_px"]]
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        if str(query_variant) == "dual_guide_command_label":
+        if str(query_id) == "dual_guide_command_label":
             assert len(out.evidence_gt.value) == 5
             assert [record["support_kind"] for record in evidence_supports] == [
                 "intent_cue_card",
@@ -104,7 +104,7 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
 
 def test_gui_relation_command_intent_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationCommandIntentTargetLabelTask()
-    out = task.generate(79200, params={"query_variant": "create_insert_command_label"}, max_attempts=20)
+    out = task.generate(79200, params={"query_id": "create_insert_command_label"}, max_attempts=20)
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
         "evidence": [[290, 150, 480, 190], [70, 240, 270, 310], [290, 200, 480, 235], [290, 320, 480, 390]],
         "answer": "G",
@@ -114,11 +114,11 @@ def test_gui_relation_command_intent_target_label_prompt_examples_match_option_c
 
 def test_gui_relation_command_intent_target_label_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesRelationCommandIntentTargetLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     intent_categories: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
-    answers_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
 
     for index in range(260):
         out = task.generate(
@@ -127,15 +127,15 @@ def test_gui_relation_command_intent_target_label_balanced_sampling_defaults_cov
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
         intent_categories[str(execution["intent_category"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_variant[query_variant][str(execution["target_label"])] += 1
+        answers_by_query_id[query_id][str(execution["target_label"])] += 1
 
-    assert set(query_variants.keys()) == set(SUPPORTED_QUERY_VARIANTS)
-    assert all(abs(count - 130) <= 10 for count in query_variants.values())
+    assert set(query_ids.keys()) == set(SUPPORTED_QUERY_IDS)
+    assert all(abs(count - 130) <= 10 for count in query_ids.values())
     assert set(intent_categories.keys()) == {
         "create_insert",
         "select_choose",
@@ -154,14 +154,14 @@ def test_gui_relation_command_intent_target_label_balanced_sampling_defaults_cov
         "os_file_manager",
     }
     assert set(style_variants.keys()) == {"standard", "compact", "contrast", "cool", "warm", "sage"}
-    for query_variant in SUPPORTED_QUERY_VARIANTS:
-        assert len(answers_by_query_variant[query_variant]) >= 20
+    for query_id in SUPPORTED_QUERY_IDS:
+        assert len(answers_by_query_id[query_id]) >= 20
 
 
 def test_gui_relation_command_intent_target_label_deterministic() -> None:
     task = PagesRelationCommandIntentTargetLabelTask()
     params = {
-        "query_variant": "edit_transform_command_label",
+        "query_id": "edit_transform_command_label",
         "scene_variant": "cad_workspace",
         "style_variant": "contrast",
         "target_label": "M",

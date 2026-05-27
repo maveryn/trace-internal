@@ -204,11 +204,11 @@ def _balanced_int(
 def _choose_axis(params: Mapping[str, Any], defaults: Mapping[str, Any], *, key: str, supported: Sequence[str], seed: int, namespace: str) -> Tuple[str, Dict[str, float]]:
     explicit = params.get(key)
     if explicit is None and key == "query_id":
-        explicit = params.get("query_variant")
+        explicit = params.get("query_id")
     if explicit is None and key == "query_id":
-        raw_query_variant = params.get("query_variant")
-        if raw_query_variant is not None and str(raw_query_variant) != "default":
-            explicit = raw_query_variant
+        raw_query_id = params.get("query_id")
+        if raw_query_id is not None and str(raw_query_id) != "default":
+            explicit = raw_query_id
     if explicit is not None:
         text = str(explicit)
         if text not in set(map(str, supported)):
@@ -985,10 +985,8 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
                     "scene_id": SCENE_ID,
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
-                    "internal_query_variant": str(query_id),
+                    "internal_query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": dataset.answer_value,
                     "supporting_item_ids": list(dataset.supporting_item_ids),
@@ -996,26 +994,21 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
             },
             "query_spec": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults_required["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_id": SCENE_ID,
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                 },
             },
             "render_spec": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query_id),
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(render_params.canvas_height),
@@ -1042,10 +1035,8 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
             ),
             "execution_trace": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
-                "internal_query_variant": str(query_id),
+                "internal_query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(query_id),
                 "view_family": "isometric_voxel_ladder",
@@ -1073,7 +1064,7 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "supporting_item_ids": list(dataset.supporting_item_ids),
                 "supporting_evidence_source": "item_bboxes_px",
                 "evidence_policy": "bbox_set over route/count support items",
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
             },
             "witness_symbolic": {
@@ -1098,7 +1089,6 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 complexity_components=dict(complexity.complexity_components),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

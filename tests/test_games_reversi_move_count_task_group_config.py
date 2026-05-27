@@ -15,11 +15,11 @@ def test_games_reversi_move_count_defaults_expose_scene_query_and_answer_axes() 
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"compact_board", "classic_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "legal_move_count",
         "corner_move_count",
         "flip_count_for_marked_move",

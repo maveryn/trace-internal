@@ -9,8 +9,8 @@
 6. Evidence type: ordered `bbox_set`
 
 ## Variants
-1. `query_variant=command_intent_target_label`: prompt gives an intent cue and visible object row label.
-2. `query_variant=dual_guide_command_label`: prompt gives an intent cue and an object cue; the object cue must be mapped through a second visible guide before selecting the row.
+1. `query_id=command_intent_target_label`: prompt gives an intent cue and visible object row label.
+2. `query_id=dual_guide_command_label`: prompt gives an intent cue and an object cue; the object cue must be mapped through a second visible guide before selecting the row.
 3. `intent_category` is sampled as `create_insert|select_choose|view_toggle|edit_transform|format_style`.
 4. The intent category controls which guide cue/action header family is queried.
 
@@ -41,6 +41,6 @@
 
 ## Determinism
 1. Generation is deterministic for `instance_seed` plus params.
-2. seeded sampling balances query variants, scene variants, style variants, target controls, and answer-label support.
-3. seeded sampling also balances `intent_category` inside each public query variant.
+2. seeded sampling balances query ids, scene variants, style variants, target controls, and answer-label support.
+3. seeded sampling also balances `intent_category` inside each public query id.
 4. The answer and evidence come from the same symbolic control/support trace.

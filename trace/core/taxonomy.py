@@ -57,8 +57,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__area__interval_area_value": _entry("charts", "area", "charts", "area"),
     "task_charts__area__stacked_band_dominance_label": _entry("charts", "area", "charts", "area"),
     "task_charts__area__stacked_band_interval_sum_value": _entry("charts", "area", "charts", "area"),
-    "task_charts__bar_3d__axis_gap_value": _entry("charts", "bar_3d", "charts", "three_d_bar"),
-    "task_charts__bar_3d__axis_total_value": _entry("charts", "bar_3d", "charts", "three_d_bar"),
+    "task_charts__bar_3d__axis_aggregate_value": _entry("charts", "bar_3d", "charts", "three_d_bar"),
     "task_charts__bar_3d__condition_count": _entry("charts", "bar_3d", "charts", "three_d_bar"),
     "task_charts__boxplot__median_rank_difference_value": _entry("charts", "boxplot", "charts", "distribution"),
     "task_charts__boxplot__paired_median_shift_label": _entry("charts", "boxplot", "charts", "distribution"),
@@ -78,8 +77,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__dashboard__dual_condition_count": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__dual_source_target_sum_value": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dashboard__panel_gap_extremum_category_label": _entry("charts", "dashboard", "charts", "dashboard"),
-    "task_charts__dashboard__source_rank_difference_value": _entry("charts", "dashboard", "charts", "dashboard"),
-    "task_charts__dashboard__source_rank_target_value": _entry("charts", "dashboard", "charts", "dashboard"),
+    "task_charts__dashboard__source_rank_metric_value": _entry("charts", "dashboard", "charts", "dashboard"),
     "task_charts__dumbbell__gap_rank_row_label": _entry("charts", "dumbbell", "charts", "dumbbell"),
     "task_charts__dumbbell__pair_relation_count": _entry("charts", "dumbbell", "charts", "dumbbell"),
     "task_charts__error_interval__interval_width_rank_label": _entry("charts", "error_interval", "charts", "error_interval"),
@@ -100,11 +98,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__parallel_coords__axis_delta_extremum_label": _entry("charts", "parallel_coords", "charts", "parallel_coordinates"),
     "task_charts__parallel_coords__crossing_count": _entry("charts", "parallel_coords", "charts", "parallel_coordinates"),
     "task_charts__part_whole__adjacent_transfer_gap_value": _entry("charts", "part_whole", "charts", "composition"),
-    "task_charts__part_whole__order_count_conversion_value": _entry("charts", "part_whole", "charts", "composition"),
-    "task_charts__part_whole__order_sector_angle_value": _entry("charts", "part_whole", "charts", "composition"),
-    "task_charts__part_whole__order_share_sum_value": _entry("charts", "part_whole", "charts", "composition"),
-    "task_charts__pictogram__category_total_value": _entry("charts", "pictogram", "charts", "pictogram"),
-    "task_charts__pictogram__group_difference_value": _entry("charts", "pictogram", "charts", "pictogram"),
+    "task_charts__part_whole__ordered_segment_value": _entry("charts", "part_whole", "charts", "composition"),
+    "task_charts__pictogram__group_arithmetic_value": _entry("charts", "pictogram", "charts", "pictogram"),
     "task_charts__pictogram__threshold_count": _entry("charts", "pictogram", "charts", "pictogram"),
     "task_charts__radar__profile_advantage_count": _entry("charts", "radar", "charts", "radar"),
     "task_charts__radar__threshold_metric_count_for_panel": _entry("charts", "radar", "charts", "radar"),
@@ -115,8 +110,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__region_map__adjacent_condition_count": _entry("charts", "region_map", "charts", "map"),
     "task_charts__region_map__border_neighbor_count": _entry("charts", "region_map", "charts", "map"),
     "task_charts__region_map__continent_filtered_count": _entry("charts", "region_map", "charts", "map"),
-    "task_charts__region_map__region_category_count": _entry("charts", "region_map", "charts", "map"),
-    "task_charts__region_map__region_value_count": _entry("charts", "region_map", "charts", "map"),
+    "task_charts__region_map__legend_predicate_region_count": _entry("charts", "region_map", "charts", "map"),
     "task_charts__sankey__node_side_total_value": _entry("charts", "sankey", "charts", "flow"),
     "task_charts__sankey__path_value": _entry("charts", "sankey", "charts", "flow"),
     "task_charts__scatter_cluster__cluster_feature_extremum_label": _entry("charts", "scatter_cluster", "charts", "scatter"),
@@ -149,8 +143,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_charts__table__value_predicate_count": _entry("charts", "table", "charts", "table_counting"),
     "task_charts__treemap__group_total_value": _entry("charts", "treemap", "charts", "composition"),
     "task_charts__treemap__repeated_leaf_aggregate_value": _entry("charts", "treemap", "charts", "composition"),
-    "task_charts__violin__feature_extremum_label": _entry("charts", "violin", "charts", "distribution"),
-    "task_charts__violin__shape_feature_label": _entry("charts", "violin", "charts", "distribution"),
+    "task_charts__violin__distribution_feature_label": _entry("charts", "violin", "charts", "distribution"),
     "task_charts__waterfall__counterfactual_final_value": _entry("charts", "waterfall", "charts", "waterfall"),
     "task_charts__waterfall__running_total_value": _entry("charts", "waterfall", "charts", "waterfall"),
     "task_charts__waterfall__threshold_crossing_label": _entry("charts", "waterfall", "charts", "waterfall"),
@@ -629,14 +622,13 @@ def resolve_task_taxonomy(
 
 def resolve_task_query_id(
     *,
-    query_variant: str | None = None,
+    query_id: str | None = None,
     trace_payload: Mapping[str, Any] | None = None,
 ) -> str:
     """Resolve the diagnostic query id for one generated instance.
 
-    ``query_id`` is the public branch identifier. ``query_variant`` is only an
-    internal replay/sampling selector and is used here as a final fallback for
-    wrappers that have not populated the public id yet.
+    ``query_id`` is the canonical branch identifier and is used here as a final
+    fallback for wrappers that have not populated trace metadata yet.
     """
 
     trace_payload = trace_payload if isinstance(trace_payload, Mapping) else {}
@@ -651,9 +643,9 @@ def resolve_task_query_id(
         if query_id is not None and str(query_id).strip():
             return str(query_id)
 
-    variant = str(query_variant or "").strip()
-    if variant and variant != "default":
-        return variant
+    query_id_text = str(query_id or "").strip()
+    if query_id_text and query_id_text != "default":
+        return query_id_text
     return ""
 
 

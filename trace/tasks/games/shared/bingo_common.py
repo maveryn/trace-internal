@@ -16,7 +16,7 @@ BINGO_COLUMN_RANGES: Tuple[Tuple[int, int], ...] = (
 )
 BINGO_BOARD_SIZE = 5
 SUPPORTED_BINGO_SCENE_VARIANTS: Tuple[str, ...] = ("single_card",)
-SUPPORTED_BINGO_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BINGO_QUERY_IDS: Tuple[str, ...] = (
     "completed_axis_line_count",
     "line_sum_extremum_value",
 )
@@ -187,7 +187,7 @@ def _select_unique_line_sum_extremum(
 def build_bingo_card_state(
     *,
     rng,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     line_axis: str | None = None,
     extremum: str | None = None,
@@ -195,7 +195,7 @@ def build_bingo_card_state(
 ) -> BingoCardState:
     """Construct one bingo-card state that satisfies the requested completed-line count."""
 
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "completed_row_count":
         variant = "completed_axis_line_count"
         line_axis = "row"
@@ -239,7 +239,7 @@ def build_bingo_card_state(
             distractor_mark_prob=float(mark_prob),
         )
     else:
-        raise ValueError(f"unsupported bingo query variant: {query_variant}")
+        raise ValueError(f"unsupported bingo query id: {query_id}")
 
     numbers_grid = build_bingo_number_grid(rng)
     completed_rows = _completed_rows(mark_grid)
@@ -310,13 +310,13 @@ def build_bingo_card_state(
     )
 
 
-def evidence_cell_ids_for_query(*, card_state: BingoCardState, query_variant: str, line_axis: str | None = None) -> Tuple[str, ...]:
+def evidence_cell_ids_for_query(*, card_state: BingoCardState, query_id: str, line_axis: str | None = None) -> Tuple[str, ...]:
     """Return the canonical evidence cell ids for the active bingo query."""
 
     evidence_ids: List[str] = []
     completed_rows = set(int(value) for value in card_state.completed_row_indices)
     completed_columns = set(int(value) for value in card_state.completed_column_indices)
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "completed_row_count":
         variant = "completed_axis_line_count"
         line_axis = "row"
@@ -338,7 +338,7 @@ def evidence_cell_ids_for_query(*, card_state: BingoCardState, query_variant: st
         elif variant == "completed_axis_line_count" and axis == "column":
             include = bool(in_completed_column and cell.is_marked)
         else:
-            raise ValueError(f"unsupported bingo query variant: {query_variant}")
+            raise ValueError(f"unsupported bingo query id: {query_id}")
         if include:
             evidence_ids.append(str(cell.cell_id))
     return tuple(str(value) for value in evidence_ids)
@@ -350,7 +350,7 @@ __all__ = [
     "BINGO_COLUMN_RANGES",
     "SUPPORTED_BINGO_EXTREMA",
     "SUPPORTED_BINGO_LINE_AXES",
-    "SUPPORTED_BINGO_QUERY_VARIANTS",
+    "SUPPORTED_BINGO_QUERY_IDS",
     "SUPPORTED_BINGO_SCENE_VARIANTS",
     "BingoCardState",
     "BingoCellInstance",

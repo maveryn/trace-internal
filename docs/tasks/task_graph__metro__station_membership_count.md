@@ -8,7 +8,7 @@
 5. Objective: count stations satisfying a route-membership predicate.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `metro_transfer_station_count` or `metro_single_route_station_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_set`

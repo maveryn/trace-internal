@@ -19,7 +19,7 @@ generation:
       cyan: 1.0
       magenta: 1.0
       maroon: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
@@ -29,11 +29,11 @@ generation:
     max_lane_count: 5
   task_overrides:
     pages_schedule_day_planner_base:
-      query_variant_weights:
+      query_id_weights:
         overlap_count: 1.0
         longer_than_reference_count: 1.0
         maximum_non_overlapping_count: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       event_count_support: [7, 8, 9, 10]
       overlap_count_support: [1, 2, 3, 4, 5]
       overlap_max_lane_count: 4

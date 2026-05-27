@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set over the counted capture edge gaps.
-3. Public `query_variant` is `default`; the concrete internal query is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. The concrete internal query is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
 
 ## Implementation
 1. This task uses the shared games scene renderer for its scene id.

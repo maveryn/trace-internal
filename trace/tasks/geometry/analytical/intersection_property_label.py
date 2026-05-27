@@ -52,7 +52,7 @@ CircleSpec = Tuple[Point, float]
 BBox = Tuple[int, int, int, int]
 
 TASK_ID = "geometry_analytical_intersection_property_label_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "line_circle_tangent_label",
     "line_circle_two_intersections_label",
     "circle_circle_two_intersections_label",
@@ -141,8 +141,8 @@ class _PanelSpec:
 class _ResolvedQuery:
     """Resolved task axes for one generated instance."""
 
-    query_variant: str
-    query_variant_probabilities: Dict[str, float]
+    query_id: str
+    query_id_probabilities: Dict[str, float]
     winner_label: str
     winner_label_probabilities: Dict[str, float]
     label_pool: Tuple[str, ...]
@@ -167,15 +167,15 @@ class _RenderedScene:
     intersection_color: Color
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -183,11 +183,11 @@ def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -211,7 +211,7 @@ def _resolve_winner_label(
     params: Mapping[str, Any],
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     label_pool: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     winner_params = _decoupled_winner_label_params(params)
@@ -237,24 +237,24 @@ def _resolve_winner_label(
         selection_index = resolve_selection_index(
             params=winner_params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.winner_label.{query_variant}",
+            namespace=f"{TASK_ID}.winner_label.{query_id}",
         )
         winner_label = str(label_set[int(selection_index) % len(label_set)])
     return winner_label, {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+    query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
     label_pool = _resolve_label_pool(params)
     winner_label, winner_label_probabilities = _resolve_winner_label(
         params,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         label_pool=label_pool,
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id=str(query_id),
+        query_id_probabilities=dict(query_id_probabilities),
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_label_probabilities),
         label_pool=tuple(label_pool),
@@ -469,11 +469,11 @@ def _circle_circle_disjoint_bank() -> Tuple[_PanelSpec, ...]:
     )
 
 
-def _template_index(params: Mapping[str, Any], *, instance_seed: int, query_variant: str, support_size: int) -> int:
+def _template_index(params: Mapping[str, Any], *, instance_seed: int, query_id: str, support_size: int) -> int:
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.panel_template.{query_variant}",
+        namespace=f"{TASK_ID}.panel_template.{query_id}",
     )
     return int(selection_index) % max(1, int(support_size))
 
@@ -485,26 +485,26 @@ def _shuffled_without_winner(panels: Sequence[_PanelSpec], *, winner: _PanelSpec
 
 
 def _build_panels(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[str, Any]) -> Dict[str, _PanelSpec]:
-    query_variant = str(query.query_variant)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.panels.{query_variant}")
+    query_id = str(query.query_id)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.panels.{query_id}")
 
-    if query_variant == "line_circle_tangent_label":
+    if query_id == "line_circle_tangent_label":
         winners = _line_circle_tangent_bank()
-        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=len(winners))]
+        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=len(winners))]
         distractors = list(_line_circle_secant_bank() + _line_circle_disjoint_bank())
         rng.shuffle(distractors)
-    elif query_variant == "line_circle_two_intersections_label":
+    elif query_id == "line_circle_two_intersections_label":
         winners = _line_circle_secant_bank()
-        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=len(winners))]
+        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=len(winners))]
         distractors = list(_line_circle_tangent_bank() + _line_circle_disjoint_bank())
         rng.shuffle(distractors)
-    elif query_variant == "circle_circle_two_intersections_label":
+    elif query_id == "circle_circle_two_intersections_label":
         winners = _circle_circle_two_intersection_bank()
-        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=len(winners))]
+        winner = winners[_template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=len(winners))]
         distractors = list(_circle_circle_tangent_bank() + _circle_circle_disjoint_bank())
         rng.shuffle(distractors)
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     panels_by_label: Dict[str, _PanelSpec] = {}
     distractor_iter = iter(distractors)
@@ -518,14 +518,14 @@ def _build_panels(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[
 
 
 def _matches_query(query: _ResolvedQuery, panel: _PanelSpec, *, target_quadrant: str) -> bool:
-    query_variant = str(query.query_variant)
-    if query_variant == "line_circle_tangent_label":
+    query_id = str(query.query_id)
+    if query_id == "line_circle_tangent_label":
         return str(panel.pair_kind) == "line_circle" and str(panel.relation_class) == "tangent"
-    if query_variant == "line_circle_two_intersections_label":
+    if query_id == "line_circle_two_intersections_label":
         return str(panel.pair_kind) == "line_circle" and len(panel.intersection_points) == 2
-    if query_variant == "circle_circle_two_intersections_label":
+    if query_id == "circle_circle_two_intersections_label":
         return str(panel.pair_kind) == "circle_circle" and len(panel.intersection_points) == 2
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _color_triplet(value: Any) -> Color:
@@ -817,7 +817,7 @@ def _panel_trace_payload(panel: _PanelSpec) -> Dict[str, Any]:
     }
 
 
-def _build_complexity(query_variant: str) -> Any:
+def _build_complexity(query_id: str) -> Any:
     weights = resolve_geometry_complexity_weights(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=TASK_ID,
@@ -826,12 +826,12 @@ def _build_complexity(query_variant: str) -> Any:
         "line_circle_tangent_label": 0.58,
         "line_circle_two_intersections_label": 0.50,
         "circle_circle_two_intersections_label": 0.64,
-    }[str(query_variant)]
+    }[str(query_id)]
     ambiguity = {
         "line_circle_tangent_label": 0.56,
         "line_circle_two_intersections_label": 0.46,
         "circle_circle_two_intersections_label": 0.60,
-    }[str(query_variant)]
+    }[str(query_id)]
     return build_geometry_task_complexity(
         weights=weights,
         components={
@@ -884,7 +884,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -921,7 +921,7 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                     for label in query.label_pool
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "winner_label": str(query.winner_label),
                     "target_quadrant": str(rendered_scene.target_quadrant),
                     "object_colors": [list(color) for color in rendered_scene.object_colors],
@@ -929,15 +929,15 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
-                    "variant_probabilities": dict(query.query_variant_probabilities),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id": str(query.query_id),
+                    "variant_probabilities": dict(query.query_id_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "winner_label": str(query.winner_label),
                     "winner_label_probabilities": dict(query.winner_label_probabilities),
                     "candidate_label_pool": list(query.label_pool),
@@ -967,20 +967,20 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
                 "coord_space": "pixel",
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_type": "option_letter",
                 "answer_value": str(query.winner_label),
                 "winner_label": str(query.winner_label),
                 "winner_pair": dict(_panel_trace_payload(winner_panel)),
                 "panels_by_label": dict(panels_trace),
                 "target_quadrant": str(rendered_scene.target_quadrant),
-                "variant_probabilities": dict(query.query_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "variant_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
             },
             "witness_symbolic": {
                 "type": "intersection_property_panel_selection",
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_label": str(query.winner_label),
                 "target_quadrant": str(rendered_scene.target_quadrant),
                 "winner_pair": dict(_panel_trace_payload(winner_panel)),
@@ -1002,9 +1002,9 @@ class GeometryAnalyticalIntersectionPropertyLabelTask:
             image=rendered_scene.image,
             image_id="img_0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(str(query.query_variant)),
+            complexity=_build_complexity(str(query.query_id)),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1017,7 +1017,7 @@ class GeometryAnalyticalIntersectionPropertyPublicLabelTask(
     """Choose the panel matching the requested intersection property."""
 
     task_id = "task_geometry__function_panels__intersection_property_label"
-    fixed_query_variants = (
+    fixed_query_ids = (
         "line_circle_tangent_label",
         "line_circle_two_intersections_label",
         "circle_circle_two_intersections_label",

@@ -7,7 +7,7 @@
 4. Objective: read one directed cycle diagram and return the exact visible stage label that is `k` steps before or after a queried stage.
 
 ## 2) Scene + task contract
-1. Supported `query_variant` values:
+1. Supported `query_id` values:
    - `offset_stage_label`
 2. Supported `scene_variant` values:
    - `cycle_ring`
@@ -42,7 +42,7 @@
 6. Slot source:
    - prompt config in `configs/domains/pages/cycle.yaml`,
    - deterministic bundle selection from `prompts/pages/cycle/pages_cycle_v0.json`,
-   - task-local JSON examples keyed by the active cycle-query variant.
+   - task-local JSON examples keyed by the active cycle-query id.
 7. Modes: `answer_only`, `answer_and_evidence`
 8. Prompt-facing answer is the exact visible target-stage label; prompt-facing evidence is the single target-stage bbox.
 
@@ -62,7 +62,7 @@
    - `stage_label_bboxes_px`
    - `edge_bboxes_px`
 4. `execution_trace` records:
-   - `query_variant`
+   - `query_id`
    - `query_relationship`
    - `scene_variant`
    - `question_format`
@@ -99,7 +99,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. `query_variant`, `query_relationship`, `scene_variant`, and `cycle_direction` are sampled independently at the policy level.
+2. `query_id`, `query_relationship`, `scene_variant`, and `cycle_direction` are sampled independently at the policy level.
 3. Answers and evidence come from the same exact rendered target stage.
 4. No semantic auto-relaxation.
 5. If a sampled cycle would produce duplicate visible labels or an invalid `k` range, reject and resample instead of silently rewriting the query.

@@ -830,7 +830,6 @@ class IconsPatternGridSizeViolationTask:
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
             "task_id": str(self.task_id),
-            "query_variant": "default",
             "query_id": str(query_id),
         }
         trace_payload = {
@@ -851,7 +850,6 @@ class IconsPatternGridSizeViolationTask:
                 ],
                 "relations": {
                     "query_id": str(query_id),
-                    "query_variant": "default",
                     "pattern_rule": "row_col_size_level_offsets",
                     "pattern_icon_id": str(scene_payload.pattern_icon_id),
                     "size_levels": [int(value) for value in scene_payload.size_levels],
@@ -880,8 +878,7 @@ class IconsPatternGridSizeViolationTask:
                 "params": {
                     "scene_id": taxonomy.scene_id,
                     "query_id": str(query_id),
-                    "query_variant": "default",
-                    "query_variant_probabilities": {str(query_id): 1.0},
+                    "query_id_probabilities": {str(query_id): 1.0},
                     "variant_probabilities": {str(query_id): 1.0},
                     "grid_rows": int(scene_payload.grid_rows),
                     "grid_cols": int(scene_payload.grid_cols),
@@ -947,7 +944,7 @@ class IconsPatternGridSizeViolationTask:
             "execution_trace": {
                 **common_ids,
                 "scene_variant": "numbered_grid",
-                "query_variant_probabilities": {str(query_id): 1.0},
+                "query_id_probabilities": {str(query_id): 1.0},
                 "variant_probabilities": {str(query_id): 1.0},
                 "grid_rows": int(scene_payload.grid_rows),
                 "grid_cols": int(scene_payload.grid_cols),
@@ -1024,7 +1021,6 @@ class IconsPatternGridSizeViolationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=taxonomy.scene_id,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -6,25 +6,24 @@ import re
 from functools import wraps
 from typing import Dict, Type
 
+from ..core.taxonomy import resolve_task_query_id
 from .base import Task
 from .shared.fixed_query import rewrite_public_query_output
 
 
 TASK_REGISTRY: Dict[str, Type[Task]] = {}
-_SOURCE_TASK_ID_PATTERN = re.compile(r"^task_[a-z0-9_]+$")
 _V0_TASK_ID_PATTERN = re.compile(
     r"^task_(?P<domain>[a-z0-9_]+)__(?P<scene>[a-z0-9_]+)__(?P<objective>[a-z0-9_]+)$"
 )
-_TASK_NAME_PATTERN = re.compile(r"^[a-z0-9_]+$")
 
 
 def _validate_task_id_contract(cls: Type[Task], task_id: str) -> None:
     """Validate canonical task-id naming and taxonomy alignment."""
     task_id_text = str(task_id)
     v0_match = _V0_TASK_ID_PATTERN.match(task_id_text)
-    if v0_match is None and _SOURCE_TASK_ID_PATTERN.match(task_id_text) is None:
+    if v0_match is None:
         raise ValueError(
-            "task_id must follow 'task_<domain>_<task_group>_<task_name>' or "
+            "task_id must follow taxonomy-v0 public form "
             "'task_<domain>__<scene_id>__<objective_contract>' "
             f"(got: {task_id})"
         )
@@ -41,16 +40,6 @@ def _validate_task_id_contract(cls: Type[Task], task_id: str) -> None:
                 "taxonomy-v0 task_id domain segment must match class domain "
                 f"'{domain}' (got: {task_id_text})"
             )
-        return
-    prefix = f"task_{str(domain)}_{str(task_group)}_"
-    if not task_id_text.startswith(prefix):
-        raise ValueError(
-            "task_id must include class domain/task_group prefix "
-            f"'{prefix}' (got: {task_id_text})"
-        )
-    task_name = task_id_text[len(prefix):]
-    if not task_name or _TASK_NAME_PATTERN.match(task_name) is None:
-        raise ValueError(f"invalid task_name segment in task_id '{task_id_text}'")
 
 
 def register_task(cls: Type[Task]) -> Type[Task]:
@@ -67,9 +56,10 @@ def register_task(cls: Type[Task]) -> Type[Task]:
         @wraps(original_generate)
         def _generate_with_public_query_contract(self, instance_seed, *, params, max_attempts):
             output = original_generate(self, instance_seed, params=params, max_attempts=max_attempts)
-            query_id = str(output.query_id or "")
-            if not query_id and str(output.query_variant or "").strip() and str(output.query_variant) != "default":
-                query_id = str(output.query_variant)
+            query_id = str(
+                output.query_id
+                or resolve_task_query_id(trace_payload=output.trace_payload)
+            )
             if not query_id:
                 return output
             scene_id = str(output.scene_id or taxonomy_scene_id)
@@ -77,7 +67,7 @@ def register_task(cls: Type[Task]) -> Type[Task]:
                 output,
                 query_id=query_id,
                 scene_id=scene_id,
-                preserve_internal_query_variant_as="internal_query_variant",
+                preserve_internal_query_id_as="internal_query_id",
             )
 
         cls.generate = _generate_with_public_query_contract  # type: ignore[method-assign]

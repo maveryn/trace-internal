@@ -1,8 +1,8 @@
 generation:
   shared:
-    query_variant_weights:
+    query_id_weights:
       minimum_spanning_tree_weight: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     node_count_min: 4
     node_count_max: 7
     extra_edge_count_min: 1
@@ -55,8 +55,12 @@ generation:
     balanced_layout_transform_variant_sampling: true
     balanced_node_color_name_sampling: true
   task_overrides:
+    task_graph__node_link__mst_weight:
+      query_id_weights:
+        minimum_spanning_tree_weight: 1.0
+      balanced_query_id_sampling: true
     task_graph__adjacency__mst_weight:
-      query_variant_weights:
+      query_id_weights:
         weighted_matrix_mst_weight: 1.0
       node_count_min: 4
       node_count_max: 7
@@ -69,10 +73,10 @@ generation:
         letters: 1.0
         numbers: 1.0
         named: 2.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_label_variant_sampling: true
     task_graph__flow_network__max_flow_value:
-      query_variant_weights:
+      query_id_weights:
         max_flow_value: 1.0
       node_count_min: 5
       node_count_max: 6
@@ -92,13 +96,13 @@ generation:
         straight: 1.0
       layout_transform_variant_weights:
         identity: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_layout_variant_sampling: true
       balanced_layout_transform_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
       balanced_node_color_name_sampling: true
     task_graph__flow_network__min_cut_edge_count:
-      query_variant_weights:
+      query_id_weights:
         minimum_cut_edge_count: 1.0
       node_count_min: 5
       node_count_max: 6
@@ -118,7 +122,7 @@ generation:
         straight: 1.0
       layout_transform_variant_weights:
         identity: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_layout_variant_sampling: true
       balanced_layout_transform_variant_sampling: true
       balanced_edge_routing_variant_sampling: true

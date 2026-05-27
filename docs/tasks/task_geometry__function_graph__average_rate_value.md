@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `graphing`
 3. Scene id: `function_graph`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `average_rate_between_marked_points`
 6. Answer type: `number`
 7. Evidence type: `point_set`

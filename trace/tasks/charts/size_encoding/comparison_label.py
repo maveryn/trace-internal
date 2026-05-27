@@ -41,7 +41,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_size_encoding_comparison_label_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "filtered_item_extremum_label",
     "reference_size_neighbor_label",
     "category_total_extremum_label",
@@ -143,7 +143,7 @@ class _Item:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     answer: str
     evidence_item_ids: Tuple[str, ...]
     evidence_panel_labels: Tuple[str, ...]
@@ -174,24 +174,24 @@ class _Rendered:
     render_meta: Dict[str, Any]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
 def _resolve_scene_variant(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
@@ -414,7 +414,7 @@ def _build_query(
     items: Sequence[_Item],
     categories: Sequence[str],
     panels: Sequence[str],
-    query_variant: str,
+    query_id: str,
     extremum_direction: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -423,7 +423,7 @@ def _build_query(
     neighbor_gap_min = _resolve_int(params, "neighbor_gap_min", 5)
     category_total_gap_min = _resolve_int(params, "category_total_gap_min", 18)
 
-    if str(query_variant) == "filtered_item_extremum_label":
+    if str(query_id) == "filtered_item_extremum_label":
         filtered_gap_min = _resolve_int(params, "filtered_item_winner_gap_min", int(winner_gap_min))
         filtered_gap_max = _resolve_int(params, "filtered_item_winner_gap_max", 10_000)
         outside_extreme_min = _resolve_int(params, "filtered_item_outside_extreme_min", 0)
@@ -461,7 +461,7 @@ def _build_query(
             )
         ]
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=str(winner.label),
             evidence_item_ids=(str(winner.item_id),),
             evidence_panel_labels=(),
@@ -477,7 +477,7 @@ def _build_query(
             },
         )
 
-    if str(query_variant) == "reference_size_neighbor_label":
+    if str(query_id) == "reference_size_neighbor_label":
         feasible_categories: List[Tuple[str, List[Tuple[_Item, List[Tuple[int, str, _Item]]]]]] = []
         for category, group in sorted(_items_by_category(items).items()):
             if len(group) < 3:
@@ -513,7 +513,7 @@ def _build_query(
         ]
         answer_item = distances[0][2]
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=str(answer_item.label),
             evidence_item_ids=(str(reference.item_id), str(answer_item.item_id)),
             evidence_panel_labels=(),
@@ -530,7 +530,7 @@ def _build_query(
                 "candidate_count": int(len(distances)),
             },
         )
-    if str(query_variant) == "category_total_extremum_label":
+    if str(query_id) == "category_total_extremum_label":
         totals = {
             str(category): int(sum(int(item.value) for item in items if str(item.category) == str(category)))
             for category in categories
@@ -549,7 +549,7 @@ def _build_query(
             raise ValueError("category-total gap too small")
         evidence_ids = tuple(str(item.item_id) for item in items if str(item.category) == str(answer_category))
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=str(answer_category),
             evidence_item_ids=evidence_ids,
             evidence_panel_labels=(),
@@ -561,12 +561,12 @@ def _build_query(
             trace={"category_totals": dict(totals), "winner_gap": int(gap), "winner_total": int(answer_total)},
         )
 
-    raise ValueError(f"unsupported query variant: {query_variant}")
+    raise ValueError(f"unsupported query id: {query_id}")
 
 
 def _build_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     extremum_direction: str,
     params: Mapping[str, Any],
@@ -640,7 +640,7 @@ def _build_dataset(
         items=items,
         categories=categories,
         panels=panels,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         extremum_direction=str(extremum_direction),
         params=params,
         instance_seed=int(instance_seed) + (131 * int(attempt_index)),
@@ -1043,7 +1043,7 @@ def _evidence_bboxes(dataset: _Dataset, rendered: _Rendered) -> List[List[float]
         if bbox is not None:
             boxes.append(list(bbox))
     for category_label in dataset.query.evidence_category_labels:
-        if dataset.query.query_variant != "category_total_extremum_label":
+        if dataset.query.query_id != "category_total_extremum_label":
             bbox = rendered.category_legend_bboxes.get(str(category_label))
             if bbox is not None:
                 boxes.append(list(bbox))
@@ -1062,10 +1062,10 @@ class ChartsSizeEncodingComparisonLabelTask:
     task_group = "size_encoding"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
             params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         extremum_direction, extremum_direction_probabilities = _resolve_extremum_direction(
@@ -1078,7 +1078,7 @@ class ChartsSizeEncodingComparisonLabelTask:
         for attempt_index in range(max(1, int(max_attempts))):
             try:
                 dataset = _build_dataset(
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     scene_variant=str(scene_variant),
                     extremum_direction=str(extremum_direction),
                     params=params,
@@ -1132,7 +1132,7 @@ class ChartsSizeEncodingComparisonLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
@@ -1142,10 +1142,10 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "extremum_phrase": "largest" if str(extremum_direction) == "largest" else "smallest",
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+                "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
             },
             instance_seed=int(instance_seed),
         )
@@ -1164,7 +1164,7 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "scene_kind": f"chart_size_encoding_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "extremum_direction": str(extremum_direction),
                     "answer_label": str(dataset.query.answer),
@@ -1175,16 +1175,16 @@ class ChartsSizeEncodingComparisonLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "extremum_direction": str(extremum_direction),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "extremum_direction_probabilities": dict(extremum_direction_probabilities),
                     "item_count": int(len(dataset.items)),
@@ -1212,7 +1212,7 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "category_legend_bboxes_px": dict(rendered.category_legend_bboxes),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "extremum_direction": str(extremum_direction),
                 "answer_label": str(dataset.query.answer),
@@ -1228,7 +1228,7 @@ class ChartsSizeEncodingComparisonLabelTask:
                 "values_by_label": dict(values_by_label),
                 "category_by_label": dict(category_by_label),
                 "panel_by_label": dict(panel_by_label),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "extremum_direction_probabilities": dict(extremum_direction_probabilities),
                 "question_format": "size_encoded_label_comparison",
@@ -1255,16 +1255,16 @@ class ChartsSizeEncodingComparisonLabelTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(len(dataset.items)), [int(single_item_min), int(visual_scan_max)]),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
-        if str(query_variant) == "category_total_extremum_label":
+        if str(query_id) == "category_total_extremum_label":
             complexity = build_chart_complexity(
                 weights=_COMPLEXITY_WEIGHTS,
                 components={
                     "visual_scan": normalize_int_with_bounds(int(len(dataset.items)), [int(single_item_min), int(visual_scan_max)]),
-                    "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]) + (0.04 * max(0, len(evidence_boxes) - 4))),
+                    "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)]) + (0.04 * max(0, len(evidence_boxes) - 4))),
                     "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
                 },
             )
@@ -1278,7 +1278,7 @@ class ChartsSizeEncodingComparisonLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1291,7 +1291,7 @@ class ChartsSizeEncodingFilteredItemExtremumLabelTask(
     """Return the size-encoded item label with an extremal value inside a filter."""
 
     task_id = "task_charts__size_encoding__filtered_item_extremum_label"
-    fixed_query_variant = "filtered_item_extremum_label"
+    fixed_query_id = "filtered_item_extremum_label"
 
 
 @register_task
@@ -1302,7 +1302,7 @@ class ChartsSizeEncodingReferenceSizeNeighborLabelTask(
     """Return the size neighbor of a reference item."""
 
     task_id = "task_charts__size_encoding__reference_size_neighbor_label"
-    fixed_query_variant = "reference_size_neighbor_label"
+    fixed_query_id = "reference_size_neighbor_label"
 
 
 @register_task
@@ -1313,7 +1313,7 @@ class ChartsSizeEncodingCategoryTotalExtremumLabelTask(
     """Return the category label with an extremal total encoded size."""
 
     task_id = "task_charts__size_encoding__category_total_extremum_label"
-    fixed_query_variant = "category_total_extremum_label"
+    fixed_query_id = "category_total_extremum_label"
 
 
 __all__ = [

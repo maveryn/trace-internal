@@ -65,7 +65,7 @@ def rewrite_branch_output(
     query_spec = trace_payload.setdefault("query_spec", {})
     if isinstance(query_spec, dict):
         query_spec["task_id"] = str(public_task_id)
-        query_spec["query_variant"] = query_id
+        query_spec["query_id"] = query_id
         query_spec["query_id"] = query_id
         query_spec["branch_id"] = str(branch_id)
         params = query_spec.setdefault("params", {})
@@ -76,19 +76,19 @@ def rewrite_branch_output(
     if isinstance(scene_ir, dict):
         relations = scene_ir.setdefault("relations", {})
         if isinstance(relations, dict):
-            relations["query_variant"] = query_id
+            relations["query_id"] = query_id
             relations["query_id"] = query_id
             relations["branch_id"] = str(branch_id)
 
     execution_trace = trace_payload.setdefault("execution_trace", {})
     if isinstance(execution_trace, dict):
-        execution_trace["query_variant"] = query_id
+        execution_trace["query_id"] = query_id
         execution_trace["query_id"] = query_id
         execution_trace["public_task_id"] = str(public_task_id)
         execution_trace["branch_id"] = str(branch_id)
 
     output.trace_payload = trace_payload
-    output.query_variant = query_id
+    output.query_id = query_id
     output.query_id = query_id
     return output
 

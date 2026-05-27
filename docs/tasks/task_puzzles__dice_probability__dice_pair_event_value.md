@@ -8,7 +8,7 @@
 5. Goal: compute a reduced-fraction probability for selecting one visible-top die from each of two shown dice trays.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `pair_sum_probability|pair_sum_threshold_probability|pair_difference_probability|pair_parity_combo_probability|pair_color_value_combo_probability`
 3. Dice count per tray: `3..5`
 4. Answer type: `string`

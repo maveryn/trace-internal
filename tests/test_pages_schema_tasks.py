@@ -42,7 +42,7 @@ def test_pages_schema_field_role_count_contract() -> None:
         ]
 
         assert out.scene_id == "schema"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
@@ -65,7 +65,7 @@ def test_pages_schema_relationship_count_contract() -> None:
         ]
 
         assert out.scene_id == "schema"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(query["answer"])

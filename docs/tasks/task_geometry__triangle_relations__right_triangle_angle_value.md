@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `triangle_relations`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `angle_from_opposite_adjacent`, `angle_from_opposite_hypotenuse`, `angle_from_adjacent_hypotenuse`, or `angle_of_elevation_from_height_and_distance`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

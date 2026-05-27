@@ -1,18 +1,18 @@
 # task_illustrations__library__section_book_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Overview
 
 - domain: `illustrations`
-- scene: `library`
-- task group: `counting`
+- scene_id: `library`
+- task_group: `counting`
 - task: `library_book_count`
 - module: `trace/tasks/illustrations/counting/library_book_count.py`
 - default enabled: yes
 
-This merged task renders an illustrated library with labeled shelf sections and
-asks for a count of books in one section. Public query variants are:
+The task renders an illustrated library with labeled shelf sections and asks
+for a count of books in one section. Query ids are:
 
 - `books_in_section_count`: count all books in a named section.
 - `book_color_in_section_count`: count books with a named canonical color in a named section.
@@ -31,7 +31,7 @@ asks for a count of books in one section. Public query variants are:
 - `bundle_id = illustrations_counting_v0`
 - `scene_key = library_canvas`
 - `task_key = library_book_count_task`
-- `query_key` is one of the public variants listed above.
+- `query_id` is one of the branches listed above.
 
 ## Calibration Notes
 

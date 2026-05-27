@@ -28,11 +28,11 @@ from ..shared.diagram.complexity import (
 from ..shared.diagram.hierarchy_common import (
     HierarchyDefaults,
     SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS,
-    SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS,
+    SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS,
     build_hierarchy_tree_count_dataset,
     resolve_hierarchy_render_params,
     resolve_hierarchy_tree_count_scene_variant,
-    resolve_hierarchy_tree_count_query_variant,
+    resolve_hierarchy_tree_count_query_id,
 )
 from ..shared.diagram.hierarchy_scene import render_hierarchy_scene
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
@@ -40,7 +40,7 @@ from ..shared.public_query_task import rewrite_pages_query_output
 
 
 TASK_ID = "task_pages__hierarchy__tree_count"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "subtree_descendant_count": 0.58,
@@ -60,8 +60,8 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="h
 POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="hierarchy", apply_prob=0.0)
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
-    """Return prompt JSON examples that match the active tree-count query variant."""
+def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
+    """Return prompt JSON examples that match the active tree-count query id."""
 
     examples = {
         "subtree_descendant_count": (
@@ -83,7 +83,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
             4,
         ),
     }
-    evidence_bbox, answer_value = examples[str(query_variant)]
+    evidence_bbox, answer_value = examples[str(query_id)]
     answer_and_evidence = {"evidence": evidence_bbox, "answer": int(answer_value)}
     answer_only = {"answer": int(answer_value)}
     return (
@@ -102,7 +102,7 @@ class PagesHierarchyTreeCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = resolve_hierarchy_tree_count_query_variant(
+        query_id, query_id_probabilities = resolve_hierarchy_tree_count_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -115,7 +115,7 @@ class PagesHierarchyTreeCountTask:
             task_id=self.task_id,
         )
         dataset = build_hierarchy_tree_count_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -161,21 +161,21 @@ class PagesHierarchyTreeCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_rooted_tree"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -196,7 +196,7 @@ class PagesHierarchyTreeCountTask:
         answer_scan = normalize_int_with_bounds(int(answer_value), [2, 18])
         evidence_scan = normalize_int_with_bounds(len(evidence_node_bbox_ids), [2, 19])
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + (0.10 * float(node_scan))
             + (0.16 * float(depth_scan))
             + (0.14 * float(answer_scan))
@@ -211,13 +211,13 @@ class PagesHierarchyTreeCountTask:
             },
         )
 
-        witness_type = "ordered_id_path" if str(query_variant) == "path_length_between_two_nodes" else "id_set"
+        witness_type = "ordered_id_path" if str(query_id) == "path_length_between_two_nodes" else "id_set"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"diagram_hierarchy_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "root_node_id": str(dataset["root_node_id"]),
                     "query_node_ids": [str(node_id) for node_id in dataset["query_node_ids"]],
@@ -226,15 +226,15 @@ class PagesHierarchyTreeCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "tree_node_count": int(dataset["tree_node_count"]),
                     "tree_depth": int(dataset["tree_depth"]),
@@ -263,9 +263,9 @@ class PagesHierarchyTreeCountTask:
                 "edge_bboxes_px": dict(rendered_scene.edge_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -317,13 +317,13 @@ class PagesHierarchyTreeCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="hierarchy",
-            query_probabilities=query_variant_probabilities,
+            query_probabilities=query_id_probabilities,
         )
 
 

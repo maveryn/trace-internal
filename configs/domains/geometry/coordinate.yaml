@@ -49,14 +49,14 @@ generation:
         line_points: 1.0
         quadrant_points: 1.0
         polygon_lattice: 1.0
-      query_variant_weights:
+      query_id_weights:
         parallel_count: 1.0
         perpendicular_count: 1.0
         collinear_count: 1.0
         same_quadrant_count: 1.0
         point_in_shape_count: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
 
 rendering:
   shared:

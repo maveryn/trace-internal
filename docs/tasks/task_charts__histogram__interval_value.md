@@ -5,7 +5,7 @@
 2. Scene id: `histogram`
 3. Source implementation domain/group: `charts/distribution`
 4. Query id: `bin_count_between_values`, `interval_mass`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.distribution.histogram_count.ChartsDistributionHistogramIntervalValueTask`

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `tangent_packing`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `circle_in_square_radius_from_gap_area`, `square_in_circle_side_from_gap_area`, `two_circles_in_rectangle_radius_from_gap_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`
@@ -15,7 +15,7 @@
 
 ## Behavior
 Infer a missing length from a labeled shaded gap area and circle/square/
-rectangle tangency constraints. Query variants cover an inscribed circle in a
+rectangle tangency constraints. Query ids cover an inscribed circle in a
 square, an inscribed square in a circle, and two equal tangent circles packed
 inside a rectangle. Answers are numeric and rounded to one decimal place.
 

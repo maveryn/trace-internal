@@ -38,7 +38,7 @@ from ....core.visual.background import make_background_canvas
 TASK_ID = "task_graph__graph_options__structure_match_label"
 SCENE_ID = "graph_options"
 
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "same_structure_label",
     "contained_subgraph_label",
 )
@@ -361,18 +361,18 @@ def _resolve_int_range(
     return int(value), (int(lower), int(upper)), dict(uniform_probability_map(tuple(range(lower, upper + 1))))
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_graph_named_variant(
-        spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant"),
+        spawn_rng(int(instance_seed), f"{TASK_ID}.query_id"),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported=SUPPORTED_QUERY_VARIANTS,
+        supported=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
 
 
@@ -411,7 +411,7 @@ def _resolve_correct_option_index(
     *,
     instance_seed: int,
     option_count: int,
-    query_variant: str,
+    query_id: str,
 ) -> int:
     explicit = params.get("correct_option_index")
     if explicit is not None:
@@ -423,7 +423,7 @@ def _resolve_correct_option_index(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:{str(query_variant)}:correct_option_index",
+            namespace=f"{TASK_ID}:{str(query_id)}:correct_option_index",
         )
     )
     return int(selection % int(option_count))
@@ -505,7 +505,7 @@ def _build_same_structure_dataset(
         option_count=int(option_count),
     )
     return {
-        "query_variant": "same_structure_label",
+        "query_id": "same_structure_label",
         "query_panel_title": "Reference",
         "query_structure_spec": dict(base),
         "answer_structure_spec": dict(base),
@@ -602,7 +602,7 @@ def _build_contained_subgraph_dataset(
         option_count=int(option_count),
     )
     return {
-        "query_variant": "contained_subgraph_label",
+        "query_id": "contained_subgraph_label",
         "query_panel_title": "Target Graph",
         "query_structure_spec": dict(base),
         "answer_structure_spec": dict(pattern),
@@ -626,7 +626,7 @@ def _build_contained_subgraph_dataset(
 
 def _build_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     edge_mode: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -637,10 +637,10 @@ def _build_dataset_for_variant(
         params,
         instance_seed=int(instance_seed),
         option_count=int(option_count),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset.{str(query_variant)}", int(attempt))
-    if str(query_variant) == "same_structure_label":
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset.{str(query_id)}", int(attempt))
+    if str(query_id) == "same_structure_label":
         dataset = _build_same_structure_dataset(
             rng=rng,
             params=params,
@@ -649,7 +649,7 @@ def _build_dataset_for_variant(
             correct_option_index=int(correct_option_index),
             edge_mode=str(edge_mode),
         )
-    elif str(query_variant) == "contained_subgraph_label":
+    elif str(query_id) == "contained_subgraph_label":
         dataset = _build_contained_subgraph_dataset(
             rng=rng,
             params=params,
@@ -659,7 +659,7 @@ def _build_dataset_for_variant(
             edge_mode=str(edge_mode),
         )
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
     dataset["option_count"] = int(option_count)
     dataset["edge_mode"] = str(edge_mode)
     return dataset
@@ -1112,7 +1112,7 @@ def _render_scene(
     )
 
 
-def _build_complexity(dataset: Mapping[str, Any], *, query_variant: str, scene_variant: str) -> Any:
+def _build_complexity(dataset: Mapping[str, Any], *, query_id: str, scene_variant: str) -> Any:
     option_count = int(dataset.get("option_count", 6))
     node_count = int(dataset.get("node_count", 5))
     edge_count = len(_edge_set(dataset["answer_structure_spec"]))
@@ -1125,9 +1125,9 @@ def _build_complexity(dataset: Mapping[str, Any], *, query_variant: str, scene_v
     return build_graph_complexity(
         weights=_COMPLEXITY_WEIGHTS,
         components={
-            "topology_reasoning": float(_QUERY_LOAD[str(query_variant)]),
+            "topology_reasoning": float(_QUERY_LOAD[str(query_id)]),
             "visual_scan": float(visual_scan),
-            "ambiguity": 0.36 if str(query_variant) == "same_structure_label" else 0.46,
+            "ambiguity": 0.36 if str(query_id) == "same_structure_label" else 0.46,
             "clutter": float(clutter + (0.08 * _SCENE_LOAD[str(scene_variant)])),
         },
     )
@@ -1142,7 +1142,7 @@ class GraphRelationStructureMatchLabelTask:
     task_group = "relation"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         edge_mode, edge_mode_probabilities = _resolve_edge_mode(params, instance_seed=int(instance_seed))
         last_error: Exception | None = None
@@ -1150,7 +1150,7 @@ class GraphRelationStructureMatchLabelTask:
         for attempt in range(max(1, int(max_attempts))):
             try:
                 dataset = _build_dataset_for_variant(
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     edge_mode=str(edge_mode),
                     params=params,
                     instance_seed=int(hash64(int(instance_seed), f"{TASK_ID}.dataset_seed", int(attempt))),
@@ -1260,7 +1260,7 @@ class GraphRelationStructureMatchLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
@@ -1291,8 +1291,7 @@ class GraphRelationStructureMatchLabelTask:
                 "scene_kind": "graph_structure_options",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
-                    "query_id": str(query_variant),
+                    "query_id": str(query_id),
                     "edge_mode": str(edge_mode),
                     "answer_option_label": str(answer_value),
                     "correct_option_panel_id": str(correct_option_panel_id),
@@ -1301,16 +1300,14 @@ class GraphRelationStructureMatchLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
-                    "query_id": str(query_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "edge_mode": str(edge_mode),
                     "edge_mode_probabilities": dict(edge_mode_probabilities),
                     "scene_variant": str(scene_variant),
@@ -1359,14 +1356,13 @@ class GraphRelationStructureMatchLabelTask:
                 },
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id": str(query_id),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "edge_mode": str(edge_mode),
                 "edge_mode_probabilities": dict(edge_mode_probabilities),
                 "scene_variant": str(scene_variant),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "query_panel_title": str(dataset["query_panel_title"]),
                 "query_structure_spec": dict(dataset["query_structure_spec"]),
                 "answer_structure_spec": dict(dataset["answer_structure_spec"]),
@@ -1398,7 +1394,7 @@ class GraphRelationStructureMatchLabelTask:
                 "pixel_bbox_set": list(evidence_bboxes),
             },
         }
-        complexity = _build_complexity(dataset, query_variant=str(query_variant), scene_variant=str(scene_variant))
+        complexity = _build_complexity(dataset, query_id=str(query_id), scene_variant=str(scene_variant))
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=answer_gt,
@@ -1408,9 +1404,8 @@ class GraphRelationStructureMatchLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

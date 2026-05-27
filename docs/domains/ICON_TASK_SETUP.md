@@ -12,7 +12,10 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - icon instances use `bbox_set`,
    - labeled cells/pairs use `bbox_set` over the cell,
    - missing or violating slots use one local `bbox_set`.
-4. Active icons tasks expose one public sampling unit per `task_id`: generated outputs use `query_variant="default"` and put the meaningful branch in `query_id`. Source `query_variant` params remain accepted as targeted-generation aliases.
+4. Active icons tasks expose one public sampling unit per `task_id` and put the
+   meaningful branch in `query_id`. Legacy/internal `query_id` params may
+   still be accepted as targeted-generation aliases, but prompt-facing and
+   review-facing branch identity should use `query_id`.
 
 ## 2) Asset policy
 1. TRACE uses the curated icon bundle under `assets/icons/` for broad

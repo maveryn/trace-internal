@@ -16,12 +16,12 @@ generation:
     category_count_max: 15
     value_min: 1
     value_max: 20
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
   task_overrides:
     charts_distribution_histogram_count_base:
       bin_width_min: 1
       bin_width_max: 1
-      query_variant_weights:
+      query_id_weights:
         interval_mass: 1.0
         bin_count_between_values: 1.0
         rank_item_bin_label: 1.0
@@ -32,7 +32,7 @@ generation:
       value_max: 99
       value_window_span_min: 25
       value_window_span_max: 25
-      query_variant_weights:
+      query_id_weights:
         median_reference_label: 1.0
         iqr_extremum_label: 1.0
       median_reference_direction_weights:
@@ -41,7 +41,7 @@ generation:
       extremum_direction_weights:
         largest: 1.0
         smallest: 1.0
-      query_variant_overrides:
+      query_id_overrides:
         iqr_extremum_label:
           iqr_winner_gap_min: 1
           iqr_winner_gap_max: 1
@@ -63,7 +63,7 @@ generation:
       support_span_max: 22
       support_winner_gap_min: 2
       support_winner_gap_max: 5
-      query_variant_weights:
+      query_id_weights:
         highest_mode: 1.0
         lowest_mode: 1.0
         bimodal_label: 1.0
@@ -75,7 +75,7 @@ generation:
       value_window_span_max: 25
       category_count_min: 6
       category_count_max: 12
-      query_variant_weights:
+      query_id_weights:
         median_top_second_difference_value: 1.0
         median_top_third_difference_value: 1.0
         median_top_bottom_difference_value: 1.0
@@ -89,7 +89,7 @@ generation:
       category_count_max: 6
       paired_median_shift_min: 2
       paired_median_shift_max: 10
-      query_variant_weights:
+      query_id_weights:
         paired_median_greatest_increase_label: 1.0
         paired_median_greatest_decrease_label: 1.0
         paired_median_greatest_absolute_change_label: 1.0

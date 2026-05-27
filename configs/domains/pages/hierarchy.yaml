@@ -226,7 +226,7 @@ visual:
 generation:
   task_overrides:
     task_pages__hierarchy__tree_count:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       tree_node_count_min: 16
       tree_node_count_max: 30
@@ -238,7 +238,7 @@ generation:
       subtree_leaf_count_max: 12
       path_length_between_two_nodes_min: 3
       path_length_between_two_nodes_max: 16
-      query_variant_weights:
+      query_id_weights:
         subtree_descendant_count: 1.0
         subtree_leaf_count: 1.0
         path_length_between_two_nodes: 1.0

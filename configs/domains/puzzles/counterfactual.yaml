@@ -2,12 +2,12 @@ generation:
   task_overrides:
     task_puzzles__counterfactual_board__board_grid_count:
       balanced_board_style_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       board_style_weights:
         chess_checkers: 1.0
         sudoku: 1.0
         xiangqi: 1.0
-      query_variant_weights:
+      query_id_weights:
         row_count: 1.0
         column_count: 1.0
         horizontal_line_count: 1.0

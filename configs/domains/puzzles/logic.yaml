@@ -6,10 +6,10 @@ generation:
       king_non_touch_board_size_min: 3
       king_non_touch_board_size_max: 5
       option_count: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_uniqueness_axis_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         axis_uniqueness: 1.0
         row_and_column_uniqueness: 1.0
         king_non_touch: 1.0
@@ -24,9 +24,9 @@ generation:
       option_count: 6
       count_min: 1
       count_max: 8
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         count_progression_matrix: 1.0
         spatial_transform_matrix: 1.0
         set_operation_matrix: 1.0
@@ -63,9 +63,9 @@ generation:
     task_puzzles__matchstick__matchstick_number_transform_label:
       option_count_min: 6
       option_count_max: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         add_one_stick: 1.0
         remove_one_stick: 1.0
       scene_variant_weights:
@@ -80,9 +80,9 @@ generation:
       grid_size: 3
       shape_edge_count_min: 8
       shape_edge_count_max: 15
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         most_loose_endpoints: 1.0
         fewest_loose_endpoints: 1.0
       scene_variant_weights:
@@ -98,9 +98,9 @@ generation:
       visible_value_max: 18
       window_sequence_length_min: 6
       window_sequence_length_max: 9
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         equal_sum_line_constraint_value: 1.0
         paired_cluster_sum_relation_value: 1.0
         consecutive_window_sum_value: 1.0
@@ -119,9 +119,9 @@ generation:
       letter_count_max: 5
       letter_extra_equation_count_min: 0
       letter_extra_equation_count_max: 1
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         hidden_addition_digit_value: 1.0
         hidden_subtraction_digit_value: 1.0
         letter_digit_value: 1.0
@@ -143,9 +143,9 @@ generation:
       operation_table_rows_max: 4
       operation_table_cols_min: 2
       operation_table_cols_max: 4
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         row_column_total_missing_value: 1.0
         operation_table_cell_value: 1.0
       scene_variant_weights:
@@ -170,9 +170,9 @@ generation:
       pyramid_visible_value_max: 99999
       multiplication_pyramid_base_count_min: 3
       multiplication_pyramid_base_count_max: 4
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         addition_wall_missing_value: 1.0
         difference_wall_missing_value: 1.0
         multiplication_pyramid_value: 1.0
@@ -228,9 +228,9 @@ generation:
       option_count_max: 8
       visible_star_fraction_min: 0.30
       visible_star_fraction_max: 0.55
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         valid_cell_anywhere_label: 1.0
         valid_cell_in_marked_region_label: 1.0
         valid_cell_for_marked_row_label: 1.0
@@ -245,9 +245,9 @@ generation:
       target_count_max: 6
       visible_star_fraction_min: 0.15
       visible_star_fraction_max: 0.35
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         remaining_valid_cells_in_marked_region_count: 1.0
         remaining_valid_cells_in_marked_row_count: 1.0
         remaining_valid_cells_in_marked_column_count: 1.0

@@ -97,17 +97,17 @@ _COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_target_reachability_count_internal",
 )
-_SUPPORTED_QUERY_VARIANTS = ("reachable_target_count", "unreachable_target_count")
+_SUPPORTED_QUERY_IDS = ("reachable_target_count", "unreachable_target_count")
 
 
-def _resolve_query_variant(params: Mapping[str, Any]) -> str:
-    query_variant = str(params.get("query_variant", "reachable_target_count"))
-    if query_variant not in _SUPPORTED_QUERY_VARIANTS:
+def _resolve_query_id(params: Mapping[str, Any]) -> str:
+    query_id = str(params.get("query_id", "reachable_target_count"))
+    if query_id not in _SUPPORTED_QUERY_IDS:
         raise ValueError(
-            f"Unsupported query_variant={query_variant!r} for cell_board_target_reachability_count_internal; "
-            f"expected one of {_SUPPORTED_QUERY_VARIANTS}"
+            f"Unsupported query_id={query_id!r} for cell_board_target_reachability_count_internal; "
+            f"expected one of {_SUPPORTED_QUERY_IDS}"
         )
-    return query_variant
+    return query_id
 
 
 def _sample_square_tile_spec(rng, *, short_side_px_min: int, short_side_px_max: int) -> RectangularTileSpec:
@@ -157,7 +157,7 @@ class TileReachableTargetCountTask:
     default_dataset_enabled = False
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant = _resolve_query_variant(params)
+        query_id = _resolve_query_id(params)
         rows, cols, board_metadata = resolve_square_board_dimensions(
             params=params,
             generation_defaults=_GEN_DEFAULTS,
@@ -287,7 +287,7 @@ class TileReachableTargetCountTask:
         if int(effective_target_unreachable_target_count_max) < int(target_unreachable_target_count_min):
             raise ValueError("unreachable-target answer range is infeasible for the configured board size")
 
-        if query_variant == "reachable_target_count":
+        if query_id == "reachable_target_count":
             target_count_min = int(target_reachable_target_count_min)
             target_count_max = int(effective_target_reachable_target_count_max)
         else:
@@ -297,10 +297,10 @@ class TileReachableTargetCountTask:
         target_selection_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{self.task_id}:{query_variant}",
+            namespace=f"{self.task_id}:{query_id}",
         )
         target_answer_count = int(target_count_min) + (int(target_selection_index) % int(target_range_size))
-        if query_variant == "reachable_target_count":
+        if query_id == "reachable_target_count":
             target_reachable_target_count = int(target_answer_count)
             target_unreachable_target_count = max(1, 2 - int(target_reachable_target_count))
         else:
@@ -392,7 +392,7 @@ class TileReachableTargetCountTask:
         )
 
         selected_target_coords = (
-            reachable_target_coords if query_variant == "reachable_target_count" else unreachable_target_coords
+            reachable_target_coords if query_id == "reachable_target_count" else unreachable_target_coords
         )
         evidence_artifacts = coordinate_set_evidence_artifacts(
             coords=selected_target_coords,
@@ -423,7 +423,7 @@ class TileReachableTargetCountTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         answer_hint = str(prompt_defaults["answer_hint"])
         evidence_hint = str(prompt_defaults["evidence_hint"])
-        if query_variant == "unreachable_target_count":
+        if query_id == "unreachable_target_count":
             prompt_task_key = str(all_prompt_defaults.get("unreachable_task_key", "unreachable_target_count_query"))
             answer_hint = str(all_prompt_defaults.get("unreachable_answer_hint", answer_hint))
             evidence_hint = str(all_prompt_defaults.get("unreachable_evidence_hint", evidence_hint))
@@ -432,7 +432,7 @@ class TileReachableTargetCountTask:
             evidence_value=[[216, 120], [168, 216]],
             answer_type="integer",
         )
-        if query_variant == "unreachable_target_count":
+        if query_id == "unreachable_target_count":
             json_example = str(all_prompt_defaults.get("unreachable_json_example", json_example))
             json_example_answer_only = str(
                 all_prompt_defaults.get("unreachable_json_example_answer_only", json_example_answer_only)
@@ -489,9 +489,9 @@ class TileReachableTargetCountTask:
             },
         )
         selected_entity_set_name = (
-            "reachable_targets" if query_variant == "reachable_target_count" else "unreachable_targets"
+            "reachable_targets" if query_id == "reachable_target_count" else "unreachable_targets"
         )
-        selected_template_id = f"{query_variant}_v0"
+        selected_template_id = f"{query_id}_v0"
         selected_query_steps = [
             {
                 "out": "reachable",
@@ -500,7 +500,7 @@ class TileReachableTargetCountTask:
                 "start": str(start_id),
             },
         ]
-        if query_variant == "reachable_target_count":
+        if query_id == "reachable_target_count":
             selected_query_steps.append(
                 {
                     "out": "reachable_targets",
@@ -524,7 +524,7 @@ class TileReachableTargetCountTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(selected_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -569,7 +569,7 @@ class TileReachableTargetCountTask:
                 "anchors": pixel_anchor_map_from_bboxes(bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "rows": int(rows),
                 "cols": int(cols),
                 **dict(board_metadata),
@@ -603,7 +603,7 @@ class TileReachableTargetCountTask:
                 "unreachable_target_ids": [
                     cell_id((int(row), int(col))) for row, col in unreachable_target_coords
                 ],
-                "selected_target_kind": str(query_variant),
+                "selected_target_kind": str(query_id),
                 "selected_target_coords": [[int(row), int(col)] for row, col in selected_target_coords],
                 "selected_target_ids": list(selected_target_ids),
                 "reachable_coords": [[int(row), int(col)] for row, col in reachable_coords],
@@ -668,6 +668,6 @@ class TileReachableTargetCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

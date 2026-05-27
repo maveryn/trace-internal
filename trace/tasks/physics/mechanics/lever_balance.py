@@ -25,7 +25,7 @@ from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_lever_balance_complexity
@@ -42,12 +42,12 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "offset_fulcrum",
     "textured_beam",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "left_torque",
     "right_torque",
     "missing_weight_to_balance",
 )
-SUPPORTED_PUBLIC_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PUBLIC_QUERY_IDS: Tuple[str, ...] = (
     "side_torque",
     "missing_weight_to_balance",
 )
@@ -55,15 +55,15 @@ MISSING_WEIGHT_SCENE_VARIANTS: Tuple[str, ...] = (
     "center_fulcrum",
     "textured_beam",
 )
-_SOURCE_TORQUE_SIDE_BY_QUERY_VARIANT = {
+_SOURCE_TORQUE_SIDE_BY_QUERY_ID = {
     "left_torque": "left",
     "right_torque": "right",
 }
 _SUPPORTED_TORQUE_SIDES: Tuple[str, ...] = ("left", "right")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "center_fulcrum": SUPPORTED_QUERY_VARIANTS,
-    "offset_fulcrum": SUPPORTED_QUERY_VARIANTS,
-    "textured_beam": SUPPORTED_QUERY_VARIANTS,
+    "center_fulcrum": SUPPORTED_QUERY_IDS,
+    "offset_fulcrum": SUPPORTED_QUERY_IDS,
+    "textured_beam": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -103,13 +103,13 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
-    public_query_variant: str
+    query_id: str
+    public_query_id: str
     torque_side: str | None
     accent_color_name: str
     target_answer: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     torque_side_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -155,10 +155,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
 
 
-def _is_missing_weight_query(query_variant: str) -> bool:
+def _is_missing_weight_query(query_id: str) -> bool:
     """Return true when the query asks for one missing balancing weight."""
 
-    return str(query_variant) == "missing_weight_to_balance"
+    return str(query_id) == "missing_weight_to_balance"
 
 
 def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_keys: Sequence[str]) -> Mapping[str, Any]:
@@ -168,7 +168,7 @@ def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_
     return params
 
 
-def _resolve_public_query_variant(
+def _resolve_public_query_id(
     rng,
     *,
     instance_seed: int,
@@ -176,26 +176,26 @@ def _resolve_public_query_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the public query family, accepting old side-specific names as aliases."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOURCE_TORQUE_SIDE_BY_QUERY_VARIANT:
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOURCE_TORQUE_SIDE_BY_QUERY_ID:
         return "side_torque", {
             key: (1.0 if key == "side_torque" else 0.0)
-            for key in SUPPORTED_PUBLIC_QUERY_VARIANTS
+            for key in SUPPORTED_PUBLIC_QUERY_IDS
         }
-    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_VARIANTS:
+    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_IDS:
         selected = str(explicit_query)
         return selected, {
             key: (1.0 if key == selected else 0.0)
-            for key in SUPPORTED_PUBLIC_QUERY_VARIANTS
+            for key in SUPPORTED_PUBLIC_QUERY_IDS
         }
 
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -203,11 +203,11 @@ def _resolve_public_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -220,9 +220,9 @@ def _resolve_torque_side(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the side for a side-torque query."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOURCE_TORQUE_SIDE_BY_QUERY_VARIANT:
-        selected = str(_SOURCE_TORQUE_SIDE_BY_QUERY_VARIANT[str(explicit_query)])
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOURCE_TORQUE_SIDE_BY_QUERY_ID:
+        selected = str(_SOURCE_TORQUE_SIDE_BY_QUERY_ID[str(explicit_query)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_TORQUE_SIDES}
 
     explicit_side = params.get("torque_side", params.get("query_side"))
@@ -234,7 +234,7 @@ def _resolve_torque_side(
 
     side_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_PUBLIC_QUERY_VARIANTS),
+        divisor=len(SUPPORTED_PUBLIC_QUERY_IDS),
         explicit_keys=("torque_side", "query_side"),
     )
     selected, probabilities = resolve_variant(
@@ -264,21 +264,21 @@ def _resolve_target_answer(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve the sampled answer support for one lever-balance query."""
 
     target_params = dict(params)
-    explicit_query = target_params.get("query_variant", target_params.get("query_variant"))
+    explicit_query = target_params.get("query_id", target_params.get("query_id"))
     _ = explicit_query
     return resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=target_params,
         gen_defaults=_GEN_DEFAULTS,
-        support_key="missing_weight_support" if _is_missing_weight_query(str(query_variant)) else "torque_answer_support",
+        support_key="missing_weight_support" if _is_missing_weight_query(str(query_id)) else "torque_answer_support",
         explicit_key="target_answer",
-        fallback_support=_DEFAULTS.missing_weight_support if _is_missing_weight_query(str(query_variant)) else _DEFAULTS.torque_answer_support,
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        fallback_support=_DEFAULTS.missing_weight_support if _is_missing_weight_query(str(query_id)) else _DEFAULTS.torque_answer_support,
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -288,24 +288,24 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve one compatible scene/query pair plus answer support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    public_query_variant, query_probs = _resolve_public_query_variant(
+    public_query_id, query_probs = _resolve_public_query_id(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
     )
     torque_side: str | None = None
     torque_side_probabilities: Dict[str, float] = {}
-    if str(public_query_variant) == "side_torque":
+    if str(public_query_id) == "side_torque":
         torque_side, torque_side_probabilities = _resolve_torque_side(
             axis_rng,
             instance_seed=int(instance_seed),
             params=params,
         )
-        query_variant = f"{str(torque_side)}_torque"
+        query_id = f"{str(torque_side)}_torque"
     else:
-        query_variant = str(public_query_variant)
+        query_id = str(public_query_id)
 
-    if _is_missing_weight_query(str(query_variant)) and params.get("scene_variant") is None:
+    if _is_missing_weight_query(str(query_id)) and params.get("scene_variant") is None:
         scene_supported_variants = MISSING_WEIGHT_SCENE_VARIANTS
         scene_weights_key = "missing_weight_scene_variant_weights"
     else:
@@ -313,7 +313,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         scene_weights_key = "scene_variant_weights"
     scene_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS),
+        divisor=len(SUPPORTED_QUERY_IDS),
         explicit_keys=("scene_variant",),
     )
     scene_variant, scene_probs = resolve_variant(
@@ -339,7 +339,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_color_name_probabilities = resolve_variant(
@@ -364,13 +364,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
-        public_query_variant=str(public_query_variant),
+        query_id=str(query_id),
+        public_query_id=str(public_query_id),
         torque_side=(str(torque_side) if torque_side is not None else None),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         torque_side_probabilities=dict(torque_side_probabilities),
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -503,7 +503,7 @@ def _sample_same_side_known_weights(
 def _sample_weight_layout(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     params: Mapping[str, Any],
 ) -> Tuple[List[Tuple[str, int, int | None, bool, bool]], Dict[str, Any]]:
@@ -512,20 +512,20 @@ def _sample_weight_layout(
     distance_support = _distance_support(params)
     weight_min = int(params.get("weight_value_min", group_default(_GEN_DEFAULTS, "weight_value_min", _DEFAULTS.weight_value_min)))
     weight_max = int(params.get("weight_value_max", group_default(_GEN_DEFAULTS, "weight_value_max", _DEFAULTS.weight_value_max)))
-    max_weights_key = "missing_weight_max_side_weights" if _is_missing_weight_query(str(query_variant)) else "max_side_weights"
+    max_weights_key = "missing_weight_max_side_weights" if _is_missing_weight_query(str(query_id)) else "max_side_weights"
     max_weights = int(
         params.get(
             max_weights_key,
             group_default(
                 _GEN_DEFAULTS,
                 max_weights_key,
-                group_default(_GEN_DEFAULTS, "max_side_weights", _DEFAULTS.missing_weight_max_side_weights if _is_missing_weight_query(str(query_variant)) else _DEFAULTS.max_side_weights),
+                group_default(_GEN_DEFAULTS, "max_side_weights", _DEFAULTS.missing_weight_max_side_weights if _is_missing_weight_query(str(query_id)) else _DEFAULTS.max_side_weights),
             ),
         )
     )
 
-    if str(query_variant) in {"left_torque", "right_torque"}:
-        relevant_side = "left" if str(query_variant) == "left_torque" else "right"
+    if str(query_id) in {"left_torque", "right_torque"}:
+        relevant_side = "left" if str(query_id) == "left_torque" else "right"
         distractor_side = "right" if str(relevant_side) == "left" else "left"
         relevant_candidates = _candidate_side_configs_for_torque(
             target_torque=int(target_answer),
@@ -649,7 +649,7 @@ def _draw_beam_texture(
 def _render_scene(
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     accent_color_name: str,
     placements: Sequence[Tuple[str, int, int | None, bool, bool]],
     render_defaults: Mapping[str, Any],
@@ -825,7 +825,7 @@ def _render_scene(
         if bool(missing):
             placeholder_bbox_px = list(weight_bbox)
 
-    if _is_missing_weight_query(str(query_variant)) and placeholder_bbox_px is not None:
+    if _is_missing_weight_query(str(query_id)) and placeholder_bbox_px is not None:
         evidence_bboxes = [list(placeholder_bbox_px)]
         evidence_entity_ids = ["missing_weight_marker"]
     else:
@@ -879,7 +879,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             try:
                 placements, layout_metadata = _sample_weight_layout(
                     attempt_rng,
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     target_answer=int(axes.target_answer),
                     params=params,
                 )
@@ -898,7 +898,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
             )
             rendered_scene = _render_scene(
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 accent_color_name=str(axes.accent_color_name),
                 placements=list(placements),
                 render_defaults={
@@ -974,7 +974,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.public_query_variant),
+                query_key=str(axes.public_query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -983,7 +983,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                     "evidence_hint": str(
                         prompt_defaults["evidence_hint_missing_weight"]
-                        if _is_missing_weight_query(str(axes.query_variant))
+                        if _is_missing_weight_query(str(axes.query_id))
                         else prompt_defaults["evidence_hint_torque"]
                     ),
                     "answer_hint": str(prompt_defaults["answer_hint"]),
@@ -1000,22 +1000,21 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 weight_count=len(rendered_scene.weight_specs),
                 relevant_weight_count=len(rendered_scene.relevant_weight_ids),
                 max_distance=int(rendered_scene.max_distance_units),
                 target_answer=int(axes.target_answer),
             )
-            target_support_key = "missing_weight_support" if _is_missing_weight_query(str(axes.query_variant)) else "torque_answer_support"
+            target_support_key = "missing_weight_support" if _is_missing_weight_query(str(axes.query_id)) else "torque_answer_support"
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": f"physics_lever_balance_{str(axes.scene_variant)}",
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "torque_side": axes.torque_side,
                         "accent_color_name": str(axes.accent_color_name),
                         "target_answer": int(axes.target_answer),
@@ -1024,21 +1023,20 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.public_query_variant),
+                    "query_id": str(axes.public_query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "torque_side": axes.torque_side,
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "torque_side_probabilities": dict(axes.torque_side_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
@@ -1057,9 +1055,8 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "internal_query_variant": str(axes.query_variant),
+                    "query_id": str(axes.public_query_id),
+                    "internal_query_id": str(axes.query_id),
                     "torque_side": axes.torque_side,
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
@@ -1068,7 +1065,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                             params,
                             gen_defaults=_GEN_DEFAULTS,
                             key=str(target_support_key),
-                            fallback=_DEFAULTS.missing_weight_support if _is_missing_weight_query(str(axes.query_variant)) else _DEFAULTS.torque_answer_support,
+                            fallback=_DEFAULTS.missing_weight_support if _is_missing_weight_query(str(axes.query_id)) else _DEFAULTS.torque_answer_support,
                         )
                     ),
                     "query_side": None if layout_metadata is None else layout_metadata.get("query_side"),
@@ -1110,7 +1107,7 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.public_query_variant),
+                query_id=str(axes.public_query_id),
                 scene_id="lever",
             )
 
@@ -1125,7 +1122,7 @@ class PhysicsMechanicsSideTorqueValueTask(
     """Return the total torque on a queried side of a lever."""
 
     task_id = "task_physics__lever__side_torque_value"
-    fixed_query_variant = "side_torque"
+    fixed_query_id = "side_torque"
 
 
 @register_task
@@ -1136,7 +1133,7 @@ class PhysicsMechanicsMissingWeightBalanceValueTask(
     """Return the missing weight needed to balance a lever."""
 
     task_id = "task_physics__lever__missing_weight_balance_value"
-    fixed_query_variant = "missing_weight_to_balance"
+    fixed_query_id = "missing_weight_to_balance"
 
 
 __all__ = [

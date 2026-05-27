@@ -364,7 +364,7 @@ def _finalize_generated_output(
 ) -> tuple[Dict[str, Any], Dict[str, Any], str]:
     """Finalize one generated task output into train/trace records."""
 
-    query_variant_used = str(getattr(generated, "query_variant", "") or "")
+    query_id_used = str(getattr(generated, "query_id", "") or "")
     taxonomy = resolve_task_taxonomy(
         str(task.task_id),
         source_domain=str(getattr(task, "domain", "")),
@@ -381,7 +381,7 @@ def _finalize_generated_output(
         taxonomy = replace(taxonomy, scene_id=scene_id)
     query_id = str(
         getattr(generated, "query_id", "")
-        or resolve_task_query_id(query_variant=query_variant_used, trace_payload=generated.trace_payload)
+        or resolve_task_query_id(query_id=query_id_used, trace_payload=generated.trace_payload)
     )
     if not type_registry.validate_answer_type(generated.answer_gt.type):
         raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")

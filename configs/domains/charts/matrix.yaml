@@ -4,7 +4,7 @@ generation:
     row_count_max: 12
     column_count_min: 6
     column_count_max: 12
-    query_variant_weights:
+    query_id_weights:
       axis_extremum_label: 1.0
       off_diagonal_confusion_label: 1.0
       threshold_cell_count: 1.0
@@ -39,7 +39,7 @@ generation:
     comparison_weights:
       at_least: 1.0
       at_most: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_palette_variant_sampling: true
     balanced_header_layout_sampling: true

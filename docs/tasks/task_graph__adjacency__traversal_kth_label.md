@@ -7,7 +7,7 @@
 4. Task id: `task_graph__adjacency__traversal_kth_label`
 5. Objective: return the node label at a requested position in a BFS or DFS traversal from an adjacency list.
 
-## Query Variants
+## Query IDs
 1. `bfs_kth_visit_label`: breadth-first search from a named source row, using each row's neighbor order left to right.
 2. `dfs_kth_visit_label`: recursive depth-first search from a named source row, using each row's neighbor order left to right.
 

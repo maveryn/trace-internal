@@ -1,6 +1,6 @@
 # `task_icons__named_field__reference_distance_rank_label`
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending v0 review/calibration artifact refresh.
 
 ## Identity
 - domain: `icons`
@@ -54,8 +54,6 @@ unlabeled and are not included in the distance-rank candidate set.
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
 
-## Calibration
-- sample distribution: 6 unique answers, max answer frequency `0.190`
-- qwen25vl7b: hard `0.060`, easy `0.000`, mean `0.225`
-- scene review workbook:
-  `plans/task-reviews/icons/named_field/scene_review.xlsx`
+## Current Review Status
+Current v0 review and solve-rate artifacts are pending. Use
+`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.

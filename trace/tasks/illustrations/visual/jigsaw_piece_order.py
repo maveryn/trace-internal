@@ -349,13 +349,11 @@ class IllustrationsVisualJigsawPieceOrderTask:
                     "source_image_shown": False,
                 },
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -389,7 +387,6 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 "answer_positions": list(answer_positions),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "answer_labels": list(answer_labels),
                 "answer": str(answer_value),
@@ -412,7 +409,6 @@ class IllustrationsVisualJigsawPieceOrderTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

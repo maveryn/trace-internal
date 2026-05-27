@@ -39,7 +39,7 @@ from .gui_relation_common import (
 
 
 TASK_ID = "task_pages__web_action__web_action_target_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "click_target_label",
     "type_field_label",
     "select_option_label",
@@ -183,7 +183,7 @@ class _GuideEntry:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     controls: Tuple[_ControlSpec, ...]
@@ -201,7 +201,7 @@ class _ResolvedQuery:
     context_support_id: str
     context_support_kind: str
     candidate_label_pool: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
 
@@ -458,7 +458,7 @@ def _resolve_named_axis(
     return str(selected), dict(probabilities)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     rng,
     *,
     instance_seed: int,
@@ -468,11 +468,11 @@ def _resolve_query_variant(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        supported=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
 
 
@@ -739,7 +739,7 @@ def _base_select_controls(params: Mapping[str, Any], *, instance_seed: int, rng)
 
 def _instruction_for_target(
     *,
-    query_variant: str,
+    query_id: str,
     target: _ControlSpec,
     instance_seed: int,
     params: Mapping[str, Any],
@@ -747,13 +747,13 @@ def _instruction_for_target(
     explicit = params.get("instruction_text")
     if explicit is not None:
         return str(explicit), 0
-    if str(query_variant) == "type_field_label":
+    if str(query_id) == "type_field_label":
         templates = (
             'In "{context}", use the field cue "{cue}" from the guide',
             'Enter text for "{context}" using guide cue "{cue}"',
             'Use the input in "{context}" whose guide cue is "{cue}"',
         )
-    elif str(query_variant) == "select_option_label":
+    elif str(query_id) == "select_option_label":
         templates = (
             'For "{context}", use the option cue "{cue}" from the guide',
             'Choose the option for "{context}" with guide cue "{cue}"',
@@ -765,25 +765,25 @@ def _instruction_for_target(
             'Click the control on the item with {context} and guide cue "{cue}"',
             'Use the guided action for the item with {context} and cue "{cue}"',
         )
-    index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"instruction.{query_variant}") % len(templates)
+    index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"instruction.{query_id}") % len(templates)
     return (
         str(templates[int(index)]).format(cue=str(target.action_cue_label), context=str(target.context_label)),
         int(index),
     )
 
 
-def _guide_support_kind(query_variant: str) -> str:
-    if str(query_variant) == "type_field_label":
+def _guide_support_kind(query_id: str) -> str:
+    if str(query_id) == "type_field_label":
         return "field_guide_card"
-    if str(query_variant) == "select_option_label":
+    if str(query_id) == "select_option_label":
         return "option_guide_card"
     return "action_guide_card"
 
 
-def _coded_display_text(query_variant: str, code_label: str) -> str:
-    if str(query_variant) == "type_field_label":
+def _coded_display_text(query_id: str, code_label: str) -> str:
+    if str(query_id) == "type_field_label":
         return "Enter value"
-    if str(query_variant) == "select_option_label":
+    if str(query_id) == "select_option_label":
         return str(code_label)
     return str(code_label)
 
@@ -791,7 +791,7 @@ def _coded_display_text(query_variant: str, code_label: str) -> str:
 def _with_guide_codes(
     controls: Sequence[_ControlSpec],
     *,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
 ) -> Tuple[Tuple[_ControlSpec, ...], Tuple[_GuideEntry, ...]]:
     columns = sorted({int(control.col_index) for control in controls})
@@ -799,8 +799,8 @@ def _with_guide_codes(
         raise ValueError(f"not enough guide codes/cues for {TASK_ID}")
     code_labels = list(_GUIDE_CODE_LABELS)
     cue_labels = list(_GUIDE_CUE_LABELS)
-    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_codes.{query_variant}").shuffle(code_labels)
-    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_cues.{query_variant}").shuffle(cue_labels)
+    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_codes.{query_id}").shuffle(code_labels)
+    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_cues.{query_id}").shuffle(cue_labels)
     action_by_col = {
         int(col_index): str(next(control.action_label for control in controls if int(control.col_index) == int(col_index)))
         for col_index in columns
@@ -810,7 +810,7 @@ def _with_guide_codes(
     guide_entries = [
         _GuideEntry(
             support_id=f"support_guide_{int(col_index)}",
-            support_kind=_guide_support_kind(str(query_variant)),
+            support_kind=_guide_support_kind(str(query_id)),
             cue_label=str(cue_by_col[int(col_index)]),
             code_label=str(code_by_col[int(col_index)]),
             action_label=str(action_by_col[int(col_index)]),
@@ -820,7 +820,7 @@ def _with_guide_codes(
         for index, col_index in enumerate(columns)
     ]
     order = list(range(len(guide_entries)))
-    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_order.{query_variant}").shuffle(order)
+    spawn_rng(int(instance_seed), f"{TASK_ID}.guide_order.{query_id}").shuffle(order)
     shuffled_entries = tuple(guide_entries[index] for index in order)
     coded_controls: List[_ControlSpec] = []
     for control in controls:
@@ -832,7 +832,7 @@ def _with_guide_codes(
                 control_id=str(control.control_id),
                 candidate_label=str(control.candidate_label),
                 role=str(control.role),
-                display_text=_coded_display_text(str(query_variant), code_label),
+                display_text=_coded_display_text(str(query_id), code_label),
                 context_label=str(control.context_label),
                 context_display_label=str(control.context_display_label),
                 context_attribute_1=str(control.context_attribute_1),
@@ -896,11 +896,11 @@ def _with_candidate_labels(
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = _resolve_query_variant(rng, instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(rng, instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="scene_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="scene_variant"),
         supported=SUPPORTED_WEB_SCENE_VARIANTS,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -910,7 +910,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     style_variant, style_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="style_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="style_variant"),
         supported=SUPPORTED_STYLE_VARIANTS,
         explicit_key="style_variant",
         weights_key="style_variant_weights",
@@ -918,9 +918,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         namespace="style_variant",
     )
 
-    if str(query_variant) == "type_field_label":
+    if str(query_id) == "type_field_label":
         base_controls = _base_type_controls(params, instance_seed=int(instance_seed), rng=rng)
-    elif str(query_variant) == "select_option_label":
+    elif str(query_id) == "select_option_label":
         base_controls = _base_select_controls(params, instance_seed=int(instance_seed), rng=rng)
     else:
         base_controls = _base_click_controls(params, instance_seed=int(instance_seed), rng=rng)
@@ -928,18 +928,18 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         raise ValueError(f"{TASK_ID} generated no target controls")
     coded_controls, guide_entries = _with_guide_codes(
         base_controls,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         instance_seed=int(instance_seed),
     )
 
-    target_index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target.{query_variant}") % len(coded_controls)
+    target_index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target.{query_id}") % len(coded_controls)
     target_without_label = coded_controls[int(target_index)]
     candidate_label_pool = _normalize_str_support(params, "candidate_label_pool", _DEFAULTS.candidate_label_pool)
     target_label = str(
         params.get(
             "target_label",
             candidate_label_pool[
-                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_label.{query_variant}")
+                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_label.{query_id}")
                 % len(candidate_label_pool)
             ],
         )
@@ -953,13 +953,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
     target = next(control for control in controls if str(control.control_id) == str(target_without_label.control_id))
     instruction_text, instruction_template_index = _instruction_for_target(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target=target,
         instance_seed=int(instance_seed),
         params=params,
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         controls=tuple(controls),
@@ -977,7 +977,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         context_support_id=str(target.support_id),
         context_support_kind=str(target.support_kind),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -1129,9 +1129,9 @@ def _draw_action_guide(
     guide = (x1, float(top_y), x2, float(top_y) + guide_h)
     _rounded_rect(draw, guide, radius=12, fill=theme.panel_alt_fill, outline=theme.browser_line, width=1)
     title = "Action Guide"
-    if str(query.query_variant) == "type_field_label":
+    if str(query.query_id) == "type_field_label":
         title = "Field Guide"
-    elif str(query.query_variant) == "select_option_label":
+    elif str(query.query_id) == "select_option_label":
         title = "Option Guide"
     _draw_text_left(
         draw,
@@ -1456,7 +1456,7 @@ def _render_web_scene(
     badge_bboxes: Dict[str, List[float]] = {}
     support_bboxes: Dict[str, List[float]] = {}
     support_records: List[Dict[str, Any]] = []
-    if str(query.query_variant) == "type_field_label":
+    if str(query.query_id) == "type_field_label":
         _render_type_scene(
             draw,
             query=query,
@@ -1469,7 +1469,7 @@ def _render_web_scene(
             support_bboxes=support_bboxes,
             support_records=support_records,
         )
-    elif str(query.query_variant) == "select_option_label":
+    elif str(query.query_id) == "select_option_label":
         _render_select_scene(
             draw,
             query=query,
@@ -1565,7 +1565,7 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     }
     components = {
         "visual_scan": _clamp_unit((float(len(query.controls)) - 6.0) / 14.0),
-        "relational_grounding": float(variant_grounding.get(str(query.query_variant), 0.65)),
+        "relational_grounding": float(variant_grounding.get(str(query.query_id), 0.65)),
         "layout_complexity": _clamp_unit(0.45 + (float(len(query.controls)) / 40.0)),
         "output_burden": 0.50,
     }
@@ -1639,7 +1639,7 @@ class PagesRelationWebActionTargetLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1688,7 +1688,7 @@ class PagesRelationWebActionTargetLabelTask:
                     for record in control_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -1714,13 +1714,13 @@ class PagesRelationWebActionTargetLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -1740,7 +1740,7 @@ class PagesRelationWebActionTargetLabelTask:
                     "context_support_id": str(query.context_support_id),
                     "context_support_kind": str(query.context_support_kind),
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
                 },
@@ -1776,7 +1776,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
                 "target_control_id": str(query.target_control_id),
@@ -1801,7 +1801,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "controls": list(control_records),
                 "support_records": list(support_records),
                 "total_control_count": int(len(query.controls)),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
                 "question_format": "gui_web_action_target_label",
@@ -1826,15 +1826,15 @@ class PagesRelationWebActionTargetLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(query),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             scene_id="web_action",
-            query_probabilities=query.query_variant_probabilities,
+            query_probabilities=query.query_id_probabilities,
         )
 
 
-__all__ = ["PagesRelationWebActionTargetLabelTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["PagesRelationWebActionTargetLabelTask", "SUPPORTED_QUERY_IDS"]

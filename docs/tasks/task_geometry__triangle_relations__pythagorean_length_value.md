@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `triangle_relations`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `chained_rectangle_diagonal_length` or `rectangle_triangle_shared_height_length`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

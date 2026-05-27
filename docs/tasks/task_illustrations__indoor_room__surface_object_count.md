@@ -1,6 +1,6 @@
 # task_illustrations__indoor_room__surface_object_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -14,7 +14,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 The task renders an indoor room with furniture surfaces and many small objects
 placed on or away from those surfaces.
 
-The public task uses `query_variant=default` and records
+The task records
 `query_id=object_type_on_surface_count`. The query asks how many objects of a
 named type are on a named surface such as a table, shelf, or counter.
 
@@ -39,7 +39,7 @@ named type are on a named surface such as a table, shelf, or counter.
 ## Prompt Contract
 - `scene_key = indoor_room_canvas`
 - `task_key = object_type_on_surface_count_task`
-- `query_key = object_type_on_surface_count`
+- `query_id = object_type_on_surface_count`
 - prompts ask for named objects on the named surface
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

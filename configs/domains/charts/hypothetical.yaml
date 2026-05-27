@@ -11,7 +11,7 @@ generation:
     aggregate_count_max: 3
     share_percent_values: [10, 15, 20, 25, 30, 40, 50, 60]
     baseline_percent_values: [25, 50, 75, 100]
-    query_variant_weights:
+    query_id_weights:
       remaining_mean_after_removal: 1.0
       target_share_after_removal: 1.0
       baseline_from_aggregate_percent_change: 1.0
@@ -19,7 +19,7 @@ generation:
       bar: 1.0
       dot_plot: 1.0
       lollipop: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:

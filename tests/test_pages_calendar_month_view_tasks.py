@@ -22,9 +22,9 @@ def test_pages_calendar_month_view_contract_matches_trace() -> None:
     scene_variants = ("classic", "outline")
     style_variants = ("studio", "marker")
     accent_colors = ("blue", "orange")
-    for variant_index, (task, marked_day_class) in enumerate(task_cases):
+    for query_id_index, (task, marked_day_class) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 21800 + (variant_index * 10) + scene_index
+            seed = 21800 + (query_id_index * 10) + scene_index
             params = {
                 "scene_variant": scene_variant,
                 "style_variant": style_variants[scene_index],
@@ -43,9 +43,9 @@ def test_pages_calendar_month_view_contract_matches_trace() -> None:
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
             expected_source_variant = "count_marked_day_class" if marked_day_class is not None else "date_of_weekday_occurrence"
-            assert out.query_variant == "default"
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["source_query_variant"]) == expected_source_variant
+            assert out.query_id == "default"
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["source_query_id"]) == expected_source_variant
             if marked_day_class is not None:
                 assert out.query_id == f"count_marked_{marked_day_class}_days"
                 assert str(execution["marked_day_class"]) == marked_day_class
@@ -118,7 +118,7 @@ def test_pages_calendar_month_view_prompt_examples_match_variants() -> None:
 
 def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> None:
     tasks = (PagesCalendarWeekdayOccurrenceDateTask(), PagesCalendarMarkedDayClassCountTask())
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     marked_day_classes: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
@@ -132,7 +132,7 @@ def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> No
                 max_attempts=20,
             )
             execution = out.trace_payload["execution_trace"]
-            query_variants[str(execution["source_query_variant"])] += 1
+            query_ids[str(execution["source_query_id"])] += 1
             if execution["marked_day_class"] is not None:
                 marked_day_classes[str(execution["marked_day_class"])] += 1
             scene_variants[str(execution["scene_variant"])] += 1
@@ -140,7 +140,7 @@ def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> No
             accent_color_names[str(execution["accent_color_name"])] += 1
             row_counts[int(execution["row_count"])] += 1
 
-    assert set(query_variants.keys()) == {
+    assert set(query_ids.keys()) == {
         "date_of_weekday_occurrence",
         "count_marked_day_class",
     }

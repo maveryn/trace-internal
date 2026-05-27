@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `composite_shape`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `sector_angle_from_arc_length` or `sector_angle_from_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

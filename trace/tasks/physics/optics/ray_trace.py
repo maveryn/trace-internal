@@ -19,7 +19,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.render_variation import resolve_render_int
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_optics_ray_trace_complexity
@@ -39,7 +39,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "quad_mirror",
     "five_mirror",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "bounce_count",
     "target_hit_count",
 )
@@ -106,11 +106,11 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     accent_color_name: str
     target_answer: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
 
@@ -142,7 +142,7 @@ class _SceneLayout:
     """One fully resolved optics board before rendering."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     target_answer: int
     source_row: int
     mirrors: Tuple[_MirrorPlacement, ...]
@@ -163,10 +163,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="optics", apply_prob=0.5)
 
 
-def _target_support_key(*, scene_variant: str, query_variant: str) -> str:
+def _target_support_key(*, scene_variant: str, query_id: str) -> str:
     """Return the active answer-support key for one scene/query pair."""
 
-    if str(query_variant) == "target_hit_count":
+    if str(query_id) == "target_hit_count":
         return "target_hit_count_support"
     return f"bounce_count_support_{str(scene_variant)}"
 
@@ -176,11 +176,11 @@ def _resolve_target_answer(
     instance_seed: int,
     params: Mapping[str, Any],
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve one count answer with deterministic balancing."""
 
-    support_key = _target_support_key(scene_variant=str(scene_variant), query_variant=str(query_variant))
+    support_key = _target_support_key(scene_variant=str(scene_variant), query_id=str(query_id))
     fallback = getattr(_DEFAULTS, support_key)
     target_params = dict(params)
     return resolve_integer_choice(
@@ -190,7 +190,7 @@ def _resolve_target_answer(
         support_key=str(support_key),
         explicit_key="target_answer",
         fallback_support=fallback,
-        namespace=f"{TASK_ID}.target_answer.{str(scene_variant)}.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(scene_variant)}.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         use_instance_seed_cycle=True,
         namespace_support_permutation=True,
@@ -201,23 +201,23 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve scene/query/color axes and one target answer."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
     target_answer, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=params,
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_color_name_probabilities = resolve_variant(
@@ -242,11 +242,11 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
@@ -476,7 +476,7 @@ def _choose_targets(
     rng,
     *,
     target_answer: int,
-    query_variant: str,
+    query_id: str,
     board_cols: int,
     board_rows: int,
     path_cells: Sequence[Tuple[int, int]],
@@ -540,7 +540,7 @@ def _sample_scene_layout(
     rng,
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
@@ -553,7 +553,7 @@ def _sample_scene_layout(
     target_count_min = int(params.get("target_count_min", group_default(_GEN_DEFAULTS, "target_count_min", _DEFAULTS.target_count_min)))
     target_count_max = int(params.get("target_count_max", group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max)))
 
-    if str(query_variant) == "bounce_count":
+    if str(query_id) == "bounce_count":
         bounce_count = int(target_answer)
     else:
         bounce_support = resolve_integer_support(
@@ -591,11 +591,11 @@ def _sample_scene_layout(
         board_rows=int(board_rows),
     )
     mirror_cells = [(int(col), int(row)) for col, row, _ in mirrors]
-    if str(query_variant) == "target_hit_count":
+    if str(query_id) == "target_hit_count":
         targets = _choose_targets(
             rng,
             target_answer=int(target_answer),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             board_cols=int(board_cols),
             board_rows=int(board_rows),
             path_cells=path_cells,
@@ -607,7 +607,7 @@ def _sample_scene_layout(
         targets = []
 
     actual_hit_target_count = sum(1 for target in targets if bool(target.hit))
-    if str(query_variant) == "target_hit_count" and int(actual_hit_target_count) != int(target_answer):
+    if str(query_id) == "target_hit_count" and int(actual_hit_target_count) != int(target_answer):
         raise ValueError("constructed optics targets did not realize the requested hit count")
 
     source_point_px, exit_point_px = _compute_path_points(
@@ -616,7 +616,7 @@ def _sample_scene_layout(
         path_cells=path_cells,
         exit_direction=str(exit_direction),
     )
-    if str(query_variant) == "bounce_count":
+    if str(query_id) == "bounce_count":
         evidence_entity_ids = tuple(f"bounce_{int(index)}" for index in range(1, len(hit_bounce_cells) + 1))
     else:
         evidence_entity_ids = tuple(str(target.target_id) for target in targets if bool(target.hit))
@@ -632,7 +632,7 @@ def _sample_scene_layout(
     )
     return _SceneLayout(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_answer=int(target_answer),
         source_row=int(source_row),
         mirrors=mirror_specs,
@@ -645,10 +645,10 @@ def _sample_scene_layout(
     )
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples for the active optics query."""
 
-    if str(query_variant) == "bounce_count":
+    if str(query_id) == "bounce_count":
         evidence = [[242, 190], [346, 294]]
     else:
         evidence = [[190, 138], [398, 346]]
@@ -735,7 +735,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 scene_layout = _sample_scene_layout(
                     attempt_rng,
                     scene_variant=str(axes.scene_variant),
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     target_answer=int(axes.target_answer),
                     params=params,
                     render_defaults=render_defaults,
@@ -781,7 +781,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 source_point_px=tuple(scene_layout.source_point_px),
                 exit_point_px=tuple(scene_layout.exit_point_px),
                 evidence_entity_ids=list(scene_layout.evidence_entity_ids),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 diagram_style=diagram_style,
             )
             image, post_noise_meta = apply_post_image_noise(
@@ -810,20 +810,20 @@ class _PhysicsOpticsRayTraceBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
@@ -833,7 +833,7 @@ class _PhysicsOpticsRayTraceBaseTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            if str(axes.query_variant) == "bounce_count":
+            if str(axes.query_id) == "bounce_count":
                 evidence_points_by_label = {
                     str(spec.bounce_id): list(spec.point_px)
                     for spec in rendered_scene.bounce_specs
@@ -862,39 +862,37 @@ class _PhysicsOpticsRayTraceBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 mirror_count=len(scene_layout.mirrors),
                 target_count=len(scene_layout.targets),
                 target_answer=int(axes.target_answer),
             )
-            support_key = _target_support_key(scene_variant=str(axes.scene_variant), query_variant=str(axes.query_variant))
+            support_key = _target_support_key(scene_variant=str(axes.scene_variant), query_id=str(axes.query_id))
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": f"physics_optics_ray_trace_{str(axes.scene_variant)}",
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),
@@ -912,8 +910,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": list(
@@ -964,7 +961,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 scene_id="ray_optics",
             )
 
@@ -979,7 +976,7 @@ class PhysicsOpticsRayBounceCountTask(
     """Return the number of mirror-bounce points on the ray path."""
 
     task_id = "task_physics__ray_optics__ray_bounce_count"
-    fixed_query_variant = "bounce_count"
+    fixed_query_id = "bounce_count"
 
 
 @register_task
@@ -990,7 +987,7 @@ class PhysicsOpticsRayTargetHitCountTask(
     """Return the number of target points touched by the ray path."""
 
     task_id = "task_physics__ray_optics__ray_target_hit_count"
-    fixed_query_variant = "target_hit_count"
+    fixed_query_id = "target_hit_count"
 
 
 __all__ = [

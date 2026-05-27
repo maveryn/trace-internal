@@ -16,9 +16,9 @@ Evidence is the bounding box of the marked red `?` resistor in the left circuit.
 Calibrated public sampling uses missing-resistor answers from `{1, 3, 4, 5, 6, 8}`. The paired scene also displays the common total resistance and the known left-side resistance excluding the red `?`.
 
 ## Prompt And Trace
-Prompt bundle: `physics_circuits_v0`; family key: `resistor_network_diagram`; task key: `equivalent_resistance_query`; query variant key: `missing_resistor_value`.
+Prompt bundle: `physics_circuits_v0`; family key: `resistor_network_diagram`; task key: `equivalent_resistance_query`; query id key: `missing_resistor_value`.
 
-Public outputs use `query_variant="default"` and `query_id="missing_resistor_value"`. The trace records both circuit layouts, the paired total resistance, the missing resistor location, and evidence entity ids.
+Outputs `query_id="missing_resistor_value"`. The trace records both circuit layouts, the paired total resistance, the missing resistor location, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized paired-circuit layout, and infeasible explicit targets are rejected.

@@ -19,7 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
-    SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_VARIANTS,
+    SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS,
     projected_binary_tree_bbox_evidence,
     render_binary_tree_scene,
     sample_binary_tree_for_traversal_query,
@@ -83,13 +83,13 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved query and style axes for one binary-tree traversal instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     traversal_position: int
     label_variant: str
     node_shape_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     traversal_position_probabilities: Dict[str, float]
     label_variant_probabilities: Dict[str, float]
@@ -109,18 +109,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
@@ -190,13 +190,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         )
         traversal_position = int(support[int(selection_index % len(support))])
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         traversal_position=int(traversal_position),
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         scene_variant_probabilities=dict(scene_probs),
         traversal_position_probabilities=uniform_probability_map(support, selected=int(traversal_position) if explicit_position is not None else None),
         label_variant_probabilities=dict(label_probs),
@@ -273,7 +273,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             label_max_chars=int(group_default(_GEN_DEFAULTS, "label_max_chars", _DEFAULTS.label_max_chars)),
             max_attempts=max(1, int(max_attempts)),
         )
-        traversal_labels = traversal_labels_for_query(sample, str(query.query_variant))
+        traversal_labels = traversal_labels_for_query(sample, str(query.query_id))
         if int(query.traversal_position) > len(traversal_labels):
             raise ValueError("sampled binary tree is smaller than requested traversal position")
         answer_value = str(traversal_labels[int(query.traversal_position) - 1])
@@ -305,7 +305,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -359,7 +359,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "root_label": str(rendered_node_by_label[sample.nodes[0].label].label),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "traversal_position": int(query.traversal_position),
                     "answer_label": str(answer_value),
                     "preorder_labels": list(sample.preorder_labels),
@@ -374,15 +374,14 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "traversal_position": int(query.traversal_position),
                     "traversal_position_probabilities": dict(query.traversal_position_probabilities),
@@ -434,8 +433,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_variant": str(query.query_variant),
-                "query_id": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "answer": str(answer_value),
                 "evidence_labels": list(evidence_labels),
@@ -447,7 +445,7 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             "witness_symbolic": {
                 "type": "node_label_sequence",
                 "labels": list(evidence_labels),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_label": str(answer_value),
             },
             "projected_evidence": {
@@ -466,9 +464,8 @@ class GraphOrderBinaryTreeTraversalLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample=sample, traversal_position=int(query.traversal_position)),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

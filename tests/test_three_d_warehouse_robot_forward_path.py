@@ -11,7 +11,7 @@ from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.warehouse.robot_forward_path import (
     MIN_FIRST_OBJECT_MARGIN,
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     SUPPORTED_ROBOT_DESIGNS,
     SUPPORTED_ROBOT_HEADINGS,
     SUPPORTED_SHELF_RACK_STYLES,
@@ -35,7 +35,7 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
     output = task.generate(
         20260524,
         params={
-            "query_variant": "first_object_ahead",
+            "query_id": "first_object_ahead",
             "scene_variant": scene_variant,
             "robot_heading": robot_heading,
             "candidate_count": 5,
@@ -59,7 +59,7 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "first_object_ahead"
     assert output.answer_gt.type == "option_letter"
@@ -114,7 +114,7 @@ def test_warehouse_robot_forward_path_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "warehouse"
-    assert SUPPORTED_QUERY_VARIANTS == ("first_object_ahead",)
+    assert SUPPORTED_QUERY_IDS == ("first_object_ahead",)
     assert SUPPORTED_ROBOT_HEADINGS == ("east", "north", "west", "south")
     assert SUPPORTED_ROBOT_DESIGNS == ("low_cart", "sensor_tower", "stacker_bot")
     assert SUPPORTED_SHELF_RACK_STYLES == ("open_frame", "loaded_bins", "mixed_crates", "tall_sparse", "heavy_low")

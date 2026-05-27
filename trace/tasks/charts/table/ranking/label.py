@@ -38,8 +38,8 @@ from trace.tasks.charts.table.shared.visual_defaults import load_table_backgroun
 
 
 TASK_ID = "task_charts__table__column_rank_label"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("kth_rank_in_column",)
-_SOURCE_QUERY_VARIANTS: Tuple[str, ...] = ("kth_highest_in_column", "kth_lowest_in_column")
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("kth_rank_in_column",)
+_SOURCE_QUERY_IDS: Tuple[str, ...] = ("kth_highest_in_column", "kth_lowest_in_column")
 _SUPPORTED_RANK_DIRECTIONS: Tuple[str, ...] = ("highest", "lowest")
 
 _DEFAULTS = TableDefaults()
@@ -53,29 +53,29 @@ POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="ranking", appl
 _MISSING_COLUMN_LABEL_POOL: Tuple[str, ...] = ("Metric X", "Metric Y", "Metric Z", "Field Q", "Field R")
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic table ranking variant."""
 
-    explicit_variant = params.get("query_variant")
-    if explicit_variant is not None and str(explicit_variant).strip().lower() in set(_SOURCE_QUERY_VARIANTS):
+    explicit_variant = params.get("query_id")
+    if explicit_variant is not None and str(explicit_variant).strip().lower() in set(_SOURCE_QUERY_IDS):
         return "kth_rank_in_column", {"kth_rank_in_column": 1.0}
     return resolve_table_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
 def _resolve_rank_direction(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve highest-vs-lowest rank direction inside the merged ranking variant."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     source_direction = None
     if explicit_variant is not None:
         normalized_variant = str(explicit_variant).strip().lower()
@@ -89,7 +89,7 @@ def _resolve_rank_direction(params: Mapping[str, Any], *, instance_seed: int) ->
         if direction not in set(_SUPPORTED_RANK_DIRECTIONS):
             raise ValueError(f"unsupported rank_direction for {TASK_ID}: {explicit_direction}")
         if source_direction is not None and str(source_direction) != str(direction):
-            raise ValueError("query_variant ranking alias conflicts with explicit rank_direction")
+            raise ValueError("query_id ranking alias conflicts with explicit rank_direction")
         return str(direction), {
             str(value): (1.0 if str(value) == str(direction) else 0.0)
             for value in _SUPPORTED_RANK_DIRECTIONS
@@ -159,12 +159,12 @@ class TablesRankingLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         rank_direction, rank_direction_probabilities = _resolve_rank_direction(params, instance_seed=int(instance_seed))
-        internal_query_variant = _internal_rank_variant(str(rank_direction))
+        internal_query_id = _internal_rank_variant(str(rank_direction))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = build_ranking_label_dataset_for_variant(
-            query_variant=str(internal_query_variant),
+            query_id=str(internal_query_id),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -253,9 +253,9 @@ class TablesRankingLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=str(getattr(self, "prompt_domain", self.domain)),
@@ -263,7 +263,7 @@ class TablesRankingLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -318,8 +318,8 @@ class TablesRankingLabelTask:
                 "scene_kind": f"table_{str(scene_variant)}_ranking",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "query_column": str(query_column),
                     "query_rank": int(dataset["query_rank"]),
@@ -333,21 +333,21 @@ class TablesRankingLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "query_column": str(query_column),
                     "query_rank": int(dataset["query_rank"]),
                     "rank_direction": str(rank_direction),
                     "answerability": "unanswerable" if bool(dataset["is_unanswerable"]) else "answerable",
                     **({"absence_proof": dict(dataset["absence_proof"])} if bool(dataset["is_unanswerable"]) else {}),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "rank_direction_probabilities": dict(rank_direction_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "row_count": int(dataset["row_count"]),
@@ -382,8 +382,8 @@ class TablesRankingLabelTask:
                 "cell_bboxes_px": dict(cell_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "query_column": str(query_column),
                 "query_column_index": int(dataset["query_column_index"]),
@@ -400,7 +400,7 @@ class TablesRankingLabelTask:
                 "row_count_range": list(dataset["row_count_range"]),
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "rank_direction_probabilities": dict(rank_direction_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "column_ranking_label",
@@ -427,7 +427,7 @@ class TablesRankingLabelTask:
                 + (0.02 if str(rank_direction) == "lowest" else 0.01)
             ),
             complexity_components={
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "rank_direction": str(rank_direction),
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
@@ -444,7 +444,7 @@ class TablesRankingLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -458,7 +458,7 @@ class ChartsTableKthRankInColumnLabelTask(FixedChartQueryVariantTaskMixin, Table
     task_group = "table_ranking"
     prompt_domain = "charts"
     prompt_task_group = "table_ranking"
-    fixed_query_variant = "kth_rank_in_column"
+    fixed_query_id = "kth_rank_in_column"
     supports_unanswerable = True
 
 

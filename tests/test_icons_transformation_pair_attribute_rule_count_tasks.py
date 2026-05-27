@@ -37,9 +37,9 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 3
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "color_and_size_change"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "color_and_size_change"
     assert execution["question_format"] == "count_scene_cells_matching_reference_attribute_rule"
     assert execution["changed_attributes"] == ["color", "size"]

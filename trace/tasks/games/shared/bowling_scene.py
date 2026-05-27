@@ -320,7 +320,7 @@ def render_bowling_scene(
     *,
     pins: Tuple[BowlingPin, ...],
     path_options: Tuple[BowlingPathOption, ...],
-    query_variant: str,
+    query_id: str,
     ball_x_norm: float,
     target_pin_id: str | None,
     target_path_id: str | None,
@@ -393,7 +393,7 @@ def render_bowling_scene(
     scene_entities: list[Dict[str, Any]] = []
     ball_center = _lane_point(lane_bbox, x_norm=float(ball_x_norm), y_norm=0.875)
 
-    if str(query_variant) == "first_pin_hit_label":
+    if str(query_id) == "first_pin_hit_label":
         if target_pin_id is None:
             raise ValueError("first_pin_hit_label render requires target_pin_id")
         target_pin = next(pin for pin in pins if str(pin.pin_id) == str(target_pin_id))

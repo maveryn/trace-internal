@@ -27,7 +27,7 @@ from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     is_uniform_probability_map,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_electrostatics_field_map_complexity
@@ -51,7 +51,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "paper_grid",
     "dense_grid",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "field_direction_choice",
     "zero_field_point_label",
     "potential_value",
@@ -86,9 +86,9 @@ POINT_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 POTENTIAL_DISTANCE_UNITS: Tuple[int, ...] = (2, 3, 4)
 POTENTIAL_CHARGE_COORDS: Tuple[Tuple[int, int], ...] = ((2, 0), (0, 3), (-4, 0))
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "clean_grid": SUPPORTED_QUERY_VARIANTS,
-    "paper_grid": SUPPORTED_QUERY_VARIANTS,
-    "dense_grid": SUPPORTED_QUERY_VARIANTS,
+    "clean_grid": SUPPORTED_QUERY_IDS,
+    "paper_grid": SUPPORTED_QUERY_IDS,
+    "dense_grid": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -131,14 +131,14 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     direction_mode: str | None
     target_direction: str | None
     correct_option_letter: str | None
     accent_color_name: str
     target_answer: int | str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     direction_mode_probabilities: Dict[str, float]
     target_direction_probabilities: Dict[str, float]
     correct_option_letter_probabilities: Dict[str, float]
@@ -215,7 +215,7 @@ class _SceneSpec:
     """Resolved symbolic electrostatics scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     direction_mode: str | None
     target_direction: str | None
     correct_option_letter: str | None
@@ -301,13 +301,13 @@ def _resolve_direction_mode(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the field/force direction wording branch."""
 
-    if str(query_variant) != "field_direction_choice":
+    if str(query_id) != "field_direction_choice":
         return None, {}
-    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("direction_mode",))
+    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("direction_mode",))
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.direction_mode"),
         params=adjusted_params,
@@ -335,15 +335,15 @@ def _resolve_target_direction(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the requested vector direction for direction-choice scenes."""
 
-    if str(query_variant) != "field_direction_choice":
+    if str(query_id) != "field_direction_choice":
         return None, {}
     adjusted_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS) * len(SUPPORTED_DIRECTION_MODES),
+        divisor=len(SUPPORTED_QUERY_IDS) * len(SUPPORTED_DIRECTION_MODES),
         explicit_keys=("target_direction",),
     )
     selected, probabilities = resolve_variant(
@@ -373,17 +373,17 @@ def _resolve_correct_option_letter(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the correct visible option/candidate letter for option tasks."""
 
-    if str(query_variant) not in {"field_direction_choice", "zero_field_point_label"}:
+    if str(query_id) not in {"field_direction_choice", "zero_field_point_label"}:
         return None, {}
-    supported = OPTION_LETTERS if str(query_variant) == "field_direction_choice" else POINT_LETTERS
-    weights_key = "direction_option_letter_weights" if str(query_variant) == "field_direction_choice" else "point_option_letter_weights"
+    supported = OPTION_LETTERS if str(query_id) == "field_direction_choice" else POINT_LETTERS
+    weights_key = "direction_option_letter_weights" if str(query_id) == "field_direction_choice" else "point_option_letter_weights"
     balance_key = (
         "balanced_direction_option_letter_sampling"
-        if str(query_variant) == "field_direction_choice"
+        if str(query_id) == "field_direction_choice"
         else "balanced_point_option_letter_sampling"
     )
     option_params = dict(params)
@@ -392,12 +392,12 @@ def _resolve_correct_option_letter(
     option_params = dict(
         _with_sampling_divisor(
             option_params,
-            divisor=len(SUPPORTED_QUERY_VARIANTS),
+            divisor=len(SUPPORTED_QUERY_IDS),
             explicit_keys=("correct_option_letter",),
         )
     )
     selected, probabilities = resolve_variant(
-        spawn_rng(int(instance_seed), f"{TASK_ID}.correct_option_letter.{str(query_variant)}"),
+        spawn_rng(int(instance_seed), f"{TASK_ID}.correct_option_letter.{str(query_id)}"),
         params=option_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=supported,
@@ -427,7 +427,7 @@ def _resolve_correct_option_letter(
             balance_flag_key=balance_key,
             explicit_key="correct_option_letter",
             weights_key=weights_key,
-            sampling_namespace=f"{TASK_ID}.correct_option_letter.{str(query_variant)}",
+            sampling_namespace=f"{TASK_ID}.correct_option_letter.{str(query_id)}",
         )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -497,11 +497,11 @@ def _resolve_potential_target_answer(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int | None, Dict[str, float]]:
     """Resolve an exact integer potential target."""
 
-    if str(query_variant) != "potential_value":
+    if str(query_id) != "potential_value":
         return None, {}
     support = _feasible_potential_answers(params)
     explicit = params.get("target_answer")
@@ -511,7 +511,7 @@ def _resolve_potential_target_answer(
             raise ValueError(f"unsupported electrostatic potential target_answer: {selected}")
         return int(selected), uniform_probability_map(support, selected=int(selected))
 
-    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("target_answer",))
+    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("target_answer",))
     balanced_enabled = bool(
         adjusted_params.get(
             "balanced_target_answer_sampling",
@@ -535,16 +535,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve scene/query/color/answer axes for one instance."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
     accent_name, accent_probs = resolve_variant(
@@ -570,45 +570,45 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     direction_mode, direction_mode_probs = _resolve_direction_mode(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     target_direction, target_direction_probs = _resolve_target_direction(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     correct_option_letter, option_probs = _resolve_correct_option_letter(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     potential_answer, potential_probs = _resolve_potential_target_answer(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
 
-    if str(query_variant) == "potential_value":
+    if str(query_id) == "potential_value":
         if potential_answer is None:
             raise ValueError("potential_value query requires a numeric target answer")
         target_answer: int | str = int(potential_answer)
         target_probs: Dict[str, float] = dict(potential_probs)
     else:
         if correct_option_letter is None:
-            raise ValueError(f"{query_variant} query requires a correct option letter")
+            raise ValueError(f"{query_id} query requires a correct option letter")
         target_answer = str(correct_option_letter)
         target_probs = dict(option_probs)
 
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         direction_mode=direction_mode,
         target_direction=target_direction,
         correct_option_letter=correct_option_letter,
         accent_color_name=str(accent_name),
         target_answer=target_answer,
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         direction_mode_probabilities={str(key): float(value) for key, value in sorted(direction_mode_probs.items())},
         target_direction_probabilities={str(key): float(value) for key, value in sorted(target_direction_probs.items())},
         correct_option_letter_probabilities={str(key): float(value) for key, value in sorted(option_probs.items())},
@@ -801,11 +801,11 @@ def _sample_potential_scenario(rng, *, target_answer: int, params: Mapping[str, 
 def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _SceneSpec:
     """Sample one symbolic electrostatics scene."""
 
-    if str(axes.query_variant) == "field_direction_choice":
+    if str(axes.query_id) == "field_direction_choice":
         scenario = _sample_direction_scenario(rng, axes=axes)
         return _SceneSpec(
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             direction_mode=str(axes.direction_mode),
             target_direction=str(axes.target_direction),
             correct_option_letter=str(axes.correct_option_letter),
@@ -815,11 +815,11 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -
             potential_scenario=None,
             evidence_entity_ids=(f"option_{str(axes.correct_option_letter)}",),
         )
-    if str(axes.query_variant) == "zero_field_point_label":
+    if str(axes.query_id) == "zero_field_point_label":
         scenario = _sample_zero_field_scenario(rng, axes=axes)
         return _SceneSpec(
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             direction_mode=None,
             target_direction=None,
             correct_option_letter=str(axes.correct_option_letter),
@@ -832,7 +832,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any]) -
     scenario = _sample_potential_scenario(rng, target_answer=int(axes.target_answer), params=params)
     return _SceneSpec(
         scene_variant=str(axes.scene_variant),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         direction_mode=None,
         target_direction=None,
         correct_option_letter=None,
@@ -1316,12 +1316,12 @@ def _render_scene(
     render_map: Dict[str, Any] = {
         "accent_color_name": str(accent_color_name),
         "scene_variant": str(scene_spec.scene_variant),
-        "query_variant": str(scene_spec.query_variant),
+        "query_id": str(scene_spec.query_id),
         "technical_diagram_frame_mode": str(diagram_style.frame_mode),
     }
     coord_extent = int(render_defaults["coord_extent"])
 
-    if str(scene_spec.query_variant) == "field_direction_choice":
+    if str(scene_spec.query_id) == "field_direction_choice":
         if scene_spec.direction_scenario is None:
             raise ValueError("field_direction_choice render requires a direction scenario")
         scenario = scene_spec.direction_scenario
@@ -1371,7 +1371,7 @@ def _render_scene(
         render_map.update(option_map)
         render_map["query_point_bbox_px"] = list(point_bbox)
         render_map["charge_bboxes_px"] = [list(bbox) for bbox in charge_bboxes]
-    elif str(scene_spec.query_variant) == "zero_field_point_label":
+    elif str(scene_spec.query_id) == "zero_field_point_label":
         if scene_spec.zero_field_scenario is None:
             raise ValueError("zero_field_point_label render requires a zero-field scenario")
         scenario = scene_spec.zero_field_scenario
@@ -1526,18 +1526,18 @@ def _render_scene(
     )
 
 
-def _answer_type(query_variant: str) -> str:
+def _answer_type(query_id: str) -> str:
     """Return answer type for the public query."""
 
-    if str(query_variant) in {"field_direction_choice", "zero_field_point_label"}:
+    if str(query_id) in {"field_direction_choice", "zero_field_point_label"}:
         return "option_letter"
     return "integer"
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for the active electrostatics query."""
 
-    if str(query_variant) in {"field_direction_choice", "zero_field_point_label"}:
+    if str(query_id) in {"field_direction_choice", "zero_field_point_label"}:
         return build_prompt_json_examples(
             evidence_value=[[872, 104, 990, 202]],
             answer_type="option_letter",
@@ -1558,10 +1558,10 @@ def _direction_mode_phrase(direction_mode: str | None) -> str:
     return "the net electric field at P"
 
 
-def _object_description_for_query(prompt_defaults: Dict[str, Any], *, scene_variant: str, query_variant: str) -> str:
+def _object_description_for_query(prompt_defaults: Dict[str, Any], *, scene_variant: str, query_id: str) -> str:
     """Return the most specific prompt-facing scene description available."""
 
-    query_specific_key = f"object_description_{str(scene_variant)}_{str(query_variant)}"
+    query_specific_key = f"object_description_{str(scene_variant)}_{str(query_id)}"
     if query_specific_key in prompt_defaults:
         return str(prompt_defaults[query_specific_key])
     return str(prompt_defaults[f"object_description_{str(scene_variant)}"])
@@ -1689,35 +1689,35 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": _object_description_for_query(
                         prompt_defaults,
                         scene_variant=str(axes.scene_variant),
-                        query_variant=str(axes.query_variant),
+                        query_id=str(axes.query_id),
                     ),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
+                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                     "direction_mode_phrase": _direction_mode_phrase(axes.direction_mode),
                 },
                 instance_seed=int(instance_seed),
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            answer_type = _answer_type(str(axes.query_variant))
-            if str(axes.query_variant) == "potential_value":
+            answer_type = _answer_type(str(axes.query_id))
+            if str(axes.query_id) == "potential_value":
                 if scene_spec.potential_scenario is None:
                     raise RuntimeError("missing potential scenario after electrostatics scene render")
                 answer_value: int | str = int(scene_spec.potential_scenario.potential_value)
@@ -1742,7 +1742,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 direction_mode=axes.direction_mode,
                 charge_count=int(charge_count),
                 option_count=int(option_count),
@@ -1817,8 +1817,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "direction_mode": axes.direction_mode,
                         "target_direction": axes.target_direction,
                         "accent_color_name": str(axes.accent_color_name),
@@ -1831,7 +1830,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "direction_mode": axes.direction_mode,
                     "target_direction": axes.target_direction,
                     "template_id": str(prompt_defaults["bundle_id"]),
@@ -1840,15 +1839,14 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "direction_mode": axes.direction_mode,
                         "target_direction": axes.target_direction,
                         "accent_color_name": str(axes.accent_color_name),
                         "correct_option_letter": axes.correct_option_letter,
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "direction_mode_probabilities": dict(axes.direction_mode_probabilities),
                         "target_direction_probabilities": dict(axes.target_direction_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
@@ -1869,8 +1867,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "direction_mode": axes.direction_mode,
                     "target_direction": axes.target_direction,
                     "accent_color_name": str(axes.accent_color_name),
@@ -1878,7 +1875,7 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                     "answer_type": str(answer_type),
                     "potential_answer_support": list(_potential_answer_support(params)),
                     "potential_contribution_support": list(_potential_contribution_support(params)),
-                    "option_letters": list(OPTION_LETTERS) if str(axes.query_variant) == "field_direction_choice" else list(POINT_LETTERS),
+                    "option_letters": list(OPTION_LETTERS) if str(axes.query_id) == "field_direction_choice" else list(POINT_LETTERS),
                     "direction_scenario": dict(direction_payload),
                     "zero_field_scenario": dict(zero_payload),
                     "potential_scenario": dict(potential_payload),
@@ -1906,9 +1903,8 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
                 scene_id=SCENE_ID,
-                query_id=str(axes.query_variant),
+                query_id=str(axes.query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
@@ -1922,7 +1918,7 @@ class PhysicsElectrostaticsFieldDirectionChoiceTask(
     """Choose the labeled arrow matching an electric-field or test-charge force direction."""
 
     task_id = "task_physics__electrostatic_field__field_direction_choice"
-    fixed_query_variant = "field_direction_choice"
+    fixed_query_id = "field_direction_choice"
 
 
 @register_task
@@ -1933,7 +1929,7 @@ class PhysicsElectrostaticsZeroFieldPointLabelTask(
     """Choose the labeled point where unequal same-sign charges produce zero net field."""
 
     task_id = "task_physics__electrostatic_field__zero_field_point_label"
-    fixed_query_variant = "zero_field_point_label"
+    fixed_query_id = "zero_field_point_label"
 
 
 @register_task
@@ -1944,4 +1940,4 @@ class PhysicsElectrostaticsPotentialValueTask(
     """Compute signed electric potential at a marked point from shown charges and distances."""
 
     task_id = "task_physics__electrostatic_field__potential_value"
-    fixed_query_variant = "potential_value"
+    fixed_query_id = "potential_value"

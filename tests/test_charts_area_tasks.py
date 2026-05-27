@@ -24,7 +24,7 @@ def test_area_tasks_generate_default_query_outputs() -> None:
             params={},
             max_attempts=80,
         )
-        assert output.query_variant == "default"
+        assert output.query_id == "default"
         assert output.scene_id == "area"
         assert output.query_id == query_id
         assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id

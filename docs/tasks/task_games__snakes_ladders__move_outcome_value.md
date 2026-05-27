@@ -13,5 +13,5 @@
 1. The scene shows a 10 x 10 numbered serpentine Snakes and Ladders board with one visible token.
 2. The die value is shown in the side panel.
 3. The final square is sampled from broad explicit support and is unique by construction.
-4. Public `query_variant` is `default`; the query branch is retained as `query_id` and trace metadata.
+4. The query branch is retained as `query_id` and trace metadata.
 5. Default generation samples jump-triggered move outcomes with probability `0.30`; snakes and ladders remain visible as board context.

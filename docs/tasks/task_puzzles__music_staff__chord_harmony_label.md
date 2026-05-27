@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__chord_harmony_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `chord_quality_label|roman_numeral_label|chord_inversion_label`
 3. Prompts ask for chord quality, roman numeral in a named key, or inversion name.
 4. Internal variation includes triads, seventh chords, major-key functions, root position, inversions, and `engraved_sheet|exam_scan|notebook_staff` scene variants.

@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__counterfactual_board__board_grid_count`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id` is one of:
    - `row_count`
    - `column_count`

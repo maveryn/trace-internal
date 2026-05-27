@@ -19,19 +19,19 @@ def _sample(
     *,
     answer_type: str,
     answer_value: object,
-    query_variant: str = "variant",
+    query_id: str = "variant",
     execution_trace: dict[str, object] | None = None,
     query_params: dict[str, object] | None = None,
 ) -> analysis.ReviewSample:
     payload = {
         "answer_gt": {"type": answer_type, "value": answer_value},
-        "query_variant": query_variant,
+        "query_id": query_id,
         "query_spec": {"params": dict(query_params or {})},
         "execution_trace": dict(execution_trace or {}),
     }
     return analysis.ReviewSample(
         task_id="task_dummy",
-        query_variant=query_variant,
+        query_id=query_id,
         answer_type=answer_type,
         answer_value=answer_value,
         payload=payload,
@@ -186,23 +186,21 @@ def test_task_level_baseline_is_weighted_by_variant() -> None:
             _sample(
                 answer_type="integer",
                 answer_value=1,
-                query_variant="small",
                 query_params={"target_answer_support": [1, 2]},
             ),
             _sample(
                 answer_type="integer",
                 answer_value=4,
-                query_variant="large",
                 query_params={"target_answer_support": [1, 2, 3, 4]},
             ),
             _sample(
                 answer_type="integer",
                 answer_value=3,
-                query_variant="large",
+                query_id="large",
                 query_params={"target_answer_support": [1, 2, 3, 4]},
             ),
         ],
         split_by_variant=True,
     )
     assert round(float(result.random_baseline), 6) == round(((1 / 2) + (1 / 4) + (1 / 4)) / 3, 6)
-    assert result.method == "weighted_by_query_variant"
+    assert result.method == "weighted_by_query_id"

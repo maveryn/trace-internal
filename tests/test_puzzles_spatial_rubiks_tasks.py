@@ -49,7 +49,7 @@ def test_rubiks_tasks_emit_public_contracts() -> None:
         for query_index, query_id in enumerate(sorted(queries)):
             out = task_cls().generate(
                 2026052200 + (task_index * 20) + query_index,
-                params={"query_variant": query_id},
+                params={"query_id": query_id},
                 max_attempts=30,
             )
             trace = out.trace_payload
@@ -57,9 +57,9 @@ def test_rubiks_tasks_emit_public_contracts() -> None:
 
             json.dumps(trace)
             assert out.scene_id == "rubiks_net"
-            assert out.query_variant == "default"
+            assert out.query_id == "default"
             assert out.query_id == query_id
-            assert execution["query_variant"] == "default"
+            assert execution["query_id"] == "default"
             assert execution["query_id"] == query_id
             assert trace["query_spec"]["query_id"] == query_id
             assert trace["render_spec"]["scene_id"] == "rubiks_net"
@@ -87,7 +87,7 @@ def test_rubiks_tasks_emit_public_contracts() -> None:
 def test_rubiks_generation_is_deterministic() -> None:
     task = PuzzlesSpatialRubiksMoveResultLabelTask()
     params = {
-        "query_variant": "two_move_result_label",
+        "query_id": "two_move_result_label",
         "scene_variant": "paper_net",
     }
     out_a = task.generate(2026052299, params=params, max_attempts=30)

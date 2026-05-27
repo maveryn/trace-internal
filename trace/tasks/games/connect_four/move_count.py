@@ -43,7 +43,7 @@ from ..shared.connect_four_common import (
 from ..shared.connect_four_scene import ConnectFourRenderParams, render_connect_four_board_scene
 from ..shared.fixed_query_task import QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -53,7 +53,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "midgame_board",
     "crowded_board",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "winning_move_count",
     "safe_move_count",
 )
@@ -111,7 +111,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Connect Four scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     board_size_variant: str
     board_rows: int
@@ -119,7 +119,7 @@ class _ResolvedAxes:
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     board_size_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -158,30 +158,30 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="conn
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="connect_four", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured answer-support key for one query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured answer-support key for one query id."""
 
     return {
         "winning_move_count": "winning_move_count_support",
         "safe_move_count": "safe_move_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -189,7 +189,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _target_answer_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced target-answer cycling."""
 
@@ -197,16 +197,16 @@ def _target_answer_params_for_query_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return target_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return target_params
-    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return target_params
 
 
 def _scene_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Decorrelate balanced scene cycling from balanced query cycling."""
 
@@ -216,7 +216,7 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if params.get("scene_variant") is not None:
         return scene_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return scene_params
     enabled = bool(
         params.get(
@@ -241,14 +241,14 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if max(positives) - min(positives) > 1e-9:
         return scene_params
-    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return scene_params
 
 
 def _board_size_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Cycle board sizes inside each query and scene pair for balanced reviews."""
 
@@ -258,7 +258,7 @@ def _board_size_params_for_query_cycle(
         return board_params
     if params.get("board_size_variant") is not None or params.get("board_size") is not None:
         return board_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return board_params
     enabled = bool(
         params.get(
@@ -298,14 +298,14 @@ def _board_size_params_for_query_cycle(
                 if float(raw_scene_weights.get(str(value), 0.0)) > 0.0
             ),
         )
-    board_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS) * int(scene_count))
+    board_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS) * int(scene_count))
     return board_params
 
 
 def _style_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Decorrelate balanced style cycling from balanced query cycling."""
 
@@ -315,7 +315,7 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if params.get("style_variant") is not None:
         return style_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return style_params
     enabled = bool(
         params.get(
@@ -344,7 +344,7 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if max(positives) - min(positives) > 1e-9:
         return style_params
-    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return style_params
 
 
@@ -385,22 +385,22 @@ def _normalize_board_size_variant(raw_value: Any) -> str:
     return str(aliases[text])
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    return resolve_games_query_variant(
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
     )
 
 
@@ -433,7 +433,7 @@ def _resolve_board_size_variant(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Tuple[str, int, int, Dict[str, float]]:
     """Resolve the Connect Four board-size axis."""
 
@@ -444,7 +444,7 @@ def _resolve_board_size_variant(
         instance_seed=int(instance_seed),
         params=_board_size_params_for_query_cycle(
             alias_params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="board_size_variant",
         explicit_key="board_size_variant",
@@ -460,7 +460,7 @@ def _resolve_safe_board_size_variant(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
     target_answer: int,
 ) -> Tuple[str, int, int, Dict[str, float]]:
     """Resolve the safe-move board-size axis.
@@ -499,7 +499,7 @@ def _resolve_safe_board_size_variant(
         instance_seed=int(instance_seed),
         params=_board_size_params_for_query_cycle(
             alias_params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="safe_board_size_variant",
         explicit_key="safe_board_size_variant",
@@ -519,7 +519,7 @@ def _resolve_safe_board_size_variant(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual sampling axes for one Connect Four instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -527,7 +527,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=_scene_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="scene_variant",
         explicit_key="scene_variant",
@@ -535,10 +535,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balance_flag_key="balanced_scene_variant_sampling",
         supported=SUPPORTED_SCENE_VARIANTS,
     )
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _target_answer_params_for_query_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -547,7 +547,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -557,24 +557,24 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         key=str(target_support_key),
         fallback=getattr(_DEFAULTS, target_support_key),
     )
-    if str(query_variant) == "safe_move_count":
+    if str(query_id) == "safe_move_count":
         board_size_variant, board_rows, board_columns, board_size_variant_probabilities = _resolve_safe_board_size_variant(
             instance_seed=int(instance_seed),
             params=params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
             target_answer=int(target_answer),
         )
     else:
         board_size_variant, board_rows, board_columns, board_size_variant_probabilities = _resolve_board_size_variant(
             instance_seed=int(instance_seed),
             params=params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
     style_variant, style_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=_style_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="style_variant",
         explicit_key="style_variant",
@@ -583,7 +583,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported=SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS,
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         board_size_variant=str(board_size_variant),
         board_rows=int(board_rows),
@@ -591,7 +591,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         board_size_variant_probabilities=dict(board_size_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -737,17 +737,17 @@ def _evaluate_query(
     *,
     board: Board,
     current_player: int,
-    query_variant: str,
+    query_id: str,
 ) -> _QueryEvaluation | None:
-    """Evaluate one query variant on one visible board."""
+    """Evaluate one query id on one visible board."""
 
     current_wins = winning_drop_map(board, int(current_player))
     winning_coords = tuple(sorted(tuple(coord) for coord, _ in current_wins.values()))
     safe_coords = _safe_move_coords(board, current_player=int(current_player))
 
-    if str(query_variant) == "winning_move_count":
+    if str(query_id) == "winning_move_count":
         evidence_coords = winning_coords
-    elif str(query_variant) == "safe_move_count":
+    elif str(query_id) == "safe_move_count":
         evidence_coords = safe_coords
     else:
         return None
@@ -842,7 +842,7 @@ def _augment_board_density(
     rng,
     board: Board,
     current_player: int,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     scene_variant: str,
 ) -> Board:
@@ -876,7 +876,7 @@ def _augment_board_density(
             evaluation = _evaluate_query(
                 board=next_board,
                 current_player=int(current_player),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
             )
             if evaluation is None or int(evaluation.answer) != int(target_answer):
                 continue
@@ -988,7 +988,7 @@ def _construct_safe_move_board(
         evaluation = _evaluate_query(
             board=board,
             current_player=int(current_player),
-            query_variant="safe_move_count",
+            query_id="safe_move_count",
         )
         if evaluation is None or int(evaluation.answer) != int(target_answer):
             continue
@@ -1000,7 +1000,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
     """Construct one Connect Four scene consistent with the requested axes."""
 
     current_player = _resolve_current_player(rng, params=params)
-    if str(axes.query_variant) == "winning_move_count":
+    if str(axes.query_id) == "winning_move_count":
         base_board, construction_mode = _construct_vertical_threat_base(
             rng=rng,
             current_player=int(current_player),
@@ -1012,7 +1012,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
             rng=rng,
             board=base_board,
             current_player=int(current_player),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             target_answer=int(axes.target_answer),
             scene_variant=str(axes.scene_variant),
         )
@@ -1029,7 +1029,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
     evaluation = _evaluate_query(
         board=board,
         current_player=int(current_player),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
     )
     if evaluation is None or int(evaluation.answer) != int(axes.target_answer):
         raise ValueError("final Connect Four board does not match the requested target answer")
@@ -1148,7 +1148,7 @@ class GamesConnectFourMoveCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": _object_description(
@@ -1158,8 +1158,8 @@ class GamesConnectFourMoveCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "current_player_name": str(current_player_name),
@@ -1178,7 +1178,7 @@ class GamesConnectFourMoveCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             occupied_count=int(sampled_scene.occupied_count),
             target_answer=int(axes.target_answer),
             evidence_count=len(sampled_scene.evaluation.evidence_entity_ids),
@@ -1190,8 +1190,7 @@ class GamesConnectFourMoveCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "board_size_variant": str(axes.board_size_variant),
                     "board_row_count": int(axes.board_rows),
                     "board_column_count": int(axes.board_columns),
@@ -1203,22 +1202,21 @@ class GamesConnectFourMoveCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "board_size_variant": str(axes.board_size_variant),
                     "board_row_count": int(axes.board_rows),
                     "board_column_count": int(axes.board_columns),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "board_size_variant_probabilities": dict(axes.board_size_variant_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "current_player": str(current_player_name),
@@ -1242,8 +1240,7 @@ class GamesConnectFourMoveCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "board_size_variant": str(axes.board_size_variant),
                 "board_row_count": int(axes.board_rows),
                 "board_column_count": int(axes.board_columns),
@@ -1280,7 +1277,7 @@ class GamesConnectFourMoveCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_id="connect_four",
         )
 
@@ -1290,7 +1287,7 @@ class GamesConnectFourMoveCountPublicTask(QuerySubsetTaskMixin, GamesConnectFour
     """Count Connect Four drop columns matching one sampled move condition."""
 
     task_id = "task_games__connect_four__move_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "winning_move_count",
         "safe_move_count",
     )

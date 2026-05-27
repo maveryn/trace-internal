@@ -12,7 +12,7 @@ from trace.tasks.three_d.street.same_road_arm_reference import (
     ROAD_ARMS,
     SCENE_ID,
     STREET_OBJECT_TYPES,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -33,7 +33,7 @@ def test_street_same_road_arm_reference_answer_evidence_and_geometry(
     output = task.generate(
         20260522,
         params={
-            "query_variant": "same_road_arm_as_reference",
+            "query_id": "same_road_arm_as_reference",
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
             "candidate_count": 6,
@@ -59,7 +59,7 @@ def test_street_same_road_arm_reference_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "same_road_arm_as_reference"
     assert output.answer_gt.type == "option_letter"
@@ -106,4 +106,4 @@ def test_street_same_road_arm_reference_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "street"
-    assert SUPPORTED_QUERY_VARIANTS == ("same_road_arm_as_reference",)
+    assert SUPPORTED_QUERY_IDS == ("same_road_arm_as_reference",)

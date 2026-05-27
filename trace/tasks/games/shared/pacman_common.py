@@ -8,7 +8,7 @@ from typing import Iterable, Mapping, Sequence, Tuple
 
 Coord = Tuple[int, int]
 
-SUPPORTED_PACMAN_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PACMAN_QUERY_IDS: Tuple[str, ...] = (
     "path_pellet_count",
     "next_item_label",
     "pellet_count_before_ghost",
@@ -69,7 +69,7 @@ class PacmanSample:
 
     row_count: int
     col_count: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     open_cells: Tuple[Coord, ...]
@@ -163,9 +163,9 @@ def coord_from_entity_id(entity_id: str) -> Coord:
 def validate_pacman_sample(sample: PacmanSample) -> None:
     """Validate one generated Pac-Man sample contract."""
 
-    query = str(sample.query_variant)
-    if query not in SUPPORTED_PACMAN_QUERY_VARIANTS:
-        raise ValueError(f"unsupported Pac-Man query_variant: {query}")
+    query = str(sample.query_id)
+    if query not in SUPPORTED_PACMAN_QUERY_IDS:
+        raise ValueError(f"unsupported Pac-Man query_id: {query}")
     if str(sample.scene_variant) not in SUPPORTED_PACMAN_SCENE_VARIANTS:
         raise ValueError(f"unsupported Pac-Man scene_variant: {sample.scene_variant}")
     if str(sample.style_variant) not in SUPPORTED_PACMAN_STYLE_VARIANTS:
@@ -293,7 +293,7 @@ __all__ = [
     "PACMAN_GHOST_COLOR_KEYS",
     "PACMAN_ITEM_KINDS",
     "PACMAN_ITEM_LABELS",
-    "SUPPORTED_PACMAN_QUERY_VARIANTS",
+    "SUPPORTED_PACMAN_QUERY_IDS",
     "SUPPORTED_PACMAN_SCENE_VARIANTS",
     "SUPPORTED_PACMAN_STYLE_VARIANTS",
     "Coord",

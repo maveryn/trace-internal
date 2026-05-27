@@ -15,17 +15,17 @@ from tests.helpers import extract_prompt_json_example
 
 def test_puzzles_clock_compare_contract_matches_trace() -> None:
     task = PuzzlesClockCompareTask()
-    query_variants = ("earliest_time", "latest_time")
+    query_ids = ("earliest_time", "latest_time")
     scene_variants = ("classic", "outline")
     style_variants = ("studio", "marker")
     accent_colors = ("blue", "orange")
-    for variant_index, query_variant in enumerate(query_variants):
+    for query_id_index, query_id in enumerate(query_ids):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 20500 + (variant_index * 10) + scene_index
+            seed = 20500 + (query_id_index * 10) + scene_index
             out = task.generate(
                 seed,
                 params={
-                    "query_variant": query_variant,
+                    "query_id": query_id,
                     "scene_variant": scene_variant,
                     "style_variant": style_variants[scene_index],
                     "accent_color_name": accent_colors[scene_index],
@@ -42,11 +42,11 @@ def test_puzzles_clock_compare_contract_matches_trace() -> None:
             assert out.answer_gt.type == "string"
             assert out.evidence_gt.type == "bbox_set"
             assert len(out.evidence_gt.value) == 1
-            expected_direction = "earliest" if str(query_variant) == "earliest_time" else "latest"
-            assert out.query_variant == "default"
+            expected_direction = "earliest" if str(query_id) == "earliest_time" else "latest"
+            assert out.query_id == "default"
             assert out.query_id == f"{expected_direction}_time_label"
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["source_query_variant"]) == "time_extremum_label"
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["source_query_id"]) == "time_extremum_label"
             assert str(execution["extremum_direction"]) == expected_direction
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["style_variant"]) == str(style_variants[scene_index])
@@ -87,10 +87,10 @@ def test_puzzles_clock_compare_prompt_examples_match_variants() -> None:
             {"answer": "B"},
         ),
     }
-    for index, (query_variant, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=20540):
+    for index, (query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=20540):
         out = task.generate(
             index,
-            params={"query_variant": query_variant},
+            params={"query_id": query_id},
             max_attempts=20,
         )
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -103,7 +103,7 @@ def test_puzzles_clock_compare_explicit_clock_count_supports_twelve_clocks() -> 
     task = PuzzlesClockCompareTask()
     out = task.generate(
         20570,
-        params={"query_variant": "latest_time", "clock_count": 12},
+        params={"query_id": "latest_time", "clock_count": 12},
         max_attempts=20,
     )
     execution = out.trace_payload["execution_trace"]
@@ -115,7 +115,7 @@ def test_puzzles_clock_compare_explicit_clock_count_supports_twelve_clocks() -> 
 
 def test_puzzles_clock_compare_balanced_sampling_defaults_cover_axes() -> None:
     task = PuzzlesClockCompareTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     extremum_directions: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
@@ -129,7 +129,7 @@ def test_puzzles_clock_compare_balanced_sampling_defaults_cover_axes() -> None:
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variants[str(execution["query_variant"])] += 1
+        query_ids[str(execution["query_id"])] += 1
         extremum_directions[str(execution["extremum_direction"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
@@ -137,7 +137,7 @@ def test_puzzles_clock_compare_balanced_sampling_defaults_cover_axes() -> None:
         clock_counts[int(execution["clock_count"])] += 1
         winner_labels[str(execution["winner_label"])] += 1
 
-    assert set(query_variants.keys()) == {"default"}
+    assert set(query_ids.keys()) == {"default"}
     assert set(extremum_directions.keys()) == {"earliest", "latest"}
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_CLOCK_STYLE_VARIANTS)

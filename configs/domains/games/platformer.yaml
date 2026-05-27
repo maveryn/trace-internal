@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       side_scroller: 1.0
-    query_variant_weights:
+    query_id_weights:
       jump_landing_label: 1.0
       collectible_count: 1.0
     style_variant_weights:
@@ -12,7 +12,7 @@ generation:
       snow: 1.0
       sunset: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_platform_count_sampling: true
     balanced_hazard_count_sampling: true

@@ -21,7 +21,7 @@ generation:
     x_value_max: 100
     y_value_min: 0
     y_value_max: 100
-    query_variant_weights:
+    query_id_weights:
       cluster_trend_direction_label: 1.0
       cluster_separation_extremum_label: 1.0
       cluster_spread_extremum_label: 1.0
@@ -38,7 +38,7 @@ generation:
     spread_extremum_weights:
       largest: 1.0
       smallest: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_trend_direction_sampling: true
     balanced_separation_extremum_sampling: true
     balanced_spread_axis_sampling: true
@@ -52,12 +52,12 @@ generation:
       readout_y_value_min: 10
       readout_y_value_max: 90
       readout_min_series_gap_at_x: 4
-      query_variant_weights:
+      query_id_weights:
         series_highest_x_label: 1.0
         series_lowest_x_label: 1.0
         series_pair_value_gap_at_x: 1.0
         series_y_anchor_other_series_value: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
 
 rendering:
   shared:

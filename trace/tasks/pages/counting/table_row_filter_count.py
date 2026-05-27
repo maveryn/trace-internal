@@ -28,7 +28,7 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 
 
 TASK_ID = "gui_counting_table_row_filter_internal"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "selected_rows_with_status_count",
     "enabled_action_for_type_count",
     "value_threshold_in_group_count",
@@ -142,7 +142,7 @@ class _RowSpec:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     rows: Tuple[_RowSpec, ...]
@@ -158,7 +158,7 @@ class _ResolvedQuery:
     row_count_support: Tuple[int, ...]
     answer_count_support: Tuple[int, ...]
     section_count_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
 
@@ -603,9 +603,9 @@ def _status_fill(status: str, theme: _Theme) -> Color:
 
 
 def _row_matches(row: _RowSpec, query: _ResolvedQuery) -> bool:
-    if str(query.query_variant) == "selected_rows_with_status_count":
+    if str(query.query_id) == "selected_rows_with_status_count":
         return bool(row.selected) and str(row.status_label) == str(query.target_status)
-    if str(query.query_variant) == "enabled_action_for_type_count":
+    if str(query.query_id) == "enabled_action_for_type_count":
         return (
             str(row.type_label) == str(query.target_type)
             and str(row.action_label) == str(query.target_action_label)
@@ -619,20 +619,20 @@ def _row_matches(row: _RowSpec, query: _ResolvedQuery) -> bool:
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = _resolve_named_axis(
+    query_id, query_id_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        supported=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="scene_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="scene_variant"),
         supported=SUPPORTED_SCENE_VARIANTS,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -642,7 +642,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     style_variant, style_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="style_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="style_variant"),
         supported=SUPPORTED_STYLE_VARIANTS,
         explicit_key="style_variant",
         weights_key="style_variant_weights",
@@ -655,12 +655,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     base_answer_count_support = _normalize_int_support(params, "answer_count_support", _DEFAULTS.answer_count_support)
     row_count_support = _normalize_int_support(
         params,
-        f"{query_variant}_row_count_support",
+        f"{query_id}_row_count_support",
         base_row_count_support,
     )
     answer_count_support = _normalize_int_support(
         params,
-        f"{query_variant}_answer_count_support",
+        f"{query_id}_answer_count_support",
         base_answer_count_support,
     )
     section_name_pool = _normalize_str_support(params, "section_name_pool", _DEFAULTS.section_name_pool)
@@ -681,7 +681,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     else:
         answer_value = int(
             answer_count_support[
-                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_value.{query_variant}")
+                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_value.{query_id}")
                 % len(answer_count_support)
             ]
         )
@@ -699,7 +699,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
                 section_count_support,
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"section_count.{query_variant}",
+                namespace=f"section_count.{query_id}",
             ),
         )
     )
@@ -739,10 +739,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     target_section_index = int(
-        _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target_section.{query_variant}")
+        _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target_section.{query_id}")
         % int(section_count)
     )
-    min_target_size = int(answer_value) + 1 if str(query_variant) == "value_threshold_in_group_count" else 3
+    min_target_size = int(answer_value) + 1 if str(query_id) == "value_threshold_in_group_count" else 3
     row_count = min(max(row_count_support), max(int(requested_row_count), int(answer_value) + 5, int(min_target_size) + 2))
     if row_count < min_target_size + (section_count - 1) * 2:
         row_count = min(max(row_count_support), min_target_size + (section_count - 1) * 2)
@@ -766,18 +766,18 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         flat_keys[int(index)]
         for index in _select_indices(
             instance_seed=int(instance_seed),
-            namespace=f"evidence.{query_variant}",
+            namespace=f"evidence.{query_id}",
             count=int(answer_value),
             size=len(flat_keys),
         )
     )
-    if str(query_variant) == "value_threshold_in_group_count":
+    if str(query_id) == "value_threshold_in_group_count":
         target_keys = [key for key in flat_keys if int(key[0]) == int(target_section_index)]
         evidence_keys = set(
             target_keys[int(index)]
             for index in _select_indices(
                 instance_seed=int(instance_seed),
-                namespace=f"evidence.{query_variant}.{target_section_index}",
+                namespace=f"evidence.{query_id}.{target_section_index}",
                 count=int(answer_value),
                 size=len(target_keys),
             )
@@ -804,7 +804,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             action_enabled = bool((int(global_index) + int(section_index)) % 3 != 0)
             size_mb = 10 + int((abs(hash64(int(instance_seed), row_id, 17)) % 82))
 
-            if str(query_variant) == "selected_rows_with_status_count":
+            if str(query_id) == "selected_rows_with_status_count":
                 if is_match:
                     selected = True
                     status_label = str(target_status)
@@ -812,7 +812,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
                     status_label = non_target_statuses[int(global_index) % len(non_target_statuses)]
                 elif not selected and int(global_index) % 4 == 0:
                     status_label = str(target_status)
-            elif str(query_variant) == "enabled_action_for_type_count":
+            elif str(query_id) == "enabled_action_for_type_count":
                 if is_match:
                     type_label = str(target_type)
                     action_label = str(target_action_label)
@@ -861,7 +861,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             global_index += 1
 
     placeholder = _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         rows=tuple(rows),
@@ -877,7 +877,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         row_count_support=tuple(int(value) for value in row_count_support),
         answer_count_support=tuple(int(value) for value in answer_count_support),
         section_count_support=tuple(int(value) for value in section_count_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -886,12 +886,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             evidence_row_ids.append(str(row.row_id))
     if len(evidence_row_ids) != int(answer_value):
         raise RuntimeError(
-            f"GUI table row-filter evidence cardinality does not match answer for {query_variant}: "
+            f"GUI table row-filter evidence cardinality does not match answer for {query_id}: "
             f"{len(evidence_row_ids)} != {answer_value}"
         )
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         rows=tuple(rows),
@@ -907,7 +907,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         row_count_support=tuple(int(value) for value in row_count_support),
         answer_count_support=tuple(int(value) for value in answer_count_support),
         section_count_support=tuple(int(value) for value in section_count_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -1176,10 +1176,10 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     if not _COMPLEXITY_WEIGHTS:
         raise ValueError(f"missing positive complexity criteria weights for {TASK_ID}")
     scan = (float(len(query.rows)) - 9.0) / 6.0
-    if str(query.query_variant) == "selected_rows_with_status_count":
+    if str(query.query_id) == "selected_rows_with_status_count":
         state_filtering = 0.78
         grouping = 0.54
-    elif str(query.query_variant) == "enabled_action_for_type_count":
+    elif str(query.query_id) == "enabled_action_for_type_count":
         state_filtering = 0.88
         grouping = 0.62
     else:
@@ -1262,7 +1262,7 @@ class GuiCountingTableRowFilterCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1329,7 +1329,7 @@ class GuiCountingTableRowFilterCountTask:
                     for record in row_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_status": str(query.target_status),
@@ -1346,13 +1346,13 @@ class GuiCountingTableRowFilterCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_status": str(query.target_status),
@@ -1364,7 +1364,7 @@ class GuiCountingTableRowFilterCountTask:
                     "row_count_support": [int(value) for value in query.row_count_support],
                     "answer_count_support": [int(value) for value in query.answer_count_support],
                     "section_count_support": [int(value) for value in query.section_count_support],
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
                 },
@@ -1398,7 +1398,7 @@ class GuiCountingTableRowFilterCountTask:
                 "evidence_row_ids": [str(value) for value in query.evidence_row_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
                 "answer_value": int(query.answer_value),
@@ -1414,7 +1414,7 @@ class GuiCountingTableRowFilterCountTask:
                 "matching_rows": list(matched_records),
                 "total_row_count": int(len(query.rows)),
                 "section_count": int(len(query.section_names)),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
                 "question_format": "gui_table_row_filter_count",
@@ -1438,9 +1438,9 @@ class GuiCountingTableRowFilterCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(query),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["GuiCountingTableRowFilterCountTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["GuiCountingTableRowFilterCountTask", "SUPPORTED_QUERY_IDS"]

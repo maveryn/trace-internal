@@ -1,8 +1,6 @@
 # task_illustrations__single_object_figure__visible_part_count
 
-Status: previously accepted after qwen25vl7b solve-rate calibration; expanded
-with additional query variants and needs a fresh solve-rate sweep before being
-treated as accepted for the full current distribution.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -17,7 +15,7 @@ Object colors vary by seed as render-only visual variation. Traffic-light lens
 colors stay fixed in signal order, while the casing/post color varies; clovers
 vary only within green palettes.
 
-Public variants:
+Query ids:
 - `bird_visible_leg_count`
 - `quadruped_visible_leg_count`
 - `airplane_visible_wing_count`

@@ -91,7 +91,7 @@ class _TriangleSceneObject:
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-triangle counting instance."""
-    query_variant: str
+    query_id: str
     object_count: int
     target_count: int
     objects: Tuple[_TriangleSceneObject, ...]
@@ -345,9 +345,9 @@ _SAMPLERS = {
     "obtuse": _sample_obtuse_triangle,
 }
 
-def _triangle_matches_variant(prototype: _TrianglePrototype, query_variant: str) -> bool:
+def _triangle_matches_variant(prototype: _TrianglePrototype, query_id: str) -> bool:
     """Return whether one prototype satisfies the requested counting predicate."""
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "equilateral_triangle":
         return str(prototype.side_kind) == "equilateral"
     if variant == "isosceles_triangle":
@@ -360,9 +360,9 @@ def _triangle_matches_variant(prototype: _TrianglePrototype, query_variant: str)
         return str(prototype.angle_kind) == "acute"
     if variant == "obtuse_triangle":
         return str(prototype.angle_kind) == "obtuse"
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
-def _positive_sampler_names(query_variant: str) -> Tuple[str, ...]:
+def _positive_sampler_names(query_id: str) -> Tuple[str, ...]:
     """Return likely-positive prototype sampler names for one variant."""
     mapping = {
         "equilateral_triangle": ("equilateral",),
@@ -372,9 +372,9 @@ def _positive_sampler_names(query_variant: str) -> Tuple[str, ...]:
         "acute_triangle": ("acute", "equilateral"),
         "obtuse_triangle": ("obtuse",),
     }
-    return tuple(mapping[str(query_variant)])
+    return tuple(mapping[str(query_id)])
 
-def _negative_sampler_names(query_variant: str) -> Tuple[str, ...]:
+def _negative_sampler_names(query_id: str) -> Tuple[str, ...]:
     """Return likely-negative sampler names for one variant."""
     mapping = {
         "equilateral_triangle": ("isosceles", "scalene", "right", "obtuse"),
@@ -384,12 +384,12 @@ def _negative_sampler_names(query_variant: str) -> Tuple[str, ...]:
         "acute_triangle": ("right", "obtuse"),
         "obtuse_triangle": ("acute", "right", "equilateral"),
     }
-    return tuple(mapping[str(query_variant)])
+    return tuple(mapping[str(query_id)])
 
 def _sample_triangle_for_match(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     positive: bool,
     min_side_units: float,
     max_side_units: float,
@@ -400,9 +400,9 @@ def _sample_triangle_for_match(
 ) -> _TrianglePrototype:
     """Sample one triangle prototype that either matches or rejects the query class."""
     preferred = (
-        _positive_sampler_names(str(query_variant))
+        _positive_sampler_names(str(query_id))
         if bool(positive)
-        else _negative_sampler_names(str(query_variant))
+        else _negative_sampler_names(str(query_id))
     )
     fallback = tuple(_SAMPLERS.keys())
     last_error: Exception | None = None
@@ -423,11 +423,11 @@ def _sample_triangle_for_match(
             except Exception as exc:
                 last_error = exc
                 continue
-            if bool(_triangle_matches_variant(prototype, str(query_variant))) == bool(positive):
+            if bool(_triangle_matches_variant(prototype, str(query_id))) == bool(positive):
                 return prototype
     raise RuntimeError("failed to sample triangle prototype for counting scene") from last_error
 
-def _variant_class_label(query_variant: str) -> str:
+def _variant_class_label(query_id: str) -> str:
     """Return a normalized human-readable triangle class label."""
     mapping = {
         "equilateral_triangle": "equilateral",
@@ -437,7 +437,7 @@ def _variant_class_label(query_variant: str) -> str:
         "acute_triangle": "acute",
         "obtuse_triangle": "obtuse",
     }
-    return str(mapping[str(query_variant)])
+    return str(mapping[str(query_id)])
 
 def _place_triangle_object(
     prototype: _TrianglePrototype,
@@ -475,7 +475,7 @@ def _place_triangle_object(
 def _sample_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -509,7 +509,7 @@ def _sample_scene(
             for label, slot in zip(labels, slots):
                 prototype = _sample_triangle_for_match(
                     rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     positive=str(label) in positives,
                     min_side_units=float(min_side_units),
                     max_side_units=float(max_side_units),
@@ -564,7 +564,7 @@ def _sample_scene(
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -572,7 +572,7 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
             },
         )
     raise RuntimeError("failed to sample triangle-counting scene") from last_error
@@ -590,10 +590,10 @@ class GeometryCountingTriangleTask:
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
-        query_variant = apply_balanced_variant_sampling(
+        query_id = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -601,7 +601,7 @@ class GeometryCountingTriangleTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -719,7 +719,7 @@ class GeometryCountingTriangleTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -789,7 +789,7 @@ class GeometryCountingTriangleTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -839,18 +839,18 @@ class GeometryCountingTriangleTask:
                 ],
                 "relations": {
                     "counting_target": "triangle_class",
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -878,9 +878,9 @@ class GeometryCountingTriangleTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(query_variant),
-                "query_variant": str(query_variant),
-                "counting_class": str(_variant_class_label(str(query_variant))),
+                "scene_variant": str(query_id),
+                "query_id": str(query_id),
+                "counting_class": str(_variant_class_label(str(query_id))),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -891,7 +891,7 @@ class GeometryCountingTriangleTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(_variant_class_label(str(query_variant))),
+                "counting_class": str(_variant_class_label(str(query_id))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
@@ -913,9 +913,8 @@ class GeometryCountingTriangleTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="triangle",
-                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

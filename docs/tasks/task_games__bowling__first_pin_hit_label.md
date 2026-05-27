@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `string`
 2. Evidence type: `bbox_set` over the selected pin.
-3. Public `query_variant` is `default`; `first_pin_hit_label` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `first_pin_hit_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games bowling-lane renderer.

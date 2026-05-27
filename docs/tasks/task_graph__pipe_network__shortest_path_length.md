@@ -8,7 +8,7 @@
 5. Objective: count open pipe segments in the unique shortest open route between two labeled junctions.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `pipe_shortest_path_length`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_sequence`

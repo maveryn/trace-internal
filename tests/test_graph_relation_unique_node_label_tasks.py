@@ -38,7 +38,7 @@ def test_graph_relation_unique_node_label_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__unique_node_label" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "unique_successor_label"
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_set"

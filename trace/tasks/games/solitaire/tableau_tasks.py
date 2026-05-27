@@ -1268,8 +1268,6 @@ class _SolitaireTableauTask:
                 "relations": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
                     "answer": sample.answer,
                     "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
@@ -1277,8 +1275,6 @@ class _SolitaireTableauTask:
             },
             "query_spec": {
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
-                "query_variant": "default",
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1287,10 +1283,9 @@ class _SolitaireTableauTask:
                     "scene_variant": str(sample.scene_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant_probabilities": {str(sample.query_id): 1.0},
-                    "query_variant": "default",
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {str(sample.query_id): 1.0},
+                    "query_id": "default",
+                    "query_id_probabilities": {"default": 1.0},
                     "style_variant": str(style_variant),
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),
@@ -1308,8 +1303,6 @@ class _SolitaireTableauTask:
             "execution_trace": {
                 "scene_variant": str(sample.scene_variant),
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
-                "query_variant": "default",
                 "style_variant": str(style_variant),
                 "answer": sample.answer,
                 "card_specs": card_specs,
@@ -1337,7 +1330,6 @@ class _SolitaireTableauTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

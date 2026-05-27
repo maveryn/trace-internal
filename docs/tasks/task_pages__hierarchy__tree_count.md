@@ -7,7 +7,7 @@
 4. Objective: read one generic rooted tree diagram and return the requested integer count.
 
 ## 2) Scene + task contract
-1. Supported `query_variant` values:
+1. Supported `query_id` values:
    - `subtree_descendant_count`
    - `subtree_leaf_count`
    - `path_length_between_two_nodes`
@@ -42,7 +42,7 @@
 2. `subtree_leaf_count` evidence is the unordered set of node bboxes for all counted leaf descendants in the queried subtree.
 3. `path_length_between_two_nodes` evidence is the ordered set of node bboxes on the path from the first queried node to the second queried node. The answer counts hops, so evidence length is `answer + 1`.
 4. `execution_trace` records:
-   - `query_variant`
+   - `query_id`
    - `scene_variant`
    - `question_format`
    - `view_family`
@@ -73,6 +73,6 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. `query_variant`, answer support, tree size, and tree depth are balanced through seeded sampling under the normal seeded sampler.
+2. `query_id`, answer support, tree size, and tree depth are balanced through seeded sampling under the normal seeded sampler.
 3. Answers and evidence come from the same generated tree trace.
 4. No semantic auto-relaxation.

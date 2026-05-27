@@ -7,7 +7,7 @@
 4. Objective: read one static printed map and return the exact visible landmark or zone label required by the query.
 
 ## 2) Scene + task contract
-1. Supported `query_variant` values:
+1. Supported `query_id` values:
    - `destination_after_directions`
    - `landmark_after_route_step`
 2. Supported `scene_variant` values:
@@ -40,7 +40,7 @@
 6. Slot source:
    - prompt config in `configs/domains/pages/map.yaml`,
    - deterministic bundle selection from `prompts/pages/map/pages_map_v0.json`,
-   - task-local JSON examples keyed by the active map-query variant.
+   - task-local JSON examples keyed by the active map-query id.
 7. Modes: `answer_only`, `answer_and_evidence`
 8. Prompt-facing answer is an exact visible landmark label; prompt-facing evidence is the supporting route boxes.
 
@@ -68,7 +68,7 @@
    - `path_bboxes_px`
    - `highlighted_route_bboxes_px`
 4. `execution_trace` records:
-   - `query_variant`
+   - `query_id`
    - `scene_variant`
    - `question_format`
    - `view_family`
@@ -101,7 +101,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. `query_variant` and `scene_variant` are sampled independently at the policy level.
+2. `query_id` and `scene_variant` are sampled independently at the policy level.
 3. Answers and evidence come from the same exact rendered landmark or zone label.
 4. No semantic auto-relaxation.
 5. If a sampled route cannot satisfy the requested step bounds, reject rather than silently changing the query contract.

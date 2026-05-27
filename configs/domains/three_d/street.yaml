@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_three_d__street__intersection_nearest_label:
-      query_variant_weights:
+      query_id_weights:
         closest_to_intersection: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
@@ -19,11 +19,11 @@ generation:
       candidate_count_max: 6
       context_object_count_min: 10
       context_object_count_max: 10
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
     task_three_d__street__same_road_arm_reference_label:
-      query_variant_weights:
+      query_id_weights:
         same_road_arm_as_reference: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
@@ -41,11 +41,11 @@ generation:
       candidate_count_max: 6
       context_object_count_min: 10
       context_object_count_max: 10
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
     task_three_d__street__lane_ahead_object_label:
-      query_variant_weights:
+      query_id_weights:
         ahead_along_lane: 1.0
       scene_variant_weights:
         downtown_intersection: 1.0
@@ -66,7 +66,7 @@ generation:
       candidate_count_max: 5
       context_object_count_min: 8
       context_object_count_max: 8
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_intersection_layout_sampling: true
       balanced_travel_mode_sampling: true

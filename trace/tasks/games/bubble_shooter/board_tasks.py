@@ -24,7 +24,7 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ..shared.bubble_shooter_common import (
     BUBBLE_COLOR_KEYS,
     BUBBLE_OPTION_LABELS,
-    SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS,
+    SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS,
     SUPPORTED_BUBBLE_SHOOTER_SCENE_VARIANTS,
     SUPPORTED_BUBBLE_SHOOTER_STYLE_VARIANTS,
     Board,
@@ -48,7 +48,7 @@ from ..shared.bubble_shooter_scene import BubbleShooterRenderParams, render_bubb
 from ..shared.complexity import build_games_bubble_shooter_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
@@ -85,7 +85,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Bubble-shooter instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     row_count: int
@@ -95,7 +95,7 @@ class _ResolvedAxes:
     option_count: int
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     row_count_probabilities: Dict[str, float]
@@ -115,15 +115,15 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="bubb
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="bubble_shooter", apply_prob=0.5)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Bubble-shooter query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Bubble-shooter query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS,
     )
 
 
@@ -205,13 +205,13 @@ def _resolve_label_choice(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -219,7 +219,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner answer axes."""
 
@@ -227,19 +227,19 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS))
     return cycle_params
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Bubble-shooter instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     answer_cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -284,7 +284,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     target_answer = None
     target_answer_probabilities: Dict[str, float] = {}
-    if str(query_variant) == "pop_count":
+    if str(query_id) == "pop_count":
         target_answer_support = resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -302,7 +302,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
-    elif str(query_variant) == "drop_count":
+    elif str(query_id) == "drop_count":
         target_answer_support = resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -323,7 +323,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     else:
         target_answer_support = tuple(_DEFAULTS.pop_count_support)
 
-    if str(query_variant) in {"pop_count", "drop_count"} and params.get("row_count") is None:
+    if str(query_id) in {"pop_count", "drop_count"} and params.get("row_count") is None:
         row_count = min(
             int(row_count),
             int(group_default(_GEN_DEFAULTS, "count_query_max_row_count", _DEFAULTS.count_query_max_row_count)),
@@ -338,7 +338,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     option_count = 0
     option_count_probabilities: Dict[str, float] = {}
-    if str(query_variant) == "pop_color_label":
+    if str(query_id) == "pop_color_label":
         option_count, option_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=answer_cycle_params,
@@ -363,7 +363,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         option_count = max(int(option_count), int(target_index) + 1)
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         row_count=int(row_count),
@@ -373,7 +373,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         option_count=int(option_count),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         row_count_probabilities=dict(row_count_probabilities),
@@ -704,7 +704,7 @@ def _sample_pop_count_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
     sample = BubbleShooterSample(
         row_count=int(axes.row_count),
         col_count=int(axes.col_count),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         board=board,
@@ -731,7 +731,7 @@ def _sample_drop_count_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample
     sample = BubbleShooterSample(
         row_count=int(axes.row_count),
         col_count=int(axes.col_count),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         board=board,
@@ -789,7 +789,7 @@ def _sample_pop_color_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
     sample = BubbleShooterSample(
         row_count=int(axes.row_count),
         col_count=int(axes.col_count),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         board=board,
@@ -809,23 +809,23 @@ def _sample_pop_color_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
     """Construct one Bubble-shooter scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "pop_count":
         return _sample_pop_count_scene(rng=rng, axes=axes)
     if query == "drop_count":
         return _sample_drop_count_scene(rng=rng, axes=axes)
     if query == "pop_color_label":
         return _sample_pop_color_scene(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Bubble-shooter query_variant: {query}")
+    raise ValueError(f"unsupported Bubble-shooter query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Bubble-shooter JSON output."""
 
-    if str(query_variant) == "pop_color_label":
+    if str(query_id) == "pop_color_label":
         answer_value: str | int = "C"
         evidence_value = [[428, 602, 462, 654], [380, 256, 426, 302], [426, 256, 472, 302]]
-    elif str(query_variant) == "drop_count":
+    elif str(query_id) == "drop_count":
         answer_value = 4
         evidence_value = [[460, 350, 506, 396], [506, 350, 552, 396]]
     else:
@@ -871,7 +871,7 @@ class GamesBubbleShooterBoardTask:
             landing_coord=sampled_scene.landing_coord,
             shooter_color_key=sampled_scene.shooter_color_key,
             option_specs=sampled_scene.option_specs,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             background=background,
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
@@ -908,22 +908,22 @@ class GamesBubbleShooterBoardTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "bubble_shooter_rule_text": str(prompt_defaults["bubble_shooter_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -933,7 +933,7 @@ class GamesBubbleShooterBoardTask:
 
         answer_gt = (
             TypedValue(type="string", value=str(sampled_scene.answer))
-            if str(axes.query_variant) == "pop_color_label"
+            if str(axes.query_id) == "pop_color_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
@@ -941,7 +941,7 @@ class GamesBubbleShooterBoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             bubble_count=len(occupied_coords(sampled_scene.board)),
             row_count=int(sampled_scene.row_count),
             col_count=int(sampled_scene.col_count),
@@ -972,8 +972,7 @@ class GamesBubbleShooterBoardTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "row_count": int(sampled_scene.row_count),
                     "col_count": int(sampled_scene.col_count),
@@ -981,23 +980,22 @@ class GamesBubbleShooterBoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "row_count": int(sampled_scene.row_count),
                     "col_count": int(sampled_scene.col_count),
                     "bubble_count": len(occupied_coords(sampled_scene.board)),
                     "option_count": len(sampled_scene.option_specs),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),
                     "col_count_probabilities": dict(axes.col_count_probabilities),
@@ -1020,8 +1018,7 @@ class GamesBubbleShooterBoardTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "row_count": int(sampled_scene.row_count),
                 "col_count": int(sampled_scene.col_count),
@@ -1058,9 +1055,8 @@ class GamesBubbleShooterBoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="bubble_shooter",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -1069,7 +1065,7 @@ class GamesBubbleShooterShotEffectCountTask(QuerySubsetTaskMixin, GamesBubbleSho
     """Count bubbles matching a sampled immediate shot-effect condition."""
 
     task_id = "task_games__bubble_shooter__shot_effect_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "pop_count",
         "drop_count",
     )
@@ -1080,7 +1076,7 @@ class GamesBubbleShooterPopColorLabelTask(FixedQueryVariantTaskMixin, GamesBubbl
     """Choose the labeled next-bubble color that would make bubbles pop."""
 
     task_id = "task_games__bubble_shooter__pop_color_label"
-    fixed_query_variant = "pop_color_label"
+    fixed_query_id = "pop_color_label"
 
 
 __all__ = [

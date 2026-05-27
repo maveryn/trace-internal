@@ -14,7 +14,7 @@ from ..shared.consolidated_source import (
     strip_consolidated_params,
     unregister_source_tasks,
 )
-from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.consolidated_sampling import resolve_compatible_scene_query_ids
 from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from .angle import GeometryAngleMeasure2DTask
 from .area import GeometryAreaMeasure2DTask
@@ -39,7 +39,7 @@ _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "ellipse",
     "line",
 )
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "angle",
     "area",
     "perimeter",
@@ -76,12 +76,12 @@ def _source_sampling_params(
     params: Mapping[str, Any],
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
 ) -> Dict[str, Any]:
     """Return source params for the shared renderer."""
 
     source_params = strip_consolidated_params(params)
-    _ = scene_variant, query_variant
+    _ = scene_variant, query_id
     return source_params
 
 
@@ -94,23 +94,23 @@ class GeometryMeasurementValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rng = spawn_rng(instance_seed, f"{self.task_id}.axes")
-        scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+        scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
             rng,
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_scene_variants=_SUPPORTED_SCENE_VARIANTS,
-            supported_query_variants=_SUPPORTED_QUERY_VARIANTS,
+            supported_query_ids=_SUPPORTED_QUERY_IDS,
             compatibility=_COMPATIBILITY,
             scene_sampling_namespace=f"{self.task_id}.scene_variant",
-            query_sampling_namespace=f"{self.task_id}.query_variant",
+            query_sampling_namespace=f"{self.task_id}.query_id",
         )
-        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(query_variant))]
+        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(query_id))]
         source_task = source_task_cls()
         source_params = _source_sampling_params(
             params,
             scene_variant=str(scene_variant),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         source_params.update(dict(source_overrides))
         output = source_task.generate(int(instance_seed), params=source_params, max_attempts=int(max_attempts))
@@ -118,12 +118,12 @@ class GeometryMeasurementValueTask:
         return normalize_source_geometry_output(
             output,
             scene_variant=str(scene_variant),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             source_task_id=str(source_task.task_id),
             scene_variant_probabilities=scene_probs,
-            query_variant_probabilities=query_probs,
+            query_id_probabilities=query_probs,
             source_scene_variant=str(source_trace.get("scene_variant", scene_variant)),
-            source_query_variant=str(output.query_variant),
+            source_query_id=str(output.query_id),
         )
 
 
@@ -132,7 +132,7 @@ class GeometryMeasurementAngleValueTask(FixedGeometryQueryTaskMixin, GeometryMea
     """Public geometry angle-measurement task."""
 
     task_id = "task_geometry__graph_paper__angle_value"
-    fixed_query_variant = "angle"
+    fixed_query_id = "angle"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("angle",)
 
@@ -142,7 +142,7 @@ class GeometryMeasurementPolygonAreaValueTask(FixedGeometryQueryTaskMixin, Geome
     """Public polygon-area measurement task."""
 
     task_id = "task_geometry__graph_paper__polygon_area_value"
-    fixed_query_variant = "area"
+    fixed_query_id = "area"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle", "quadrilateral")
 
@@ -152,7 +152,7 @@ class GeometryMeasurementEllipseAreaValueTask(FixedGeometryQueryTaskMixin, Geome
     """Public ellipse-area measurement task."""
 
     task_id = "task_geometry__graph_paper__ellipse_area_value"
-    fixed_query_variant = "area"
+    fixed_query_id = "area"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("ellipse",)
 
@@ -162,7 +162,7 @@ class GeometryMeasurementPolygonPerimeterValueTask(FixedGeometryQueryTaskMixin, 
     """Public polygon-perimeter measurement task."""
 
     task_id = "task_geometry__graph_paper__polygon_perimeter_value"
-    fixed_query_variant = "perimeter"
+    fixed_query_id = "perimeter"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle", "quadrilateral")
 
@@ -172,7 +172,7 @@ class GeometryMeasurementCircleCircumferenceValueTask(FixedGeometryQueryTaskMixi
     """Public circle-circumference measurement task."""
 
     task_id = "task_geometry__graph_paper__circle_circumference_value"
-    fixed_query_variant = "perimeter"
+    fixed_query_id = "perimeter"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("circle",)
 
@@ -182,6 +182,6 @@ class GeometryMeasurementLineSlopeValueTask(FixedGeometryQueryTaskMixin, Geometr
     """Public line-slope measurement task."""
 
     task_id = "task_geometry__graph_paper__line_slope_value"
-    fixed_query_variant = "slope"
+    fixed_query_id = "slope"
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("line",)

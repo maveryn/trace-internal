@@ -23,7 +23,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "single_row",
-                "query_variant": "matching_end_count",
+                "query_id": "matching_end_count",
                 "target_answer": 3,
                 "candidate_count": 8,
             },
@@ -33,7 +33,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "single_row",
-                "query_variant": "higher_sum_than_reference_count",
+                "query_id": "higher_sum_than_reference_count",
                 "target_answer": 4,
                 "candidate_count": 9,
             },
@@ -43,7 +43,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "two_row",
-                "query_variant": "sum_to_target_count",
+                "query_id": "sum_to_target_count",
                 "target_answer": 3,
                 "candidate_count": 10,
                 "target_total": 7,
@@ -54,7 +54,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "two_row",
-                "query_variant": "double_count",
+                "query_id": "double_count",
                 "target_answer": 5,
                 "candidate_count": 12,
             },
@@ -76,7 +76,7 @@ def test_games_dominoes_chain_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
@@ -95,7 +95,7 @@ def test_games_dominoes_chain_count_matching_end_marks_reference_and_open_half()
         26011,
         params={
             "scene_variant": "single_row",
-            "query_variant": "matching_end_count",
+            "query_id": "matching_end_count",
             "target_answer": 2,
             "candidate_count": 8,
         },
@@ -115,7 +115,7 @@ def test_games_dominoes_chain_count_sum_to_target_records_target_total() -> None
         26021,
         params={
             "scene_variant": "single_row",
-            "query_variant": "sum_to_target_count",
+            "query_id": "sum_to_target_count",
             "target_answer": 2,
             "candidate_count": 8,
             "target_total": 6,
@@ -217,11 +217,11 @@ def test_games_dominoes_chain_count_query_cycle_covers_answer_and_scene_support(
             params={},
             max_attempts=192,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         execution = out.trace_payload["execution_trace"]
-        answers_by_variant[query_variant].add(int(out.answer_gt.value))
-        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
-        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+        answers_by_variant[query_id].add(int(out.answer_gt.value))
+        scenes_by_variant[query_id].add(str(execution["scene_variant"]))
+        styles_by_variant[query_id].add(str(execution["style_variant"]))
 
     assert answers_by_variant == {
         "double_count": {0, 1, 2, 3, 4, 5},
@@ -246,7 +246,7 @@ def test_games_dominoes_chain_count_query_cycle_covers_answer_and_scene_support(
 def test_games_dominoes_chain_count_is_deterministic() -> None:
     params = {
         "scene_variant": "two_row",
-        "query_variant": "higher_sum_than_reference_count",
+        "query_id": "higher_sum_than_reference_count",
         "target_answer": 5,
         "candidate_count": 12,
     }
@@ -276,7 +276,7 @@ def test_games_dominoes_chain_count_prompt_avoids_table_color_and_sentence_splic
         20260509,
         params={
             "scene_variant": "two_row",
-            "query_variant": "matching_end_count",
+            "query_id": "matching_end_count",
             "target_answer": 3,
             "candidate_count": 12,
         },

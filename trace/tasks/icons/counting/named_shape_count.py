@@ -545,7 +545,6 @@ class IconsCountingNamedShapeCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -592,7 +591,6 @@ class IconsCountingNamedShapeCountTask:
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_field",
                 "arrangement_mode": str(sample.arrangement_mode),
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "question_format": "count_named_shape_icons",
                 "target_shape_id": str(sample.target_shape_id),
@@ -623,7 +621,6 @@ class IconsCountingNamedShapeCountTask:
             trace_payload=trace_payload,
             complexity=_complexity(sample, render_params=render_params),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},

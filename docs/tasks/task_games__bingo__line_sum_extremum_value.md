@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set over the five cells in the completed line whose sum is the unique extremum.
-3. Public `query_variant` is `default`; `line_sum_extremum_value` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `line_sum_extremum_value` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games bingo-card renderer for its scene id.

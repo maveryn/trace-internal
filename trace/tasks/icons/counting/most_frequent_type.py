@@ -362,7 +362,7 @@ class IconsCountingMostFrequentTypeCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(QUERY_ID),
+                "query_id": str(QUERY_ID),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -378,7 +378,7 @@ class IconsCountingMostFrequentTypeCountTask:
                     "distinct_type_count": int(scene_payload.distinct_type_count),
                     "object_count_probabilities": dict(frequency_spec.object_count_probabilities),
                     "target_count_probabilities": dict(frequency_spec.target_count_probabilities),
-                    "query_variant_probabilities": {str(QUERY_ID): 1.0},
+                    "query_id_probabilities": {str(QUERY_ID): 1.0},
                     "pool_manifest": str(pool_manifest),
                 },
             },
@@ -397,7 +397,7 @@ class IconsCountingMostFrequentTypeCountTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_scene",
-                "query_variant": str(QUERY_ID),
+                "query_id": str(QUERY_ID),
                 "question_format": "count_icons_of_unique_most_frequent_type",
                 "object_count": int(scene_payload.object_count),
                 "target_count": int(answer_value),
@@ -449,7 +449,7 @@ class IconsCountingMostFrequentTypeCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(QUERY_ID),
+            query_id=str(QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(
@@ -484,7 +484,7 @@ def _type_frequency_generation_params(query_id: str) -> Dict[str, Any]:
 def _resolve_type_frequency_query(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     """Resolve the internal frequency predicate for the merged public task."""
 
-    explicit_query = params.get("query_id", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     if explicit_query is not None:
         query_id = str(explicit_query)
         if query_id not in TYPE_FREQUENCY_QUERY_IDS:
@@ -513,7 +513,7 @@ class IconsIconFieldTypeFrequencyCountTask:
         query_id, query_probabilities = _resolve_type_frequency_query(int(instance_seed), params)
         delegated_params = {**_type_frequency_generation_params(str(query_id)), **dict(params)}
         if str(query_id) == "singleton_type_count":
-            delegated_params["query_variant"] = "singleton_type_count"
+            delegated_params["query_id"] = "singleton_type_count"
             output = IconsCountingSingletonTypeTask().generate(
                 int(instance_seed),
                 params=delegated_params,

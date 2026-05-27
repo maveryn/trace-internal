@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.games.shared.bowling_common import (
-    SUPPORTED_BOWLING_QUERY_VARIANTS,
+    SUPPORTED_BOWLING_QUERY_IDS,
     SUPPORTED_BOWLING_SCENE_VARIANTS,
     SUPPORTED_BOWLING_STYLE_VARIANTS,
 )
@@ -19,14 +19,14 @@ def test_games_bowling_lane_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_visible_pin_count_sampling"]) is True
     assert bool(generation["balanced_path_option_count_sampling"]) is True
     assert bool(generation["balanced_target_pin_sampling"]) is True
     assert bool(generation["balanced_target_path_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_BOWLING_SCENE_VARIANTS)
-    assert set(generation["query_variant_weights"].keys()) == set(SUPPORTED_BOWLING_QUERY_VARIANTS)
+    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_BOWLING_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_BOWLING_STYLE_VARIANTS)
     assert list(generation["visible_pin_count_support"]) == [4, 5, 6, 7, 8, 9]
     assert list(generation["path_option_count_support"]) == [4, 5, 6]

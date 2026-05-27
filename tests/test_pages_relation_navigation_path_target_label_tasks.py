@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.pages.relation.navigation_path_target_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     PagesRelationNavigationPathTargetLabelTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -21,11 +21,11 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
     scene_variants = ("office_document", "creative_workspace", "developer_ide")
     style_variants = ("standard", "compact", "contrast")
 
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             78100 + index,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variants[index],
                 "style_variant": style_variants[index],
             },
@@ -38,10 +38,10 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
 
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert trace["scene_ir"]["scene_kind"] == "gui_navigation_path"
         assert str(out.answer_gt.value) == str(execution["target_label"])
         assert str(target["candidate_label"]) == str(execution["target_label"])
@@ -50,13 +50,13 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
         assert len(out.evidence_gt.value) == 3
 
-        if query_variant == "menu_path_target_label":
+        if query_id == "menu_path_target_label":
             assert list(execution["menu_command_count_range"]) == [3, 4]
             assert int(execution["menu_command_count"]) == 3
             assert int(execution["total_control_count"]) == 2 * 2 * 2 * int(execution["menu_command_count"])
             assert str(target["role"]) == "menu_item"
             assert [record["support_kind"] for record in evidence_supports] == ["menu_root", "menu_group"]
-        elif query_variant == "sidebar_tree_target_label":
+        elif query_id == "sidebar_tree_target_label":
             assert int(execution["total_control_count"]) == 12
             assert str(target["role"]) == "sidebar_tree_item"
             assert [record["support_kind"] for record in evidence_supports] == ["sidebar_section", "sidebar_group"]
@@ -86,7 +86,7 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
 
 def test_gui_relation_navigation_path_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationNavigationPathTargetLabelTask()
-    out = task.generate(78200, params={"query_variant": "menu_path_target_label"}, max_attempts=20)
+    out = task.generate(78200, params={"query_id": "menu_path_target_label"}, max_attempts=20)
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
         "evidence": [[82, 214, 308, 252], [104, 270, 286, 302], [112, 316, 286, 354]],
         "answer": "G",
@@ -96,10 +96,10 @@ def test_gui_relation_navigation_path_target_label_prompt_examples_match_option_
 
 def test_gui_relation_navigation_path_target_label_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesRelationNavigationPathTargetLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
-    answers_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
     menu_command_counts: Counter[int] = Counter()
     ribbon_count_tuples: Counter[tuple[int, int, int]] = Counter()
     active_variants: set[str] | None = None
@@ -111,14 +111,14 @@ def test_gui_relation_navigation_path_target_label_balanced_sampling_defaults_co
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_variant[query_variant][str(execution["target_label"])] += 1
-        if query_variant == "menu_path_target_label":
+        answers_by_query_id[query_id][str(execution["target_label"])] += 1
+        if query_id == "menu_path_target_label":
             menu_command_counts[int(execution["menu_command_count"])] += 1
-        if query_variant == "ribbon_group_command_label":
+        if query_id == "ribbon_group_command_label":
             ribbon_count_tuples[
                 (
                     int(execution["ribbon_tab_count"]),
@@ -129,13 +129,13 @@ def test_gui_relation_navigation_path_target_label_balanced_sampling_defaults_co
         if active_variants is None:
             active_variants = {
                 str(key)
-                for key, value in dict(execution["query_variant_probabilities"]).items()
+                for key, value in dict(execution["query_id_probabilities"]).items()
                 if float(value) > 0.0
             }
 
     assert active_variants
-    assert set(query_variants.keys()) == active_variants
-    assert all(count >= 0.30 * 156 for count in query_variants.values())
+    assert set(query_ids.keys()) == active_variants
+    assert all(count >= 0.30 * 156 for count in query_ids.values())
     assert set(scene_variants.keys()) == {
         "office_document",
         "creative_workspace",
@@ -149,14 +149,14 @@ def test_gui_relation_navigation_path_target_label_balanced_sampling_defaults_co
         assert set(menu_command_counts.keys()) == {3}
     if "ribbon_group_command_label" in active_variants:
         assert set(ribbon_count_tuples.keys()) == {(3, 2, 3), (3, 2, 4), (4, 2, 3)}
-    for query_variant in active_variants:
-        assert len(answers_by_query_variant[query_variant]) >= 20
+    for query_id in active_variants:
+        assert len(answers_by_query_id[query_id]) >= 20
 
 
 def test_gui_relation_navigation_path_target_label_deterministic() -> None:
     task = PagesRelationNavigationPathTargetLabelTask()
     params = {
-        "query_variant": "ribbon_group_command_label",
+        "query_id": "ribbon_group_command_label",
         "scene_variant": "cad_workspace",
         "style_variant": "contrast",
         "target_label": "M",

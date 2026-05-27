@@ -67,7 +67,7 @@ SIGN_INTERVAL_VARIANTS: Tuple[str, ...] = (
     SIGN_INTERVAL_NEGATIVE_LABEL,
 )
 INTERVAL_PROPERTY_VARIANTS: Tuple[str, ...] = MONOTONIC_INTERVAL_VARIANTS + SIGN_INTERVAL_VARIANTS
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "function_status_label",
     "one_to_one_status_label",
     "domain_match_label",
@@ -177,8 +177,8 @@ class _RelationSpec:
 class _ResolvedQuery:
     """Resolved task axes for one generated instance."""
 
-    query_variant: str
-    query_variant_probabilities: Dict[str, float]
+    query_id: str
+    query_id_probabilities: Dict[str, float]
     winner_label: str
     winner_label_probabilities: Dict[str, float]
     label_pool: Tuple[str, ...]
@@ -297,15 +297,15 @@ def _resolve_line_colors(params: Mapping[str, Any], *, instance_seed: int) -> Tu
     }
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -313,11 +313,11 @@ def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -341,7 +341,7 @@ def _resolve_winner_label(
     params: Mapping[str, Any],
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     label_pool: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     winner_params = _decoupled_winner_label_params(params)
@@ -367,38 +367,38 @@ def _resolve_winner_label(
         selection_index = resolve_selection_index(
             params=winner_params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.winner_label.{query_variant}",
+            namespace=f"{TASK_ID}.winner_label.{query_id}",
         )
         winner_label = str(label_set[int(selection_index) % len(label_set)])
     return winner_label, {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
-def _target_interval_for_variant(query_variant: str) -> Tuple[float, float] | None:
+def _target_interval_for_variant(query_id: str) -> Tuple[float, float] | None:
     """Return the prompt-facing x-interval for interval-property tasks."""
 
-    if str(query_variant) in set(MONOTONIC_INTERVAL_VARIANTS):
+    if str(query_id) in set(MONOTONIC_INTERVAL_VARIANTS):
         return (-2.0, 2.0)
-    if str(query_variant) in set(SIGN_INTERVAL_VARIANTS):
+    if str(query_id) in set(SIGN_INTERVAL_VARIANTS):
         return (-4.0, 4.0)
     return None
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+    query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
     label_pool = _resolve_label_pool(params)
     winner_label, winner_label_probabilities = _resolve_winner_label(
         params,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         label_pool=label_pool,
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id=str(query_id),
+        query_id_probabilities=dict(query_id_probabilities),
         winner_label=str(winner_label),
         winner_label_probabilities=dict(winner_label_probabilities),
         label_pool=tuple(label_pool),
-        target_interval=_target_interval_for_variant(str(query_variant)),
+        target_interval=_target_interval_for_variant(str(query_id)),
     )
 
 
@@ -933,17 +933,17 @@ def _random_asymmetric_relation(rng, relation_id: str, *, template_index: int) -
     )
 
 
-def _sample_symmetry_winner(rng, query_variant: str, template_index: int) -> _RelationSpec:
-    if str(query_variant) == "y_axis_symmetry_label":
+def _sample_symmetry_winner(rng, query_id: str, template_index: int) -> _RelationSpec:
+    if str(query_id) == "y_axis_symmetry_label":
         return _random_y_axis_symmetric_relation(rng, "y_axis_symmetric_relation", template_index=int(template_index))
-    if str(query_variant) == "x_axis_symmetry_label":
+    if str(query_id) == "x_axis_symmetry_label":
         return _random_x_axis_symmetric_relation(rng, "x_axis_symmetric_relation", template_index=int(template_index))
-    if str(query_variant) == "origin_symmetry_label":
+    if str(query_id) == "origin_symmetry_label":
         return _random_origin_symmetric_relation(rng, "origin_symmetric_relation", template_index=int(template_index))
-    raise ValueError(f"unsupported symmetry query_variant: {query_variant}")
+    raise ValueError(f"unsupported symmetry query_id: {query_id}")
 
 
-def _sample_symmetry_distractors(rng, query_variant: str) -> List[_RelationSpec]:
+def _sample_symmetry_distractors(rng, query_id: str) -> List[_RelationSpec]:
     pools = {
         "y_axis_symmetry_label": (
             lambda index: _random_x_axis_symmetric_relation(rng, f"x_axis_distractor_{index}", template_index=index),
@@ -961,9 +961,9 @@ def _sample_symmetry_distractors(rng, query_variant: str) -> List[_RelationSpec]
             lambda index: _random_asymmetric_relation(rng, f"asymmetric_distractor_{index}", template_index=index),
         ),
     }
-    samplers = pools.get(str(query_variant))
+    samplers = pools.get(str(query_id))
     if samplers is None:
-        raise ValueError(f"unsupported symmetry query_variant: {query_variant}")
+        raise ValueError(f"unsupported symmetry query_id: {query_id}")
     distractors = [
         samplers[0](0),
         samplers[0](1),
@@ -1192,12 +1192,12 @@ def _local_monotonic_relation(
 def _sample_monotonic_interval_bank(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_interval: Tuple[float, float],
 ) -> Tuple[_RelationSpec, List[_RelationSpec]]:
     """Sample one winner and five nonmatching monotonic-interval distractors."""
 
-    target_increasing = str(query_variant) == MONOTONIC_INTERVAL_INCREASING_LABEL
+    target_increasing = str(query_id) == MONOTONIC_INTERVAL_INCREASING_LABEL
     winner = _local_monotonic_relation(
         rng,
         "target_local_monotone_relation",
@@ -1269,12 +1269,12 @@ def _interval_crossing_relation(
 def _sample_sign_interval_bank(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_interval: Tuple[float, float],
 ) -> Tuple[_RelationSpec, List[_RelationSpec]]:
     """Sample one winner and five nonmatching sign-interval distractors."""
 
-    target_positive = str(query_variant) == SIGN_INTERVAL_POSITIVE_LABEL
+    target_positive = str(query_id) == SIGN_INTERVAL_POSITIVE_LABEL
     winner = _interval_sign_relation(
         rng,
         "target_interval_sign_relation",
@@ -1302,11 +1302,11 @@ def _sample_sign_interval_bank(
     return winner, distractors
 
 
-def _template_index(params: Mapping[str, Any], *, instance_seed: int, query_variant: str, support_size: int) -> int:
+def _template_index(params: Mapping[str, Any], *, instance_seed: int, query_id: str, support_size: int) -> int:
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.relation_template.{query_variant}",
+        namespace=f"{TASK_ID}.relation_template.{query_id}",
     )
     return int(selection_index) % max(1, int(support_size))
 
@@ -1323,55 +1323,55 @@ def _shuffled_without_winner(
 
 
 def _build_relations(query: _ResolvedQuery, *, instance_seed: int, params: Mapping[str, Any]) -> Dict[str, _RelationSpec]:
-    query_variant = str(query.query_variant)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.relations.{query_variant}")
+    query_id = str(query.query_id)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.relations.{query_id}")
     for _ in range(100):
         relations_by_label: Dict[str, _RelationSpec] = {}
-        if query_variant == "function_status_label":
+        if query_id == "function_status_label":
             winner = _sample_function_winner(
                 rng,
-                _template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=7),
+                _template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=7),
             )
             distractors = _sample_function_distractors(rng)
             rng.shuffle(distractors)
-        elif query_variant == "one_to_one_status_label":
+        elif query_id == "one_to_one_status_label":
             winner = _sample_one_to_one_winner(
                 rng,
-                _template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=6),
+                _template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=6),
             )
             distractors = _sample_one_to_one_distractors(rng)
             rng.shuffle(distractors)
-        elif query_variant in {"y_axis_symmetry_label", "x_axis_symmetry_label", "origin_symmetry_label"}:
+        elif query_id in {"y_axis_symmetry_label", "x_axis_symmetry_label", "origin_symmetry_label"}:
             winner = _sample_symmetry_winner(
                 rng,
-                query_variant,
-                _template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=3),
+                query_id,
+                _template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=3),
             )
-            distractors = _sample_symmetry_distractors(rng, query_variant)
-        elif query_variant in {"domain_match_label", "range_match_label"}:
+            distractors = _sample_symmetry_distractors(rng, query_id)
+        elif query_id in {"domain_match_label", "range_match_label"}:
             bank = _sample_domain_range_bank(rng)
-            winner = bank[_template_index(params, instance_seed=int(instance_seed), query_variant=query_variant, support_size=len(bank))]
+            winner = bank[_template_index(params, instance_seed=int(instance_seed), query_id=query_id, support_size=len(bank))]
             distractors = _shuffled_without_winner(bank, winner=winner, rng=rng)
-        elif query_variant in set(MONOTONIC_INTERVAL_VARIANTS):
+        elif query_id in set(MONOTONIC_INTERVAL_VARIANTS):
             target_interval = query.target_interval
             if target_interval is None:
-                raise ValueError(f"{query_variant} requires target_interval")
+                raise ValueError(f"{query_id} requires target_interval")
             winner, distractors = _sample_monotonic_interval_bank(
                 rng,
-                query_variant=query_variant,
+                query_id=query_id,
                 target_interval=target_interval,
             )
-        elif query_variant in set(SIGN_INTERVAL_VARIANTS):
+        elif query_id in set(SIGN_INTERVAL_VARIANTS):
             target_interval = query.target_interval
             if target_interval is None:
-                raise ValueError(f"{query_variant} requires target_interval")
+                raise ValueError(f"{query_id} requires target_interval")
             winner, distractors = _sample_sign_interval_bank(
                 rng,
-                query_variant=query_variant,
+                query_id=query_id,
                 target_interval=target_interval,
             )
         else:
-            raise ValueError(f"unsupported query_variant: {query_variant}")
+            raise ValueError(f"unsupported query_id: {query_id}")
 
         distractor_iter = iter(distractors)
         for label in query.label_pool:
@@ -1384,17 +1384,17 @@ def _build_relations(query: _ResolvedQuery, *, instance_seed: int, params: Mappi
         except RuntimeError:
             continue
         return relations_by_label
-    raise RuntimeError(f"failed to sample unique function-property answer for {query_variant}")
+    raise RuntimeError(f"failed to sample unique function-property answer for {query_id}")
 
 
-def _symmetry_axis_for_variant(query_variant: str) -> str:
-    if str(query_variant) == "y_axis_symmetry_label":
+def _symmetry_axis_for_variant(query_id: str) -> str:
+    if str(query_id) == "y_axis_symmetry_label":
         return "y_axis"
-    if str(query_variant) == "x_axis_symmetry_label":
+    if str(query_id) == "x_axis_symmetry_label":
         return "x_axis"
-    if str(query_variant) == "origin_symmetry_label":
+    if str(query_id) == "origin_symmetry_label":
         return "origin"
-    raise ValueError(f"unsupported symmetry query_variant: {query_variant}")
+    raise ValueError(f"unsupported symmetry query_id: {query_id}")
 
 
 def _points_over_interval(relation: _RelationSpec, interval: Tuple[float, float]) -> List[Point]:
@@ -1441,38 +1441,38 @@ def _is_negative_on_interval(relation: _RelationSpec, interval: Tuple[float, flo
 
 
 def _validate_unique_answer(query: _ResolvedQuery, relations_by_label: Mapping[str, _RelationSpec]) -> None:
-    query_variant = str(query.query_variant)
-    if query_variant == "function_status_label":
+    query_id = str(query.query_id)
+    if query_id == "function_status_label":
         matches = [label for label, relation in relations_by_label.items() if bool(relation.is_function)]
-    elif query_variant == "one_to_one_status_label":
+    elif query_id == "one_to_one_status_label":
         matches = [label for label, relation in relations_by_label.items() if bool(relation.is_function and relation.is_one_to_one)]
-    elif query_variant in {"y_axis_symmetry_label", "x_axis_symmetry_label", "origin_symmetry_label"}:
-        axis = _symmetry_axis_for_variant(query_variant)
+    elif query_id in {"y_axis_symmetry_label", "x_axis_symmetry_label", "origin_symmetry_label"}:
+        axis = _symmetry_axis_for_variant(query_id)
         matches = [label for label, relation in relations_by_label.items() if str(axis) in set(relation.symmetry_axes)]
-    elif query_variant == "domain_match_label":
+    elif query_id == "domain_match_label":
         target = relations_by_label[str(query.winner_label)].domain
         matches = [label for label, relation in relations_by_label.items() if tuple(relation.domain) == tuple(target)]
-    elif query_variant == "range_match_label":
+    elif query_id == "range_match_label":
         target = relations_by_label[str(query.winner_label)].range
         matches = [label for label, relation in relations_by_label.items() if tuple(relation.range) == tuple(target)]
-    elif query_variant == MONOTONIC_INTERVAL_INCREASING_LABEL:
+    elif query_id == MONOTONIC_INTERVAL_INCREASING_LABEL:
         if query.target_interval is None:
-            raise ValueError(f"{query_variant} requires target_interval")
+            raise ValueError(f"{query_id} requires target_interval")
         matches = [label for label, relation in relations_by_label.items() if _is_increasing_on_interval(relation, query.target_interval)]
-    elif query_variant == MONOTONIC_INTERVAL_DECREASING_LABEL:
+    elif query_id == MONOTONIC_INTERVAL_DECREASING_LABEL:
         if query.target_interval is None:
-            raise ValueError(f"{query_variant} requires target_interval")
+            raise ValueError(f"{query_id} requires target_interval")
         matches = [label for label, relation in relations_by_label.items() if _is_decreasing_on_interval(relation, query.target_interval)]
-    elif query_variant == SIGN_INTERVAL_POSITIVE_LABEL:
+    elif query_id == SIGN_INTERVAL_POSITIVE_LABEL:
         if query.target_interval is None:
-            raise ValueError(f"{query_variant} requires target_interval")
+            raise ValueError(f"{query_id} requires target_interval")
         matches = [label for label, relation in relations_by_label.items() if _is_positive_on_interval(relation, query.target_interval)]
-    elif query_variant == SIGN_INTERVAL_NEGATIVE_LABEL:
+    elif query_id == SIGN_INTERVAL_NEGATIVE_LABEL:
         if query.target_interval is None:
-            raise ValueError(f"{query_variant} requires target_interval")
+            raise ValueError(f"{query_id} requires target_interval")
         matches = [label for label, relation in relations_by_label.items() if _is_negative_on_interval(relation, query.target_interval)]
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
     if matches != [str(query.winner_label)]:
         raise RuntimeError(f"function_property_label answer is not unique: {matches}")
 
@@ -1643,7 +1643,7 @@ def _relation_trace_payload(relation: _RelationSpec) -> Dict[str, Any]:
     return payload
 
 
-def _build_complexity(query_variant: str) -> Any:
+def _build_complexity(query_id: str) -> Any:
     weights = resolve_geometry_complexity_weights(
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=TASK_ID,
@@ -1660,7 +1660,7 @@ def _build_complexity(query_variant: str) -> Any:
         MONOTONIC_INTERVAL_DECREASING_LABEL: 0.60,
         SIGN_INTERVAL_POSITIVE_LABEL: 0.54,
         SIGN_INTERVAL_NEGATIVE_LABEL: 0.56,
-    }[str(query_variant)]
+    }[str(query_id)]
     ambiguity = {
         "function_status_label": 0.36,
         "one_to_one_status_label": 0.52,
@@ -1673,7 +1673,7 @@ def _build_complexity(query_variant: str) -> Any:
         MONOTONIC_INTERVAL_DECREASING_LABEL: 0.48,
         SIGN_INTERVAL_POSITIVE_LABEL: 0.42,
         SIGN_INTERVAL_NEGATIVE_LABEL: 0.44,
-    }[str(query_variant)]
+    }[str(query_id)]
     return build_geometry_task_complexity(
         weights=weights,
         components={
@@ -1723,7 +1723,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1761,7 +1761,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                     for label in query.label_pool
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "winner_label": str(query.winner_label),
                     "target_domain": str(rendered_scene.target_domain),
                     "target_range": str(rendered_scene.target_range),
@@ -1769,15 +1769,15 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
-                    "variant_probabilities": dict(query.query_variant_probabilities),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id": str(query.query_id),
+                    "variant_probabilities": dict(query.query_id_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "winner_label": str(query.winner_label),
                     "winner_label_probabilities": dict(query.winner_label_probabilities),
                     "candidate_label_pool": list(query.label_pool),
@@ -1808,19 +1808,19 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "coord_space": "pixel",
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_type": "option_letter",
                 "answer_value": str(query.winner_label),
                 "winner_label": str(query.winner_label),
                 "winner_relation": dict(_relation_trace_payload(winner_relation)),
                 "relations_by_label": dict(relations_trace),
-                "variant_probabilities": dict(query.query_variant_probabilities),
+                "variant_probabilities": dict(query.query_id_probabilities),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "target_interval": str(rendered_scene.target_interval),
             },
             "witness_symbolic": {
                 "type": "function_property_panel_selection",
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_label": str(query.winner_label),
                 "target_domain": str(rendered_scene.target_domain),
                 "target_range": str(rendered_scene.target_range),
@@ -1842,9 +1842,9 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
             image=rendered_scene.image,
             image_id="img_0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(str(query.query_variant)),
+            complexity=_build_complexity(str(query.query_id)),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1857,5 +1857,5 @@ class GeometryAnalyticalRelationPropertyLabelTask(
     """Choose the panel matching one requested coordinate-relation property."""
 
     task_id = "task_geometry__function_panels__relation_property_label"
-    fixed_query_variants = SUPPORTED_QUERY_VARIANTS
+    fixed_query_ids = SUPPORTED_QUERY_IDS
     public_scene_id = "function_panels"

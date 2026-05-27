@@ -18,7 +18,7 @@ from .common import (
 
 
 SUPPORTED_DOCUMENT_MAP_SCENE_VARIANTS: Tuple[str, ...] = ("campus_map",)
-SUPPORTED_DOCUMENT_MAP_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DOCUMENT_MAP_QUERY_IDS: Tuple[str, ...] = (
     "destination_after_directions",
     "landmark_after_route_step",
 )
@@ -198,25 +198,25 @@ def resolve_map_scene_variant(
     )
 
 
-def resolve_map_query_variant(
+def resolve_map_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the active semantic map-query variant."""
+    """Resolve the active semantic map-query id."""
 
     return resolve_diagrams_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DOCUMENT_MAP_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DOCUMENT_MAP_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -442,7 +442,7 @@ def _title(*, rng) -> str:
 
 def build_map_navigation_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -527,7 +527,7 @@ def build_map_navigation_dataset(
     question_text: str
     evidence_semantics: str
 
-    if str(query_variant) == "destination_after_directions":
+    if str(query_id) == "destination_after_directions":
         step_min, step_max = resolve_required_int_bounds(
             params,
             gen_defaults,
@@ -549,7 +549,7 @@ def build_map_navigation_dataset(
             f"{direction_text}. What landmark do you reach? Return the exact landmark label."
         )
         evidence_semantics = "route_landmarks_ordered"
-    elif str(query_variant) == "landmark_after_route_step":
+    elif str(query_id) == "landmark_after_route_step":
         step_min, step_max = resolve_required_int_bounds(
             params,
             gen_defaults,
@@ -586,11 +586,11 @@ def build_map_navigation_dataset(
         )
         evidence_semantics = "highlighted_route_landmarks_ordered_to_answer"
     else:
-        raise ValueError(f"unsupported map query variant: {query_variant}")
+        raise ValueError(f"unsupported map query id: {query_id}")
 
     return {
         "scene_title": _title(rng=rng),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": "campus_map",
         "question_text": str(question_text),
         "question_format": "map_navigation_label",
@@ -615,9 +615,9 @@ __all__ = [
     "MapDefaults",
     "MapRenderParams",
     "SUPPORTED_DOCUMENT_MAP_SCENE_VARIANTS",
-    "SUPPORTED_DOCUMENT_MAP_QUERY_VARIANTS",
+    "SUPPORTED_DOCUMENT_MAP_QUERY_IDS",
     "build_map_navigation_dataset",
     "resolve_map_render_params",
     "resolve_map_scene_variant",
-    "resolve_map_query_variant",
+    "resolve_map_query_id",
 ]

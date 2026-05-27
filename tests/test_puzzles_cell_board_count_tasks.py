@@ -52,7 +52,7 @@ def test_cell_board_color_count_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "color_count"
+    assert str(out.query_id) == "color_count"
     assert out.answer_gt.type == "integer"
     assert isinstance(out.answer_gt.value, int)
     assert out.evidence_gt.type == "point_set"
@@ -152,7 +152,7 @@ def test_cell_board_color_components_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "color_components"
+    assert str(out.query_id) == "color_components"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -247,7 +247,7 @@ def test_cell_board_largest_component_size_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "largest_component_size"
+    assert str(out.query_id) == "largest_component_size"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]

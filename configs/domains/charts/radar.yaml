@@ -16,12 +16,12 @@ generation:
     target_count_max: 6
     min_condition_metric_count_min: 2
     min_condition_metric_count_max: 4
-    query_variant_weights:
+    query_id_weights:
       highlighted_metric_threshold_panel_count: 1.0
       threshold_metric_count_for_panel: 1.0
       profile_advantage_count: 1.0
       matching_condition_panel_count: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
 
 rendering:
   shared:

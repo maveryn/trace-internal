@@ -7,14 +7,14 @@ from typing import Any, Dict, Mapping, Sequence
 
 from ...base import TaskOutput
 from ...shared.deterministic_sampling import resolve_selection_index
-from ...shared.fixed_query import force_query_variant_params, rewrite_public_query_output
+from ...shared.fixed_query import force_query_id_params, rewrite_public_query_output
 from .information_style import infer_graph_scene_id
 
 
-def forced_query_variant_params(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
-    """Return params that force one internal graph query variant."""
+def forced_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
+    """Return params that force one internal graph query id."""
 
-    return force_query_variant_params(params, query_variant=str(query_variant))
+    return force_query_id_params(params, query_id=str(query_id))
 
 
 def rewrite_graph_query_output(output: TaskOutput, *, query_id: str) -> TaskOutput:
@@ -23,8 +23,8 @@ def rewrite_graph_query_output(output: TaskOutput, *, query_id: str) -> TaskOutp
     rewritten = rewrite_public_query_output(
         output,
         query_id=str(query_id),
-        params_query_variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as="internal_query_variant",
+        params_query_id_probabilities={"default": 1.0},
+        preserve_internal_query_id_as="internal_query_id",
     )
     if rewritten.scene_id:
         return rewritten
@@ -75,7 +75,7 @@ def select_merged_graph_query_id(
     if forced is not None:
         return str(forced)
 
-    raw_weights = params.get("query_id_weights", params.get("query_variant_weights"))
+    raw_weights = params.get("query_id_weights", params.get("query_id_weights"))
     if isinstance(raw_weights, Mapping):
         weighted: list[str] = []
         canonical_weights = {str(query_id): 0.0 for query_id in supported}
@@ -108,7 +108,7 @@ def forced_merged_graph_query_id(
     supported = tuple(str(query_id) for query_id in supported_query_ids)
     alias_map = {str(key): str(value) for key, value in (aliases or {}).items()}
     supported_set = set(supported)
-    for key in ("query_id", "query_variant"):
+    for key in ("query_id", "query_id"):
         value = params.get(str(key))
         if value is None:
             continue
@@ -144,7 +144,7 @@ def decoupled_merged_branch_params(
 
 
 __all__ = [
-    "forced_query_variant_params",
+    "forced_query_id_params",
     "rewrite_graph_query_output",
     "rewrite_graph_public_task_output",
     "decoupled_merged_branch_params",

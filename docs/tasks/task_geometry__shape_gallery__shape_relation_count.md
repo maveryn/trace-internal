@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `similarity`
 3. Scene id: `shape_gallery`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `congruent_count` or `similar_count`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

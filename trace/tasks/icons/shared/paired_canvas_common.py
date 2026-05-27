@@ -299,7 +299,7 @@ def choose_query_id(
     task_id: str,
     query_ids: Sequence[str],
     weight_key: str,
-    explicit_keys: Sequence[str] = ("query_id", "query_variant", "query_variant"),
+    explicit_keys: Sequence[str] = ("query_id", "query_id", "query_id"),
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one public query id with balanced sampling when weights are uniform."""
 
@@ -314,7 +314,7 @@ def choose_query_id(
             raise ValueError(f"unsupported query id for {task_id}: {explicit}")
         return str(explicit), {query: (1.0 if query == explicit else 0.0) for query in supported}
 
-    raw_weights = params.get(weight_key, params.get("query_variant_weights", gen_defaults.get(weight_key, {query: 1.0 for query in supported})))
+    raw_weights = params.get(weight_key, params.get("query_id_weights", gen_defaults.get(weight_key, {query: 1.0 for query in supported})))
     if not isinstance(raw_weights, Mapping):
         raise ValueError(f"{weight_key} must be a mapping when provided")
     probabilities = normalize_positive_weights(
@@ -323,7 +323,7 @@ def choose_query_id(
     )
     selected = str(weighted_choice(rng, probabilities, sort_keys=True))
     enabled = bool(params.get("balanced_query_sampling", gen_defaults.get("balanced_query_sampling", True)))
-    overridden = any(key in params and params.get(key) is not None for key in (weight_key, "query_variant_weights"))
+    overridden = any(key in params and params.get(key) is not None for key in (weight_key, "query_id_weights"))
     positive_values = [float(value) for value in probabilities.values() if float(value) > 0.0]
     if bool(enabled) and (not overridden) and positive_values and max(positive_values) - min(positive_values) <= 1e-9:
         selection_index = resolve_selection_index(
@@ -543,15 +543,14 @@ def paired_task_output(
             },
         },
         "query_spec": {
-            "query_variant": str(payload.query_id),
+            "query_id": str(payload.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "query_id": str(payload.query_id),
-                "query_variant": str(payload.query_id),
-                "query_variant_probabilities": dict(payload.query_probabilities),
+                "query_id_probabilities": dict(payload.query_probabilities),
                 "object_count": int(payload.object_count),
                 "object_count_probabilities": dict(payload.object_count_probabilities),
                 "target_count": int(payload.target_count),
@@ -579,10 +578,8 @@ def paired_task_output(
         },
         "execution_trace": {
             "scene_variant": PANEL_SCENE_ID,
-            "query_variant": str(payload.query_id),
             "query_id": str(payload.query_id),
-            "query_variant": str(payload.query_id),
-            "query_variant_probabilities": dict(payload.query_probabilities),
+            "query_id_probabilities": dict(payload.query_probabilities),
             "question_format": str(payload.question_format),
             "object_count": int(payload.object_count),
             "object_count_probabilities": dict(payload.object_count_probabilities),
@@ -623,7 +620,7 @@ def paired_task_output(
         trace_payload=trace_payload,
         complexity=complexity,
         task_versions=default_task_versions(),
-        query_variant=str(payload.query_id),
+        query_id=str(payload.query_id),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
     return rewrite_icons_query_output(

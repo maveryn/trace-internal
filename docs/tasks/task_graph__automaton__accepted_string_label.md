@@ -8,7 +8,7 @@
 5. Objective: choose the one labeled candidate input string accepted by a visible finite-state automaton.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `dfa_accepted_string_label` or `nfa_accepted_string_label`
 3. `answer_gt.type`: `string`
 4. `evidence_gt.type`: `point_sequence`

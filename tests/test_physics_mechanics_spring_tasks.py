@@ -63,14 +63,14 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
 
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
     expected_internal_query = expected_query_id
@@ -80,12 +80,12 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
             if params.get("solve_for") == "weight"
             else "missing_extension_for_weight"
         )
-    assert trace["query_spec"]["params"]["internal_query_variant"] == expected_internal_query
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
 
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_variant"] == expected_internal_query
+    assert execution["internal_query_id"] == expected_internal_query
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
@@ -94,14 +94,14 @@ def test_physics_mechanics_spring_tasks_emit_expected_contract(
     assert int(execution["scale_factor"]) in {1, 2, 3}
     if expected_query_id == "missing_value" and str(execution["solve_for"]) == "weight":
 
-        assert execution["internal_query_variant"] == "missing_weight_for_extension"
+        assert execution["internal_query_id"] == "missing_weight_for_extension"
 
         assert execution["right_measurement"]["shown_weight_value"] is None
 
         assert execution["right_measurement"]["shown_extension_value"] == execution["right_measurement"]["true_extension_value"]
     elif expected_query_id == "missing_value" and str(execution["solve_for"]) == "extension":
 
-        assert execution["internal_query_variant"] == "missing_extension_for_weight"
+        assert execution["internal_query_id"] == "missing_extension_for_weight"
 
         assert execution["right_measurement"]["shown_weight_value"] == execution["right_measurement"]["true_weight_value"]
 
@@ -177,10 +177,10 @@ def test_physics_mechanics_spring_tasksseeded_sampler_decouples_answer_support()
             params={},
             max_attempts=60,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
         solve_for = out.trace_payload["execution_trace"].get("solve_for")
-        query_key = (query_variant, str(solve_for) if solve_for is not None else None)
+        query_key = (query_id, str(solve_for) if solve_for is not None else None)
         answers_by_query[query_key].add(int(out.answer_gt.value))
         scenes_by_query[query_key][scene_variant] += 1
         combos[(*query_key, scene_variant)] += 1
@@ -192,9 +192,9 @@ def test_physics_mechanics_spring_tasksseeded_sampler_decouples_answer_support()
             params={},
             max_attempts=60,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
-        query_key = (query_variant, None)
+        query_key = (query_id, None)
         answers_by_query[query_key].add(int(out.answer_gt.value))
         scenes_by_query[query_key][scene_variant] += 1
         combos[(*query_key, scene_variant)] += 1

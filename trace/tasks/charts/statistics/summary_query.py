@@ -42,13 +42,13 @@ StatisticKind = str
 SceneVariant = str
 
 TASK_ID = "charts_statistics_summary_query_base"
-_VALUE_QUERY_VARIANTS: Tuple[str, ...] = (
+_VALUE_QUERY_IDS: Tuple[str, ...] = (
     "order_statistic_value",
 )
-_LABEL_QUERY_VARIANTS: Tuple[str, ...] = (
+_LABEL_QUERY_IDS: Tuple[str, ...] = (
     "order_statistic_label",
 )
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = _VALUE_QUERY_VARIANTS + _LABEL_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = _VALUE_QUERY_IDS + _LABEL_QUERY_IDS
 _SUPPORTED_STATISTIC_KINDS: Tuple[str, ...] = (
     "median",
     "nth_highest",
@@ -107,19 +107,19 @@ def _public_task_param_overrides(task_id: str) -> Dict[str, Any]:
     return overrides
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic chart statistic variant."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -162,8 +162,8 @@ def _support_sampling_params(params: Mapping[str, Any]) -> Dict[str, Any]:
     if "_sample_cursor" not in support_params:
         return support_params
     divisor = 1
-    if "query_variant" not in support_params and "query_variant_weights" not in support_params:
-        divisor *= max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    if "query_id" not in support_params and "query_id_weights" not in support_params:
+        divisor *= max(1, len(_SUPPORTED_QUERY_IDS))
     if "statistic_kind" not in support_params and "statistic_kind_weights" not in support_params:
         divisor *= max(1, len(_SUPPORTED_STATISTIC_KINDS))
     support_params["_sample_cursor"] = int(support_params["_sample_cursor"]) // max(1, divisor)
@@ -210,13 +210,13 @@ class ChartsStatisticsSummaryQueryTask:
             merged_params = dict(public_overrides)
             merged_params.update(dict(params))
             params = merged_params
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         statistic_kind, statistic_kind_probabilities = _resolve_statistic_kind(
             params,
             instance_seed=int(instance_seed),
         )
-        answer_is_label = str(query_variant) == "order_statistic_label"
+        answer_is_label = str(query_id) == "order_statistic_label"
         support_params = _support_sampling_params(params)
         values, answer_value, evidence_labels, trace_extras = build_summary_statistics_dataset_for_variant(
             statistic_kind=str(statistic_kind),
@@ -328,7 +328,7 @@ class ChartsStatisticsSummaryQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(task_key),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -382,7 +382,7 @@ class ChartsStatisticsSummaryQueryTask:
                 "scene_kind": f"chart_{str(scene_variant)}_statistics",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "statistic_kind": str(statistic_kind),
                     "answer_value": int(answer_value),
@@ -391,17 +391,17 @@ class ChartsStatisticsSummaryQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "statistic_kind": str(statistic_kind),
                     "answer_target": "label" if answer_is_label else "value",
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "statistic_kind_probabilities": dict(statistic_kind_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "mark_count": int(trace_extras["mark_count"]),
@@ -450,7 +450,7 @@ class ChartsStatisticsSummaryQueryTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "statistic_kind": str(statistic_kind),
                 "answer_value": int(answer_value),
@@ -463,7 +463,7 @@ class ChartsStatisticsSummaryQueryTask:
                 "mark_count_range": list(trace_extras["mark_count_range"]),
                 "target_answer": int(trace_extras["target_answer"]),
                 "target_answer_range": list(trace_extras["target_answer_range"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "statistic_kind_probabilities": dict(statistic_kind_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": str(question_format),
@@ -517,7 +517,7 @@ class ChartsStatisticsSummaryQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -527,7 +527,7 @@ class ChartsSingleSeriesOrderStatisticValueTask(MergedChartQueryVariantTaskMixin
     """Return a sampled order-statistic value from a labeled chart."""
 
     task_id = "task_charts__single_series__order_statistic_value"
-    allowed_query_variants = _VALUE_QUERY_VARIANTS
+    allowed_query_ids = _VALUE_QUERY_IDS
 
 
 @register_task
@@ -535,7 +535,7 @@ class ChartsSingleSeriesOrderStatisticLabelTask(MergedChartQueryVariantTaskMixin
     """Return the label matching a sampled order statistic from a labeled chart."""
 
     task_id = "task_charts__single_series__order_statistic_label"
-    allowed_query_variants = _LABEL_QUERY_VARIANTS
+    allowed_query_ids = _LABEL_QUERY_IDS
 
 
 __all__ = [

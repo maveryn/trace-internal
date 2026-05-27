@@ -36,7 +36,7 @@ _EXCEL_HEADERS: List[str] = [
     "image",
     "evidence_image",
     "task",
-    "query_variant",
+    "query_id",
     "scene_id",
     "query_id",
     "prompt_answer",
@@ -127,14 +127,13 @@ def _dedupe_sheet_title(base: str, used: set[str]) -> str:
         index += 1
 
 
-def _review_variant_key(*, query_variant: str, query_id: str) -> str:
+def _review_query_id_key(*, query_id: str) -> str:
     """Return the review grouping key for one exported task instance."""
 
-    query_variant_text = str(query_variant).strip()
     query_id_text = str(query_id).strip()
-    if query_variant_text in {"", "default"} and query_id_text:
+    if query_id_text in {"", "default"} and query_id_text:
         return query_id_text
-    return query_variant_text
+    return query_id_text
 
 
 def _ensure_link_or_copy(source: Path, destination: Path) -> None:
@@ -262,7 +261,7 @@ def _populate_inspection_sheet(
 
         values = [
             row.get("task", ""),
-            row.get("query_variant", ""),
+            row.get("query_id", ""),
             row.get("scene_id", ""),
             row.get("query_id", ""),
             row.get("prompt_answer", row.get("prompt_answer_only", "")),
@@ -284,7 +283,7 @@ def _populate_inspection_sheet(
 
 
 def _write_inspection_excel(
-    rows_by_variant: Mapping[str, Sequence[Mapping[str, Any]]],
+    rows_by_query_id: Mapping[str, Sequence[Mapping[str, Any]]],
     path: Path,
     *,
     out_root: Path,
@@ -294,19 +293,19 @@ def _write_inspection_excel(
     used_titles: set[str] = set()
     variant_to_sheet: Dict[str, str] = {}
 
-    sorted_variants = sorted(str(variant) for variant in rows_by_variant.keys()) or [""]
-    for index, query_variant in enumerate(sorted_variants):
-        base_title = str(query_variant).strip() or "default"
+    sorted_variants = sorted(str(variant) for variant in rows_by_query_id.keys()) or [""]
+    for index, query_id in enumerate(sorted_variants):
+        base_title = str(query_id).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if index == 0:
             sheet = workbook.active
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(query_variant)] = str(sheet_title)
+        variant_to_sheet[str(query_id)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
-            rows=list(rows_by_variant.get(str(query_variant), [])),
+            rows=list(rows_by_query_id.get(str(query_id), [])),
             out_root=out_root,
             image_buffers=image_buffers,
         )
@@ -343,8 +342,8 @@ def main() -> int:
     train_index = _load_train_instance_index(dataset_root)
     trace_index = _load_trace_index(dataset_root, selected_refs)
 
-    rows_by_variant: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    per_variant_counts: Dict[str, int] = defaultdict(int)
+    rows_by_query_id: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    per_query_id_counts: Dict[str, int] = defaultdict(int)
 
     for ref in selected_refs:
         key = (str(ref["shard_id"]), int(ref["line_index"]))
@@ -357,24 +356,24 @@ def main() -> int:
 
         query_spec = trace_record.get("query_spec", {}) if isinstance(trace_record, Mapping) else {}
         execution_trace = trace_record.get("execution_trace", {}) if isinstance(trace_record, Mapping) else {}
-        query_variant = str(query_spec.get("query_variant") or execution_trace.get("query_variant") or "").strip()
+        query_id = str(query_spec.get("query_id") or execution_trace.get("query_id") or "").strip()
         scene_id = str(instance.get("scene_id") or query_spec.get("scene_id") or taxonomy.scene_id)
         query_id = str(
             instance.get("query_id")
             or query_spec.get("query_id")
             or execution_trace.get("query_id")
-            or resolve_task_query_id(query_variant=query_variant, trace_payload=trace_record)
+            or resolve_task_query_id(query_id=query_id, trace_payload=trace_record)
         )
-        review_variant = _review_variant_key(query_variant=query_variant, query_id=query_id)
-        variant_dir = review_variant or "default"
-        variant_index = int(per_variant_counts[variant_dir])
-        per_variant_counts[variant_dir] += 1
+        review_query_id = _review_query_id_key(query_id=query_id)
+        query_id_dir = review_query_id or "default"
+        query_id_index = int(per_query_id_counts[query_id_dir])
+        per_query_id_counts[query_id_dir] += 1
 
         image_info = list(instance.get("images", []) or [])
         if not image_info:
             raise ValueError(f"instance missing images for {key}")
         image_source = dataset_root / str(image_info[0].get("path", ""))
-        image_destination = images_dir / variant_dir / f"{variant_index:04d}.png"
+        image_destination = images_dir / query_id_dir / f"{query_id_index:04d}.png"
         _ensure_link_or_copy(image_source, image_destination)
         rel_image_path = image_destination.relative_to(out_root).as_posix()
 
@@ -402,7 +401,6 @@ def main() -> int:
             "task": task_id,
             "domain": str(taxonomy.domain),
             "scene_id": scene_id,
-            "query_variant": query_variant,
             "query_id": query_id,
             "instance_seed": int(instance.get("instance_seed", 0)),
             "instance_id": instance.get("instance_id"),
@@ -424,15 +422,15 @@ def main() -> int:
             "projected_evidence": trace_record.get("projected_evidence", {}),
             "versions": instance.get("versions", {}),
         }
-        data_path = data_dir / variant_dir / f"{variant_index:04d}.json"
+        data_path = data_dir / query_id_dir / f"{query_id_index:04d}.json"
         data_path.parent.mkdir(parents=True, exist_ok=True)
         data_path.write_text(json.dumps(data_payload, ensure_ascii=False, indent=2), encoding="utf-8")
         rel_data_path = data_path.relative_to(out_root).as_posix()
 
-        rows_by_variant[review_variant].append(
+        rows_by_query_id[review_query_id].append(
             {
                 "task": task_id,
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_id": scene_id,
                 "query_id": query_id,
                 "prompt": prompt_answer_and_evidence,
@@ -453,7 +451,7 @@ def main() -> int:
             }
         )
 
-    workbook_sheets = _write_inspection_excel(rows_by_variant, workbook_path, out_root=out_root)
+    workbook_sheets = _write_inspection_excel(rows_by_query_id, workbook_path, out_root=out_root)
 
     manifest = {
         "task_id": task_id,
@@ -461,10 +459,10 @@ def main() -> int:
         "scene_id": str(taxonomy.scene_id),
         "calibration_baseline": str(args.calibration_baseline),
         "review_label": review_label,
-        "inspection_count": int(sum(len(rows) for rows in rows_by_variant.values())),
+        "inspection_count": int(sum(len(rows) for rows in rows_by_query_id.values())),
         "variants": {
-            str(variant): int(len(rows_by_variant[variant]))
-            for variant in sorted(rows_by_variant.keys())
+            str(variant): int(len(rows_by_query_id[variant]))
+            for variant in sorted(rows_by_query_id.keys())
         },
         "source_parquet": str(parquet_path),
         "source_dataset_root": str(dataset_root),

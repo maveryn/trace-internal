@@ -53,7 +53,7 @@ def test_cell_board_region_size_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "region_size"
+    assert str(out.query_id) == "region_size"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]

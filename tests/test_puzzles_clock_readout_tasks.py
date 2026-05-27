@@ -32,9 +32,9 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
     scene_variants = ("classic", "minimal", "outline")
     style_variants = ("studio", "accented", "marker")
     accent_colors = ("blue", "orange", "magenta")
-    for variant_index, (task, expected_unit, expected_direction) in enumerate(task_cases):
+    for query_id_index, (task, expected_unit, expected_direction) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 20300 + (variant_index * 20) + scene_index
+            seed = 20300 + (query_id_index * 20) + scene_index
             out = task.generate(
                 seed,
                 params={
@@ -59,10 +59,10 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
             expected_hand_count = 3 if expected_unit == "seconds" else 2
             assert len(out.evidence_gt.value) == expected_hand_count
             assert trace["scene_ir"]["scene_kind"] == "puzzles_clock_single"
-            assert out.query_variant == "default"
+            assert out.query_id == "default"
             assert out.query_id == f"{expected_unit}_{expected_direction}"
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["source_query_variant"]) == "offset_time"
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["source_query_id"]) == "offset_time"
             assert str(execution["offset_unit"]) == expected_unit
             assert str(execution["offset_direction"]) == expected_direction
             assert str(execution["scene_variant"]) == str(scene_variant)
@@ -166,7 +166,7 @@ def test_puzzles_clock_balanced_sampling_defaults_cover_axes() -> None:
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         offset_units[str(execution["offset_unit"])] += 1
         offset_directions[str(execution["offset_direction"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1

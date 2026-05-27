@@ -82,7 +82,7 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
 
     assert "task_graph__flow_network__max_flow_value" in TASK_REGISTRY
     assert out.scene_id == "flow_network"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "max_flow_value"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_pair_set"

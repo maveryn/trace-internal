@@ -9,7 +9,7 @@ from typing import Iterable, Sequence, Tuple
 SIZE = 9
 BOX_SIZE = 3
 DIGITS: Tuple[int, ...] = tuple(range(1, 10))
-SUPPORTED_SUDOKU_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SUDOKU_QUERY_IDS: Tuple[str, ...] = (
     "marked_cell_value",
     "marked_cell_candidate_count",
     "unit_missing_digits_count",
@@ -35,7 +35,7 @@ class SudokuSample:
 
     board: Board
     solution: Board
-    query_variant: str
+    query_id: str
     answer: int
     evidence_coords: Tuple[Coord, ...]
     marked_cell: Coord | None
@@ -224,7 +224,7 @@ __all__ = [
     "SIZE",
     "Board",
     "Coord",
-    "SUPPORTED_SUDOKU_QUERY_VARIANTS",
+    "SUPPORTED_SUDOKU_QUERY_IDS",
     "SUPPORTED_SUDOKU_SCENE_VARIANTS",
     "SUPPORTED_SUDOKU_UNIT_TYPES",
     "SudokuSample",

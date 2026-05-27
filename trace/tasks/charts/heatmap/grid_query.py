@@ -50,7 +50,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_heatmap_query_base"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "axis_condition_extremum_label",
     "axis_cell_extremum_label",
     "condition_run_extremum_label",
@@ -64,7 +64,7 @@ _SUPPORTED_EXTREMUM_DIRECTIONS: Tuple[str, ...] = ("hottest", "coolest")
 _SUPPORTED_QUERY_AXES: Tuple[str, ...] = ("row", "column")
 _INTENSITY_CONDITIONS: Tuple[str, ...] = ("hot", "cool")
 _SIGNED_CONDITIONS: Tuple[str, ...] = ("increase", "decrease")
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "heatmap")
@@ -279,17 +279,17 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _HeatmapRenderParams:
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -361,18 +361,18 @@ def _resolve_query_axis(params: Mapping[str, Any], *, instance_seed: int) -> Tup
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not enabled:
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -380,15 +380,15 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -608,7 +608,7 @@ def _reading_order_cell_ids(cells: Sequence[Mapping[str, Any]]) -> List[str]:
 
 def _candidate_for_query(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     query_axis: str,
     condition_kind: str,
@@ -625,7 +625,7 @@ def _candidate_for_query(
     row_count = len(row_labels)
     column_count = len(column_labels)
 
-    if str(query_variant) == "axis_condition_extremum_label":
+    if str(query_id) == "axis_condition_extremum_label":
         if str(query_axis) == "row":
             counts = [
                 sum(
@@ -702,7 +702,7 @@ def _candidate_for_query(
             },
         }
 
-    if str(query_variant) == "axis_cell_extremum_label" and str(query_axis) == "column":
+    if str(query_id) == "axis_cell_extremum_label" and str(query_axis) == "column":
         feasible_columns: List[int] = []
         for column_index in range(int(column_count)):
             column_values = [int(values[row_index][column_index]) for row_index in range(int(row_count))]
@@ -738,7 +738,7 @@ def _candidate_for_query(
             },
         }
 
-    if str(query_variant) == "axis_cell_extremum_label" and str(query_axis) == "row":
+    if str(query_id) == "axis_cell_extremum_label" and str(query_axis) == "row":
         feasible_rows: List[int] = []
         for row_index in range(int(row_count)):
             row_values = [int(values[row_index][column_index]) for column_index in range(int(column_count))]
@@ -774,7 +774,7 @@ def _candidate_for_query(
             },
         }
 
-    if str(query_variant) == "condition_run_extremum_label":
+    if str(query_id) == "condition_run_extremum_label":
         run_specs: List[Tuple[int, int, int]] = []
         for row_index in range(int(row_count)):
             mask = [
@@ -809,12 +809,12 @@ def _candidate_for_query(
             },
         }
 
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _candidate_for_unanswerable_query(
     *,
-    query_variant: str,
+    query_id: str,
     query_axis: str,
     row_labels: Sequence[str],
     column_labels: Sequence[str],
@@ -822,7 +822,7 @@ def _candidate_for_unanswerable_query(
     extremum_direction: str,
     instance_seed: int,
 ) -> Dict[str, Any] | None:
-    if str(query_variant) == "axis_cell_extremum_label":
+    if str(query_id) == "axis_cell_extremum_label":
         if str(query_axis) == "row":
             missing_label = choose_missing_label(
                 visible_labels=row_labels,
@@ -883,7 +883,7 @@ def _candidate_for_unanswerable_query(
             ),
         }
 
-    if str(query_variant) == "axis_condition_extremum_label":
+    if str(query_id) == "axis_condition_extremum_label":
         missing_condition = choose_missing_label(
             visible_labels=(
                 "high-intensity",
@@ -929,7 +929,7 @@ def _candidate_for_unanswerable_query(
 
 def _construct_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     query_axis: str,
     condition_kind: str,
@@ -966,11 +966,11 @@ def _construct_dataset(
         if should_use_unanswerable_branch(
             params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}",
+            namespace=f"{TASK_ID}.{query_id}",
             enabled=bool(params.get("_enable_unanswerable", False)),
         ):
             query = _candidate_for_unanswerable_query(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 query_axis=str(query_axis),
                 row_labels=row_labels,
                 column_labels=column_labels,
@@ -980,7 +980,7 @@ def _construct_dataset(
             )
         else:
             query = _candidate_for_query(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 scene_variant=str(scene_variant),
                 query_axis=str(query_axis),
                 condition_kind=str(condition_kind),
@@ -998,7 +998,7 @@ def _construct_dataset(
         query_condition_kind = str(dict(query["question_params"]).get("condition_kind", condition_kind))
         return {
             "scene_title": str(_TITLE_OPTIONS[int(rng.randrange(len(_TITLE_OPTIONS)))]),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "query_axis": str(query_axis),
             "condition_kind": str(query_condition_kind),
@@ -1281,10 +1281,10 @@ def _render_heatmap(
     )
 
 
-def _json_examples(query_variant: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
     return (
-        str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-        str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+        str(prompt_defaults[f"json_example_{str(query_id)}"]),
+        str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
     )
 
 
@@ -1297,19 +1297,19 @@ class ChartsHeatmapGridQueryTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_sampling_params(params, query_variant_probabilities=query_variant_probabilities)
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        support_params = _support_sampling_params(params, query_id_probabilities=query_id_probabilities)
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(support_params, instance_seed=int(instance_seed))
         query_axis = "row"
         query_axis_probabilities: Dict[str, float] = {}
-        if str(query_variant) in {"axis_condition_extremum_label", "axis_cell_extremum_label"}:
+        if str(query_id) in {"axis_condition_extremum_label", "axis_cell_extremum_label"}:
             query_axis, query_axis_probabilities = _resolve_query_axis(
                 support_params,
                 instance_seed=int(instance_seed),
             )
         condition_kind = ""
         condition_probabilities: Dict[str, float] = {}
-        if str(query_variant) in {"axis_condition_extremum_label", "condition_run_extremum_label"}:
+        if str(query_id) in {"axis_condition_extremum_label", "condition_run_extremum_label"}:
             condition_params = _decoupled_sampling_params(
                 support_params,
                 divisor=2,
@@ -1324,7 +1324,7 @@ class ChartsHeatmapGridQueryTask:
             condition_kind = _condition_support(str(scene_variant))[0]
         extremum_direction = ""
         extremum_probabilities: Dict[str, float] = {}
-        if str(query_variant) == "axis_cell_extremum_label":
+        if str(query_id) == "axis_cell_extremum_label":
             extremum_params = _decoupled_sampling_params(
                 support_params,
                 divisor=2,
@@ -1339,7 +1339,7 @@ class ChartsHeatmapGridQueryTask:
 
         dataset_params = {**dict(support_params), "_enable_unanswerable": bool(getattr(self, "supports_unanswerable", False))}
         dataset = _construct_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             query_axis=str(query_axis),
             condition_kind=str(condition_kind),
@@ -1397,7 +1397,7 @@ class ChartsHeatmapGridQueryTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _json_examples(str(query_variant), prompt_defaults=prompt_defaults)
+        json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
         qparams = dict(dataset["question_params"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -1405,13 +1405,13 @@ class ChartsHeatmapGridQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint_label"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1445,7 +1445,7 @@ class ChartsHeatmapGridQueryTask:
         evidence_scan = normalize_int_with_bounds(len(evidence_cell_ids), [1, 16])
         grid_scan = normalize_int_with_bounds(int(dataset["row_count"]) * int(dataset["column_count"]), [35, 120])
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BY_VARIANT[str(query_id)])
             + (0.14 * float(evidence_scan))
         )
         complexity = build_chart_complexity(
@@ -1457,9 +1457,9 @@ class ChartsHeatmapGridQueryTask:
             },
         )
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
             "row_count": int(dataset["row_count"]),
             "column_count": int(dataset["column_count"]),
@@ -1481,7 +1481,7 @@ class ChartsHeatmapGridQueryTask:
                 "scene_kind": "chart_heatmap",
                 "entities": [dict(item) for item in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "query_axis": str(query_axis),
                     "answer_value": dataset["answer_value"],
@@ -1493,7 +1493,7 @@ class ChartsHeatmapGridQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1521,7 +1521,7 @@ class ChartsHeatmapGridQueryTask:
                 "column_label_bboxes_px": dict(rendered_scene.column_label_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": "heatmap_query",
                 "scene_title": str(dataset["scene_title"]),
@@ -1541,7 +1541,7 @@ class ChartsHeatmapGridQueryTask:
                 "query_axis": str(query_axis),
                 "condition_kind": str(dataset["condition_kind"]),
                 "extremum_direction": str(extremum_direction),
-                "evidence_semantics": str(query_variant),
+                "evidence_semantics": str(query_id),
                 "answerability": "unanswerable" if bool(dataset["is_unanswerable"]) else "answerable",
                 **({"absence_proof": dict(dataset["absence_proof"])} if bool(dataset["is_unanswerable"]) else {}),
             },
@@ -1569,7 +1569,7 @@ class ChartsHeatmapGridQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
 
 
@@ -1581,7 +1581,7 @@ class ChartsHeatmapAxisConditionExtremumLabelTask(
     """Return the row or column label with the most cells satisfying a color condition."""
 
     task_id = "task_charts__heatmap__axis_condition_extremum_label"
-    fixed_query_variant = "axis_condition_extremum_label"
+    fixed_query_id = "axis_condition_extremum_label"
     supports_unanswerable = True
 
 
@@ -1593,7 +1593,7 @@ class ChartsHeatmapAxisCellExtremumLabelTask(
     """Return the row or column label containing a requested cell extremum."""
 
     task_id = "task_charts__heatmap__axis_cell_extremum_label"
-    fixed_query_variant = "axis_cell_extremum_label"
+    fixed_query_id = "axis_cell_extremum_label"
     supports_unanswerable = True
 
 
@@ -1605,7 +1605,7 @@ class ChartsHeatmapConditionRunExtremumLabelTask(
     """Return the label with the longest consecutive run satisfying a color condition."""
 
     task_id = "task_charts__heatmap__condition_run_extremum_label"
-    fixed_query_variant = "condition_run_extremum_label"
+    fixed_query_id = "condition_run_extremum_label"
 
 
 __all__ = [
@@ -1614,5 +1614,5 @@ __all__ = [
     "ChartsHeatmapConditionRunExtremumLabelTask",
     "ChartsHeatmapGridQueryTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

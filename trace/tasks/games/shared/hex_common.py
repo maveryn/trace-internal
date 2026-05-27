@@ -10,7 +10,7 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 EMPTY = 0
 RED = 1
 BLUE = -1
-SUPPORTED_HEX_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_HEX_QUERY_IDS: Tuple[str, ...] = (
     "winning_move_cell_label",
     "connection_gap_count",
 )
@@ -39,7 +39,7 @@ class HexSample:
     """Generated Hex board state and task answer."""
 
     board_size: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     player_color: str
     player_value: int
@@ -423,7 +423,7 @@ def validate_hex_sample(sample: HexSample) -> None:
         raise ValueError("Hex board dimensions do not match board_size")
     if int(sample.player_value) != int(color_value(sample.player_color)):
         raise ValueError("Hex player color and value disagree")
-    if str(sample.query_variant) == "winning_move_cell_label":
+    if str(sample.query_id) == "winning_move_cell_label":
         if sample.winning_move_coord is None:
             raise ValueError("Hex winning-move sample is missing winning_move_coord")
         if int(board[sample.winning_move_coord[0]][sample.winning_move_coord[1]]) != EMPTY:
@@ -449,7 +449,7 @@ def validate_hex_sample(sample: HexSample) -> None:
             raise ValueError("Hex winning-move evidence must be one completed winning path")
         return
 
-    if str(sample.query_variant) == "connection_gap_count":
+    if str(sample.query_id) == "connection_gap_count":
         gap_count, path = minimum_connection_path(board, player_value=int(sample.player_value))
         if int(sample.answer) != int(gap_count):
             raise ValueError("Hex gap-count answer does not match shortest path cost")
@@ -471,7 +471,7 @@ def validate_hex_sample(sample: HexSample) -> None:
             raise ValueError("Hex gap-count evidence must be the unique minimum empty-cell set")
         return
 
-    raise ValueError(f"unsupported Hex query_variant: {sample.query_variant}")
+    raise ValueError(f"unsupported Hex query_id: {sample.query_id}")
 
 
 __all__ = [
@@ -485,7 +485,7 @@ __all__ = [
     "HexGapSetSearch",
     "HexSample",
     "SUPPORTED_HEX_PLAYER_COLORS",
-    "SUPPORTED_HEX_QUERY_VARIANTS",
+    "SUPPORTED_HEX_QUERY_IDS",
     "SUPPORTED_HEX_SCENE_VARIANTS",
     "all_coords",
     "board_from_rows",

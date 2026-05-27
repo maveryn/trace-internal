@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_BOWLING_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BOWLING_QUERY_IDS: Tuple[str, ...] = (
     "first_pin_hit_label",
     "spare_path_label",
 )
@@ -49,7 +49,7 @@ class BowlingPathOption:
 class BowlingSample:
     """Generated bowling scene state."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: str
@@ -88,7 +88,7 @@ def option_label(index: int) -> str:
 def validate_bowling_sample(sample: BowlingSample) -> None:
     """Validate that answer and evidence match the active Bowling query."""
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     pin_ids = [str(pin.pin_id) for pin in sample.pins]
     pin_labels = [str(pin.label) for pin in sample.pins]
     path_ids = [str(path.path_id) for path in sample.path_options]
@@ -125,7 +125,7 @@ def validate_bowling_sample(sample: BowlingSample) -> None:
         expected_answer = str(sample.target_path_label)
         expected_evidence = {str(sample.target_path_id)}
     else:
-        raise ValueError(f"unsupported bowling query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported bowling query_id: {sample.query_id}")
     if str(sample.answer) != str(expected_answer):
         raise ValueError("bowling answer does not match active query")
     if set(sample.evidence_entity_ids) != expected_evidence:
@@ -133,7 +133,7 @@ def validate_bowling_sample(sample: BowlingSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_BOWLING_QUERY_VARIANTS",
+    "SUPPORTED_BOWLING_QUERY_IDS",
     "SUPPORTED_BOWLING_SCENE_VARIANTS",
     "SUPPORTED_BOWLING_STYLE_VARIANTS",
     "BowlingPathOption",

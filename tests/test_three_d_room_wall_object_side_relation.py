@@ -14,13 +14,13 @@ from trace.tasks.three_d.room.wall_object_camera_distance import (
 from trace.tasks.three_d.room.wall_object_side_relation import (
     REFERENCE_OBJECT_TYPE,
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "relation_key"),
+    ("query_id", "relation_key"),
     [
         ("left_of_reference_on_wall", "left_of_reference_on_wall_by_label"),
         ("right_of_reference_on_wall", "right_of_reference_on_wall_by_label"),
@@ -29,14 +29,14 @@ from trace.tasks.three_d.room.wall_object_side_relation import (
 @pytest.mark.parametrize("reference_wall", ["back", "left", "right"])
 def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
     reference_wall: str,
-    query_variant: str,
+    query_id: str,
     relation_key: str,
 ) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260522,
         params={
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": "studio_room",
             "candidate_count": 5,
             "context_wall_count": 4,
@@ -74,9 +74,9 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
         ].items()
     }
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
-    assert output.query_id == query_variant
+    assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == answer_label
     assert output.evidence_gt.type == "bbox_set"
@@ -99,7 +99,7 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
     assert {str(spec["wall"]) for spec in candidates} == {reference_wall}
     assert len(candidates) == 5
     assert trace["candidate_walls_by_label"][answer_label] == reference_wall
-    if query_variant == "left_of_reference_on_wall":
+    if query_id == "left_of_reference_on_wall":
         assert candidate_left_coords[answer_label] > reference_left_coord
         for label, coord in candidate_left_coords.items():
             if label != answer_label:
@@ -128,7 +128,7 @@ def test_room_wall_object_side_relation_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "room"
-    assert SUPPORTED_QUERY_VARIANTS == (
+    assert SUPPORTED_QUERY_IDS == (
         "left_of_reference_on_wall",
         "right_of_reference_on_wall",
     )

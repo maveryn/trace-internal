@@ -8,7 +8,7 @@
 5. Objective: compute the maximum flow value on a directed capacity network.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `max_flow_value`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_pair_set`

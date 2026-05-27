@@ -21,7 +21,7 @@ from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_ar
 from ...shared.text_rendering import load_font, resolve_scene_label_font_size_px
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_task_complexity, clamp_unit_interval, resolve_geometry_complexity_weights
-from ..shared.fixed_query_task import select_geometry_query_variant
+from ..shared.fixed_query_task import select_geometry_query_id
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
@@ -46,15 +46,15 @@ SECTION_POINT_TASK_ID = "task_geometry__coordinate_plane__section_point_label"
 TRANSFORMED_POINT_TASK_ID = "task_geometry__coordinate_plane__transformed_point_label"
 SCENE_ID = "coordinate_plane"
 
-MISSING_ENDPOINT_QUERY_VARIANTS: Tuple[str, ...] = (
+MISSING_ENDPOINT_QUERY_IDS: Tuple[str, ...] = (
     "missing_endpoint_from_midpoint",
     "missing_startpoint_from_midpoint",
 )
-SECTION_POINT_QUERY_VARIANTS: Tuple[str, ...] = (
+SECTION_POINT_QUERY_IDS: Tuple[str, ...] = (
     "one_third_from_p_to_q",
     "two_thirds_from_p_to_q",
 )
-TRANSFORMED_POINT_QUERY_VARIANTS: Tuple[str, ...] = (
+TRANSFORMED_POINT_QUERY_IDS: Tuple[str, ...] = (
     "translate_point",
     "translate_by_reference_vector",
     "reflect_over_vertical_line",
@@ -236,14 +236,14 @@ def _select_winner_label(
 def _resolve_query(
     *,
     task_id: str,
-    query_variants: Sequence[str],
+    query_ids: Sequence[str],
     label_pool: Sequence[str],
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _ResolvedQuery:
-    query_id, query_probabilities = select_geometry_query_variant(
+    query_id, query_probabilities = select_geometry_query_id(
         params,
-        query_variants=tuple(query_variants),
+        query_ids=tuple(query_ids),
         task_id=str(task_id),
         instance_seed=int(instance_seed),
     )
@@ -300,7 +300,7 @@ def _sample_problem(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _AlgebraProblem:
-    if str(query_id) in set(MISSING_ENDPOINT_QUERY_VARIANTS):
+    if str(query_id) in set(MISSING_ENDPOINT_QUERY_IDS):
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
@@ -330,7 +330,7 @@ def _sample_problem(
             guide_segments=(("Q", "M", "solid"),),
         )
 
-    if str(query_id) in set(SECTION_POINT_QUERY_VARIANTS):
+    if str(query_id) in set(SECTION_POINT_QUERY_IDS):
         index = _case_index(
             params=params,
             instance_seed=int(instance_seed),
@@ -476,14 +476,14 @@ def _common_distractors(problem: _AlgebraProblem, *, max_abs: int) -> Tuple[Grap
     known_points = dict(problem.known_points_by_label)
     distractors: List[GraphPoint] = []
 
-    if str(problem.query_id) in set(MISSING_ENDPOINT_QUERY_VARIANTS):
+    if str(problem.query_id) in set(MISSING_ENDPOINT_QUERY_IDS):
         endpoint = next(point for label, point in known_points.items() if str(label) != "M")
         midpoint = known_points["M"]
         _add_candidate(distractors, midpoint, occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(endpoint[0]) + int(midpoint[0]), int(endpoint[1]) + int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, (int(endpoint[0]) - int(midpoint[0]), int(endpoint[1]) - int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
         _add_candidate(distractors, ((2 * int(endpoint[0])) - int(midpoint[0]), (2 * int(endpoint[1])) - int(midpoint[1])), occupied=set(), max_abs=int(max_abs))
-    elif str(problem.query_id) in set(SECTION_POINT_QUERY_VARIANTS):
+    elif str(problem.query_id) in set(SECTION_POINT_QUERY_IDS):
         point_p = known_points["P"]
         point_q = known_points["Q"]
         dx = int(point_q[0]) - int(point_p[0])
@@ -951,9 +951,8 @@ def _trace_payload(
     relations = {
         "scene_id": SCENE_ID,
         "query_id": str(query.query_id),
-        "query_variant": "default",
         "variant_probabilities": {"default": 1.0},
-        "query_variant_probabilities": dict(query.query_probabilities),
+        "query_id_probabilities": dict(query.query_probabilities),
         "winner_label": str(query.winner_label),
         "target_label_name": str(rendered.problem.target_label_name),
         "target_point_graph": [int(value) for value in rendered.problem.target_point],
@@ -979,7 +978,6 @@ def _trace_payload(
             "relations": dict(relations),
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -987,10 +985,9 @@ def _trace_payload(
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
@@ -1024,7 +1021,6 @@ def _trace_payload(
         "execution_trace": {
             "scene_id": SCENE_ID,
             "query_id": str(query.query_id),
-            "query_variant": "default",
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "target_label_name": str(rendered.problem.target_label_name),
@@ -1036,7 +1032,7 @@ def _trace_payload(
             "known_points_by_label": dict(known_trace),
             "candidate_points_by_label": dict(candidate_trace),
             "variant_probabilities": {"default": 1.0},
-            "query_variant_probabilities": dict(query.query_probabilities),
+            "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_algebra_candidate_point",
@@ -1061,7 +1057,7 @@ def _trace_payload(
 def _generate_output(
     *,
     task_id: str,
-    query_variants: Sequence[str],
+    query_ids: Sequence[str],
     scene_key: str,
     instance_seed: int,
     params: Dict[str, Any],
@@ -1070,7 +1066,7 @@ def _generate_output(
     label_pool = _resolve_label_pool(params, generation_defaults, "algebra_candidate_labels", DEFAULT_LABEL_POOL)
     query = _resolve_query(
         task_id=str(task_id),
-        query_variants=tuple(query_variants),
+        query_ids=tuple(query_ids),
         label_pool=label_pool,
         instance_seed=int(instance_seed),
         params=params,
@@ -1140,11 +1136,9 @@ def _generate_output(
         trace_payload=trace_payload,
         complexity=_build_complexity(
             task_id=str(task_id),
-            query_id=str(query.query_id),
             object_count=len(rendered.problem.known_points_by_label) + len(rendered.candidate_points_by_label),
         ),
         task_versions=default_task_versions(),
-        query_variant="default",
         scene_id=SCENE_ID,
         query_id=str(query.query_id),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1164,7 +1158,7 @@ class GeometryCoordinateMissingEndpointLabelTask:
         del max_attempts
         return _generate_output(
             task_id=self.task_id,
-            query_variants=MISSING_ENDPOINT_QUERY_VARIANTS,
+            query_ids=MISSING_ENDPOINT_QUERY_IDS,
             scene_key="coordinate_algebra_midpoint_scene",
             instance_seed=int(instance_seed),
             params=params,
@@ -1184,7 +1178,7 @@ class GeometryCoordinateSectionPointLabelTask:
         del max_attempts
         return _generate_output(
             task_id=self.task_id,
-            query_variants=SECTION_POINT_QUERY_VARIANTS,
+            query_ids=SECTION_POINT_QUERY_IDS,
             scene_key="coordinate_algebra_section_scene",
             instance_seed=int(instance_seed),
             params=params,
@@ -1204,7 +1198,7 @@ class GeometryCoordinateTransformedPointLabelTask:
         del max_attempts
         return _generate_output(
             task_id=self.task_id,
-            query_variants=TRANSFORMED_POINT_QUERY_VARIANTS,
+            query_ids=TRANSFORMED_POINT_QUERY_IDS,
             scene_key="coordinate_algebra_transform_scene",
             instance_seed=int(instance_seed),
             params=params,

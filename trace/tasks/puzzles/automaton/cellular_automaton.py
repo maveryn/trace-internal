@@ -392,18 +392,18 @@ def _resolve_query(
     supported_queries: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     effective_params = dict(params)
-    if effective_params.get("query_variant") is None and effective_params.get("query_variant") is not None:
-        effective_params["query_variant"] = str(effective_params["query_variant"])
+    if effective_params.get("query_id") is None and effective_params.get("query_id") is not None:
+        effective_params["query_id"] = str(effective_params["query_id"])
     return _resolve_axis(
         params=effective_params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
         supported_variants=supported_queries,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -2003,11 +2003,10 @@ def _common_trace(
     execution_trace: Mapping[str, Any],
 ) -> Dict[str, Any]:
     query_params = {
-        "query_variant": "default",
-        "query_variant_probabilities": {"default": 1.0},
+        "query_id": "default",
+        "query_id_probabilities": {"default": 1.0},
         "query_id": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+        "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
         "scene_id": str(scene_id),
         "scene_variant": str(scene_variant),
         "scene_variant_probabilities": {str(key): float(value) for key, value in scene_variant_probabilities.items()},
@@ -2019,9 +2018,7 @@ def _common_trace(
             "relations": dict(query_params),
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
             "template_id": str(prompt_meta["bundle_id"]),
             "prompt_variant": dict(prompt_meta["prompt_variant"]),
             "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -2201,7 +2198,6 @@ class PuzzlesAutomatonAgentFinalPoseLabelTask(_BaseAutomatonTask):
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=AGENT_SCENE_ID,
             query_id=query_id,
             prompt_variants=prompt_variants,
@@ -2333,7 +2329,6 @@ class PuzzlesAutomatonAgentCellFlipCountTask(_BaseAutomatonTask):
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=AGENT_SCENE_ID,
             query_id=query_id,
             prompt_variants=prompt_variants,
@@ -2373,7 +2368,7 @@ class PuzzlesAutomatonLifeFutureGridLabelTask(_BaseAutomatonTask):
         }
         trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_bboxes=evidence_bboxes, answer_value=str(dataset.answer_label), execution_trace=execution_trace)
         complexity = build_puzzle_complexity(weights=complexity_weights, components={"visual_scan": normalize_int_with_bounds(dataset.rows * dataset.cols, [25, 64]), "reasoning_load": normalize_int_with_bounds(dataset.steps, [1, 3]), "scene_variant_load": 0.20 if scene_variant == "clean_grid" else 0.30})
-        return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), query_variant="default", scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
+        return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
 
 
 @register_task
@@ -2409,7 +2404,7 @@ class PuzzlesAutomatonLifePopulationCountTask(_BaseAutomatonTask):
         }
         trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_bboxes=evidence_bboxes, answer_value=int(dataset.live_count), execution_trace=execution_trace)
         complexity = build_puzzle_complexity(weights=complexity_weights, components={"visual_scan": normalize_int_with_bounds(dataset.rows * dataset.cols, [25, 64]), "reasoning_load": normalize_int_with_bounds(dataset.steps + len(dataset.target_cells), [2, 20]), "scene_variant_load": 0.20 if scene_variant == "clean_grid" else 0.30})
-        return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), query_variant="default", scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
+        return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
 
 
 @register_task
@@ -2540,7 +2535,6 @@ class PuzzlesAutomatonTuringWrittenSymbolCountTask(_BaseAutomatonTask):
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=TURING_SCENE_ID,
             query_id=query_id,
             prompt_variants=prompt_variants,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.games.shared.minigolf_common import (
-    SUPPORTED_MINIGOLF_QUERY_VARIANTS,
+    SUPPORTED_MINIGOLF_QUERY_IDS,
     SUPPORTED_MINIGOLF_SCENE_VARIANTS,
     SUPPORTED_MINIGOLF_STYLE_VARIANTS,
 )
@@ -19,14 +19,14 @@ def test_games_minigolf_course_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_obstacle_count_sampling"]) is True
     assert bool(generation["balanced_path_option_count_sampling"]) is True
     assert bool(generation["balanced_target_obstacle_label_sampling"]) is True
     assert bool(generation["balanced_target_path_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_MINIGOLF_SCENE_VARIANTS)
-    assert set(generation["query_variant_weights"].keys()) == set(SUPPORTED_MINIGOLF_QUERY_VARIANTS)
+    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_MINIGOLF_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_MINIGOLF_STYLE_VARIANTS)
     assert list(generation["obstacle_count_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["path_option_count_support"]) == [4, 5, 6]

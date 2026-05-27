@@ -4,7 +4,7 @@ This document defines what should count as one TRACE task.
 
 Use it when:
 - proposing new tasks,
-- deciding whether a new idea should become a `query_id` / query variant or a
+- deciding whether a new idea should become a `query_id` / query id or a
   new task id,
 - evaluating whether an existing task should be split or merged,
 - rebalancing the benchmark for uniform task-level sampling.
@@ -25,7 +25,7 @@ Use it when:
    - and what kind of scene grammar it sees repeatedly.
 4. Public taxonomy identifies this as `domain -> scene_id -> task_id`.
 5. Source `task_group` remains an implementation/config grouping during the transition, but it is not the public taxonomy unit.
-6. Do not introduce a field, config key, prompt column, or artifact column named `task_variant`; use `query_id` for branch identity and `query_variant` only for internal replay selectors.
+6. Do not introduce a field, config key, prompt column, or artifact column named `task_variant`; use `query_id` for branch identity and `query_id` only for internal replay selectors.
 
 ## 2.1) Hard Task Boundary
 
@@ -90,12 +90,12 @@ sampled outputs are inconsistent or insufficient to determine the four axes.
 Do not use a review bucket merely because two tasks are conceptually related or
 share a scene.
 
-## 2.2) Query Variant Definition
+## 2.2) Query ID Definition
 
-Use **query variant** as the human-facing term and `query_id` as the canonical
+Use **query id** as the human-facing term and `query_id` as the canonical
 metadata field.
 
-A query variant is the smallest task-internal semantic branch that needs a
+A query id is the smallest task-internal semantic branch that needs a
 distinct reasoning/rationale template family. This includes changes to the
 requested operation, answer transform, witness role, ordering rule, filtering
 predicate, traversal rule, comparison target, or evidence explanation.
@@ -111,11 +111,11 @@ Rules:
    structure, they may remain one `query_id`. Examples include mirrored words
    like highest/lowest or before/after only when the same template can express
    both with a parameter.
-4. Visual/rendering/style variants are not query variants unless they change the
+4. Visual/rendering/style variants are not query ids unless they change the
    reasoning/rationale template family.
 5. Difficulty knobs, counts, labels, colors, and sampled values are not query
    variants unless they change the reasoning/rationale template family.
-6. Different algorithms or objective families are not query variants just
+6. Different algorithms or objective families are not query ids just
    because the scene, answer type, or evidence type is shared. For example,
    shortest path and longest path should be separate public tasks unless the
    domain intentionally defines a broader objective family that preserves one
@@ -168,7 +168,7 @@ These differences do **not** automatically require a new task:
 1. scene chrome / style variants,
 2. object identities, colors, counts, and placements,
 3. local arithmetic or logical reasoning over the same support set,
-4. multiple query variants over the same witness semantics,
+4. multiple query ids over the same witness semantics,
 5. being text-heavy, as long as the text must still be visually located/read from the image,
 6. reasoning difficulty.
 
@@ -176,7 +176,7 @@ In other words: a task does **not** need equal difficulty across variants, but i
 
 ## 5) New variant vs new task
 
-### Add a new `query_id` / query variant when:
+### Add a new `query_id` / query id when:
 1. the same scene scaffold still works,
 2. the same unit of attention still matters,
 3. the same witness semantics still apply,
@@ -268,8 +268,8 @@ inconsistent enough to block classification.
 
 ## 10) Variant-Aware Dataset Sampling
 1. The default TRACE sampling unit remains the task id.
-2. `query_id` values are diagnostics for query variants inside one task, not
-   separate public tasks. Source `query_variant` remains only an internal replay
+2. `query_id` values are diagnostics for query ids inside one task, not
+   separate public tasks. Source `query_id` remains only an internal replay
    selector.
 3. Large RLVR training builds may optionally use variant-aware task counts when comparing task-unit ablations.
 4. The supported weight formula is:

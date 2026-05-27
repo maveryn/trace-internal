@@ -27,17 +27,17 @@ def _apply_expression(operand_cents: list[int], operators: list[str]) -> int:
 
 def test_pages_arithmetic_section_expression_value_contract_matches_trace() -> None:
     task = PagesArithmeticSectionExpressionValueTask()
-    query_variants = (
+    query_ids = (
         "sum_two_amounts_in_section",
         "difference_two_amounts_in_section",
         "sum_minus_amount_in_section",
     )
     scene_variants = ("form_sheet", "invoice_sheet", "receipt_sheet")
 
-    for variant_index, query_variant in enumerate(query_variants):
+    for query_id_index, query_id in enumerate(query_ids):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 38100 + (variant_index * 20) + scene_index
-            out = task.generate(seed, params={"query_variant": query_variant, "scene_variant": scene_variant}, max_attempts=10)
+            seed = 38100 + (query_id_index * 20) + scene_index
+            out = task.generate(seed, params={"query_id": query_id, "scene_variant": scene_variant}, max_attempts=10)
             trace = out.trace_payload
             execution = trace["execution_trace"]
             render_map = trace["render_map"]
@@ -46,11 +46,11 @@ def test_pages_arithmetic_section_expression_value_contract_matches_trace() -> N
             assert out.answer_gt.type == "string"
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-            assert str(out.query_variant) == "default"
-            assert str(out.query_id) == str(query_variant)
+            assert str(out.query_id) == "default"
+            assert str(out.query_id) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["query_id"]) == str(query_variant)
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
             assert str(execution["question_format"]) == "document_section_expression_value"
             assert str(execution["view_family"]) == "structured_document"
             assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
@@ -117,8 +117,8 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
         ),
     }
 
-    for index, (query_variant, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=38240):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, (query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=38240):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
@@ -127,7 +127,7 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
 
 def test_pages_arithmetic_section_expression_value_is_deterministic() -> None:
     task = PagesArithmeticSectionExpressionValueTask()
-    params = {"query_variant": "sum_minus_amount_in_section", "scene_variant": "invoice_sheet"}
+    params = {"query_id": "sum_minus_amount_in_section", "scene_variant": "invoice_sheet"}
     out_a = task.generate(38320, params=params, max_attempts=10)
     out_b = task.generate(38320, params=params, max_attempts=10)
 
@@ -141,18 +141,18 @@ def test_pages_arithmetic_section_expression_value_is_deterministic() -> None:
 
 def test_pages_arithmetic_balanced_sampling_defaults_cover_variants() -> None:
     task = PagesArithmeticSectionExpressionValueTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     pairs: Counter[tuple[str, str]] = Counter()
 
     for index in range(36):
         out = task.generate(hash64(38380, "pages_arithmetic", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        query_variants[str(execution["query_id"])] += 1
+        query_ids[str(execution["query_id"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         pairs[(str(execution["query_id"]), str(execution["scene_variant"]))] += 1
 
-    assert set(query_variants.keys()) == {
+    assert set(query_ids.keys()) == {
         "sum_two_amounts_in_section",
         "difference_two_amounts_in_section",
         "sum_minus_amount_in_section",

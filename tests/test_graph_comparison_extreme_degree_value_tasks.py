@@ -45,13 +45,13 @@ def test_graph_comparison_extreme_degree_value_undirected_contract_matches_trace
 
     assert "task_graph__node_link__degree_extremum_value" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "undirected_max_degree_value"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_extreme_degree_comparison"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_max_degree_value"
     assert execution["graph_directionality"] == "undirected"
     assert execution["degree_mode"] == "degree"

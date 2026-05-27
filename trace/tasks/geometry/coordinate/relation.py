@@ -21,7 +21,7 @@ from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_coordinate_relation_complexity
-from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.consolidated_sampling import resolve_compatible_scene_query_ids
 from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin, MultiFixedGeometryQueryTaskMixin
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.labeled_point_evidence import empty_graph_point_set_evidence_artifacts, graph_point_set_evidence_artifacts
@@ -46,7 +46,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "quadrant_points",
     "polygon_lattice",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "parallel_count",
     "perpendicular_count",
     "collinear_count",
@@ -59,8 +59,8 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "quadrant_points": ("same_quadrant_count",),
     "polygon_lattice": ("point_in_shape_count",),
 }
-SEGMENT_COUNT_QUERY_VARIANTS = {"parallel_count", "perpendicular_count"}
-COUNT_QUERY_VARIANTS = {
+SEGMENT_COUNT_QUERY_IDS = {"parallel_count", "perpendicular_count"}
+COUNT_QUERY_IDS = {
     "parallel_count",
     "perpendicular_count",
     "collinear_count",
@@ -135,9 +135,9 @@ class _ResolvedQuery:
     """Resolved scene/query axes and answer support for one coordinate scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     target_count: int | None = None
     target_count_probabilities: Dict[str, float] = field(default_factory=dict)
     label_pool: Tuple[str, ...] = field(default_factory=tuple)
@@ -313,11 +313,11 @@ def _segments_intersect(segment_a: Segment, segment_b: Segment) -> bool:
     return bool((o1 > 0) != (o2 > 0) and (o3 > 0) != (o4 > 0))
 
 
-def _count_target_support(*, query_variant: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
+def _count_target_support(*, query_id: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
     """Resolve the supported answer counts for one count-style coordinate variant."""
 
-    normalized_query = str(query_variant).strip().lower()
-    if normalized_query in SEGMENT_COUNT_QUERY_VARIANTS:
+    normalized_query = str(query_id).strip().lower()
+    if normalized_query in SEGMENT_COUNT_QUERY_IDS:
         support_key = "segment_target_support"
         fallback_support = _DEFAULTS.segment_target_support
         max_supported = 6
@@ -334,7 +334,7 @@ def _count_target_support(*, query_variant: str, params: Mapping[str, Any]) -> T
         fallback_support = _DEFAULTS.point_in_shape_target_support
         max_supported = 8
     else:
-        raise ValueError(f"unsupported coordinate count query_variant: {query_variant}")
+        raise ValueError(f"unsupported coordinate count query_id: {query_id}")
 
     raw_support = params.get(
         support_key,
@@ -355,12 +355,12 @@ def _resolve_count_target(
     *,
     instance_seed: int,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve a balanced target count for one count-style coordinate variant."""
 
-    support = _count_target_support(query_variant=query_variant, params=params)
+    support = _count_target_support(query_id=query_id, params=params)
     explicit = params.get("target_count")
     if explicit is not None:
         selected = int(explicit)
@@ -395,23 +395,23 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve compatible scene/query axes plus answer support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
     )
     count_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.target_count")
     target_count, target_probs = _resolve_count_target(
         count_rng,
         instance_seed=int(instance_seed),
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
     )
     if str(scene_variant) == "quadrant_points":
@@ -426,9 +426,9 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         label_pool = tuple()
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         target_count=int(target_count),
         target_count_probabilities=dict(target_probs),
         label_pool=tuple(label_pool),
@@ -633,7 +633,7 @@ def _sample_segment_count_scene(
         for vector in half_vectors
         if (
             _is_parallel(reference_half_vector, vector)
-            if str(query.query_variant) == "parallel_count"
+            if str(query.query_id) == "parallel_count"
             else _is_perpendicular(reference_half_vector, vector)
         )
     ]
@@ -642,7 +642,7 @@ def _sample_segment_count_scene(
         for vector in half_vectors
         if (
             not _is_parallel(reference_half_vector, vector)
-            if str(query.query_variant) == "parallel_count"
+            if str(query.query_id) == "parallel_count"
             else not _is_perpendicular(reference_half_vector, vector)
         )
     ]
@@ -1533,11 +1533,11 @@ class GeometryCoordinateRelationTask:
 
         answer_type = "integer"
         answer_hint = str(prompt_defaults["answer_hint_integer"])
-        if str(query.query_variant) in SEGMENT_COUNT_QUERY_VARIANTS:
+        if str(query.query_id) in SEGMENT_COUNT_QUERY_IDS:
             evidence_hint = str(prompt_defaults["evidence_hint_segment_endpoints"])
-        elif str(query.query_variant) == "collinear_count":
+        elif str(query.query_id) == "collinear_count":
             evidence_hint = str(prompt_defaults["evidence_hint_collinear_pixel_point_set"])
-        elif str(query.query_variant) == "same_quadrant_count":
+        elif str(query.query_id) == "same_quadrant_count":
             evidence_hint = str(prompt_defaults["evidence_hint_quadrant_pixel_point_set"])
         else:
             evidence_hint = str(prompt_defaults["evidence_hint_pixel_point_set"])
@@ -1559,7 +1559,7 @@ class GeometryCoordinateRelationTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1579,11 +1579,10 @@ class GeometryCoordinateRelationTask:
 
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
         }
         if query.target_count is not None:
             query_params["target_count"] = int(query.target_count)
@@ -1599,11 +1598,10 @@ class GeometryCoordinateRelationTask:
         }[str(query.scene_variant)]
         execution_trace: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
+            "query_id": str(query.query_id),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "required_evidence_labels": list(rendered_scene.required_evidence_labels),
             "question_format": str(question_format),
         }
@@ -1618,8 +1616,7 @@ class GeometryCoordinateRelationTask:
 
         scene_relations: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
+            "query_id": str(query.query_id),
         }
         if rendered_scene.matching_labels:
             if str(query.scene_variant) == "segment_set":
@@ -1634,7 +1631,7 @@ class GeometryCoordinateRelationTask:
                 "relations": dict(scene_relations),
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1665,12 +1662,12 @@ class GeometryCoordinateRelationTask:
             "projected_evidence": dict(rendered_scene.projected_evidence),
         }
 
-        target_count_for_complexity = int(query.target_count or 0) if str(query.query_variant) in COUNT_QUERY_VARIANTS else None
+        target_count_for_complexity = int(query.target_count or 0) if str(query.query_id) in COUNT_QUERY_IDS else None
         complexity = build_geometry_coordinate_relation_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
             scene_variant=str(query.scene_variant),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             object_count=int(rendered_scene.object_count),
             target_count=target_count_for_complexity,
             evidence_type=str(rendered_scene.evidence_type),
@@ -1686,7 +1683,7 @@ class GeometryCoordinateRelationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1696,7 +1693,7 @@ class GeometryCoordinateSegmentRelationCountTask(MultiFixedGeometryQueryTaskMixi
     """Count segments parallel or perpendicular to a marked reference segment."""
 
     task_id = "task_geometry__coordinate_plane__segment_relation_count"
-    fixed_query_variants = ("parallel_count", "perpendicular_count")
+    fixed_query_ids = ("parallel_count", "perpendicular_count")
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("segment_set",)
 
@@ -1706,7 +1703,7 @@ class GeometryCoordinateCollinearPointCountTask(FixedGeometryQueryTaskMixin, Geo
     """Count points collinear with the marked reference line."""
 
     task_id = "task_geometry__coordinate_plane__collinear_point_count"
-    fixed_query_variant = "collinear_count"
+    fixed_query_id = "collinear_count"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("line_points",)
 
@@ -1716,7 +1713,7 @@ class GeometryCoordinateSameQuadrantPointCountTask(FixedGeometryQueryTaskMixin, 
     """Count points in the same quadrant as the marked reference point."""
 
     task_id = "task_geometry__coordinate_plane__same_quadrant_point_count"
-    fixed_query_variant = "same_quadrant_count"
+    fixed_query_id = "same_quadrant_count"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("quadrant_points",)
 
@@ -1726,6 +1723,6 @@ class GeometryCoordinatePointInPolygonCountTask(FixedGeometryQueryTaskMixin, Geo
     """Count labeled lattice points strictly inside the polygon."""
 
     task_id = "task_geometry__coordinate_plane__point_in_polygon_count"
-    fixed_query_variant = "point_in_shape_count"
+    fixed_query_id = "point_in_shape_count"
     public_scene_id = "coordinate_plane"
     allowed_scene_variants = ("polygon_lattice",)

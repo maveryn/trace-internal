@@ -6,7 +6,7 @@ Status: active default cell-board puzzle task pending fresh merged calibration.
 1. Domain: `puzzles`
 2. Task group: `cell_board`
 3. Scene id: `cell_board`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `shortest_path`, `min_distance`
 
 ## Contract
@@ -22,4 +22,4 @@ Status: active default cell-board puzzle task pending fresh merged calibration.
 1. Movement-style layouts use square cells to keep path length visually uniform.
 2. `shortest_path` delegates to the internal tile path generator.
 3. `min_distance` delegates to the internal tile relation generator and avoids ties or ambiguous nearest pairs by construction.
-4. Internal trace metadata keeps the selected branch in `query_id` and `internal_query_variant`.
+4. Internal trace metadata keeps the selected branch in `query_id` and `internal_query_id`.

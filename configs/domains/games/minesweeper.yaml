@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       open_grid: 1.0
       mixed_grid: 1.0
-    query_variant_weights:
+    query_id_weights:
       forced_mine_count: 1.0
       forced_safe_count: 1.0
       satisfied_clue_count: 1.0
@@ -15,7 +15,7 @@ generation:
       dark: 1.0
       retro: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true
     balanced_target_answer_sampling: true

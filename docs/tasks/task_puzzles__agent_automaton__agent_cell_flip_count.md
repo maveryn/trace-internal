@@ -8,7 +8,7 @@
 5. Goal: simulate a turning agent automaton and count updates satisfying a state or marked-region condition.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `target_state_flip_count|marked_region_flip_count`
 3. Rule branch: `rule_variant=binary_rule|three_state_rule`
 4. Answer type: `integer`

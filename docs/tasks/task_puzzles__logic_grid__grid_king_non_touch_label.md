@@ -8,7 +8,7 @@
 5. Goal: choose the option that fills one missing cell while identical symbols do not touch by edge or corner.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `king_non_touch`
 3. Board size: `3x3..5x5`
 4. Answer type: `option_letter`

@@ -18,12 +18,12 @@ generation:
         wide_bench: 1.0
         compact_frame: 1.0
         tall_columns: 1.0
-      query_variant_weights:
+      query_id_weights:
         missing_output_force: 1.0
         missing_input_force: 1.0
         missing_piston_area: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
       balanced_mechanical_advantage_sampling: true
       input_force_support: [4, 5, 6, 7, 8, 9, 10, 11, 12]

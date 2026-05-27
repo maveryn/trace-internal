@@ -37,14 +37,14 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
-from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
 from ..shared.labeled_chart_common import resolve_chart_axis_variant
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
 TASK_ID = "charts_pictogram_waffle_chart_base"
 SCENE_ID = "pictogram"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "category_total_value",
     "group_difference_value",
     "threshold_count",
@@ -119,7 +119,7 @@ class _Category:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     answer: int
     answer_type: str
     evidence_category_ids: Tuple[str, ...]
@@ -130,8 +130,8 @@ class _Query:
 class _Dataset:
     categories: Tuple[_Category, ...]
     unit_scale: int
-    query_variant: str
-    query_variant_probabilities: Dict[str, float]
+    query_id: str
+    query_id_probabilities: Dict[str, float]
     scene_variant: str
     scene_variant_probabilities: Dict[str, float]
     glyph_name: str
@@ -200,17 +200,17 @@ def _public_task_param_overrides(task_id: str) -> Dict[str, Any]:
     return overrides
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -391,7 +391,7 @@ def _build_category_total_query(
     mark_counts[target_index] = int(target_mark)
     answer = int(target_mark) * int(unit_scale)
     return mark_counts, _Query(
-        query_variant="category_total_value",
+        query_id="category_total_value",
         answer=int(answer),
         answer_type="integer",
         evidence_category_ids=(f"cat_{target_index}",),
@@ -445,7 +445,7 @@ def _build_group_difference_query(
         mark_counts[pair[1]] = int(low_value)
     answer = int(diff_marks) * int(unit_scale)
     return mark_counts, _Query(
-        query_variant="group_difference_value",
+        query_id="group_difference_value",
         answer=int(answer),
         answer_type="integer",
         evidence_category_ids=(f"cat_{pair[0]}", f"cat_{pair[1]}"),
@@ -506,7 +506,7 @@ def _build_threshold_query(
     threshold_value = int(threshold_mark) * int(unit_scale)
     threshold_phrase = f"greater than {threshold_value}" if str(direction) == "greater_than" else f"less than {threshold_value}"
     return mark_counts, _Query(
-        query_variant="threshold_count",
+        query_id="threshold_count",
         answer=int(target_count),
         answer_type="integer",
         evidence_category_ids=tuple(f"cat_{index}" for index in sorted(target_indices)),
@@ -524,8 +524,8 @@ def _build_threshold_query(
 
 def _construct_dataset(
     *,
-    query_variant: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
     scene_variant: str,
     scene_variant_probabilities: Mapping[str, float],
     params: Mapping[str, Any],
@@ -564,7 +564,7 @@ def _construct_dataset(
     rng = spawn_rng(int(instance_seed), "charts.pictogram.base_counts")
     mark_counts = [rng.randint(int(mark_min), int(mark_max)) for _ in range(int(category_count))]
 
-    if str(query_variant) == "category_total_value":
+    if str(query_id) == "category_total_value":
         mark_counts, query = _build_category_total_query(
             mark_counts=mark_counts,
             unit_scale=int(unit_scale),
@@ -573,7 +573,7 @@ def _construct_dataset(
             mark_min=int(mark_min),
             mark_max=int(mark_max),
         )
-    elif str(query_variant) == "group_difference_value":
+    elif str(query_id) == "group_difference_value":
         mark_counts, query = _build_group_difference_query(
             mark_counts=mark_counts,
             unit_scale=int(unit_scale),
@@ -582,7 +582,7 @@ def _construct_dataset(
             mark_min=int(mark_min),
             mark_max=int(mark_max),
         )
-    elif str(query_variant) == "threshold_count":
+    elif str(query_id) == "threshold_count":
         mark_counts, query = _build_threshold_query(
             mark_counts=mark_counts,
             unit_scale=int(unit_scale),
@@ -592,7 +592,7 @@ def _construct_dataset(
             mark_max=int(mark_max),
         )
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     glyph, glyph_probabilities = _resolve_glyph(params, instance_seed=int(instance_seed))
     categories = _resolve_categories(
@@ -609,7 +609,7 @@ def _construct_dataset(
         qparams["category_label_a"] = str(category_by_id[str(qparams["category_id_a"])].label)
         qparams["category_label_b"] = str(category_by_id[str(qparams["category_id_b"])].label)
     query = _Query(
-        query_variant=str(query.query_variant),
+        query_id=str(query.query_id),
         answer=int(query.answer),
         answer_type=str(query.answer_type),
         evidence_category_ids=tuple(str(value) for value in query.evidence_category_ids),
@@ -620,8 +620,8 @@ def _construct_dataset(
     return _Dataset(
         categories=tuple(categories),
         unit_scale=int(unit_scale),
-        query_variant=str(query_variant),
-        query_variant_probabilities={str(key): float(value) for key, value in query_variant_probabilities.items()},
+        query_id=str(query_id),
+        query_id_probabilities={str(key): float(value) for key, value in query_id_probabilities.items()},
         scene_variant=str(scene_variant),
         scene_variant_probabilities={str(key): float(value) for key, value in scene_variant_probabilities.items()},
         glyph_name=str(glyph),
@@ -893,10 +893,10 @@ def _render_chart(
     )
 
 
-def _json_examples(query_variant: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
     return (
-        str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-        str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+        str(prompt_defaults[f"json_example_{str(query_id)}"]),
+        str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
     )
 
 
@@ -915,11 +915,11 @@ class ChartsPictogramChartTask:
             merged_params.update(dict(params))
             params = merged_params
 
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = _construct_dataset(
-            query_variant=str(query_variant),
-            query_variant_probabilities=query_variant_probabilities,
+            query_id=str(query_id),
+            query_id_probabilities=query_id_probabilities,
             scene_variant=str(scene_variant),
             scene_variant_probabilities=scene_variant_probabilities,
             params=params,
@@ -966,7 +966,7 @@ class ChartsPictogramChartTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _json_examples(str(query_variant), prompt_defaults=prompt_defaults)
+        json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
         qparams = dict(dataset.query.params)
         category_by_id = {category.category_id: category for category in dataset.categories}
         prompt_selection = render_task_prompt_variants(
@@ -975,7 +975,7 @@ class ChartsPictogramChartTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
@@ -1009,7 +1009,7 @@ class ChartsPictogramChartTask:
             + 0.45 * normalize_int_with_bounds(max(category.mark_count for category in dataset.categories), [4, 16])
         )
         evidence_scan = normalize_int_with_bounds(len(evidence_category_ids), [1, 6])
-        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]) + (0.08 * evidence_scan))
+        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)]) + (0.08 * evidence_scan))
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1020,11 +1020,9 @@ class ChartsPictogramChartTask:
         )
 
         query_params = {
-            "query_variant": str(query_variant),
-            "query_variant": str(query_variant),
-            "query_id": str(query_variant),
-            "query_variant_probabilities": dict(dataset.query_variant_probabilities),
-            "query_variant_probabilities": dict(dataset.query_variant_probabilities),
+            "query_id": str(query_id),
+            "query_id_probabilities": dict(dataset.query_id_probabilities),
+            "query_id_probabilities": dict(dataset.query_id_probabilities),
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "glyph_name": str(dataset.glyph_name),
@@ -1039,9 +1037,7 @@ class ChartsPictogramChartTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "query_variant": str(query_variant),
-                    "query_id": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "unit_scale": int(dataset.unit_scale),
                     "answer_value": int(dataset.query.answer),
@@ -1049,9 +1045,7 @@ class ChartsPictogramChartTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
-                "query_variant": str(query_variant),
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1075,9 +1069,7 @@ class ChartsPictogramChartTask:
                 "mark_bboxes_px": dict(rendered.mark_bboxes_px),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "query_variant": str(query_variant),
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "question_format": "pictogram_quantity",
                 "scene_variant": str(scene_variant),
                 "unit_scale": int(dataset.unit_scale),
@@ -1116,26 +1108,17 @@ class ChartsPictogramChartTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 
 @register_task
-class ChartsPictogramCategoryTotalValueTask(FixedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
-    """Read one category total from the repeated unit marks."""
+class ChartsPictogramGroupArithmeticValueTask(MergedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
+    """Read or compare group totals from repeated unit marks."""
 
-    task_id = "task_charts__pictogram__category_total_value"
-    fixed_query_variant = "category_total_value"
-
-
-@register_task
-class ChartsPictogramGroupDifferenceValueTask(FixedChartQueryVariantTaskMixin, ChartsPictogramChartTask):
-    """Compute the absolute difference between two pictogram category totals."""
-
-    task_id = "task_charts__pictogram__group_difference_value"
-    fixed_query_variant = "group_difference_value"
+    task_id = "task_charts__pictogram__group_arithmetic_value"
+    allowed_query_ids = ("category_total_value", "group_difference_value")
 
 
 @register_task
@@ -1143,16 +1126,15 @@ class ChartsPictogramThresholdCountTask(FixedChartQueryVariantTaskMixin, ChartsP
     """Count categories whose repeated-mark total satisfies a threshold."""
 
     task_id = "task_charts__pictogram__threshold_count"
-    fixed_query_variant = "threshold_count"
+    fixed_query_id = "threshold_count"
 
 
 __all__ = [
-    "ChartsPictogramCategoryTotalValueTask",
     "ChartsPictogramChartTask",
-    "ChartsPictogramGroupDifferenceValueTask",
+    "ChartsPictogramGroupArithmeticValueTask",
     "ChartsPictogramThresholdCountTask",
     "SUPPORTED_GLYPHS",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "SUPPORTED_THRESHOLD_DIRECTIONS",
 ]

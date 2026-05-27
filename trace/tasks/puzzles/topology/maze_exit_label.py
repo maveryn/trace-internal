@@ -29,7 +29,7 @@ TASK_ID = "puzzles_topology_maze_exit_internal"
 MAZE_EXIT_REACHABILITY_LABEL_TASK_ID = "task_puzzles__maze__exit_reachability_label"
 MAZE_REACHABLE_EXIT_COUNT_TASK_ID = "task_puzzles__maze__reachable_exit_count"
 SCENE_ID = "maze"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "exit_reachability_label",
     "reachable_exit_count",
 )
@@ -39,7 +39,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "paper_labyrinth_maze",
     "block_wall_maze",
 )
-_SOURCE_QUERY_VARIANT_TARGET_REACHABILITY = {
+_SOURCE_QUERY_ID_TARGET_REACHABILITY = {
     "reachable_exit_label": "reachable",
     "unreachable_exit_label": "unreachable",
 }
@@ -504,7 +504,7 @@ def _sample_exit_count_for_reachable_count(
 
 def _build_maze_exit_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     target_reachability: str | None,
     scene_variant: str,
     params: Mapping[str, Any],
@@ -512,7 +512,7 @@ def _build_maze_exit_dataset(
     gen_defaults: Mapping[str, Any],
     max_attempts: int,
 ) -> Dict[str, Any]:
-    is_label_variant = str(query_variant) == "exit_reachability_label"
+    is_label_variant = str(query_id) == "exit_reachability_label"
     if bool(is_label_variant):
         if str(target_reachability) not in set(SUPPORTED_TARGET_REACHABILITY_VALUES):
             raise ValueError("target_reachability must be reachable or unreachable for exit_reachability_label")
@@ -545,7 +545,7 @@ def _build_maze_exit_dataset(
     sampled_reachable_count: int | None = None
     reachable_count_range: Tuple[int, int] | None = None
 
-    if str(query_variant) == "reachable_exit_count" and "exit_count" not in params:
+    if str(query_id) == "reachable_exit_count" and "exit_count" not in params:
         exit_count_bounds = _resolve_int_bounds(
             params,
             gen_defaults,
@@ -693,10 +693,10 @@ def _build_maze_exit_dataset(
             reachable_count_range = locals().get("reachable_count_range", [1, 5])
 
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "target_reachability": str(resolved_target_reachability) if resolved_target_reachability is not None else None,
             "scene_variant": str(scene_variant),
-            "question_format": str(query_variant),
+            "question_format": str(query_id),
             "view_family": "topology_orthogonal_maze_exit_label",
             "topology_rule": "move_through_open_corridors_from_start_walls_block_motion",
             "maze_rows": int(rows),
@@ -712,7 +712,7 @@ def _build_maze_exit_dataset(
             "exit_count": int(exit_count),
             "exit_count_range": [int(exit_count_range[0]), int(exit_count_range[1])],
             "reachable_exit_count": int(len(reachable_exits)),
-            "reachable_exit_count_range": list(reachable_count_range) if str(query_variant) == "reachable_exit_count" else [1, max(1, int(exit_count) - 1)],
+            "reachable_exit_count_range": list(reachable_count_range) if str(query_id) == "reachable_exit_count" else [1, max(1, int(exit_count) - 1)],
             "reachable_exit_labels": list(reachable_labels),
             "unreachable_exit_labels": list(unreachable_labels),
             "answer_value": answer_value,
@@ -1067,32 +1067,32 @@ class _PuzzlesTopologyMazeExitBaseTask:
     task_id = TASK_ID
     domain = "puzzles"
     task_group = "topology"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_QUERY_IDS
 
-    def _resolve_query_variant(
+    def _resolve_query_id(
         self,
         params: Mapping[str, Any],
         *,
         instance_seed: int,
     ) -> Tuple[str, Dict[str, float], str | None]:
-        explicit_variant = params.get("query_variant")
+        explicit_variant = params.get("query_id")
         source_target_reachability: str | None = None
         variant_params = dict(params)
-        if explicit_variant is not None and str(explicit_variant) in _SOURCE_QUERY_VARIANT_TARGET_REACHABILITY:
-            source_target_reachability = str(_SOURCE_QUERY_VARIANT_TARGET_REACHABILITY[str(explicit_variant)])
-            variant_params["query_variant"] = "exit_reachability_label"
-        query_variant, query_variant_probabilities = resolve_puzzle_axis_variant(
+        if explicit_variant is not None and str(explicit_variant) in _SOURCE_QUERY_ID_TARGET_REACHABILITY:
+            source_target_reachability = str(_SOURCE_QUERY_ID_TARGET_REACHABILITY[str(explicit_variant)])
+            variant_params["query_id"] = "exit_reachability_label"
+        query_id, query_id_probabilities = resolve_puzzle_axis_variant(
             params=variant_params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=self.supported_query_variants,
+            supported_variants=self.supported_query_ids,
             task_id=self.task_id,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
-        return str(query_variant), dict(query_variant_probabilities), source_target_reachability
+        return str(query_id), dict(query_id_probabilities), source_target_reachability
 
     def _resolve_target_reachability(
         self,
@@ -1121,19 +1121,19 @@ class _PuzzlesTopologyMazeExitBaseTask:
         return str(target_reachability), dict(target_reachability_probabilities)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, query_variant_probabilities, source_target_reachability = self._resolve_query_variant(
+        query_id, query_id_probabilities, source_target_reachability = self._resolve_query_id(
             params,
             instance_seed=int(instance_seed),
         )
         after_task_params = _advance_sampling_after_axis(
             params,
-            axis_size=len(self.supported_query_variants),
-            explicit_keys=("query_variant",),
+            axis_size=len(self.supported_query_ids),
+            explicit_keys=("query_id",),
         )
         target_reachability: str | None = None
         target_reachability_probabilities: Dict[str, float] = {}
         after_target_params = dict(after_task_params)
-        if str(query_variant) == "exit_reachability_label":
+        if str(query_id) == "exit_reachability_label":
             target_reachability, target_reachability_probabilities = self._resolve_target_reachability(
                 after_task_params,
                 instance_seed=int(instance_seed),
@@ -1143,7 +1143,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 after_task_params,
                 axis_size=len(SUPPORTED_TARGET_REACHABILITY_VALUES),
                 explicit_keys=(
-                    ("target_reachability", "query_variant")
+                    ("target_reachability", "query_id")
                     if source_target_reachability is not None
                     else ("target_reachability",)
                 ),
@@ -1166,7 +1166,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
             explicit_key="maze_rows",
         )
         dataset = _build_maze_exit_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             target_reachability=str(target_reachability) if target_reachability is not None else None,
             scene_variant=str(scene_variant),
             params=dataset_params,
@@ -1237,21 +1237,21 @@ class _PuzzlesTopologyMazeExitBaseTask:
         target_reachability_description = str(
             _TARGET_REACHABILITY_DESCRIPTIONS.get(str(target_reachability), "")
         )
-        answer_hint = str(prompt_defaults[f"answer_hint_{str(query_variant)}"]).format(
+        answer_hint = str(prompt_defaults[f"answer_hint_{str(query_id)}"]).format(
             target_reachability_description=str(target_reachability_description),
         )
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]).format(
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"]).format(
             target_reachability_description=str(target_reachability_description),
         )
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1287,7 +1287,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
         if len(evidence_bboxes) != len(supporting_item_ids):
             raise ValueError("maze-exit evidence projection does not match supporting item ids")
         answer_value = dataset["answer_value"]
-        if str(query_variant) == "reachable_exit_count":
+        if str(query_id) == "reachable_exit_count":
             answer_gt = TypedValue(type="integer", value=int(answer_value))
         else:
             answer_gt = TypedValue(type="string", value=str(answer_value))
@@ -1299,7 +1299,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
         evidence_load = min(1.0, float(evidence_count) / float(evidence_denominator))
         reasoning_load = min(
             1.0,
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + float(_TARGET_REACHABILITY_LOAD.get(str(target_reachability), 0.0))
             + (0.08 * float(exit_scan))
             + (0.10 * float(evidence_load)),
@@ -1318,7 +1318,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "scene_kind": f"puzzle_topology_maze_exit_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "target_reachability": str(target_reachability) if target_reachability is not None else None,
                     "scene_variant": str(scene_variant),
                     "answer_value": answer_value,
@@ -1328,16 +1328,16 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "target_reachability": str(target_reachability) if target_reachability is not None else None,
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "target_reachability_probabilities": dict(target_reachability_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "maze_rows": int(dataset["maze_rows"]),
@@ -1371,7 +1371,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "evidence_source": str(supporting_evidence_source),
             }, render_params.unit_size_jitter),
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "target_reachability": str(target_reachability) if target_reachability is not None else None,
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
@@ -1394,7 +1394,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "supporting_item_ids": list(supporting_item_ids),
                 "supporting_evidence_source": str(supporting_evidence_source),
                 "evidence_policy": str(dataset["evidence_policy"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "target_reachability_probabilities": dict(target_reachability_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "query_details": dict(dataset["query_details"]),
@@ -1411,11 +1411,11 @@ class _PuzzlesTopologyMazeExitBaseTask:
             "complexity": complexity.to_dict(),
         }
 
-        if str(query_variant) == "exit_reachability_label" and str(target_reachability) == "reachable" and str(answer_value) not in set(map(str, dataset["reachable_exit_labels"])):
+        if str(query_id) == "exit_reachability_label" and str(target_reachability) == "reachable" and str(answer_value) not in set(map(str, dataset["reachable_exit_labels"])):
             raise ValueError("reachable-exit label answer drifted from reachable exits")
-        if str(query_variant) == "exit_reachability_label" and str(target_reachability) == "unreachable" and str(answer_value) not in set(map(str, dataset["unreachable_exit_labels"])):
+        if str(query_id) == "exit_reachability_label" and str(target_reachability) == "unreachable" and str(answer_value) not in set(map(str, dataset["unreachable_exit_labels"])):
             raise ValueError("unreachable-exit label answer drifted from unreachable exits")
-        if str(query_variant) == "reachable_exit_count" and int(answer_value) != int(len(dataset["reachable_exit_labels"])):
+        if str(query_id) == "reachable_exit_count" and int(answer_value) != int(len(dataset["reachable_exit_labels"])):
             raise ValueError("reachable-exit count answer drifted from reachable exits")
         if not (0.0 <= float(complexity.complexity_score) <= 1.0):
             raise ValueError("maze-exit complexity score is outside [0, 1]")
@@ -1430,7 +1430,7 @@ class _PuzzlesTopologyMazeExitBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1440,13 +1440,13 @@ class PuzzlesTopologyMazeExitReachabilityLabelTask(_PuzzlesTopologyMazeExitBaseT
     """Return a reachable or unreachable labeled exit in a wall maze."""
 
     task_id = MAZE_EXIT_REACHABILITY_LABEL_TASK_ID
-    supported_query_variants = ("exit_reachability_label",)
+    supported_query_ids = ("exit_reachability_label",)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
         return rewrite_fixed_puzzle_query_output(
             output,
-            query_id=str(output.query_variant),
+            query_id=str(output.query_id),
             scene_id=SCENE_ID,
         )
 
@@ -1456,13 +1456,13 @@ class PuzzlesTopologyMazeReachableExitCountTask(_PuzzlesTopologyMazeExitBaseTask
     """Count reachable exits in a wall maze."""
 
     task_id = MAZE_REACHABLE_EXIT_COUNT_TASK_ID
-    supported_query_variants = ("reachable_exit_count",)
+    supported_query_ids = ("reachable_exit_count",)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
         return rewrite_fixed_puzzle_query_output(
             output,
-            query_id=str(output.query_variant),
+            query_id=str(output.query_id),
             scene_id=SCENE_ID,
         )
 

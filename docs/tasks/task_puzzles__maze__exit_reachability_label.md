@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__maze__exit_reachability_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `exit_reachability_label`
 3. Prompts ask for one reachable or unreachable labeled boundary exit, controlled by `target_reachability`.
 4. Supported `scene_variant` values are `classic_wall_maze|paper_labyrinth_maze|block_wall_maze`.

@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       compact_board: 1.0
       classic_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       legal_move_count: 1.0
       corner_move_count: 1.0
       flip_count_for_marked_move: 1.0
@@ -15,7 +15,7 @@ generation:
       slate_board: 1.0
       blue_board: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     legal_move_count_support:

@@ -6,12 +6,10 @@ from trace.tasks import TASK_REGISTRY
 
 
 THREE_D_BAR_TASKS = {
-    "task_charts__bar_3d__axis_total_value": {
+    "task_charts__bar_3d__axis_aggregate_value": {
         "series_total_value",
         "category_total_value",
         "series_interval_total_value",
-    },
-    "task_charts__bar_3d__axis_gap_value": {
         "series_total_gap_value",
         "category_total_gap_value",
         "category_extremum_gap_value",
@@ -36,7 +34,6 @@ def test_three_d_bar_tasks_generate_default_query_outputs() -> None:
             params={},
             max_attempts=100,
         )
-        assert output.query_variant == "default"
         assert output.scene_id == "bar_3d"
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
@@ -53,10 +50,9 @@ def test_three_d_bar_tasks_generate_each_query_branch() -> None:
         for query_id in sorted(allowed_query_ids):
             output = task.generate(
                 92_000 + seed_index,
-                params={"query_variant": query_id},
+                params={"query_id": query_id},
                 max_attempts=100,
             )
-            assert output.query_variant == "default"
             assert output.scene_id == "bar_3d"
             assert output.query_id == query_id
             assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id
@@ -65,11 +61,11 @@ def test_three_d_bar_tasks_generate_each_query_branch() -> None:
             seed_index += 1
 
 
-def test_three_d_bar_axis_total_uses_calibrated_grid_size() -> None:
-    task = TASK_REGISTRY["task_charts__bar_3d__axis_total_value"]()
+def test_three_d_bar_axis_aggregate_uses_calibrated_grid_size() -> None:
+    task = TASK_REGISTRY["task_charts__bar_3d__axis_aggregate_value"]()
     output = task.generate(
         92_500,
-        params={"query_variant": "series_interval_total_value"},
+        params={"query_id": "series_interval_total_value"},
         max_attempts=100,
     )
     execution = output.trace_payload["execution_trace"]

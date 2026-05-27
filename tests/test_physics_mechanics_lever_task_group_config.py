@@ -16,7 +16,7 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -41,7 +41,7 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
         "maroon",
     }
 
-    assert set(generation["query_variant_weights"].keys()) == {"side_torque", "missing_weight_to_balance"}
+    assert set(generation["query_id_weights"].keys()) == {"side_torque", "missing_weight_to_balance"}
 
     assert set(generation["torque_side_weights"].keys()) == {"left", "right"}
 

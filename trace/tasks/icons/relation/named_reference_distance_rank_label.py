@@ -50,7 +50,7 @@ from ..shared.public_query_task import rewrite_icons_query_output
 
 TASK_ID = "task_icons__named_field__reference_distance_rank_label"
 SCENE_ID = "named_field"
-PUBLIC_QUERY_VARIANT = "named_reference_distance_rank_label"
+PUBLIC_QUERY_ID = "named_reference_distance_rank_label"
 
 QUERY_IDS: Tuple[str, ...] = (
     "closest_to_named_reference_label",
@@ -278,11 +278,11 @@ def _weighted_choice(rng, probabilities: Mapping[str, float]) -> str:
 
 def _resolve_query(rng, *, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     query_params = dict(params)
-    explicit_variant = str(query_params.get("query_variant", "") or "").strip()
+    explicit_variant = str(query_params.get("query_id", "") or "").strip()
     if query_params.get("distance_rank_query") is None and explicit_variant in set(QUERY_IDS):
         query_params["distance_rank_query"] = explicit_variant
-    if explicit_variant == PUBLIC_QUERY_VARIANT:
-        query_params.pop("query_variant", None)
+    if explicit_variant == PUBLIC_QUERY_ID:
+        query_params.pop("query_id", None)
     query_id, probabilities = resolve_variant(
         rng,
         params=query_params,
@@ -972,7 +972,6 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 "entities": [dict(serialized_reference), *serialized_candidates, *serialized_distractors],
                 "relations": {
                     "target": "labeled_candidate_distance_rank_from_named_reference",
-                    "query_variant": str(PUBLIC_QUERY_VARIANT),
                     "query_id": str(scene_payload.query_id),
                     "reference_instance_id": str(scene_payload.reference_icon.instance_id),
                     "reference_description": str(scene_payload.reference_description),
@@ -987,7 +986,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
+                "query_id": str(PUBLIC_QUERY_ID),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1032,7 +1031,6 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_named_field_distance_rank",
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "distance_rank_query": str(scene_payload.query_id),
                 "distance_rank_query_probabilities": dict(query_probabilities),
@@ -1050,7 +1048,6 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
                 "question_format": "select_labeled_named_icon_by_distance_rank_from_unique_named_reference",
             },
             "witness_symbolic": {
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "reference_instance_id": str(scene_payload.reference_icon.instance_id),
                 "reference_description": str(scene_payload.reference_description),
@@ -1078,7 +1075,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(scene_payload=scene_payload, render_params=render_params),
             task_versions=default_task_versions(),
-            query_variant=str(PUBLIC_QUERY_VARIANT),
+            query_id=str(PUBLIC_QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

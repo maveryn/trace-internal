@@ -25,7 +25,7 @@ def test_star_battle_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(83101, params={}, max_attempts=80)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= 1
@@ -34,7 +34,7 @@ def test_star_battle_tasks_emit_public_contract(task_cls) -> None:
 
     trace = out.trace_payload
     assert trace["query_spec"]["params"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -43,7 +43,7 @@ def test_star_battle_tasks_emit_public_contract(task_cls) -> None:
 @pytest.mark.parametrize("query_id", VALID_CELL_QUERY_IDS)
 def test_star_battle_valid_cell_task_has_one_correct_labeled_cell(query_id: str) -> None:
     task = PuzzlesLogicStarBattleValidCellLabelTask()
-    out = task.generate(83111, params={"query_variant": query_id}, max_attempts=80)
+    out = task.generate(83111, params={"query_id": query_id}, max_attempts=80)
     trace = out.trace_payload["execution_trace"]
 
     assert out.query_id == query_id
@@ -59,7 +59,7 @@ def test_star_battle_valid_cell_task_has_one_correct_labeled_cell(query_id: str)
 @pytest.mark.parametrize("query_id", REMAINING_COUNT_QUERY_IDS)
 def test_star_battle_remaining_count_matches_scoped_legal_cells(query_id: str) -> None:
     task = PuzzlesLogicStarBattleRemainingCountTask()
-    out = task.generate(83121, params={"query_variant": query_id}, max_attempts=80)
+    out = task.generate(83121, params={"query_id": query_id}, max_attempts=80)
     trace = out.trace_payload["execution_trace"]
 
     assert out.query_id == query_id

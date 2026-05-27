@@ -60,7 +60,7 @@ def _instance_trace_fields(record: dict[str, Any]) -> dict[str, Any]:
     row_count = execution.get("row_count")
     numeric_column_count = execution.get("numeric_column_count")
     fields: dict[str, Any] = {
-        "query_variant": execution.get("query_variant") or query.get("query_variant") or params.get("query_variant"),
+        "query_id": execution.get("query_id") or query.get("query_id") or params.get("query_id"),
         "question_format": execution.get("question_format") or params.get("question_format"),
         "scene_variant": execution.get("scene_variant") or render.get("scene_variant"),
         "row_count": row_count,
@@ -244,7 +244,7 @@ def export_stats(
         rows.append(row)
 
     group_keys = [
-        "query_variant",
+        "query_id",
         "question_format",
         "row_count",
         "numeric_column_count",
@@ -308,7 +308,7 @@ def export_stats(
         instance_columns = [
             "dataset_index",
             "uid",
-            "query_variant",
+            "query_id",
             "question_format",
             "scene_variant",
             "row_count",

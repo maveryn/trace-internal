@@ -10,7 +10,7 @@ from trace.tasks.pages.infographic.metric_arithmetic_value import (
     COLUMN_PROFILE_COMPARISON_VARIANTS,
     FILTERED_SECTION_EXTREMUM_VARIANTS,
     FILTERED_METRIC_TOTAL_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     PagesInfographicColumnProfileComparisonValueTask,
     PagesInfographicFilteredMetricTotalValueTask,
     PagesInfographicFilteredSectionExtremumLabelTask,
@@ -29,7 +29,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 def _expected_answer(trace: dict) -> int | str:
     values_by_label = {str(label): int(value) for label, value in trace["values_by_label"].items()}
     target_labels = [str(label) for label in trace["target_labels"]]
-    variant = str(trace.get("internal_query_variant") or trace.get("source_query_variant") or trace.get("query_id") or trace["query_variant"])
+    variant = str(trace.get("internal_query_id") or trace.get("source_query_id") or trace.get("query_id") or trace["query_id"])
     if variant == "sum_named_metrics":
         return int(sum(values_by_label[label] for label in target_labels))
     if variant == "section_extrema_arithmetic":
@@ -71,19 +71,19 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= y0 < y1 <= height
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_pages_infographic_metric_arithmetic_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_pages_infographic_metric_arithmetic_variants_match_contract(query_id: str) -> None:
     task = PagesInfographicMetricArithmeticValueTask()
     out = task.generate(
-        97100 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant, "card_count": 20, "section_count": 4, "operand_count": 4},
+        97100 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "card_count": 20, "section_count": 4, "operand_count": 4},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -131,7 +131,7 @@ def test_pages_infographic_metric_arithmetic_variants_match_contract(query_varia
 
 def test_pages_infographic_metric_arithmetic_is_deterministic() -> None:
     task = PagesInfographicMetricArithmeticValueTask()
-    params = {"query_variant": "sum_named_metrics", "card_count": 22, "section_count": 4, "operand_count": 5}
+    params = {"query_id": "sum_named_metrics", "card_count": 22, "section_count": 4, "operand_count": 5}
     out_a = task.generate(98231, params=params, max_attempts=10)
     out_b = task.generate(98231, params=params, max_attempts=10)
 
@@ -146,7 +146,7 @@ def test_pages_infographic_metric_arithmetic_supports_larger_variable_sections()
     task = PagesInfographicMetricArithmeticValueTask()
     out = task.generate(
         98531,
-        params={"query_variant": "section_total_except_named", "card_count": 30, "section_count": 6},
+        params={"query_id": "section_total_except_named", "card_count": 30, "section_count": 6},
         max_attempts=10,
     )
 
@@ -163,7 +163,7 @@ def test_pages_infographic_metric_arithmetic_supports_larger_variable_sections()
 
 def test_pages_infographic_metric_arithmetic_complexity_components_are_normalized() -> None:
     task = PagesInfographicMetricArithmeticValueTask()
-    out = task.generate(99231, params={"query_variant": "section_total_except_named"}, max_attempts=10)
+    out = task.generate(99231, params={"query_id": "section_total_except_named"}, max_attempts=10)
 
     complexity = out.complexity.to_dict()
     assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
@@ -186,7 +186,7 @@ def test_pages_infographic_section_ranked_total_label_matches_contract() -> None
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "section_ranked_total_label"
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_set"
@@ -219,27 +219,27 @@ def test_pages_infographic_section_ranked_total_label_matches_contract() -> None
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "query_variant"),
+    ("task_cls", "query_id"),
     [
         (PagesInfographicFilteredMetricTotalValueTask, FILTERED_METRIC_TOTAL_VARIANTS[0]),
         (PagesInfographicColumnProfileComparisonValueTask, COLUMN_PROFILE_COMPARISON_VARIANTS[0]),
         (PagesInfographicFilteredSectionExtremumLabelTask, FILTERED_SECTION_EXTREMUM_VARIANTS[0]),
     ],
 )
-def test_pages_infographic_new_filtered_tasks_match_contract(task_cls: type, query_variant: str) -> None:
+def test_pages_infographic_new_filtered_tasks_match_contract(task_cls: type, query_id: str) -> None:
     task = task_cls()
     out = task.generate(
-        99731 + (17 if "difference" in query_variant else 0),
+        99731 + (17 if "difference" in query_id else 0),
         params={"card_count": 24, "section_count": 4},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.query_variant == "default"
-    assert out.query_id == query_variant
+    assert out.query_id == "default"
+    assert out.query_id == query_id
     assert out.scene_id == "infographic"
-    if query_variant == "section_icon_extremum_label":
+    if query_id == "section_icon_extremum_label":
         assert execution["answer_type"] == "string"
         assert execution["question_format"] == "label_open"
         expected = _expected_answer(execution)

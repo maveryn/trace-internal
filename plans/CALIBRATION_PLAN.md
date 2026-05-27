@@ -200,7 +200,7 @@ prompt, contract, sampling, and artifact checks below are clean.
 
 1. Prompt text must use the current scene/task/query composition and must not
    contain stale task-family wording or obsolete `task_variant` fields. The public task unit is
-   `task_id`; task-internal branches are `query_id` or query variants.
+   `task_id`; task-internal branches are `query_id` or query ids.
 2. The final prompt must not repeat the same scene description, target
    instruction, or answer-format rule in multiple layers.
 3. Prompt, rendered image, answer schema, evidence schema, and verifier trace
@@ -481,7 +481,7 @@ Work on one domain at a time and one scene at a time.
 15. Move to the next scene only after the current scene reaches one of those
    explicit end states.
 
-Do not copy solve rates from removed task ids, stale query variants, or
+Do not copy solve rates from removed task ids, stale query ids, or
 non-current configuration versions onto current tasks.
 
 ## Post-Scene Domain Audit
@@ -809,7 +809,7 @@ The first check is always the realized `100` calibration rows. If that fails,
 the runner may build up to four additional same-sampler validation shards of
 `100` rows each and recheck the cumulative distribution up to `500` rows. The
 hard gates are `unique_answers >= 5` and `max_answer_frequency < 1/3`, applied
-to the cumulative validation rows and to each observed/expected `query_variant`
+to the cumulative validation rows and to each observed/expected `query_id`
 slice when trace metadata provides variants. Solve-rate calibration still uses
 only the original `100` calibration rows. A task that still fails after `500`
 rows must be reported as distribution-failed or blocked; agents must not tune,

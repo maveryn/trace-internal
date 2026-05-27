@@ -38,10 +38,10 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
         ("series_comparison_count", "multi_line", "greater_than"),
         ("series_comparison_count", "grouped_lollipop", "less_than"),
     )
-    for seed, (query_variant, scene_variant, comparison) in enumerate(cases, start=11010):
+    for seed, (query_id, scene_variant, comparison) in enumerate(cases, start=11010):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, "comparison": comparison},
+            params={"query_id": query_id, "scene_variant": scene_variant, "comparison": comparison},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -61,7 +61,7 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
             for category_label, series_values in execution["values_by_category"].items()
         }
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -112,7 +112,7 @@ def test_chart_multiseries_prompts_match_scene_variant_wording() -> None:
     ):
         out = task.generate(
             seed,
-            params={"query_variant": "series_comparison_count", "scene_variant": scene_variant},
+            params={"query_id": "series_comparison_count", "scene_variant": scene_variant},
             max_attempts=10,
         )
         prompts[str(scene_variant)] = str(out.prompt)
@@ -132,7 +132,7 @@ def test_chart_multiseries_grouped_horizontal_bar_evidence_uses_value_endpoint()
     out = task.generate(
         11035,
         params={
-            "query_variant": "series_comparison_count",
+            "query_id": "series_comparison_count",
             "scene_variant": "grouped_horizontal_bar",
             "comparison": "less_than",
         },
@@ -158,7 +158,7 @@ def test_chart_multiseries_prompt_examples_match_selected_variant() -> None:
     for index, comparison in enumerate(("greater_than", "less_than"), start=11040):
         out = task.generate(
             index,
-            params={"query_variant": "series_comparison_count", "comparison": comparison},
+            params={"query_id": "series_comparison_count", "comparison": comparison},
             max_attempts=10,
         )
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -170,7 +170,7 @@ def test_chart_multiseries_prompt_examples_match_selected_variant() -> None:
 def test_chart_multiseries_task_is_deterministic() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     params = {
-        "query_variant": "series_comparison_count",
+        "query_id": "series_comparison_count",
         "scene_variant": "multi_line",
         "comparison": "greater_than",
     }
@@ -190,7 +190,7 @@ def test_chart_multiseries_complexity_is_normalized_and_monotonic() -> None:
     easy = task.generate(
         11055,
         params={
-            "query_variant": "series_comparison_count",
+            "query_id": "series_comparison_count",
             "scene_variant": "grouped_bar",
             "comparison": "greater_than",
             "category_count_min": 5,
@@ -203,7 +203,7 @@ def test_chart_multiseries_complexity_is_normalized_and_monotonic() -> None:
     hard = task.generate(
         11055,
         params={
-            "query_variant": "series_comparison_count",
+            "query_id": "series_comparison_count",
             "scene_variant": "multi_line",
             "comparison": "greater_than",
             "category_count_min": 15,
@@ -223,7 +223,7 @@ def test_chart_multiseries_supports_explicit_category_and_series_counts() -> Non
     out = task.generate(
         11060,
         params={
-            "query_variant": "series_comparison_count",
+            "query_id": "series_comparison_count",
             "scene_variant": "grouped_bar",
             "comparison": "greater_than",
             "category_count_min": 15,
@@ -245,10 +245,10 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         ("ranked_change_extremum", "multi_line", {"change_measure": "absolute_gap", "extremum_direction": "largest"}),
         ("ranked_change_extremum", "grouped_lollipop", {"change_measure": "absolute_gap", "extremum_direction": "smallest"}),
     )
-    for seed, (query_variant, scene_variant, axis_params) in enumerate(cases, start=11110):
+    for seed, (query_id, scene_variant, axis_params) in enumerate(cases, start=11110):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, **axis_params},
+            params={"query_id": query_id, "scene_variant": scene_variant, **axis_params},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -269,8 +269,8 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
             for category_label, series_values in execution["values_by_category"].items()
         }
 
-        assert str(out.query_variant) == str(query_variant)
-        assert str(execution["internal_query_variant"]).startswith("ranked_")
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["internal_query_id"]).startswith("ranked_")
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "point_set"
         assert len(evidence_values) == 3
@@ -299,14 +299,14 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
         assert f'"{left_series}"' in str(out.prompt)
         assert f'"{right_series}"' in str(out.prompt)
         derived_values = {}
-        internal_query_variant = str(execution["internal_query_variant"])
+        internal_query_id = str(execution["internal_query_id"])
         for category_label in category_labels:
             left_value = int(values_by_category[str(category_label)][str(left_series)])
             right_value = int(values_by_category[str(category_label)][str(right_series)])
-            if internal_query_variant == "ranked_largest_increase":
+            if internal_query_id == "ranked_largest_increase":
                 derived_value = int(right_value) - int(left_value)
                 assert derived_value > 0
-            elif internal_query_variant == "ranked_largest_decrease":
+            elif internal_query_id == "ranked_largest_decrease":
                 derived_value = int(left_value) - int(right_value)
                 assert derived_value > 0
             else:
@@ -315,7 +315,7 @@ def test_chart_multiseries_extremum_label_delta_matches_contract() -> None:
             derived_values[str(category_label)] = int(derived_value)
             assert int(execution["derived_values_by_category"][str(category_label)]) == int(derived_value)
 
-        if internal_query_variant == "ranked_smallest_gap":
+        if internal_query_id == "ranked_smallest_gap":
             ranked_labels = [
                 str(label)
                 for label, _value in sorted(derived_values.items(), key=lambda item: (int(item[1]), str(item[0])))
@@ -348,7 +348,7 @@ def test_chart_multiseries_extremum_delta_prompt_examples_match_selected_variant
         out = task.generate(
             index,
             params={
-                "query_variant": "ranked_change_extremum",
+                "query_id": "ranked_change_extremum",
                 "change_measure": change_measure,
                 **params_by_measure[change_measure],
             },
@@ -363,18 +363,18 @@ def test_chart_multiseries_extremum_delta_prompt_examples_match_selected_variant
 def test_chart_multiseries_extremum_delta_balanced_axes_are_decoupled() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     observed = set()
-    query_variant_counts = {}
+    query_id_counts = {}
     scene_variant_counts = {}
     for index in range(120):
         out = task.generate(11200 + index, params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_variant"])
+        query_id = str(execution["query_id"])
         scene_variant = str(execution["scene_variant"])
-        observed.add((query_variant, scene_variant))
-        query_variant_counts[query_variant] = query_variant_counts.get(query_variant, 0) + 1
+        observed.add((query_id, scene_variant))
+        query_id_counts[query_id] = query_id_counts.get(query_id, 0) + 1
         scene_variant_counts[scene_variant] = scene_variant_counts.get(scene_variant, 0) + 1
 
-    assert set(query_variant_counts) == {
+    assert set(query_id_counts) == {
         "category_total_extremum_label",
         "conditional_gap_aggregate_value",
         "conditional_gap_extremum_value",
@@ -383,14 +383,14 @@ def test_chart_multiseries_extremum_delta_balanced_axes_are_decoupled() -> None:
         "series_comparison_count",
     }
     assert len(observed) == 24
-    assert sorted(query_variant_counts.values()) == [20, 20, 20, 20, 20, 20]
+    assert sorted(query_id_counts.values()) == [20, 20, 20, 20, 20, 20]
     assert sorted(scene_variant_counts.values()) == [30, 30, 30, 30]
 
 
 def test_chart_multiseries_extremum_delta_task_is_deterministic() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     params = {
-        "query_variant": "ranked_change_extremum",
+        "query_id": "ranked_change_extremum",
         "change_measure": "absolute_gap",
         "scene_variant": "multi_line",
         "extremum_direction": "largest",
@@ -414,10 +414,10 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
         ("ranked_ratio_extremum", "multi_line", {"ratio_measure": "pair_ratio", "extremum_direction": "largest"}),
         ("ranked_ratio_extremum", "grouped_lollipop", {"ratio_measure": "pair_ratio", "extremum_direction": "smallest"}),
     )
-    for seed, (query_variant, scene_variant, axis_params) in enumerate(cases, start=11210):
+    for seed, (query_id, scene_variant, axis_params) in enumerate(cases, start=11210):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, **axis_params},
+            params={"query_id": query_id, "scene_variant": scene_variant, **axis_params},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -437,7 +437,7 @@ def test_chart_multiseries_extremum_label_ratio_matches_contract() -> None:
             for category_label, series_values in execution["values_by_category"].items()
         }
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "point_set"
         assert len(evidence_values) == 3
@@ -523,7 +523,7 @@ def test_chart_multiseries_extremum_ratio_prompt_examples_match_selected_variant
     for index, ratio_measure in enumerate(expected, start=11240):
         out = task.generate(
             index,
-            params={"query_variant": "ranked_ratio_extremum", "ratio_measure": ratio_measure, "extremum_direction": "largest"},
+            params={"query_id": "ranked_ratio_extremum", "ratio_measure": ratio_measure, "extremum_direction": "largest"},
             max_attempts=10,
         )
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -535,18 +535,18 @@ def test_chart_multiseries_extremum_ratio_prompt_examples_match_selected_variant
 def test_chart_multiseries_extremum_ratio_balanced_axes_are_decoupled() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     observed = set()
-    query_variant_counts = {}
+    query_id_counts = {}
     scene_variant_counts = {}
     for index in range(120):
         out = task.generate(11300 + index, params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_variant"])
+        query_id = str(execution["query_id"])
         scene_variant = str(execution["scene_variant"])
-        observed.add((query_variant, scene_variant))
-        query_variant_counts[query_variant] = query_variant_counts.get(query_variant, 0) + 1
+        observed.add((query_id, scene_variant))
+        query_id_counts[query_id] = query_id_counts.get(query_id, 0) + 1
         scene_variant_counts[scene_variant] = scene_variant_counts.get(scene_variant, 0) + 1
 
-    assert set(query_variant_counts) == {
+    assert set(query_id_counts) == {
         "category_total_extremum_label",
         "conditional_gap_aggregate_value",
         "conditional_gap_extremum_value",
@@ -555,14 +555,14 @@ def test_chart_multiseries_extremum_ratio_balanced_axes_are_decoupled() -> None:
         "series_comparison_count",
     }
     assert len(observed) == 24
-    assert sorted(query_variant_counts.values()) == [20, 20, 20, 20, 20, 20]
+    assert sorted(query_id_counts.values()) == [20, 20, 20, 20, 20, 20]
     assert sorted(scene_variant_counts.values()) == [30, 30, 30, 30]
 
 
 def test_chart_multiseries_extremum_ratio_task_is_deterministic() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     params = {
-        "query_variant": "ranked_ratio_extremum",
+        "query_id": "ranked_ratio_extremum",
         "ratio_measure": "series_share",
         "scene_variant": "multi_line",
         "extremum_direction": "largest",
@@ -615,7 +615,7 @@ def test_chart_multiseries_category_total_extremum_matches_contract() -> None:
         )
         answer_label = str(ranked[int(execution["answer_rank"]) - 1])
 
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == "category_total_extremum_label"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == answer_label
@@ -636,9 +636,9 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
         ("conditional_gap_aggregate_value", "range", "multi_line", "greater_than", None),
         ("conditional_gap_extremum_value", None, "grouped_lollipop", "less_than", "smallest"),
     )
-    for seed, (query_variant, aggregate_kind, scene_variant, comparison, extremum_direction) in enumerate(cases, start=11310):
+    for seed, (query_id, aggregate_kind, scene_variant, comparison, extremum_direction) in enumerate(cases, start=11310):
         params = {
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": scene_variant,
             "condition_comparison": comparison,
         }
@@ -664,7 +664,7 @@ def test_chart_multiseries_conditional_gap_value_matches_contract() -> None:
             for category_label, series_values in execution["values_by_category"].items()
         }
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -728,14 +728,14 @@ def test_chart_multiseries_conditional_gap_prompt_examples_match_selected_varian
         "evidence": [[160, 310], [160, 250], [160, 190], [160, 280], [300, 330], [300, 260], [300, 210], [300, 300]],
         "answer": 24,
     }
-    for index, query_variant in enumerate(
+    for index, query_id in enumerate(
         (
             "conditional_gap_aggregate_value",
             "conditional_gap_extremum_value",
         ),
         start=11340,
     ):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected
@@ -745,7 +745,7 @@ def test_chart_multiseries_conditional_gap_prompt_examples_match_selected_varian
 def test_chart_multiseries_conditional_gap_axes_are_decoupled() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     observed = set()
-    query_variant_counts = {}
+    query_id_counts = {}
     scene_variant_counts = {}
     condition_counts = {}
     aggregate_counts = {}
@@ -753,26 +753,26 @@ def test_chart_multiseries_conditional_gap_axes_are_decoupled() -> None:
         out = task.generate(
             11400 + index,
             params={
-                "query_variant": "conditional_gap_aggregate_value",
+                "query_id": "conditional_gap_aggregate_value",
             },
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_variant"])
+        query_id = str(execution["query_id"])
         scene_variant = str(execution["scene_variant"])
         condition = str(execution["condition_comparison"])
         aggregate_kind = str(execution["conditional_gap_aggregate_kind"])
-        observed.add((query_variant, scene_variant))
-        query_variant_counts[query_variant] = query_variant_counts.get(query_variant, 0) + 1
+        observed.add((query_id, scene_variant))
+        query_id_counts[query_id] = query_id_counts.get(query_id, 0) + 1
         scene_variant_counts[scene_variant] = scene_variant_counts.get(scene_variant, 0) + 1
         condition_counts[condition] = condition_counts.get(condition, 0) + 1
         aggregate_counts[aggregate_kind] = aggregate_counts.get(aggregate_kind, 0) + 1
 
-    assert set(query_variant_counts) == {
+    assert set(query_id_counts) == {
         "conditional_gap_aggregate_value",
     }
     assert len(observed) == 4
-    assert sorted(query_variant_counts.values()) == [100]
+    assert sorted(query_id_counts.values()) == [100]
     assert set(scene_variant_counts) == {"grouped_bar", "grouped_horizontal_bar", "grouped_lollipop", "multi_line"}
     assert set(condition_counts) == {"greater_than", "less_than"}
     assert set(aggregate_counts) == {"mean", "range"}
@@ -783,7 +783,7 @@ def test_chart_multiseries_conditional_gap_axes_are_decoupled() -> None:
 def test_chart_multiseries_conditional_gap_task_is_deterministic() -> None:
     task = ChartsMultiseriesComparisonQueryTask()
     params = {
-        "query_variant": "conditional_gap_aggregate_value",
+        "query_id": "conditional_gap_aggregate_value",
         "conditional_gap_aggregate_kind": "range",
         "scene_variant": "multi_line",
         "condition_comparison": "greater_than",

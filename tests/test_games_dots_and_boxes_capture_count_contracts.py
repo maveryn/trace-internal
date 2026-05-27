@@ -15,18 +15,18 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "target_answer"),
+    ("query_id", "target_answer"),
     (
         ("three_sided_box_count", 4),
         ("capture_move_count", 4),
         ("highlighted_candidate_capture_count", 4),
     ),
 )
-def test_games_dots_and_boxes_capture_count_emits_expected_contract(query_variant: str, target_answer: int) -> None:
+def test_games_dots_and_boxes_capture_count_emits_expected_contract(query_id: str, target_answer: int) -> None:
     out = GamesDotsAndBoxesCaptureCountTask().generate(
         28101 + int(target_answer),
         params={
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "target_answer": int(target_answer),
         },
         max_attempts=64,
@@ -37,16 +37,16 @@ def test_games_dots_and_boxes_capture_count_emits_expected_contract(query_varian
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(target_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(target_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) == int(target_answer)
     assert execution["branching_edge_ids"] == []
     assert execution["captured_box_ids"] == []
-    if str(query_variant) == "three_sided_box_count":
+    if str(query_id) == "three_sided_box_count":
         assert len(execution["counted_box_ids"]) == int(target_answer)
         assert all(execution["box_drawn_side_counts"][box_id] == 3 for box_id in execution["counted_box_ids"])
-    elif str(query_variant) == "capture_move_count":
+    elif str(query_id) == "capture_move_count":
         assert len(execution["counted_edge_ids"]) == int(target_answer)
         assert execution["counted_edge_ids"] == execution["immediate_capture_edge_ids"]
     else:
@@ -72,7 +72,7 @@ def test_games_dots_and_boxes_capture_count_balanced_board_and_candidate_counts(
         execution = out.trace_payload["execution_trace"]
         board_shapes[(int(execution["box_rows"]), int(execution["box_cols"]))] += 1
         candidate_counts[int(execution["candidate_edge_count"])] += 1
-        styles_by_query.setdefault(str(out.query_id or out.query_variant), set()).add(str(execution["style_variant"]))
+        styles_by_query.setdefault(str(out.query_id or out.query_id), set()).add(str(execution["style_variant"]))
 
     assert set(board_shapes.keys()) == {(3, 3), (3, 4), (4, 3), (4, 4)}
     assert set(candidate_counts.keys()) == {5, 6, 7, 8}
@@ -87,7 +87,7 @@ def test_games_dots_and_boxes_capture_count_highlighted_candidate_edges_are_not_
     out = GamesDotsAndBoxesCaptureCountTask().generate(
         28121,
         params={
-            "query_variant": "highlighted_candidate_capture_count",
+            "query_id": "highlighted_candidate_capture_count",
             "target_answer": 3,
         },
         max_attempts=64,
@@ -112,10 +112,10 @@ def test_games_dots_and_boxes_capture_move_public_task_merges_candidate_query() 
         query_ids[str(out.query_id)] += 1
         answers_by_query.setdefault(str(out.query_id), set()).add(int(out.answer_gt.value))
 
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert str(out.query_id) in {"capture_move_count", "highlighted_candidate_capture_count"}
         assert execution["query_id"] == out.query_id
-        assert execution["query_variant"] == "default"
+        assert execution["query_id"] == "default"
         assert out.evidence_gt.type == "bbox_set"
         assert len(out.evidence_gt.value) == int(out.answer_gt.value)
         if str(out.query_id) == "capture_move_count":
@@ -131,7 +131,7 @@ def test_games_dots_and_boxes_capture_move_public_task_merges_candidate_query() 
 
 def test_games_dots_and_boxes_capture_count_is_deterministic() -> None:
     params = {
-        "query_variant": "capture_move_count",
+        "query_id": "capture_move_count",
         "target_answer": 5,
     }
     task = GamesDotsAndBoxesCaptureCountTask()

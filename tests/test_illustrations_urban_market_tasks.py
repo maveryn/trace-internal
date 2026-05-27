@@ -33,7 +33,7 @@ def test_shop_selling_object_count_contract() -> None:
 
     assert out.scene_id == "market"
     assert out.query_id == "shop_selling_object_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__market__shop_attribute_count"
     assert trace["query_spec"]["branch_id"] == "market_shop_selling"
     assert out.answer_gt.type == "integer"
@@ -77,7 +77,7 @@ def test_shop_category_count_contract() -> None:
 
     assert out.scene_id == "market"
     assert out.query_id == "shop_category_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__market__shop_attribute_count"
     assert trace["query_spec"]["branch_id"] == "market_shop_category"
     assert out.answer_gt.type == "integer"
@@ -170,7 +170,7 @@ def test_shop_color_attribute_count_contract() -> None:
 
     assert out.scene_id == "market"
     assert out.query_id == "awning_color_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__market__shop_attribute_count"
     assert trace["query_spec"]["branch_id"] == "market_shop_color"
     assert out.answer_gt.type == "integer"

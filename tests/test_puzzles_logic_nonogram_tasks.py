@@ -40,11 +40,11 @@ def test_nonogram_tasks_emit_public_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "nonogram"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == answer_type
         assert out.evidence_gt.type == "bbox_set"
-        assert execution["query_variant"] == "default"
+        assert execution["query_id"] == "default"
         assert execution["query_id"] == query_id
         assert trace["query_spec"]["query_id"] == query_id
         assert trace["render_spec"]["scene_id"] == "nonogram"

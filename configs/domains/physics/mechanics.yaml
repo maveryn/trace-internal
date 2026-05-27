@@ -18,13 +18,13 @@ generation:
         open_block: 1.0
         compact_block: 1.0
         tall_block: 1.0
-      query_variant_weights:
+      query_id_weights:
         force_relation: 1.0
       solve_for_weights:
         effort_force: 1.0
         load_force: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_solve_for_sampling: true
       balanced_target_answer_sampling: true
       balanced_connected_support_count_sampling: false
@@ -40,14 +40,14 @@ generation:
         center_fulcrum: 1.0
         offset_fulcrum: 1.0
         textured_beam: 1.0
-      query_variant_weights:
+      query_id_weights:
         side_torque: 1.0
         missing_weight_to_balance: 1.0
       torque_side_weights:
         left: 1.0
         right: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_torque_side_sampling: true
       balanced_target_answer_sampling: true
       distance_support: [1, 2, 3, 4, 5, 6, 7, 8]
@@ -64,14 +64,14 @@ generation:
         paired_springs: 1.0
         staggered_springs: 1.0
         textured_spring: 1.0
-      query_variant_weights:
+      query_id_weights:
         missing_value: 1.0
         extension_difference: 1.0
       solve_for_weights:
         weight: 1.0
         extension: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_solve_for_sampling: true
       balanced_target_answer_sampling: true
       scale_factor_support: [1, 2, 3]
@@ -87,7 +87,7 @@ generation:
         wide_table: 1.0
         compact_table: 1.0
         gridded_table: 1.0
-      query_variant_weights:
+      query_id_weights:
         direction_choice: 1.0
         velocity_component: 1.0
       component_axis_weights:
@@ -101,7 +101,7 @@ generation:
         E: 1.0
         F: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_component_axis_sampling: true
       balanced_correct_option_letter_sampling: true
       balanced_target_answer_sampling: true

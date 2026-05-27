@@ -885,11 +885,10 @@ class _PuzzlesLogicMatchstickBaseTask:
         option_count: int,
     ) -> Dict[str, Any]:
         params = {
-            "query_variant": "default",
-            "query_variant_probabilities": {"default": 1.0},
+            "query_id": "default",
+            "query_id_probabilities": {"default": 1.0},
             "query_id": str(query_id),
-            "query_variant": str(query_id),
-            "query_variant_probabilities": {str(query_id): 1.0},
+            "query_id_probabilities": {str(query_id): 1.0},
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": {str(key): float(value) for key, value in scene_variant_probabilities.items()},
@@ -901,18 +900,14 @@ class _PuzzlesLogicMatchstickBaseTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_id": SCENE_ID,
                     "scene_variant": str(scene_variant),
                     "answer_label": str(answer_value),
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -972,10 +967,10 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             instance_seed=int(instance_seed),
             task_id=str(self.task_id),
             supported_variants=NUMBER_QUERY_IDS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_variant_probabilities = _resolve_axis_variant(
             params=params,
@@ -1042,10 +1037,10 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             answer_value=str(dataset.answer_label),
             option_count=int(dataset.option_count),
         )
-        trace_payload["query_spec"]["params"]["query_variant_probabilities"] = {str(key): float(value) for key, value in query_probabilities.items()}
+        trace_payload["query_spec"]["params"]["query_id_probabilities"] = {str(key): float(value) for key, value in query_probabilities.items()}
         trace_payload["execution_trace"].update(
             {
-                "query_variant_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+                "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
                 "source_number": _number_text(int(dataset.source_number)),
                 "answer_number": _number_text(int(dataset.answer_number)),
                 "changed_digit_index": int(dataset.changed_digit_index),
@@ -1080,7 +1075,6 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),
@@ -1102,10 +1096,10 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             instance_seed=int(instance_seed),
             task_id=str(self.task_id),
             supported_variants=ENDPOINT_QUERY_IDS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_variant_probabilities = _resolve_axis_variant(
             params=params,
@@ -1174,13 +1168,13 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
         )
         trace_payload["query_spec"]["params"].update(
             {
-                "query_variant_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+                "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
                 "grid_size": int(dataset.grid_size),
             }
         )
         trace_payload["execution_trace"].update(
             {
-                "query_variant_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+                "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
                 "grid_size": int(dataset.grid_size),
                 "option_specs": [
                     {
@@ -1218,7 +1212,6 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

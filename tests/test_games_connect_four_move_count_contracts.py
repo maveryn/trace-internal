@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "midgame_board",
-                "query_variant": "winning_move_count",
+                "query_id": "winning_move_count",
                 "target_answer": 3,
                 "board_size_variant": "standard_7x6",
             },
@@ -31,7 +31,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "crowded_board",
-                "query_variant": "safe_move_count",
+                "query_id": "safe_move_count",
                 "target_answer": 3,
                 "board_size_variant": "small_6x5",
             },
@@ -57,7 +57,7 @@ def test_games_connect_four_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert int(execution["board_row_count"]) == int(expected_rows)
     assert int(execution["board_column_count"]) == int(expected_columns)
@@ -73,7 +73,7 @@ def test_games_connect_four_move_count_winning_evidence_stays_on_immediate_wins(
         31011,
         params={
             "scene_variant": "midgame_board",
-            "query_variant": "winning_move_count",
+            "query_id": "winning_move_count",
             "target_answer": 4,
             "board_size_variant": "standard_7x6",
         },
@@ -92,7 +92,7 @@ def test_games_connect_four_move_count_safe_evidence_tracks_safe_landing_squares
         31021,
         params={
             "scene_variant": "crowded_board",
-            "query_variant": "safe_move_count",
+            "query_id": "safe_move_count",
             "target_answer": 3,
         },
         max_attempts=48,
@@ -111,7 +111,7 @@ def test_games_connect_four_safe_move_count_default_board_size_uses_square_range
     out = task.generate(
         31025,
         params={
-            "query_variant": "safe_move_count",
+            "query_id": "safe_move_count",
             "target_answer": 2,
         },
         max_attempts=256,
@@ -125,7 +125,7 @@ def test_games_connect_four_safe_move_count_default_board_size_uses_square_range
     forced_six = task.generate(
         31026,
         params={
-            "query_variant": "safe_move_count",
+            "query_id": "safe_move_count",
             "target_answer": 6,
         },
         max_attempts=256,
@@ -163,10 +163,10 @@ def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() 
         ),
     )
     expected_styles = {"classic", "soft", "outlined", "arcade_blue", "teal_frame", "charcoal"}
-    for query_variant, base_params in cases:
+    for query_id, base_params in cases:
         for sampling_index, style_variant in enumerate(sorted(expected_styles)):
             params = dict(base_params)
-            params["query_variant"] = str(query_variant)
+            params["query_id"] = str(query_id)
             params["style_variant"] = str(style_variant)
             params["_sample_cursor"] = int(sampling_index)
             out = task.generate(
@@ -174,10 +174,10 @@ def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() 
                 params=params,
                 max_attempts=96,
             )
-            assert str(out.query_variant) == str(query_variant)
+            assert str(out.query_id) == str(query_id)
             execution = out.trace_payload["execution_trace"]
-            styles_by_variant[str(query_variant)].add(str(execution["style_variant"]))
-            if str(query_variant) == "safe_move_count":
+            styles_by_variant[str(query_id)].add(str(execution["style_variant"]))
+            if str(query_id) == "safe_move_count":
                 safe_answers.append(int(out.answer_gt.value))
 
     assert set(safe_answers) == {3}
@@ -190,7 +190,7 @@ def test_games_connect_four_move_count_query_cycle_covers_safe_answer_support() 
 def test_games_connect_four_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "crowded_board",
-        "query_variant": "safe_move_count",
+        "query_id": "safe_move_count",
         "target_answer": 1,
     }
     task = GamesConnectFourMoveCountTask()

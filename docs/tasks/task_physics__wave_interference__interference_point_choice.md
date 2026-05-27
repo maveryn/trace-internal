@@ -4,7 +4,7 @@
 - Scene id: `wave_interference`
 - Task group: `waves`
 - Query id: `interference_point_choice`
-- Public query variant: `default`
+- Public query id: `default`
 - Answer type: `option_letter`
 - Evidence type: `bbox_set`
 
@@ -16,7 +16,7 @@ Shows a two-source ripple-tank interference diagram with circular crest/trough w
 
 Prompt bundle: `physics_waves_v0`; scene key: `wave_interference_tank`; task key: `wave_interference_tank_query`; query key: `interference_point_choice`.
 
-Public outputs use `query_variant="default"` and `query_id="interference_point_choice"`. The trace records source phase relation, target condition, candidate point distances from each source in `lambda/2` steps, each point's resolved condition, the correct option letter, and evidence entity ids.
+Outputs `query_id="interference_point_choice"`. The trace records source phase relation, target condition, candidate point distances from each source in `lambda/2` steps, each point's resolved condition, the correct option letter, and evidence entity ids.
 
 ## Evidence Contract
 

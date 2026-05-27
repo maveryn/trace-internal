@@ -271,12 +271,12 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    for key in ("query_variant", "query_variant"):
+    for key in ("query_id", "query_id"):
         raw = params.get(str(key))
         if raw is not None and str(raw) in SUPPORTED_QUERY_IDS:
             return str(raw), {str(raw): 1.0}
 
-    raw_weights = params.get("query_variant_weights", group_default(_GEN_DEFAULTS, "query_variant_weights", {}))
+    raw_weights = params.get("query_id_weights", group_default(_GEN_DEFAULTS, "query_id_weights", {}))
     if isinstance(raw_weights, Mapping):
         weighted = [(str(key), float(value)) for key, value in raw_weights.items() if str(key) in SUPPORTED_QUERY_IDS and float(value) > 0.0]
     else:
@@ -286,7 +286,7 @@ def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple
 
     total = sum(weight for _, weight in weighted)
     probabilities = {str(query_id): float(weight) / float(total) for query_id, weight in weighted}
-    if bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True))):
+    if bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True))):
         index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.waterfall.query")
         return str(weighted[int(index) % len(weighted)][0]), probabilities
 
@@ -420,9 +420,7 @@ def _build_query(
     target_step = steps[target_index]
     base_params: Dict[str, Any] = {
         "query_id": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant_probabilities": dict(query_probabilities),
+        "query_id_probabilities": dict(query_probabilities),
         "step_count": int(len(steps)),
         "start_value": int(start_value),
         "final_value": int(steps[-1].running_after),
@@ -884,7 +882,6 @@ class ChartsWaterfallPanelQueryTask:
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
                     "query_id": str(dataset.query.query_id),
-                    "query_variant": str(dataset.query.query_id),
                     "answer": answer_value,
                     "evidence_bar_ids": list(dataset.query.evidence_bar_ids),
                     "evidence_extra_ids": list(dataset.query.evidence_extra_ids),
@@ -898,8 +895,6 @@ class ChartsWaterfallPanelQueryTask:
             },
             "query_spec": {
                 "query_id": str(dataset.query.query_id),
-                "query_variant": str(dataset.query.query_id),
-                "query_variant": str(dataset.query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -928,8 +923,6 @@ class ChartsWaterfallPanelQueryTask:
             },
             "execution_trace": {
                 "query_id": str(dataset.query.query_id),
-                "query_variant": str(dataset.query.query_id),
-                "query_variant": str(dataset.query.query_id),
                 "question_format": "waterfall_cumulative_query",
                 "answer": answer_value,
                 "answer_type": str(dataset.query.answer_type),
@@ -970,7 +963,6 @@ class ChartsWaterfallPanelQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(dataset.query.query_id),
             scene_id=SCENE_ID,
             query_id=str(dataset.query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -985,7 +977,7 @@ class ChartsWaterfallRunningTotalValueTask(
     """Compute the running total after a named waterfall contribution."""
 
     task_id = "task_charts__waterfall__running_total_value"
-    fixed_query_variant = RUNNING_TOTAL_QUERY_ID
+    fixed_query_id = RUNNING_TOTAL_QUERY_ID
 
 
 @register_task
@@ -996,7 +988,7 @@ class ChartsWaterfallThresholdCrossingLabelTask(
     """Return the first contribution label where the running total crosses a threshold."""
 
     task_id = "task_charts__waterfall__threshold_crossing_label"
-    allowed_query_variants = THRESHOLD_QUERY_IDS
+    allowed_query_ids = THRESHOLD_QUERY_IDS
     supports_unanswerable = True
 
 
@@ -1008,7 +1000,7 @@ class ChartsWaterfallCounterfactualFinalValueTask(
     """Compute the final total under a counterfactual contribution edit."""
 
     task_id = "task_charts__waterfall__counterfactual_final_value"
-    allowed_query_variants = COUNTERFACTUAL_QUERY_IDS
+    allowed_query_ids = COUNTERFACTUAL_QUERY_IDS
 
 
 __all__ = [

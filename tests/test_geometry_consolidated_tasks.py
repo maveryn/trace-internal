@@ -122,7 +122,7 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant"),
+    ("scene_variant", "query_id"),
     (
         ("angle", "angle"),
         ("line", "slope"),
@@ -130,38 +130,38 @@ def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_fam
         ("ellipse", "area"),
     ),
 )
-def test_geometry_measurement_value_tracks_scene_and_query_variants(
-    scene_variant: str, query_variant: str
+def test_geometry_measurement_value_tracks_scene_and_query_ids(
+    scene_variant: str, query_id: str
 ) -> None:
     task = GeometryMeasurementValueTask()
     out = task.generate(
         23001,
-        params={"scene_variant": scene_variant, "query_variant": query_variant},
+        params={"scene_variant": scene_variant, "query_id": query_id},
         max_attempts=20,
     )
     trace = out.trace_payload
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["query_spec"]["params"]["scene_variant"] == scene_variant
-    assert trace["query_spec"]["params"]["query_variant"] == query_variant
+    assert trace["query_spec"]["params"]["query_id"] == query_id
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_measurement_"
     )
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     assert out.evidence_gt.type == "point_set"
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "extremum_direction"),
+    ("scene_variant", "query_id", "extremum_direction"),
     (
         ("angle", "angle_extremum", "largest"),
         ("segment", "length_extremum", "smallest"),
@@ -169,9 +169,9 @@ def test_geometry_measurement_value_tracks_scene_and_query_variants(
         ("triangle", "area_extremum", "largest"),
     ),
 )
-def test_geometry_comparison_label_tracks_scene_and_query_variants(
+def test_geometry_comparison_label_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     extremum_direction: str,
 ) -> None:
     task = GeometryComparisonValueTask()
@@ -179,29 +179,29 @@ def test_geometry_comparison_label_tracks_scene_and_query_variants(
         23011,
         params={
             "scene_variant": scene_variant,
-            "query_variant": query_variant,
+            "query_id": query_id,
             "extremum_direction": extremum_direction,
         },
         max_attempts=20,
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "option_letter"
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["extremum_direction"] == extremum_direction
     assert trace["query_spec"]["params"]["extremum_direction"] == extremum_direction
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_comparison_"
     )
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     if scene_variant == "triangle":
         assert "triangle" in out.prompt.lower()
@@ -210,7 +210,7 @@ def test_geometry_comparison_label_tracks_scene_and_query_variants(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "extremum_direction"),
+    ("scene_variant", "query_id", "extremum_direction"),
     (
         ("angle", "angle_extremum", "largest"),
         ("angle", "angle_extremum", "smallest"),
@@ -228,7 +228,7 @@ def test_geometry_comparison_label_tracks_scene_and_query_variants(
 )
 def test_geometry_comparison_value_supports_eight_compared_objects(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     extremum_direction: str,
 ) -> None:
     task = GeometryComparisonValueTask()
@@ -236,7 +236,7 @@ def test_geometry_comparison_value_supports_eight_compared_objects(
         23111,
         params={
             "scene_variant": scene_variant,
-            "query_variant": query_variant,
+            "query_id": query_id,
             "extremum_direction": extremum_direction,
             "object_count": 8,
         },
@@ -258,7 +258,7 @@ def test_geometry_comparison_value_supports_eight_compared_objects(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "class_params"),
+    ("scene_variant", "query_id", "class_params"),
     (
         ("angle", "angle_type_count", {"angle_type": "acute"}),
         ("quadrilateral", "quadrilateral_type_count", {"quadrilateral_type": "square"}),
@@ -266,9 +266,9 @@ def test_geometry_comparison_value_supports_eight_compared_objects(
         ("polygon", "polygon_convexity_count", {"convexity_kind": "concave"}),
     ),
 )
-def test_geometry_counting_value_tracks_scene_and_query_variants(
+def test_geometry_counting_value_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     class_params: dict[str, str],
 ) -> None:
     task = GeometryCountingValueTask()
@@ -276,7 +276,7 @@ def test_geometry_counting_value_tracks_scene_and_query_variants(
         23021,
         params={
             "scene_variant": scene_variant,
-            "query_variant": query_variant,
+            "query_id": query_id,
             **class_params,
         },
         max_attempts=20,
@@ -284,20 +284,20 @@ def test_geometry_counting_value_tracks_scene_and_query_variants(
     trace = out.trace_payload
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["source_task_id"].startswith(
         "source_geometry_counting_"
     )
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     assert trace["execution_trace"]["counted_class_parameter"]
     assert trace["execution_trace"]["counted_class"]
@@ -306,7 +306,7 @@ def test_geometry_counting_value_tracks_scene_and_query_variants(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant"),
+    ("scene_variant", "query_id"),
     (
         ("angle", "angle_type_count"),
         ("triangle", "triangle_type_count"),
@@ -316,14 +316,14 @@ def test_geometry_counting_value_tracks_scene_and_query_variants(
     ),
 )
 def test_geometry_counting_value_supports_twelve_objects(
-    scene_variant: str, query_variant: str
+    scene_variant: str, query_id: str
 ) -> None:
     task = GeometryCountingValueTask()
     out = task.generate(
         23121,
         params={
             "scene_variant": scene_variant,
-            "query_variant": query_variant,
+            "query_id": query_id,
             "object_count": 12,
         },
         max_attempts=100,
@@ -340,15 +340,15 @@ def test_geometry_counting_value_supports_twelve_objects(
     (
         (
             GeometryMeasurementValueTask,
-            {"scene_variant": "triangle", "query_variant": "slope"},
+            {"scene_variant": "triangle", "query_id": "slope"},
         ),
         (
             GeometryComparisonValueTask,
-            {"scene_variant": "segment", "query_variant": "area_extremum"},
+            {"scene_variant": "segment", "query_id": "area_extremum"},
         ),
         (
             GeometryCountingValueTask,
-            {"scene_variant": "angle", "query_variant": "shape_type_count"},
+            {"scene_variant": "angle", "query_id": "shape_type_count"},
         ),
     ),
 )
@@ -361,49 +361,49 @@ def test_geometry_consolidated_tasks_reject_incompatible_scene_query_pairs(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "expected_points"),
+    ("scene_variant", "query_id", "expected_points"),
     (
         ("triangle", "translation_match", 3),
         ("quadrilateral", "reflection_match", 4),
         ("triangle", "rotation_match", 3),
     ),
 )
-def test_geometry_transformation_match_tracks_scene_and_query_variants(
+def test_geometry_transformation_match_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     expected_points: int,
 ) -> None:
     task = GeometryTransformationMatchTask()
     out = task.generate(
         23061,
-        params={"scene_variant": scene_variant, "query_variant": query_variant},
+        params={"scene_variant": scene_variant, "query_id": query_id},
         max_attempts=20,
     )
     trace = out.trace_payload
     assert out.answer_gt.type == "option_letter"
     assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == expected_points
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     assert trace["scene_ir"]["relations"]["winner_label"] == out.answer_gt.value
-    if query_variant == "rotation_match":
+    if query_id == "rotation_match":
         assert trace["execution_trace"]["rotation_mode"]
-    if query_variant == "translation_match":
+    if query_id == "translation_match":
         assert trace["execution_trace"]["translation_vector"]
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "target_count"),
+    ("scene_variant", "query_id", "target_count"),
     (
         ("triangle", "congruent_count", 2),
         ("quadrilateral", "similar_count", 3),
@@ -411,9 +411,9 @@ def test_geometry_transformation_match_tracks_scene_and_query_variants(
         ("quadrilateral", "congruent_count", 5),
     ),
 )
-def test_geometry_similarity_count_tracks_scene_and_query_variants(
+def test_geometry_similarity_count_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     target_count: int,
 ) -> None:
     task = GeometrySimilarityCountTask()
@@ -421,7 +421,7 @@ def test_geometry_similarity_count_tracks_scene_and_query_variants(
         23071,
         params={
             "scene_variant": scene_variant,
-            "query_variant": query_variant,
+            "query_id": query_id,
             "target_count": target_count,
         },
         max_attempts=30,
@@ -431,18 +431,18 @@ def test_geometry_similarity_count_tracks_scene_and_query_variants(
     assert out.evidence_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(target_count)
     assert len(out.evidence_gt.value) == int(target_count)
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
+    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["target_count"] == target_count
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     assert (
         trace["witness_symbolic"]["label_set"]
@@ -452,7 +452,7 @@ def test_geometry_similarity_count_tracks_scene_and_query_variants(
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "params", "target_count"),
+    ("scene_variant", "query_id", "params", "target_count"),
     (
         (
             "quadratic",
@@ -486,16 +486,16 @@ def test_geometry_similarity_count_tracks_scene_and_query_variants(
         ("piecewise_linear", "local_extremum_count", {"extremum_kind": "maximum"}, 6),
     ),
 )
-def test_geometry_graphing_count_tracks_scene_and_query_variants(
+def test_geometry_graphing_count_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     params: dict[str, str],
     target_count: int,
 ) -> None:
     task = GeometryGraphingCountTask()
     generation_params = {
         "scene_variant": scene_variant,
-        "query_variant": query_variant,
+        "query_id": query_id,
         "target_count": target_count,
         **dict(params),
     }
@@ -509,17 +509,17 @@ def test_geometry_graphing_count_tracks_scene_and_query_variants(
     assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(target_count)
     assert len(out.evidence_gt.value) == int(target_count)
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
     for key, value in params.items():
         assert trace["execution_trace"][key] == value
@@ -529,36 +529,36 @@ def test_geometry_graphing_count_tracks_scene_and_query_variants(
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> (
     None
 ):
-    per_variant_labels: dict[str, Counter[str]] = {
+    per_query_id_labels: dict[str, Counter[str]] = {
         "translation_match": Counter(),
         "reflection_match": Counter(),
         "rotation_match": Counter(),
     }
-    collected_counts = {key: 0 for key in per_variant_labels}
+    collected_counts = {key: 0 for key in per_query_id_labels}
 
     for index in range(10_000):
         if all(int(value) >= 100 for value in collected_counts.values()):
             break
         instance_seed = hash64(0, "geometry_transformation_match_base", index)
         resolved = _resolve_axes(int(instance_seed), params={})
-        query_variant = str(resolved.query_variant)
-        if int(collected_counts[query_variant]) >= 100:
+        query_id = str(resolved.query_id)
+        if int(collected_counts[query_id]) >= 100:
             continue
-        collected_counts[query_variant] += 1
-        per_variant_labels[query_variant][str(resolved.winner_label)] += 1
+        collected_counts[query_id] += 1
+        per_query_id_labels[query_id][str(resolved.winner_label)] += 1
 
     assert collected_counts == {
         "translation_match": 100,
         "reflection_match": 100,
         "rotation_match": 100,
     }
-    for query_variant, counts in per_variant_labels.items():
+    for query_id, counts in per_query_id_labels.items():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F"}
-        assert max(counts.values()) <= 30, query_variant
+        assert max(counts.values()) <= 30, query_id
 
 
 def test_geometry_transformation_match_decouplesseeded_sampler_axes() -> None:
-    per_variant_labels: dict[str, Counter[str]] = {
+    per_query_id_labels: dict[str, Counter[str]] = {
         "translation_match": Counter(),
         "reflection_match": Counter(),
         "rotation_match": Counter(),
@@ -572,15 +572,15 @@ def test_geometry_transformation_match_decouplesseeded_sampler_axes() -> None:
     for index in range(100):
         instance_seed = hash64(0, "geometry_transformation_match_base", index)
         resolved = _resolve_axes(int(instance_seed), params={})
-        query_variant = str(resolved.query_variant)
-        per_variant_labels[query_variant][str(resolved.winner_label)] += 1
-        per_variant_scenes[query_variant][str(resolved.scene_variant)] += 1
+        query_id = str(resolved.query_id)
+        per_query_id_labels[query_id][str(resolved.winner_label)] += 1
+        per_variant_scenes[query_id][str(resolved.scene_variant)] += 1
 
-    assert sum(sum(counter.values()) for counter in per_variant_labels.values()) == 100
-    for query_variant, counts in per_variant_labels.items():
+    assert sum(sum(counter.values()) for counter in per_query_id_labels.values()) == 100
+    for query_id, counts in per_query_id_labels.items():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F"}
-        assert max(counts.values()) <= 12, query_variant
-        assert set(per_variant_scenes[query_variant].keys()) == {
+        assert max(counts.values()) <= 12, query_id
+        assert set(per_variant_scenes[query_id].keys()) == {
             "triangle",
             "quadrilateral",
         }
@@ -589,34 +589,34 @@ def test_geometry_transformation_match_decouplesseeded_sampler_axes() -> None:
 def test_geometry_similarity_count_balances_target_counts_across_review_seed_stream() -> (
     None
 ):
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "congruent_count": Counter(),
         "similar_count": Counter(),
     }
-    collected_counts = {key: 0 for key in per_variant_counts}
+    collected_counts = {key: 0 for key in per_query_id_counts}
 
     for index in range(10_000):
         if all(int(value) >= 100 for value in collected_counts.values()):
             break
         instance_seed = hash64(0, "geometry_similarity_count_base", index)
         resolved = _resolve_similarity_axes(int(instance_seed), params={})
-        query_variant = str(resolved.query_variant)
-        if int(collected_counts[query_variant]) >= 100:
+        query_id = str(resolved.query_id)
+        if int(collected_counts[query_id]) >= 100:
             continue
-        collected_counts[query_variant] += 1
-        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+        collected_counts[query_id] += 1
+        per_query_id_counts[query_id][int(resolved.target_count)] += 1
 
     assert collected_counts == {
         "congruent_count": 100,
         "similar_count": 100,
     }
-    for query_variant, counts in per_variant_counts.items():
+    for query_id, counts in per_query_id_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
-        assert max(counts.values()) <= 25, query_variant
+        assert max(counts.values()) <= 25, query_id
 
 
 def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "congruent_count": Counter(),
         "similar_count": Counter(),
     }
@@ -631,18 +631,18 @@ def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
         resolved = _resolve_similarity_axes(
             int(instance_seed), params={}
         )
-        query_variant = str(resolved.query_variant)
+        query_id = str(resolved.query_id)
         scene_variant = str(resolved.scene_variant)
         target_count = int(resolved.target_count)
-        per_variant_counts[query_variant][target_count] += 1
-        per_variant_scenes[query_variant][scene_variant] += 1
-        combos[(query_variant, scene_variant, target_count)] += 1
+        per_query_id_counts[query_id][target_count] += 1
+        per_variant_scenes[query_id][scene_variant] += 1
+        combos[(query_id, scene_variant, target_count)] += 1
 
-    assert all(40 <= sum(counter.values()) <= 60 for counter in per_variant_counts.values())
-    for query_variant, counts in per_variant_counts.items():
+    assert all(40 <= sum(counter.values()) <= 60 for counter in per_query_id_counts.values())
+    for query_id, counts in per_query_id_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
-        assert max(counts.values()) <= 14, query_variant
-        assert set(per_variant_scenes[query_variant].keys()) == {
+        assert max(counts.values()) <= 14, query_id
+        assert set(per_variant_scenes[query_id].keys()) == {
             "triangle",
             "quadrilateral",
         }
@@ -652,23 +652,23 @@ def test_geometry_similarity_count_decouplesseeded_sampler_axes() -> None:
 def test_geometry_graphing_count_balances_target_counts_across_review_seed_stream() -> (
     None
 ):
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "reference_line_crossing_count": Counter(),
         "turning_point_count": Counter(),
         "local_extremum_count": Counter(),
     }
-    collected_counts = {key: 0 for key in per_variant_counts}
+    collected_counts = {key: 0 for key in per_query_id_counts}
 
     for index in range(10_000):
         if all(int(value) >= 100 for value in collected_counts.values()):
             break
         instance_seed = hash64(0, "geometry_graphing_count_base", index)
         resolved = _resolve_graphing_axes(int(instance_seed), params={})
-        query_variant = str(resolved.query_variant)
-        if int(collected_counts[query_variant]) >= 100:
+        query_id = str(resolved.query_id)
+        if int(collected_counts[query_id]) >= 100:
             continue
-        collected_counts[query_variant] += 1
-        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+        collected_counts[query_id] += 1
+        per_query_id_counts[query_id][int(resolved.target_count)] += 1
 
     assert collected_counts == {
         "reference_line_crossing_count": 100,
@@ -676,15 +676,15 @@ def test_geometry_graphing_count_balances_target_counts_across_review_seed_strea
         "local_extremum_count": 100,
     }
     expected_support = {2, 3, 4, 5, 6}
-    for query_variant, counts in per_variant_counts.items():
-        assert set(counts.keys()) == expected_support, query_variant
-        assert max(counts.values()) <= 30, query_variant
+    for query_id, counts in per_query_id_counts.items():
+        assert set(counts.keys()) == expected_support, query_id
+        assert max(counts.values()) <= 30, query_id
 
 
 def test_geometry_graphing_count_balances_target_counts_withseeded_sampler_stream() -> (
     None
 ):
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "reference_line_crossing_count": Counter(),
         "turning_point_count": Counter(),
         "local_extremum_count": Counter(),
@@ -695,10 +695,10 @@ def test_geometry_graphing_count_balances_target_counts_withseeded_sampler_strea
         resolved = _resolve_graphing_axes(
             int(instance_seed), params={}
         )
-        per_variant_counts[str(resolved.query_variant)][int(resolved.target_count)] += 1
+        per_query_id_counts[str(resolved.query_id)][int(resolved.target_count)] += 1
 
-    assert all(80 <= sum(counter.values()) <= 120 for counter in per_variant_counts.values())
-    for counter in per_variant_counts.values():
+    assert all(80 <= sum(counter.values()) <= 120 for counter in per_query_id_counts.values())
+    for counter in per_query_id_counts.values():
         assert set(counter.keys()) == {2, 3, 4, 5, 6}
         assert max(counter.values()) <= 30
         assert min(counter.values()) >= 10
@@ -715,13 +715,13 @@ def test_geometry_graphing_count_balances_parameter_axes_withseeded_sampler_stre
         crossing = _resolve_graphing_axes(
             int(instance_seed),
             params={
-                "query_variant": "reference_line_crossing_count",
+                "query_id": "reference_line_crossing_count",
             },
         )
         reference_line_counts[str(crossing.reference_line_kind)] += 1
         local_extremum = _resolve_graphing_axes(
             int(instance_seed),
-            params={"query_variant": "local_extremum_count"},
+            params={"query_id": "local_extremum_count"},
         )
         extremum_counts[str(local_extremum.extremum_kind)] += 1
 
@@ -746,9 +746,9 @@ def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> N
             params={},
             max_attempts=100,
         )
-        all_variants[str(out.query_variant)] += 1
-        if str(out.query_variant) in per_variant_answers:
-            per_variant_answers[str(out.query_variant)][str(out.answer_gt.value)] += 1
+        all_variants[str(out.query_id)] += 1
+        if str(out.query_id) in per_variant_answers:
+            per_variant_answers[str(out.query_id)][str(out.answer_gt.value)] += 1
 
     assert set(all_variants) == {"angle", "area", "perimeter", "slope"}
     assert all(15 <= count <= 35 for count in all_variants.values())
@@ -759,7 +759,7 @@ def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> N
 
 
 @pytest.mark.parametrize(
-    ("scene_variant", "query_variant", "answer_type", "evidence_type"),
+    ("scene_variant", "query_id", "answer_type", "evidence_type"),
     (
         ("segment_set", "parallel_count", "integer", "point_set"),
         ("segment_set", "perpendicular_count", "integer", "point_set"),
@@ -768,62 +768,62 @@ def test_geometry_measurement_value_decouples_source_answerseeded_sampler() -> N
         ("polygon_lattice", "point_in_shape_count", "integer", "point_set"),
     ),
 )
-def test_geometry_coordinate_relation_tracks_scene_and_query_variants(
+def test_geometry_coordinate_relation_tracks_scene_and_query_ids(
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     answer_type: str,
     evidence_type: str,
 ) -> None:
     task = GeometryCoordinateRelationTask()
-    params = {"scene_variant": scene_variant, "query_variant": query_variant}
-    if query_variant in {"parallel_count", "perpendicular_count", "collinear_count"}:
+    params = {"scene_variant": scene_variant, "query_id": query_id}
+    if query_id in {"parallel_count", "perpendicular_count", "collinear_count"}:
         params["target_count"] = 2
-    elif query_variant == "same_quadrant_count":
+    elif query_id == "same_quadrant_count":
         params["target_count"] = 2
-    elif query_variant == "point_in_shape_count":
+    elif query_id == "point_in_shape_count":
         params["target_count"] = 4
     out = task.generate(23081, params=params, max_attempts=30)
     trace = out.trace_payload
     assert out.answer_gt.type == answer_type
     assert out.evidence_gt.type == evidence_type
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert trace["execution_trace"]["scene_variant"] == scene_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
-    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["query_id"] == query_id
+    assert trace["execution_trace"]["query_id"] == query_id
     assert (
-        trace["execution_trace"]["query_variant_probabilities"]
-        == trace["execution_trace"]["query_variant_probabilities"]
+        trace["execution_trace"]["query_id_probabilities"]
+        == trace["execution_trace"]["query_id_probabilities"]
     )
     assert (
         trace["query_spec"]["params"]["variant_probabilities"]
-        == trace["query_spec"]["params"]["query_variant_probabilities"]
+        == trace["query_spec"]["params"]["query_id_probabilities"]
     )
 
 
 def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_stream() -> (
     None
 ):
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "parallel_count": Counter(),
         "perpendicular_count": Counter(),
         "collinear_count": Counter(),
         "same_quadrant_count": Counter(),
         "point_in_shape_count": Counter(),
     }
-    collected_counts = {key: 0 for key in per_variant_counts}
+    collected_counts = {key: 0 for key in per_query_id_counts}
 
     for index in range(10_000):
         if all(int(value) >= 100 for value in collected_counts.values()):
             break
         instance_seed = hash64(0, "geometry_coordinate_relation_base", index)
         resolved = _resolve_coordinate_axes(int(instance_seed), params={})
-        query_variant = str(resolved.query_variant)
-        if query_variant not in per_variant_counts:
+        query_id = str(resolved.query_id)
+        if query_id not in per_query_id_counts:
             continue
-        if int(collected_counts[query_variant]) >= 100:
+        if int(collected_counts[query_id]) >= 100:
             continue
-        collected_counts[query_variant] += 1
-        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+        collected_counts[query_id] += 1
+        per_query_id_counts[query_id][int(resolved.target_count)] += 1
 
     assert collected_counts == {
         "parallel_count": 100,
@@ -832,9 +832,9 @@ def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_
         "same_quadrant_count": 100,
         "point_in_shape_count": 100,
     }
-    assert set(per_variant_counts["parallel_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
-    assert max(per_variant_counts["parallel_count"].values()) <= 25
-    assert set(per_variant_counts["perpendicular_count"].keys()) == {
+    assert set(per_query_id_counts["parallel_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_query_id_counts["parallel_count"].values()) <= 25
+    assert set(per_query_id_counts["perpendicular_count"].keys()) == {
         0,
         1,
         2,
@@ -843,10 +843,10 @@ def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_
         5,
         6,
     }
-    assert max(per_variant_counts["perpendicular_count"].values()) <= 25
-    assert set(per_variant_counts["collinear_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
-    assert max(per_variant_counts["collinear_count"].values()) <= 25
-    assert set(per_variant_counts["same_quadrant_count"].keys()) == {
+    assert max(per_query_id_counts["perpendicular_count"].values()) <= 25
+    assert set(per_query_id_counts["collinear_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_query_id_counts["collinear_count"].values()) <= 25
+    assert set(per_query_id_counts["same_quadrant_count"].keys()) == {
         0,
         1,
         2,
@@ -855,8 +855,8 @@ def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_
         5,
         6,
     }
-    assert max(per_variant_counts["same_quadrant_count"].values()) <= 25
-    assert set(per_variant_counts["point_in_shape_count"].keys()) == {
+    assert max(per_query_id_counts["same_quadrant_count"].values()) <= 25
+    assert set(per_query_id_counts["point_in_shape_count"].keys()) == {
         0,
         1,
         2,
@@ -867,4 +867,4 @@ def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_
         7,
         8,
     }
-    assert max(per_variant_counts["point_in_shape_count"].values()) <= 20
+    assert max(per_query_id_counts["point_in_shape_count"].values()) <= 20

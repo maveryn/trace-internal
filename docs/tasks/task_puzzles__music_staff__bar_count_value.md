@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__bar_count_value`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `bar_count_value`
 3. Prompts ask for the number of visible bars in a staff excerpt.
 4. Internal variation includes time signatures, rhythmic partitions, and `engraved_sheet|exam_scan|notebook_staff` scene variants.

@@ -208,9 +208,9 @@ visual:
 generation:
   task_overrides:
     task_pages__form_section__section_expression_value:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         sum_two_amounts_in_section: 1.0
         difference_two_amounts_in_section: 1.0
         sum_minus_amount_in_section: 1.0

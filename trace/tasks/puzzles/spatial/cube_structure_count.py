@@ -47,7 +47,7 @@ CUBE_VISIBLE_PROJECTION_COUNT_TASK_ID = "task_puzzles__voxel_cube__cube_visible_
 CUBE_PROJECTION_MATCH_TASK_ID = "task_puzzles__voxel_cube__cube_projection_match_label"
 CUBE_PROJECTION_CONSISTENCY_TASK_ID = "task_puzzles__voxel_cube__cube_projection_consistency_label"
 
-INTERNAL_QUERY_VARIANTS: Tuple[str, ...] = (
+INTERNAL_QUERY_IDS: Tuple[str, ...] = (
     "total_cube_count",
     "missing_to_complete_cuboid_count",
     "removed_cube_count",
@@ -55,7 +55,7 @@ INTERNAL_QUERY_VARIANTS: Tuple[str, ...] = (
     "exact_k_painted_faces_cube_count",
     "view_visible_count",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "cube_count",
     "cube_structure_change_count",
     "painted_face_count",
@@ -65,7 +65,7 @@ SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
 )
 CHANGE_TYPES: Tuple[str, ...] = ("missing_to_complete", "removed")
 PAINTED_QUERY_TYPES: Tuple[str, ...] = ("exterior_face_total", "exact_k_faces_cube_count")
-_INTERNAL_TO_PUBLIC_QUERY_VARIANT: Dict[str, str] = {
+_INTERNAL_TO_PUBLIC_QUERY_ID: Dict[str, str] = {
     "total_cube_count": "cube_count",
     "missing_to_complete_cuboid_count": "cube_structure_change_count",
     "removed_cube_count": "cube_structure_change_count",
@@ -89,7 +89,7 @@ _INTERNAL_TO_PAINTED_QUERY: Dict[str, str] = {
     str(internal): str(query_type)
     for query_type, internal in _PAINTED_QUERY_TO_INTERNAL.items()
 }
-_SOLID_VIEW_SOURCE_QUERY_VARIANTS: Tuple[str, ...] = (
+_SOLID_VIEW_SOURCE_QUERY_IDS: Tuple[str, ...] = (
     "view_visible_count",
     "top_view_visible_count",
     "front_view_visible_count",
@@ -115,16 +115,16 @@ def _axis_positive_count(probabilities: Mapping[str, float], supported_values: S
     return max(1, len([str(value) for value in supported_values if float(probabilities.get(str(value), 0.0)) > 0.0]))
 
 
-def _object_description_key(*, internal_query_variant: str, scene_variant: str) -> str:
+def _object_description_key(*, internal_query_id: str, scene_variant: str) -> str:
     """Resolve the prompt object description key for one cube-structure query."""
 
-    if str(internal_query_variant) in {
+    if str(internal_query_id) in {
         "total_cube_count",
         "painted_exterior_face_count",
         "exact_k_painted_faces_cube_count",
     }:
         return f"object_description_single_stack_{str(scene_variant)}"
-    if str(internal_query_variant) in {"missing_to_complete_cuboid_count", "removed_cube_count"}:
+    if str(internal_query_id) in {"missing_to_complete_cuboid_count", "removed_cube_count"}:
         return f"object_description_change_pair_{str(scene_variant)}"
     return f"object_description_{str(scene_variant)}"
 
@@ -136,28 +136,28 @@ def _decouple_sampling_by_divisor(params: Mapping[str, Any], *, divisor: int) ->
 
 def _resolve_public_query_axis(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float], bool]:
     variant_params = dict(params)
-    source_query_variant = False
-    explicit_variant = variant_params.get("query_variant")
+    source_query_id = False
+    explicit_variant = variant_params.get("query_id")
     if explicit_variant is not None:
         variant = str(explicit_variant).strip()
-        if variant in set(INTERNAL_QUERY_VARIANTS):
-            variant_params["query_variant"] = str(_INTERNAL_TO_PUBLIC_QUERY_VARIANT[variant])
-            source_query_variant = True
-        elif variant in set(_SOLID_VIEW_SOURCE_QUERY_VARIANTS):
-            variant_params["query_variant"] = "visible_cube_count"
-            source_query_variant = True
+        if variant in set(INTERNAL_QUERY_IDS):
+            variant_params["query_id"] = str(_INTERNAL_TO_PUBLIC_QUERY_ID[variant])
+            source_query_id = True
+        elif variant in set(_SOLID_VIEW_SOURCE_QUERY_IDS):
+            variant_params["query_id"] = "visible_cube_count"
+            source_query_id = True
     selected_query, probabilities = resolve_puzzle_axis_variant(
         params=variant_params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
-    return str(selected_query), dict(probabilities), bool(source_query_variant)
+    return str(selected_query), dict(probabilities), bool(source_query_id)
 
 
 def _resolve_subquery_axis(
@@ -186,29 +186,29 @@ def _resolve_subquery_axis(
 def _resolve_query_contract(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, str, Dict[str, Any], int]:
     """Resolve public query axis plus the internal construction query."""
 
-    public_query_variant, query_variant_probabilities, source_query_variant = _resolve_public_query_axis(
+    public_query_id, query_id_probabilities, source_query_id = _resolve_public_query_axis(
         params,
         instance_seed=int(instance_seed),
     )
     query_params = dict(params)
-    explicit_variant = params.get("query_variant")
-    if explicit_variant is not None and str(explicit_variant) in set(INTERNAL_QUERY_VARIANTS):
-        internal_query_variant = str(explicit_variant)
-        if internal_query_variant in _INTERNAL_TO_CHANGE_TYPE:
-            query_params["change_type"] = str(_INTERNAL_TO_CHANGE_TYPE[internal_query_variant])
-        if internal_query_variant in _INTERNAL_TO_PAINTED_QUERY:
-            query_params["painted_query"] = str(_INTERNAL_TO_PAINTED_QUERY[internal_query_variant])
+    explicit_variant = params.get("query_id")
+    if explicit_variant is not None and str(explicit_variant) in set(INTERNAL_QUERY_IDS):
+        internal_query_id = str(explicit_variant)
+        if internal_query_id in _INTERNAL_TO_CHANGE_TYPE:
+            query_params["change_type"] = str(_INTERNAL_TO_CHANGE_TYPE[internal_query_id])
+        if internal_query_id in _INTERNAL_TO_PAINTED_QUERY:
+            query_params["painted_query"] = str(_INTERNAL_TO_PAINTED_QUERY[internal_query_id])
         subquery_probabilities: Dict[str, float] = {}
         sampling_axis_divisor = 1
-    elif str(public_query_variant) == "cube_count":
-        internal_query_variant = "total_cube_count"
+    elif str(public_query_id) == "cube_count":
+        internal_query_id = "total_cube_count"
         subquery_probabilities = {}
-        sampling_axis_divisor = _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-    elif str(public_query_variant) == "cube_structure_change_count":
+        sampling_axis_divisor = _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+    elif str(public_query_id) == "cube_structure_change_count":
         change_params = _decouple_sampling_by_divisor(
             query_params,
-            divisor=_axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            divisor=_axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1,
         )
         change_type, change_type_probabilities = _resolve_subquery_axis(
@@ -220,45 +220,45 @@ def _resolve_query_contract(params: Mapping[str, Any], *, instance_seed: int) ->
             balance_flag_key="balanced_change_type_sampling",
             axis_namespace="change_type",
         )
-        internal_query_variant = str(_CHANGE_TYPE_TO_INTERNAL[str(change_type)])
+        internal_query_id = str(_CHANGE_TYPE_TO_INTERNAL[str(change_type)])
         query_params["change_type"] = str(change_type)
         subquery_probabilities = {"change_type_probabilities": dict(change_type_probabilities)}
         sampling_axis_divisor = (
-            _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1
         )
         if params.get("change_type") is None:
             sampling_axis_divisor *= _axis_positive_count(change_type_probabilities, CHANGE_TYPES)
-    elif str(public_query_variant) == "visible_cube_count":
-        internal_query_variant = "view_visible_count"
+    elif str(public_query_id) == "visible_cube_count":
+        internal_query_id = "view_visible_count"
         subquery_probabilities = {}
         sampling_axis_divisor = (
-            _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1
         )
-    elif str(public_query_variant) == "projection_match_label":
-        internal_query_variant = "projection_match_label"
+    elif str(public_query_id) == "projection_match_label":
+        internal_query_id = "projection_match_label"
         subquery_probabilities = {}
         sampling_axis_divisor = (
-            _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1
         )
-    elif str(public_query_variant) == "projection_consistency_label":
-        internal_query_variant = "projection_consistency_label"
+    elif str(public_query_id) == "projection_consistency_label":
+        internal_query_id = "projection_consistency_label"
         subquery_probabilities = {}
         sampling_axis_divisor = (
-            _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1
         )
     else:
         painted_params = _decouple_sampling_by_divisor(
             query_params,
-            divisor=_axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            divisor=_axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1,
         )
         painted_query, painted_query_probabilities = _resolve_subquery_axis(
@@ -270,31 +270,31 @@ def _resolve_query_contract(params: Mapping[str, Any], *, instance_seed: int) ->
             balance_flag_key="balanced_painted_query_sampling",
             axis_namespace="painted_query",
         )
-        internal_query_variant = str(_PAINTED_QUERY_TO_INTERNAL[str(painted_query)])
+        internal_query_id = str(_PAINTED_QUERY_TO_INTERNAL[str(painted_query)])
         query_params["painted_query"] = str(painted_query)
         subquery_probabilities = {"painted_query_probabilities": dict(painted_query_probabilities)}
         sampling_axis_divisor = (
-            _axis_positive_count(query_variant_probabilities, SUPPORTED_QUERY_VARIANTS)
-            if params.get("query_variant") is None
+            _axis_positive_count(query_id_probabilities, SUPPORTED_QUERY_IDS)
+            if params.get("query_id") is None
             else 1
         )
         if params.get("painted_query") is None:
             sampling_axis_divisor *= _axis_positive_count(painted_query_probabilities, PAINTED_QUERY_TYPES)
 
-    query_params["query_variant"] = str(public_query_variant)
-    query_params["internal_query_variant"] = str(internal_query_variant)
-    if bool(source_query_variant):
-        query_params["source_query_variant"] = str(explicit_variant)
+    query_params["query_id"] = str(public_query_id)
+    query_params["internal_query_id"] = str(internal_query_id)
+    if bool(source_query_id):
+        query_params["source_query_id"] = str(explicit_variant)
     query_metadata: Dict[str, Any] = {
-        "query_variant_probabilities": dict(query_variant_probabilities),
-        "internal_query_variant": str(internal_query_variant),
+        "query_id_probabilities": dict(query_id_probabilities),
+        "internal_query_id": str(internal_query_id),
         **dict(subquery_probabilities),
     }
-    if str(internal_query_variant) in _INTERNAL_TO_CHANGE_TYPE:
-        query_metadata["change_type"] = str(_INTERNAL_TO_CHANGE_TYPE[str(internal_query_variant)])
-    if str(internal_query_variant) in _INTERNAL_TO_PAINTED_QUERY:
-        query_metadata["painted_query"] = str(_INTERNAL_TO_PAINTED_QUERY[str(internal_query_variant)])
-    return str(public_query_variant), str(internal_query_variant), dict(query_metadata), int(sampling_axis_divisor)
+    if str(internal_query_id) in _INTERNAL_TO_CHANGE_TYPE:
+        query_metadata["change_type"] = str(_INTERNAL_TO_CHANGE_TYPE[str(internal_query_id)])
+    if str(internal_query_id) in _INTERNAL_TO_PAINTED_QUERY:
+        query_metadata["painted_query"] = str(_INTERNAL_TO_PAINTED_QUERY[str(internal_query_id)])
+    return str(public_query_id), str(internal_query_id), dict(query_metadata), int(sampling_axis_divisor)
 
 
 def _support_range(params: Mapping[str, Any], *, key_min: str, key_max: str, fallback_min: int, fallback_max: int) -> Tuple[int, ...]:
@@ -566,12 +566,12 @@ def _painted_exterior_face_count_support(
 
 def _single_structure_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     sampling_axis_divisor: int,
 ) -> Dict[str, Any]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{query_variant}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{query_id}")
     answer_params = _decouple_sampling_by_divisor(
         params,
         divisor=int(sampling_axis_divisor),
@@ -583,7 +583,7 @@ def _single_structure_dataset(
         fallback_min=8,
         fallback_max=22,
     )
-    if str(query_variant) == "painted_exterior_face_count":
+    if str(query_id) == "painted_exterior_face_count":
         total_support = _support_range(
             params,
             key_min="painted_exterior_total_cube_count_min",
@@ -596,7 +596,7 @@ def _single_structure_dataset(
         instance_seed=int(instance_seed),
         support=total_support,
         explicit_key="target_total_cube_count",
-        namespace=f"{query_variant}.total",
+        namespace=f"{query_id}.total",
     )
     height_support = _support_range(
         params,
@@ -605,7 +605,7 @@ def _single_structure_dataset(
         fallback_min=2,
         fallback_max=3,
     )
-    if str(query_variant) == "painted_exterior_face_count":
+    if str(query_id) == "painted_exterior_face_count":
         height_support = _support_range(
             params,
             key_min="painted_exterior_height_min",
@@ -618,7 +618,7 @@ def _single_structure_dataset(
         instance_seed=int(instance_seed),
         support=height_support,
         explicit_key="target_max_height",
-        namespace=f"{query_variant}.max_height",
+        namespace=f"{query_id}.max_height",
     )
     painted_face_target_k_support = tuple(
         int(value)
@@ -635,17 +635,17 @@ def _single_structure_dataset(
         fallback_max=8,
     )
     target_exact_k_count = None
-    if str(query_variant) == "exact_k_painted_faces_cube_count":
+    if str(query_id) == "exact_k_painted_faces_cube_count":
         target_exact_k_count = _selected_support_value(
             params=answer_params,
             instance_seed=int(instance_seed),
             support=exact_answer_support,
             explicit_key="target_exact_k_painted_faces_cube_count",
-            namespace=f"{query_variant}.answer",
+            namespace=f"{query_id}.answer",
         )
     painted_answer_support: Tuple[int, ...] = ()
     target_painted_exterior_face_count = None
-    if str(query_variant) == "painted_exterior_face_count":
+    if str(query_id) == "painted_exterior_face_count":
         painted_answer_support = _painted_exterior_face_count_support(
             params=params,
             total_support=total_support,
@@ -656,11 +656,11 @@ def _single_structure_dataset(
             instance_seed=int(instance_seed),
             support=painted_answer_support,
             explicit_key="target_painted_exterior_face_count",
-            namespace=f"{query_variant}.answer.height_{int(target_max_height)}",
+            namespace=f"{query_id}.answer.height_{int(target_max_height)}",
         )
 
     for _ in range(3000):
-        if str(query_variant) in {"exact_k_painted_faces_cube_count", "painted_exterior_face_count"} and params.get("target_total_cube_count") is None:
+        if str(query_id) in {"exact_k_painted_faces_cube_count", "painted_exterior_face_count"} and params.get("target_total_cube_count") is None:
             sampled_total = int(total_support[int(rng.randint(0, len(total_support) - 1))])
         else:
             sampled_total = int(target_total)
@@ -677,7 +677,7 @@ def _single_structure_dataset(
         painted_exterior_face_count = int(sum(exposed_counts))
         if target_painted_exterior_face_count is not None and int(painted_exterior_face_count) != int(target_painted_exterior_face_count):
             continue
-        if str(query_variant) == "exact_k_painted_faces_cube_count" and params.get("painted_face_target_k") is None:
+        if str(query_id) == "exact_k_painted_faces_cube_count" and params.get("painted_face_target_k") is None:
             painted_face_target_k = int(painted_face_target_k_support[int(rng.randint(0, len(painted_face_target_k_support) - 1))])
         else:
             painted_face_target_k = _selected_support_value(
@@ -685,16 +685,16 @@ def _single_structure_dataset(
                 instance_seed=int(instance_seed),
                 support=painted_face_target_k_support,
                 explicit_key="painted_face_target_k",
-                namespace=f"{query_variant}.painted_face_target_k",
+                namespace=f"{query_id}.painted_face_target_k",
             )
         exact_k_count = int(sum(1 for count in exposed_counts if int(count) == int(painted_face_target_k)))
         if target_exact_k_count is not None and int(exact_k_count) != int(target_exact_k_count):
             continue
 
-        if str(query_variant) == "total_cube_count":
+        if str(query_id) == "total_cube_count":
             answer_value = int(total_cubes)
             answer_support = list(total_support)
-        elif str(query_variant) == "painted_exterior_face_count":
+        elif str(query_id) == "painted_exterior_face_count":
             answer_value = int(painted_exterior_face_count)
             answer_support = list(painted_answer_support)
         else:
@@ -718,7 +718,7 @@ def _single_structure_dataset(
             "answer_support": [int(value) for value in answer_support],
             "supporting_structure_ids": ["cube_structure"],
             "structure_bbox_id": "cube_structure",
-            "question_format": str(query_variant),
+            "question_format": str(query_id),
             "view_family": "isometric_cube_structure",
             "caption": "Cube structure",
             "is_comparison": False,
@@ -1052,26 +1052,26 @@ def _apply_cube_color(render_params, cube_color: Mapping[str, Any]):
 
 
 def _build_dataset(
-    query_variant: str,
+    query_id: str,
     *,
     params: Mapping[str, Any],
     instance_seed: int,
     sampling_axis_divisor: int,
 ) -> Dict[str, Any]:
-    if str(query_variant) == "missing_to_complete_cuboid_count":
+    if str(query_id) == "missing_to_complete_cuboid_count":
         return _missing_cuboid_dataset(
             params=params,
             instance_seed=int(instance_seed),
             sampling_axis_divisor=int(sampling_axis_divisor),
         )
-    if str(query_variant) == "removed_cube_count":
+    if str(query_id) == "removed_cube_count":
         return _removed_cube_dataset(
             params=params,
             instance_seed=int(instance_seed),
             sampling_axis_divisor=int(sampling_axis_divisor),
         )
     return _single_structure_dataset(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
         instance_seed=int(instance_seed),
         sampling_axis_divisor=int(sampling_axis_divisor),
@@ -1086,53 +1086,53 @@ class _PuzzlesSpatialCubeStructureBaseTask:
     task_group = "spatial"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        public_query_variant, internal_query_variant, query_metadata, sampling_axis_divisor = _resolve_query_contract(
+        public_query_id, internal_query_id, query_metadata, sampling_axis_divisor = _resolve_query_contract(
             params,
             instance_seed=int(instance_seed),
         )
-        if str(public_query_variant) == "visible_cube_count":
+        if str(public_query_id) == "visible_cube_count":
             solid_params = dict(
                 _decouple_sampling_by_divisor(
                     params,
                     divisor=int(sampling_axis_divisor),
                 )
             )
-            if params.get("query_variant") is None:
-                solid_params.pop("query_variant", None)
+            if params.get("query_id") is None:
+                solid_params.pop("query_id", None)
             return SolidViewCountGenerator().generate(
                 int(instance_seed),
                 params=solid_params,
                 max_attempts=int(max_attempts),
             )
-        if str(public_query_variant) == "projection_match_label":
+        if str(public_query_id) == "projection_match_label":
             solid_params = dict(
                 _decouple_sampling_by_divisor(
                     params,
                     divisor=int(sampling_axis_divisor),
                 )
             )
-            solid_params.pop("query_variant", None)
-            solid_params.pop("query_variant", None)
+            solid_params.pop("query_id", None)
+            solid_params.pop("query_id", None)
             return SolidViewProjectionMatchGenerator().generate(
                 int(instance_seed),
                 params=solid_params,
                 max_attempts=int(max_attempts),
             )
-        if str(public_query_variant) == "projection_consistency_label":
+        if str(public_query_id) == "projection_consistency_label":
             solid_params = dict(
                 _decouple_sampling_by_divisor(
                     params,
                     divisor=int(sampling_axis_divisor),
                 )
             )
-            solid_params.pop("query_variant", None)
-            solid_params.pop("query_variant", None)
+            solid_params.pop("query_id", None)
+            solid_params.pop("query_id", None)
             return SolidViewProjectionConsistencyGenerator().generate(
                 int(instance_seed),
                 params=solid_params,
                 max_attempts=int(max_attempts),
             )
-        query_variant_probabilities = dict(query_metadata["query_variant_probabilities"])
+        query_id_probabilities = dict(query_metadata["query_id_probabilities"])
         scene_params = _decouple_sampling_by_divisor(
             params,
             divisor=int(sampling_axis_divisor),
@@ -1144,7 +1144,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             task_id=self.task_id,
         )
         dataset = _build_dataset(
-            str(internal_query_variant),
+            str(internal_query_id),
             params=params,
             instance_seed=int(instance_seed),
             sampling_axis_divisor=int(sampling_axis_divisor),
@@ -1246,23 +1246,23 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(internal_query_variant),
+            query_key=str(internal_query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
                     prompt_defaults[
                         _object_description_key(
-                            internal_query_variant=str(internal_query_variant),
+                            internal_query_id=str(internal_query_id),
                             scene_variant=str(scene_variant),
                         )
                     ]
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(internal_query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(internal_query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
-                "json_example": str(prompt_defaults[f"json_example_{str(internal_query_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(internal_query_variant)}"]),
+                "json_example": str(prompt_defaults[f"json_example_{str(internal_query_id)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(internal_query_id)}"]),
                 "painted_face_count": str(dataset.get("painted_face_target_k", 4)),
             },
             instance_seed=int(instance_seed),
@@ -1286,7 +1286,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             "removed_cube_count": 0.48,
             "painted_exterior_face_count": 0.62,
             "exact_k_painted_faces_cube_count": 0.72,
-        }[str(internal_query_variant)]
+        }[str(internal_query_id)]
         scene_load = {
             "stack_strip": 0.12,
             "stack_card": 0.18,
@@ -1316,10 +1316,10 @@ class _PuzzlesSpatialCubeStructureBaseTask:
         if not isinstance(helper_solver_trace, Mapping):
             helper_solver_trace = {}
         execution_trace = {
-            "query_variant": str(public_query_variant),
-            "internal_query_variant": str(internal_query_variant),
+            "query_id": str(public_query_id),
+            "internal_query_id": str(internal_query_id),
             "scene_variant": str(scene_variant),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
             "question_format": str(dataset["question_format"]),
             "view_family": str(dataset["view_family"]),
@@ -1364,30 +1364,30 @@ class _PuzzlesSpatialCubeStructureBaseTask:
                 "scene_kind": f"puzzle_spatial_cube_structure_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(public_query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(public_query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": int(answer_value),
                     "view_family": str(dataset["view_family"]),
                 },
             },
             "query_spec": {
-                "query_variant": str(public_query_variant),
+                "query_id": str(public_query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(public_query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(public_query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "answer_support": list(answer_support),
                     **{
                         str(key): value
                         for key, value in query_metadata.items()
-                        if str(key) not in {"query_variant_probabilities", "internal_query_variant"}
+                        if str(key) not in {"query_id_probabilities", "internal_query_id"}
                     },
                 },
             },
@@ -1422,7 +1422,7 @@ class _PuzzlesSpatialCubeStructureBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(public_query_variant),
+            query_id=str(public_query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1432,7 +1432,7 @@ class PuzzlesSpatialCubeCountTask(FixedPuzzleQueryVariantTaskMixin, _PuzzlesSpat
     """Count all cubes in one visible cube structure."""
 
     task_id = CUBE_COUNT_TASK_ID
-    fixed_query_variant = "cube_count"
+    fixed_query_id = "cube_count"
     public_scene_id = "voxel_cube"
 
 
@@ -1441,7 +1441,7 @@ class PuzzlesSpatialCubeStructureChangeCountTask(FixedPuzzleQueryVariantTaskMixi
     """Count the cube delta between two related cube structures."""
 
     task_id = CUBE_STRUCTURE_CHANGE_COUNT_TASK_ID
-    fixed_query_variant = "cube_structure_change_count"
+    fixed_query_id = "cube_structure_change_count"
     public_scene_id = "voxel_cube"
 
 
@@ -1450,7 +1450,7 @@ class PuzzlesSpatialCubePaintedFaceCountTask(FixedPuzzleQueryVariantTaskMixin, _
     """Count exterior painted faces or cubes with a target painted-face count."""
 
     task_id = CUBE_PAINTED_FACE_COUNT_TASK_ID
-    fixed_query_variant = "painted_face_count"
+    fixed_query_id = "painted_face_count"
     public_scene_id = "voxel_cube"
 
 
@@ -1459,7 +1459,7 @@ class PuzzlesSpatialCubeVisibleProjectionCountTask(FixedPuzzleQueryVariantTaskMi
     """Count filled cells in an orthographic projection of a cube stack."""
 
     task_id = CUBE_VISIBLE_PROJECTION_COUNT_TASK_ID
-    fixed_query_variant = "visible_cube_count"
+    fixed_query_id = "visible_cube_count"
     public_scene_id = "voxel_cube"
 
 
@@ -1468,7 +1468,7 @@ class PuzzlesSpatialCubeProjectionMatchLabelTask(FixedPuzzleQueryVariantTaskMixi
     """Select the orthographic projection option matching a cube stack."""
 
     task_id = CUBE_PROJECTION_MATCH_TASK_ID
-    fixed_query_variant = "projection_match_label"
+    fixed_query_id = "projection_match_label"
     public_scene_id = "voxel_cube"
 
 
@@ -1477,7 +1477,7 @@ class PuzzlesSpatialCubeProjectionConsistencyLabelTask(FixedPuzzleQueryVariantTa
     """Select the projection or stack option that resolves cube-view consistency."""
 
     task_id = CUBE_PROJECTION_CONSISTENCY_TASK_ID
-    fixed_query_variant = "projection_consistency_label"
+    fixed_query_id = "projection_consistency_label"
     public_scene_id = "voxel_cube"
 
 

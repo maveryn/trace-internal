@@ -19,11 +19,11 @@ Rules:
 1. `scene_id` is the visual rendering grammar for the task.
 2. `task_group` is a broad reasoning/config style; intra-task query
    variants stay inside the task via canonical `query_id` metadata.
-   `query_variant` is an internal replay selector, not a public sampling unit.
+   `query_id` is an internal replay selector, not a public sampling unit.
 3. For geometry graph-paper readout tasks, use `task_group=measurement`; for multi-object geometry ranking/value-choice scenes, use `task_group=comparison`; for analytical panel-label tasks, use `task_group=analytical`.
 4. Config precedence: `domain defaults -> task_group defaults -> task/params`.
 5. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (flat section keys are unsupported).
-6. Build-task weights control cross-task sampling; query-variant weights are resolved inside the task from config/params.
+6. Build-task weights control cross-task sampling; query-id weights are resolved inside the task from config/params.
 7. Task-id naming uses taxonomy-v0 form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use this form.
 8. For taxonomy-v0 ids, the `task_id` domain segment must match class `domain`; `task_group` remains an implementation/config grouping field.
 9. Task module naming is mandatory: use file path `trace/tasks/<domain>/<task_group>/<task_name>.py` by default (do not repeat full `task_id` in filename); `puzzles/cell_board` keeps its scene-specific internals under `trace/tasks/puzzles/cell_board/`.
@@ -104,7 +104,7 @@ Required sections:
 3. Query sampling is inside each task (`P(query_id|task)`). Use **query
    variant** as the prose term for these branches and `query_id` as the
    canonical field.
-4. Validate answer distributions per query variant / `query_id` with
+4. Validate answer distributions per query id / `query_id` with
    lightweight anti-degeneracy checks over generated answers: at least 5 unique
    answers and max single-answer frequency below 1/3; numeric 5-bin summaries
    are still reported for review but are not hard pass/fail gates.

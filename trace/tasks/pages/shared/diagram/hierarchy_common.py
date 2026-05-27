@@ -17,12 +17,12 @@ from .common import (
 
 
 SUPPORTED_DIAGRAM_HIERARCHY_SCENE_VARIANTS: Tuple[str, ...] = ("org_chart",)
-SUPPORTED_DIAGRAM_HIERARCHY_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DIAGRAM_HIERARCHY_QUERY_IDS: Tuple[str, ...] = (
     "parent_of_node",
     "lowest_common_ancestor_of_two_nodes",
 )
 SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS: Tuple[str, ...] = ("rooted_tree",)
-SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "subtree_descendant_count",
     "subtree_leaf_count",
     "path_length_between_two_nodes",
@@ -148,25 +148,25 @@ def resolve_hierarchy_scene_variant(
     )
 
 
-def resolve_hierarchy_query_variant(
+def resolve_hierarchy_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the active hierarchy query variant."""
+    """Resolve the active hierarchy query id."""
 
     return resolve_diagrams_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DIAGRAM_HIERARCHY_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DIAGRAM_HIERARCHY_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -192,25 +192,25 @@ def resolve_hierarchy_tree_count_scene_variant(
     )
 
 
-def resolve_hierarchy_tree_count_query_variant(
+def resolve_hierarchy_tree_count_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the active generic tree-count hierarchy query variant."""
+    """Resolve the active generic tree-count hierarchy query id."""
 
     return resolve_diagrams_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -418,7 +418,7 @@ def _variant_local_index(
     params: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
-    query_variant: str,
+    query_id: str,
     namespace: str,
 ) -> int:
     """Return a deterministic local index for balancing support inside one variant."""
@@ -426,7 +426,7 @@ def _variant_local_index(
     return resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.{query_variant}.{namespace}",
+        namespace=f"{task_id}.{query_id}.{namespace}",
     )
 
 
@@ -436,7 +436,7 @@ def _select_from_support(
     params: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
-    query_variant: str,
+    query_id: str,
     namespace: str,
     offset: int = 0,
 ) -> int:
@@ -449,7 +449,7 @@ def _select_from_support(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         namespace=str(namespace),
     )
     return int(values[int(selection_index + int(offset)) % len(values)])
@@ -627,7 +627,7 @@ def _path_branch_lengths(
     params: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, int]:
     """Choose two branch lengths whose sum is the requested path distance."""
 
@@ -642,7 +642,7 @@ def _path_branch_lengths(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         namespace="path_branch_split",
     )
     return tuple(feasible[int(selection_index) % len(feasible)])
@@ -656,7 +656,7 @@ def _build_node_pair_path_tree(
     params: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str, str, List[str], Dict[str, List[str]]]:
     """Build one tree with two queried nodes exactly `answer_count` hops apart."""
 
@@ -667,7 +667,7 @@ def _build_node_pair_path_tree(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     max_lca_depth = int(target_depth) - max(int(left_length), int(right_length))
     lca_depth = _select_from_support(
@@ -675,7 +675,7 @@ def _build_node_pair_path_tree(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         namespace="path_lca_depth",
         offset=3,
     )
@@ -839,7 +839,7 @@ def _build_lca_query(
 
 def build_hierarchy_ancestor_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -859,7 +859,7 @@ def build_hierarchy_ancestor_dataset(
     depths = _depth_map(root_node_id, children_by_parent)
     labels = _label_map(node_ids=node_ids, rng=rng)
 
-    if str(query_variant) == "parent_of_node":
+    if str(query_id) == "parent_of_node":
         query = _build_parent_query(
             node_ids=node_ids,
             root_node_id=root_node_id,
@@ -870,7 +870,7 @@ def build_hierarchy_ancestor_dataset(
             instance_seed=int(instance_seed),
             task_id=str(task_id),
         )
-    elif str(query_variant) == "lowest_common_ancestor_of_two_nodes":
+    elif str(query_id) == "lowest_common_ancestor_of_two_nodes":
         query = _build_lca_query(
             node_ids=node_ids,
             root_node_id=root_node_id,
@@ -883,7 +883,7 @@ def build_hierarchy_ancestor_dataset(
             task_id=str(task_id),
         )
     else:
-        raise ValueError(f"unsupported hierarchy query variant: {query_variant}")
+        raise ValueError(f"unsupported hierarchy query id: {query_id}")
 
     node_specs: List[Dict[str, Any]] = []
     for node_id in node_ids:
@@ -917,7 +917,7 @@ def build_hierarchy_ancestor_dataset(
     return {
         "scene_title": _title(rng=rng),
         "scene_variant": str(scene_variant),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "question_text": str(query["question_text"]),
         "question_format": "hierarchy_ancestor_label",
         "view_family": "org_chart_diagram",
@@ -942,7 +942,7 @@ def build_hierarchy_ancestor_dataset(
 
 def build_hierarchy_tree_count_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
@@ -952,9 +952,9 @@ def build_hierarchy_tree_count_dataset(
     """Build one generic rooted-tree counting dataset instance."""
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
-    query_key = str(query_variant)
-    if query_key not in SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS:
-        raise ValueError(f"unsupported hierarchy tree-count query variant: {query_variant}")
+    query_key = str(query_id)
+    if query_key not in SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS:
+        raise ValueError(f"unsupported hierarchy tree-count query id: {query_id}")
 
     node_min, node_max = _resolve_int_bound_pair(
         params=params,
@@ -1016,7 +1016,7 @@ def build_hierarchy_tree_count_dataset(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=query_key,
+        query_id=query_key,
         namespace="tree_node_count",
         offset=1,
     )
@@ -1025,7 +1025,7 @@ def build_hierarchy_tree_count_dataset(
         params=params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=query_key,
+        query_id=query_key,
         namespace="tree_depth",
         offset=2,
     )
@@ -1036,7 +1036,7 @@ def build_hierarchy_tree_count_dataset(
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
-            query_variant=query_key,
+            query_id=query_key,
             namespace="answer_count",
         )
         query_node_id, evidence_node_ids, children_by_parent = _build_descendant_count_tree(
@@ -1052,7 +1052,7 @@ def build_hierarchy_tree_count_dataset(
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
-            query_variant=query_key,
+            query_id=query_key,
             namespace="answer_count",
         )
         query_node_id, evidence_node_ids, children_by_parent = _build_leaf_count_tree(
@@ -1068,7 +1068,7 @@ def build_hierarchy_tree_count_dataset(
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
-            query_variant=query_key,
+            query_id=query_key,
             namespace="answer_count",
         )
         target_depth = max(int(target_depth), (int(answer_count) + 1) // 2)
@@ -1079,7 +1079,7 @@ def build_hierarchy_tree_count_dataset(
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
-            query_variant=query_key,
+            query_id=query_key,
         )
         query_node_id = str(left_query_node_id)
         query_relationship = "path_length_between_two_nodes"
@@ -1147,7 +1147,7 @@ def build_hierarchy_tree_count_dataset(
     return {
         "scene_title": _tree_title(rng=rng),
         "scene_variant": str(scene_variant),
-        "query_variant": query_key,
+        "query_id": query_key,
         "question_text": str(question_text),
         "question_format": "hierarchy_tree_count",
         "view_family": "rooted_tree_diagram",
@@ -1183,14 +1183,14 @@ __all__ = [
     "HierarchyDefaults",
     "HierarchyRenderParams",
     "SUPPORTED_DIAGRAM_HIERARCHY_SCENE_VARIANTS",
-    "SUPPORTED_DIAGRAM_HIERARCHY_QUERY_VARIANTS",
+    "SUPPORTED_DIAGRAM_HIERARCHY_QUERY_IDS",
     "SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS",
-    "SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_VARIANTS",
+    "SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS",
     "build_hierarchy_ancestor_dataset",
     "build_hierarchy_tree_count_dataset",
     "resolve_hierarchy_render_params",
     "resolve_hierarchy_scene_variant",
-    "resolve_hierarchy_query_variant",
+    "resolve_hierarchy_query_id",
     "resolve_hierarchy_tree_count_scene_variant",
-    "resolve_hierarchy_tree_count_query_variant",
+    "resolve_hierarchy_tree_count_query_id",
 ]

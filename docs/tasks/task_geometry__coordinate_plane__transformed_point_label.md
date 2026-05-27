@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `translate_point`, `translate_by_reference_vector`, `reflect_over_vertical_line`, `reflect_over_horizontal_line`, or `rotate_90_about_marked_center`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

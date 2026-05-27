@@ -25,7 +25,7 @@ from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
 from trace.core.seed import hash64
 from trace.core.taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
-from trace.core.task_review_sampling import collect_variant_samples, generate_random_samples, resolve_review_variant_key
+from trace.core.task_review_sampling import collect_query_id_samples, generate_random_samples, resolve_review_query_id
 from trace.tasks import TASK_REGISTRY, create_task
 
 
@@ -35,7 +35,7 @@ _EXCEL_HEADERS: List[str] = [
     "image",
     "evidence_image",
     "task",
-    "query_variant",
+    "query_id",
     "scene_id",
     "query_id",
     "prompt_answer",
@@ -189,7 +189,7 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0, help="Base seed")
     parser.add_argument("--out-root", default="task-reviews", help="Output root for task review artifacts")
     parser.add_argument("--random-count", type=int, default=100, help="Random sample count per task")
-    parser.add_argument("--count-per-variant", type=int, default=100, help="Target samples per query variant")
+    parser.add_argument("--count-per-variant", type=int, default=100, help="Target samples per query id")
     parser.add_argument(
         "--inspection-count-per-variant",
         type=int,
@@ -314,27 +314,27 @@ def _extract_sampling_axes(output: Any) -> Dict[str, Dict[str, Any]]:
             if not probs:
                 continue
             observed = None
-            if str(axis) == "query_variant":
-                observed = getattr(output, "query_variant", "")
+            if str(axis) == "query_id":
+                observed = getattr(output, "query_id", "")
             elif str(axis) == "query_id":
                 observed = str(getattr(output, "query_id", "") or "")
             else:
                 observed = execution_trace.get(str(axis), query_params.get(str(axis), ""))
             _set_axis(str(axis), observed=observed, expected=probs, source=str(source_name))
 
-    if str(getattr(output, "query_variant", "") or "").strip() in {"", "default"}:
-        query_axis = axes.get("query_variant", {})
+    if str(getattr(output, "query_id", "") or "").strip() in {"", "default"}:
+        query_axis = axes.get("query_id", {})
         if isinstance(query_axis, Mapping) and query_axis.get("expected_probabilities"):
-            axes["query_variant"] = {
+            axes["query_id"] = {
                 "observed": str(getattr(output, "query_id", "") or query_axis.get("observed", "")),
                 "expected_probabilities": dict(query_axis.get("expected_probabilities", {})),
                 "expected_source": str(query_axis.get("expected_source", "")),
                 "expected_conflict": bool(query_axis.get("expected_conflict", False)),
             }
 
-    if "query_variant" not in axes:
-        axes["query_variant"] = {
-            "observed": str(getattr(output, "query_variant", "") or ""),
+    if "query_id" not in axes:
+        axes["query_id"] = {
+            "observed": str(getattr(output, "query_id", "") or ""),
             "expected_probabilities": {},
             "expected_source": "",
             "expected_conflict": False,
@@ -368,30 +368,28 @@ def _extract_replay_generation_params(output: Any) -> Dict[str, Any]:
             replay[key_text] = list(value)
         elif isinstance(value, Mapping):
             replay[key_text] = dict(value)
-    query_variant = str(getattr(output, "query_variant", "") or "")
-    review_variant = resolve_review_variant_key(output)
-    if review_variant:
-        if query_variant.strip() in {"", "default"}:
-            internal_query_variant = str(execution_trace.get("internal_query_variant", "") or "").strip()
-            if internal_query_variant and internal_query_variant != "default":
-                replay["query_variant"] = str(internal_query_variant)
+    query_id = str(getattr(output, "query_id", "") or "")
+    review_query_id = resolve_review_query_id(output)
+    if review_query_id:
+        if query_id.strip() in {"", "default"}:
+            internal_query_id = str(execution_trace.get("internal_query_id", "") or "").strip()
+            if internal_query_id and internal_query_id != "default":
+                replay["query_id"] = str(internal_query_id)
             else:
-                replay["query_variant"] = str(review_variant)
-            replay["query_id"] = str(review_variant)
+                replay["query_id"] = str(review_query_id)
         else:
-            replay.setdefault("query_variant", query_variant)
+            replay.setdefault("query_id", query_id)
     return replay
 
 
 def _random_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     """Collect task-review fields from one generated output."""
-    query_variant = str(getattr(output, "query_variant", "") or "")
+    query_id = str(getattr(output, "query_id", "") or "")
     return {
         "instance_seed": int(instance_seed),
-        "query_variant": query_variant,
-        "review_variant": resolve_review_variant_key(output),
+        "review_query_id": resolve_review_query_id(output),
         "scene_id": str(getattr(output, "scene_id", "") or ""),
-        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_variant=query_variant, trace_payload=getattr(output, "trace_payload", {}))),
+        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_id=query_id, trace_payload=getattr(output, "trace_payload", {}))),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
         "sampling_axes": _extract_sampling_axes(output),
@@ -401,13 +399,12 @@ def _random_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
 
 def _answer_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     """Collect answer-only fields for distribution checks."""
-    query_variant = str(getattr(output, "query_variant", "") or "")
+    query_id = str(getattr(output, "query_id", "") or "")
     return {
         "instance_seed": int(instance_seed),
-        "query_variant": query_variant,
-        "review_variant": resolve_review_variant_key(output),
+        "review_query_id": resolve_review_query_id(output),
         "scene_id": str(getattr(output, "scene_id", "") or ""),
-        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_variant=query_variant, trace_payload=getattr(output, "trace_payload", {}))),
+        "query_id": str(getattr(output, "query_id", "") or resolve_task_query_id(query_id=query_id, trace_payload=getattr(output, "trace_payload", {}))),
         "answer_type": str(output.answer_gt.type),
         "answer_value": output.answer_gt.value,
         "generation_params": _extract_replay_generation_params(output),
@@ -443,8 +440,8 @@ def _build_sampling_axis_reports(rows: Sequence[Mapping[str, Any]]) -> Dict[str,
             axis_entry = axes.get(axis, {}) if isinstance(axes, Mapping) else {}
             observed = axis_entry.get("observed")
             observed_label = str(observed) if observed is not None else ""
-            if str(axis) == "query_variant" and not observed_label:
-                observed_label = str(row.get("review_variant", "") or row.get("query_variant", "") or "")
+            if str(axis) == "query_id" and not observed_label:
+                observed_label = str(row.get("review_query_id", "") or row.get("query_id", "") or "")
             observed_counts[observed_label] = int(observed_counts.get(observed_label, 0) + 1)
 
             raw_expected = axis_entry.get("expected_probabilities", {}) if isinstance(axis_entry, Mapping) else {}
@@ -483,7 +480,7 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
     ]
     answer_report = evaluate_answer_distribution(answer_rows)
     sampling_axes = _build_sampling_axis_reports(rows)
-    variant_axis = sampling_axes.get("query_variant", {})
+    variant_axis = sampling_axes.get("query_id", {})
     variant_counts = variant_axis.get("observed_counts", {}) if isinstance(variant_axis, Mapping) else {}
     variant_expected = variant_axis.get("expected_probabilities", {}) if isinstance(variant_axis, Mapping) else {}
     has_variants = _has_true_variants(variant_counts, variant_expected)
@@ -493,7 +490,7 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
         "sample_count": int(len(rows)),
         "answer_distribution": answer_report,
         "sampling_axes": sampling_axes,
-        "query_variant_distribution": {
+        "query_id_distribution": {
             "has_variants": bool(has_variants),
             "status": "reported" if bool(has_variants) else "skipped_no_variants",
             "observed_counts": dict(variant_counts),
@@ -538,10 +535,10 @@ def _build_distribution_review_report(
     random_rows: Sequence[Mapping[str, Any]],
     random_report: Mapping[str, Any],
     variant_rows: Mapping[str, List[Dict[str, Any]]] | None,
-    variant_collection_meta: Mapping[str, Any] | None,
+    query_id_collection_meta: Mapping[str, Any] | None,
 ) -> Dict[str, Any]:
     """Build distribution review report from random and per-variant samples."""
-    variant_distribution = random_report.get("query_variant_distribution", {})
+    variant_distribution = random_report.get("query_id_distribution", {})
     has_variants = bool(variant_distribution.get("has_variants", False))
 
     if not has_variants:
@@ -552,39 +549,39 @@ def _build_distribution_review_report(
             "task_group": str(task_group),
             "scene_id": str(scene_id),
             "mode": "single_sample",
-            "has_query_variants": False,
+            "has_query_ids": False,
             "overall": dict(single_report),
-            "per_query_variant": {"": dict(single_report)},
+            "per_query_id": {"": dict(single_report)},
             "failed_variants": [""] if not bool(single_report.get("pass", False)) else [],
-            "incomplete_variants": [],
+            "incomplete_query_ids": [],
             "pass": bool(single_report.get("pass", False)),
-            "query_variant_distribution": dict(variant_distribution),
+            "query_id_distribution": dict(variant_distribution),
             "sampling_axes": dict(random_report.get("sampling_axes", {})),
         }
 
     variant_rows = variant_rows or {}
-    variant_collection_meta = variant_collection_meta or {}
-    expected_variants = list(variant_collection_meta.get("expected_variants", []))
-    if not expected_variants:
-        expected_variants = sorted(variant_rows.keys())
+    query_id_collection_meta = query_id_collection_meta or {}
+    expected_query_ids = list(query_id_collection_meta.get("expected_query_ids", []))
+    if not expected_query_ids:
+        expected_query_ids = sorted(variant_rows.keys())
     per_variant: Dict[str, Any] = {}
     combined_rows: List[Dict[str, Any]] = []
 
-    for query_variant in expected_variants:
-        rows = list(variant_rows.get(str(query_variant), []))
+    for query_id in expected_query_ids:
+        rows = list(variant_rows.get(str(query_id), []))
         combined_rows.extend(rows)
         if rows:
-            per_variant[str(query_variant)] = _evaluate_rows(rows)
+            per_variant[str(query_id)] = _evaluate_rows(rows)
 
     overall = _evaluate_rows(combined_rows)
     failed_variants = [
-        str(query_variant)
-        for query_variant, result in per_variant.items()
+        str(query_id)
+        for query_id, result in per_variant.items()
         if not bool(result.get("pass", False))
     ]
-    incomplete_variants = list(variant_collection_meta.get("incomplete_variants", []))
+    incomplete_query_ids = list(query_id_collection_meta.get("incomplete_query_ids", []))
     no_samples_collected = not bool(combined_rows)
-    task_pass = bool((not failed_variants) and (not incomplete_variants) and (not no_samples_collected))
+    task_pass = bool((not failed_variants) and (not incomplete_query_ids) and (not no_samples_collected))
 
     return {
         "task_id": str(task_id),
@@ -592,22 +589,22 @@ def _build_distribution_review_report(
         "task_group": str(task_group),
         "scene_id": str(scene_id),
         "mode": "per_variant",
-        "has_query_variants": True,
+        "has_query_ids": True,
         "overall": overall,
-        "per_query_variant": per_variant,
+        "per_query_id": per_variant,
         "failed_variants": failed_variants,
-        "incomplete_variants": incomplete_variants,
+        "incomplete_query_ids": incomplete_query_ids,
         "no_samples_collected": bool(no_samples_collected),
         "pass": bool(task_pass),
-        "query_variant_distribution": dict(variant_distribution),
+        "query_id_distribution": dict(variant_distribution),
         "sampling_axes": dict(random_report.get("sampling_axes", {})),
         "collection": {
-            "target_count_per_variant": int(variant_collection_meta.get("target_count_per_variant", 0)),
-            "total_generated": int(variant_collection_meta.get("total_generated", 0)),
-            "expected_variants": list(expected_variants),
-            "generated_variant_counts": dict(variant_collection_meta.get("generated_variant_counts", {})),
-            "collected_variant_counts": dict(variant_collection_meta.get("collected_variant_counts", {})),
-            "generation_error_counts": dict(variant_collection_meta.get("generation_error_counts", {})),
+            "target_count_per_query_id": int(query_id_collection_meta.get("target_count_per_query_id", 0)),
+            "total_generated": int(query_id_collection_meta.get("total_generated", 0)),
+            "expected_query_ids": list(expected_query_ids),
+            "generated_query_id_counts": dict(query_id_collection_meta.get("generated_query_id_counts", {})),
+            "collected_query_id_counts": dict(query_id_collection_meta.get("collected_query_id_counts", {})),
+            "generation_error_counts": dict(query_id_collection_meta.get("generation_error_counts", {})),
         },
     }
 
@@ -711,7 +708,7 @@ def _populate_inspection_sheet(
 
         values = [
             row.get("task", ""),
-            row.get("query_variant", ""),
+            row.get("query_id", ""),
             row.get("scene_id", ""),
             row.get("query_id", ""),
             row.get("prompt_answer", row.get("prompt_answer_only", "")),
@@ -733,33 +730,33 @@ def _populate_inspection_sheet(
 
 
 def _write_inspection_excel(
-    rows_by_variant: Mapping[str, Sequence[Mapping[str, Any]]],
+    rows_by_query_id: Mapping[str, Sequence[Mapping[str, Any]]],
     path: Path,
     *,
     out_root: Path,
 ) -> Dict[str, str]:
-    """Write one inspection workbook with one sheet per query variant."""
+    """Write one inspection workbook with one sheet per query id."""
     workbook = Workbook()
     image_buffers: List[io.BytesIO] = []
     used_titles: set[str] = set()
     variant_to_sheet: Dict[str, str] = {}
 
-    sorted_variants = sorted(str(variant) for variant in rows_by_variant.keys())
+    sorted_variants = sorted(str(variant) for variant in rows_by_query_id.keys())
     if not sorted_variants:
         sorted_variants = [""]
 
-    for index, query_variant in enumerate(sorted_variants):
-        base_title = str(query_variant).strip() or "default"
+    for index, query_id in enumerate(sorted_variants):
+        base_title = str(query_id).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if int(index) == 0:
             sheet = workbook.active
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(query_variant)] = str(sheet_title)
+        variant_to_sheet[str(query_id)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
-            rows=list(rows_by_variant.get(str(query_variant), [])),
+            rows=list(rows_by_query_id.get(str(query_id), [])),
             out_root=out_root,
             image_buffers=image_buffers,
         )
@@ -1204,7 +1201,7 @@ def _inspection_rows_from_task_dir(*, out_root: Path, task_dir: Path) -> List[Di
         rows.append(
             {
                 "task": str(payload.get("task", task_dir.name)),
-                "query_variant": str(payload.get("query_variant", "")),
+                "query_id": str(payload.get("query_id", "")),
                 "scene_id": str(payload.get("scene_id", task_dir.parent.name)),
                 "query_id": str(payload.get("query_id", "")),
                 "prompt": prompt,
@@ -1387,9 +1384,9 @@ def build_scene_review_workbooks(*, out_root: Path, scene_keys: Sequence[tuple[s
     return scene_manifests
 
 
-def _safe_variant_dir_name(query_variant: str) -> str:
+def _safe_query_id_dir_name(query_id: str) -> str:
     """Return filesystem-safe variant directory label."""
-    value = str(query_variant).strip()
+    value = str(query_id).strip()
     if not value:
         return "default"
     return re.sub(r"[^a-zA-Z0-9._-]+", "_", value)
@@ -1400,11 +1397,11 @@ def _build_inspection_rows(
     task_id: str,
     out_root: Path,
     task_dir: Path,
-    seed_rows_by_variant: Mapping[str, Sequence[Mapping[str, Any]]],
+    seed_rows_by_query_id: Mapping[str, Sequence[Mapping[str, Any]]],
     max_attempts_per_instance: int,
 ) -> Dict[str, Any]:
     """Generate inspection artifacts (images/json/workbook rows) for one task."""
-    rows_by_variant: Dict[str, List[Dict[str, Any]]] = {}
+    rows_by_query_id: Dict[str, List[Dict[str, Any]]] = {}
     task = create_task(str(task_id))
     taxonomy = resolve_task_taxonomy(
         str(task_id),
@@ -1414,33 +1411,33 @@ def _build_inspection_rows(
     for artifact_subdir in ("images", "data"):
         shutil.rmtree(task_dir / artifact_subdir, ignore_errors=True)
 
-    for query_variant in sorted(seed_rows_by_variant.keys()):
-        variant_dir = _safe_variant_dir_name(str(query_variant))
-        image_dir = task_dir / "images" / variant_dir
-        data_dir = task_dir / "data" / variant_dir
+    for query_id in sorted(seed_rows_by_query_id.keys()):
+        query_id_dir = _safe_query_id_dir_name(str(query_id))
+        image_dir = task_dir / "images" / query_id_dir
+        data_dir = task_dir / "data" / query_id_dir
         image_dir.mkdir(parents=True, exist_ok=True)
         data_dir.mkdir(parents=True, exist_ok=True)
 
-        seed_rows = list(seed_rows_by_variant.get(str(query_variant), []))
+        seed_rows = list(seed_rows_by_query_id.get(str(query_id), []))
         for index, seed_row in enumerate(seed_rows):
             instance_seed = int(seed_row.get("instance_seed", 0))
             generation_params = dict(seed_row.get("generation_params", {}) or {})
             generation_param_candidates: List[Dict[str, Any]] = []
-            if str(query_variant).strip():
+            if str(query_id).strip():
                 forced_task_params = dict(generation_params)
-                forced_task_params["query_variant"] = str(query_variant)
-                forced_task_params["query_id"] = str(query_variant)
+                forced_task_params["query_id"] = str(query_id)
+                forced_task_params["query_id"] = str(query_id)
                 generation_param_candidates.append(forced_task_params)
 
                 query_only_params = dict(generation_params)
-                query_only_params.pop("query_variant", None)
-                query_only_params["query_variant"] = str(query_variant)
-                query_only_params["query_id"] = str(query_variant)
+                query_only_params.pop("query_id", None)
+                query_only_params["query_id"] = str(query_id)
+                query_only_params["query_id"] = str(query_id)
                 generation_param_candidates.append(query_only_params)
 
                 replay_params = dict(generation_params)
-                replay_params.setdefault("query_variant", str(query_variant))
-                replay_params.setdefault("query_id", str(query_variant))
+                replay_params.setdefault("query_id", str(query_id))
+                replay_params.setdefault("query_id", str(query_id))
                 generation_param_candidates.append(replay_params)
             else:
                 # For single-sheet public tasks, trace params often include
@@ -1464,7 +1461,7 @@ def _build_inspection_rows(
             last_error: Exception | None = None
             candidate_seeds = [int(instance_seed)]
             candidate_seeds.extend(
-                int(hash64(int(instance_seed), f"{str(task_id)}|{str(query_variant)}|inspection", retry_index))
+                int(hash64(int(instance_seed), f"{str(task_id)}|{str(query_id)}|inspection", retry_index))
                 for retry_index in range(1, 33)
             )
             for candidate_seed in candidate_seeds:
@@ -1478,7 +1475,7 @@ def _build_inspection_rows(
                     except Exception as exc:
                         last_error = exc
                         continue
-                    if str(query_variant).strip() and resolve_review_variant_key(candidate_output) != str(query_variant):
+                    if str(query_id).strip() and resolve_review_query_id(candidate_output) != str(query_id):
                         continue
                     output = candidate_output
                     final_seed = int(candidate_seed)
@@ -1487,7 +1484,7 @@ def _build_inspection_rows(
                     break
             if output is None:
                 raise RuntimeError(
-                    f"{task_id} failed to build inspection row for variant {query_variant!r} "
+                    f"{task_id} failed to build inspection row for variant {query_id!r} "
                     f"after {len(candidate_seeds)} deterministic seed attempts"
                 ) from last_error
 
@@ -1503,11 +1500,11 @@ def _build_inspection_rows(
                 output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
                 evidence_gt=output.evidence_gt,
             )
-            output_variant = str(getattr(output, "query_variant", "") or "")
-            review_variant = resolve_review_variant_key(output)
+            output_variant = str(getattr(output, "query_id", "") or "")
+            review_query_id = resolve_review_query_id(output)
             query_id = str(
                 getattr(output, "query_id", "")
-                or resolve_task_query_id(query_variant=output_variant, trace_payload=sanitized_trace_payload)
+                or resolve_task_query_id(query_id=output_variant, trace_payload=sanitized_trace_payload)
             )
             sanitized_trace_payload = inject_taxonomy_metadata(
                 sanitized_trace_payload,
@@ -1521,7 +1518,6 @@ def _build_inspection_rows(
                 "task": str(task_id),
                 "domain": str(taxonomy.domain),
                 "scene_id": str(taxonomy.scene_id),
-                "query_variant": output_variant,
                 "query_id": query_id,
                 "instance_seed": int(final_seed),
                 "prompt": prompt_answer_and_evidence,
@@ -1551,11 +1547,11 @@ def _build_inspection_rows(
             answer_only_ground_truth = {
                 "answer": output.answer_gt.value,
             }
-            variant_rows = rows_by_variant.setdefault(str(review_variant), [])
+            variant_rows = rows_by_query_id.setdefault(str(review_query_id), [])
             variant_rows.append(
                 {
                     "task": str(task_id),
-                    "query_variant": str(output_variant),
+                    "query_id": str(output_variant),
                     "scene_id": str(taxonomy.scene_id),
                     "query_id": query_id,
                     "prompt": prompt_answer_and_evidence,
@@ -1577,22 +1573,22 @@ def _build_inspection_rows(
             )
 
     inspection_total = 0
-    for query_variant in sorted(rows_by_variant.keys()):
-        rows_by_variant[str(query_variant)] = sorted(
-            list(rows_by_variant.get(str(query_variant), [])),
+    for query_id in sorted(rows_by_query_id.keys()):
+        rows_by_query_id[str(query_id)] = sorted(
+            list(rows_by_query_id.get(str(query_id), [])),
             key=lambda item: int(item.get("instance_seed", 0)),
         )
-        inspection_total += int(len(rows_by_variant[str(query_variant)]))
+        inspection_total += int(len(rows_by_query_id[str(query_id)]))
 
     workbook_path = task_dir / f"{task_id}.xlsx"
-    workbook_sheets = _write_inspection_excel(rows_by_variant, workbook_path, out_root=out_root)
+    workbook_sheets = _write_inspection_excel(rows_by_query_id, workbook_path, out_root=out_root)
 
     manifest = {
         "task_id": str(task_id),
         "inspection_count": int(inspection_total),
         "variants": {
-            str(variant): int(len(seed_rows_by_variant.get(str(variant), [])))
-            for variant in sorted(seed_rows_by_variant.keys())
+            str(variant): int(len(seed_rows_by_query_id.get(str(variant), [])))
+            for variant in sorted(seed_rows_by_query_id.keys())
         },
         "workbook": str(workbook_path.relative_to(out_root).as_posix()),
         "workbook_sheets": dict(workbook_sheets),
@@ -1607,9 +1603,9 @@ def _group_random_inspection_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str
     grouped: Dict[str, List[Dict[str, Any]]] = {}
     for row in rows:
         review_key = str(
-            row.get("review_variant")
+            row.get("review_query_id")
             or row.get("query_id")
-            or row.get("query_variant")
+            or row.get("query_id")
             or ""
         )
         grouped.setdefault(str(review_key), []).append(dict(row))
@@ -1621,9 +1617,9 @@ def main() -> int:
     args = _parse_cli()
     if int(args.random_count) <= 0:
         raise ValueError("--random-count must be > 0")
-    if int(args.count_per_variant) <= 0:
+    if int(args.count_per_query_id) <= 0:
         raise ValueError("--count-per-variant must be > 0")
-    if int(args.inspection_count_per_variant) <= 0:
+    if int(args.inspection_count_per_query_id) <= 0:
         raise ValueError("--inspection-count-per-variant must be > 0")
     if int(args.max_attempts_per_instance) <= 0:
         raise ValueError("--max-attempts-per-instance must be > 0")
@@ -1642,8 +1638,8 @@ def main() -> int:
             "seed": int(args.seed),
             "tasks": list(task_ids),
             "random_count": int(args.random_count),
-            "count_per_variant": int(args.count_per_variant),
-            "inspection_count_per_variant": int(args.inspection_count_per_variant),
+            "count_per_query_id": int(args.count_per_query_id),
+            "inspection_count_per_query_id": int(args.inspection_count_per_query_id),
             "balanced_inspection_by_query": bool(args.balanced_inspection_by_query),
             "max_attempts_per_instance": int(args.max_attempts_per_instance),
             "max_total_samples_per_task": int(args.max_total_samples_per_task),
@@ -1693,13 +1689,13 @@ def main() -> int:
             write_json_file(random_path, random_report)
             task_summary["reports"]["random_review"] = str(random_path.relative_to(out_root).as_posix())
 
-            has_variants = bool(random_report["query_variant_distribution"]["has_variants"])
+            has_variants = bool(random_report["query_id_distribution"]["has_variants"])
             variant_rows: Dict[str, List[Dict[str, Any]]] | None = None
             collection_meta: Dict[str, Any] | None = None
             if has_variants:
-                collected = collect_variant_samples(
+                collected = collect_query_id_samples(
                     task_id=str(task_id),
-                    target_count_per_variant=int(args.count_per_variant),
+                    target_count_per_query_id=int(args.count_per_query_id),
                     seed=int(args.seed),
                     max_attempts_per_instance=int(args.max_attempts_per_instance),
                     max_total_samples_per_task=int(args.max_total_samples_per_task),
@@ -1707,19 +1703,19 @@ def main() -> int:
                     collector=_answer_collector,
                 )
                 variant_rows = {
-                    str(variant): list(collected.get("samples_by_variant", {}).get(str(variant), []))
-                    for variant in list(collected.get("expected_variants", []))
+                    str(variant): list(collected.get("samples_by_query_id", {}).get(str(variant), []))
+                    for variant in list(collected.get("expected_query_ids", []))
                 }
                 distribution_variant_rows = dict(variant_rows)
                 collection_meta = {
                     key: collected.get(key)
                     for key in (
-                        "target_count_per_variant",
+                        "target_count_per_query_id",
                         "total_generated",
-                        "expected_variants",
-                        "generated_variant_counts",
-                        "collected_variant_counts",
-                        "incomplete_variants",
+                        "expected_query_ids",
+                        "generated_query_id_counts",
+                        "collected_query_id_counts",
+                        "incomplete_query_ids",
                         "generation_error_counts",
                     )
                 }
@@ -1732,7 +1728,7 @@ def main() -> int:
                 random_rows=random_rows,
                 random_report=random_report,
                 variant_rows=variant_rows,
-                variant_collection_meta=collection_meta,
+                query_id_collection_meta=collection_meta,
             )
             dist_path = task_dir / "distribution_review.json"
             write_json_file(dist_path, distribution_report)
@@ -1745,7 +1741,7 @@ def main() -> int:
             print(f"[{status}] {task_id} distribution review")
 
         if str(args.mode) in {"full", "inspection"}:
-            seed_rows_by_variant: Dict[str, List[Dict[str, Any]]]
+            seed_rows_by_query_id: Dict[str, List[Dict[str, Any]]]
             random_rows_for_inspection: List[Dict[str, Any]] | None = None
             if not bool(args.balanced_inspection_by_query):
                 random_rows_for_inspection = list(random_rows)
@@ -1758,73 +1754,73 @@ def main() -> int:
                         workers=int(args.workers),
                         collector=_answer_collector,
                     )
-                seed_rows_by_variant = _group_random_inspection_rows(random_rows_for_inspection)
+                seed_rows_by_query_id = _group_random_inspection_rows(random_rows_for_inspection)
             elif random_report is None:
-                inspection_collected = collect_variant_samples(
+                inspection_collected = collect_query_id_samples(
                     task_id=str(task_id),
-                    target_count_per_variant=int(args.inspection_count_per_variant),
+                    target_count_per_query_id=int(args.inspection_count_per_query_id),
                     seed=int(args.seed) + 17,
                     max_attempts_per_instance=int(args.max_attempts_per_instance),
                     max_total_samples_per_task=int(args.max_total_samples_per_task),
                     workers=int(args.workers),
                     collector=_answer_collector,
                 )
-                expected_variants = list(inspection_collected.get("expected_variants", []))
-                if not expected_variants:
-                    expected_variants = sorted(inspection_collected.get("samples_by_variant", {}).keys())
-                seed_rows_by_variant = {
-                    str(variant): list(inspection_collected.get("samples_by_variant", {}).get(str(variant), []))
-                    for variant in expected_variants
+                expected_query_ids = list(inspection_collected.get("expected_query_ids", []))
+                if not expected_query_ids:
+                    expected_query_ids = sorted(inspection_collected.get("samples_by_query_id", {}).keys())
+                seed_rows_by_query_id = {
+                    str(variant): list(inspection_collected.get("samples_by_query_id", {}).get(str(variant), []))
+                    for variant in expected_query_ids
                 }
-                if not seed_rows_by_variant:
+                if not seed_rows_by_query_id:
                     fallback_rows = generate_random_samples(
                         task_id=str(task_id),
-                        count=int(args.inspection_count_per_variant),
+                        count=int(args.inspection_count_per_query_id),
                         seed=int(args.seed) + 17,
                         max_attempts_per_instance=int(args.max_attempts_per_instance),
                         workers=int(args.workers),
                         collector=_answer_collector,
                     )
-                    seed_rows_by_variant = {"": list(fallback_rows)}
-            elif bool(random_report["query_variant_distribution"]["has_variants"]):
+                    seed_rows_by_query_id = {"": list(fallback_rows)}
+            elif bool(random_report["query_id_distribution"]["has_variants"]):
                 if distribution_variant_rows is not None and str(args.mode) == "full":
-                    seed_rows_by_variant = {
-                        str(variant): list(rows[: int(args.inspection_count_per_variant)])
+                    seed_rows_by_query_id = {
+                        str(variant): list(rows[: int(args.inspection_count_per_query_id)])
                         for variant, rows in distribution_variant_rows.items()
                     }
                 else:
-                    inspection_collected = collect_variant_samples(
+                    inspection_collected = collect_query_id_samples(
                         task_id=str(task_id),
-                        target_count_per_variant=int(args.inspection_count_per_variant),
+                        target_count_per_query_id=int(args.inspection_count_per_query_id),
                         seed=int(args.seed) + 17,
                         max_attempts_per_instance=int(args.max_attempts_per_instance),
                         max_total_samples_per_task=int(args.max_total_samples_per_task),
                         workers=int(args.workers),
                         collector=_answer_collector,
                     )
-                    seed_rows_by_variant = {
-                        str(variant): list(inspection_collected.get("samples_by_variant", {}).get(str(variant), []))
-                        for variant in list(inspection_collected.get("expected_variants", []))
+                    seed_rows_by_query_id = {
+                        str(variant): list(inspection_collected.get("samples_by_query_id", {}).get(str(variant), []))
+                        for variant in list(inspection_collected.get("expected_query_ids", []))
                     }
             else:
                 if random_rows_for_inspection is None:
                     random_rows_for_inspection = generate_random_samples(
                         task_id=str(task_id),
-                        count=int(args.inspection_count_per_variant),
+                        count=int(args.inspection_count_per_query_id),
                         seed=int(args.seed) + 17,
                         max_attempts_per_instance=int(args.max_attempts_per_instance),
                         workers=int(args.workers),
                         collector=_answer_collector,
                     )
-                seed_rows_by_variant = {
-                    "": list(random_rows_for_inspection[: int(args.inspection_count_per_variant)]),
+                seed_rows_by_query_id = {
+                    "": list(random_rows_for_inspection[: int(args.inspection_count_per_query_id)]),
                 }
 
             inspection_manifest = _build_inspection_rows(
                 task_id=str(task_id),
                 out_root=out_root,
                 task_dir=task_dir,
-                seed_rows_by_variant=seed_rows_by_variant,
+                seed_rows_by_query_id=seed_rows_by_query_id,
                 max_attempts_per_instance=int(args.max_attempts_per_instance),
             )
             task_summary["reports"]["inspection_manifest"] = str(

@@ -87,7 +87,7 @@ from ..spatial.camera_distance import (
 
 TASK_ID = "task_three_d__warehouse__robot_forward_path_label"
 SCENE_ID = "warehouse"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("first_object_ahead",)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("first_object_ahead",)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("storage_aisle", "loading_zone", "packing_floor")
 SUPPORTED_ROBOT_HEADINGS: Tuple[str, ...] = WAREHOUSE_ROBOT_HEADINGS
 SUPPORTED_ROBOT_DESIGNS: Tuple[str, ...] = WAREHOUSE_ROBOT_DESIGNS
@@ -1288,7 +1288,7 @@ def _attach_path_answers(
 def _build_dataset(
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     robot_heading: str,
     candidate_count: int,
@@ -1358,7 +1358,7 @@ def _build_dataset(
             0.12,
         )
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "candidate_count": int(candidate_count),
             "context_object_count": int(context_object_count),
@@ -1472,16 +1472,16 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) -> Dict[str, Any]:
     locked_params = dict(params)
-    query_variant, _query_probabilities = _shared_resolve_axis_variant(
+    query_id, _query_probabilities = _shared_resolve_axis_variant(
         params=params,
         task_id=TASK_ID,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
         allow_locked=True,
     )
     scene_variant, _scene_probabilities = _shared_resolve_axis_variant(
@@ -1535,7 +1535,7 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
     _camera_yaw_band, _camera_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(params=params, instance_seed=int(instance_seed))
     locked_params.update(
         {
-            "_locked_query_variant": str(query_variant),
+            "_locked_query_id": str(query_id),
             "_locked_scene_variant": str(scene_variant),
             "_locked_robot_heading": str(robot_heading),
             "_locked_candidate_count": int(candidate_count),
@@ -1567,16 +1567,16 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params=params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
             allow_locked=True,
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
@@ -1631,7 +1631,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_dataset(
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             robot_heading=str(robot_heading),
             candidate_count=int(candidate_count),
@@ -1677,7 +1677,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1719,15 +1719,14 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "robot_heading": str(robot_heading),
@@ -1771,8 +1770,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "target_object_bboxes_px": {str(key): list(rendered_scene.object_bboxes_px[str(key)]) for key in dataset["target_object_ids"]},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "candidate_count": int(dataset["candidate_count"]),
@@ -1805,7 +1803,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
                 "object_type_counts": dict(dataset["object_type_counts"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_warehouse_robot",
                 "solver_trace": dict(solver_trace),
             },
@@ -1824,9 +1822,8 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

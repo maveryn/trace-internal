@@ -35,7 +35,7 @@ from ..shared.distribution_chart_common import (
     resolve_chart_render_params_for_task,
 )
 from ..shared.fixed_query_task import MergedChartQueryVariantTaskMixin
-from ..shared.param_overrides import apply_query_variant_overrides
+from ..shared.param_overrides import apply_query_id_overrides
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
@@ -45,7 +45,7 @@ TASK_ID = "charts_distribution_boxplot_label_base"
 MEDIAN_RANK_DIFFERENCE_TASK_ID = "task_charts__boxplot__median_rank_difference_value"
 PAIRED_MEDIAN_SHIFT_TASK_ID = "task_charts__boxplot__paired_median_shift_label"
 SCENE_VARIANT = "boxplot"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "median_reference_label",
     "iqr_extremum_label",
 )
@@ -57,12 +57,12 @@ _SUPPORTED_EXTREMUM_DIRECTIONS: Tuple[str, ...] = (
     "largest",
     "smallest",
 )
-_SUPPORTED_PAIRED_SHIFT_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_PAIRED_SHIFT_QUERY_IDS: Tuple[str, ...] = (
     "paired_median_greatest_increase_label",
     "paired_median_greatest_decrease_label",
     "paired_median_greatest_absolute_change_label",
 )
-_SUPPORTED_MEDIAN_RANK_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_MEDIAN_RANK_QUERY_IDS: Tuple[str, ...] = (
     "median_top_second_difference_value",
     "median_top_third_difference_value",
     "median_top_bottom_difference_value",
@@ -109,44 +109,44 @@ _PAIRED_SHIFT_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
 }
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic boxplot query variant."""
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    """Resolve the semantic boxplot query id."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+    """Return true when `_sample_cursor` is driving the default query-id cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not bool(enabled):
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
 
-def _support_params_for_query_variant_cycle(
+def _support_params_for_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-public-variant occurrence index for subvariant support cycling."""
 
@@ -154,9 +154,9 @@ def _support_params_for_query_variant_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -193,26 +193,26 @@ def _resolve_extremum_direction(params: Mapping[str, Any], *, instance_seed: int
 
 
 def _internal_boxplot_variant(
-    query_variant: str,
+    query_id: str,
     *,
     median_reference_direction: str | None,
     extremum_direction: str | None,
 ) -> str:
     """Map the public boxplot variant plus query parameter to the construction variant."""
 
-    if str(query_variant) == "median_reference_label":
+    if str(query_id) == "median_reference_label":
         if str(median_reference_direction) == "above_reference_q3":
             return "median_above_reference_q3"
         if str(median_reference_direction) == "below_reference_q1":
             return "median_below_reference_q1"
         raise ValueError(f"unsupported median_reference_direction: {median_reference_direction}")
-    if str(query_variant) == "iqr_extremum_label":
+    if str(query_id) == "iqr_extremum_label":
         if str(extremum_direction) == "largest":
             return "largest_iqr"
         if str(extremum_direction) == "smallest":
             return "smallest_iqr"
         raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
-    raise ValueError(f"unsupported boxplot query_variant: {query_variant}")
+    raise ValueError(f"unsupported boxplot query_id: {query_id}")
 
 
 def _median_reference_prompt_slots(median_reference_direction: str | None) -> Dict[str, str]:
@@ -251,59 +251,59 @@ def _iqr_extremum_prompt_slots(extremum_direction: str | None) -> Dict[str, str]
     raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
 
 
-def _resolve_paired_shift_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_paired_shift_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the paired before/after median-shift query."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_PAIRED_SHIFT_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_PAIRED_SHIFT_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_PAIRED_SHIFT_QUERY_IDS,
         task_id=PAIRED_MEDIAN_SHIFT_TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _resolve_median_rank_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_median_rank_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve which ranked medians are compared."""
 
     resolved_params = dict(params)
-    query_variant = resolved_params.get("query_variant")
-    if resolved_params.get("query_variant") is None and query_variant is not None:
-        query_variant_text = str(query_variant)
-        if query_variant_text in set(_SUPPORTED_MEDIAN_RANK_QUERY_VARIANTS):
-            resolved_params["query_variant"] = query_variant_text
-        elif query_variant_text == "median_rank_difference_value":
-            resolved_params["query_variant"] = "median_top_third_difference_value"
+    query_id = resolved_params.get("query_id")
+    if resolved_params.get("query_id") is None and query_id is not None:
+        query_id_text = str(query_id)
+        if query_id_text in set(_SUPPORTED_MEDIAN_RANK_QUERY_IDS):
+            resolved_params["query_id"] = query_id_text
+        elif query_id_text == "median_rank_difference_value":
+            resolved_params["query_id"] = "median_top_third_difference_value"
     return resolve_chart_axis_variant(
         params=resolved_params,
         gen_defaults=_MEDIAN_RANK_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_MEDIAN_RANK_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_MEDIAN_RANK_QUERY_IDS,
         task_id=MEDIAN_RANK_DIFFERENCE_TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _median_rank_params_for_query(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
+def _median_rank_params_for_query(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
     """Return generation params for one median-rank comparison query."""
 
     resolved = dict(params)
     resolved["median_rank_upper_rank"] = 1
-    if str(query_variant) == "median_top_second_difference_value":
+    if str(query_id) == "median_top_second_difference_value":
         resolved["median_rank_lower_rank"] = 2
-    elif str(query_variant) == "median_top_third_difference_value":
+    elif str(query_id) == "median_top_third_difference_value":
         resolved["median_rank_lower_rank"] = 3
-    elif str(query_variant) == "median_top_bottom_difference_value":
+    elif str(query_id) == "median_top_bottom_difference_value":
         resolved["median_rank_lower_rank"] = "lowest"
     else:
-        raise ValueError(f"unsupported median-rank query variant: {query_variant}")
+        raise ValueError(f"unsupported median-rank query id: {query_id}")
     return resolved
 
 
@@ -320,7 +320,7 @@ def _render_boxplot_public_output(
     evidence_labels: Sequence[str],
     trace_extras: Mapping[str, Any],
     query_id: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
     prompt_defaults: Mapping[str, Any],
     prompt_task_key: str,
     render_defaults: Mapping[str, Any],
@@ -329,7 +329,7 @@ def _render_boxplot_public_output(
     paired_boxplots: Tuple[Sequence[Any], Sequence[Any]] | None = None,
     slot_overrides: Mapping[str, Any] | None = None,
 ) -> TaskOutput:
-    """Render a public boxplot task with default query_variant and explicit query_id."""
+    """Render a public boxplot task with default query_id and explicit query_id."""
 
     render_params = resolve_chart_render_params_for_task(
         {**dict(effective_params), **dict(mark_style)},
@@ -405,10 +405,8 @@ def _render_boxplot_public_output(
     )
     trace_params = {
         "query_id": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant": "default",
-        "query_variant_probabilities": dict(query_variant_probabilities),
-        "query_variant_probabilities": {"default": 1.0},
+        "query_id_probabilities": dict(query_id_probabilities),
+        "query_id_probabilities": {"default": 1.0},
         **dict(trace_extras),
     }
     trace_payload = {
@@ -425,8 +423,6 @@ def _render_boxplot_public_output(
             "scene_id": "boxplot",
             "task_id": str(task_id),
             "query_id": str(query_id),
-            "query_variant": str(query_id),
-            "query_variant": "default",
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -519,7 +515,6 @@ def _render_boxplot_public_output(
         trace_payload=trace_payload,
         complexity=complexity,
         task_versions=default_task_versions(),
-        query_variant="default",
         scene_id="boxplot",
         query_id=str(query_id),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -536,32 +531,32 @@ class ChartsDistributionBoxplotLabelTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         base_params = dict(params)
-        query_variant, query_variant_probabilities = _resolve_query_variant(base_params, instance_seed=int(instance_seed))
-        support_params = _support_params_for_query_variant_cycle(
+        query_id, query_id_probabilities = _resolve_query_id(base_params, instance_seed=int(instance_seed))
+        support_params = _support_params_for_query_id_cycle(
             base_params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
-        effective_params = apply_query_variant_overrides(
+        effective_params = apply_query_id_overrides(
             support_params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             default_params=_GEN_DEFAULTS,
         )
         median_reference_direction = None
         median_reference_direction_probabilities: Dict[str, float] = {}
         extremum_direction = None
         extremum_direction_probabilities: Dict[str, float] = {}
-        if str(query_variant) == "median_reference_label":
+        if str(query_id) == "median_reference_label":
             median_reference_direction, median_reference_direction_probabilities = _resolve_median_reference_direction(
                 effective_params,
                 instance_seed=int(instance_seed),
             )
-        elif str(query_variant) == "iqr_extremum_label":
+        elif str(query_id) == "iqr_extremum_label":
             extremum_direction, extremum_direction_probabilities = _resolve_extremum_direction(
                 effective_params,
                 instance_seed=int(instance_seed),
             )
         boxplot_variant = _internal_boxplot_variant(
-            str(query_variant),
+            str(query_id),
             median_reference_direction=median_reference_direction,
             extremum_direction=extremum_direction,
         )
@@ -574,7 +569,7 @@ class ChartsDistributionBoxplotLabelTask:
             mark_count=1,
         )
         boxplots, answer_label, evidence_value, trace_extras = build_boxplot_dataset_for_variant(
-            query_variant=str(boxplot_variant),
+            query_id=str(boxplot_variant),
             params=effective_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -637,16 +632,16 @@ class ChartsDistributionBoxplotLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_boxplot"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+                "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
                 "reference_label": str(trace_extras.get("reference_label", "")),
                 **dict(median_slots),
                 **dict(iqr_slots),
@@ -674,7 +669,7 @@ class ChartsDistributionBoxplotLabelTask:
                 "scene_kind": "chart_boxplot_distribution",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
                     "answer_label": str(answer_label),
                     "evidence_value": int(evidence_value),
@@ -717,15 +712,15 @@ class ChartsDistributionBoxplotLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     **(
                         {"median_reference_direction": str(median_reference_direction)}
                         if median_reference_direction is not None
@@ -806,7 +801,7 @@ class ChartsDistributionBoxplotLabelTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": SCENE_VARIANT,
                 "answer_label": str(answer_label),
                 "evidence_value": int(evidence_value),
@@ -815,7 +810,7 @@ class ChartsDistributionBoxplotLabelTask:
                 "category_count_range": list(trace_extras["category_count_range"]),
                 "value_range": list(trace_extras["value_range"]),
                 "quartiles_by_label": dict(trace_extras["quartiles_by_label"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 **(
                     {"median_reference_direction": str(median_reference_direction)}
                     if median_reference_direction is not None
@@ -881,7 +876,7 @@ class ChartsDistributionBoxplotLabelTask:
                     int(trace_extras["category_count"]),
                     trace_extras["category_count_range"],
                 ),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": 0.65,
             },
         )
@@ -894,7 +889,7 @@ class ChartsDistributionBoxplotLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -907,7 +902,7 @@ class ChartsDistributionBoxplotSummaryLabelTask(
     """Return a box label from one sampled boxplot summary query."""
 
     task_id = "task_charts__boxplot__summary_statistic_label"
-    allowed_query_variants = ("median_reference_label", "iqr_extremum_label")
+    allowed_query_ids = ("median_reference_label", "iqr_extremum_label")
 
 
 @register_task
@@ -922,13 +917,13 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         base_params = dict(params)
-        query_variant, query_variant_probabilities = _resolve_median_rank_query_variant(
+        query_id, query_id_probabilities = _resolve_median_rank_query_id(
             base_params,
             instance_seed=int(instance_seed),
         )
-        effective_params = _median_rank_params_for_query(base_params, query_variant=str(query_variant))
-        supported_aliases = set(_SUPPORTED_MEDIAN_RANK_QUERY_VARIANTS) | {"", "default", "median_rank_difference_value"}
-        for explicit_key in ("query_variant", "query_id", "query_variant"):
+        effective_params = _median_rank_params_for_query(base_params, query_id=str(query_id))
+        supported_aliases = set(_SUPPORTED_MEDIAN_RANK_QUERY_IDS) | {"", "default", "median_rank_difference_value"}
+        for explicit_key in ("query_id", "query_id", "query_id"):
             explicit_value = effective_params.get(str(explicit_key))
             if explicit_value is not None and str(explicit_value) not in supported_aliases:
                 raise ValueError(f"unsupported {explicit_key} for {self.task_id}: {explicit_value}")
@@ -979,8 +974,8 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
             answer_gt=TypedValue(type="integer", value=int(answer)),
             evidence_labels=evidence_labels,
             trace_extras=trace_extras,
-            query_id=str(query_variant),
-            query_variant_probabilities=dict(query_variant_probabilities),
+            query_id=str(query_id),
+            query_id_probabilities=dict(query_id_probabilities),
             prompt_defaults=prompt_defaults,
             prompt_task_key=str(prompt_defaults["task_key"]),
             render_defaults=_MEDIAN_RANK_RENDER_DEFAULTS,
@@ -1001,13 +996,13 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         base_params = dict(params)
-        query_variant, query_variant_probabilities = _resolve_paired_shift_query_variant(
+        query_id, query_id_probabilities = _resolve_paired_shift_query_id(
             base_params,
             instance_seed=int(instance_seed),
         )
-        effective_params = apply_query_variant_overrides(
+        effective_params = apply_query_id_overrides(
             base_params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             default_params=_PAIRED_SHIFT_GEN_DEFAULTS,
         )
         mark_style = resolve_chart_mark_colors(
@@ -1019,7 +1014,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             mark_count=1,
         )
         before_boxplots, after_boxplots, answer_label, evidence_labels, trace_extras = build_boxplot_paired_median_shift_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=effective_params,
             instance_seed=int(instance_seed),
             gen_defaults=_PAIRED_SHIFT_GEN_DEFAULTS,
@@ -1060,13 +1055,13 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
             answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
             evidence_labels=evidence_labels,
             trace_extras=trace_extras,
-            query_id=str(query_variant),
-            query_variant_probabilities=dict(query_variant_probabilities),
+            query_id=str(query_id),
+            query_id_probabilities=dict(query_id_probabilities),
             prompt_defaults=prompt_defaults,
             prompt_task_key=str(prompt_defaults["task_key"]),
             render_defaults=_PAIRED_SHIFT_RENDER_DEFAULTS,
             complexity_weights=_PAIRED_SHIFT_COMPLEXITY_WEIGHTS,
-            reasoning_load=float(_PAIRED_SHIFT_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+            reasoning_load=float(_PAIRED_SHIFT_REASONING_LOAD_BY_VARIANT[str(query_id)]),
         )
 
 

@@ -449,7 +449,7 @@ def render_bubble_shooter_scene(
     landing_coord: Coord,
     shooter_color_key: str | None,
     option_specs: Tuple[BubbleShooterOption, ...],
-    query_variant: str,
+    query_id: str,
     background: Image.Image,
     scene_variant: str,
     style_variant: str,

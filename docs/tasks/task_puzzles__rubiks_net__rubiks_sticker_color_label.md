@@ -8,7 +8,7 @@
 5. Goal: choose the labeled color-swatch option for a queried sticker on a Rubik-style cube net.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `static_sticker_color_label|one_move_sticker_color_label|short_sequence_sticker_color_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

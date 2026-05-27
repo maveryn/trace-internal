@@ -7,7 +7,7 @@
 - Query id: `on_top_of_prop|under_prop|inside_prop`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed; solve-rate calibration pending
+- Status: pending_v0_review
 
 ## Contract
 The image shows the same open synthetic perspective 3D object scene as the camera-distance task: a gridded floor or platform, small lettered answer-candidate objects, and larger unlettered props. The prompt asks which small lettered object has a spatial relation to a named prop.
@@ -25,6 +25,9 @@ Evidence is the bounding box of the selected small lettered 3D object. The named
 
 ## Prompt And Trace
 The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, object roles, prompt-facing names, the reference prop id/name, per-label relation truth, and projected object bboxes.
+
+## Calibration
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.

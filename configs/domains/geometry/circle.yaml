@@ -11,11 +11,11 @@ generation:
     inscribed_angle_from_arc_answer_support: [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
     tangent_chord_angle_from_arc_answer_support: [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75]
     tangent_chord_angle_from_inscribed_answer_support: [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75]
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_answer_sampling: true
   task_overrides:
     geometry_circle_theorem_value_base:
-      query_variant_weights:
+      query_id_weights:
         diameter_perpendicular_chord_length: 1.0
         secant_secant_variable_segment_length: 1.0
         tangent_secant_length: 1.0

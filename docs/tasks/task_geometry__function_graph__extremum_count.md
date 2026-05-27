@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `graphing`
 3. Scene id: `function_graph`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `turning_point_count` or `local_extremum_count`
 6. Answer type: `integer`
 7. Evidence type: `point_set`

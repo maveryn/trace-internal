@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `missing_endpoint_from_midpoint` or `missing_startpoint_from_midpoint`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

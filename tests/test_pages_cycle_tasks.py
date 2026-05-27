@@ -32,7 +32,7 @@ def test_pages_cycle_offset_stage_label_contract_matches_answer_stage_bbox() -> 
             out = task.generate(
                 seed,
                 params={
-                    "query_variant": "offset_stage_label",
+                    "query_id": "offset_stage_label",
                     "query_relationship": query_relationship,
                     "scene_variant": "cycle_ring",
                     "cycle_direction": cycle_direction,
@@ -48,9 +48,9 @@ def test_pages_cycle_offset_stage_label_contract_matches_answer_stage_bbox() -> 
             assert out.answer_gt.type == "string"
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == f"{query_relationship}_offset_stage_label"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == f"{query_relationship}_offset_stage_label"
             assert str(execution["query_relationship"]) == str(query_relationship)
             assert str(execution["scene_variant"]) == "cycle_ring"
@@ -84,7 +84,7 @@ def test_pages_cycle_prompt_examples_match_variant_contract() -> None:
     for index, query_relationship in enumerate(("after", "before"), start=61460):
         out = task.generate(
             index,
-            params={"query_variant": "offset_stage_label", "query_relationship": query_relationship},
+            params={"query_id": "offset_stage_label", "query_relationship": query_relationship},
             max_attempts=10,
         )
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -95,7 +95,7 @@ def test_pages_cycle_prompt_examples_match_variant_contract() -> None:
 
 def test_pages_cycle_offset_stage_label_is_deterministic() -> None:
     task = PagesCycleOffsetStageLabelTask()
-    params = {"query_variant": "offset_stage_label", "query_relationship": "before", "scene_variant": "cycle_ring"}
+    params = {"query_id": "offset_stage_label", "query_relationship": "before", "scene_variant": "cycle_ring"}
     out_a = task.generate(61510, params=params, max_attempts=10)
     out_b = task.generate(61510, params=params, max_attempts=10)
 
@@ -109,7 +109,7 @@ def test_pages_cycle_offset_stage_label_is_deterministic() -> None:
 
 def test_pages_cycle_balanced_sampling_defaults_cover_variants() -> None:
     task = PagesCycleOffsetStageLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     query_relationships: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     cycle_directions: Counter[str] = Counter()
@@ -118,13 +118,13 @@ def test_pages_cycle_balanced_sampling_defaults_cover_variants() -> None:
     for index in range(48):
         out = task.generate(hash64(61540, "pages_cycle", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        query_variants[str(execution["query_id"])] += 1
+        query_ids[str(execution["query_id"])] += 1
         query_relationships[str(execution["query_relationship"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         cycle_directions[str(execution["direction"])] += 1
         relationship_direction_pairs[(str(execution["query_relationship"]), str(execution["direction"]))] += 1
 
-    assert set(query_variants.keys()) == {"after_offset_stage_label", "before_offset_stage_label"}
+    assert set(query_ids.keys()) == {"after_offset_stage_label", "before_offset_stage_label"}
     assert set(query_relationships.keys()) == {"after", "before"}
     assert set(scene_variants.keys()) == {"cycle_ring"}
     assert set(cycle_directions.keys()) == {"clockwise", "counterclockwise"}
@@ -140,7 +140,7 @@ def test_pages_cycle_uses_short_names_and_respects_stage_and_step_ranges() -> No
     task = PagesCycleOffsetStageLabelTask()
     out = task.generate(
         61590,
-        params={"query_variant": "offset_stage_label", "query_relationship": "after", "scene_variant": "cycle_ring"},
+        params={"query_id": "offset_stage_label", "query_relationship": "after", "scene_variant": "cycle_ring"},
         max_attempts=10,
     )
     execution = out.trace_payload["execution_trace"]
@@ -164,12 +164,12 @@ def test_pages_cycle_before_relationship_is_harder_than_after_relationship() -> 
     task = PagesCycleOffsetStageLabelTask()
     after = task.generate(
         61620,
-        params={"query_variant": "offset_stage_label", "query_relationship": "after", "scene_variant": "cycle_ring"},
+        params={"query_id": "offset_stage_label", "query_relationship": "after", "scene_variant": "cycle_ring"},
         max_attempts=10,
     )
     before = task.generate(
         61620,
-        params={"query_variant": "offset_stage_label", "query_relationship": "before", "scene_variant": "cycle_ring"},
+        params={"query_id": "offset_stage_label", "query_relationship": "before", "scene_variant": "cycle_ring"},
         max_attempts=10,
     )
 
@@ -178,13 +178,13 @@ def test_pages_cycle_before_relationship_is_harder_than_after_relationship() -> 
     )
 
 
-def test_pages_cycle_source_before_after_query_variant_aliases_query_relationship() -> None:
+def test_pages_cycle_source_before_after_query_id_aliases_query_relationship() -> None:
     task = PagesCycleOffsetStageLabelTask()
-    out = task.generate(61650, params={"query_variant": "before_k_steps", "scene_variant": "cycle_ring"}, max_attempts=10)
+    out = task.generate(61650, params={"query_id": "before_k_steps", "scene_variant": "cycle_ring"}, max_attempts=10)
     execution = out.trace_payload["execution_trace"]
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) == "before_offset_stage_label"
-    assert str(execution["query_variant"]) == "default"
+    assert str(execution["query_id"]) == "default"
     assert str(execution["query_id"]) == "before_offset_stage_label"
     assert str(execution["query_relationship"]) == "before"

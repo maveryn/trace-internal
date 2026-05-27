@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.pages.relation.web_action_target_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     PagesRelationWebActionTargetLabelTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -25,11 +25,11 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
     scene_variants = ("shop_catalog", "travel_booking", "support_center")
     style_variants = ("standard", "compact", "contrast")
 
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             99100 + index,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variants[index],
                 "style_variant": style_variants[index],
             },
@@ -42,10 +42,10 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
 
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
         assert str(execution["style_variant"]) == str(style_variants[index])
         assert trace["scene_ir"]["scene_kind"] == SCENE_KIND
@@ -72,14 +72,14 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
         assert str(evidence_supports[1]["code_label"]) == str(execution["instruction_code_label"])
         assert str(evidence_supports[2]["support_id"]) == str(target["support_id"])
 
-        if query_variant == "click_target_label":
+        if query_id == "click_target_label":
             assert str(target["role"]) == "web_button"
             assert 12 <= int(execution["total_control_count"]) <= 24
             assert str(target["context_display_label"]).strip()
             assert str(target["context_display_label"]) not in str(execution["instruction_text"])
             assert str(target["context_attribute_1"]) in str(execution["instruction_text"])
             assert str(target["context_attribute_2"]) in str(execution["instruction_text"])
-        elif query_variant == "type_field_label":
+        elif query_id == "type_field_label":
             assert str(target["role"]) == "web_input"
             assert 9 <= int(execution["total_control_count"]) <= 16
         else:
@@ -109,10 +109,10 @@ def test_gui_relation_web_action_target_prompt_examples_match_option_contract() 
 
 def test_gui_relation_web_action_target_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesRelationWebActionTargetLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
-    answers_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
 
     for index in range(180):
         out = task.generate(
@@ -121,14 +121,14 @@ def test_gui_relation_web_action_target_balanced_sampling_defaults_cover_axes_an
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_variant[query_variant][str(execution["target_label"])] += 1
+        answers_by_query_id[query_id][str(execution["target_label"])] += 1
 
-    assert set(query_variants.keys()) == set(SUPPORTED_QUERY_VARIANTS)
-    assert max(query_variants.values()) - min(query_variants.values()) <= 12
+    assert set(query_ids.keys()) == set(SUPPORTED_QUERY_IDS)
+    assert max(query_ids.values()) - min(query_ids.values()) <= 12
     assert set(scene_variants.keys()) == {
         "shop_catalog",
         "travel_booking",
@@ -138,14 +138,14 @@ def test_gui_relation_web_action_target_balanced_sampling_defaults_cover_axes_an
         "content_cms",
     }
     assert set(style_variants.keys()) == {"standard", "compact", "contrast", "cool", "warm", "sage"}
-    for query_variant in SUPPORTED_QUERY_VARIANTS:
-        assert len(answers_by_query_variant[query_variant]) >= 20
+    for query_id in SUPPORTED_QUERY_IDS:
+        assert len(answers_by_query_id[query_id]) >= 20
 
 
 def test_gui_relation_web_action_target_deterministic() -> None:
     task = PagesRelationWebActionTargetLabelTask()
     params = {
-        "query_variant": "select_option_label",
+        "query_id": "select_option_label",
         "scene_variant": "finance_portal",
         "style_variant": "contrast",
         "target_label": "M",

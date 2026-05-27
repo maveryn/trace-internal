@@ -51,7 +51,7 @@ Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
 
 TASK_ID = "geometry_circle_theorem_value_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "diameter_perpendicular_chord_length",
     "secant_secant_variable_segment_length",
     "tangent_secant_length",
@@ -203,9 +203,9 @@ class _Defaults:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     target_answer: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
     tangent_secant_target_kind: str | None = None
     tangent_secant_target_kind_probabilities: Dict[str, float] | None = None
@@ -563,35 +563,35 @@ def _feasible_secant_secant_variable_target_kinds(
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = resolve_variant(
+    query_id, query_id_probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
-    query_variant = apply_balanced_variant_sampling(
+    query_id = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(query_variant),
-        variant_probabilities=query_variant_probabilities,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        selected_variant=str(query_id),
+        variant_probabilities=query_id_probabilities,
+        supported_variants=SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
-    support_key = f"{query_variant}_answer_support"
+    support_key = f"{query_id}_answer_support"
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(support_key),
         explicit_key="target_answer",
-        fallback_support=_ANSWER_SUPPORT_BY_VARIANT[str(query_variant)],
-        namespace=f"{TASK_ID}.{query_variant}.target_answer",
+        fallback_support=_ANSWER_SUPPORT_BY_VARIANT[str(query_id)],
+        namespace=f"{TASK_ID}.{query_id}.target_answer",
         balanced_flag_key="balanced_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -599,7 +599,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     tangent_secant_target_kind_probabilities: Dict[str, float] = {}
     secant_secant_variable_target_kind: str | None = None
     secant_secant_variable_target_kind_probabilities: Dict[str, float] = {}
-    if str(query_variant) == "tangent_secant_length":
+    if str(query_id) == "tangent_secant_length":
         feasible_target_kinds = _feasible_tangent_secant_target_kinds(
             int(target_answer)
         )
@@ -620,7 +620,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         tangent_secant_target_kind_probabilities = {
             str(kind): float(probability) for kind in feasible_target_kinds
         }
-    if str(query_variant) == "secant_secant_variable_segment_length":
+    if str(query_id) == "secant_secant_variable_segment_length":
         feasible_target_kinds = _feasible_secant_secant_variable_target_kinds(
             int(target_answer)
         )
@@ -643,9 +643,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             str(kind): float(probability) for kind in feasible_target_kinds
         }
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_answer=int(target_answer),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
         tangent_secant_target_kind=tangent_secant_target_kind,
         tangent_secant_target_kind_probabilities=dict(
@@ -2161,14 +2161,14 @@ def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, An
 
 
 def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    query_variant = str(query.query_variant)
-    if query_variant == "central_angle_from_inscribed":
+    query_id = str(query.query_id)
+    if query_id == "central_angle_from_inscribed":
         central_angle = int(query.target_answer)
         if int(central_angle) % 10 != 0 or not (40 <= int(central_angle) <= 160):
             raise ValueError(f"unsupported central angle answer: {query.target_answer}")
         inscribed_angle = int(central_angle // 2)
         answer_kind = "central"
-    elif query_variant in {"inscribed_angle_from_central", "inscribed_angle_from_arc"}:
+    elif query_id in {"inscribed_angle_from_central", "inscribed_angle_from_arc"}:
         inscribed_angle = int(query.target_answer)
         if int(inscribed_angle) % 5 != 0 or not (20 <= int(inscribed_angle) <= 80):
             raise ValueError(
@@ -2177,7 +2177,7 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         central_angle = int(2 * int(inscribed_angle))
         answer_kind = "inscribed"
     else:
-        raise ValueError(f"unsupported inscribed-angle query: {query_variant}")
+        raise ValueError(f"unsupported inscribed-angle query: {query_id}")
 
     radius = float(rng.choice((10, 11, 12, 13, 14)))
     rotation = float(rng.choice((20, 35, 50, 65, 80, 95, 110, 125, 140)))
@@ -2227,7 +2227,7 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         "inscribed": f"{inscribed_angle_name}={int(inscribed_angle)}",
         "arc": f"{intercepted_arc_name}={int(central_angle)}",
     }
-    if query_variant == "inscribed_angle_from_central":
+    if query_id == "inscribed_angle_from_central":
         evidence_tokens = (token_by_kind["central"],)
         angle_marker_specs = (
             {
@@ -2252,7 +2252,7 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
                 "end": label_map["C"],
             },
         )
-    elif query_variant == "central_angle_from_inscribed":
+    elif query_id == "central_angle_from_inscribed":
         evidence_tokens = (token_by_kind["inscribed"],)
         angle_marker_specs = (
             {
@@ -2352,17 +2352,17 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
 
 
 def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    query_variant = str(query.query_variant)
+    query_id = str(query.query_id)
     tangent_chord_angle = int(query.target_answer)
     if int(tangent_chord_angle) % 5 != 0 or not (25 <= int(tangent_chord_angle) <= 75):
         raise ValueError(
             f"unsupported tangent-chord angle answer: {query.target_answer}"
         )
-    if query_variant not in {
+    if query_id not in {
         "tangent_chord_angle_from_arc",
         "tangent_chord_angle_from_inscribed",
     }:
-        raise ValueError(f"unsupported tangent-chord query: {query_variant}")
+        raise ValueError(f"unsupported tangent-chord query: {query_id}")
 
     central_angle = int(2 * int(tangent_chord_angle))
     radius = float(rng.choice((10, 11, 12, 13, 14)))
@@ -2409,7 +2409,7 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
     arc_token = f"{intercepted_arc_name}={int(central_angle)}"
     inscribed_token = f"{inscribed_angle_name}={int(tangent_chord_angle)}"
     distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
-    if query_variant == "tangent_chord_angle_from_arc":
+    if query_id == "tangent_chord_angle_from_arc":
         evidence_tokens = (arc_token,)
         extra_angle_token: str | None = None
     else:
@@ -2448,7 +2448,7 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
     circle_arc_specs = (
         {
             "token": (
-                arc_token if query_variant == "tangent_chord_angle_from_arc" else None
+                arc_token if query_id == "tangent_chord_angle_from_arc" else None
             ),
             "start": label_map["T"],
             "end": label_map["A"],
@@ -2500,30 +2500,30 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
 
 
 def _build_scene_payload(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
-    if str(query.query_variant) == "diameter_perpendicular_chord_length":
+    if str(query.query_id) == "diameter_perpendicular_chord_length":
         return _build_diameter_perpendicular_chord_scene(rng, query=query)
-    if str(query.query_variant) == "secant_secant_variable_segment_length":
+    if str(query.query_id) == "secant_secant_variable_segment_length":
         return _build_secant_secant_variable_scene(rng, query=query)
-    if str(query.query_variant) == "tangent_secant_length":
+    if str(query.query_id) == "tangent_secant_length":
         return _build_tangent_secant_scene(rng, query=query)
-    if str(query.query_variant) == "secant_secant_length":
+    if str(query.query_id) == "secant_secant_length":
         return _build_secant_secant_scene(rng, query=query)
-    if str(query.query_variant) == "intersecting_chords_arc_measure":
+    if str(query.query_id) == "intersecting_chords_arc_measure":
         return _build_intersecting_chords_arc_scene(rng, query=query)
-    if str(query.query_variant) == "multi_step_angle_value":
+    if str(query.query_id) == "multi_step_angle_value":
         return _build_multi_step_angle_scene(rng, query=query)
-    if str(query.query_variant) in {
+    if str(query.query_id) in {
         "inscribed_angle_from_central",
         "central_angle_from_inscribed",
         "inscribed_angle_from_arc",
     }:
         return _build_inscribed_angle_scene(rng, query=query)
-    if str(query.query_variant) in {
+    if str(query.query_id) in {
         "tangent_chord_angle_from_arc",
         "tangent_chord_angle_from_inscribed",
     }:
         return _build_tangent_chord_angle_scene(rng, query=query)
-    raise ValueError(f"unsupported query_variant: {query.query_variant}")
+    raise ValueError(f"unsupported query_id: {query.query_id}")
 
 
 class GeometryCircleTheoremValueTask:
@@ -2605,7 +2605,7 @@ class GeometryCircleTheoremValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -2628,9 +2628,9 @@ class GeometryCircleTheoremValueTask:
         answer_gt = TypedValue(type="integer", value=int(rendered_scene.answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         query_params = {
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_answer": int(query.target_answer),
             "target_answer_probabilities": dict(query.target_answer_probabilities),
         }
@@ -2653,7 +2653,7 @@ class GeometryCircleTheoremValueTask:
                 "scene_kind": "geometry_circle_theorem_value",
                 "entities": list(rendered_scene.scene_entities),
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "answer_segment": str(
                         rendered_scene.theorem_trace["answer_segment"]
                     ),
@@ -2662,7 +2662,7 @@ class GeometryCircleTheoremValueTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(
@@ -2692,9 +2692,9 @@ class GeometryCircleTheoremValueTask:
                 "coord_space": "pixel",
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
-                "variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
+                "variant_probabilities": dict(query.query_id_probabilities),
                 "target_answer": int(query.target_answer),
                 "target_answer_probabilities": dict(query.target_answer_probabilities),
                 "answer_type": "integer",
@@ -2705,7 +2705,7 @@ class GeometryCircleTheoremValueTask:
             },
             "witness_symbolic": {
                 "type": "circle_theorem_measurement_tokens",
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "answer_segment": str(rendered_scene.theorem_trace["answer_segment"]),
                 "answer_value": int(rendered_scene.answer_value),
                 "evidence_tokens": list(rendered_scene.evidence_tokens),
@@ -2725,7 +2725,7 @@ class GeometryCircleTheoremValueTask:
         complexity = build_geometry_circle_theorem_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             annotation_count=len(rendered_scene.token_bboxes),
             answer_value=int(rendered_scene.answer_value),
         )
@@ -2739,7 +2739,7 @@ class GeometryCircleTheoremValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -2752,7 +2752,7 @@ class GeometryCircleDiameterPerpendicularChordLengthValueTask(
     """Solve a length in a diameter-perpendicular-chord diagram."""
 
     task_id = "task_geometry__circle_theorem__diameter_perpendicular_chord_length_value"
-    fixed_query_variant = "diameter_perpendicular_chord_length"
+    fixed_query_id = "diameter_perpendicular_chord_length"
     public_scene_id = "circle_theorem"
 
 
@@ -2764,7 +2764,7 @@ class GeometryCircleTangentSecantLengthValueTask(
     """Solve a length in a tangent-secant diagram."""
 
     task_id = "task_geometry__circle_theorem__tangent_secant_length_value"
-    fixed_query_variant = "tangent_secant_length"
+    fixed_query_id = "tangent_secant_length"
     public_scene_id = "circle_theorem"
 
 
@@ -2776,7 +2776,7 @@ class GeometryCircleSecantSecantLengthValueTask(
     """Solve a length in a secant-secant diagram."""
 
     task_id = "task_geometry__circle_theorem__secant_secant_length_value"
-    fixed_query_variants = (
+    fixed_query_ids = (
         "secant_secant_length",
         "secant_secant_variable_segment_length",
     )
@@ -2791,7 +2791,7 @@ class GeometryCircleIntersectingChordsArcMeasureValueTask(
     """Solve an arc measure in an intersecting-chords diagram."""
 
     task_id = "task_geometry__circle_theorem__intersecting_chords_arc_measure_value"
-    fixed_query_variant = "intersecting_chords_arc_measure"
+    fixed_query_id = "intersecting_chords_arc_measure"
     public_scene_id = "circle_theorem"
 
 
@@ -2803,7 +2803,7 @@ class GeometryCircleInscribedAngleValueTask(
     """Solve a central or inscribed angle from the inscribed-angle theorem."""
 
     task_id = "task_geometry__circle_theorem__inscribed_angle_value"
-    fixed_query_variants = (
+    fixed_query_ids = (
         "inscribed_angle_from_central",
         "central_angle_from_inscribed",
         "inscribed_angle_from_arc",
@@ -2819,7 +2819,7 @@ class GeometryCircleTangentChordAngleValueTask(
     """Solve a tangent-chord angle from an arc or matching inscribed angle."""
 
     task_id = "task_geometry__circle_theorem__tangent_chord_angle_value"
-    fixed_query_variants = (
+    fixed_query_ids = (
         "tangent_chord_angle_from_arc",
         "tangent_chord_angle_from_inscribed",
     )
@@ -2834,7 +2834,7 @@ class GeometryCircleMultiStepAngleValueTask(
     """Solve an angle from multiple arc measurements in an intersecting-chords diagram."""
 
     task_id = "task_geometry__circle_theorem__multi_step_angle_value"
-    fixed_query_variant = "multi_step_angle_value"
+    fixed_query_id = "multi_step_angle_value"
     public_scene_id = "circle_theorem"
 
 

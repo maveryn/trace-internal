@@ -7,7 +7,7 @@
 4. Task id: `task_graph__adjacency__mst_weight`
 5. Objective: compute the total weight of the unique minimum spanning tree from a weighted adjacency matrix.
 
-## Query Variants
+## Query IDs
 1. `weighted_matrix_mst_weight`: find the minimum spanning tree in a connected undirected weighted graph shown as a matrix.
 
 ## Evidence

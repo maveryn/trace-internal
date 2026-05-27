@@ -1,7 +1,6 @@
 # task_illustrations__park_playground__person_count
 
-Status: accepted branch merge; replaces the previous park person activity,
-zone, and equipment-use public tasks.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -15,7 +14,7 @@ zone, and equipment-use public tasks.
 The task renders a synthetic park/playground with people, equipment, paths,
 zones, and decor.
 
-Public query variants:
+Query ids:
 
 - `sitting_person_count`
 - `walking_person_count`
@@ -37,14 +36,14 @@ Public query variants:
 - one `[x0, y0, x1, y1]` pixel bbox around each counted person
 
 ## Trace Contract
-- `query_spec.task_id` is this merged public task id.
+- `query_spec.task_id` is this public task id.
 - `query_spec.branch_id` records the private branch generator used for the
   selected query.
-- `query_spec.params.merged_query_probabilities` records public query
+- `query_spec.params.merged_query_probabilities` records query
   sampling support.
 - Branch-specific render maps and witness fields are preserved.
 
 ## Prompt Contract
 - `scene_key = park_playground_canvas`
-- `query_key` is the selected query variant
+- `query_id` is the selected branch
 - branch-specific task keys from `illustrations_counting_v0` are reused

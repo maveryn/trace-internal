@@ -8,7 +8,7 @@
 5. Objective: count the number of directed edges in the unique longest path of a directed acyclic graph.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `directed_longest_path_length`
 3. Supported `graph_directionality`: `directed`
 4. `answer_gt.type`: `integer`

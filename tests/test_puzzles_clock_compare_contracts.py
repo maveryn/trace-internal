@@ -14,7 +14,7 @@ from tests.helpers import read_jsonl
 def test_puzzles_clock_compare_deterministic() -> None:
     task = PuzzlesClockCompareTask()
     params = {
-        "query_variant": "earliest_time",
+        "query_id": "earliest_time",
         "scene_variant": "minimal",
         "style_variant": "accented",
         "accent_color_name": "purple",

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `circle_inequality_panel_match`, `vertical_strip_panel_match`, `horizontal_halfplane_panel_match`, or `two_inequality_panel_match`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_PLATFORMER_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PLATFORMER_QUERY_IDS: Tuple[str, ...] = (
     "jump_landing_label",
     "collectible_count",
 )
@@ -63,7 +63,7 @@ class PlatformerCollectible:
 class PlatformerSample:
     """Generated platformer scene state."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: str | int
@@ -122,7 +122,7 @@ def validate_platformer_sample(sample: PlatformerSample) -> None:
     if not set(sample.evidence_entity_ids) <= known_entities:
         raise ValueError("platformer evidence references unknown entities")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "jump_landing_label":
         if sample.target_platform_id is None or sample.target_platform_label is None:
             raise ValueError("jump_landing_label requires a target platform")
@@ -132,7 +132,7 @@ def validate_platformer_sample(sample: PlatformerSample) -> None:
         expected_answer = int(len(sample.target_collectible_ids))
         expected_evidence = set(str(value) for value in sample.target_collectible_ids)
     else:
-        raise ValueError(f"unsupported platformer query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported platformer query_id: {sample.query_id}")
 
     if sample.answer != expected_answer:
         raise ValueError("platformer answer does not match active query")
@@ -141,7 +141,7 @@ def validate_platformer_sample(sample: PlatformerSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_PLATFORMER_QUERY_VARIANTS",
+    "SUPPORTED_PLATFORMER_QUERY_IDS",
     "SUPPORTED_PLATFORMER_SCENE_VARIANTS",
     "SUPPORTED_PLATFORMER_STYLE_VARIANTS",
     "PlatformerCollectible",

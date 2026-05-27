@@ -37,17 +37,17 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_composition_small_multiples_aggregate_value_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "top_k_by_segment_then_sum_other_segment_count",
     "conditioned_panel_sum_from_percent",
     "average_top_k_minus_average_bottom_k",
     "composition_shift_l1_distance",
 )
-AGGREGATE_QUERY_VARIANTS: Tuple[str, ...] = (
+AGGREGATE_QUERY_IDS: Tuple[str, ...] = (
     "top_k_by_segment_then_sum_other_segment_count",
     "conditioned_panel_sum_from_percent",
 )
-DIFFERENCE_QUERY_VARIANTS: Tuple[str, ...] = (
+DIFFERENCE_QUERY_IDS: Tuple[str, ...] = (
     "average_top_k_minus_average_bottom_k",
     "composition_shift_l1_distance",
 )
@@ -111,17 +111,17 @@ class _RenderedSmallMultiples:
     layout_jitter_meta: Dict[str, Any]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -181,9 +181,9 @@ def _params_for_scene_axis(params: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def _task_axis_stride(params: Mapping[str, Any]) -> int:
-    if _axis_is_explicit(params, explicit_key="query_variant", weights_key="query_variant_weights"):
+    if _axis_is_explicit(params, explicit_key="query_id", weights_key="query_id_weights"):
         return 1
-    return len(SUPPORTED_QUERY_VARIANTS)
+    return len(SUPPORTED_QUERY_IDS)
 
 
 def _scene_axis_stride(params: Mapping[str, Any]) -> int:
@@ -510,7 +510,7 @@ def _build_shift_dataset(
 
 def _build_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _Dataset:
@@ -540,7 +540,7 @@ def _build_dataset(
         "conditioned_panel_sum_from_percent": _build_conditioned_dataset,
         "average_top_k_minus_average_bottom_k": _build_average_difference_dataset,
     }
-    if str(query_variant) == "composition_shift_l1_distance":
+    if str(query_id) == "composition_shift_l1_distance":
         dataset = _build_shift_dataset(
             panel_labels=panel_labels,
             segment_labels=segment_labels,
@@ -548,7 +548,7 @@ def _build_dataset(
             instance_seed=int(instance_seed),
         )
     else:
-        dataset = builders[str(query_variant)](
+        dataset = builders[str(query_id)](
             panel_labels=panel_labels,
             segment_labels=segment_labels,
             total_values=total_values,
@@ -839,9 +839,9 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             }
             effective_params = dict(task_override_params)
             effective_params.update(dict(params))
-            if "query_variant_weights" in task_override_params:
-                raw_weights = params.get("query_variant_weights")
-                override_weights = task_override_params["query_variant_weights"]
+            if "query_id_weights" in task_override_params:
+                raw_weights = params.get("query_id_weights")
+                override_weights = task_override_params["query_id_weights"]
                 override_keys = set(str(key) for key in override_weights) if isinstance(override_weights, Mapping) else set()
                 raw_keys = set(str(key) for key in raw_weights) if isinstance(raw_weights, Mapping) else set()
                 raw_is_uniform_allowed = (
@@ -850,12 +850,12 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                     and all(float(value) == 1.0 for value in raw_weights.values())
                 )
                 if raw_is_uniform_allowed:
-                    effective_params["query_variant_weights"] = task_override_params["query_variant_weights"]
+                    effective_params["query_id_weights"] = task_override_params["query_id_weights"]
             params = effective_params
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_params = _params_for_scene_axis(params)
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(scene_params, instance_seed=int(instance_seed))
-        dataset = _build_dataset(query_variant=str(query_variant), params=params, instance_seed=int(instance_seed))
+        dataset = _build_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
 
         canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
@@ -908,16 +908,16 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -969,21 +969,21 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "scene_kind": f"chart_{str(scene_variant)}_composition_small_multiples",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "segment_labels": [str(label) for label in dataset.segment_labels],
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "panel_count": int(extras["panel_count"]),
                     "segment_count": int(extras["segment_count"]),
@@ -1025,7 +1025,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 },
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(dataset.answer_value),
                 "evidence_values": [int(value) for value in dataset.evidence_values],
@@ -1033,13 +1033,13 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
                 "segment_labels": [str(label) for label in dataset.segment_labels],
                 "panels": panels_trace,
                 "question_format": "numeric_open",
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 **dict(extras),
             },
             "witness_symbolic": {
                 "type": "small_multiple_aggregate",
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
                 "evidence_values": [int(value) for value in dataset.evidence_values],
                 "calculation": dict(extras),
@@ -1054,7 +1054,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(extras["panel_count"]), extras["panel_count_range"]),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
@@ -1067,7 +1067,7 @@ class ChartsCompositionSmallMultiplesAggregateValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1080,7 +1080,7 @@ class ChartsCompositionSmallMultiplesAggregateValuePublicTask(
     """Compute one sampled aggregate value from small-multiple composition panels."""
 
     task_id = "task_charts__small_multiple__aggregate_value"
-    allowed_query_variants = AGGREGATE_QUERY_VARIANTS
+    allowed_query_ids = AGGREGATE_QUERY_IDS
 
 
 @register_task
@@ -1091,13 +1091,13 @@ class ChartsCompositionSmallMultiplesDifferenceValuePublicTask(
     """Compute one sampled difference value from small-multiple composition panels."""
 
     task_id = "task_charts__small_multiple__difference_value"
-    allowed_query_variants = DIFFERENCE_QUERY_VARIANTS
+    allowed_query_ids = DIFFERENCE_QUERY_IDS
 
 
 __all__ = [
-    "AGGREGATE_QUERY_VARIANTS",
+    "AGGREGATE_QUERY_IDS",
     "ChartsCompositionSmallMultiplesAggregateValueTask",
     "ChartsCompositionSmallMultiplesAggregateValuePublicTask",
     "ChartsCompositionSmallMultiplesDifferenceValuePublicTask",
-    "DIFFERENCE_QUERY_VARIANTS",
+    "DIFFERENCE_QUERY_IDS",
 ]

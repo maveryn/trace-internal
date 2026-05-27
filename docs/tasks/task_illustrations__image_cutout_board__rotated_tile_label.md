@@ -1,6 +1,6 @@
 # task_illustrations__image_cutout_board__rotated_tile_label
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -10,7 +10,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 - module: `trace/tasks/illustrations/visual/rotated_tile_label.py`
 
 ## Contract
-The task renders one accepted illustration source scene, fits it to a square
+The task renders one current illustration source scene, fits it to a square
 image, cuts it into a labeled `3x3` tile grid, and rotates exactly one tile in
 place. The answer is the label of the rotated tile.
 

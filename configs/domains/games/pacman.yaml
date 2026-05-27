@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       compact_maze: 1.0
       wide_maze: 1.0
-    query_variant_weights:
+    query_id_weights:
       path_pellet_count: 1.0
       next_item_label: 1.0
       pellet_count_before_ghost: 1.0
@@ -14,7 +14,7 @@ generation:
       terminal: 1.0
       pastel: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_row_count_sampling: true
     balanced_col_count_sampling: true

@@ -32,7 +32,7 @@ from ..shared.visual_defaults import load_graph_background_defaults, load_graph_
 
 
 TASK_ID = "task_graph__adjacency__traversal_kth_label"
-SUPPORTED_ADJACENCY_TRAVERSAL_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_ADJACENCY_TRAVERSAL_QUERY_IDS: Tuple[str, ...] = (
     "bfs_kth_visit_label",
     "dfs_kth_visit_label",
 )
@@ -59,13 +59,13 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support axes for one adjacency traversal instance."""
 
-    query_variant: str
+    query_id: str
     node_count: int
     traversal_position: int
     extra_edge_count: int
     label_variant: str
     source_index: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     traversal_position_probabilities: Dict[str, float]
     extra_edge_count_probabilities: Dict[str, float]
@@ -85,18 +85,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_ADJACENCY_TRAVERSAL_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_ADJACENCY_TRAVERSAL_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
     label_variant, label_probs = resolve_graph_named_variant(
@@ -156,13 +156,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         source_index = int(source_selection % int(node_count))
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         node_count=int(node_count),
         traversal_position=int(traversal_position),
         extra_edge_count=int(extra_edge_count),
         label_variant=str(label_variant),
         source_index=int(source_index),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         node_count_probabilities=uniform_probability_map(node_support, selected=int(node_count) if explicit_node is not None else None),
         traversal_position_probabilities=uniform_probability_map(
             position_support,
@@ -228,7 +228,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
         )
         visit_order = (
             bfs_visit_order(sample.adjacency, source_label)
-            if str(query.query_variant) == "bfs_kth_visit_label"
+            if str(query.query_id) == "bfs_kth_visit_label"
             else dfs_visit_order(sample.adjacency, source_label)
         )
         if int(query.traversal_position) > len(visit_order):
@@ -270,7 +270,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -318,7 +318,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "representation_variant": str(rendered.representation_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "source_label": str(source_label),
                     "visit_order": list(visit_order),
                     "answer_label": str(answer_value),
@@ -331,14 +331,13 @@ class GraphOrderAdjacencyTraversalLabelTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "node_count_probabilities": dict(query.node_count_probabilities),
                     "traversal_position": int(query.traversal_position),
@@ -370,8 +369,7 @@ class GraphOrderAdjacencyTraversalLabelTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "representation_variant": str(rendered.representation_variant),
                 "source_label": str(source_label),
                 "answer": str(answer_value),
@@ -405,9 +403,8 @@ class GraphOrderAdjacencyTraversalLabelTask:
                 traversal_position=int(query.traversal_position),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

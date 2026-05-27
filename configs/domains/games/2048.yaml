@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       standard_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       merge_count: 1.0
       score_value: 1.0
       max_tile_value: 1.0
@@ -24,7 +24,7 @@ generation:
       bottom_left: 1.0
       bottom_right: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_move_direction_sampling: true
     balanced_goal_cell_sampling: true

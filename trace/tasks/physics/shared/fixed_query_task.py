@@ -5,13 +5,13 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping
 
 from ...base import TaskOutput
-from ...shared.fixed_query import force_query_variant_params, rewrite_public_query_output
+from ...shared.fixed_query import force_query_id_params, rewrite_public_query_output
 
 
-def forced_query_variant_params(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
-    """Return params that force one internal physics query variant."""
+def forced_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
+    """Return params that force one internal physics query id."""
 
-    return force_query_variant_params(params, query_variant=str(query_variant))
+    return force_query_id_params(params, query_id=str(query_id))
 
 
 def rewrite_physics_query_output(output: TaskOutput, *, query_id: str) -> TaskOutput:
@@ -20,28 +20,28 @@ def rewrite_physics_query_output(output: TaskOutput, *, query_id: str) -> TaskOu
     return rewrite_public_query_output(
         output,
         query_id=str(query_id),
-        params_query_variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as="internal_query_variant",
+        params_query_id_probabilities={"default": 1.0},
+        preserve_internal_query_id_as="internal_query_id",
     )
 
 
 class FixedPhysicsQueryVariantTaskMixin:
-    """Mixin for wrapper tasks that force one query variant in a shared renderer."""
+    """Mixin for wrapper tasks that force one query id in a shared renderer."""
 
     default_dataset_enabled = True
-    fixed_query_variant: str
+    fixed_query_id: str
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(  # type: ignore[misc]
             int(instance_seed),
-            params=forced_query_variant_params(params, query_variant=str(self.fixed_query_variant)),
+            params=forced_query_id_params(params, query_id=str(self.fixed_query_id)),
             max_attempts=int(max_attempts),
         )
-        return rewrite_physics_query_output(output, query_id=str(self.fixed_query_variant))
+        return rewrite_physics_query_output(output, query_id=str(self.fixed_query_id))
 
 
 __all__ = [
     "FixedPhysicsQueryVariantTaskMixin",
-    "forced_query_variant_params",
+    "forced_query_id_params",
     "rewrite_physics_query_output",
 ]

@@ -15,14 +15,14 @@ def test_games_battleship_grid_defaults_expose_scene_query_target_board_and_styl
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_board_size_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"standard_fleet"}
-    assert set(generation["query_variant_weights"].keys()) == {"sunk_ship_count", "partial_ship_count"}
-    assert float(generation["query_variant_weights"]["sunk_ship_count"]) == 1.0
-    assert float(generation["query_variant_weights"]["partial_ship_count"]) == 1.0
+    assert set(generation["query_id_weights"].keys()) == {"sunk_ship_count", "partial_ship_count"}
+    assert float(generation["query_id_weights"]["sunk_ship_count"]) == 1.0
+    assert float(generation["query_id_weights"]["partial_ship_count"]) == 1.0
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_BATTLESHIP_STYLE_VARIANTS)
     assert list(generation["board_size_support"]) == [8, 9, 10]
     assert list(generation["sunk_ship_count_support"]) == [1, 2, 3, 4]

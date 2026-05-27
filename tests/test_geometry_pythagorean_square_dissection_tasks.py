@@ -24,7 +24,7 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
     out = task.generate(58001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
     assert out.evidence_gt.type == "bbox_set"
@@ -34,7 +34,7 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -86,7 +86,7 @@ def test_pythagorean_square_dissection_tasks_support_every_explicit_query(
         assert out.query_id == query_id
         assert out.answer_gt.type == "number"
         assert out.trace_payload["query_spec"]["params"][
-            "query_variant_probabilities"
+            "query_id_probabilities"
         ] == {query_id: 1.0}
 
 

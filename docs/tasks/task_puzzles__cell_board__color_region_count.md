@@ -6,7 +6,7 @@ Status: accepted active default cell-board puzzle task.
 1. Domain: `puzzles`
 2. Task group: `cell_board`
 3. Scene id: `cell_board`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `color_count`, `color_components`, `largest_component_size`
 
 ## Contract
@@ -17,5 +17,5 @@ Status: accepted active default cell-board puzzle task.
 
 ## Notes
 1. Board coordinates remain private verifier metadata.
-2. Internal trace metadata keeps the selected source branch in `internal_query_variant`.
+2. Internal trace metadata keeps the selected source branch in `internal_query_id`.
 3. The selected semantic branch is recorded in `query_id`.

@@ -12,12 +12,12 @@ from trace.tasks.shared.text_rendering import load_font, resolve_text_label_cent
 @pytest.mark.parametrize(
     ("params", "expected_answer_type", "expected_evidence_type", "expected_evidence_count"),
     (
-        ({"scene_variant": "segment_set", "query_variant": "parallel_count", "target_count": 2}, "integer", "point_set", 4),
-        ({"scene_variant": "segment_set", "query_variant": "perpendicular_count", "target_count": 1}, "integer", "point_set", 2),
-        ({"scene_variant": "line_points", "query_variant": "collinear_count", "target_count": 3}, "integer", "point_set", 3),
-        ({"scene_variant": "quadrant_points", "query_variant": "same_quadrant_count", "target_count": 3}, "integer", "point_set", 3),
-        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 2}, "integer", "point_set", 2),
-        ({"scene_variant": "polygon_lattice", "query_variant": "point_in_shape_count", "target_count": 8}, "integer", "point_set", 8),
+        ({"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2}, "integer", "point_set", 4),
+        ({"scene_variant": "segment_set", "query_id": "perpendicular_count", "target_count": 1}, "integer", "point_set", 2),
+        ({"scene_variant": "line_points", "query_id": "collinear_count", "target_count": 3}, "integer", "point_set", 3),
+        ({"scene_variant": "quadrant_points", "query_id": "same_quadrant_count", "target_count": 3}, "integer", "point_set", 3),
+        ({"scene_variant": "polygon_lattice", "query_id": "point_in_shape_count", "target_count": 2}, "integer", "point_set", 2),
+        ({"scene_variant": "polygon_lattice", "query_id": "point_in_shape_count", "target_count": 8}, "integer", "point_set", 8),
     ),
 )
 def test_geometry_coordinate_relation_emits_expected_contract(
@@ -31,14 +31,14 @@ def test_geometry_coordinate_relation_emits_expected_contract(
     assert out.evidence_gt.type == expected_evidence_type
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
     assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert out.trace_payload["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
 
 
 def test_geometry_coordinate_relation_rejects_unsupported_scene_variant() -> None:
     with pytest.raises(ValueError):
         GeometryCoordinateRelationTask().generate(
             23311,
-            params={"scene_variant": "triangle", "query_variant": "parallel_count"},
+            params={"scene_variant": "triangle", "query_id": "parallel_count"},
             max_attempts=20,
         )
 
@@ -47,7 +47,7 @@ def test_geometry_coordinate_relation_rejects_incompatible_scene_query_pair() ->
     with pytest.raises(ValueError):
         GeometryCoordinateRelationTask().generate(
             23312,
-            params={"scene_variant": "segment_set", "query_variant": "same_quadrant_count"},
+            params={"scene_variant": "segment_set", "query_id": "same_quadrant_count"},
             max_attempts=20,
         )
 
@@ -55,7 +55,7 @@ def test_geometry_coordinate_relation_rejects_incompatible_scene_query_pair() ->
 def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_point_evidence() -> None:
     segment_out = GeometryCoordinateRelationTask().generate(
         23313,
-        params={"scene_variant": "segment_set", "query_variant": "parallel_count", "target_count": 2},
+        params={"scene_variant": "segment_set", "query_id": "parallel_count", "target_count": 2},
         max_attempts=20,
     )
     segment_frame = segment_out.trace_payload["render_spec"]["graph_coordinate_frame"]
@@ -77,7 +77,7 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
 
     quadrant_out = GeometryCoordinateRelationTask().generate(
         23314,
-        params={"scene_variant": "quadrant_points", "query_variant": "same_quadrant_count", "target_count": 2},
+        params={"scene_variant": "quadrant_points", "query_id": "same_quadrant_count", "target_count": 2},
         max_attempts=20,
     )
     quadrant_frame = quadrant_out.trace_payload["render_spec"]["graph_coordinate_frame"]
@@ -90,7 +90,7 @@ def test_geometry_coordinate_relation_uses_centered_segment_window_and_quadrant_
 def test_geometry_coordinate_relation_collinear_scene_keeps_reference_and_candidates_inside_centered_board() -> None:
     out = GeometryCoordinateRelationTask().generate(
         23315,
-        params={"scene_variant": "line_points", "query_variant": "collinear_count", "target_count": 4},
+        params={"scene_variant": "line_points", "query_id": "collinear_count", "target_count": 4},
         max_attempts=20,
     )
     frame = out.trace_payload["render_spec"]["graph_coordinate_frame"]

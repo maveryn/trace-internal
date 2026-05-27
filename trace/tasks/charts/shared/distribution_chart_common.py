@@ -304,7 +304,7 @@ def _build_controlled_extreme_density_specs(
     *,
     labels: Sequence[str],
     candidate_modes: Sequence[int],
-    query_variant: DensityQueryVariant,
+    query_id: DensityQueryVariant,
     value_min: int,
     value_max: int,
     rng: Any,
@@ -355,20 +355,20 @@ def _build_controlled_extreme_density_specs(
     window_start = int(rng.choice(feasible_starts))
     window_modes = list(range(int(window_start), int(window_start) + int(window_size)))
 
-    if str(query_variant) == "highest_mode":
+    if str(query_id) == "highest_mode":
         winner_mode = int(window_modes[-1])
         runner_up_mode = int(winner_mode) - int(winner_gap)
         remaining_pool = [int(mode) for mode in window_modes if int(mode) < int(runner_up_mode)]
         chosen_remaining = rng.sample(remaining_pool, category_count - 2)
         chosen_modes = list(chosen_remaining) + [int(runner_up_mode), int(winner_mode)]
-    elif str(query_variant) == "lowest_mode":
+    elif str(query_id) == "lowest_mode":
         winner_mode = int(window_modes[0])
         runner_up_mode = int(winner_mode) + int(winner_gap)
         remaining_pool = [int(mode) for mode in window_modes if int(mode) > int(runner_up_mode)]
         chosen_remaining = rng.sample(remaining_pool, category_count - 2)
         chosen_modes = [int(winner_mode), int(runner_up_mode)] + list(chosen_remaining)
     else:
-        raise ValueError(f"unsupported controlled extreme density query_variant: {query_variant}")
+        raise ValueError(f"unsupported controlled extreme density query_id: {query_id}")
 
     rng.shuffle(chosen_modes)
     specs: List[ViolinPlotSpec] = []
@@ -471,7 +471,7 @@ def _build_controlled_bimodal_density_specs(
 def _build_controlled_support_span_density_specs(
     *,
     labels: Sequence[str],
-    query_variant: DensityQueryVariant,
+    query_id: DensityQueryVariant,
     value_min: int,
     value_max: int,
     rng: Any,
@@ -499,14 +499,14 @@ def _build_controlled_support_span_density_specs(
         if int(gap) < 1:
             continue
         for winner_span in candidate_spans:
-            if str(query_variant) == "widest_support":
+            if str(query_id) == "widest_support":
                 runner_span = int(winner_span) - int(gap)
                 remaining_pool = [
                     int(span)
                     for span in candidate_spans
                     if int(span) < int(runner_span)
                 ]
-            elif str(query_variant) == "narrowest_support":
+            elif str(query_id) == "narrowest_support":
                 runner_span = int(winner_span) + int(gap)
                 remaining_pool = [
                     int(span)
@@ -514,7 +514,7 @@ def _build_controlled_support_span_density_specs(
                     if int(span) > int(runner_span)
                 ]
             else:
-                raise ValueError(f"unsupported controlled support-span variant: {query_variant}")
+                raise ValueError(f"unsupported controlled support-span variant: {query_id}")
             if int(runner_span) in set(candidate_spans) and len(remaining_pool) >= int(category_count) - 2:
                 feasible_choices.append((int(gap), int(winner_span), int(runner_span), list(remaining_pool)))
     if not feasible_choices:
@@ -558,7 +558,7 @@ def _build_controlled_support_span_density_specs(
 
 def build_density_dataset_for_variant(
     *,
-    query_variant: DensityQueryVariant,
+    query_id: DensityQueryVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -585,16 +585,16 @@ def build_density_dataset_for_variant(
         list(range(int(category_count_min), int(category_count_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:category_count:{str(query_variant)}",
+        namespace=f"{task_id}:category_count:{str(query_id)}",
     )
     labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
-    rng = spawn_rng(int(instance_seed), f"{task_id}.density.{str(query_variant)}")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.density.{str(query_id)}")
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
 
     specs: List[ViolinPlotSpec] = []
     generation_meta: Dict[str, Any] = {"generation_profile": "baseline"}
-    if str(query_variant) in {"highest_mode", "lowest_mode"}:
+    if str(query_id) in {"highest_mode", "lowest_mode"}:
         candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
         if len(candidate_modes) < int(category_count):
             raise ValueError("density mode support is too small for requested category count")
@@ -619,7 +619,7 @@ def build_density_dataset_for_variant(
             specs, generation_meta = _build_controlled_extreme_density_specs(
                 labels=labels,
                 candidate_modes=candidate_modes,
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 value_min=int(value_min),
                 value_max=int(value_max),
                 rng=rng,
@@ -645,13 +645,13 @@ def build_density_dataset_for_variant(
                         outline_rgb=outline_rgb,
                     )
                 )
-        if str(query_variant) == "highest_mode":
+        if str(query_id) == "highest_mode":
             winning_spec = max(specs, key=lambda spec: int(spec.mode_values[0]))
         else:
             winning_spec = min(specs, key=lambda spec: int(spec.mode_values[0]))
         answer_label = str(winning_spec.label)
         evidence_values = [int(winning_spec.mode_values[0])]
-    elif str(query_variant) == "bimodal_label":
+    elif str(query_id) == "bimodal_label":
         candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
         bimodal_separation_bounds = _resolve_optional_positive_int_bounds(
             params,
@@ -718,7 +718,7 @@ def build_density_dataset_for_variant(
         winning_spec = next(spec for spec in specs if len(spec.mode_values) == 2)
         answer_label = str(winning_spec.label)
         evidence_values = sorted(int(value) for value in winning_spec.mode_values)
-    elif str(query_variant) in {"widest_support", "narrowest_support"}:
+    elif str(query_id) in {"widest_support", "narrowest_support"}:
         support_span_bounds = _resolve_optional_positive_int_bounds(
             params,
             min_key="support_span_min",
@@ -737,7 +737,7 @@ def build_density_dataset_for_variant(
             support_winner_gap_bounds = (2, 4)
         specs, generation_meta = _build_controlled_support_span_density_specs(
             labels=labels,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             value_min=int(value_min),
             value_max=int(value_max),
             rng=rng,
@@ -746,14 +746,14 @@ def build_density_dataset_for_variant(
             support_span_bounds=support_span_bounds,
             winner_gap_bounds=support_winner_gap_bounds,
         )
-        if str(query_variant) == "widest_support":
+        if str(query_id) == "widest_support":
             winning_spec = max(specs, key=lambda spec: int(spec.support_max) - int(spec.support_min))
         else:
             winning_spec = min(specs, key=lambda spec: int(spec.support_max) - int(spec.support_min))
         answer_label = str(winning_spec.label)
         evidence_values = [int(winning_spec.support_min), int(winning_spec.support_max)]
     else:
-        raise ValueError(f"unsupported density query_variant: {query_variant}")
+        raise ValueError(f"unsupported density query_id: {query_id}")
 
     trace_extras = {
         "scene_variant": "violin",
@@ -787,28 +787,28 @@ def _build_histogram_labels(*, start_value: int, bin_width: int, bin_count: int)
 
 def _histogram_answer_range(
     *,
-    query_variant: HistogramQueryVariant,
+    query_id: HistogramQueryVariant,
     bin_count_max: int,
 ) -> Tuple[int, int]:
-    if str(query_variant) == "bin_count_between_values":
+    if str(query_id) == "bin_count_between_values":
         return 2, min(15, int(bin_count_max))
-    if str(query_variant) in _CUMULATIVE_HISTOGRAM_VARIANTS:
+    if str(query_id) in _CUMULATIVE_HISTOGRAM_VARIANTS:
         return 1, 99
-    if str(query_variant) in {"interval_mass", "outside_interval_mass"}:
-        raise ValueError(f"{query_variant} derives its answer from sampled bar counts")
-    raise ValueError(f"unsupported histogram query_variant: {query_variant}")
+    if str(query_id) in {"interval_mass", "outside_interval_mass"}:
+        raise ValueError(f"{query_id} derives its answer from sampled bar counts")
+    raise ValueError(f"unsupported histogram query_id: {query_id}")
 
 
 def _resolve_histogram_target_answer(
     params: Mapping[str, Any],
     *,
-    query_variant: HistogramQueryVariant,
+    query_id: HistogramQueryVariant,
     instance_seed: int,
     bin_count_max: int,
     task_id: str,
 ) -> int:
     default_min, default_max = _histogram_answer_range(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         bin_count_max=int(bin_count_max),
     )
     target_min = int(params.get("target_answer_min", default_min))
@@ -819,13 +819,13 @@ def _resolve_histogram_target_answer(
         list(range(int(target_min), int(target_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:target_answer:{str(query_variant)}",
+        namespace=f"{task_id}:target_answer:{str(query_id)}",
     )
 
 
 def build_histogram_dataset_for_variant(
     *,
-    query_variant: HistogramQueryVariant,
+    query_id: HistogramQueryVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -872,10 +872,10 @@ def build_histogram_dataset_for_variant(
         task_id=task_id,
     )
 
-    rng = spawn_rng(int(instance_seed), f"{task_id}.histogram.{str(query_variant)}")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.histogram.{str(query_id)}")
     evidence_is_outside_interval = False
 
-    if str(query_variant) == "interval_mass":
+    if str(query_id) == "interval_mass":
         feasible_bin_counts = [
             int(value)
             for value in range(int(bin_count_min), int(bin_count_max) + 1)
@@ -887,14 +887,14 @@ def build_histogram_dataset_for_variant(
             feasible_bin_counts,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:histogram_bin_count:{str(query_variant)}",
+            namespace=f"{task_id}:histogram_bin_count:{str(query_id)}",
         )
         max_interval_span = min(int(interval_bin_span_max), int(bin_count))
         relevant_count = balanced_choice_from_values(
             list(range(int(interval_bin_span_min), int(max_interval_span) + 1)),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:interval_bin_span:{str(query_variant)}",
+            namespace=f"{task_id}:interval_bin_span:{str(query_id)}",
         )
         evidence_start = int(rng.randint(0, int(bin_count) - int(relevant_count)))
         evidence_stop = int(evidence_start) + int(relevant_count)
@@ -908,7 +908,7 @@ def build_histogram_dataset_for_variant(
             for _ in range(int(bin_count) - int(relevant_count))
         ]
         query_meta = {"interval_bin_span": int(relevant_count)}
-    elif str(query_variant) == "outside_interval_mass":
+    elif str(query_id) == "outside_interval_mass":
         feasible_bin_counts = [
             int(value)
             for value in range(int(bin_count_min), int(bin_count_max) + 1)
@@ -920,14 +920,14 @@ def build_histogram_dataset_for_variant(
             feasible_bin_counts,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:histogram_bin_count:{str(query_variant)}",
+            namespace=f"{task_id}:histogram_bin_count:{str(query_id)}",
         )
         max_outside_count = min(int(outside_interval_bin_count_max), int(bin_count) - 2)
         outside_count = balanced_choice_from_values(
             list(range(int(outside_interval_bin_count_min), int(max_outside_count) + 1)),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:outside_interval_bin_count:{str(query_variant)}",
+            namespace=f"{task_id}:outside_interval_bin_count:{str(query_id)}",
         )
         left_outside_count = int(rng.randint(1, int(outside_count) - 1))
         right_outside_count = int(outside_count) - int(left_outside_count)
@@ -951,10 +951,10 @@ def build_histogram_dataset_for_variant(
             "outside_left_bin_count": int(left_outside_count),
             "outside_right_bin_count": int(right_outside_count),
         }
-    elif str(query_variant) == "bin_count_between_values":
+    elif str(query_id) == "bin_count_between_values":
         target_answer = _resolve_histogram_target_answer(
             params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
             bin_count_max=int(bin_count_max),
             task_id=task_id,
@@ -970,7 +970,7 @@ def build_histogram_dataset_for_variant(
             feasible_bin_counts,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:histogram_bin_count:{str(query_variant)}",
+            namespace=f"{task_id}:histogram_bin_count:{str(query_id)}",
         )
         relevant_count = int(target_answer)
         evidence_start = int(rng.randint(0, int(bin_count) - int(relevant_count)))
@@ -984,7 +984,7 @@ def build_histogram_dataset_for_variant(
             for _ in range(int(bin_count) - int(relevant_count))
         ]
         query_meta = {"interval_bin_span": int(relevant_count)}
-    elif str(query_variant) in _CUMULATIVE_HISTOGRAM_VARIANTS:
+    elif str(query_id) in _CUMULATIVE_HISTOGRAM_VARIANTS:
         feasible_bin_counts = [
             int(value)
             for value in range(int(bin_count_min), int(bin_count_max) + 1)
@@ -996,7 +996,7 @@ def build_histogram_dataset_for_variant(
             feasible_bin_counts,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:histogram_bin_count:{str(query_variant)}",
+            namespace=f"{task_id}:histogram_bin_count:{str(query_id)}",
         )
         sampled_values = [
             int(rng.randint(int(bin_frequency_min), int(bin_frequency_max)))
@@ -1009,7 +1009,7 @@ def build_histogram_dataset_for_variant(
             list(range(int(min_answer_index), int(max_answer_index) + 1)),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:answer_bin_index:{str(query_variant)}",
+            namespace=f"{task_id}:answer_bin_index:{str(query_id)}",
         )
         previous_cumulative = int(sum(sampled_values[: int(answer_index)]))
         answer_bin_count = int(sampled_values[int(answer_index)])
@@ -1017,7 +1017,7 @@ def build_histogram_dataset_for_variant(
             list(range(int(previous_cumulative) + 1, int(previous_cumulative) + int(answer_bin_count) + 1)),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:target_rank:{str(query_variant)}",
+            namespace=f"{task_id}:target_rank:{str(query_id)}",
         )
         rank_fraction_numerator = 0
         rank_fraction_denominator = 0
@@ -1043,7 +1043,7 @@ def build_histogram_dataset_for_variant(
             "cumulative_count_through_answer_bin": int(previous_cumulative) + int(answer_bin_count),
         }
     else:
-        raise ValueError(f"unsupported histogram query_variant: {query_variant}")
+        raise ValueError(f"unsupported histogram query_id: {query_id}")
 
     if int(bin_width_min) < 1 or int(bin_width_max) < int(bin_width_min):
         raise ValueError("histogram bin-width range must be positive and ordered")
@@ -1051,7 +1051,7 @@ def build_histogram_dataset_for_variant(
         list(range(int(bin_width_min), int(bin_width_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:bin_width:{str(query_variant)}",
+        namespace=f"{task_id}:bin_width:{str(query_id)}",
     )
     capped_bin_start_max = min(int(bin_start_max), 100 - (int(bin_count) * int(bin_width)))
     if int(capped_bin_start_max) < int(bin_start_min):
@@ -1060,7 +1060,7 @@ def build_histogram_dataset_for_variant(
         list(range(int(bin_start_min), int(capped_bin_start_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:bin_start:{str(query_variant)}",
+        namespace=f"{task_id}:bin_start:{str(query_id)}",
     )
     labels = _build_histogram_labels(
         start_value=int(start_value),
@@ -1099,11 +1099,11 @@ def build_histogram_dataset_for_variant(
 
     query_interval_label = ""
     query_bin_label = ""
-    if str(query_variant) in {"interval_mass", "bin_count_between_values", "outside_interval_mass"}:
+    if str(query_id) in {"interval_mass", "bin_count_between_values", "outside_interval_mass"}:
         query_interval_label = f"{bins[int(evidence_start)].interval_start}-{bins[int(evidence_stop) - 1].interval_end}"
         query_meta["query_interval_start_value"] = int(bins[int(evidence_start)].interval_start)
         query_meta["query_interval_end_value"] = int(bins[int(evidence_stop) - 1].interval_end)
-    if str(query_variant) in _CUMULATIVE_HISTOGRAM_VARIANTS:
+    if str(query_id) in _CUMULATIVE_HISTOGRAM_VARIANTS:
         query_bin_label = str(bins[int(query_meta["answer_bin_index"])].label)
         target_answer = int(query_bin_label)
         query_meta["answer_bin_label"] = str(query_bin_label)
@@ -1127,11 +1127,11 @@ def build_histogram_dataset_for_variant(
         "target_answer": int(target_answer),
         "target_answer_range": (
             []
-            if str(query_variant) in {"interval_mass", "outside_interval_mass"}
+            if str(query_id) in {"interval_mass", "outside_interval_mass"}
             else (
                 [int(labels[0]), int(labels[-1])]
-                if str(query_variant) in _CUMULATIVE_HISTOGRAM_VARIANTS
-                else list(_histogram_answer_range(query_variant=str(query_variant), bin_count_max=int(bin_count_max)))
+                if str(query_id) in _CUMULATIVE_HISTOGRAM_VARIANTS
+                else list(_histogram_answer_range(query_id=str(query_id), bin_count_max=int(bin_count_max)))
             )
         ),
         "labels": [str(label) for label in labels],
@@ -1270,7 +1270,7 @@ def build_boxplot_median_rank_difference_dataset(
 
 def build_boxplot_paired_median_shift_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1297,7 +1297,7 @@ def build_boxplot_paired_median_shift_dataset(
         list(range(int(category_count_min), int(category_count_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:category_count:{str(query_variant)}",
+        namespace=f"{task_id}:category_count:{str(query_id)}",
     )
     median_min = int(value_min) + 2
     median_max = int(value_max) - 2
@@ -1311,19 +1311,19 @@ def build_boxplot_paired_median_shift_dataset(
     if len(shift_support) < int(category_count):
         raise ValueError("paired boxplot shift support is too small for requested category count")
 
-    rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_variant)}")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_id)}")
     base_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
     shift_magnitudes = [int(value) for value in rng.sample(shift_support, int(category_count))]
     rng.shuffle(shift_magnitudes)
-    if str(query_variant) == "paired_median_greatest_increase_label":
+    if str(query_id) == "paired_median_greatest_increase_label":
         signed_shifts = [int(value) for value in shift_magnitudes]
         answer_index = max(range(int(category_count)), key=lambda idx: int(signed_shifts[idx]))
         shift_direction = "increase"
-    elif str(query_variant) == "paired_median_greatest_decrease_label":
+    elif str(query_id) == "paired_median_greatest_decrease_label":
         signed_shifts = [-int(value) for value in shift_magnitudes]
         answer_index = max(range(int(category_count)), key=lambda idx: -int(signed_shifts[idx]))
         shift_direction = "decrease"
-    elif str(query_variant) == "paired_median_greatest_absolute_change_label":
+    elif str(query_id) == "paired_median_greatest_absolute_change_label":
         signed_shifts = [
             int(value) if int(rng.randint(0, 1)) == 1 else -int(value)
             for value in shift_magnitudes
@@ -1331,7 +1331,7 @@ def build_boxplot_paired_median_shift_dataset(
         answer_index = max(range(int(category_count)), key=lambda idx: abs(int(signed_shifts[idx])))
         shift_direction = "absolute_change"
     else:
-        raise ValueError(f"unsupported paired boxplot query variant: {query_variant}")
+        raise ValueError(f"unsupported paired boxplot query id: {query_id}")
 
     before_fill = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
@@ -1478,7 +1478,7 @@ def build_boxplot_paired_median_shift_dataset(
 
 def build_boxplot_dataset_for_variant(
     *,
-    query_variant: BoxPlotQueryVariant,
+    query_id: BoxPlotQueryVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1505,10 +1505,10 @@ def build_boxplot_dataset_for_variant(
         list(range(int(category_count_min), int(category_count_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:category_count:{str(query_variant)}",
+        namespace=f"{task_id}:category_count:{str(query_id)}",
     )
     labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
-    rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_variant)}")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.boxplot.{str(query_id)}")
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
 
@@ -1735,11 +1735,11 @@ def build_boxplot_dataset_for_variant(
 
     specs: List[BoxPlotSpec] = []
     generation_meta: Dict[str, Any] = {}
-    if str(query_variant) == "median_above_reference_q3":
+    if str(query_id) == "median_above_reference_q3":
         specs, answer_label, evidence_value, generation_meta = _build_reference_median_specs(direction="above")
-    elif str(query_variant) == "median_below_reference_q1":
+    elif str(query_id) == "median_below_reference_q1":
         specs, answer_label, evidence_value, generation_meta = _build_reference_median_specs(direction="below")
-    elif str(query_variant) in {"largest_iqr", "smallest_iqr"}:
+    elif str(query_id) in {"largest_iqr", "smallest_iqr"}:
         support_min = 2
         support_max = int(value_max) - int(value_min) - 3
         feasible_iqrs = list(range(int(support_min), int(support_max) + 1))
@@ -1750,7 +1750,7 @@ def build_boxplot_dataset_for_variant(
         if int(gap_max) > 0:
             gap_min = max(1, int(gap_min))
             gap_max = max(int(gap_min), int(gap_max))
-            if str(query_variant) == "largest_iqr":
+            if str(query_id) == "largest_iqr":
                 answer_min = int(support_min) + int(gap_min) + int(category_count) - 2
                 if int(answer_min) > int(support_max):
                     raise ValueError("boxplot largest-IQR gap support is too small for requested category count")
@@ -1805,14 +1805,14 @@ def build_boxplot_dataset_for_variant(
                     outline_rgb=outline_rgb,
                 )
             )
-        if str(query_variant) == "largest_iqr":
+        if str(query_id) == "largest_iqr":
             answer_label = max(specs, key=lambda spec: int(spec.q3) - int(spec.q1)).label
             evidence_value = max(int(spec.q3) - int(spec.q1) for spec in specs)
         else:
             answer_label = min(specs, key=lambda spec: int(spec.q3) - int(spec.q1)).label
             evidence_value = min(int(spec.q3) - int(spec.q1) for spec in specs)
     else:
-        raise ValueError(f"unsupported boxplot query_variant: {query_variant}")
+        raise ValueError(f"unsupported boxplot query_id: {query_id}")
 
     trace_extras = {
         "scene_variant": "boxplot",

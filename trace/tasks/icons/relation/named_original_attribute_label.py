@@ -50,7 +50,7 @@ from ..shared.public_query_task import rewrite_icons_query_output
 
 TASK_ID = "task_icons__paired_canvas__original_attribute_label"
 SCENE_ID = "paired_canvas"
-PUBLIC_QUERY_VARIANT = "named_original_attribute_label"
+PUBLIC_QUERY_ID = "named_original_attribute_label"
 
 QUERY_IDS: Tuple[str, ...] = (
     "original_shape_label",
@@ -1123,7 +1123,6 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 "entities": [*serialized_originals, *serialized_rights],
                 "relations": {
                     "target": "right_labeled_icon_by_original_named_attribute",
-                    "query_variant": str(PUBLIC_QUERY_VARIANT),
                     "query_id": str(scene_payload.query_id),
                     "target_description": str(scene_payload.target_description),
                     "answer_label": str(scene_payload.answer_label),
@@ -1137,7 +1136,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
+                "query_id": str(PUBLIC_QUERY_ID),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1180,7 +1179,6 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             },
             "execution_trace": {
                 "scene_variant": "paired_canvas_original_to_right",
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "original_attribute_query": str(scene_payload.query_id),
                 "original_attribute_query_probabilities": dict(query_probabilities),
@@ -1196,7 +1194,6 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 "question_format": "select_labeled_right_icon_by_original_named_attribute",
             },
             "witness_symbolic": {
-                "query_variant": str(PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "target_description": str(scene_payload.target_description),
                 "answer_label": str(scene_payload.answer_label),
@@ -1222,7 +1219,7 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(scene_payload),
             task_versions=default_task_versions(),
-            query_variant=str(PUBLIC_QUERY_VARIANT),
+            query_id=str(PUBLIC_QUERY_ID),
         )
         return rewrite_icons_query_output(
             output,

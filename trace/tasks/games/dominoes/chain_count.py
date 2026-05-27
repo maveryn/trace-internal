@@ -25,7 +25,7 @@ from ..shared.complexity import build_games_dominoes_chain_complexity
 from ..shared.domino_scene import DominoRenderParams, DominoTileInstance, render_domino_chain_scene
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_DOMINO_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -35,14 +35,14 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "single_row",
     "two_row",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "matching_end_count",
     "higher_sum_than_reference_count",
     "sum_to_target_count",
     "double_count",
 )
-TWO_STEP_QUERY_VARIANT = "two_step_extension_label"
-TWO_STEP_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_QUERY_VARIANTS + (TWO_STEP_QUERY_VARIANT,)
+TWO_STEP_QUERY_ID = "two_step_extension_label"
+TWO_STEP_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_QUERY_IDS + (TWO_STEP_QUERY_ID,)
 OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEFGHIJKL")
 PIP_VALUES: Tuple[int, ...] = tuple(range(7))
 CANONICAL_DOMINOES: Tuple[Tuple[int, int], ...] = tuple(
@@ -87,14 +87,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one domino scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
     candidate_count: int
     candidate_count_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -166,23 +166,23 @@ def _build_tile_instance(
     )
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    return resolve_games_query_variant(
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=supported_query_variants,
+        supported_variants=supported_query_ids,
     )
 
 
@@ -211,38 +211,38 @@ def _resolve_named_axis(
     )
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured answer-support key for one query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured answer-support key for one query id."""
 
     return {
         "matching_end_count": "matching_end_target_answer_support",
         "higher_sum_than_reference_count": "higher_sum_target_answer_support",
         "sum_to_target_count": "sum_to_target_answer_support",
         "double_count": "double_target_answer_support",
-        TWO_STEP_QUERY_VARIANT: "two_step_extension_target_answer_support",
-    }[str(query_variant)]
+        TWO_STEP_QUERY_ID: "two_step_extension_target_answer_support",
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(
     params: Mapping[str, Any],
     probabilities: Mapping[str, float],
     *,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(tuple(supported_query_variants)):
+    if len(positives) != len(tuple(supported_query_ids)):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -250,8 +250,8 @@ def _uses_uniform_query_cycle(
 def _target_answer_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced target-answer cycling."""
 
@@ -261,19 +261,19 @@ def _target_answer_params_for_query_cycle(
         return target_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return target_params
-    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return target_params
 
 
 def _scene_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Decorrelate balanced scene cycling from balanced query cycling."""
 
@@ -285,8 +285,8 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return scene_params
     enabled = bool(
@@ -312,15 +312,15 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if max(positives) - min(positives) > 1e-9:
         return scene_params
-    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return scene_params
 
 
 def _style_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Decorrelate balanced style cycling from balanced query cycling."""
 
@@ -332,8 +332,8 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return style_params
     enabled = bool(
@@ -363,7 +363,7 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if max(positives) - min(positives) > 1e-9:
         return style_params
-    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return style_params
 
 
@@ -378,7 +378,7 @@ def _candidate_count_support_key(scene_variant: str) -> str:
 
 def _feasible_candidate_count_support(
     *,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     raw_support: Sequence[int],
 ) -> Tuple[int, ...]:
@@ -387,11 +387,11 @@ def _feasible_candidate_count_support(
     feasible: List[int] = []
     for raw_value in raw_support:
         candidate_count = int(raw_value)
-        if str(query_variant) == TWO_STEP_QUERY_VARIANT:
+        if str(query_id) == TWO_STEP_QUERY_ID:
             minimum = max(2, int(target_answer) + 1)
         else:
             minimum = max(7, int(target_answer))
-        if str(query_variant) == "sum_to_target_count" and int(target_answer) == 0:
+        if str(query_id) == "sum_to_target_count" and int(target_answer) == 0:
             minimum = 7
         if int(candidate_count) < int(minimum):
             continue
@@ -403,21 +403,21 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve semantic/visual axes plus target answer and visible candidate count."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=_scene_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
-            supported_query_variants=supported_query_variants,
+            query_id_probabilities=query_id_probabilities,
+            supported_query_ids=supported_query_ids,
         ),
         namespace="scene_variant",
         explicit_key="scene_variant",
@@ -429,8 +429,8 @@ def _resolve_axes(
         instance_seed=int(instance_seed),
         params=_style_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
-            supported_query_variants=supported_query_variants,
+            query_id_probabilities=query_id_probabilities,
+            supported_query_ids=supported_query_ids,
         ),
         namespace="style_variant",
         explicit_key="style_variant",
@@ -439,11 +439,11 @@ def _resolve_axes(
         supported=SUPPORTED_DOMINO_STYLE_VARIANTS,
     )
 
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _target_answer_params_for_query_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities=query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -452,7 +452,7 @@ def _resolve_axes(
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -470,13 +470,13 @@ def _resolve_axes(
         fallback=getattr(_DEFAULTS, _candidate_count_support_key(str(scene_variant))),
     )
     candidate_count_support = _feasible_candidate_count_support(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_answer=int(target_answer),
         raw_support=raw_candidate_count_support,
     )
     if not candidate_count_support:
         raise ValueError(
-            f"no feasible candidate_count values remain for {query_variant}/{scene_variant} at target {target_answer}"
+            f"no feasible candidate_count values remain for {query_id}/{scene_variant} at target {target_answer}"
         )
     candidate_count_support_key = _candidate_count_support_key(str(scene_variant))
     candidate_params = dict(params)
@@ -488,20 +488,20 @@ def _resolve_axes(
         support_key=str(candidate_count_support_key),
         explicit_key="candidate_count",
         fallback_support=candidate_count_support,
-        namespace=f"{TASK_ID}.candidate_count.{str(scene_variant)}.{str(query_variant)}",
+        namespace=f"{TASK_ID}.candidate_count.{str(scene_variant)}.{str(query_id)}",
         balanced_flag_key="balanced_candidate_count_sampling",
         namespace_support_permutation=True,
     )
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         candidate_count=int(candidate_count),
         candidate_count_support=tuple(int(value) for value in candidate_count_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -1074,26 +1074,26 @@ def _sample_scene(
 ) -> _SampledDominoScene:
     """Sample one domino scene for the active query family."""
 
-    if str(axes.query_variant) == "matching_end_count":
+    if str(axes.query_id) == "matching_end_count":
         return _sample_matching_end_scene(
             rng,
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
         )
-    if str(axes.query_variant) == "higher_sum_than_reference_count":
+    if str(axes.query_id) == "higher_sum_than_reference_count":
         return _sample_higher_sum_scene(
             rng,
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
         )
-    if str(axes.query_variant) == "sum_to_target_count":
+    if str(axes.query_id) == "sum_to_target_count":
         return _sample_sum_to_target_scene(
             rng,
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
             params=params,
         )
-    if str(axes.query_variant) == TWO_STEP_QUERY_VARIANT:
+    if str(axes.query_id) == TWO_STEP_QUERY_ID:
         return _sample_two_step_extension_scene(
             rng,
             candidate_count=int(axes.candidate_count),
@@ -1106,10 +1106,10 @@ def _sample_scene(
     )
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active domino query semantics."""
 
-    if str(query_variant) == "matching_end_count":
+    if str(query_id) == "matching_end_count":
         answer_and_evidence = {
             "evidence": [
                 [248, 318, 386, 394],
@@ -1118,7 +1118,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
             "answer": 2,
         }
         answer_only = {"answer": 2}
-    elif str(query_variant) == "higher_sum_than_reference_count":
+    elif str(query_id) == "higher_sum_than_reference_count":
         answer_and_evidence = {
             "evidence": [
                 [248, 318, 386, 394],
@@ -1128,7 +1128,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
             "answer": 3,
         }
         answer_only = {"answer": 3}
-    elif str(query_variant) == "sum_to_target_count":
+    elif str(query_id) == "sum_to_target_count":
         answer_and_evidence = {
             "evidence": [
                 [248, 318, 386, 394],
@@ -1138,7 +1138,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
             "answer": 3,
         }
         answer_only = {"answer": 3}
-    elif str(query_variant) == TWO_STEP_QUERY_VARIANT:
+    elif str(query_id) == TWO_STEP_QUERY_ID:
         answer_and_evidence = {
             "evidence": [
                 [248, 318, 386, 394],
@@ -1226,13 +1226,13 @@ class GamesDominoesChainCountTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "dominoes"
-    supported_query_variants = SUPPORTED_QUERY_VARIANTS
+    supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(
             int(instance_seed),
             params=params,
-            supported_query_variants=tuple(str(value) for value in self.supported_query_variants),
+            supported_query_ids=tuple(str(value) for value in self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
@@ -1303,13 +1303,13 @@ class GamesDominoesChainCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(axes.query_id))
         prompt_slots = {
             "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+            "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "connection_rule_text": str(prompt_defaults["connection_rule_text"]),
@@ -1324,7 +1324,7 @@ class GamesDominoesChainCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
@@ -1333,7 +1333,7 @@ class GamesDominoesChainCountTask:
 
         answer_gt = (
             TypedValue(type="string", value=str(sampled_scene.answer_value))
-            if str(axes.query_variant) == TWO_STEP_QUERY_VARIANT
+            if str(axes.query_id) == TWO_STEP_QUERY_ID
             else TypedValue(type="integer", value=int(sampled_scene.answer_value))
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
@@ -1341,7 +1341,7 @@ class GamesDominoesChainCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             candidate_count=int(axes.candidate_count),
             target_answer=int(axes.target_answer),
             evidence_count=len(sampled_scene.evidence_tile_ids),
@@ -1349,8 +1349,7 @@ class GamesDominoesChainCountTask:
 
         execution_trace = {
             "scene_variant": str(axes.scene_variant),
-            "query_variant": str(axes.query_variant),
-            "query_variant": str(axes.query_variant),
+            "query_id": str(axes.query_id),
             "style_variant": str(axes.style_variant),
             "target_answer": sampled_scene.answer_value,
             "target_answer_index": int(axes.target_answer),
@@ -1374,8 +1373,7 @@ class GamesDominoesChainCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "candidate_count": int(axes.candidate_count),
                     "target_answer": sampled_scene.answer_value,
@@ -1385,19 +1383,18 @@ class GamesDominoesChainCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": sampled_scene.answer_value,
                     "target_answer_index": int(axes.target_answer),
@@ -1438,14 +1435,13 @@ class GamesDominoesChainCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="dominoes",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
         return rewrite_public_query_output(
             output,
-            query_id=str(axes.query_variant),
-            query_variant_probabilities=axes.query_variant_probabilities,
+            query_id=str(axes.query_id),
+            query_id_probabilities=axes.query_id_probabilities,
         )
 
 
@@ -1461,11 +1457,11 @@ class GamesDominoesTwoStepExtensionLabelTask(GamesDominoesChainCountTask):
     """Choose the labeled loose domino that works as the second step in a chain extension."""
 
     task_id = "task_games__dominoes__two_step_extension_label"
-    supported_query_variants = TWO_STEP_SUPPORTED_QUERY_VARIANTS
+    supported_query_ids = TWO_STEP_SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         forced_params = dict(params)
-        forced_params["query_variant"] = TWO_STEP_QUERY_VARIANT
+        forced_params["query_id"] = TWO_STEP_QUERY_ID
         target_answer = forced_params.get("target_answer")
         if isinstance(target_answer, str) and len(target_answer) == 1 and target_answer.isalpha():
             forced_params["target_answer"] = ord(target_answer.upper()) - ord("A")

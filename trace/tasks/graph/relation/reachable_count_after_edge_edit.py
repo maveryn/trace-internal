@@ -55,7 +55,7 @@ from ..shared.task_support import (
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__node_link__reachable_node_count_after_edge_edit"
+TASK_ID = "graph_node_link_reachable_count_after_edge_edit_internal"
 SCENE_ID = "node_link"
 
 QUERY_ID_BY_OPERATION = {
@@ -114,7 +114,7 @@ class _ResolvedQuery:
     edge_routing_variant: str
     node_color_name: str
     edit_operation_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_reachable_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -395,7 +395,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
         edit_operation_probabilities={str(key): float(value) for key, value in edit_operation_probabilities.items()},
-        query_variant_probabilities=dict(query_probabilities),
+        query_id_probabilities=dict(query_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -649,7 +649,6 @@ class GraphRelationReachableCountAfterEdgeEditTask:
                 "scene_kind": "graph_reachable_count_after_edge_edit",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
                     "relation_rule": str(RELATION_RULE_BY_OPERATION[str(query.edit_operation)]),
                     "graph_directionality": "directed",
@@ -676,17 +675,15 @@ class GraphRelationReachableCountAfterEdgeEditTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "graph_directionality": "directed",
                     "edit_operation": str(query.edit_operation),
                     "edit_operation_probabilities": dict(query.edit_operation_probabilities),
@@ -711,7 +708,7 @@ class GraphRelationReachableCountAfterEdgeEditTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                 },
             },
             "render_spec": {
@@ -750,10 +747,9 @@ class GraphRelationReachableCountAfterEdgeEditTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.query_id),
                 "graph_directionality": "directed",
@@ -814,7 +810,6 @@ class GraphRelationReachableCountAfterEdgeEditTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -42,7 +42,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_radar_query_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "highlighted_metric_threshold_panel_count",
     "threshold_metric_count_for_panel",
     "profile_advantage_count",
@@ -116,7 +116,7 @@ class _Panel:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: str | int
     answer_type: str
@@ -149,17 +149,17 @@ class _Rendered:
     render_meta: Dict[str, Any]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -263,15 +263,15 @@ def _choice_index(params: Mapping[str, Any], *, instance_seed: int, namespace: s
     return int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -279,18 +279,18 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(
+    if not _uses_uniform_query_id_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     ):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -505,7 +505,7 @@ def _build_highlighted_metric_threshold_dataset(params: Mapping[str, Any], *, in
     )
     evidence_ids = tuple(f"{str(panel)}|Profile|{str(metric_label)}" for panel in panel_labels if str(panel) in matching_set)
     query = _Query(
-        query_variant="highlighted_metric_threshold_panel_count",
+        query_id="highlighted_metric_threshold_panel_count",
         scene_variant="small_multiple_radar",
         answer=int(target_count),
         answer_type="integer",
@@ -585,7 +585,7 @@ def _build_threshold_metric_count_dataset(params: Mapping[str, Any], *, instance
         if int(values[str(query_panel_label)][str(metric)]) > int(threshold)
     )
     query = _Query(
-        query_variant="threshold_metric_count_for_panel",
+        query_id="threshold_metric_count_for_panel",
         scene_variant="small_multiple_radar",
         answer=int(target_count),
         answer_type="integer",
@@ -653,7 +653,7 @@ def _build_profile_advantage_dataset(params: Mapping[str, Any], *, instance_seed
             evidence_ids.append(f"|{_PROFILE_LABELS[0]}|{str(metric)}")
             evidence_ids.append(f"|{_PROFILE_LABELS[1]}|{str(metric)}")
     query = _Query(
-        query_variant="profile_advantage_count",
+        query_id="profile_advantage_count",
         scene_variant="single_radar_multi_profile",
         answer=int(target_count),
         answer_type="integer",
@@ -746,7 +746,7 @@ def _build_matching_condition_dataset(params: Mapping[str, Any], *, instance_see
         if int(values[str(panel)][str(metric)]) > int(threshold)
     )
     query = _Query(
-        query_variant="matching_condition_panel_count",
+        query_id="matching_condition_panel_count",
         scene_variant="small_multiple_radar",
         answer=int(target_count),
         answer_type="integer",
@@ -767,16 +767,16 @@ def _build_matching_condition_dataset(params: Mapping[str, Any], *, instance_see
     return _Dataset(metrics=tuple(metrics), panels=panels, query=query)
 
 
-def _build_dataset(query_variant: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
-    if str(query_variant) == "highlighted_metric_threshold_panel_count":
+def _build_dataset(query_id: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
+    if str(query_id) == "highlighted_metric_threshold_panel_count":
         return _build_highlighted_metric_threshold_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "threshold_metric_count_for_panel":
+    if str(query_id) == "threshold_metric_count_for_panel":
         return _build_threshold_metric_count_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "profile_advantage_count":
+    if str(query_id) == "profile_advantage_count":
         return _build_profile_advantage_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "matching_condition_panel_count":
+    if str(query_id) == "matching_condition_panel_count":
         return _build_matching_condition_dataset(params, instance_seed=int(instance_seed))
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
@@ -1087,7 +1087,7 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             single_panel=str(dataset.query.scene_variant) == "single_radar_multi_profile",
             highlight_metric=(
                 str(dataset.query.metric_label)
-                if str(dataset.query.query_variant) == "highlighted_metric_threshold_panel_count"
+                if str(dataset.query.query_id) == "highlighted_metric_threshold_panel_count"
                 else ""
             ),
         )
@@ -1131,7 +1131,7 @@ def _render_dataset(dataset: _Dataset, *, params: Mapping[str, Any], instance_se
             "metric_labels": list(dataset.metrics),
             "highlight_metric_label": (
                 str(dataset.query.metric_label)
-                if str(dataset.query.query_variant) == "highlighted_metric_threshold_panel_count"
+                if str(dataset.query.query_id) == "highlighted_metric_threshold_panel_count"
                 else ""
             ),
         },
@@ -1155,17 +1155,17 @@ class ChartsRadarMultiplotQueryTask:
     task_group = "radar"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         support_params = _support_sampling_params(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
         dataset: _Dataset | None = None
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             try:
                 attempt_params = {**dict(support_params), "_attempt_index": int(attempt_index)}
-                dataset = _build_dataset(str(query_variant), attempt_params, instance_seed=int(instance_seed) + int(attempt_index))
+                dataset = _build_dataset(str(query_id), attempt_params, instance_seed=int(instance_seed) + int(attempt_index))
                 break
             except Exception as exc:
                 last_error = exc
@@ -1211,7 +1211,7 @@ class ChartsRadarMultiplotQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(dataset.query.scene_variant)}"]),
@@ -1223,10 +1223,10 @@ class ChartsRadarMultiplotQueryTask:
                 "minimum_metric_count": str(dataset.query.minimum_metric_count),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
-                "json_example": str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+                "json_example": str(prompt_defaults[f"json_example_{str(query_id)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
             },
             instance_seed=int(instance_seed),
         )
@@ -1246,22 +1246,22 @@ class ChartsRadarMultiplotQueryTask:
                 "scene_kind": f"chart_radar_{str(dataset.query.scene_variant)}",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.query.scene_variant),
                     "answer": dataset.query.answer,
                     "evidence_point_ids": list(dataset.query.evidence_point_ids),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.query.scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "metric_count": int(len(dataset.metrics)),
                     "panel_count": int(len(dataset.panels)),
                     "question_format": "radar_profile_query",
@@ -1284,7 +1284,7 @@ class ChartsRadarMultiplotQueryTask:
                 "legend_bboxes_px": dict(rendered.legend_bboxes),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(dataset.query.scene_variant),
                 "answer": dataset.query.answer,
                 "answer_type": str(dataset.query.answer_type),
@@ -1294,7 +1294,7 @@ class ChartsRadarMultiplotQueryTask:
                 "panel_count": int(len(dataset.panels)),
                 "values_by_panel_profile": values_by_panel_profile,
                 "evidence_point_ids": list(dataset.query.evidence_point_ids),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "question_format": "radar_profile_query",
                 **dict(dataset.query.trace),
             },
@@ -1321,7 +1321,7 @@ class ChartsRadarMultiplotQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(visual_count), [10, int(visual_max)]),
-                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])),
+                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)])),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(dataset.query.scene_variant)]),
             },
         )
@@ -1335,7 +1335,7 @@ class ChartsRadarMultiplotQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1348,7 +1348,7 @@ class ChartsRadarThresholdPanelCountTask(
     """Count radar panels satisfying sampled threshold conditions."""
 
     task_id = "task_charts__radar__threshold_panel_count"
-    allowed_query_variants = (
+    allowed_query_ids = (
         "highlighted_metric_threshold_panel_count",
         "matching_condition_panel_count",
     )
@@ -1362,7 +1362,7 @@ class ChartsRadarThresholdMetricCountForPanelTask(
     """Count metrics in one radar panel satisfying a threshold."""
 
     task_id = "task_charts__radar__threshold_metric_count_for_panel"
-    fixed_query_variant = "threshold_metric_count_for_panel"
+    fixed_query_id = "threshold_metric_count_for_panel"
 
 
 @register_task
@@ -1370,7 +1370,7 @@ class ChartsRadarProfileAdvantageCountTask(FixedChartQueryVariantTaskMixin, Char
     """Count metrics where one radar profile exceeds another."""
 
     task_id = "task_charts__radar__profile_advantage_count"
-    fixed_query_variant = "profile_advantage_count"
+    fixed_query_id = "profile_advantage_count"
 
 
 __all__ = [

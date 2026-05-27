@@ -28,7 +28,7 @@ def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.query_variant == "default"
+    assert out_a.query_id == "default"
     assert out_a.query_id
 
 

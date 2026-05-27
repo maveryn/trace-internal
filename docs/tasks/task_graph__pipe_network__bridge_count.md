@@ -8,7 +8,7 @@
 5. Objective: count open pipes whose removal disconnects part of the open-pipe network.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `pipe_bridge_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_pair_set`

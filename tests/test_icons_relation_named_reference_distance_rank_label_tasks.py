@@ -35,7 +35,7 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
     assert out.answer_gt.value == "D"
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 2
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == "named_field"
     assert out.query_id == "second_closest_to_named_reference_label"
     assert trace["scene_ir"]["scene_kind"] == "icons_named_field_distance_rank"
@@ -95,7 +95,7 @@ def test_icons_relation_named_reference_distance_rank_sampling_smoke() -> None:
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(execution["query_id"])
         assert execution["sorted_candidate_labels_by_distance"][int(execution["answer_rank"])] == str(out.answer_gt.value)
         assert set(str(label) for label in execution["candidate_labels"]) == set("ABCDEF")

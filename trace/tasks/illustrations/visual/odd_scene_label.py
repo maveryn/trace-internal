@@ -381,7 +381,6 @@ class IllustrationsVisualOddSceneLabelTask:
                     "count_phrase": str(sample.source_query.count_phrase),
                 },
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                     "common_count": int(sample.common_count),
                     "odd_count": int(sample.odd_count),
@@ -389,7 +388,6 @@ class IllustrationsVisualOddSceneLabelTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -424,7 +422,6 @@ class IllustrationsVisualOddSceneLabelTask:
                 "option_sources": list(option_records),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "answer": str(answer_label),
                 "correct_option_label": str(answer_label),
@@ -450,7 +447,6 @@ class IllustrationsVisualOddSceneLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

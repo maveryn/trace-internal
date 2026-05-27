@@ -35,7 +35,7 @@ from ..shared.visual_defaults import load_graph_background_defaults, load_graph_
 TASK_ID = "task_graph__binary_tree__node_relation_label"
 SCENE_ID = "binary_tree"
 
-SUPPORTED_BINARY_TREE_RELATION_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BINARY_TREE_RELATION_QUERY_IDS: Tuple[str, ...] = (
     "parent_label",
     "left_child_label",
     "right_child_label",
@@ -84,12 +84,12 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved query and style axes for one binary-tree relation instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     label_variant: str
     node_shape_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     label_variant_probabilities: Dict[str, float]
     node_shape_variant_probabilities: Dict[str, float]
@@ -119,18 +119,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         query_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_BINARY_TREE_RELATION_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_BINARY_TREE_RELATION_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
@@ -185,12 +185,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         namespace="node_color_name",
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         scene_variant_probabilities=dict(scene_probs),
         label_variant_probabilities=dict(label_probs),
         node_shape_variant_probabilities=dict(shape_probs),
@@ -213,13 +213,13 @@ def _lowest_common_ancestor(node_id_a: str, node_id_b: str) -> str:
 def _choose_relation(
     *,
     sample: BinaryTreeSample,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
     attempt: int,
 ) -> _RelationSelection:
     node_by_id = {str(node.node_id): node for node in sample.nodes}
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.relation.{query_variant}.{attempt}")
-    query = str(query_variant)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.relation.{query_id}.{attempt}")
+    query = str(query_id)
 
     if query == "parent_label":
         candidates = [node for node in sample.nodes if node.parent_id is not None]
@@ -323,7 +323,7 @@ def _sample_relation_tree(
             )
             relation = _choose_relation(
                 sample=sample,
-                query_variant=str(query.query_variant),
+                query_id=str(query.query_id),
                 instance_seed=int(instance_seed),
                 attempt=int(attempt),
             )
@@ -340,16 +340,16 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(*, sample: BinaryTreeSample, query_variant: str) -> Any:
+def _build_complexity(*, sample: BinaryTreeSample, query_id: str) -> Any:
     node_norm = normalize_int_with_bounds(int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max))
     depth_norm = normalize_int_with_bounds(int(sample.max_depth), (2, _DEFAULTS.max_depth))
-    relation_load = 1.0 if str(query_variant) == "lowest_common_ancestor_label" else 0.55
+    relation_load = 1.0 if str(query_id) == "lowest_common_ancestor_label" else 0.55
     return build_graph_complexity(
         weights=_COMPLEXITY_WEIGHTS,
         components={
             "topology_reasoning": (0.50 * relation_load) + (0.30 * depth_norm) + (0.20 * node_norm),
             "visual_scan": (0.70 * node_norm) + (0.30 * depth_norm),
-            "ambiguity": 0.62 if str(query_variant) == "lowest_common_ancestor_label" else 0.38,
+            "ambiguity": 0.62 if str(query_id) == "lowest_common_ancestor_label" else 0.38,
             "clutter": (0.65 * node_norm) + (0.35 * depth_norm),
         },
     )
@@ -429,7 +429,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=slots,
             instance_seed=int(instance_seed),
@@ -477,7 +477,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "root_label": str(node_by_id[""].label),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "query_labels": list(relation.query_labels),
                     "answer_label": str(relation.answer_label),
                     "answer_node_id": str(relation.answer_node_id),
@@ -493,15 +493,14 @@ class GraphRelationBinaryTreeNodeLabelTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "node_count": int(sample.node_count),
                     "node_count_probabilities": dict(uniform_probability_map(tuple(range(_DEFAULTS.node_count_min, _DEFAULTS.node_count_max + 1)))),
@@ -552,8 +551,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_variant": str(query.query_variant),
-                "query_id": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "query_labels": list(relation.query_labels),
                 "answer": str(relation.answer_label),
                 "answer_label": str(relation.answer_label),
@@ -564,7 +562,7 @@ class GraphRelationBinaryTreeNodeLabelTask:
             },
             "witness_symbolic": {
                 "type": "binary_tree_node_label_relation",
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "query_labels": list(relation.query_labels),
                 "answer_label": str(relation.answer_label),
             },
@@ -584,11 +582,10 @@ class GraphRelationBinaryTreeNodeLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample=sample, query_variant=str(query.query_variant)),
+            complexity=_build_complexity(sample=sample, query_id=str(query.query_id)),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

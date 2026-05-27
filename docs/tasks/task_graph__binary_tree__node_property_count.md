@@ -7,7 +7,7 @@
 4. Task id: `task_graph__binary_tree__node_property_count`
 5. Objective: count nodes satisfying a binary-tree structural predicate.
 
-## Query Variants
+## Query IDs
 1. `leaf_node_count`: count nodes with no children.
 2. `internal_node_count`: count nodes with at least one child.
 3. `single_child_node_count`: count nodes with exactly one child.
@@ -23,4 +23,4 @@
 1. The renderer is a top-down ordered binary tree; left and right children are determined by visible position.
 2. Default node count is `7..13`.
 3. Node labels use graph label variants `letters|numbers|named`.
-4. Query support is balanced by `query_variant`; answer support is sampled independently from task-local count ranges.
+4. Query support is balanced by `query_id`; answer support is sampled independently from task-local count ranges.

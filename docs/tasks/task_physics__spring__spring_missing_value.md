@@ -14,9 +14,9 @@ The image shows two identical springs with rulers and weight blocks. The task as
 Evidence contains the reference weight and extension markers plus the queried marked value and its paired shown measurement. `solve_for=weight|extension` is an inverse parameter inside this task.
 
 ## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query variant key: `missing_value`.
+Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query id key: `missing_value`.
 
-Public outputs use `query_variant="default"` and `query_id="missing_value"`. The trace records the scale factor, solve target, measurements, answer support, and evidence entity ids.
+Outputs `query_id="missing_value"`. The trace records the scale factor, solve target, measurements, answer support, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized spring layout.

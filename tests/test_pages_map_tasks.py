@@ -11,15 +11,15 @@ from tests.helpers import extract_prompt_json_example
 
 def test_pages_map_navigation_label_contract_matches_evidence_bboxes() -> None:
     task = PagesMapNavigationLabelTask()
-    query_variants = (
+    query_ids = (
         "destination_after_directions",
         "landmark_after_route_step",
     )
 
-    for variant_index, query_variant in enumerate(query_variants):
+    for query_id_index, query_id in enumerate(query_ids):
         out = task.generate(
-            62400 + variant_index,
-            params={"query_variant": query_variant, "scene_variant": "campus_map"},
+            62400 + query_id_index,
+            params={"query_id": query_id, "scene_variant": "campus_map"},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -36,10 +36,10 @@ def test_pages_map_navigation_label_contract_matches_evidence_bboxes() -> None:
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == "campus_map"
         assert str(execution["question_format"]) == "map_navigation_label"
         assert str(execution["view_family"]) == "printed_campus_map"
@@ -55,11 +55,11 @@ def test_pages_map_navigation_label_contract_matches_evidence_bboxes() -> None:
         assert evidence_bboxes == expected_bboxes
         assert [str(item) for item in execution["supporting_bbox_ids"]] == evidence_bbox_ids
 
-        if str(query_variant) == "destination_after_directions":
+        if str(query_id) == "destination_after_directions":
             assert len(execution["route_landmark_ids"]) >= 3
             assert str(execution["evidence_semantics"]) == "route_landmarks_ordered"
             assert len(execution["evidence_landmark_bbox_ids"]) == len(execution["route_landmark_ids"])
-        elif str(query_variant) == "landmark_after_route_step":
+        elif str(query_id) == "landmark_after_route_step":
             assert len(execution["highlighted_route_landmark_ids"]) >= 4
             assert render_map["highlighted_route_bboxes_px"]
             assert str(execution["evidence_semantics"]) == "highlighted_route_landmarks_ordered_to_answer"
@@ -72,8 +72,8 @@ def test_pages_map_navigation_label_prompt_examples_match_string_contract() -> N
         "landmark_after_route_step": "Gallery",
     }
 
-    for index, (query_variant, expected_answer) in enumerate(expected.items(), start=62460):
-        out = task.generate(index, params={"query_variant": query_variant, "scene_variant": "campus_map"}, max_attempts=10)
+    for index, (query_id, expected_answer) in enumerate(expected.items(), start=62460):
+        out = task.generate(index, params={"query_id": query_id, "scene_variant": "campus_map"}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert str(answer_and_evidence["answer"]) == str(expected_answer)
@@ -83,7 +83,7 @@ def test_pages_map_navigation_label_prompt_examples_match_string_contract() -> N
 
 def test_pages_map_navigation_label_is_deterministic() -> None:
     task = PagesMapNavigationLabelTask()
-    params = {"query_variant": "landmark_after_route_step", "scene_variant": "campus_map"}
+    params = {"query_id": "landmark_after_route_step", "scene_variant": "campus_map"}
     out_a = task.generate(62510, params=params, max_attempts=10)
     out_b = task.generate(62510, params=params, max_attempts=10)
 
@@ -97,18 +97,18 @@ def test_pages_map_navigation_label_is_deterministic() -> None:
 
 def test_pages_map_navigation_label_balanced_sampling_covers_variants() -> None:
     task = PagesMapNavigationLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
 
     for index in range(12):
         out = task.generate(hash64(62540, "pages_map", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        query_variants[str(execution["query_id"])] += 1
+        query_ids[str(execution["query_id"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
 
-    assert set(query_variants.keys()) == {
+    assert set(query_ids.keys()) == {
         "destination_after_directions",
         "landmark_after_route_step",
     }
     assert set(scene_variants.keys()) == {"campus_map"}
-    assert all(count >= 4 for count in query_variants.values())
+    assert all(count >= 4 for count in query_ids.values())

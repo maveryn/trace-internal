@@ -34,7 +34,7 @@ from ..shared.visual_defaults import load_graph_background_defaults, load_graph_
 TASK_ID = "task_graph__binary_tree__tree_operation_label"
 SCENE_ID = "binary_tree"
 
-SUPPORTED_SEARCH_TREE_OPERATION_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SEARCH_TREE_OPERATION_QUERY_IDS: Tuple[str, ...] = (
     "bst_search_terminal_label",
     "bst_insert_parent_label",
     "heap_property_violation_label",
@@ -81,12 +81,12 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved query and visual axes for one search-tree operation instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     node_count: int
     node_shape_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     node_shape_variant_probabilities: Dict[str, float]
@@ -117,18 +117,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         query_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_SEARCH_TREE_OPERATION_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_SEARCH_TREE_OPERATION_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
@@ -185,12 +185,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         namespace="node_color_name",
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         node_count=int(node_count),
         node_shape_variant=str(node_shape_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         scene_variant_probabilities=dict(scene_probs),
         node_count_probabilities=dict(uniform_probability_map(support, selected=int(node_count) if explicit_node_count is not None else None)),
         node_shape_variant_probabilities=dict(shape_probs),
@@ -403,7 +403,7 @@ def _sample_operation(
     query: _ResolvedQuery,
     max_attempts: int,
 ) -> Tuple[BinaryTreeSample, _OperationSelection]:
-    if str(query.query_variant) == "heap_property_violation_label":
+    if str(query.query_id) == "heap_property_violation_label":
         nodes, (parent_id, child_id) = _sample_heap_nodes(int(instance_seed), node_count=int(query.node_count))
         sample = _make_sample(nodes)
         parent_label = str(nodes[str(parent_id)]["key"])
@@ -423,8 +423,8 @@ def _sample_operation(
         max_depth=int(group_default(_GEN_DEFAULTS, "max_depth", _DEFAULTS.max_depth)),
         max_attempts=max(1, int(max_attempts)),
     )
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.operation.{query.query_variant}")
-    if str(query.query_variant) == "bst_search_terminal_label" and rng.randrange(2):
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.operation.{query.query_id}")
+    if str(query.query_id) == "bst_search_terminal_label" and rng.randrange(2):
         target_key = int(rng.choice([int(node["key"]) for node in nodes.values()]))
     else:
         target_key = _sample_missing_key(rng, nodes=nodes)
@@ -438,7 +438,7 @@ def _sample_operation(
         evidence_labels=tuple(str(labels_by_id[str(node_id)]) for node_id in path_ids),
         query_node_ids=tuple(str(node_id) for node_id in path_ids),
         answer_node_id=str(answer_node_id),
-        operation_kind=str(query.query_variant),
+        operation_kind=str(query.query_id),
     )
 
 
@@ -449,11 +449,11 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(*, sample: BinaryTreeSample, operation: _OperationSelection, query_variant: str) -> Any:
+def _build_complexity(*, sample: BinaryTreeSample, operation: _OperationSelection, query_id: str) -> Any:
     node_norm = normalize_int_with_bounds(int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max))
     depth_norm = normalize_int_with_bounds(int(sample.max_depth), (2, _DEFAULTS.max_depth))
     path_norm = normalize_int_with_bounds(len(operation.evidence_labels), (2, _DEFAULTS.max_depth + 1))
-    operation_load = 0.58 if str(query_variant) == "heap_property_violation_label" else 0.72
+    operation_load = 0.58 if str(query_id) == "heap_property_violation_label" else 0.72
     return build_graph_complexity(
         weights=_COMPLEXITY_WEIGHTS,
         components={
@@ -497,7 +497,7 @@ class GraphRelationSearchTreeOperationLabelTask:
             query=query,
             max_attempts=max(1, int(max_attempts)),
         )
-        scene_title = "Binary Heap" if str(query.query_variant) == "heap_property_violation_label" else "Binary Search Tree"
+        scene_title = "Binary Heap" if str(query.query_id) == "heap_property_violation_label" else "Binary Search Tree"
         rendered_scene = render_binary_tree_scene(
             sample=sample,
             render_params=render_params,
@@ -519,14 +519,14 @@ class GraphRelationSearchTreeOperationLabelTask:
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
         target_key = "" if operation.target_key is None else str(operation.target_key)
-        object_description_key = "object_description_heap" if str(query.query_variant) == "heap_property_violation_label" else "object_description_bst"
+        object_description_key = "object_description_heap" if str(query.query_id) == "heap_property_violation_label" else "object_description_bst"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults.get(object_description_key, prompt_defaults["object_description"])),
@@ -582,7 +582,7 @@ class GraphRelationSearchTreeOperationLabelTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "root_label": str(sample_node_by_id[""].label),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "target_key": int(operation.target_key) if operation.target_key is not None else None,
                     "answer_label": str(operation.answer_label),
                     "answer_node_id": str(operation.answer_node_id),
@@ -599,15 +599,14 @@ class GraphRelationSearchTreeOperationLabelTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "node_count": int(sample.node_count),
                     "node_count_probabilities": dict(query.node_count_probabilities),
@@ -657,8 +656,7 @@ class GraphRelationSearchTreeOperationLabelTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_variant": str(query.query_variant),
-                "query_id": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "operation_kind": str(operation.operation_kind),
                 "target_key": int(operation.target_key) if operation.target_key is not None else None,
                 "answer": str(operation.answer_label),
@@ -671,7 +669,7 @@ class GraphRelationSearchTreeOperationLabelTask:
             },
             "witness_symbolic": {
                 "type": "search_tree_operation_path",
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "target_key": int(operation.target_key) if operation.target_key is not None else None,
                 "answer_label": str(operation.answer_label),
                 "evidence_labels": list(operation.evidence_labels),
@@ -690,11 +688,10 @@ class GraphRelationSearchTreeOperationLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample=sample, operation=operation, query_variant=str(query.query_variant)),
+            complexity=_build_complexity(sample=sample, operation=operation, query_id=str(query.query_id)),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ..shared.bowling_common import (
-    SUPPORTED_BOWLING_QUERY_VARIANTS,
+    SUPPORTED_BOWLING_QUERY_IDS,
     SUPPORTED_BOWLING_SCENE_VARIANTS,
     SUPPORTED_BOWLING_STYLE_VARIANTS,
     BowlingPathOption,
@@ -37,7 +37,7 @@ from ..shared.bowling_scene import BowlingRenderParams, render_bowling_scene
 from ..shared.complexity import build_games_bowling_lane_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.visual_defaults import load_games_noise_defaults
 
@@ -112,14 +112,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Bowling instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     visible_pin_count: int
     path_option_count: int
     target_pin_index: int | None
     target_path_index: int | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     visible_pin_count_probabilities: Dict[str, float]
@@ -137,15 +137,15 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="bowling", apply_prob=0.5)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Bowling query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Bowling query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_BOWLING_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_BOWLING_QUERY_IDS,
     )
 
 
@@ -177,7 +177,7 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Bowling instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -205,7 +205,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_pin_index_probabilities: Dict[str, float] | None = None
     target_path_index: int | None = None
     target_path_index_probabilities: Dict[str, float] | None = None
-    if str(query_variant) == "first_pin_hit_label":
+    if str(query_id) == "first_pin_hit_label":
         visible_pin_count, visible_pin_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -228,7 +228,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balanced_flag_key="balanced_target_pin_sampling",
             namespace_support_permutation=True,
         )
-    if str(query_variant) == "spare_path_label":
+    if str(query_id) == "spare_path_label":
         path_option_count, path_option_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -253,14 +253,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
         path_option_count = max(int(path_option_count), int(target_path_index) + 1)
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         visible_pin_count=int(visible_pin_count),
         path_option_count=int(path_option_count),
         target_pin_index=None if target_pin_index is None else int(target_pin_index),
         target_path_index=None if target_path_index is None else int(target_path_index),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         visible_pin_count_probabilities=dict(visible_pin_count_probabilities),
@@ -493,7 +493,7 @@ def _sample_first_pin_hit(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
                 if clearance_px is not None and float(clearance_px) < _PIN_VISUAL_CLEARANCE_RADIUS_PX:
                     continue
                 sample = BowlingSample(
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     scene_variant=str(axes.scene_variant),
                     style_variant=str(axes.style_variant),
                     answer=str(target_pin.label),
@@ -575,7 +575,7 @@ def _sample_spare_path(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
     )
     target_path = path_options[int(target_path_index)]
     sample = BowlingSample(
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         answer=str(target_path.label),
@@ -599,18 +599,18 @@ def _sample_spare_path(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
 def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> BowlingSample:
     """Construct one Bowling scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "first_pin_hit_label":
         return _sample_first_pin_hit(rng=rng, axes=axes)
     if query == "spare_path_label":
         return _sample_spare_path(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Bowling query_variant: {query}")
+    raise ValueError(f"unsupported Bowling query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Bowling JSON output."""
 
-    if str(query_variant) == "spare_path_label":
+    if str(query_id) == "spare_path_label":
         answer_value = "4"
         evidence_value = [[624, 642, 660, 678]]
     else:
@@ -675,7 +675,7 @@ class GamesBowlingLaneTask:
         rendered_scene = render_bowling_scene(
             pins=sampled_scene.pins,
             path_options=sampled_scene.path_options,
-            query_variant=str(sampled_scene.query_variant),
+            query_id=str(sampled_scene.query_id),
             ball_x_norm=float(sampled_scene.ball_x_norm),
             target_pin_id=sampled_scene.target_pin_id,
             target_path_id=sampled_scene.target_path_id,
@@ -714,14 +714,14 @@ class GamesBowlingLaneTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -729,8 +729,8 @@ class GamesBowlingLaneTask:
                 "spare_path_rule_text": str(prompt_defaults["spare_path_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -745,7 +745,7 @@ class GamesBowlingLaneTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             standing_pin_count=int(standing_pin_count),
             path_option_count=len(sampled_scene.path_options),
             evidence_count=len(sampled_scene.evidence_entity_ids),
@@ -777,8 +777,7 @@ class GamesBowlingLaneTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "standing_pin_count": int(standing_pin_count),
                     "path_option_count": len(sampled_scene.path_options),
@@ -786,15 +785,14 @@ class GamesBowlingLaneTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "visible_pin_count": len(sampled_scene.pins),
                     "path_option_count": len(sampled_scene.path_options),
@@ -802,8 +800,8 @@ class GamesBowlingLaneTask:
                     "target_pin_label_index": axes.target_pin_index,
                     "target_path_index": axes.target_path_index,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "visible_pin_count_probabilities": dict(axes.visible_pin_count_probabilities),
                     "path_option_count_probabilities": dict(axes.path_option_count_probabilities),
@@ -828,8 +826,7 @@ class GamesBowlingLaneTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "visible_pin_count": len(sampled_scene.pins),
                 "pins": pin_trace,
@@ -865,9 +862,8 @@ class GamesBowlingLaneTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="bowling",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -876,7 +872,7 @@ class GamesBowlingFirstPinHitLabelTask(FixedQueryVariantTaskMixin, GamesBowlingL
     """Identify the labeled pin hit first by the visible ball path."""
 
     task_id = "task_games__bowling__first_pin_hit_label"
-    fixed_query_variant = "first_pin_hit_label"
+    fixed_query_id = "first_pin_hit_label"
 
 
 @register_task
@@ -884,7 +880,7 @@ class GamesBowlingSparePathLabelTask(FixedQueryVariantTaskMixin, GamesBowlingLan
     """Identify the labeled path that picks up the visible spare."""
 
     task_id = "task_games__bowling__spare_path_label"
-    fixed_query_variant = "spare_path_label"
+    fixed_query_id = "spare_path_label"
 
 
 __all__ = [

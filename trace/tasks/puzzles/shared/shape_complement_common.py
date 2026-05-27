@@ -264,7 +264,7 @@ def _resolve_correct_option_index(
     task_id: str,
     option_count: int,
 ) -> int:
-    """Resolve a balanced correct-option slot without aliasing query variants."""
+    """Resolve a balanced correct-option slot without aliasing query ids."""
 
     explicit = params.get("correct_option_index")
     if explicit is not None:
@@ -365,7 +365,7 @@ def _build_rectangle_complement(
 
 def build_shape_complement_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -374,9 +374,9 @@ def build_shape_complement_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic rectangular complement puzzle dataset."""
 
-    selected_variant = str(query_variant)
+    selected_variant = str(query_id)
     if selected_variant not in set(SUPPORTED_PUZZLE_RECTANGLE_COMPLEMENT_MATCHING_POLICIES):
-        raise ValueError(f"unsupported rectangular complement matching policy: {query_variant}")
+        raise ValueError(f"unsupported rectangular complement matching policy: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     option_count, option_count_range = _resolve_count_range(
@@ -503,7 +503,7 @@ def build_shape_complement_dataset_for_variant(
     target_bbox_dims = tuple(int(value) for value in base["target_bbox_dims"])
 
     return {
-        "query_variant": str(selected_variant),
+        "query_id": str(selected_variant),
         "option_specs": list(option_specs),
         "option_count": int(option_count),
         "option_count_range": [int(option_count_range[0]), int(option_count_range[1])],
@@ -524,7 +524,7 @@ def build_shape_complement_dataset_for_variant(
         "correct_option_panel_id": str(correct_option_panel_id),
         "valid_option_panel_ids": [str(correct_option_panel_id)],
         "solver_trace": {
-            "query_variant": str(selected_variant),
+            "query_id": str(selected_variant),
             "matching_policy": str(matching_policy),
             "target_generation_kind": str(base["target_generation_kind"]),
             "target_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in target_cells],

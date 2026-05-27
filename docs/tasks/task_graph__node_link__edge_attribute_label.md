@@ -8,7 +8,7 @@
 5. Objective: read the visible text label attached to a specified edge, directed arrow, or first edge on a unique shortest path.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `edge_between_nodes_label`, `directed_edge_between_nodes_label`, or `shortest_path_first_edge_label`
 3. Supported `graph_directionality`: `undirected|directed`
 4. `answer_gt.type`: `string`
@@ -55,7 +55,7 @@
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. Answers and evidence come from the same finalized edge-label assignment and rendered edge-label bbox.
-3. The query variant and target answer label are decoupled under seeded cycling so calibration samples cover all labels within each query branch.
+3. The query id and target answer label are decoupled under seeded cycling so calibration samples cover all labels within each query branch.
 4. No semantic auto-relaxation: failures do not weaken graph directionality, label support, or edge-label visibility constraints.
 
 ## 7) Complexity + Tests

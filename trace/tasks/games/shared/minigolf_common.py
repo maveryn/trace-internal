@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Mapping, Tuple
 
 
-SUPPORTED_MINIGOLF_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_MINIGOLF_QUERY_IDS: Tuple[str, ...] = (
     "first_obstacle_label",
     "shot_path_label",
 )
@@ -47,7 +47,7 @@ class MinigolfShotOption:
 class MinigolfSample:
     """Generated mini-golf scene state."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: str
@@ -88,7 +88,7 @@ def path_label(index: int) -> str:
 def validate_minigolf_sample(sample: MinigolfSample) -> None:
     """Validate answer and evidence for one Mini-golf sample."""
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     obstacle_ids = [str(obstacle.obstacle_id) for obstacle in sample.obstacles]
     obstacle_labels = [str(obstacle.label) for obstacle in sample.obstacles]
     path_ids = [str(path.path_id) for path in sample.shot_options]
@@ -121,7 +121,7 @@ def validate_minigolf_sample(sample: MinigolfSample) -> None:
         expected_answer = str(sample.target_path_label)
         expected_evidence = {str(sample.target_path_id)}
     else:
-        raise ValueError(f"unsupported mini-golf query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported mini-golf query_id: {sample.query_id}")
 
     if str(sample.answer) != str(expected_answer):
         raise ValueError("mini-golf answer does not match active query")
@@ -130,7 +130,7 @@ def validate_minigolf_sample(sample: MinigolfSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_MINIGOLF_QUERY_VARIANTS",
+    "SUPPORTED_MINIGOLF_QUERY_IDS",
     "SUPPORTED_MINIGOLF_SCENE_VARIANTS",
     "SUPPORTED_MINIGOLF_STYLE_VARIANTS",
     "MinigolfObstacle",

@@ -41,7 +41,7 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(65001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id in QUERY_IDS_BY_TASK[task_cls]
     assert out.answer_gt.type == "number"
     assert out.evidence_gt.type == "bbox_set"
@@ -53,7 +53,7 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["scene_ir"]["scene_id"] == SCENE_ID
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -122,12 +122,12 @@ def test_tangent_packing_tasks_support_every_explicit_query(task_cls) -> None:
         assert out.query_id == query_id
         assert out.answer_gt.type == "number"
         assert out.trace_payload["query_spec"]["params"][
-            "query_variant_probabilities"
+            "query_id_probabilities"
         ] == {query_id: 1.0}
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
-def test_tangent_packing_tasks_sample_all_query_variants(task_cls) -> None:
+def test_tangent_packing_tasks_sample_all_query_ids(task_cls) -> None:
     task = task_cls()
     seen = set()
     for index in range(18):

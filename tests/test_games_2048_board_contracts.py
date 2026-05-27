@@ -38,9 +38,9 @@ def _source_ids_for_max(result) -> tuple[str, ...]:
 @pytest.mark.parametrize(
     ("params", "expected_query", "expected_answer"),
     (
-        ({"query_variant": "merge_count", "target_answer": 3}, "merge_count", 3),
-        ({"query_variant": "score_value", "target_answer": 40}, "score_value", 40),
-        ({"query_variant": "max_tile_value", "target_answer": 128}, "max_tile_value", 128),
+        ({"query_id": "merge_count", "target_answer": 3}, "merge_count", 3),
+        ({"query_id": "score_value", "target_answer": 40}, "score_value", 40),
+        ({"query_id": "max_tile_value", "target_answer": 128}, "max_tile_value", 128),
     ),
 )
 def test_games_2048_move_result_value_emits_expected_contract(
@@ -55,12 +55,12 @@ def test_games_2048_move_result_value_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "2048"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -68,7 +68,7 @@ def test_games_2048_move_result_value_emits_expected_contract(
 def test_games_2048_move_result_value_matches_standard_move_simulation() -> None:
     out = Games2048MoveResultValueTask().generate(
         204811,
-        params={"query_variant": "score_value", "target_answer": 24, "move_direction": "left"},
+        params={"query_id": "score_value", "target_answer": 24, "move_direction": "left"},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -83,7 +83,7 @@ def test_games_2048_move_result_value_matches_standard_move_simulation() -> None
 def test_games_2048_max_tile_evidence_uses_source_cells_for_unique_max() -> None:
     out = Games2048MoveResultValueTask().generate(
         204812,
-        params={"query_variant": "max_tile_value", "target_answer": 256, "move_direction": "up"},
+        params={"query_id": "max_tile_value", "target_answer": 256, "move_direction": "up"},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -162,7 +162,7 @@ def test_games_2048_query_cycles_cover_supports() -> None:
 
 
 def test_games_2048_generation_is_deterministic() -> None:
-    params = {"query_variant": "max_tile_value", "target_answer": 64, "move_direction": "down"}
+    params = {"query_id": "max_tile_value", "target_answer": 64, "move_direction": "down"}
     task = Games2048MoveResultValueTask()
     out_a = task.generate(204831, params=params, max_attempts=128)
     out_b = task.generate(204831, params=params, max_attempts=128)

@@ -10,13 +10,13 @@ from tests.helpers import assert_counter_support_within, extract_prompt_json_exa
 from trace.core.seed import hash64
 from trace.tasks.charts.flow.sankey_path_value import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsFlowSankeyPathValueTask,
 )
 from trace.tasks.charts.flow.radial_sankey import (
-    DOMINANT_ENDPOINT_QUERY_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS as RADIAL_SUPPORTED_QUERY_VARIANTS,
-    TRANSFER_TOTAL_QUERY_VARIANTS,
+    DOMINANT_ENDPOINT_QUERY_IDS,
+    SUPPORTED_QUERY_IDS as RADIAL_SUPPORTED_QUERY_IDS,
+    TRANSFER_TOTAL_QUERY_IDS,
     ChartsFlowRadialSankeyTask,
 )
 
@@ -40,7 +40,7 @@ def _bboxes_overlap(a: list[float], b: list[float], *, gap: float = 0.0) -> bool
 
 
 def _expected_answer(execution: dict) -> int:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     details = [dict(path) for path in execution["query_path_details"]]
     if variant == "source_to_target_total_flow":
         return sum(min(int(path["first_value"]), int(path["second_value"])) for path in details)
@@ -60,9 +60,9 @@ def _expected_answer(execution: dict) -> int:
 
 
 def _expected_radial_answer(execution: dict) -> int | str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     details = [dict(link) for link in execution["query_link_details"]]
-    if variant in TRANSFER_TOTAL_QUERY_VARIANTS:
+    if variant in TRANSFER_TOTAL_QUERY_IDS:
         return sum(int(link["value"]) for link in details)
     if variant == "largest_target_for_source":
         ordered = sorted(details, key=lambda link: (-int(link["value"]), str(link["target_label"]), str(link["link_id"])))
@@ -76,12 +76,12 @@ def _expected_radial_answer(execution: dict) -> int | str:
     raise AssertionError(f"unsupported radial variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_flow_sankey_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_flow_sankey_variants_match_contract(query_id: str) -> None:
     task = ChartsFlowSankeyPathValueTask()
     out = task.generate(
-        69100 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant, "scene_variant": "three_column_sankey"},
+        69100 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "scene_variant": "three_column_sankey"},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -89,12 +89,12 @@ def test_chart_flow_sankey_variants_match_contract(query_variant: str) -> None:
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["scene_variant"]) == "three_column_sankey"
-    expected_question_format = "sankey_node_side_total_value" if query_variant.endswith("_total_flow") and query_variant != "source_to_target_total_flow" else "sankey_path_value"
+    expected_question_format = "sankey_node_side_total_value" if query_id.endswith("_total_flow") and query_id != "source_to_target_total_flow" else "sankey_path_value"
     assert str(execution["question_format"]) == expected_question_format
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 2 <= int(execution["source_count"]) <= 3
@@ -138,19 +138,19 @@ def test_chart_flow_sankey_variants_match_contract(query_variant: str) -> None:
     paths_by_id = {str(key): dict(value) for key, value in execution["paths_by_id"].items()}
     for path_id in execution["query_path_ids"]:
         assert str(path_id) in paths_by_id
-    if query_variant == "source_to_target_total_flow":
+    if query_id == "source_to_target_total_flow":
         assert len(execution["query_path_ids"]) >= 2
         labels = {(str(path["source_label"]), str(path["target_label"])) for path in execution["query_path_details"]}
         assert len(labels) == 1
         assert len(evidence_segment_ids) == 2 * len(execution["query_path_ids"])
-    elif query_variant == "source_outgoing_total_flow":
+    elif query_id == "source_outgoing_total_flow":
         assert 2 <= len(execution["query_path_ids"]) <= 3
         labels = {str(path["source_label"]) for path in execution["query_path_details"]}
         assert len(labels) == 1
         assert len(evidence_segment_ids) == len(execution["query_path_ids"])
         assert all(str(segment_id).endswith(":source_middle") for segment_id in evidence_segment_ids)
         assert int(execution["node_side_total"]) == sum(int(path["first_value"]) for path in execution["query_path_details"])
-    elif query_variant == "target_incoming_total_flow":
+    elif query_id == "target_incoming_total_flow":
         assert 2 <= len(execution["query_path_ids"]) <= 3
         labels = {str(path["target_label"]) for path in execution["query_path_details"]}
         assert len(labels) == 1
@@ -181,8 +181,8 @@ def test_chart_flow_sankey_prompt_examples_match_contract() -> None:
         "target_incoming_total_flow": 34,
     }
 
-    for index, (query_variant, answer) in enumerate(expected.items(), start=69200):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, (query_id, answer) in enumerate(expected.items(), start=69200):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence["answer"] == answer
@@ -201,7 +201,7 @@ def test_chart_flow_sankey_balanced_sampling_covers_variants() -> None:
     for index in range(50):
         out = task.generate(hash64(69300, "charts_flow", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         source_counts[int(execution["source_count"])] += 1
         middle_counts[int(execution["middle_count"])] += 1
         target_counts[int(execution["target_count"])] += 1
@@ -209,7 +209,7 @@ def test_chart_flow_sankey_balanced_sampling_covers_variants() -> None:
 
     assert_counter_support_within(
         variants,
-        SUPPORTED_QUERY_VARIANTS,
+        SUPPORTED_QUERY_IDS,
         expected_per_key=10,
         tolerance=4,
     )
@@ -221,7 +221,7 @@ def test_chart_flow_sankey_balanced_sampling_covers_variants() -> None:
 
 def test_chart_flow_sankey_is_deterministic() -> None:
     task = ChartsFlowSankeyPathValueTask()
-    params = {"query_variant": "path_flow_difference", "scene_variant": SUPPORTED_SCENE_VARIANTS[0]}
+    params = {"query_id": "path_flow_difference", "scene_variant": SUPPORTED_SCENE_VARIANTS[0]}
     out_a = task.generate(69400, params=params, max_attempts=10)
     out_b = task.generate(69400, params=params, max_attempts=10)
 
@@ -231,12 +231,12 @@ def test_chart_flow_sankey_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-@pytest.mark.parametrize("query_variant", RADIAL_SUPPORTED_QUERY_VARIANTS)
-def test_chart_flow_radial_sankey_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", RADIAL_SUPPORTED_QUERY_IDS)
+def test_chart_flow_radial_sankey_variants_match_contract(query_id: str) -> None:
     task = ChartsFlowRadialSankeyTask()
     out = task.generate(
-        69500 + RADIAL_SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant, "scene_variant": "radial_chord_sankey"},
+        69500 + RADIAL_SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "scene_variant": "radial_chord_sankey"},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -244,15 +244,15 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_variant: str) ->
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
-    expected_type = "integer" if query_variant in TRANSFER_TOTAL_QUERY_VARIANTS else "string"
+    assert out.query_id == query_id
+    expected_type = "integer" if query_id in TRANSFER_TOTAL_QUERY_IDS else "string"
     assert out.answer_gt.type == expected_type
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["scene_variant"]) == "radial_chord_sankey"
     expected_question_format = (
         "radial_sankey_transfer_total_value"
-        if query_variant in TRANSFER_TOTAL_QUERY_VARIANTS
+        if query_id in TRANSFER_TOTAL_QUERY_IDS
         else "radial_sankey_dominant_endpoint_label"
     )
     assert str(execution["question_format"]) == expected_question_format
@@ -290,11 +290,11 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_variant: str) ->
     expected_bboxes += [render_map["node_label_bboxes_px"][node_id] for node_id in evidence_node_ids]
     assert out.evidence_gt.value == expected_bboxes
 
-    if query_variant == "source_to_targets_total":
+    if query_id == "source_to_targets_total":
         assert 2 <= len(execution["query_link_ids"]) <= 3
         assert len({str(link["source_label"]) for link in execution["query_link_details"]}) == 1
         assert len(evidence_node_ids) == 0
-    elif query_variant == "sources_to_target_total":
+    elif query_id == "sources_to_target_total":
         assert 2 <= len(execution["query_link_ids"]) <= 3
         assert len({str(link["target_label"]) for link in execution["query_link_details"]}) == 1
         assert len(evidence_node_ids) == 0
@@ -303,7 +303,7 @@ def test_chart_flow_radial_sankey_variants_match_contract(query_variant: str) ->
         assert len(evidence_node_ids) == 1
         values = [int(link["value"]) for link in execution["query_link_details"]]
         assert len(set(values)) == len(values)
-        if query_variant == "second_largest_target_for_source":
+        if query_id == "second_largest_target_for_source":
             assert len(execution["query_link_ids"]) >= 3
 
     complexity = out.complexity.to_dict()
@@ -325,8 +325,8 @@ def test_chart_flow_radial_sankey_prompt_examples_match_contract() -> None:
         "second_largest_target_for_source": "X",
     }
 
-    for index, (query_variant, answer) in enumerate(expected.items(), start=69600):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, (query_id, answer) in enumerate(expected.items(), start=69600):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence["answer"] == answer
@@ -340,11 +340,11 @@ def test_chart_flow_radial_sankey_balanced_sampling_covers_variants() -> None:
     for index in range(50):
         out = task.generate(hash64(69700, "charts_radial_flow", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
 
     assert_counter_support_within(
         variants,
-        RADIAL_SUPPORTED_QUERY_VARIANTS,
+        RADIAL_SUPPORTED_QUERY_IDS,
         expected_per_key=10,
         tolerance=5,
     )
@@ -352,7 +352,7 @@ def test_chart_flow_radial_sankey_balanced_sampling_covers_variants() -> None:
 
 def test_chart_flow_radial_sankey_is_deterministic() -> None:
     task = ChartsFlowRadialSankeyTask()
-    params = {"query_variant": "largest_source_for_target", "scene_variant": "radial_chord_sankey"}
+    params = {"query_id": "largest_source_for_target", "scene_variant": "radial_chord_sankey"}
     out_a = task.generate(69800, params=params, max_attempts=10)
     out_b = task.generate(69800, params=params, max_attempts=10)
 

@@ -43,7 +43,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_hypothetical_counterfactual_value_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "remaining_mean_after_removal",
     "target_share_after_removal",
     "baseline_from_aggregate_percent_change",
@@ -84,17 +84,17 @@ class _CounterfactualDataset:
     trace_extras: Dict[str, Any]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -112,28 +112,28 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+    """Return true when `_sample_cursor` is driving the default query-id cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not bool(enabled):
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
 
-def _support_params_for_query_variant_cycle(
+def _support_params_for_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use the per-variant occurrence index for balanced answer/support cycling."""
 
@@ -141,9 +141,9 @@ def _support_params_for_query_variant_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -184,7 +184,7 @@ def _choose_count_param(
     return balanced_choice_from_values(candidates, params=params, instance_seed=int(instance_seed), namespace=str(namespace))
 
 
-def _choose_mark_count(params: Mapping[str, Any], *, scene_variant: str, query_variant: str, instance_seed: int) -> int:
+def _choose_mark_count(params: Mapping[str, Any], *, scene_variant: str, query_id: str, instance_seed: int) -> int:
     mark_count_min, mark_count_max = resolve_mark_count_bounds(
         params,
         gen_defaults=_GEN_DEFAULTS,
@@ -200,7 +200,7 @@ def _choose_mark_count(params: Mapping[str, Any], *, scene_variant: str, query_v
         [int(value) for value in range(int(mark_count_min), int(mark_count_max) + 1)],
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.mark_count.{query_variant}",
+        namespace=f"{TASK_ID}.mark_count.{query_id}",
     )
 
 
@@ -532,7 +532,7 @@ def _build_baseline_from_aggregate_percent_change(
 
 def _build_counterfactual_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -547,7 +547,7 @@ def _build_counterfactual_dataset(
     mark_count = _choose_mark_count(
         params,
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         instance_seed=int(instance_seed),
     )
     labels = tuple(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
@@ -556,7 +556,7 @@ def _build_counterfactual_dataset(
         "target_share_after_removal": _build_target_share_after_removal,
         "baseline_from_aggregate_percent_change": _build_baseline_from_aggregate_percent_change,
     }
-    dataset = builders[str(query_variant)](
+    dataset = builders[str(query_id)](
         labels=labels,
         params=params,
         instance_seed=int(instance_seed),
@@ -592,14 +592,14 @@ class ChartsHypotheticalCounterfactualValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_params_for_query_variant_cycle(
+        support_params = _support_params_for_query_id_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
         dataset = _build_counterfactual_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=support_params,
             instance_seed=int(instance_seed),
@@ -657,16 +657,16 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "answer_hint",
             )
             + tuple(f"object_description_{scene_variant}" for scene_variant in SUPPORTED_SCENE_VARIANTS)
-            + tuple(f"evidence_hint_{query_variant}" for query_variant in SUPPORTED_QUERY_VARIANTS)
-            + tuple(f"json_example_{query_variant}" for query_variant in SUPPORTED_QUERY_VARIANTS)
-            + tuple(f"json_example_answer_only_{query_variant}" for query_variant in SUPPORTED_QUERY_VARIANTS),
+            + tuple(f"evidence_hint_{query_id}" for query_id in SUPPORTED_QUERY_IDS)
+            + tuple(f"json_example_{query_id}" for query_id in SUPPORTED_QUERY_IDS)
+            + tuple(f"json_example_answer_only_{query_id}" for query_id in SUPPORTED_QUERY_IDS),
             context=f"prompt defaults for {self.task_id}",
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -674,7 +674,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -706,22 +706,22 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "scene_kind": f"chart_{str(scene_variant)}_hypothetical_counterfactual",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "evidence_labels": list(dataset.evidence_labels),
                     "counterfactual_operation": str(extras["counterfactual_operation"]),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "mark_count": int(extras["mark_count"]),
                     **{
@@ -778,14 +778,14 @@ class ChartsHypotheticalCounterfactualValueTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(dataset.answer_value),
                 "evidence_labels": list(dataset.evidence_labels),
                 "labels": [str(label) for label in dataset.labels],
                 "values": [int(value) for value in dataset.values],
                 "values_by_label": dict(values_by_label),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "numeric_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
@@ -800,7 +800,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             },
             "witness_symbolic": {
                 "type": "counterfactual_chart_calculation",
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
                 "evidence_labels": list(dataset.evidence_labels),
                 "calculation": dict(extras),
@@ -815,7 +815,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(extras["mark_count"]), extras["mark_count_range"]),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
@@ -828,7 +828,7 @@ class ChartsHypotheticalCounterfactualValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -841,7 +841,7 @@ class ChartsHypotheticalCounterfactualValuePublicTask(
     """Compute one sampled counterfactual value from a labeled chart."""
 
     task_id = "task_charts__single_series__counterfactual_value"
-    allowed_query_variants = SUPPORTED_QUERY_VARIANTS
+    allowed_query_ids = SUPPORTED_QUERY_IDS
 
 
 __all__ = [

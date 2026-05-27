@@ -8,7 +8,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` pair on the left and a labeled `Scene` grid of icon pairs on the right.
-2. Supported `query_variant` values: one current scene variant, `same_pair_transform`.
+2. Supported `query_id` value: `same_pair_transform`.
 3. Answer type: `answer_gt.type = integer`.
 4. Evidence type: `evidence_gt.type = bbox_set` (pixel-space boxes around the matching Scene cells, sorted top-to-bottom then left-to-right).
 5. Count policy: `target_count` is sampled independently from `0..4`, `distractor_count` is sampled independently from `1..9`, and `object_count = target_count + distractor_count` is constrained to the Scene option range `4..9`.
@@ -41,7 +41,7 @@
 7. Balanced defaults: `resolve_counting_target_and_distractor_triplet(...)` balances both target and distractor counts across feasible support under the normal seeded sampler.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query variant.
+1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_transformation_pair_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_transformation_pair_count_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

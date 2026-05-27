@@ -21,7 +21,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.backgammon_common import (
-    BACKGAMMON_QUERY_VARIANTS,
+    BACKGAMMON_QUERY_IDS,
     BACKGAMMON_STYLE_VARIANTS,
     PLAYER_BLACK,
     PLAYER_WHITE,
@@ -39,7 +39,7 @@ from ..shared.backgammon_scene import BackgammonRenderParams, render_backgammon_
 from ..shared.complexity import build_games_backgammon_board_complexity
 from ..shared.fixed_query_task import QuerySubsetTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.visual_defaults import load_games_noise_defaults
 
@@ -71,12 +71,12 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Backgammon instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -91,15 +91,15 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="backgammon", apply_prob=0.5)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Backgammon query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Backgammon query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=BACKGAMMON_QUERY_VARIANTS,
+        supported_variants=BACKGAMMON_QUERY_IDS,
     )
 
 
@@ -131,13 +131,13 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(BACKGAMMON_QUERY_VARIANTS):
+    if len(positives) != len(BACKGAMMON_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -145,7 +145,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced answer axes."""
 
@@ -153,32 +153,32 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(BACKGAMMON_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(BACKGAMMON_QUERY_IDS))
     return cycle_params
 
 
-def _support_key_for_query(query_variant: str) -> Tuple[str, Tuple[int, ...]]:
+def _support_key_for_query(query_id: str) -> Tuple[str, Tuple[int, ...]]:
     """Return the answer-support key and fallback for one query."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query == "legal_move_count":
         return "legal_count_support", tuple(_DEFAULTS.legal_count_support)
     if query == "hit_move_count":
         return "hit_count_support", tuple(_DEFAULTS.hit_count_support)
     if query == "blocked_destination_count":
         return "blocked_count_support", tuple(_DEFAULTS.blocked_count_support)
-    raise ValueError(f"unsupported Backgammon query_variant: {query}")
+    raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Backgammon instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     answer_cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -198,7 +198,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balance_flag_key="balanced_style_variant_sampling",
         supported=BACKGAMMON_STYLE_VARIANTS,
     )
-    support_key, fallback_support = _support_key_for_query(str(query_variant))
+    support_key, fallback_support = _support_key_for_query(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=answer_cycle_params,
@@ -206,7 +206,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=support_key,
         explicit_key="target_answer",
         fallback_support=fallback_support,
-        namespace=f"target_answer.{str(query_variant)}",
+        namespace=f"target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -217,12 +217,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=fallback_support,
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -294,10 +294,10 @@ def _candidate_destinations(*, sources: Sequence[int], dice: Tuple[int, int]) ->
     return tuple(sorted(destinations))
 
 
-def _target_state_for_query(rng: Any, *, query_variant: str, is_target: bool) -> BackgammonPoint:
+def _target_state_for_query(rng: Any, *, query_id: str, is_target: bool) -> BackgammonPoint:
     """Return the stack state to place on a candidate destination."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query == "legal_move_count":
         if bool(is_target):
             return BackgammonPoint(owner=None, count=0)
@@ -314,13 +314,13 @@ def _target_state_for_query(rng: Any, *, query_variant: str, is_target: bool) ->
         if float(rng.random()) < 0.38:
             return BackgammonPoint(owner=PLAYER_WHITE, count=1)
         return BackgammonPoint(owner=None, count=0)
-    raise ValueError(f"unsupported Backgammon query_variant: {query}")
+    raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
 def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
     """Construct one exact-answer Backgammon position."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     target_answer = int(axes.target_answer)
     for _inner_attempt in range(1500):
         dice = _choose_dice(rng)
@@ -343,7 +343,7 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
         for destination in candidates:
             points[int(destination)] = _target_state_for_query(
                 rng,
-                query_variant=query,
+                query_id=query,
                 is_target=int(destination) in target_set,
             )
 
@@ -355,13 +355,13 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
                 points[int(point)] = BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(1, 4)))
 
         outcome = compute_black_single_die_destinations(points, dice=dice)
-        expected_targets = target_destinations_for_query(outcome, query_variant=query)
+        expected_targets = target_destinations_for_query(outcome, query_id=query)
         if tuple(expected_targets) != tuple(target_destinations):
             continue
         sample = BackgammonSample(
             points=dict(points),
             dice=(int(dice[0]), int(dice[1])),
-            query_variant=query,
+            query_id=query,
             answer=int(target_answer),
             target_destinations=tuple(int(point) for point in target_destinations),
             outcome=outcome,
@@ -373,13 +373,13 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
     raise ValueError(f"could not construct Backgammon sample for {query} answer {target_answer}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Backgammon JSON output."""
 
-    if str(query_variant) == "hit_move_count":
+    if str(query_id) == "hit_move_count":
         answer_value = 2
         evidence_value = [[410, 104, 475, 316], [608, 104, 673, 316]]
-    elif str(query_variant) == "blocked_destination_count":
+    elif str(query_id) == "blocked_destination_count":
         answer_value = 3
         evidence_value = [[276, 400, 341, 612], [342, 400, 407, 612], [608, 400, 673, 612]]
     else:
@@ -480,22 +480,22 @@ class GamesBackgammonBoardTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "backgammon_rule_text": str(prompt_defaults["backgammon_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -519,7 +519,7 @@ class GamesBackgammonBoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             occupied_point_count=int(occupied_count),
             black_source_count=int(black_source_count),
             target_answer=int(sampled_scene.answer),
@@ -540,8 +540,7 @@ class GamesBackgammonBoardTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "dice": [int(value) for value in sampled_scene.dice],
                     "target_destinations": [int(point) for point in sampled_scene.target_destinations],
@@ -549,22 +548,21 @@ class GamesBackgammonBoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "dice": [int(value) for value in sampled_scene.dice],
                     "target_answer": int(sampled_scene.answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
                 },
@@ -580,8 +578,7 @@ class GamesBackgammonBoardTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "points": point_trace,
                 "dice": [int(value) for value in sampled_scene.dice],
@@ -614,9 +611,8 @@ class GamesBackgammonBoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="backgammon",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -625,7 +621,7 @@ class GamesBackgammonDestinationCountTask(QuerySubsetTaskMixin, GamesBackgammonB
     """Count Backgammon destination points matching one sampled query condition."""
 
     task_id = "task_games__backgammon__destination_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "legal_move_count",
         "hit_move_count",
         "blocked_destination_count",

@@ -43,14 +43,14 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "wave_interference"
 
     assert out.query_id == "interference_point_choice"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["params"]["internal_query_variant"] == "interference_point_choice"
+    assert trace["query_spec"]["params"]["internal_query_id"] == "interference_point_choice"
 
     assert execution["phase_relation"] == "in_phase"
 
@@ -91,7 +91,7 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert int(out.answer_gt.value) == 4
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "wave_interference"
 

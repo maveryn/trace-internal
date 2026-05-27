@@ -8,7 +8,7 @@
 5. Goal: simulate a turning agent automaton and choose the option showing its final cell and direction.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `binary_rule_final_pose|three_state_rule_final_pose`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

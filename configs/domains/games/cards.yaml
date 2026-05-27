@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       multi_row: 1.0
-    query_variant_weights:
+    query_id_weights:
       same_suit_as_reference_count: 1.0
       higher_than_reference_count: 1.0
       exact_triple_count: 1.0
@@ -12,7 +12,7 @@ generation:
       soft: 1.0
       outlined: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_card_count_sampling: true

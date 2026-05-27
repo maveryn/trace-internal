@@ -1,6 +1,6 @@
 # task_illustrations__source_scene_edit__object_count_after_edit
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -9,11 +9,11 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 - module: `trace/tasks/illustrations/counterfactual/object_count_after_edit.py`
 
 ## Contract
-The task renders one accepted illustration source scene with a known current
+The task renders one current illustration source scene with a known current
 count of a named target object. The prompt asks for the resulting count after a
 hypothetical add or remove edit.
 
-Public variants:
+Query ids:
 - `after_added_k_objects_count`
 - `after_removed_k_objects_count`
 

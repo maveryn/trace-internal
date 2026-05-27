@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_three_d__warehouse__robot_forward_path_label:
-      query_variant_weights:
+      query_id_weights:
         first_object_ahead: 1.0
       scene_variant_weights:
         storage_aisle: 1.0
@@ -16,11 +16,11 @@ generation:
       candidate_count_max: 5
       context_object_count_min: 11
       context_object_count_max: 11
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_robot_heading_sampling: true
     task_three_d__warehouse__robot_nearest_object_label:
-      query_variant_weights:
+      query_id_weights:
         closest_robot_to_reference: 1.0
         closest_object_to_robot: 1.0
       scene_variant_weights:
@@ -36,7 +36,7 @@ generation:
       candidate_count_max: 5
       context_object_count_min: 10
       context_object_count_max: 10
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_aisle_heading_sampling: true
 

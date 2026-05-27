@@ -23,18 +23,18 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ..shared.complexity import build_games_2048_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.twenty_forty_eight_common import (
     Board,
     Coord,
     EMPTY,
-    MOVE_RESULT_QUERY_VARIANTS,
+    MOVE_RESULT_QUERY_IDS,
     SIZE,
     SUPPORTED_2048_DIRECTIONS,
     SUPPORTED_2048_GOAL_CELLS,
     SUPPORTED_2048_LABELS,
-    SUPPORTED_2048_QUERY_VARIANTS,
+    SUPPORTED_2048_QUERY_IDS,
     SUPPORTED_2048_SCENE_VARIANTS,
     SUPPORTED_2048_STYLE_VARIANTS,
     Move2048Result,
@@ -77,7 +77,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one 2048 instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     move_direction: str
@@ -86,7 +86,7 @@ class _ResolvedAxes:
     target_label: str | None
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     move_direction_probabilities: Dict[str, float]
@@ -104,20 +104,20 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="2048", apply_prob=0.5)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced 2048 query variant."""
+    """Resolve one balanced 2048 query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=supported_query_variants,
+        supported_variants=supported_query_ids,
     )
 
 
@@ -191,17 +191,17 @@ def _uses_uniform_query_cycle(
     params: Mapping[str, Any],
     probabilities: Mapping[str, float],
     *,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> bool:
     """Return true when the query axis uses the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(tuple(supported_query_variants)):
+    if len(positives) != len(tuple(supported_query_ids)):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -209,8 +209,8 @@ def _uses_uniform_query_cycle(
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner answer axes."""
 
@@ -220,55 +220,55 @@ def _params_for_query_occurrence_cycle(
         return cycle_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return cycle_params
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     """Return the integer support key used by one 2048 value query."""
 
-    if str(query_variant) == "merge_count":
+    if str(query_id) == "merge_count":
         return "merge_count_support"
-    if str(query_variant) == "score_value":
+    if str(query_id) == "score_value":
         return "score_value_support"
-    if str(query_variant) == "max_tile_value":
+    if str(query_id) == "max_tile_value":
         return "max_tile_value_support"
-    raise ValueError(f"query variant {query_variant!r} does not use integer target support")
+    raise ValueError(f"query id {query_id!r} does not use integer target support")
 
 
-def _target_fallback(query_variant: str) -> Tuple[int, ...]:
+def _target_fallback(query_id: str) -> Tuple[int, ...]:
     """Return fallback answer support for one 2048 value query."""
 
-    if str(query_variant) == "merge_count":
+    if str(query_id) == "merge_count":
         return _DEFAULTS.merge_count_support
-    if str(query_variant) == "score_value":
+    if str(query_id) == "score_value":
         return _DEFAULTS.score_value_support
-    if str(query_variant) == "max_tile_value":
+    if str(query_id) == "max_tile_value":
         return _DEFAULTS.max_tile_value_support
-    raise ValueError(f"query variant {query_variant!r} does not use integer target support")
+    raise ValueError(f"query id {query_id!r} does not use integer target support")
 
 
 def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one 2048 instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     answer_cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities=query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -317,13 +317,13 @@ def _resolve_axes(
         key="best_move_label_support",
         fallback=_DEFAULTS.best_move_label_support,
     )
-    if str(query_variant) in MOVE_RESULT_QUERY_VARIANTS:
-        support_key = _target_support_key(str(query_variant))
+    if str(query_id) in MOVE_RESULT_QUERY_IDS:
+        support_key = _target_support_key(str(query_id))
         target_answer_support = resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
             key=support_key,
-            fallback=_target_fallback(str(query_variant)),
+            fallback=_target_fallback(str(query_id)),
         )
         target_answer, target_answer_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
@@ -331,12 +331,12 @@ def _resolve_axes(
             gen_defaults=_GEN_DEFAULTS,
             support_key=support_key,
             explicit_key="target_answer",
-            fallback_support=_target_fallback(str(query_variant)),
-            namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+            fallback_support=_target_fallback(str(query_id)),
+            namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
-    elif str(query_variant) == "best_move_label":
+    elif str(query_id) == "best_move_label":
         target_label, target_label_probabilities = _resolve_label_choice(
             instance_seed=int(instance_seed),
             params=answer_cycle_params,
@@ -347,10 +347,10 @@ def _resolve_axes(
             balanced_flag_key="balanced_target_label_sampling",
         )
     else:
-        raise ValueError(f"unsupported 2048 query_variant: {query_variant}")
+        raise ValueError(f"unsupported 2048 query_id: {query_id}")
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         move_direction=str(move_direction),
@@ -359,7 +359,7 @@ def _resolve_axes(
         target_label=None if target_label is None else str(target_label),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         move_direction_probabilities=dict(move_direction_probabilities),
@@ -503,24 +503,24 @@ def _board_for_merge_values(
     return _board_from_move_order(lines, direction=str(direction))
 
 
-def _merge_metric(result: Move2048Result, *, query_variant: str) -> int:
+def _merge_metric(result: Move2048Result, *, query_id: str) -> int:
     """Return the answer metric for one value query."""
 
-    if str(query_variant) == "merge_count":
+    if str(query_id) == "merge_count":
         return int(len(result.merge_pairs))
-    if str(query_variant) == "score_value":
+    if str(query_id) == "score_value":
         return int(result.score)
-    if str(query_variant) == "max_tile_value":
+    if str(query_id) == "max_tile_value":
         return int(board_max_tile(result.after))
-    raise ValueError(f"unsupported 2048 value query: {query_variant}")
+    raise ValueError(f"unsupported 2048 value query: {query_id}")
 
 
-def _evidence_coords_for_query(result: Move2048Result, *, query_variant: str) -> Tuple[Coord, ...]:
+def _evidence_coords_for_query(result: Move2048Result, *, query_id: str) -> Tuple[Coord, ...]:
     """Return source-cell evidence coordinates for one value query."""
 
-    if str(query_variant) in {"merge_count", "score_value"}:
+    if str(query_id) in {"merge_count", "score_value"}:
         return tuple(coord for pair in result.merge_pairs for coord in pair)
-    if str(query_variant) == "max_tile_value":
+    if str(query_id) == "max_tile_value":
         max_value = int(board_max_tile(result.after))
         max_cells = [
             tuple(coord)
@@ -528,7 +528,7 @@ def _evidence_coords_for_query(result: Move2048Result, *, query_variant: str) ->
             if int(result.after[int(coord[0])][int(coord[1])]) == int(max_value) and sources
         ]
         return tuple(coord for cell in max_cells for coord in result.result_sources[cell])
-    raise ValueError(f"unsupported 2048 value query: {query_variant}")
+    raise ValueError(f"unsupported 2048 value query: {query_id}")
 
 
 def _unique_max_result(result: Move2048Result) -> bool:
@@ -541,7 +541,7 @@ def _unique_max_result(result: Move2048Result) -> bool:
 def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
     """Construct a single-arrow 2048 value query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     target = int(axes.target_answer if axes.target_answer is not None else 0)
     for _attempt in range(160):
         if query == "merge_count":
@@ -574,7 +574,7 @@ def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
         result = simulate_2048_move(board, str(axes.move_direction))
         if not result.moved:
             continue
-        if _merge_metric(result, query_variant=query) != target:
+        if _merge_metric(result, query_id=query) != target:
             continue
         if query == "max_tile_value" and not _unique_max_result(result):
             continue
@@ -582,9 +582,9 @@ def _sample_move_result_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
             str(direction): simulate_2048_move(board, str(direction))
             for direction in SUPPORTED_2048_DIRECTIONS
         }
-        evidence_ids = tuple(coord_to_cell_id(coord) for coord in _evidence_coords_for_query(result, query_variant=query))
+        evidence_ids = tuple(coord_to_cell_id(coord) for coord in _evidence_coords_for_query(result, query_id=query))
         sample = Sample2048(
-            query_variant=query,
+            query_id=query,
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=int(target),
@@ -662,7 +662,7 @@ def _sample_best_move_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
         move_labels = _assign_move_labels(rng=rng, target_direction=target_direction, target_label=target_label)
         evidence_ids = tuple(coord_to_cell_id(coord) for coord in sources)
         sample = Sample2048(
-            query_variant="best_move_label",
+            query_id="best_move_label",
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_label),
@@ -683,23 +683,23 @@ def _sample_best_move_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> Sample2048:
     """Construct one 2048 scene for the requested query."""
 
-    if str(axes.query_variant) in MOVE_RESULT_QUERY_VARIANTS:
+    if str(axes.query_id) in MOVE_RESULT_QUERY_IDS:
         return _sample_move_result_scene(rng=rng, axes=axes)
-    if str(axes.query_variant) == "best_move_label":
+    if str(axes.query_id) == "best_move_label":
         return _sample_best_move_scene(rng=rng, axes=axes)
-    raise ValueError(f"unsupported 2048 query_variant: {axes.query_variant}")
+    raise ValueError(f"unsupported 2048 query_id: {axes.query_id}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for 2048 JSON output."""
 
-    if str(query_variant) == "best_move_label":
+    if str(query_id) == "best_move_label":
         answer_value: str | int = "D"
         evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
-    elif str(query_variant) == "merge_count":
+    elif str(query_id) == "merge_count":
         answer_value = 2
         evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
-    elif str(query_variant) == "score_value":
+    elif str(query_id) == "score_value":
         answer_value = 24
         evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
     else:
@@ -739,13 +739,13 @@ class Games2048BoardTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "2048"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_2048_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_2048_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(
             int(instance_seed),
             params=params,
-            supported_query_variants=tuple(self.supported_query_variants),
+            supported_query_ids=tuple(self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
@@ -794,8 +794,8 @@ class Games2048BoardTask:
             style_variant=str(axes.style_variant),
             params=render_params,
             panel_style=panel_style,
-            move_direction=None if str(axes.query_variant) == "best_move_label" else str(sampled_scene.move_direction),
-            move_label_by_direction=sampled_scene.move_label_by_direction if str(axes.query_variant) == "best_move_label" else None,
+            move_direction=None if str(axes.query_id) == "best_move_label" else str(sampled_scene.move_direction),
+            move_label_by_direction=sampled_scene.move_label_by_direction if str(axes.query_id) == "best_move_label" else None,
             goal_cell=sampled_scene.goal_cell,
         )
         evidence_bboxes = [
@@ -832,14 +832,14 @@ class Games2048BoardTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -848,8 +848,8 @@ class Games2048BoardTask:
                 "move_rule_text": str(prompt_defaults["move_rule_text"]),
                 "score_rule_text": str(prompt_defaults["score_rule_text"]),
                 "goal_rule_text": str(prompt_defaults["goal_rule_text"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -859,7 +859,7 @@ class Games2048BoardTask:
 
         answer_gt = (
             TypedValue(type="string", value=str(sampled_scene.answer))
-            if str(axes.query_variant) == "best_move_label"
+            if str(axes.query_id) == "best_move_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
@@ -868,7 +868,7 @@ class Games2048BoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             filled_count=int(filled_count),
             merge_count=int(len(sampled_scene.move_result.merge_pairs)),
             target_answer=sampled_scene.answer,
@@ -880,8 +880,7 @@ class Games2048BoardTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "move_direction": str(sampled_scene.move_direction),
                     "goal_cell": None if sampled_scene.goal_cell is None else [int(sampled_scene.goal_cell[0]), int(sampled_scene.goal_cell[1])],
@@ -889,21 +888,20 @@ class Games2048BoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "move_direction": str(sampled_scene.move_direction),
                     "goal_cell": str(axes.goal_cell_name),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "move_direction_probabilities": dict(axes.move_direction_probabilities),
                     "goal_cell_probabilities": dict(axes.goal_cell_probabilities),
@@ -928,8 +926,7 @@ class Games2048BoardTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "board_before": [[int(value) for value in row] for row in sampled_scene.board],
                 "move_direction": str(sampled_scene.move_direction),
@@ -964,9 +961,8 @@ class Games2048BoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="2048",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -975,7 +971,7 @@ class Games2048MoveResultValueTask(Games2048BoardTask):
     """Answer integer questions about one shown 2048 move."""
 
     task_id = "task_games__2048__move_result_value"
-    supported_query_variants = MOVE_RESULT_QUERY_VARIANTS
+    supported_query_ids = MOVE_RESULT_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))
@@ -986,10 +982,10 @@ class Games2048MoveResultValueTask(Games2048BoardTask):
         if isinstance(query_spec, Mapping):
             spec_params = query_spec.get("params")
             if isinstance(spec_params, Mapping):
-                raw_probabilities = spec_params.get("query_variant_probabilities")
+                raw_probabilities = spec_params.get("query_id_probabilities")
                 if isinstance(raw_probabilities, Mapping):
                     probabilities = {str(key): float(value) for key, value in raw_probabilities.items()}
-        return rewrite_public_query_output(output, query_id=query_id, query_variant_probabilities=probabilities)
+        return rewrite_public_query_output(output, query_id=query_id, query_id_probabilities=probabilities)
 
 
 @register_task
@@ -997,8 +993,8 @@ class Games2048BestMoveLabelTask(FixedQueryVariantTaskMixin, Games2048BoardTask)
     """Choose the labeled 2048 move that maximizes the outlined goal-cell value."""
 
     task_id = "task_games__2048__best_move_label"
-    fixed_query_variant = "best_move_label"
-    supported_query_variants = ("best_move_label",)
+    fixed_query_id = "best_move_label"
+    supported_query_ids = ("best_move_label",)
 
 
 __all__ = [

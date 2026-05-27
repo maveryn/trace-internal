@@ -73,11 +73,11 @@ Promote helpers when a second consumer appears.
    - Use `resolve_counting_cardinality_pair(...)` when the count answer itself should be sampled from the global feasible support before object-count/layout choice.
    - `resolve_counting_target_and_distractor_triplet(...)` also supports target-conditioned distractor floors via `distractor_margin_over_target` when one family needs more negatives than positives for readable scenes.
 17. `trace/tasks/shared/variant_sampling.py`
-   - Canonical deterministic query-variant override/weight/balancing helpers across domains.
+   - Canonical deterministic query-id override/weight/balancing helpers across domains.
    - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
    - Balanced cycling must respect positive-probability variants only; zero-weight variants are disabled and should not re-enter through deterministic cycling.
    - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
-   - Use `resolve_compatible_scene_query_variants(...)` when a task exposes constrained `scene_variant` + `query_variant` axes; do not keep that resolver trapped inside one domain once a second domain needs it.
+   - Use `resolve_compatible_scene_query_ids(...)` when a task exposes constrained `scene_variant` + `query_id` axes; do not keep that resolver trapped inside one domain once a second domain needs it.
    - Use separate namespaces for scene/query axes so equal-size axes do not alias one-to-one.
 18. `trace/tasks/shared/support_sampling.py`
    - Canonical deterministic integer-support parsing and balanced support cycling across domains.
@@ -126,8 +126,8 @@ Promote helpers when a second consumer appears.
    - Use this when a second domain needs graph-paper points projected into public pixel evidence instead of importing geometry-local evidence helpers across domains.
 26. `trace/tasks/shared/fixed_query.py`
    - Canonical public fixed-query wrapper helper for tasks backed by internal query branches.
-   - Use `force_query_variant_params(...)` when a domain wrapper needs to force one internal branch before generation.
-   - Use `rewrite_public_query_output(...)` to expose the public wrapper contract: `query_variant="default"`, populated `query_id`, optional public `task_id` / `scene_id` rewrites, domain-selected probability metadata in `query_spec`, `execution_trace`, optional `render_spec`, scene relation metadata, and optional scene-root identity metadata.
+   - Use `force_query_id_params(...)` when a domain wrapper needs to force one internal branch before generation.
+   - Use `rewrite_public_query_output(...)` to expose the public wrapper contract: populated `query_id`, optional public `task_id` / `scene_id` rewrites, domain-selected probability metadata in `query_spec`, `execution_trace`, optional `render_spec`, scene relation metadata, optional scene-root identity metadata, and internal `query_id` replay metadata.
    - Domain-local modules such as `charts/shared/fixed_query_task.py`, `games/shared/fixed_query_task.py`, `geometry/shared/fixed_query_task.py`, `graph/shared/fixed_query_task.py`, `physics/shared/fixed_query_task.py`, `puzzles/shared/fixed_query_task.py`, `icons/shared/public_query_task.py`, `pages/shared/public_query_task.py`, and `puzzles/cell_board/merged_tasks.py` should be thin policy/name adapters over this helper, not independent rewrite implementations.
 
 ### Domain-shared (current)
@@ -159,8 +159,8 @@ Promote helpers when a second consumer appears.
    - `quadrilateral_prototypes.py` provides reusable centered quadrilateral-class samplers/classifiers shared by quadrilateral counting scenes and future mixed shape-type scenes.
    - `function_graph_scene.py` provides reusable graph-paper plotted-function rendering helpers for graphing-family geometry tasks; keep floating-point graph-unit projection, function polyline drawing, and dashed horizontal guide-line rendering there instead of rebuilding those helpers task-locally.
    - `complexity.py` is the shared geometry-domain complexity layer; it owns normalized `[0, 1]` score construction, config-weight resolution, and the active family builders for migrated geometry tasks (currently comparison, counting, measurement, analytical, coordinate, circle, and graphing), while task modules still own the task-local raw-to-normalized measurements that feed those shared builders.
-   - `consolidated_sampling.py` is the canonical scene/query-axis resolver for consolidated geometry tasks; use it when a geometry family exposes constrained `scene_variant` + `query_variant` sampling instead of re-implementing filtering per task.
-   - `consolidated_source.py` is the canonical adapter layer for consolidated geometry tasks that delegate to source geometry generators while rewriting trace metadata to the active `scene_variant` / `query_variant` contract, including the review-facing `query_variant` probability fields that inspection/distribution tooling reads back later.
+   - `consolidated_sampling.py` is the canonical scene/query-axis resolver for consolidated geometry tasks; use it when a geometry family exposes constrained `scene_variant` + `query_id` sampling instead of re-implementing filtering per task.
+   - `consolidated_source.py` is the canonical adapter layer for consolidated geometry tasks that delegate to source geometry generators while rewriting trace metadata to the active `scene_variant` / `query_id` contract, including the review-facing `query_id` probability fields that inspection/distribution tooling reads back later.
    - `polygon_transformations.py` is the canonical lattice-polygon transform helper for geometry tasks that reason over rigid transforms or similarity; keep asymmetric template sampling plus rigid/uniform/anisotropic polygon transforms and congruence/similarity checks there instead of encoding those transforms directly inside each geometry task.
    - `polygon_scene_helpers.py` is the canonical graph-paper polygon projection/reference-rendering helper for geometry families that reuse the same Reference-plus-candidates scaffold; keep point projection, polygon visibility checks, and `Reference` label rendering there instead of cloning those task-local helpers.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/measurement_rendering.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
@@ -329,7 +329,7 @@ Promote helpers when a second consumer appears.
    - `sudoku_scene.py` is the canonical Sudoku-grid renderer for active games Sudoku tasks; it owns grid layout, highlighted-unit and marked-cell chrome, digit rendering, and traced cell bbox maps.
    - `snake_common.py` is the shared Snake construction/rules layer; it owns cardinal moves, one-step and planned-sequence simulation, safe-direction evaluation, coordinate ids, and sample validation for active Snake tasks and later siblings.
    - `snake_scene.py` is the canonical Snake-grid renderer for active games Snake tasks; it owns square-board layout, head/body/food drawing, style palettes, and traced cell bbox maps.
-   - `sampling.py` is the shared games-domain axis sampler layer; it owns the reusable balanced `query_variant` and named-axis resolution used across games task groups.
+   - `sampling.py` is the shared games-domain axis sampler layer; it owns the reusable balanced `query_id` and named-axis resolution used across games task groups.
    - `complexity.py` is the shared games-domain complexity layer; it owns normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction for games tasks.
    - `style.py` is the shared games-domain theme layer; it owns reusable bingo / dots-and-boxes / card / domino / Reversi / Connect Four / Checkers / Morris / Go / Sudoku chrome, shadow, and highlight styling so new games tasks do not hardcode separate palettes.
    - `visual_defaults.py` is the canonical games-domain background/noise loader layer shared across future games task groups.

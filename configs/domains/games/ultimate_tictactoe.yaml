@@ -1,18 +1,18 @@
 generation:
   shared:
-    status_count_query_variant_weights:
+    status_count_query_id_weights:
       x_won_board_count: 1.0
       o_won_board_count: 1.0
       neither_won_board_count: 1.0
       drawn_board_count: 1.0
-    local_tactic_query_variant_weights:
+    local_tactic_query_id_weights:
       x_winning_move_label: 1.0
       o_winning_move_label: 1.0
       x_blocking_move_label: 1.0
       o_blocking_move_label: 1.0
     style_variant_weights:
       panel_scene: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_answer_option_sampling: true

@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       open_board: 1.0
       crowded_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       winning_move_cell_label: 1.0
       connection_gap_count: 1.0
     player_color_weights:
@@ -16,7 +16,7 @@ generation:
       slate: 1.0
       paper: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_player_color_sampling: true
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true

@@ -7,7 +7,7 @@ from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 
 SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DOTS_AND_BOXES_QUERY_IDS: Tuple[str, ...] = (
     "three_sided_box_count",
     "capture_move_count",
     "highlighted_candidate_capture_count",
@@ -609,7 +609,7 @@ def _make_board_state_from_drawn_edges(
 def build_dots_and_boxes_count_board_state(
     *,
     rng,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     box_rows: int,
     box_cols: int,
@@ -620,7 +620,7 @@ def build_dots_and_boxes_count_board_state(
     edge_specs, box_edges, _edge_boxes = _build_geometry(int(box_rows), int(box_cols))
     all_edge_ids = _all_edge_ids(box_edges)
     target = int(target_answer)
-    query = str(query_variant)
+    query = str(query_id)
     if target < 0:
         raise ValueError("dots-and-boxes count targets must be non-negative")
 
@@ -697,7 +697,7 @@ def build_dots_and_boxes_count_board_state(
                 target_answer=int(target),
             )
 
-        raise ValueError(f"unsupported dots-and-boxes query_variant: {query}")
+        raise ValueError(f"unsupported dots-and-boxes query_id: {query}")
 
     raise RuntimeError(f"failed to build a dots-and-boxes board for {query} target {target}")
 
@@ -713,7 +713,7 @@ __all__ = [
     "DotsAndBoxesBoxInstance",
     "DotsAndBoxesEdgeInstance",
     "DotsAndBoxesSimulationResult",
-    "SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS",
+    "SUPPORTED_DOTS_AND_BOXES_QUERY_IDS",
     "SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS",
     "box_drawn_side_counts",
     "build_dots_and_boxes_board_state",

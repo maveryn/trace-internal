@@ -1,6 +1,6 @@
 # task_illustrations__construction_site__equipment_zone_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -15,7 +15,7 @@ The task renders a synthetic construction site with visible labeled zones:
 Excavation Zone, Loading Zone, and Roadwork Zone. Construction equipment items
 are placed by semantic zone before rendering.
 
-Public query variants:
+Query ids:
 
 - `vehicle_in_excavation_zone_count`
 - `vehicle_in_loading_zone_count`
@@ -45,6 +45,6 @@ named zone.
 ## Prompt Contract
 - `scene_key = construction_site_canvas`
 - `task_key = equipment_in_zone_count_task`
-- `query_key` is one of the three zone-count variants above
+- `query_id` is one of the three zone-count branches above
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

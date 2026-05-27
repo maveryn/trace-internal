@@ -32,7 +32,7 @@ from ..shared.coordinate_panel_grid import (
     panel_bbox_for_index,
     plot_bbox_for_panel,
 )
-from ..shared.fixed_query_task import select_geometry_query_variant
+from ..shared.fixed_query_task import select_geometry_query_id
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
@@ -50,13 +50,13 @@ SHAPE_MATCH_TASK_ID = "task_geometry__coordinate_panels__quadrilateral_shape_mat
 COMPLETION_SCENE_ID = "coordinate_plane"
 PANEL_SCENE_ID = "coordinate_panels"
 
-COMPLETION_QUERY_VARIANTS: Tuple[str, ...] = (
+COMPLETION_QUERY_IDS: Tuple[str, ...] = (
     "parallelogram_completion_label",
     "rectangle_completion_label",
     "square_completion_label",
     "rhombus_completion_label",
 )
-SHAPE_MATCH_QUERY_VARIANTS: Tuple[str, ...] = (
+SHAPE_MATCH_QUERY_IDS: Tuple[str, ...] = (
     "square_shape_match_label",
     "rectangle_shape_match_label",
     "rhombus_shape_match_label",
@@ -286,7 +286,7 @@ def _select_winner_label(
     instance_seed: int,
     task_id: str,
     label_pool: Sequence[str],
-    query_variant_count: int,
+    query_id_count: int,
 ) -> Tuple[str, Dict[str, float]]:
     labels = tuple(str(label) for label in label_pool)
     explicit = params.get("winner_label", params.get("answer_label"))
@@ -306,14 +306,14 @@ def _select_winner_label(
 def _resolve_query(
     *,
     task_id: str,
-    query_variants: Sequence[str],
+    query_ids: Sequence[str],
     scene_label_pool: Sequence[str],
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _ResolvedQuery:
-    query_id, query_probabilities = select_geometry_query_variant(
+    query_id, query_probabilities = select_geometry_query_id(
         params,
-        query_variants=tuple(query_variants),
+        query_ids=tuple(query_ids),
         task_id=str(task_id),
         instance_seed=int(instance_seed),
     )
@@ -322,7 +322,7 @@ def _resolve_query(
         instance_seed=int(instance_seed),
         task_id=str(task_id),
         label_pool=tuple(scene_label_pool),
-        query_variant_count=len(tuple(query_variants)),
+        query_id_count=len(tuple(query_ids)),
     )
     target_kind = str(QUERY_TARGET_KIND[str(query_id)])
     return _ResolvedQuery(
@@ -976,16 +976,14 @@ def _completion_trace_payload(
             "relations": {
                 "scene_id": COMPLETION_SCENE_ID,
                 "query_id": str(query.query_id),
-                "query_variant": "default",
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
                 "winner_label": str(query.winner_label),
             },
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -993,10 +991,9 @@ def _completion_trace_payload(
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": COMPLETION_SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
                 "winner_label": str(query.winner_label),
@@ -1026,7 +1023,6 @@ def _completion_trace_payload(
         "execution_trace": {
             "scene_id": COMPLETION_SCENE_ID,
             "query_id": str(query.query_id),
-            "query_variant": "default",
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "target_kind": str(query.target_kind),
@@ -1036,7 +1032,7 @@ def _completion_trace_payload(
             "candidate_points_by_label": dict(candidate_trace),
             "target_ordered_vertices": [[int(value) for value in point] for point in rendered.target_ordered_vertices],
             "variant_probabilities": {"default": 1.0},
-            "query_variant_probabilities": dict(query.query_probabilities),
+            "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_quadrilateral_completion",
@@ -1079,16 +1075,14 @@ def _panel_trace_payload(
             "relations": {
                 "scene_id": PANEL_SCENE_ID,
                 "query_id": str(query.query_id),
-                "query_variant": "default",
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
                 "winner_label": str(query.winner_label),
             },
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1096,10 +1090,9 @@ def _panel_trace_payload(
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": PANEL_SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
                 "winner_label": str(query.winner_label),
@@ -1130,14 +1123,13 @@ def _panel_trace_payload(
         "execution_trace": {
             "scene_id": PANEL_SCENE_ID,
             "query_id": str(query.query_id),
-            "query_variant": "default",
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "target_kind": str(query.target_kind),
             "target_shape_name": str(query.target_shape_name),
             "panels_by_label": dict(panels_trace),
             "variant_probabilities": {"default": 1.0},
-            "query_variant_probabilities": dict(query.query_probabilities),
+            "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_quadrilateral_shape_panel_match",
@@ -1173,7 +1165,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
         )
         query = _resolve_query(
             task_id=self.task_id,
-            query_variants=COMPLETION_QUERY_VARIANTS,
+            query_ids=COMPLETION_QUERY_IDS,
             scene_label_pool=label_pool,
             instance_seed=int(instance_seed),
             params=params,
@@ -1241,11 +1233,9 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(
                 task_id=self.task_id,
-                query_id=str(query.query_id),
                 object_count=3 + len(rendered.candidate_points_by_label),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=COMPLETION_SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1267,7 +1257,7 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
         label_pool = _resolve_label_pool(params, generation_defaults, "panel_labels", DEFAULT_PANEL_LABEL_POOL)
         query = _resolve_query(
             task_id=self.task_id,
-            query_variants=SHAPE_MATCH_QUERY_VARIANTS,
+            query_ids=SHAPE_MATCH_QUERY_IDS,
             scene_label_pool=label_pool,
             instance_seed=int(instance_seed),
             params=params,
@@ -1335,12 +1325,10 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(
                 task_id=self.task_id,
-                query_id=str(query.query_id),
                 object_count=4,
                 panel_count=len(rendered.panels_by_label),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=PANEL_SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

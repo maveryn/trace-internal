@@ -10,7 +10,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.pages.relation.professional_target_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     PagesRelationProfessionalTargetLabelTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -25,11 +25,11 @@ def test_gui_relation_professional_target_contract_matches_trace() -> None:
     scene_variants = ("office_document", "creative_workspace", "developer_ide", "cad_workspace", "scientific_plotter")
     style_variants = ("standard", "compact", "contrast", "standard", "compact")
 
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             89100 + index,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variants[index],
                 "style_variant": style_variants[index],
             },
@@ -42,10 +42,10 @@ def test_gui_relation_professional_target_contract_matches_trace() -> None:
 
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert trace["scene_ir"]["scene_kind"] == SCENE_KIND
         assert str(out.answer_gt.value) == str(execution["target_label"])
         assert str(target["candidate_label"]) == str(execution["target_label"])
@@ -89,10 +89,10 @@ def test_gui_relation_professional_target_prompt_examples_match_option_contract(
 
 def test_gui_relation_professional_target_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesRelationProfessionalTargetLabelTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
-    answers_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
     context_counts: Counter[int] = Counter()
     active_variants: set[str] | None = None
 
@@ -103,23 +103,23 @@ def test_gui_relation_professional_target_balanced_sampling_defaults_cover_axes_
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_variant[query_variant][str(execution["target_label"])] += 1
+        answers_by_query_id[query_id][str(execution["target_label"])] += 1
         context_counts[int(execution["context_count"])] += 1
         if active_variants is None:
             active_variants = {
                 str(key)
-                for key, value in dict(execution["query_variant_probabilities"]).items()
+                for key, value in dict(execution["query_id_probabilities"]).items()
                 if float(value) > 0.0
             }
 
     assert active_variants
-    assert set(query_variants.keys()) == set(active_variants)
-    assert set(active_variants) == set(SUPPORTED_QUERY_VARIANTS)
-    assert all(count >= 20 for count in query_variants.values())
+    assert set(query_ids.keys()) == set(active_variants)
+    assert set(active_variants) == set(SUPPORTED_QUERY_IDS)
+    assert all(count >= 20 for count in query_ids.values())
     assert set(scene_variants.keys()) == {
         "office_document",
         "creative_workspace",
@@ -130,14 +130,14 @@ def test_gui_relation_professional_target_balanced_sampling_defaults_cover_axes_
     }
     assert set(style_variants.keys()) == {"standard", "compact", "contrast", "cool", "warm", "sage"}
     assert set(context_counts.keys()) == {3, 4, 5}
-    for query_variant in active_variants:
-        assert len(answers_by_query_variant[query_variant]) >= 15
+    for query_id in active_variants:
+        assert len(answers_by_query_id[query_id]) >= 15
 
 
 def test_gui_relation_professional_target_deterministic() -> None:
     task = PagesRelationProfessionalTargetLabelTask()
     params = {
-        "query_variant": SUPPORTED_QUERY_VARIANTS[-1],
+        "query_id": SUPPORTED_QUERY_IDS[-1],
         "scene_variant": "cad_workspace",
         "style_variant": "contrast",
         "target_label": "M",

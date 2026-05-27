@@ -14,16 +14,16 @@ def test_games_bingo_completed_line_count_defaults_expose_scene_query_and_target
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"single_card"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "completed_axis_line_count",
         "line_sum_extremum_value",
     }
-    assert float(generation["query_variant_weights"]["completed_axis_line_count"]) == 1.0
-    assert float(generation["query_variant_weights"]["line_sum_extremum_value"]) == 1.0
+    assert float(generation["query_id_weights"]["completed_axis_line_count"]) == 1.0
+    assert float(generation["query_id_weights"]["line_sum_extremum_value"]) == 1.0
     assert set(generation["line_axis_weights"].keys()) == {"row", "column"}
     assert set(generation["extremum_weights"].keys()) == {"max", "min"}
     assert set(generation["style_variant_weights"].keys()) == {

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter
 import random
 
-from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_compatible_scene_query_variants
+from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_compatible_scene_query_ids
 
 
 def test_balanced_variant_sampling_ignores_zero_weight_variants() -> None:
@@ -55,16 +55,16 @@ def test_balanced_variant_sampling_uses_seeded_public_sampler_for_positive_unifo
 def test_compatible_scene_query_sampling_uses_separate_seeded_namespaces() -> None:
     combos: Counter[tuple[str, str]] = Counter()
     for index in range(30):
-        scene, _, query, _ = resolve_compatible_scene_query_variants(
+        scene, _, query, _ = resolve_compatible_scene_query_ids(
             random.Random(index),
             instance_seed=index,
             params={},
             gen_defaults={
                 "balanced_scene_variant_sampling": True,
-                "balanced_query_variant_sampling": True,
+                "balanced_query_id_sampling": True,
             },
             supported_scene_variants=("scene_a", "scene_b", "scene_c"),
-            supported_query_variants=("query_a", "query_b", "query_c"),
+            supported_query_ids=("query_a", "query_b", "query_c"),
             compatibility={
                 "scene_a": ("query_a", "query_b", "query_c"),
                 "scene_b": ("query_a", "query_b", "query_c"),

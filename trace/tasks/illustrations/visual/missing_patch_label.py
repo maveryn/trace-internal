@@ -74,7 +74,7 @@ def _patch_mode_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
 
 def _sample_spec(*, params: Mapping[str, Any], instance_seed: int) -> _SampleSpec:
     support = _patch_mode_support(params)
-    explicit_mode = params.get("patch_mode", params.get("query_variant"))
+    explicit_mode = params.get("patch_mode", params.get("query_id"))
     if explicit_mode is not None:
         patch_mode = str(explicit_mode)
         if patch_mode not in set(support):
@@ -362,13 +362,11 @@ class IllustrationsVisualMissingPatchLabelTask:
                     "options": [{"label": label, "bbox": option_bboxes[str(label)]} for label in labels],
                 },
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(sample.patch_mode),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": str(sample.patch_mode),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -401,7 +399,6 @@ class IllustrationsVisualMissingPatchLabelTask:
                 "correct_option_label": str(answer_label),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(sample.patch_mode),
                 "answer": str(answer_label),
                 "correct_option_label": str(answer_label),
@@ -425,7 +422,6 @@ class IllustrationsVisualMissingPatchLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.patch_mode),
         )

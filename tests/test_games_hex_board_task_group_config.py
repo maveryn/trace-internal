@@ -15,14 +15,14 @@ def test_games_hex_board_defaults_expose_scene_query_target_board_and_style_axes
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_player_color_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_board_size_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert bool(generation["balanced_target_label_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"open_board", "crowded_board"}
-    assert set(generation["query_variant_weights"].keys()) == {"winning_move_cell_label", "connection_gap_count"}
+    assert set(generation["query_id_weights"].keys()) == {"winning_move_cell_label", "connection_gap_count"}
     assert set(generation["player_color_weights"].keys()) == {"red", "blue"}
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_HEX_STYLE_VARIANTS)
     assert list(generation["board_size_support"]) == [5, 6, 7, 8]

@@ -7,7 +7,7 @@
 - Query id: `closest_to_reference`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed pending probe
+- Status: pending_v0_review
 
 ## Contract
 The image shows the same open synthetic perspective 3D object scene as the other `three_d/spatial` tasks: a gridded floor or platform, perspective camera cues, and 3D objects with explicit world coordinates and projected boxes.
@@ -23,6 +23,9 @@ Evidence is the bounding box of the selected lettered 3D object. The named refer
 
 ## Prompt And Trace
 The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing names, reference id/name/shape, per-label surface gaps to the reference, nearest-order labels, and projected object bboxes.
+
+## Calibration
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.

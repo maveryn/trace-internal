@@ -87,7 +87,7 @@ class ProfessionalTaskDefinition:
     task_id: str
     scene_kind: str
     question_format: str
-    supported_query_variants: Tuple[str, ...]
+    supported_query_ids: Tuple[str, ...]
     variants: Tuple[ProfessionalVariantSpec, ...]
 
 
@@ -145,7 +145,7 @@ class _ControlSpec:
 @dataclass(frozen=True)
 class _ResolvedQuery:
     task_id: str
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     variant_spec: ProfessionalVariantSpec
@@ -161,7 +161,7 @@ class _ResolvedQuery:
     context_count: int
     context_count_range: Tuple[int, int]
     candidate_label_pool: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
 
@@ -229,11 +229,11 @@ def _support_selection_index(
     params: Mapping[str, Any],
     *,
     task_id: str,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
     instance_seed: int,
     namespace: str,
 ) -> int:
-    _ = supported_query_variants
+    _ = supported_query_ids
     return int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}:{namespace}"))
 
 
@@ -242,7 +242,7 @@ def _resolve_context_count(
     gen_defaults: Mapping[str, Any],
     *,
     task_id: str,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
     instance_seed: int,
 ) -> Tuple[int, Tuple[int, int]]:
     if "context_count" in params or "context_count" in gen_defaults:
@@ -260,7 +260,7 @@ def _resolve_context_count(
         _support_selection_index(
             params,
             task_id=str(task_id),
-            supported_query_variants=supported_query_variants,
+            supported_query_ids=supported_query_ids,
             instance_seed=int(instance_seed),
             namespace="context_count",
         )
@@ -344,24 +344,24 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
     task_id = str(definition.task_id)
     gen_defaults, _render_defaults, _prompt_defaults, _bg_defaults, _noise_defaults, _complexity_weights = _relation_defaults(task_id)
     rng = spawn_rng(int(instance_seed), f"{task_id}.query")
-    query_variant, query_variant_probabilities = _resolve_named_axis(
+    query_id, query_id_probabilities = _resolve_named_axis(
         rng,
         task_id=task_id,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         params=params,
-        supported=tuple(definition.supported_query_variants),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=tuple(definition.supported_query_ids),
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         rng,
         task_id=task_id,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, task_id=task_id, divisor=len(definition.supported_query_variants), namespace="scene_variant"),
+        params=_decoupled_params(params, task_id=task_id, divisor=len(definition.supported_query_ids), namespace="scene_variant"),
         supported=SUPPORTED_SCENE_VARIANTS,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -373,7 +373,7 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
         task_id=task_id,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, task_id=task_id, divisor=len(definition.supported_query_variants), namespace="style_variant"),
+        params=_decoupled_params(params, task_id=task_id, divisor=len(definition.supported_query_ids), namespace="style_variant"),
         supported=SUPPORTED_STYLE_VARIANTS,
         explicit_key="style_variant",
         weights_key="style_variant_weights",
@@ -381,22 +381,22 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
         namespace="style_variant",
     )
     variant_by_name = {str(spec.name): spec for spec in definition.variants}
-    if str(query_variant) not in variant_by_name:
-        raise ValueError(f"unsupported variant {query_variant!r} for {task_id}")
-    spec = variant_by_name[str(query_variant)]
+    if str(query_id) not in variant_by_name:
+        raise ValueError(f"unsupported variant {query_id!r} for {task_id}")
+    spec = variant_by_name[str(query_id)]
     candidate_label_pool = _normalize_support(params, gen_defaults, key="candidate_label_pool", fallback=_DEFAULTS.candidate_label_pool, task_id=task_id)
     context_count, context_count_range = _resolve_context_count(
         params,
         gen_defaults,
         task_id=task_id,
-        supported_query_variants=definition.supported_query_variants,
+        supported_query_ids=definition.supported_query_ids,
         instance_seed=int(instance_seed),
     )
     contexts = _normalize_support(params, gen_defaults, key=str(spec.context_pool_key), fallback=spec.context_pool, task_id=task_id)[:context_count]
     actions = _normalize_support(params, gen_defaults, key=str(spec.action_pool_key), fallback=spec.action_pool, task_id=task_id)[:5]
     cues = _normalize_support(params, gen_defaults, key=str(spec.cue_pool_key), fallback=spec.cue_pool, task_id=task_id)[:5]
     if len(contexts) < context_count or len(actions) < 5 or len(cues) < 5:
-        raise ValueError(f"{task_id}/{query_variant} requires at least {context_count} contexts plus 5 actions and cues")
+        raise ValueError(f"{task_id}/{query_id} requires at least {context_count} contexts plus 5 actions and cues")
 
     controls_without_labels: List[_ControlSpec] = []
     order = 0
@@ -421,9 +421,9 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
     target_index = _support_selection_index(
         params,
         task_id=task_id,
-        supported_query_variants=definition.supported_query_variants,
+        supported_query_ids=definition.supported_query_ids,
         instance_seed=int(instance_seed),
-        namespace=f"target.{query_variant}",
+        namespace=f"target.{query_id}",
     ) % len(controls_without_labels)
     target = controls_without_labels[int(target_index)]
     target_label = str(
@@ -433,9 +433,9 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
                 _support_selection_index(
                     params,
                     task_id=task_id,
-                    supported_query_variants=definition.supported_query_variants,
+                    supported_query_ids=definition.supported_query_ids,
                     instance_seed=int(instance_seed),
-                    namespace=f"answer_label.{query_variant}",
+                    namespace=f"answer_label.{query_id}",
                 )
                 % len(candidate_label_pool)
             ],
@@ -466,13 +466,13 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
             )
         )
     guide_order = list(range(len(actions)))
-    spawn_rng(int(instance_seed), f"{task_id}.guide_order.{query_variant}").shuffle(guide_order)
+    spawn_rng(int(instance_seed), f"{task_id}.guide_order.{query_id}").shuffle(guide_order)
     template_index = _support_selection_index(
         params,
         task_id=task_id,
-        supported_query_variants=definition.supported_query_variants,
+        supported_query_ids=definition.supported_query_ids,
         instance_seed=int(instance_seed),
-        namespace=f"instruction_template.{query_variant}",
+        namespace=f"instruction_template.{query_id}",
     ) % len(spec.instruction_templates)
     instruction_text = str(spec.instruction_templates[int(template_index)]).format(
         context_label=str(target.context_label),
@@ -482,7 +482,7 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
     )
     return _ResolvedQuery(
         task_id=task_id,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         variant_spec=spec,
@@ -498,7 +498,7 @@ def _resolve_query(definition: ProfessionalTaskDefinition, instance_seed: int, *
         context_count=int(context_count),
         context_count_range=tuple(int(value) for value in context_count_range),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -840,7 +840,7 @@ class ProfessionalGuiRelationTaskBase:
             bundle_id=str(prompt_defaults_required["bundle_id"]),
             scene_key=str(prompt_defaults_required["scene_key"]),
             task_key=str(prompt_defaults_required["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults_required["object_description"]),
@@ -881,7 +881,7 @@ class ProfessionalGuiRelationTaskBase:
                     for record in control_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -899,13 +899,13 @@ class ProfessionalGuiRelationTaskBase:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults_required["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -920,7 +920,7 @@ class ProfessionalGuiRelationTaskBase:
                     "context_count": int(query.context_count),
                     "context_count_range": [int(value) for value in query.context_count_range],
                     "action_count": int(len({int(control.action_index) for control in query.controls})),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
                 },
@@ -955,7 +955,7 @@ class ProfessionalGuiRelationTaskBase:
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
                 "target_control_id": str(query.target_control_id),
@@ -975,7 +975,7 @@ class ProfessionalGuiRelationTaskBase:
                 "context_count": int(query.context_count),
                 "context_count_range": [int(value) for value in query.context_count_range],
                 "action_count": int(len({int(control.action_index) for control in query.controls})),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
                 "question_format": str(definition.question_format),
@@ -1000,14 +1000,14 @@ class ProfessionalGuiRelationTaskBase:
             trace_payload=trace_payload,
             complexity=_build_complexity(query, complexity_weights),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             scene_id="workspace",
-            query_probabilities=query.query_variant_probabilities,
+            query_probabilities=query.query_id_probabilities,
         )
 
 

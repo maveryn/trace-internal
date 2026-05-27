@@ -309,7 +309,6 @@ class IllustrationsRelationNamedObjectSideCountTask:
                 "scene_id": SCENE_ID,
                 "entities": scene_entities(scene),
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                     "reference_object_id": str(reference_id),
                     "reference_type": str(sample.query.reference_type),
@@ -318,7 +317,6 @@ class IllustrationsRelationNamedObjectSideCountTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -355,7 +353,6 @@ class IllustrationsRelationNamedObjectSideCountTask:
                 "counted_object_ids": list(counted_ids),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
                 "reference_type": str(sample.query.reference_type),
@@ -386,7 +383,6 @@ class IllustrationsRelationNamedObjectSideCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(object_count=int(sample.object_count), target_count=int(answer), relation=str(sample.query.relation)),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__pipe_flow__pipe_flow_repair_tile_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `flow_repair_tile_label`
 3. Prompt asks for the labeled 2x2 pipe/conduit option that can be rotated to fill the black missing region and repair flow from the green start marker to the red triangular finish flag.
 4. Internal variation:

@@ -18,7 +18,7 @@ SUPPORTED_PUZZLE_STRING_TOPOLOGY_SCENE_VARIANTS: Tuple[str, ...] = (
     "string_card",
     "string_outline",
 )
-SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS: Tuple[str, ...] = (
     "open_rope_count",
     "closed_loop_count",
     "knotted_component_count",
@@ -119,7 +119,7 @@ def resolve_string_topology_scene_variant(
     )
 
 
-def resolve_string_topology_query_variant(
+def resolve_string_topology_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -132,12 +132,12 @@ def resolve_string_topology_query_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -652,14 +652,14 @@ def _append_fillers(
 
 def _build_component_pool(
     *,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     visual_group_count: int,
     rng,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Build visual groups and component specs satisfying one target answer."""
 
-    selected = str(query_variant)
+    selected = str(query_id)
     groups: List[Dict[str, Any]] = []
     components: List[Dict[str, Any]] = []
 
@@ -710,21 +710,21 @@ def _build_component_pool(
             filler_cycle=("open_string", "closed_ring", "open_string"),
         )
     else:
-        raise ValueError(f"unsupported topology string query_variant: {query_variant}")
+        raise ValueError(f"unsupported topology string query_id: {query_id}")
 
     return _shuffle_groups_and_renumber(groups, components, rng=rng)
 
 
 def _supporting_item_ids_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     components: Sequence[Mapping[str, Any]],
     groups: Sequence[Mapping[str, Any]],
     crossings: Sequence[Mapping[str, Any]],
 ) -> List[str]:
-    """Return ordered evidence ids for the selected query variant."""
+    """Return ordered evidence ids for the selected query id."""
 
-    selected = str(query_variant)
+    selected = str(query_id)
     if selected == "open_rope_count":
         return [
             str(component["component_id"])
@@ -743,7 +743,7 @@ def _supporting_item_ids_for_variant(
             for component in components
             if int(component.get("knot_count", 0)) > 0
         ]
-    raise ValueError(f"unsupported topology string query_variant: {query_variant}")
+    raise ValueError(f"unsupported topology string query_id: {query_id}")
 
 
 def _build_crossing_specs(
@@ -800,7 +800,7 @@ def _build_crossing_specs(
 
 def build_string_topology_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -809,9 +809,9 @@ def build_string_topology_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one deterministic topology string-component dataset."""
 
-    selected_variant = str(query_variant)
-    if selected_variant not in set(SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS):
-        raise ValueError(f"unsupported topology string query_variant: {query_variant}")
+    selected_variant = str(query_id)
+    if selected_variant not in set(SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS):
+        raise ValueError(f"unsupported topology string query_id: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.string_topology_dataset")
     count_spec = _resolve_target_and_distractor_counts(
@@ -829,7 +829,7 @@ def build_string_topology_dataset_for_variant(
     component_count_range = list(count_spec["object_count_range"])
 
     groups, components = _build_component_pool(
-        query_variant=str(selected_variant),
+        query_id=str(selected_variant),
         target_answer=int(target_answer),
         visual_group_count=int(visual_group_count),
         rng=rng,
@@ -840,7 +840,7 @@ def build_string_topology_dataset_for_variant(
     closed_loop_count = sum(1 for component in components if bool(component["closed"]))
     knotted_component_count = sum(1 for component in components if int(component.get("knot_count", 0)) > 0)
     supporting_item_ids = _supporting_item_ids_for_variant(
-        query_variant=str(selected_variant),
+        query_id=str(selected_variant),
         components=components,
         groups=groups,
         crossings=crossing_specs,
@@ -881,7 +881,7 @@ def build_string_topology_dataset_for_variant(
         "view_family": "topology_string_component_count",
         "topology_rule": "crossings_do_not_merge_components_over_under_recorded",
         "solver_trace": {
-            "query_variant": str(selected_variant),
+            "query_id": str(selected_variant),
             "answer_value": int(answer_value),
             "supporting_item_ids": [str(value) for value in supporting_item_ids],
             "component_count": int(component_count),
@@ -902,9 +902,9 @@ __all__ = [
     "PuzzleStringTopologyDefaults",
     "PuzzleStringTopologyRenderParams",
     "SUPPORTED_PUZZLE_STRING_TOPOLOGY_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS",
+    "SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS",
     "build_string_topology_dataset_for_variant",
     "resolve_string_topology_render_params",
     "resolve_string_topology_scene_variant",
-    "resolve_string_topology_query_variant",
+    "resolve_string_topology_query_id",
 ]

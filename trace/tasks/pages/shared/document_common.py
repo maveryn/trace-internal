@@ -15,7 +15,7 @@ from .text_generation import (
 )
 
 
-SUPPORTED_DOCUMENT_FIELD_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DOCUMENT_FIELD_QUERY_IDS: Tuple[str, ...] = (
     "lookup_identifier",
     "lookup_name",
     "lookup_date",
@@ -139,25 +139,25 @@ _VALUE_BUILDERS = {
 }
 
 
-def resolve_document_query_variant(
+def resolve_document_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic query variant for one structured-page readout task."""
+    """Resolve the semantic query id for one structured-page readout task."""
 
     return resolve_pages_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DOCUMENT_FIELD_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DOCUMENT_FIELD_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -250,7 +250,7 @@ def resolve_document_render_params(
 
 def build_document_field_lookup_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -292,15 +292,15 @@ def build_document_field_lookup_dataset(
             )
         if len(field_specs) != len(templates):
             continue
-        candidates = [spec for spec in field_specs if str(spec["field_category"]) == str(query_variant)]
+        candidates = [spec for spec in field_specs if str(spec["field_category"]) == str(query_id)]
         if not candidates:
-            raise ValueError(f"scene_variant='{scene_variant}' has no fields for query_variant='{query_variant}'")
+            raise ValueError(f"scene_variant='{scene_variant}' has no fields for query_id='{query_id}'")
         query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_field")
         query_field = dict(candidates[int(query_rng.randrange(len(candidates)))])
         question_text = f"What is the {str(query_field['question_name'])}?"
         return {
             "scene_variant": str(scene_variant),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
             "question_text": str(question_text),
             "field_specs": list(field_specs),
@@ -322,10 +322,10 @@ __all__ = [
     "DOCUMENT_SCENE_TITLES",
     "DocumentDefaults",
     "DocumentRenderParams",
-    "SUPPORTED_DOCUMENT_FIELD_QUERY_VARIANTS",
+    "SUPPORTED_DOCUMENT_FIELD_QUERY_IDS",
     "SUPPORTED_DOCUMENT_SCENE_VARIANTS",
     "build_document_field_lookup_dataset",
     "resolve_document_render_params",
     "resolve_document_scene_variant",
-    "resolve_document_query_variant",
+    "resolve_document_query_id",
 ]

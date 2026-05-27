@@ -98,18 +98,18 @@ def test_puzzle_spatial_cube_structure_split_contracts_match_trace() -> None:
         render_map = trace["render_map"]
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(query["query_variant"]) == "default"
+        assert str(query["query_id"]) == "default"
         assert str(query["query_id"]) == str(query_id)
-        assert str(query["params"]["query_variant"]) == "default"
+        assert str(query["params"]["query_id"]) == "default"
         assert str(query["params"]["query_id"]) == str(query_id)
-        assert str(query["params"]["internal_query_variant"]) == str(internal_variant)
-        assert str(execution["query_variant"]) == "default"
+        assert str(query["params"]["internal_query_id"]) == str(internal_variant)
+        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
-        assert str(execution["internal_query_variant"]) == str(internal_variant)
+        assert str(execution["internal_query_id"]) == str(internal_variant)
         assert str(execution["question_format"]) == str(internal_variant)
         assert str(execution["scene_variant"]) == "stack_card"
         assert str(render["scene_variant"]) == "stack_card"
@@ -234,9 +234,9 @@ def test_puzzle_spatial_cube_count_sampling_covers_answers_and_heights() -> None
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == "cube_count"
-        assert str(execution["internal_query_variant"]) == "total_cube_count"
+        assert str(execution["internal_query_id"]) == "total_cube_count"
         answers.add(int(out.answer_gt.value))
         heights[int(execution["max_height"])] += 1
         cube_colors.add(str(out.trace_payload["render_spec"]["cube_color"]["name"]))
@@ -262,8 +262,8 @@ def test_puzzle_spatial_cube_structure_change_sampling_covers_subqueries_and_ans
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        internal_variant = str(execution["internal_query_variant"])
-        assert str(out.query_variant) == "default"
+        internal_variant = str(execution["internal_query_id"])
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == "cube_structure_change_count"
         assert internal_variant in answer_by_variant
         internal_counter[internal_variant] += 1
@@ -293,8 +293,8 @@ def test_puzzle_spatial_cube_painted_face_sampling_covers_subqueries() -> None:
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        internal_variant = str(execution["internal_query_variant"])
-        assert str(out.query_variant) == "default"
+        internal_variant = str(execution["internal_query_id"])
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == "painted_face_count"
         assert internal_variant in answer_by_variant
         internal_counter[internal_variant] += 1

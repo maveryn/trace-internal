@@ -266,14 +266,12 @@ class ParkPersonActivityBranch:
                 "scene_id": SCENE_ID,
                 "entities": park_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(sample.query_id),
                     "query_id": str(sample.query_id),
                     "target_activity": str(sample.activity),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -304,7 +302,6 @@ class ParkPersonActivityBranch:
                 "counted_person_ids": list(counted_person_ids),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
                 "target_activity": str(sample.activity),
@@ -335,7 +332,6 @@ class ParkPersonActivityBranch:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

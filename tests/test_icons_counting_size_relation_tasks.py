@@ -48,9 +48,9 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
     assert len(out.evidence_gt.value) == 3
     assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_counting_size_relation"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "size_smaller"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "size_smaller"
     assert execution["question_format"] == "count_matching_scene_icons_by_size_relation"
     assert execution["size_relation"] == "smaller"

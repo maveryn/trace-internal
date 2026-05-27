@@ -237,7 +237,7 @@ def main() -> int:
         "overall": defaultdict(_new_aggregate),
         "domain": defaultdict(_new_aggregate),
         "task": defaultdict(_new_aggregate),
-        "query_variant": defaultdict(_new_aggregate),
+        "query_id": defaultdict(_new_aggregate),
         "evidence_type": defaultdict(_new_aggregate),
     }
     failure_totals: Counter[str] = Counter()
@@ -246,12 +246,12 @@ def main() -> int:
         domain = str(row.get("domain") or "")
         task = str(row.get("task") or "")
         evidence_type = str(row.get("evidence_type") or "")
-        query_variant = str(row.get("query_variant") or "unknown")
+        query_id = str(row.get("query_id") or "unknown")
         group_keys = {
             "overall": "overall",
             "domain": domain,
             "task": task,
-            "query_variant": f"{task}::{query_variant}",
+            "query_id": f"{task}::{query_id}",
             "evidence_type": evidence_type,
         }
         for group_name, group_key in group_keys.items():
@@ -285,7 +285,7 @@ def main() -> int:
     _write_sheet(workbook, "overall", finalized["overall"], columns)
     _write_sheet(workbook, "by_task", finalized["task"], columns)
     _write_sheet(workbook, "by_domain", finalized["domain"], columns)
-    _write_sheet(workbook, "by_query_variant", finalized["query_variant"], columns)
+    _write_sheet(workbook, "by_query_id", finalized["query_id"], columns)
     _write_sheet(workbook, "by_evidence_type", finalized["evidence_type"], columns)
     _write_sheet(
         workbook,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.games.shared.brick_breaker_common import (
-    SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS,
+    SUPPORTED_BRICK_BREAKER_QUERY_IDS,
     SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS,
     SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS,
 )
@@ -19,14 +19,14 @@ def test_games_brick_breaker_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_brick_row_sampling"]) is True
     assert bool(generation["balanced_brick_col_sampling"]) is True
     assert bool(generation["balanced_lane_count_sampling"]) is True
     assert bool(generation["balanced_row_remaining_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS)
-    assert set(generation["query_variant_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS)
+    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS)
     assert list(generation["brick_row_count_support"]) == [4, 5]
     assert list(generation["brick_col_count_support"]) == [5, 6]

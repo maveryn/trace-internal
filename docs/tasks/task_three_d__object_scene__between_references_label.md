@@ -7,7 +7,7 @@
 - Query id: `between_references`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: accepted
+- Status: pending_v0_review
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, two unlettered reference props named in the question, and `6` lettered answer candidates.
@@ -26,9 +26,4 @@ The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The 
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.
 
 ## Calibration
-Accepted on qwen25vl7b `100x24` with seed `20260521`: `hard=0.000`, `easy=0.090`, `band=0.910`, and mean solve `0.502`. The exact parquet distribution passed with `6` unique answers and max answer frequency `0.170`.
-
-Artifacts:
-- Calibration parquet and distribution report live under `out/calibration/current/three_d/object_scene/task_three_d__object_scene__between_references_label/`.
-- Review workbook: `plans/task-reviews/three_d/object_scene/task_three_d__object_scene__between_references_label/task_three_d__object_scene__between_references_label.xlsx`
-- Solve workbook lives under the same task-review directory.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.

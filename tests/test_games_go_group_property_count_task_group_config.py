@@ -15,12 +15,12 @@ def test_games_go_group_property_count_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_player_color_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"open_board", "crowded_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "marked_group_liberty_count",
         "marked_group_adjacent_enemy_count",
         "marked_group_shared_liberty_count",

@@ -37,13 +37,13 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "parallel",
     "simple_series_parallel",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "total_resistance",
     "missing_resistor_value",
 )
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "parallel": SUPPORTED_QUERY_VARIANTS,
-    "simple_series_parallel": SUPPORTED_QUERY_VARIANTS,
+    "parallel": SUPPORTED_QUERY_IDS,
+    "simple_series_parallel": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -102,12 +102,12 @@ class _ResolvedAxes:
     """Resolved scene/task axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     accent_color_name: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
 
@@ -302,10 +302,10 @@ def _select_compound_block_count(
     return int(available[abs(int(instance_seed)) % len(available)])
 
 
-def _target_support_key(*, scene_variant: str, query_variant: str) -> str:
+def _target_support_key(*, scene_variant: str, query_id: str) -> str:
     """Return the config support key for one scene variant."""
 
-    if str(query_variant) == "missing_resistor_value":
+    if str(query_id) == "missing_resistor_value":
         return "missing_resistor_value_support"
     return {
         "parallel": "parallel_target_answer_support",
@@ -318,11 +318,11 @@ def _resolve_target_answer(
     instance_seed: int,
     params: Mapping[str, Any],
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
     """Resolve the sampled target resistance support for one scene family."""
 
-    support_key = _target_support_key(scene_variant=str(scene_variant), query_variant=str(query_variant))
+    support_key = _target_support_key(scene_variant=str(scene_variant), query_id=str(query_id))
     fallback = getattr(_DEFAULTS, support_key)
     raw_support = resolve_integer_support(
         params,
@@ -338,14 +338,14 @@ def _resolve_target_answer(
     )
     feasible_support = _feasible_target_support(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         raw_support=raw_support,
         resistor_value_min=int(resistor_value_min),
         resistor_value_max=int(resistor_value_max),
         params=params,
     )
     if not feasible_support:
-        raise ValueError(f"no feasible target_answer values remain for {scene_variant}/{query_variant}")
+        raise ValueError(f"no feasible target_answer values remain for {scene_variant}/{query_id}")
     resolved_params = dict(params)
     resolved_params[str(support_key)] = list(int(value) for value in feasible_support)
     target_answer, probabilities = resolve_integer_choice(
@@ -366,7 +366,7 @@ def _resolve_target_answer(
 def _is_feasible_target_answer(
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     resistor_value_min: int,
     resistor_value_max: int,
@@ -382,7 +382,7 @@ def _is_feasible_target_answer(
 ) -> bool:
     """Return whether one scene/query pair can realize the requested target answer."""
 
-    if str(query_variant) == "missing_resistor_value":
+    if str(query_id) == "missing_resistor_value":
         if str(scene_variant) == "parallel":
             return bool(
                 _parallel_missing_pair_candidates(
@@ -431,7 +431,7 @@ def _is_feasible_target_answer(
 def _feasible_target_support(
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     raw_support: Sequence[int],
     resistor_value_min: int,
     resistor_value_max: int,
@@ -444,7 +444,7 @@ def _feasible_target_support(
         target_answer = int(raw_value)
         if _is_feasible_target_answer(
             scene_variant=str(scene_variant),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
@@ -463,17 +463,17 @@ def _feasible_target_support(
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
-    """Resolve one compatible scene/query-variant pair plus answer support."""
+    """Resolve one compatible scene/query-id pair plus answer support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
     secondary_params = _secondary_axis_params(params)
-    query_variant, task_probs = _resolve_query_variant(
+    query_id, task_probs = _resolve_query_id(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
     )
     explicit_scene = params.get("scene_variant")
-    if str(query_variant) == "total_resistance" and explicit_scene is None:
+    if str(query_id) == "total_resistance" and explicit_scene is None:
         target_answer, target_answer_support, target_answer_probabilities = _resolve_total_resistance_target_answer(
             instance_seed=int(instance_seed),
             params=secondary_params,
@@ -489,13 +489,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             axis_rng,
             instance_seed=int(instance_seed),
             params=secondary_params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         target_answer, target_answer_support, target_answer_probabilities = _resolve_target_answer(
             instance_seed=int(instance_seed),
             params=secondary_params,
             scene_variant=str(scene_variant),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_color_name_probabilities = resolve_variant(
@@ -520,44 +520,44 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(task_probs),
+        query_id_probabilities=dict(task_probs),
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     rng,
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the public query variant, respecting any explicit scene compatibility."""
+    """Resolve the public query id, respecting any explicit scene compatibility."""
 
-    task_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
+    task_supported = [str(value) for value in SUPPORTED_QUERY_IDS]
     compatibility_map = {
         str(scene): tuple(str(query) for query in queries)
         for scene, queries in COMPATIBILITY.items()
     }
     task_set = set(task_supported)
 
-    query_variant = params.get("query_variant")
-    explicit_task = params.get("query_variant")
-    if query_variant is not None:
-        if str(query_variant) not in task_set:
-            raise ValueError(f"unsupported query_variant: {query_variant}")
-        if explicit_task is not None and str(explicit_task) != str(query_variant):
-            raise ValueError("circuit resistance family query_variant must match query_variant")
+    query_id = params.get("query_id")
+    explicit_task = params.get("query_id")
+    if query_id is not None:
+        if str(query_id) not in task_set:
+            raise ValueError(f"unsupported query_id: {query_id}")
+        if explicit_task is not None and str(explicit_task) != str(query_id):
+            raise ValueError("circuit resistance family query_id must match query_id")
         params = dict(params)
-        params["query_variant"] = str(query_variant)
-        explicit_task = str(query_variant)
+        params["query_id"] = str(query_id)
+        explicit_task = str(query_id)
     if explicit_task is not None and str(explicit_task) not in task_set:
-        raise ValueError(f"unsupported query_variant: {explicit_task}")
+        raise ValueError(f"unsupported query_id: {explicit_task}")
     explicit_scene = params.get("scene_variant")
     if explicit_scene is not None:
         if str(explicit_scene) not in set(str(value) for value in SUPPORTED_SCENE_VARIANTS):
@@ -568,8 +568,8 @@ def _resolve_query_variant(
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=allowed_tasks,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
         )
         selected_task = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
@@ -578,13 +578,13 @@ def _resolve_query_variant(
             selected_variant=str(selected_task),
             variant_probabilities=restricted_task_probs,
             supported_variants=allowed_tasks,
-            balance_flag_key="balanced_query_variant_sampling",
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            sampling_namespace=f"{TASK_ID}.query_variant",
+            balance_flag_key="balanced_query_id_sampling",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            sampling_namespace=f"{TASK_ID}.query_id",
         )
         return str(selected_task), {
-            query_variant: float(restricted_task_probs.get(query_variant, 0.0)) for query_variant in task_supported
+            query_id: float(restricted_task_probs.get(query_id, 0.0)) for query_id in task_supported
         }
 
     selected_task, restricted_task_probs = resolve_variant(
@@ -592,8 +592,8 @@ def _resolve_query_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=task_supported,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected_task = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -602,13 +602,13 @@ def _resolve_query_variant(
         selected_variant=str(selected_task),
         variant_probabilities=restricted_task_probs,
         supported_variants=task_supported,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected_task), {
-        query_variant: float(restricted_task_probs.get(query_variant, 0.0)) for query_variant in task_supported
+        query_id: float(restricted_task_probs.get(query_id, 0.0)) for query_id in task_supported
     }
 
 
@@ -617,9 +617,9 @@ def _resolve_scene_variant(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one scene variant after the query variant is known."""
+    """Resolve one scene variant after the query id is known."""
 
     scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
     explicit_scene = params.get("scene_variant")
@@ -627,12 +627,12 @@ def _resolve_scene_variant(
         if str(explicit_scene) not in set(scene_supported):
             raise ValueError(f"unsupported scene_variant: {explicit_scene}")
         allowed_queries = set(COMPATIBILITY.get(str(explicit_scene), ()))
-        if str(query_variant) not in allowed_queries:
-            raise ValueError(f"incompatible scene/query combination: {explicit_scene} + {query_variant}")
+        if str(query_id) not in allowed_queries:
+            raise ValueError(f"incompatible scene/query combination: {explicit_scene} + {query_id}")
         return str(explicit_scene), {scene: (1.0 if scene == str(explicit_scene) else 0.0) for scene in scene_supported}
 
     allowed_scenes = [
-        scene for scene in scene_supported if str(query_variant) in set(COMPATIBILITY.get(scene, ()))
+        scene for scene in scene_supported if str(query_id) in set(COMPATIBILITY.get(scene, ()))
     ]
     selected_scene, restricted_scene_probs = resolve_variant(
         rng,
@@ -652,7 +652,7 @@ def _resolve_scene_variant(
         balance_flag_key="balanced_scene_variant_sampling",
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
-        sampling_namespace=f"{TASK_ID}.scene_variant.{str(query_variant)}",
+        sampling_namespace=f"{TASK_ID}.scene_variant.{str(query_id)}",
     )
     return str(selected_scene), {
         scene: float(restricted_scene_probs.get(scene, 0.0)) for scene in scene_supported
@@ -685,7 +685,7 @@ def _resolve_total_resistance_target_answer(
         if any(
             _is_feasible_target_answer(
                 scene_variant=str(scene_variant),
-                query_variant="total_resistance",
+                query_id="total_resistance",
                 target_answer=int(value),
                 resistor_value_min=int(resistor_value_min),
                 resistor_value_max=int(resistor_value_max),
@@ -740,7 +740,7 @@ def _resolve_scene_variant_for_total_resistance(
         for scene_variant in SUPPORTED_SCENE_VARIANTS
         if _is_feasible_target_answer(
             scene_variant=str(scene_variant),
-            query_variant="total_resistance",
+            query_id="total_resistance",
             target_answer=int(target_answer),
             resistor_value_min=int(resistor_value_min),
             resistor_value_max=int(resistor_value_max),
@@ -1575,11 +1575,11 @@ def _sample_missing_pair_layout(
     )
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
-    """Return prompt JSON examples tailored to the active query variant."""
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    """Return prompt JSON examples tailored to the active query id."""
 
     evidence_value: List[List[int]]
-    if str(query_variant) == "missing_resistor_value":
+    if str(query_id) == "missing_resistor_value":
         evidence_value = [[174, 214, 270, 260]]
     else:
         evidence_value = [
@@ -1739,7 +1739,7 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             try:
-                if str(axes.query_variant) == "missing_resistor_value":
+                if str(axes.query_id) == "missing_resistor_value":
                     public_scene_id = "paired_resistor"
                     pair_layout = _sample_missing_pair_layout(
                         attempt_rng,
@@ -1770,7 +1770,7 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 instance_seed=int(instance_seed),
                 params=params,
             )
-            if str(axes.query_variant) == "missing_resistor_value":
+            if str(axes.query_id) == "missing_resistor_value":
                 pair_defaults = _pair_render_defaults(params, instance_seed=int(instance_seed))
                 left_origin = (
                     float(
@@ -1986,23 +1986,23 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(
-                        prompt_defaults[f"object_description_{str(axes.scene_variant)}_{str(axes.query_variant)}"]
+                        prompt_defaults[f"object_description_{str(axes.scene_variant)}_{str(axes.query_id)}"]
                     ),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
-                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
+                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
                 },
@@ -2016,7 +2016,7 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 resistor_count=len(rendered_scene.resistor_specs),
                 target_answer=int(axes.target_answer),
             )
@@ -2024,13 +2024,13 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 "scene_ir": {
                     "scene_kind": (
                         f"physics_resistor_network_pair_{str(axes.scene_variant)}"
-                        if str(axes.query_variant) == "missing_resistor_value"
+                        if str(axes.query_id) == "missing_resistor_value"
                         else f"physics_resistor_network_{str(axes.scene_variant)}"
                     ),
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "target_answer": int(axes.target_answer),
                         "accent_color_name": str(axes.accent_color_name),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
@@ -2040,17 +2040,17 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
                         "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -2069,7 +2069,7 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -2160,7 +2160,7 @@ class _PhysicsCircuitsEquivalentResistanceBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 scene_id=public_scene_id,
             )
 
@@ -2175,7 +2175,7 @@ class PhysicsCircuitsTotalResistanceValueTask(
     """Return the total equivalent resistance of one visible resistor network."""
 
     task_id = "task_physics__resistor__total_resistance_value"
-    fixed_query_variant = "total_resistance"
+    fixed_query_id = "total_resistance"
 
 
 @register_task
@@ -2186,7 +2186,7 @@ class PhysicsCircuitsMissingResistorValueTask(
     """Return the red missing resistor value that balances paired circuits."""
 
     task_id = "task_physics__paired_resistor__missing_resistor_value"
-    fixed_query_variant = "missing_resistor_value"
+    fixed_query_id = "missing_resistor_value"
 
 
 __all__ = [

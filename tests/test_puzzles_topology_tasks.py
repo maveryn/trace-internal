@@ -50,15 +50,15 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
         "beaded_string",
     )
 
-    for variant_index, (task, query_variant) in enumerate(tasks):
+    for query_id_index, (task, query_id) in enumerate(tasks):
         for mode_index, token_render_style in enumerate(token_render_styles):
             for scene_index, scene_variant in enumerate(scene_variants):
-                loop_path_style = loop_path_styles[(variant_index + mode_index + scene_index) % len(loop_path_styles)]
-                seed = 27320 + (variant_index * 1000) + (mode_index * 100) + (scene_index * 10)
+                loop_path_style = loop_path_styles[(query_id_index + mode_index + scene_index) % len(loop_path_styles)]
+                seed = 27320 + (query_id_index * 1000) + (mode_index * 100) + (scene_index * 10)
                 out = task.generate(
                     seed,
                     params={
-                        "query_variant": query_variant,
+                        "query_id": query_id,
                         "token_render_style": token_render_style,
                         "scene_variant": scene_variant,
                         "loop_path_style": loop_path_style,
@@ -72,14 +72,14 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
                 solver = execution["solver_trace"]
                 evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-                assert str(out.query_variant) == "default"
-                assert str(out.query_id) == str(query_variant)
+                assert str(out.query_id) == "default"
+                assert str(out.query_id) == str(query_id)
                 assert str(out.scene_id) == "cyclic_order"
                 assert str(execution["token_render_style"]) == str(token_render_style)
                 assert str(execution["loop_path_style"]) == str(loop_path_style)
-                assert str(execution["query_variant"]) == "default"
-                assert str(execution["query_id"]) == str(query_variant)
-                assert str(execution["internal_query_variant"]) == str(query_variant)
+                assert str(execution["query_id"]) == "default"
+                assert str(execution["query_id"]) == str(query_id)
+                assert str(execution["internal_query_id"]) == str(query_id)
                 assert out.evidence_gt.type == "bbox_set"
                 assert out.answer_gt.type == "option_letter"
                 assert str(out.answer_gt.value) == str(execution["answer_option_label"])
@@ -97,7 +97,7 @@ def test_puzzle_topology_cyclic_order_match_contract_matches_valid_options() -> 
                 assert 4 <= int(execution["bead_count_range"][0]) <= int(execution["bead_count_range"][1]) <= 5
                 assert int(execution["bead_count"]) >= int(execution["bead_count_range"][0])
                 assert int(execution["bead_count"]) <= int(execution["bead_count_range"][1])
-                assert str(execution["question_format"]) == str(query_variant)
+                assert str(execution["question_format"]) == str(query_id)
                 assert str(execution["equivalence_rule"]) == "same_cyclic_order_up_to_rotation_no_reflection"
                 assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
 
@@ -154,9 +154,9 @@ def test_puzzle_topology_prompt_examples_match_selected_variants() -> None:
             {"answer": "C"},
         ),
     }
-    for index, (query_variant, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=27410):
+    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=27410):
         out = task.generate(index, params={}, max_attempts=10)
-        assert str(out.query_id) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
@@ -240,12 +240,12 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
         "string_outline",
     )
 
-    for variant_index, (task, query_variant) in enumerate(task_cases):
+    for query_id_index, (task, query_id) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 28520 + (variant_index * 20) + scene_index
+            seed = 28520 + (query_id_index * 20) + scene_index
             out = task.generate(
                 seed,
-                params={"scene_variant": scene_variant, "query_variant": query_variant},
+                params={"scene_variant": scene_variant, "query_id": query_id},
                 max_attempts=10,
             )
             trace = out.trace_payload
@@ -257,8 +257,8 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
             crossings = [dict(crossing) for crossing in execution["crossing_specs"]]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == "default"
-            assert str(out.query_id) == str(query_variant)
+            assert str(out.query_id) == "default"
+            assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "string_topology"
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
@@ -267,9 +267,9 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
             assert int(out.answer_gt.value) >= 1
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["query_id"]) == str(query_variant)
-            assert str(execution["internal_query_variant"]) == str(query_variant)
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
             assert str(execution["question_format"]) == "string_component_count"
@@ -303,7 +303,7 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
             assert list(execution["target_count_range"]) == [3, 10]
             assert list(execution["distractor_count_range"]) == [3, 10]
 
-            if str(query_variant) == "open_rope_count":
+            if str(query_id) == "open_rope_count":
                 expected_ids = [
                     str(component["component_id"])
                     for component in components
@@ -311,7 +311,7 @@ def test_puzzle_topology_string_component_count_contract_matches_metadata() -> N
                 ]
                 evidence_source = render_map["component_bboxes_px"]
                 expected_count = int(execution["open_rope_count"])
-            elif str(query_variant) == "closed_loop_count":
+            elif str(query_id) == "closed_loop_count":
                 expected_ids = [str(component["component_id"]) for component in components if bool(component["closed"])]
                 evidence_source = render_map["component_bboxes_px"]
                 expected_count = sum(1 for component in components if bool(component["closed"]))
@@ -378,10 +378,10 @@ def test_puzzle_topology_string_component_prompt_examples_match_selected_variant
             {"answer": 1},
         ),
     }
-    for index, (query_variant, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=28610):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
+    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=28610):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
@@ -390,7 +390,7 @@ def test_puzzle_topology_string_component_prompt_examples_match_selected_variant
 
 def test_puzzle_topology_string_component_count_task_is_deterministic() -> None:
     task = PuzzlesTopologyStringComponentCountTask()
-    params = {"scene_variant": "string_card", "query_variant": "knotted_component_count"}
+    params = {"scene_variant": "string_card", "query_id": "knotted_component_count"}
     out_a = task.generate(28680, params=params, max_attempts=10)
     out_b = task.generate(28680, params=params, max_attempts=10)
 
@@ -407,7 +407,7 @@ def test_puzzle_topology_open_rope_count_uses_knotted_closed_distractors() -> No
     out = task.generate(
         28695,
         params={
-            "query_variant": "open_rope_count",
+            "query_id": "open_rope_count",
             "target_count": 3,
             "distractor_count": 3,
             "scene_variant": "string_strip",
@@ -439,12 +439,12 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        query_variant = str(trace["query_id"])
-        assert str(trace["query_variant"]) == "default"
-        assert str(trace["internal_query_variant"]) == str(query_variant)
-        combos[(query_variant, str(trace["scene_variant"]))] += 1
-        answers_by_variant.setdefault(query_variant, set()).add(int(out.answer_gt.value))
-        distractors_by_variant.setdefault(query_variant, set()).add(int(trace["distractor_count"]))
+        query_id = str(trace["query_id"])
+        assert str(trace["query_id"]) == "default"
+        assert str(trace["internal_query_id"]) == str(query_id)
+        combos[(query_id, str(trace["scene_variant"]))] += 1
+        answers_by_variant.setdefault(query_id, set()).add(int(out.answer_gt.value))
+        distractors_by_variant.setdefault(query_id, set()).add(int(trace["distractor_count"]))
         assert int(trace["object_count"]) == int(trace["target_count"]) + int(trace["distractor_count"])
         assert 6 <= int(trace["object_count"]) <= 20
 
@@ -492,12 +492,12 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        query_variant = str(trace["query_variant"])
-        assert query_variant == "default"
-        query_variant = str(trace["query_id"])
+        query_id = str(trace["query_id"])
+        assert query_id == "default"
+        query_id = str(trace["query_id"])
         assert str(trace["scene_variant"]) == "string_card"
-        fixed_scene_answers.setdefault(query_variant, set()).add(int(out.answer_gt.value))
-        fixed_scene_distractors.setdefault(query_variant, set()).add(int(trace["distractor_count"]))
+        fixed_scene_answers.setdefault(query_id, set()).add(int(out.answer_gt.value))
+        fixed_scene_distractors.setdefault(query_id, set()).add(int(trace["distractor_count"]))
 
     assert fixed_scene_answers["open_rope_count"] == expected_count_support
     assert fixed_scene_answers["closed_loop_count"] == expected_count_support
@@ -516,9 +516,9 @@ def test_puzzle_topology_string_component_sampling_decouples_variant_scene_and_a
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        assert str(trace["query_variant"]) == "default"
+        assert str(trace["query_id"]) == "default"
         assert str(trace["query_id"]) == "knotted_component_count"
-        assert str(trace["internal_query_variant"]) == "knotted_component_count"
+        assert str(trace["internal_query_id"]) == "knotted_component_count"
         fixed_task_scenes[str(trace["scene_variant"])] += 1
         fixed_task_answers.add(int(out.answer_gt.value))
         fixed_task_distractors.add(int(trace["distractor_count"]))
@@ -540,10 +540,10 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
         "block_wall_maze",
     )
 
-    for variant_index, (task, query_variant, target_reachability) in enumerate(task_cases):
+    for query_id_index, (task, query_id, target_reachability) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 29120 + (variant_index * 20) + scene_index
-            params = {"scene_variant": scene_variant, "query_variant": query_variant}
+            seed = 29120 + (query_id_index * 20) + scene_index
+            params = {"scene_variant": scene_variant, "query_id": query_id}
             if target_reachability is not None:
                 params["target_reachability"] = target_reachability
             out = task.generate(
@@ -560,16 +560,16 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
             reachable_labels = [str(value) for value in execution["reachable_exit_labels"]]
             unreachable_labels = [str(value) for value in execution["unreachable_exit_labels"]]
 
-            assert str(out.query_variant) == "default"
-            assert str(out.query_id) == str(query_variant)
+            assert str(out.query_id) == "default"
+            assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "maze"
-            assert out.answer_gt.type == ("integer" if str(query_variant) == "reachable_exit_count" else "string")
+            assert out.answer_gt.type == ("integer" if str(query_id) == "reachable_exit_count" else "string")
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["query_id"]) == str(query_variant)
-            assert str(execution["internal_query_variant"]) == str(query_variant)
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert execution["target_reachability"] == target_reachability
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -588,11 +588,11 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
                 for item_id in supporting_ids
             ]
 
-            if str(query_variant) == "exit_reachability_label" and str(target_reachability) == "reachable":
+            if str(query_id) == "exit_reachability_label" and str(target_reachability) == "reachable":
                 assert len(reachable_labels) == 1
                 assert str(out.answer_gt.value) == str(reachable_labels[0])
                 assert len(supporting_ids) == 1
-            elif str(query_variant) == "exit_reachability_label" and str(target_reachability) == "unreachable":
+            elif str(query_id) == "exit_reachability_label" and str(target_reachability) == "unreachable":
                 assert len(unreachable_labels) == 1
                 assert str(out.answer_gt.value) == str(unreachable_labels[0])
                 assert len(supporting_ids) == 1
@@ -619,9 +619,9 @@ def test_puzzle_topology_maze_exit_prompt_examples_match_selected_variants() -> 
             {"answer": 3},
         ),
     }
-    for index, (query_variant, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=29210):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
-        assert str(out.query_id) == str(query_variant)
+    for index, (query_id, (task, expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=29210):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
+        assert str(out.query_id) == str(query_id)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
@@ -630,7 +630,7 @@ def test_puzzle_topology_maze_exit_prompt_examples_match_selected_variants() -> 
 
 def test_puzzle_topology_maze_exit_label_task_is_deterministic() -> None:
     task = PuzzlesTopologyMazeReachableExitCountTask()
-    params = {"query_variant": "reachable_exit_count", "scene_variant": "block_wall_maze"}
+    params = {"query_id": "reachable_exit_count", "scene_variant": "block_wall_maze"}
     out_a = task.generate(29280, params=params, max_attempts=10)
     out_b = task.generate(29280, params=params, max_attempts=10)
 
@@ -721,13 +721,13 @@ def test_puzzle_topology_maze_exit_reachability_label_samples_target_reachabilit
     for index, (target_reachability, expected) in enumerate(cases.items()):
         out = task.generate(
             29440 + index,
-            params={"query_variant": "exit_reachability_label", "target_reachability": target_reachability},
+            params={"query_id": "exit_reachability_label", "target_reachability": target_reachability},
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == "exit_reachability_label"
-        assert trace["query_variant"] == "default"
+        assert trace["query_id"] == "default"
         assert trace["query_id"] == "exit_reachability_label"
         assert trace["target_reachability"] == expected
 
@@ -760,12 +760,12 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
             supporting_ids = [str(value) for value in execution["supporting_item_ids"]]
 
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "voxel_ladder"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
-            assert str(execution["internal_query_variant"]) == str(query_id)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert str(render["layout"]) == "isometric_voxel_platforms_with_ladders"

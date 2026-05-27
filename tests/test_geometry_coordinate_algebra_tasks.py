@@ -6,20 +6,20 @@ import pytest
 
 from trace.tasks import create_task
 from trace.tasks.geometry.coordinate.algebra import (
-    MISSING_ENDPOINT_QUERY_VARIANTS,
+    MISSING_ENDPOINT_QUERY_IDS,
     MISSING_ENDPOINT_TASK_ID,
     SCENE_ID,
-    SECTION_POINT_QUERY_VARIANTS,
+    SECTION_POINT_QUERY_IDS,
     SECTION_POINT_TASK_ID,
-    TRANSFORMED_POINT_QUERY_VARIANTS,
+    TRANSFORMED_POINT_QUERY_IDS,
     TRANSFORMED_POINT_TASK_ID,
 )
 
 
-@pytest.mark.parametrize("query_id", MISSING_ENDPOINT_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", MISSING_ENDPOINT_QUERY_IDS)
 def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> None:
     task = create_task(MISSING_ENDPOINT_TASK_ID)
-    out = task.generate(77901, params={"query_variant": query_id, "winner_label": "C"}, max_attempts=50)
+    out = task.generate(77901, params={"query_id": query_id, "winner_label": "C"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -43,10 +43,10 @@ def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> Non
     assert execution["target_point_graph"] == expected
 
 
-@pytest.mark.parametrize("query_id", SECTION_POINT_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SECTION_POINT_QUERY_IDS)
 def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     task = create_task(SECTION_POINT_TASK_ID)
-    out = task.generate(77906, params={"query_variant": query_id, "winner_label": "D"}, max_attempts=50)
+    out = task.generate(77906, params={"query_id": query_id, "winner_label": "D"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -73,10 +73,10 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert execution["target_point_graph"] == expected
 
 
-@pytest.mark.parametrize("query_id", TRANSFORMED_POINT_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", TRANSFORMED_POINT_QUERY_IDS)
 def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> None:
     task = create_task(TRANSFORMED_POINT_TASK_ID)
-    out = task.generate(77911, params={"query_variant": query_id, "winner_label": "E"}, max_attempts=50)
+    out = task.generate(77911, params={"query_id": query_id, "winner_label": "E"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -131,7 +131,7 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
 )
 def test_coordinate_algebra_tasks_are_deterministic(task_id: str, query_id: str) -> None:
     task = create_task(task_id)
-    params = {"query_variant": query_id, "winner_label": "B"}
+    params = {"query_id": query_id, "winner_label": "B"}
     out_a = task.generate(77921, params=dict(params), max_attempts=50)
     out_b = task.generate(77921, params=dict(params), max_attempts=50)
 

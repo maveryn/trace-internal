@@ -512,7 +512,7 @@ class TileMinDistanceTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
-                "query_variant": "min_distance",
+                "query_id": "min_distance",
                 "template_id": "min_distance_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -553,7 +553,7 @@ class TileMinDistanceTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "query_variant": "min_distance",
+                "query_id": "min_distance",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "target_distance_range": [int(target_distance_min), int(effective_target_distance_max)],
@@ -642,6 +642,6 @@ class TileMinDistanceTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="min_distance",
+            query_id="min_distance",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

@@ -24,14 +24,14 @@
   - `compact_frame`
   - `tall_columns`
 
-## Query Variants
+## Query IDs
 - `missing_output_force`
   - input force, the middle reference piston, and all piston areas are shown; the output force is marked `?`
 - `missing_input_force`
   - output force, the middle reference piston, and all piston areas are shown; the input force is marked `?`
 - `missing_piston_area`
   - input force, output force, the middle reference piston, and input area are shown; the output piston area is marked `?`
-- Public outputs use `query_variant="default"` and put the concrete branch in `query_id`.
+- Outputs put the concrete branch in `query_id`.
 
 ## Reasoning Contract
 - The hydraulic system is ideal and uses Pascal's law across all connected pistons:

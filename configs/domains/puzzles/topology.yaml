@@ -7,7 +7,7 @@ generation:
       valid_option_count_max: 5
       bead_count_min: 4
       bead_count_max: 6
-      query_variant_overrides:
+      query_id_overrides:
         cyclic_order_equivalent_label:
           option_count_min: 6
           option_count_max: 6
@@ -15,11 +15,11 @@ generation:
           bead_count_max: 5
       min_color_distance: 50.0
       color_distance_space: lab
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_token_render_style_sampling: true
       balanced_scene_variant_sampling: true
       balanced_loop_path_style_sampling: true
-      query_variant_weights:
+      query_id_weights:
         cyclic_order_equivalent_label: 1.0
       token_render_style_weights:
         colored_beads: 1.0
@@ -46,9 +46,9 @@ generation:
       distractor_count_min: 3
       distractor_count_max: 10
       balanced_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         open_rope_count: 1.0
         closed_loop_count: 1.0
         knotted_component_count: 1.0
@@ -66,10 +66,10 @@ generation:
       reachable_exit_count_min: 1
       reachable_exit_count_max: 5
       balanced_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_target_reachability_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         exit_reachability_label: 1.0
         reachable_exit_count: 1.0
       target_reachability_weights:

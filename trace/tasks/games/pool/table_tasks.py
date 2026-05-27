@@ -27,7 +27,7 @@ from ..shared.layout import resolve_games_layout_jitter
 from ..shared.pool_common import (
     POOL_BALL_NUMBERS,
     POOL_POCKETS,
-    SUPPORTED_POOL_QUERY_VARIANTS,
+    SUPPORTED_POOL_QUERY_IDS,
     SUPPORTED_POOL_SCENE_VARIANTS,
     PoolBall,
     PoolPocket,
@@ -43,7 +43,7 @@ from ..shared.pool_common import (
     validate_pool_sample,
 )
 from ..shared.pool_scene import PoolRenderParams, render_pool_table_scene
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_POOL_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -78,13 +78,13 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Pool-table instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     object_ball_count: int
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     object_ball_count_probabilities: Dict[str, float]
@@ -101,39 +101,39 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="pool
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="pool", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     """Return the configured answer-support key for one Pool query."""
 
     return {
         "pottable_ball_count": "pottable_ball_count_support",
         "legal_group_pottable_count": "legal_group_pottable_count_support",
         "blocking_ball_count": "blocking_ball_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    if not bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True))):
+    if not bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True))):
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    return len(positives) == len(SUPPORTED_POOL_QUERY_VARIANTS) and max(positives) - min(positives) <= 1e-9
+    return len(positives) == len(SUPPORTED_POOL_QUERY_IDS) and max(positives) - min(positives) <= 1e-9
 
 
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner axes."""
 
     cycle_params = dict(params)
     sampling_index = params.get("_sample_cursor")
-    if sampling_index is None or not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if sampling_index is None or not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_POOL_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_POOL_QUERY_IDS))
     return cycle_params
 
 
@@ -165,16 +165,16 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Pool-table instance."""
 
-    query_variant, query_variant_probabilities = resolve_games_query_variant(
+    query_id, query_id_probabilities = resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_POOL_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_POOL_QUERY_IDS,
     )
     cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -201,11 +201,11 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key="object_ball_count_support",
         explicit_key="object_ball_count",
         fallback_support=_DEFAULTS.object_ball_count_support,
-        namespace=f"{TASK_ID}.object_ball_count.{str(query_variant)}",
+        namespace=f"{TASK_ID}.object_ball_count.{str(query_id)}",
         balanced_flag_key="balanced_object_ball_count_sampling",
         namespace_support_permutation=True,
     )
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=cycle_params,
@@ -213,7 +213,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=support_key,
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -224,13 +224,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=getattr(_DEFAULTS, support_key),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         object_ball_count=int(object_ball_count),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         object_ball_count_probabilities=dict(object_ball_count_probabilities),
@@ -588,7 +588,7 @@ def _blocking_layout(*, rng, target_answer: int, params: Mapping[str, Any]) -> P
     if len(actual_blockers) != int(target_answer):
         raise ValueError("constructed pool blocker count did not match target")
     sample = PoolSample(
-        query_variant="blocking_ball_count",
+        query_id="blocking_ball_count",
         scene_variant="standard_table",
         answer=int(target_answer),
         balls=tuple(balls),
@@ -612,11 +612,11 @@ def _blocking_layout(*, rng, target_answer: int, params: Mapping[str, Any]) -> P
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> PoolSample:
     """Construct one Pool-table scene for the requested axes."""
 
-    if str(axes.query_variant) == "blocking_ball_count":
+    if str(axes.query_id) == "blocking_ball_count":
         sample = _blocking_layout(rng=rng, target_answer=int(axes.target_answer), params=params)
         return replace(sample, scene_variant=str(axes.scene_variant))
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "pottable_ball_count":
         balls = _clear_pottable_count_layout(
             rng=rng,
@@ -640,7 +640,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Poo
         if len(all_pottable) != int(axes.target_answer):
             raise ValueError("pool pottable count does not match target")
         sample = PoolSample(
-            query_variant=query,
+            query_id=query,
             scene_variant=str(axes.scene_variant),
             answer=len(all_pottable),
             balls=balls,
@@ -667,7 +667,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Poo
             max_angle_degrees=float(max_angle),
         )
         sample = PoolSample(
-            query_variant=query,
+            query_id=query,
             scene_variant=str(axes.scene_variant),
             answer=len(legal_ids),
             balls=balls,
@@ -685,15 +685,15 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Poo
             construction_mode="random_pool_layout_current_group_pottable_count",
         )
     else:
-        raise ValueError(f"unsupported Pool query_variant: {axes.query_variant}")
+        raise ValueError(f"unsupported Pool query_id: {axes.query_id}")
     validate_pool_sample(sample)
     return sample
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Pool JSON output."""
 
-    answer_value = 2 if str(query_variant) == "blocking_ball_count" else 3
+    answer_value = 2 if str(query_id) == "blocking_ball_count" else 3
     evidence_value = [[180, 220, 220, 260], [520, 310, 560, 350]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -740,8 +740,8 @@ class GamesPoolTableTask:
             badge_text=badge_text,
             marked_ball_id=sampled_scene.marked_ball_id,
             marked_pocket_id=sampled_scene.marked_pocket_id,
-            shot_path_ball_id=sampled_scene.marked_ball_id if str(axes.query_variant) == "blocking_ball_count" else None,
-            shot_path_pocket_id=sampled_scene.marked_pocket_id if str(axes.query_variant) == "blocking_ball_count" else None,
+            shot_path_ball_id=sampled_scene.marked_ball_id if str(axes.query_id) == "blocking_ball_count" else None,
+            shot_path_pocket_id=sampled_scene.marked_pocket_id if str(axes.query_id) == "blocking_ball_count" else None,
             params=render_params,
         )
         evidence_entity_ids = [*sampled_scene.evidence_ball_ids, *sampled_scene.evidence_pocket_ids]
@@ -779,7 +779,7 @@ class GamesPoolTableTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         group_text = ""
         if sampled_scene.current_player_group:
             group_text = str(sampled_scene.current_player_group)
@@ -789,14 +789,14 @@ class GamesPoolTableTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "direct_shot_rule_text": str(prompt_defaults["direct_shot_rule_text"]),
@@ -814,7 +814,7 @@ class GamesPoolTableTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             object_ball_count=len(object_balls(sampled_scene.balls)),
             target_answer=int(sampled_scene.target_answer),
             evidence_count=len(evidence_entity_ids),
@@ -837,31 +837,29 @@ class GamesPoolTableTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(sampled_scene.target_answer),
                     "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "object_ball_count": int(axes.object_ball_count),
                     "current_player_group": sampled_scene.current_player_group,
                     "marked_ball_id": sampled_scene.marked_ball_id,
                     "marked_pocket_id": sampled_scene.marked_pocket_id,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "object_ball_count_probabilities": dict(axes.object_ball_count_probabilities),
                     "target_answer": int(sampled_scene.target_answer),
@@ -881,8 +879,7 @@ class GamesPoolTableTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "object_ball_count": len(object_balls(sampled_scene.balls)),
                 "target_answer": int(sampled_scene.target_answer),
@@ -928,9 +925,8 @@ class GamesPoolTableTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="pool",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -939,7 +935,7 @@ class GamesPoolQualifyingPottableCountTask(QuerySubsetTaskMixin, GamesPoolTableT
     """Count pottable balls matching one sampled direct-shot condition."""
 
     task_id = "task_games__pool__pottable_ball_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "pottable_ball_count",
         "legal_group_pottable_count",
     )
@@ -950,7 +946,7 @@ class GamesPoolBlockingBallCountTask(FixedQueryVariantTaskMixin, GamesPoolTableT
     """Count balls blocking the marked direct shot lane."""
 
     task_id = "task_games__pool__blocking_ball_count"
-    fixed_query_variant = "blocking_ball_count"
+    fixed_query_id = "blocking_ball_count"
 
 
 __all__ = [

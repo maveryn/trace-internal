@@ -1,6 +1,6 @@
 # `task_icons__paired_canvas__original_attribute_label`
 
-Status: accepted.
+Status: pending v0 review/calibration artifact refresh.
 
 ## Identity
 - domain: `icons`
@@ -50,7 +50,6 @@ three-attribute bindings such as color+fill-style+shape.
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
 
-## Calibration
-- qwen25vl7b `100 x 24`, seed `20260507`: hard `0.100`, easy `0.050`,
-  mean solve rate `0.291`, response cap `0.000`, prompt max `146`
-- distribution gate: `6` unique answers, max answer frequency `0.190`
+## Current Review Status
+Current v0 review and solve-rate artifacts are pending. Use
+`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.

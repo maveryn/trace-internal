@@ -24,7 +24,7 @@ from ...shared.prompt_variants import (
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.complexity import build_games_crossing_lane_complexity
 from ..shared.crossing_common import (
-    SUPPORTED_CROSSING_QUERY_VARIANTS,
+    SUPPORTED_CROSSING_QUERY_IDS,
     SUPPORTED_CROSSING_SCENE_VARIANTS,
     SUPPORTED_CROSSING_STYLE_VARIANTS,
     CrossingRouteOption,
@@ -42,13 +42,13 @@ from ..shared.crossing_common import (
 from ..shared.crossing_scene import CrossingRenderParams, render_crossing_scene
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, forced_query_params, rewrite_public_query_output
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
 TASK_ID = "games_crossing_lane_base"
 _LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
-SAFE_ROUTE_QUERY_VARIANTS: Tuple[str, ...] = ("safe_start_label", "goal_reachable_label")
+SAFE_ROUTE_QUERY_IDS: Tuple[str, ...] = ("safe_start_label", "goal_reachable_label")
 
 
 @dataclass(frozen=True)
@@ -80,7 +80,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one lane-crossing instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     lane_count: int
@@ -90,7 +90,7 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...] | None
     target_label_index: int | None
     target_label_index_support: Tuple[int, ...] | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     lane_count_probabilities: Dict[str, float]
@@ -110,30 +110,30 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="cros
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="crossing", apply_prob=0.5)
 
 
-def _target_support_key(query_variant: str) -> str | None:
+def _target_support_key(query_id: str) -> str | None:
     """Return the answer-support key for count/value crossing queries."""
 
     return {
         "collision_time_value": "collision_time_support",
         "moving_object_count": "moving_object_count_support",
-    }.get(str(query_variant))
+    }.get(str(query_id))
 
 
-def _is_label_query(query_variant: str) -> bool:
+def _is_label_query(query_id: str) -> bool:
     """Return true when the query answer is a route/start label."""
 
-    return str(query_variant) in {"safe_start_label", "goal_reachable_label"}
+    return str(query_id) in {"safe_start_label", "goal_reachable_label"}
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced crossing query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced crossing query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_CROSSING_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_CROSSING_QUERY_IDS,
     )
 
 
@@ -165,7 +165,7 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one crossing instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -220,7 +220,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer: int | None = None
     target_answer_support: Tuple[int, ...] | None = None
     target_answer_probabilities: Dict[str, float] | None = None
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     if support_key is not None:
         target_answer, target_answer_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
@@ -229,7 +229,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             support_key=str(support_key),
             explicit_key="target_answer",
             fallback_support=getattr(_DEFAULTS, str(support_key)),
-            namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+            namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
@@ -239,17 +239,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             key=str(support_key),
             fallback=getattr(_DEFAULTS, str(support_key)),
         )
-        if str(query_variant) in {"collision_time_value", "moving_object_count"}:
+        if str(query_id) in {"collision_time_value", "moving_object_count"}:
             lane_count = max(int(lane_count), min(8, int(target_answer) + 2))
-        if str(query_variant) == "collision_time_value" and int(target_answer) > int(row_count):
+        if str(query_id) == "collision_time_value" and int(target_answer) > int(row_count):
             row_count = int(target_answer)
-        if str(query_variant) == "moving_object_count" and int(target_answer) > int(row_count):
+        if str(query_id) == "moving_object_count" and int(target_answer) > int(row_count):
             row_count = int(target_answer)
 
     target_label_index: int | None = None
     target_label_index_support: Tuple[int, ...] | None = None
     target_label_index_probabilities: Dict[str, float] | None = None
-    if _is_label_query(str(query_variant)):
+    if _is_label_query(str(query_id)):
         target_label_index, target_label_index_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -257,7 +257,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             support_key="target_label_index_support",
             explicit_key="target_label_index",
             fallback_support=_DEFAULTS.target_label_index_support,
-            namespace=f"{TASK_ID}.target_label_index.{str(query_variant)}",
+            namespace=f"{TASK_ID}.target_label_index.{str(query_id)}",
             balanced_flag_key="balanced_target_label_sampling",
             namespace_support_permutation=True,
         )
@@ -268,12 +268,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             fallback=_DEFAULTS.target_label_index_support,
         )
         lane_count = max(int(lane_count), int(target_label_index) + 1)
-        if str(query_variant) == "goal_reachable_label":
+        if str(query_id) == "goal_reachable_label":
             route_option_count = max(int(route_option_count), int(target_label_index) + 1)
             lane_count = max(int(lane_count), int(route_option_count))
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         lane_count=int(lane_count),
@@ -283,7 +283,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer_support=target_answer_support,
         target_label_index=None if target_label_index is None else int(target_label_index),
         target_label_index_support=target_label_index_support,
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         lane_count_probabilities=dict(lane_count_probabilities),
@@ -529,7 +529,7 @@ def _sample_safe_start(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | Non
     sample = CrossingSample(
         lane_count=lane_count,
         row_count=row_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         answer=str(target_label),
@@ -598,7 +598,7 @@ def _sample_collision_time(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample |
     sample = CrossingSample(
         lane_count=lane_count,
         row_count=row_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         answer=int(target_tick),
@@ -671,7 +671,7 @@ def _sample_moving_object_count(rng: Any, *, axes: _ResolvedAxes) -> CrossingSam
     sample = CrossingSample(
         lane_count=lane_count,
         row_count=row_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         answer=int(target_count),
@@ -773,7 +773,7 @@ def _sample_goal_reachable(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample |
     sample = CrossingSample(
         lane_count=lane_count,
         row_count=row_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         style_variant=str(axes.style_variant),
         answer=str(target_label),
@@ -798,7 +798,7 @@ def _sample_goal_reachable(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample |
 def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample:
     """Construct one exact-answer crossing scene."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     builders = {
         "safe_start_label": _sample_safe_start,
         "collision_time_value": _sample_collision_time,
@@ -807,7 +807,7 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample:
     }
     builder = builders.get(query)
     if builder is None:
-        raise ValueError(f"unsupported crossing query_variant: {query}")
+        raise ValueError(f"unsupported crossing query_id: {query}")
     for _attempt in range(1200):
         sample = builder(rng, axes=axes)
         if sample is not None:
@@ -815,10 +815,10 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample:
     raise ValueError(f"could not construct crossing sample for query {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for crossing JSON output."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query in {"safe_start_label", "goal_reachable_label"}:
         answer_value: int | str = "C"
         evidence_value = [[226, 612, 312, 664]]
@@ -837,21 +837,21 @@ def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
 def _safe_route_query_params(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[Dict[str, Any], str, Dict[str, float]]:
     """Return params that select one safe-route label query inside the merged task."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    supported = set(SAFE_ROUTE_QUERY_VARIANTS)
+    explicit_query = params.get("query_id")
+    supported = set(SAFE_ROUTE_QUERY_IDS)
     selection_index = resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
-        namespace="games_crossing_safe_route_label.query_variant",
+        namespace="games_crossing_safe_route_label.query_id",
     )
     if explicit_query is not None:
         query = str(explicit_query)
         if query not in supported:
-            raise ValueError(f"unsupported safe-route query_variant: {query}")
+            raise ValueError(f"unsupported safe-route query_id: {query}")
     else:
-        query = SAFE_ROUTE_QUERY_VARIANTS[abs(int(selection_index)) % len(SAFE_ROUTE_QUERY_VARIANTS)]
-    probabilities = {str(value): 1.0 / float(len(SAFE_ROUTE_QUERY_VARIANTS)) for value in SAFE_ROUTE_QUERY_VARIANTS}
-    forced = forced_query_params(params, query_variant=str(query))
+        query = SAFE_ROUTE_QUERY_IDS[abs(int(selection_index)) % len(SAFE_ROUTE_QUERY_IDS)]
+    probabilities = {str(value): 1.0 / float(len(SAFE_ROUTE_QUERY_IDS)) for value in SAFE_ROUTE_QUERY_IDS}
+    forced = forced_query_params(params, query_id=str(query))
     if "target_label_index" not in forced:
         label_support = resolve_integer_support(
             forced,
@@ -859,7 +859,7 @@ def _safe_route_query_params(params: Mapping[str, Any], *, instance_seed: int) -
             key="target_label_index_support",
             fallback=_DEFAULTS.target_label_index_support,
         )
-        label_selection_index = int(selection_index) // len(SAFE_ROUTE_QUERY_VARIANTS) if explicit_query is None else int(selection_index)
+        label_selection_index = int(selection_index) // len(SAFE_ROUTE_QUERY_IDS) if explicit_query is None else int(selection_index)
         forced["target_label_index"] = int(label_support[abs(int(label_selection_index)) % len(label_support)])
     return forced, str(query), probabilities
 
@@ -936,22 +936,22 @@ class GamesCrossingLaneTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "crossing_motion_rule_text": str(prompt_defaults["crossing_motion_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -968,7 +968,7 @@ class GamesCrossingLaneTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             lane_count=int(sampled_scene.lane_count),
             row_count=int(sampled_scene.row_count),
             vehicle_count=len(sampled_scene.vehicles),
@@ -1001,8 +1001,7 @@ class GamesCrossingLaneTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
@@ -1011,15 +1010,14 @@ class GamesCrossingLaneTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
@@ -1029,8 +1027,8 @@ class GamesCrossingLaneTask:
                     "target_label_index": None if sampled_scene.target_label_index is None else int(sampled_scene.target_label_index),
                     "target_label_index_support": None if axes.target_label_index_support is None else [int(value) for value in axes.target_label_index_support],
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),
@@ -1049,8 +1047,7 @@ class GamesCrossingLaneTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "lane_count": int(sampled_scene.lane_count),
                 "row_count": int(sampled_scene.row_count),
@@ -1086,9 +1083,8 @@ class GamesCrossingLaneTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="crossing",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -1097,7 +1093,7 @@ class GamesCrossingCollisionTimeValueTask(FixedQueryVariantTaskMixin, GamesCross
     """Return the first collision tick for the marked route."""
 
     task_id = "task_games__crossing__collision_time_value"
-    fixed_query_variant = "collision_time_value"
+    fixed_query_id = "collision_time_value"
 
 
 @register_task
@@ -1105,7 +1101,7 @@ class GamesCrossingMovingObjectCountTask(FixedQueryVariantTaskMixin, GamesCrossi
     """Count moving objects that intersect the marked route."""
 
     task_id = "task_games__crossing__moving_object_count"
-    fixed_query_variant = "moving_object_count"
+    fixed_query_id = "moving_object_count"
 
 
 @register_task
@@ -1120,7 +1116,7 @@ class GamesCrossingSafeRouteLabelTask(GamesCrossingLaneTask):
         return rewrite_public_query_output(
             output,
             query_id=str(query_id),
-            query_variant_probabilities=query_probabilities,
+            query_id_probabilities=query_probabilities,
         )
 
 

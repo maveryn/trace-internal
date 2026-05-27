@@ -12,7 +12,7 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks import create_task
 from trace.tasks.charts.three_d.panel_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsThreeDPanelQueryTask,
 )
 
@@ -33,7 +33,7 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def _expected_answer(execution: dict) -> int | str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
 
     if variant == "reference_nearest_label":
         target = float(execution["target_axis_value"])
@@ -65,12 +65,12 @@ def _expected_answer(execution: dict) -> int | str:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_three_d_base_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_three_d_base_variants_match_contract(query_id: str) -> None:
     task = ChartsThreeDPanelQueryTask()
     out = task.generate(
-        98200 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant},
+        98200 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id},
         max_attempts=80,
     )
     trace = out.trace_payload
@@ -78,7 +78,7 @@ def test_chart_three_d_base_variants_match_contract(query_variant: str) -> None:
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "surface_3d_query"
@@ -115,23 +115,23 @@ def test_chart_three_d_base_variants_match_contract(query_variant: str) -> None:
 
 @pytest.mark.parametrize("query_id,task_id", sorted(PUBLIC_TASK_IDS.items()))
 def test_chart_three_d_public_tasks_rewrite_query_id(query_id: str, task_id: str) -> None:
-    out = create_task(task_id).generate(98300 + SUPPORTED_QUERY_VARIANTS.index(query_id), params={}, max_attempts=80)
+    out = create_task(task_id).generate(98300 + SUPPORTED_QUERY_IDS.index(query_id), params={}, max_attempts=80)
     trace = out.trace_payload
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_variant"] == "default"
+    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
-    assert trace["scene_ir"]["relations"]["query_variant"] == "default"
+    assert trace["scene_ir"]["relations"]["query_id"] == "default"
     assert trace["scene_ir"]["relations"]["query_id"] == query_id
 
 
 def test_chart_three_d_prompt_examples_match_contract() -> None:
     task = ChartsThreeDPanelQueryTask()
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS, start=98400):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=80)
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=98400):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert "Read this visual" not in out.prompt
@@ -151,7 +151,7 @@ def test_chart_three_d_balanced_sampling_covers_queries_and_sizes() -> None:
     for index in range(100):
         out = task.generate(hash64(98500, "charts_three_d", index), params={}, max_attempts=300)
         execution = out.trace_payload["execution_trace"]
-        variant = str(execution["query_variant"])
+        variant = str(execution["query_id"])
         variants[variant] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         if variant == "surface_extremum_label":
@@ -159,7 +159,7 @@ def test_chart_three_d_balanced_sampling_covers_queries_and_sizes() -> None:
         if variant == "panel_variation_label":
             panel_counts[int(execution["panel_count"])] += 1
 
-    assert set(variants) == set(SUPPORTED_QUERY_VARIANTS)
+    assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert set(scene_variants).issubset(set(SUPPORTED_SCENE_VARIANTS))
     assert min(surface_x_counts) >= 5
     assert max(surface_x_counts) <= 7
@@ -170,4 +170,4 @@ def test_chart_three_d_balanced_sampling_covers_queries_and_sizes() -> None:
 def test_chart_three_d_config_is_loaded() -> None:
     defaults = get_task_group_defaults("charts", "three_d")
     assert defaults["prompt"]["shared"]["bundle_id"] == "charts_three_d_v0"
-    assert defaults["generation"]["shared"]["balanced_query_variant_sampling"] is True
+    assert defaults["generation"]["shared"]["balanced_query_id_sampling"] is True

@@ -26,7 +26,7 @@ from ..shared.complexity import build_games_platformer_level_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.platformer_common import (
-    SUPPORTED_PLATFORMER_QUERY_VARIANTS,
+    SUPPORTED_PLATFORMER_QUERY_IDS,
     SUPPORTED_PLATFORMER_SCENE_VARIANTS,
     SUPPORTED_PLATFORMER_STYLE_VARIANTS,
     PlatformerCollectible,
@@ -39,7 +39,7 @@ from ..shared.platformer_common import (
     validate_platformer_sample,
 )
 from ..shared.platformer_scene import PlatformerRenderParams, render_platformer_scene
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
@@ -76,7 +76,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Platformer instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     platform_count: int
@@ -84,7 +84,7 @@ class _ResolvedAxes:
     distractor_collectible_count: int
     target_platform_label: str | None
     target_collectible_count: int | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     platform_count_probabilities: Dict[str, float]
@@ -104,15 +104,15 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="plat
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="platformer", apply_prob=0.5)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Platformer query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Platformer query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_PLATFORMER_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_PLATFORMER_QUERY_IDS,
     )
 
 
@@ -185,7 +185,7 @@ def _resolve_label_choice(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Platformer instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -242,7 +242,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_platform_label_probabilities: Dict[str, float] | None = None
     target_collectible_count: int | None = None
     target_collectible_count_probabilities: Dict[str, float] | None = None
-    if str(query_variant) == "jump_landing_label":
+    if str(query_id) == "jump_landing_label":
         target_platform_label, target_platform_label_probabilities = _resolve_label_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -252,7 +252,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             namespace=f"{TASK_ID}.target_platform_label",
             balanced_flag_key="balanced_target_platform_label_sampling",
         )
-    elif str(query_variant) == "collectible_count":
+    elif str(query_id) == "collectible_count":
         target_collectible_count, target_collectible_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -266,7 +266,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         platform_count=int(platform_count),
@@ -274,7 +274,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         distractor_collectible_count=int(distractor_collectible_count),
         target_platform_label=None if target_platform_label is None else str(target_platform_label),
         target_collectible_count=None if target_collectible_count is None else int(target_collectible_count),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         platform_count_probabilities=dict(platform_count_probabilities),
@@ -563,7 +563,7 @@ def _sample_landing(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
         hazards = _decorative_hazards(rng=rng, count=max(2, int(axes.hazard_count) - 3), avoid_path=path, avoid_points=(player, target_center))
         coins = _decorative_collectibles(rng=rng, start_index=0, count=4, avoid_path=path, avoid_points=(player, target_center))
         sample = PlatformerSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_platform.label),
@@ -627,7 +627,7 @@ def _sample_collectibles(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
         hazards = _decorative_hazards(rng=rng, count=max(2, int(axes.hazard_count) - 3), avoid_path=path, avoid_points=(player, end))
         target_ids = tuple(str(coin.collectible_id) for coin in target_collectibles)
         sample = PlatformerSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=int(len(target_collectibles)),
@@ -652,18 +652,18 @@ def _sample_collectibles(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
 def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
     """Construct one Platformer scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "jump_landing_label":
         return _sample_landing(rng=rng, axes=axes)
     if query == "collectible_count":
         return _sample_collectibles(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Platformer query_variant: {query}")
+    raise ValueError(f"unsupported Platformer query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Platformer JSON output."""
 
-    if str(query_variant) == "collectible_count":
+    if str(query_id) == "collectible_count":
         answer_value: str | int = 4
         evidence_value = [[328, 210, 364, 246], [430, 182, 466, 218], [536, 198, 572, 234], [641, 254, 677, 290]]
     else:
@@ -708,7 +708,7 @@ class GamesPlatformerLevelTask:
             platforms=sampled_scene.platforms,
             hazards=sampled_scene.hazards,
             collectibles=sampled_scene.collectibles,
-            query_variant=str(sampled_scene.query_variant),
+            query_id=str(sampled_scene.query_id),
             player_xy_norm=(float(sampled_scene.player_x_norm), float(sampled_scene.player_y_norm)),
             path_points_norm=tuple(sampled_scene.path_points_norm),
             visible_path_fraction=float(sampled_scene.visible_path_fraction),
@@ -745,14 +745,14 @@ class GamesPlatformerLevelTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -760,8 +760,8 @@ class GamesPlatformerLevelTask:
                 "platformer_full_arc_rule_text": str(prompt_defaults["platformer_full_arc_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -769,7 +769,7 @@ class GamesPlatformerLevelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        if str(axes.query_variant) == "collectible_count":
+        if str(axes.query_id) == "collectible_count":
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
@@ -778,11 +778,11 @@ class GamesPlatformerLevelTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             platform_count=len(sampled_scene.platforms),
             hazard_count=len(sampled_scene.hazards),
             collectible_count=len(sampled_scene.collectibles),
-            target_answer=int(sampled_scene.answer) if str(axes.query_variant) == "collectible_count" else len(sampled_scene.evidence_entity_ids),
+            target_answer=int(sampled_scene.answer) if str(axes.query_id) == "collectible_count" else len(sampled_scene.evidence_entity_ids),
             evidence_count=len(sampled_scene.evidence_entity_ids),
         )
         platform_trace = [
@@ -824,8 +824,7 @@ class GamesPlatformerLevelTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "platform_count": len(sampled_scene.platforms),
                     "hazard_count": len(sampled_scene.hazards),
@@ -837,15 +836,14 @@ class GamesPlatformerLevelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "platform_count": int(axes.platform_count),
                     "hazard_count": int(axes.hazard_count),
@@ -856,8 +854,8 @@ class GamesPlatformerLevelTask:
                     "target_platform_label": axes.target_platform_label,
                     "target_collectible_count": axes.target_collectible_count,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "platform_count_probabilities": dict(axes.platform_count_probabilities),
                     "hazard_count_probabilities": dict(axes.hazard_count_probabilities),
@@ -879,8 +877,7 @@ class GamesPlatformerLevelTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "player_xy_norm": [float(sampled_scene.player_x_norm), float(sampled_scene.player_y_norm)],
                 "path_points_norm": [[float(x), float(y)] for x, y in sampled_scene.path_points_norm],
@@ -914,9 +911,8 @@ class GamesPlatformerLevelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="platformer",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -925,7 +921,7 @@ class GamesPlatformerJumpLandingLabelTask(FixedQueryVariantTaskMixin, GamesPlatf
     """Identify the labeled platform reached by a jump arc."""
 
     task_id = "task_games__platformer__jump_landing_label"
-    fixed_query_variant = "jump_landing_label"
+    fixed_query_id = "jump_landing_label"
 
 
 @register_task
@@ -933,7 +929,7 @@ class GamesPlatformerCollectibleCountTask(FixedQueryVariantTaskMixin, GamesPlatf
     """Count collectibles lying on the shown jump arc."""
 
     task_id = "task_games__platformer__collectible_count"
-    fixed_query_variant = "collectible_count"
+    fixed_query_id = "collectible_count"
 
 
 __all__ = [

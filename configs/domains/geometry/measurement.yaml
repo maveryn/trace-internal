@@ -9,7 +9,7 @@ generation:
     ellipse_allow_circle: false
   task_overrides:
     geometry_measurement_value_base:
-      query_variant_weights:
+      query_id_weights:
         angle: 1.0
         area: 1.0
         perimeter: 1.0
@@ -21,7 +21,7 @@ generation:
         circle: 1.0
         ellipse: 1.0
         line: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     source_geometry_measurement_angle:
       min_angle: 30

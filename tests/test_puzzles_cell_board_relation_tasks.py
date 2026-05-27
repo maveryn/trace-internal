@@ -51,7 +51,7 @@ def test_cell_board_min_distance_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "min_distance"
+    assert str(out.query_id) == "min_distance"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_sequence"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]

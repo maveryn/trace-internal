@@ -33,9 +33,9 @@ def test_icons_relation_occlusion_order_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_occlusion_order_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_occlusion_order"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "same_front_to_back_order"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "same_front_to_back_order"
     assert int(execution["object_count"]) == 8
     assert int(execution["target_count"]) == 3

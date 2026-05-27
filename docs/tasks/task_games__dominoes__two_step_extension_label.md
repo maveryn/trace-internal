@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `string`
 2. Evidence type: bbox_set containing the first-step loose domino box and the answer domino box.
-3. Public `query_variant` is `default`; `two_step_extension_label` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `two_step_extension_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games domino-chain renderer for its scene id.

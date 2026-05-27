@@ -1243,7 +1243,7 @@ class GeometryLengthMeasure2DTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(variant_kind),
+                "query_id": str(variant_kind),
                 "template_id": str(self.query_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1294,6 +1294,6 @@ class GeometryLengthMeasure2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(variant_kind),
+            query_id=str(variant_kind),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

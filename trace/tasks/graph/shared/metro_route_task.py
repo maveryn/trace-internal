@@ -458,7 +458,6 @@ class MetroRouteGraphTaskBase:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(self.query_id),
                 "scene_id": PUBLIC_METRO_SCENE_ID,
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -490,7 +489,6 @@ class MetroRouteGraphTaskBase:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(self.query_id),
                 "scene_variant": "metro",
                 "scene_id": PUBLIC_METRO_SCENE_ID,
@@ -639,7 +637,6 @@ class MetroRouteGraphTaskBase:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=PUBLIC_METRO_SCENE_ID,
             query_id=str(self.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

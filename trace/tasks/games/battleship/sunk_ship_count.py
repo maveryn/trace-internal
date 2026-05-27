@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ..shared.battleship_common import (
     FLEET_SHAPES,
-    SUPPORTED_BATTLESHIP_QUERY_VARIANTS,
+    SUPPORTED_BATTLESHIP_QUERY_IDS,
     SUPPORTED_BATTLESHIP_SCENE_VARIANTS,
     BattleshipSample,
     BattleshipShipPlacement,
@@ -37,7 +37,7 @@ from ..shared.battleship_scene import BattleshipRenderParams, render_battleship_
 from ..shared.complexity import build_games_battleship_grid_complexity
 from ..shared.fixed_query_task import QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_BATTLESHIP_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_noise_defaults
@@ -74,13 +74,13 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Battleship instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board_size: int
     target_answer: int | None
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     board_size_probabilities: Dict[str, float]
@@ -96,24 +96,24 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="battleship", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     """Return the configured answer-support key for one Battleship query."""
 
     return {
         "sunk_ship_count": "sunk_ship_count_support",
         "partial_ship_count": "partial_ship_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Battleship query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Battleship query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_BATTLESHIP_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_BATTLESHIP_QUERY_IDS,
     )
 
 
@@ -145,7 +145,7 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Battleship instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -178,7 +178,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balanced_flag_key="balanced_board_size_sampling",
         namespace_support_permutation=True,
     )
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=params,
@@ -186,7 +186,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -197,13 +197,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=getattr(_DEFAULTS, support_key),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         board_size=int(board_size),
         target_answer=None if target_answer is None else int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         board_size_probabilities=dict(board_size_probabilities),
@@ -319,15 +319,15 @@ def _partial_ship_count_bounds(params: Mapping[str, Any]) -> Tuple[int, int]:
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> BattleshipSample:
     """Construct one Battleship tracking-grid scene for the requested axes."""
 
-    if str(axes.query_variant) not in SUPPORTED_BATTLESHIP_QUERY_VARIANTS:
-        raise ValueError(f"unsupported Battleship query_variant: {axes.query_variant}")
+    if str(axes.query_id) not in SUPPORTED_BATTLESHIP_QUERY_IDS:
+        raise ValueError(f"unsupported Battleship query_id: {axes.query_id}")
 
     board_size = int(axes.board_size)
     target_answer = int(axes.target_answer or 1)
     if target_answer < 1 or target_answer > len(FLEET_SHAPES):
         raise ValueError(f"unsupported Battleship target_answer: {target_answer}")
     fleet_size = len(FLEET_SHAPES)
-    if str(axes.query_variant) == "sunk_ship_count":
+    if str(axes.query_id) == "sunk_ship_count":
         sunk_count = int(target_answer)
         partial_low, partial_high = _partial_ship_count_bounds(params)
         partial_count = min(
@@ -406,7 +406,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Bat
     miss_low, miss_high = _miss_count_bounds(params)
     miss_count = min(len(available_for_misses), int(rng.randint(int(miss_low), int(miss_high))))
     miss_coords = sorted_coords(available_for_misses[:miss_count])
-    if str(axes.query_variant) == "sunk_ship_count":
+    if str(axes.query_id) == "sunk_ship_count":
         evidence_coords = sorted_coords(coord for ship in placements if ship.is_sunk for coord in ship.coords)
         answer = int(sunk_count)
     else:
@@ -419,7 +419,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Bat
         answer = int(partial_count)
     sample = BattleshipSample(
         board_size=int(board_size),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=int(answer),
         ship_placements=tuple(placements),
@@ -436,7 +436,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> Bat
     return sample
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Battleship JSON output."""
 
     answer_value = 2
@@ -544,21 +544,21 @@ class GamesBattleshipGridTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "battleship_rule_text": str(prompt_defaults["battleship_rule_text"]),
@@ -573,7 +573,7 @@ class GamesBattleshipGridTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             board_size=int(sampled_scene.board_size),
             hit_count=len(sampled_scene.hit_coords),
             miss_count=len(sampled_scene.miss_coords),
@@ -598,8 +598,7 @@ class GamesBattleshipGridTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.board_size),
                     "target_answer": int(sampled_scene.target_answer),
@@ -607,20 +606,19 @@ class GamesBattleshipGridTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.board_size),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size_probabilities": dict(axes.board_size_probabilities),
                     "target_answer": int(sampled_scene.target_answer),
@@ -644,8 +642,7 @@ class GamesBattleshipGridTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "board_size": int(sampled_scene.board_size),
                 "target_answer": int(sampled_scene.target_answer),
@@ -688,9 +685,8 @@ class GamesBattleshipGridTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="battleship",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -699,7 +695,7 @@ class GamesBattleshipShipStatusCountTask(QuerySubsetTaskMixin, GamesBattleshipGr
     """Count fleet ships matching one sampled hit-status condition."""
 
     task_id = "task_games__battleship__ship_status_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "sunk_ship_count",
         "partial_ship_count",
     )

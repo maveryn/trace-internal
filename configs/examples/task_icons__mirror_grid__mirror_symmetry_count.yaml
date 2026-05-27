@@ -1,5 +1,5 @@
 task_id: task_icons__mirror_grid__mirror_symmetry_count
 params:
-  query_variant: mirror_vertical
+  query_id: mirror_vertical
   target_count: 2
   distractor_count: 4

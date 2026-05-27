@@ -19,14 +19,14 @@ from tests.helpers import read_jsonl
     ("params", "expected_answer", "expected_evidence_count"),
     (
         (
-            {"scene_variant": "single_board", "query_variant": "ring_count", "target_ring": "double", "target_answer": 3, "dart_count": 8},
+            {"scene_variant": "single_board", "query_id": "ring_count", "target_ring": "double", "target_answer": 3, "dart_count": 8},
             3,
             3,
         ),
         (
                 {
                     "scene_variant": "single_board",
-                    "query_variant": "threshold_score_count",
+                    "query_id": "threshold_score_count",
                     "target_threshold": 40,
                     "target_answer": 4,
                     "dart_count": 8,
@@ -51,7 +51,7 @@ def test_games_darts_score_count_emits_expected_count_contract(
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert all(str(dart_id).startswith("dart_") for dart_id in execution["evidence_entity_ids"])
 
@@ -59,7 +59,7 @@ def test_games_darts_score_count_emits_expected_count_contract(
 def test_games_darts_score_count_total_score_uses_small_board_and_all_darts_as_evidence() -> None:
     out = GamesDartsScoreCountTask().generate(
         92011,
-        params={"scene_variant": "single_board", "query_variant": "total_score", "dart_count": 1},
+        params={"scene_variant": "single_board", "query_id": "total_score", "dart_count": 1},
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
@@ -102,12 +102,12 @@ def test_games_darts_score_count_query_cycle_covers_count_answers_and_scenes() -
             params={"_sample_cursor": int(sampling_index)},
             max_attempts=64,
         )
-        query_variant = str(out.query_variant)
+        query_id = str(out.query_id)
         execution = out.trace_payload["execution_trace"]
-        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
-        dart_counts_by_variant[query_variant].add(int(execution["dart_count"]))
-        if query_variant in answers_by_variant:
-            answers_by_variant[query_variant].add(int(out.answer_gt.value))
+        scenes_by_variant[query_id].add(str(execution["scene_variant"]))
+        dart_counts_by_variant[query_id].add(int(execution["dart_count"]))
+        if query_id in answers_by_variant:
+            answers_by_variant[query_id].add(int(out.answer_gt.value))
 
     assert answers_by_variant == {
         "ring_count": {0, 1, 2, 3, 4, 5},
@@ -122,7 +122,7 @@ def test_games_darts_score_count_query_cycle_covers_count_answers_and_scenes() -
 def test_games_darts_score_count_is_deterministic() -> None:
     params = {
         "scene_variant": "single_board",
-        "query_variant": "threshold_score_count",
+        "query_id": "threshold_score_count",
         "target_threshold": 30,
         "target_answer": 4,
         "dart_count": 8,
@@ -141,7 +141,7 @@ def test_games_darts_score_count_is_deterministic() -> None:
 def test_games_darts_score_count_dart_color_is_lab_separated_from_board() -> None:
     out = GamesDartsScoreCountTask().generate(
         92041,
-        params={"scene_variant": "single_board", "query_variant": "ring_count", "target_ring": "single", "target_answer": 2, "dart_count": 8},
+        params={"scene_variant": "single_board", "query_id": "ring_count", "target_ring": "single", "target_answer": 2, "dart_count": 8},
         max_attempts=48,
     )
     execution = out.trace_payload["execution_trace"]
@@ -162,7 +162,7 @@ def test_games_darts_score_count_prompt_bundle_requires_query_specific_slots() -
 def test_games_darts_score_count_total_score_prompt_asks_for_visible_option_letter() -> None:
     out = GamesDartsScoreCountTask().generate(
         92052,
-        params={"scene_variant": "single_board", "query_variant": "total_score", "dart_count": 1},
+        params={"scene_variant": "single_board", "query_id": "total_score", "dart_count": 1},
         max_attempts=48,
     )
 
@@ -185,7 +185,7 @@ def test_games_darts_score_count_ring_prompt_uses_natural_area_names(
         92051,
         params={
             "scene_variant": "single_board",
-            "query_variant": "ring_count",
+            "query_id": "ring_count",
             "target_ring": target_ring,
             "target_answer": 2,
             "dart_count": 8,

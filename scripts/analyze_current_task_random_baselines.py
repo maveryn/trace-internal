@@ -117,7 +117,7 @@ class SolveStats:
 @dataclass(frozen=True)
 class ReviewSample:
     task_id: str
-    query_variant: str
+    query_id: str
     answer_type: str
     answer_value: Any
     payload: dict[str, Any]
@@ -334,7 +334,7 @@ def _solve_stats_from_json(path: Path) -> SolveStats:
     if not isinstance(overall, Mapping):
         overall = data
     by_variant: dict[str, float] = {}
-    for variant_key in ("by_query_variant", "by_variant", "by_query_variant"):
+    for variant_key in ("by_query_id", "by_variant", "by_query_id"):
         raw_by_variant = data.get(variant_key) or {}
         if isinstance(raw_by_variant, Mapping):
             variant_records = [(name, record) for name, record in raw_by_variant.items()]
@@ -343,7 +343,7 @@ def _solve_stats_from_json(path: Path) -> SolveStats:
                 (
                     record.get(
                         "group",
-                        record.get("name", record.get("query_variant", record.get("query_variant", record.get("variant", "")))),
+                        record.get("name", record.get("query_id", record.get("query_id", record.get("variant", "")))),
                     ),
                     record,
                 )
@@ -373,11 +373,11 @@ def _solve_stats_from_workbook(path: Path) -> SolveStats:
         summary_records = _record_from_workbook_sheet(path, "overall")
     overall = summary_records[0] if summary_records else {}
     by_variant: dict[str, float] = {}
-    for sheet_name in ("by_query_variant", "by_variant", "by_query_variant"):
+    for sheet_name in ("by_query_id", "by_variant", "by_query_id"):
         for record in _record_from_workbook_sheet(path, sheet_name):
             group = record.get(
                 "group",
-                record.get("name", record.get("query_variant", record.get("query_variant", record.get("variant", "")))),
+                record.get("name", record.get("query_id", record.get("query_id", record.get("variant", "")))),
             )
             mean = _first_float(record, ("mean_solve_rate", "mean_solve"))
             if str(group).strip() and mean is not None:
@@ -417,7 +417,7 @@ def _solve_stats_from_per_instance(path: Path, row: ProgressTaskRow, *, easy_thr
                 easy_count += 1
             else:
                 band_count += 1
-            variant = str(record.get("query_variant", "") or "").strip()
+            variant = str(record.get("query_id", "") or "").strip()
             if variant:
                 by_variant_rows[variant].append((solved, rollouts))
 
@@ -533,14 +533,14 @@ def _execution_trace(payload: Mapping[str, Any]) -> Mapping[str, Any]:
     return execution if isinstance(execution, Mapping) else {}
 
 
-def _query_variant_from_payload(payload: Mapping[str, Any], fallback: str) -> str:
+def _query_id_from_payload(payload: Mapping[str, Any], fallback: str) -> str:
     query = _query_spec(payload)
     execution = _execution_trace(payload)
     for value in (
-        payload.get("query_variant"),
-        query.get("query_variant"),
-        _query_params(payload).get("query_variant"),
-        execution.get("query_variant"),
+        payload.get("query_id"),
+        query.get("query_id"),
+        _query_params(payload).get("query_id"),
+        execution.get("query_id"),
         fallback,
     ):
         if str(value or "").strip():
@@ -593,11 +593,11 @@ def load_review_samples(repo_root: Path, row: ProgressTaskRow) -> list[ReviewSam
             answer = trace.get("answer_gt") if isinstance(trace, Mapping) else None
         if not isinstance(answer, Mapping):
             continue
-        query_variant = _query_variant_from_payload(payload, fallback=path.parent.name)
+        query_id = _query_id_from_payload(payload, fallback=path.parent.name)
         samples.append(
             ReviewSample(
                 task_id=row.task_id,
-                query_variant=query_variant,
+                query_id=query_id,
                 answer_type=str(answer.get("type", "")).strip(),
                 answer_value=answer.get("value"),
                 payload=payload,
@@ -933,11 +933,11 @@ def estimate_random_baseline(samples: Sequence[ReviewSample], *, split_by_varian
             notes="no task-review JSON samples found",
         )
 
-    variants = sorted({sample.query_variant for sample in sample_list})
+    variants = sorted({sample.query_id for sample in sample_list})
     if split_by_variant and len(variants) > 1:
         child_results = {
             variant: estimate_random_baseline(
-                [sample for sample in sample_list if sample.query_variant == variant],
+                [sample for sample in sample_list if sample.query_id == variant],
                 split_by_variant=False,
             )
             for variant in variants
@@ -956,7 +956,7 @@ def estimate_random_baseline(samples: Sequence[ReviewSample], *, split_by_varian
         supports = sorted({result.support for result in child_results.values() if result.support})
         return BaselineResult(
             random_baseline=(weighted_sum / float(weight)) if weight else None,
-            method="weighted_by_query_variant",
+            method="weighted_by_query_id",
             confidence="unresolved" if missing else _confidence_min(result.confidence for result in child_results.values()),
             support="; ".join(supports[:4]) + ("; ..." if len(supports) > 4 else ""),
             sample_count=len(sample_list),
@@ -1035,7 +1035,7 @@ def analyze_task(repo_root: Path, row: ProgressTaskRow) -> TaskAnalysis:
     samples = load_review_samples(repo_root, row)
     by_variant: dict[str, list[ReviewSample]] = defaultdict(list)
     for sample in samples:
-        by_variant[str(sample.query_variant)].append(sample)
+        by_variant[str(sample.query_id)].append(sample)
     variant_baselines = {
         variant: estimate_random_baseline(variant_samples, split_by_variant=False)
         for variant, variant_samples in sorted(by_variant.items())

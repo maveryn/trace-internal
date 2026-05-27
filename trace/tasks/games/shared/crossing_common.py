@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_CROSSING_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_CROSSING_QUERY_IDS: Tuple[str, ...] = (
     "safe_start_label",
     "collision_time_value",
     "moving_object_count",
@@ -50,7 +50,7 @@ class CrossingSample:
 
     lane_count: int
     row_count: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: int | str
@@ -180,7 +180,7 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
     if not set(sample.evidence_entity_ids) <= known_entities:
         raise ValueError("crossing evidence references unknown entities")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "safe_start_label":
         if sample.target_start_label is None:
             raise ValueError("safe_start_label requires target_start_label")
@@ -216,7 +216,7 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         expected_answer = str(sample.target_route_label)
         expected_evidence = {route_entity_id(str(sample.target_route_label))}
     else:
-        raise ValueError(f"unsupported crossing query_variant: {query}")
+        raise ValueError(f"unsupported crossing query_id: {query}")
 
     if sample.answer != expected_answer:
         raise ValueError("crossing answer does not match active query")
@@ -225,7 +225,7 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_CROSSING_QUERY_VARIANTS",
+    "SUPPORTED_CROSSING_QUERY_IDS",
     "SUPPORTED_CROSSING_SCENE_VARIANTS",
     "SUPPORTED_CROSSING_STYLE_VARIANTS",
     "CrossingRouteOption",

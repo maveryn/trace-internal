@@ -38,7 +38,7 @@ def test_cube_net_face_relation_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == SCENE_ID
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
@@ -63,7 +63,7 @@ def test_cube_rolling_result_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == SCENE_ID
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"

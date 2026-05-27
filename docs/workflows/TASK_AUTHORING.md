@@ -13,13 +13,13 @@ Use this as the implementation checklist for new or modified tasks.
    task-local operators or parameters inside the same family.
 5. Define task contracts:
    - scene,
-   - query ids / query variants or internal task parameters,
+   - query ids / query ids or internal task parameters,
    - answer type,
    - evidence type(s),
    - constraints/rejection policy.
-   Use **query variant** as the human-facing name for task-internal branches and
+   Use **query id** as the human-facing name for task-internal branches and
    `query_id` as the canonical field. Do not introduce new `task_variant`
-   surfaces; `query_variant` is an internal replay selector only.
+   surfaces; `query_id` is an internal replay selector only.
 6. Check shared helpers first:
    - `trace/core`
    - `trace/tasks/shared`
@@ -169,7 +169,7 @@ Use this as the implementation checklist for new or modified tasks.
 2. Query sampling occurs inside each task.
 3. Default `P(query_id|task)` is uniform unless overridden.
 4. If one task has both a semantic query axis and a visual-representation axis, keep `query_id` for the semantic axis and record the visual axis separately as `scene_variant` in trace/query metadata instead of exploding the task into a cross-product of near-duplicate tasks.
-5. If a consolidated wrapper delegates to shared task implementations, rewrite every prompt/review-facing branch field to the active surface (`query_id` and `query_spec.params.query_probabilities`) and accept source `query_variant` params only as targeted-generation aliases when needed to rebuild saved manifests.
+5. If a consolidated wrapper delegates to shared task implementations, rewrite every prompt/review-facing branch field to the active surface (`query_id` and `query_spec.params.query_probabilities`) and accept source `query_id` params only as targeted-generation aliases when needed to rebuild saved manifests.
 5. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
 6. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
 7. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.

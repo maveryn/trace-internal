@@ -39,17 +39,17 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "pv_diagram"
 
     assert out.query_id == "work_value"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["params"]["internal_query_variant"] == "work_value"
-    assert execution["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["internal_query_id"] == "work_value"
+    assert execution["query_id"] == "default"
 
-    assert execution["internal_query_variant"] == "work_value"
+    assert execution["internal_query_id"] == "work_value"
 
     assert execution["evidence_entity_ids"] == ["work_witness_region"]
 
@@ -126,7 +126,7 @@ def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == "process_sign_choice"
 

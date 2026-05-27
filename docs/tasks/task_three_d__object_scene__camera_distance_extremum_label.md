@@ -7,12 +7,12 @@
 - Query id: `closest_to_camera|farthest_from_camera`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: accepted after full-bleed floor update
+- Status: pending_v0_review
 
 ## Contract
 The image shows an open synthetic perspective 3D scene with a full-canvas gridded floor/tabletop, small lettered 3D answer-candidate objects, and larger unlettered context props. The full-bleed grid is drawn from screen-ray intersections with the floor plane, so visible grid lines continue to the canvas bounds instead of ending at a projected platform square. The prompt asks which lettered small object is closest to or farthest from the camera.
 
-Closest/farthest is resolved from true camera-to-small-candidate-object-center distances in the generated 3D scene metadata. Larger unlettered props such as tables or shelves can be present, but are not answer candidates for this task. The query branch is recorded in `query_id`; public outputs use `query_variant="default"`.
+Closest/farthest is resolved from true camera-to-small-candidate-object-center distances in the generated 3D scene metadata. Larger unlettered props such as tables or shelves can be present, but are not answer candidates for this task. The query branch is recorded in `query_id`.
 
 The camera is sampled from several oblique orbit bands around the scene, covering front, side, and rear viewpoints while avoiding nearly straight-on views that flatten the perspective.
 
@@ -29,9 +29,7 @@ Evidence is the bounding box of the selected small lettered 3D object. The floor
 The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, dimension scale, shape type, natural object name, prompt-name safety flag, object role, object camera coordinates, candidate-only camera distances/order, context prop specs, and projected object bboxes.
 
 ## Calibration
-The full-bleed rendering review workbook, distribution report, and combined object-scene review have been regenerated. The exact calibration parquet distribution passed with `6` unique answers and max answer frequency `0.220`.
-
-qwen25vl7b `100x24` calibration on seed `20260523` gave `hard=0.120`, `easy=0.060`, `band=0.820`, mean solve `0.288`, cap `0.000`, and prompt max `144`. The previous bounded-platform run on seed `20260521` gave `hard=0.100`, `easy=0.030`, `band=0.870`, mean solve `0.287`, cap `0.000`, and prompt max `143`.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.

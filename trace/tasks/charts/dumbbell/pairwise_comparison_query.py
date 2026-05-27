@@ -42,7 +42,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_dumbbell_pairwise_comparison_query_base"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "gap_rank_row_label",
     "side_winner_count",
     "absolute_gap_threshold_count",
@@ -53,7 +53,7 @@ _SUPPORTED_RANK_N: Tuple[int, ...] = (2, 3, 4)
 _SUPPORTED_SIDE_DIRECTIONS: Tuple[str, ...] = ("series_a_greater", "series_b_greater")
 _SUPPORTED_GAP_THRESHOLD_RELATIONS: Tuple[str, ...] = ("at_least", "at_most")
 
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "dumbbell")
@@ -115,7 +115,7 @@ class _Row:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     answer: str | int
     answer_type: str
     evidence_row_ids: Tuple[str, ...]
@@ -229,17 +229,17 @@ def _balanced_int(
     return int(selected), uniform_probability_map(tuple(values))
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -371,7 +371,7 @@ def _sample_rows(
     row_count: int,
     labels: Sequence[str],
     target_row_index: int | None,
-    query_variant: str,
+    query_id: str,
     rank_order: str | None,
     rank_n: int | None,
     threshold: int | None,
@@ -379,7 +379,7 @@ def _sample_rows(
     side_direction: str | None,
     gap_threshold_relation: str | None,
 ) -> Tuple[Tuple[_Row, ...], Tuple[str, ...], Dict[str, Any]]:
-    rng = spawn_rng(instance_seed, f"{TASK_ID}.rows.{query_variant}")
+    rng = spawn_rng(instance_seed, f"{TASK_ID}.rows.{query_id}")
     value_min, value_max = resolve_required_int_bounds(
         params,
         _GEN_DEFAULTS,
@@ -401,7 +401,7 @@ def _sample_rows(
     signed_direction_by_index: Dict[int, int] = {}
     trace_params: Dict[str, Any] = {}
 
-    if str(query_variant) == "gap_rank_row_label":
+    if str(query_id) == "gap_rank_row_label":
         assert target_row_index is not None
         assert rank_order is not None
         assert rank_n is not None
@@ -423,7 +423,7 @@ def _sample_rows(
                 "answer_gap": int(answer_gap),
             }
         )
-    elif str(query_variant) == "side_winner_count":
+    elif str(query_id) == "side_winner_count":
         assert threshold is not None
         assert target_count is not None
         assert side_direction is not None
@@ -449,7 +449,7 @@ def _sample_rows(
                 "target_count": int(target_count),
             }
         )
-    elif str(query_variant) == "absolute_gap_threshold_count":
+    elif str(query_id) == "absolute_gap_threshold_count":
         assert threshold is not None
         assert target_count is not None
         assert gap_threshold_relation is not None
@@ -478,7 +478,7 @@ def _sample_rows(
             }
         )
     else:
-        raise ValueError(f"unsupported query variant: {query_variant}")
+        raise ValueError(f"unsupported query id: {query_id}")
 
     rows: List[_Row] = []
     for index, label in enumerate(labels):
@@ -509,8 +509,8 @@ def _build_dataset(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    query_variant: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
 ) -> _Dataset:
     row_min, row_max = resolve_required_int_bounds(
         params,
@@ -543,7 +543,7 @@ def _build_dataset(
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is not None:
-        support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+        support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
 
     answer_row_index: int | None = None
     rank_order: str | None = None
@@ -559,15 +559,15 @@ def _build_dataset(
     target_count: int | None = None
     target_count_probabilities: Dict[str, float] = {}
 
-    if str(query_variant) == "gap_rank_row_label":
+    if str(query_id) == "gap_rank_row_label":
         answer_row_index = resolve_selection_index(
             params=support_params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.answer_row_index",
+            namespace=f"{TASK_ID}.{query_id}.answer_row_index",
         ) % int(row_count)
         rank_order, rank_order_probabilities = _resolve_rank_order(support_params, instance_seed=int(instance_seed))
         rank_n, rank_n_probabilities = _resolve_rank_n(support_params, instance_seed=int(instance_seed))
-    if str(query_variant) == "side_winner_count":
+    if str(query_id) == "side_winner_count":
         threshold_min = _gen_int(params, "side_threshold_min", 10)
         threshold_max = _gen_int(params, "side_threshold_max", 24)
         threshold_step = max(1, _gen_int(params, "side_threshold_step", 2))
@@ -589,7 +589,7 @@ def _build_dataset(
             high=int(count_max),
         )
         side_direction, side_direction_probabilities = _resolve_side_direction(support_params, instance_seed=int(instance_seed))
-    if str(query_variant) == "absolute_gap_threshold_count":
+    if str(query_id) == "absolute_gap_threshold_count":
         threshold_min = _gen_int(params, "gap_threshold_min", 12)
         threshold_max = _gen_int(params, "gap_threshold_max", 28)
         threshold_step = max(1, _gen_int(params, "gap_threshold_step", 4))
@@ -621,7 +621,7 @@ def _build_dataset(
         row_count=int(row_count),
         labels=labels,
         target_row_index=answer_row_index,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         rank_order=rank_order,
         rank_n=rank_n,
         threshold=threshold,
@@ -631,7 +631,7 @@ def _build_dataset(
     )
 
     rows_by_id = {row.row_id: row for row in rows}
-    if str(query_variant) in {"side_winner_count", "absolute_gap_threshold_count"}:
+    if str(query_id) in {"side_winner_count", "absolute_gap_threshold_count"}:
         answer: str | int = int(len(evidence_row_ids))
         answer_type = "integer"
     else:
@@ -639,9 +639,9 @@ def _build_dataset(
         answer_type = "string"
 
     query_params = {
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": "horizontal_dumbbell",
-        "query_variant_probabilities": dict(query_variant_probabilities),
+        "query_id_probabilities": dict(query_id_probabilities),
         "scene_variant_probabilities": {"horizontal_dumbbell": 1.0},
         "row_count": int(row_count),
         "row_count_probabilities": dict(row_count_probabilities),
@@ -668,7 +668,7 @@ def _build_dataset(
         series_b_name=str(series_b_name),
         rows=tuple(rows),
         query=_Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=answer,
             answer_type=str(answer_type),
             evidence_row_ids=tuple(evidence_row_ids),
@@ -831,9 +831,9 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
         "json_example": str(prompt_defaults["json_example_count" if is_count else "json_example_label"]),
         "json_example_answer_only": str(prompt_defaults["json_example_answer_only_count" if is_count else "json_example_answer_only_label"]),
     }
-    if str(dataset.query.query_variant) == "gap_rank_row_label":
+    if str(dataset.query.query_id) == "gap_rank_row_label":
         slots["rank_phrase"] = str(dataset.query.params["rank_phrase"])
-    if str(dataset.query.query_variant) == "side_winner_count":
+    if str(dataset.query.query_id) == "side_winner_count":
         side_direction = str(dataset.query.params["side_direction"])
         if side_direction == "series_a_greater":
             slots["winner_series"] = str(dataset.series_a_name)
@@ -842,7 +842,7 @@ def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -
             slots["winner_series"] = str(dataset.series_b_name)
             slots["loser_series"] = str(dataset.series_a_name)
         slots["threshold_value"] = int(dataset.query.params["threshold_value"])
-    if str(dataset.query.query_variant) == "absolute_gap_threshold_count":
+    if str(dataset.query.query_id) == "absolute_gap_threshold_count":
         relation = str(dataset.query.params["gap_threshold_relation"])
         slots["gap_relation_phrase"] = "at least" if relation == "at_least" else "at most"
         slots["gap_threshold_value"] = int(dataset.query.params["gap_threshold_value"])
@@ -891,12 +891,12 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
         raise RuntimeError(f"failed to generate {self.task_id} after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         dataset = _build_dataset(
             params=params,
             instance_seed=int(instance_seed),
-            query_variant=str(query_variant),
-            query_variant_probabilities=query_variant_probabilities,
+            query_id=str(query_id),
+            query_id_probabilities=query_id_probabilities,
         )
         render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
         render_params = _resolve_render_params(render_style_params)
@@ -941,7 +941,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
@@ -979,7 +979,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(len(dataset.rows), [8, 18]),
-                "reasoning_load": clamp_unit_interval(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": clamp_unit_interval(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(dataset.scene_variant)]),
             },
         )
@@ -988,14 +988,14 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "scene_kind": "chart_dumbbell_pairwise",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
                     "evidence_row_ids": list(evidence_row_ids),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1023,7 +1023,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "legend_bboxes_px": dict(rendered.legend_bboxes_px),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "question_format": "dumbbell_pairwise_comparison_query",
                 "answer": answer_value,
@@ -1034,7 +1034,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
                 "row_labels": [str(row.label) for row in dataset.rows],
                 "rows": list(row_values),
                 "evidence_row_ids": list(evidence_row_ids),
-                "query_variant_probabilities": dict(dataset.query.params.get("query_variant_probabilities", {})),
+                "query_id_probabilities": dict(dataset.query.params.get("query_id_probabilities", {})),
                 **dict(dataset.query.params),
             },
             "witness_symbolic": {
@@ -1055,7 +1055,7 @@ class ChartsDumbbellPairwiseComparisonQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1068,7 +1068,7 @@ class ChartsDumbbellGapRankRowLabelTask(
     """Return the row label at a requested gap rank."""
 
     task_id = "task_charts__dumbbell__gap_rank_row_label"
-    fixed_query_variant = "gap_rank_row_label"
+    fixed_query_id = "gap_rank_row_label"
 
 
 @register_task
@@ -1079,7 +1079,7 @@ class ChartsDumbbellPairRelationCountTask(
     """Count rows satisfying a dumbbell pair relation."""
 
     task_id = "task_charts__dumbbell__pair_relation_count"
-    allowed_query_variants = ("side_winner_count", "absolute_gap_threshold_count")
+    allowed_query_ids = ("side_winner_count", "absolute_gap_threshold_count")
 
 
 __all__ = [
@@ -1087,5 +1087,5 @@ __all__ = [
     "ChartsDumbbellPairRelationCountTask",
     "ChartsDumbbellPairwiseComparisonQueryTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

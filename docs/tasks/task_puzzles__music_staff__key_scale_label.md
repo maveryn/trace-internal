@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__key_scale_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `key_signature_label|scale_validation_truth_label|scale_degree_function_label`
 3. Prompts ask for the key represented by a key signature, whether a displayed scale is correct for a named key, or the scale-degree function of a marked note.
 4. Internal variation:

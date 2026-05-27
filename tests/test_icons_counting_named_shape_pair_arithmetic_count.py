@@ -60,7 +60,7 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
 
         assert out.scene_id == "named_field"
         assert out.query_id == query_id
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == target_answer
         assert out.answer_gt.value == answer

@@ -16,7 +16,7 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
         "tall_block",
     }
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "force_relation",
     }
 

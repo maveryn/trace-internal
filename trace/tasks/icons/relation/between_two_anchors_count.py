@@ -51,7 +51,7 @@ from ..shared.icon_task_rendering import (
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
-_PUBLIC_QUERY_VARIANT = "between_anchors_strip_count"
+_PUBLIC_QUERY_ID = "between_anchors_strip_count"
 _RELATION_VARIANTS: Tuple[str, ...] = (
     "inside_vertical_strip",
     "inside_horizontal_strip",
@@ -118,7 +118,7 @@ class _ScenePayload:
     object_count: int
     target_count: int
     distractor_count: int
-    query_variant: str
+    query_id: str
     anchor_icon_id: str
     anchor_tint_rgb: Tuple[int, int, int]
     anchor_rotation_degrees: int
@@ -154,14 +154,14 @@ def _strip_axis_to_variant(strip_axis: str) -> str:
     raise ValueError(f"unsupported strip_axis: {strip_axis}")
 
 
-def _variant_to_strip_axis(query_variant: str) -> str:
+def _variant_to_strip_axis(query_id: str) -> str:
     """Map source construction variant to the public strip axis."""
 
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         return "vertical"
-    if str(query_variant) == "inside_horizontal_strip":
+    if str(query_id) == "inside_horizontal_strip":
         return "horizontal"
-    raise ValueError(f"unsupported strip relation variant: {query_variant}")
+    raise ValueError(f"unsupported strip relation variant: {query_id}")
 
 
 def _resolve_strip_axis(scene_rng, *, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -170,13 +170,13 @@ def _resolve_strip_axis(scene_rng, *, params: Mapping[str, Any], instance_seed: 
     axis_params = dict(params)
     if axis_params.get("strip_axis") is None and axis_params.get("axis") is not None:
         axis_params["strip_axis"] = axis_params["axis"]
-    explicit_variant = axis_params.get("query_variant")
+    explicit_variant = axis_params.get("query_id")
     if axis_params.get("strip_axis") is None and explicit_variant is not None:
         variant = str(explicit_variant).strip()
         if variant in set(_RELATION_VARIANTS):
             axis_params["strip_axis"] = _variant_to_strip_axis(variant)
-        elif variant == str(_PUBLIC_QUERY_VARIANT):
-            axis_params.pop("query_variant", None)
+        elif variant == str(_PUBLIC_QUERY_ID):
+            axis_params.pop("query_id", None)
     selected_axis, axis_probabilities = resolve_variant(
         scene_rng,
         params=axis_params,
@@ -225,7 +225,7 @@ def _center_in_strip(
     center_xy: Sequence[float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    query_variant: str,
+    query_id: str,
     margin_px: int,
 ) -> bool:
     """Return whether one candidate center lies safely inside the requested strip."""
@@ -234,13 +234,13 @@ def _center_in_strip(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         return float(left + margin) <= float(cx) <= float(right - margin)
-    if str(query_variant) == "inside_horizontal_strip":
+    if str(query_id) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         return float(top + margin) <= float(cy) <= float(bottom - margin)
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _center_outside_strip(
@@ -248,7 +248,7 @@ def _center_outside_strip(
     center_xy: Sequence[float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    query_variant: str,
+    query_id: str,
     margin_px: int,
 ) -> bool:
     """Return whether one candidate center lies safely outside the requested strip."""
@@ -257,13 +257,13 @@ def _center_outside_strip(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         return float(cx) <= float(left - margin) or float(cx) >= float(right + margin)
-    if str(query_variant) == "inside_horizontal_strip":
+    if str(query_id) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         return float(cy) <= float(top - margin) or float(cy) >= float(bottom + margin)
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _target_region_bbox(
@@ -271,7 +271,7 @@ def _target_region_bbox(
     content_bbox: Sequence[int | float],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    query_variant: str,
+    query_id: str,
     margin_px: int,
     sprite_size: Sequence[int | float],
 ) -> Tuple[int, int, int, int] | None:
@@ -284,7 +284,7 @@ def _target_region_bbox(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(margin_px)))
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         left, right = sorted((float(ax), float(bx)))
         region = (
             int(round(max(float(x0), float(left + margin - half_w)))),
@@ -292,7 +292,7 @@ def _target_region_bbox(
             int(round(min(float(x1), float(right - margin + half_w)))),
             int(round(float(y1))),
         )
-    elif str(query_variant) == "inside_horizontal_strip":
+    elif str(query_id) == "inside_horizontal_strip":
         top, bottom = sorted((float(ay), float(by)))
         region = (
             int(round(float(x0))),
@@ -301,7 +301,7 @@ def _target_region_bbox(
             int(round(min(float(y1), float(bottom - margin + half_h)))),
         )
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
     if int(region[2]) - int(region[0]) <= int(sprite_w) or int(region[3]) - int(region[1]) <= int(sprite_h):
         return None
     return tuple(int(value) for value in region)
@@ -312,7 +312,7 @@ def _sample_anchor_pair_bboxes(
     *,
     content_bbox: Sequence[int | float],
     sprite_size: Tuple[int, int],
-    query_variant: str,
+    query_id: str,
     span_ratio_min: float,
     span_ratio_max: float,
     outside_ratio_min: float,
@@ -329,7 +329,7 @@ def _sample_anchor_pair_bboxes(
     outside_ratio = max(0.0, float(outside_ratio_min))
     edge_padding = max(0, int(edge_padding_px))
 
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         span_min = max(float(sprite_w) + 32.0, float(span_ratio_min) * float(width))
         span_max = min(float(span_ratio_max) * float(width), float(width) - 2.0 * float(outside_ratio * width))
         if span_min > span_max:
@@ -348,7 +348,7 @@ def _sample_anchor_pair_bboxes(
         center_y = float(rng.uniform(float(center_y_min), float(center_y_max)))
         anchor_a_center = (float(left_center_x), float(center_y))
         anchor_b_center = (float(right_center_x), float(center_y))
-    elif str(query_variant) == "inside_horizontal_strip":
+    elif str(query_id) == "inside_horizontal_strip":
         span_min = max(float(sprite_h) + 32.0, float(span_ratio_min) * float(height))
         span_max = min(float(span_ratio_max) * float(height), float(height) - 2.0 * float(outside_ratio * height))
         if span_min > span_max:
@@ -368,7 +368,7 @@ def _sample_anchor_pair_bboxes(
         anchor_a_center = (float(center_x), float(top_center_y))
         anchor_b_center = (float(center_x), float(bottom_center_y))
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     def _center_to_bbox(center_xy: Sequence[float]) -> Tuple[int, int, int, int]:
         center_x, center_y = float(center_xy[0]), float(center_xy[1])
@@ -388,7 +388,7 @@ def _sample_scene(
     rng,
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int,
     distractor_count: int,
@@ -439,12 +439,12 @@ def _sample_scene(
     anchor_nominal_size = int(rng.randint(int(render_params["scene_icon_size_min_px"]), int(render_params["scene_icon_size_max_px"])))
     anchor_noise_edits_a, anchor_noise_seed_a = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:anchor_a",
+        namespace=f"task_icons__two_anchor__between_anchors_count:{query_id}:anchor_a",
         render_params=render_params,
     )
     anchor_noise_edits_b, anchor_noise_seed_b = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:anchor_b",
+        namespace=f"task_icons__two_anchor__between_anchors_count:{query_id}:anchor_b",
         render_params=render_params,
     )
 
@@ -482,7 +482,7 @@ def _sample_scene(
         rng,
         content_bbox=scene_content_bbox,
         sprite_size=anchor_sprite_a.size,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         span_ratio_min=float(render_params["strip_span_ratio_min"]),
         span_ratio_max=float(render_params["strip_span_ratio_max"]),
         outside_ratio_min=float(render_params["strip_outside_ratio_min"]),
@@ -554,7 +554,7 @@ def _sample_scene(
         rotation_degrees = int(rng.choice(rotation_candidates))
         noise_edits, noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"task_icons__two_anchor__between_anchors_count:{query_variant}:scene_icon_{int(index)}",
+            namespace=f"task_icons__two_anchor__between_anchors_count:{query_id}:scene_icon_{int(index)}",
             render_params=render_params,
         )
         sprite = None
@@ -579,7 +579,7 @@ def _sample_scene(
                         content_bbox=scene_content_bbox,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        query_variant=str(query_variant),
+                        query_id=str(query_id),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                         sprite_size=candidate_sprite.size,
                     )
@@ -602,7 +602,7 @@ def _sample_scene(
                         center_xy=center_xy,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        query_variant=str(query_variant),
+                        query_id=str(query_id),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                     ):
                         continue
@@ -611,7 +611,7 @@ def _sample_scene(
                         center_xy=center_xy,
                         anchor_a_center_xy=anchor_a_center_xy,
                         anchor_b_center_xy=anchor_b_center_xy,
-                        query_variant=str(query_variant),
+                        query_id=str(query_id),
                         margin_px=int(render_params["strip_boundary_margin_px"]),
                     ):
                         continue
@@ -630,7 +630,7 @@ def _sample_scene(
             center_xy=center_xy,
             anchor_a_center_xy=anchor_a_center_xy,
             anchor_b_center_xy=anchor_b_center_xy,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             margin_px=int(render_params["strip_boundary_margin_px"]),
         )
         if bool(is_target):
@@ -701,7 +701,7 @@ def _sample_scene(
             object_count=int(object_count),
             target_count=int(target_count),
             distractor_count=int(distractor_count),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             anchor_icon_id=str(anchor_icon_id),
             anchor_tint_rgb=tuple(int(channel) for channel in anchor_tint_rgb),
             anchor_rotation_degrees=int(anchor_rotation_degrees) % 360,
@@ -739,8 +739,8 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             params=params,
             instance_seed=int(instance_seed),
         )
-        query_variant = _strip_axis_to_variant(str(strip_axis))
-        public_query_variant = str(_PUBLIC_QUERY_VARIANT)
+        query_id = _strip_axis_to_variant(str(strip_axis))
+        public_query_id = str(_PUBLIC_QUERY_ID)
         counting_params = dict(params)
         (
             object_count,
@@ -807,7 +807,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 scene_payload, image = _sample_scene(
                     scene_rng,
                     instance_seed=int(instance_seed),
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     object_count=int(object_count),
                     target_count=int(target_count),
                     distractor_count=int(distractor_count),
@@ -878,8 +878,8 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 ],
                 "relations": {
                     "counting_target": "candidate_icon_centers_in_strip_between_two_anchors",
-                    "query_variant": str(public_query_variant),
-                    "internal_query_variant": str(scene_payload.query_variant),
+                    "query_id": str(public_query_id),
+                    "internal_query_id": str(scene_payload.query_id),
                     "strip_axis": str(strip_axis),
                     "anchor_icon_id": str(scene_payload.anchor_icon_id),
                     "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
@@ -891,7 +891,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(public_query_variant),
+                "query_id": str(public_query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -913,7 +913,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                     "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
                     "strip_axis": str(strip_axis),
                     "strip_axis_probabilities": dict(strip_axis_probabilities),
-                    "internal_query_variant": str(scene_payload.query_variant),
+                    "internal_query_id": str(scene_payload.query_id),
                     "strip_boundary_margin_px": int(render_params["strip_boundary_margin_px"]),
                     "strip_span_ratio_min": float(render_params["strip_span_ratio_min"]),
                     "strip_span_ratio_max": float(render_params["strip_span_ratio_max"]),
@@ -947,8 +947,8 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             },
             "execution_trace": {
                 "scene_variant": "scene_two_anchors_strip",
-                "query_variant": str(public_query_variant),
-                "internal_query_variant": str(scene_payload.query_variant),
+                "query_id": str(public_query_id),
+                "internal_query_id": str(scene_payload.query_id),
                 "strip_axis": str(strip_axis),
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -976,8 +976,8 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "strip_axis_probabilities": dict(strip_axis_probabilities),
             },
             "witness_symbolic": {
-                "query_variant": str(public_query_variant),
-                "internal_query_variant": str(scene_payload.query_variant),
+                "query_id": str(public_query_id),
+                "internal_query_id": str(scene_payload.query_id),
                 "strip_axis": str(strip_axis),
                 "anchor_a_center_xy": [float(scene_payload.anchor_a_center_xy[0]), float(scene_payload.anchor_a_center_xy[1])],
                 "anchor_b_center_xy": [float(scene_payload.anchor_b_center_xy[0]), float(scene_payload.anchor_b_center_xy[1])],
@@ -991,7 +991,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         complexity = build_icons_relation_between_two_anchors_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
-            query_variant=str(scene_payload.query_variant),
+            query_id=str(scene_payload.query_id),
             object_count=int(scene_payload.object_count),
             target_count=int(scene_payload.target_count),
             object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
@@ -1019,11 +1019,11 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(public_query_variant),
+            query_id=str(public_query_id),
         )
         return rewrite_icons_query_output(
             output,
-            query_id=str(scene_payload.query_variant),
+            query_id=str(scene_payload.query_id),
             scene_id="two_anchor",
             query_probabilities={
                 _strip_axis_to_variant(str(key)): float(value)

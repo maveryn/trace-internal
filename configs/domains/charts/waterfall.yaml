@@ -8,8 +8,8 @@ generation:
     delta_abs_max: 20
     running_total_min: 8
     running_total_max: 95
-    balanced_query_variant_sampling: true
-    query_variant_weights:
+    balanced_query_id_sampling: true
+    query_id_weights:
       running_total_after_step: 1.0
       first_total_at_least_threshold: 1.0
       first_total_at_most_threshold: 1.0

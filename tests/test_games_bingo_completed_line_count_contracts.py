@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "completed_axis_line_count",
+                "query_id": "completed_axis_line_count",
                 "line_axis": "row",
                 "target_answer": 3,
             },
@@ -27,7 +27,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "completed_column_count",
+                "query_id": "completed_column_count",
                 "target_answer": 4,
             },
             4,
@@ -45,12 +45,12 @@ def test_games_bingo_completed_line_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
-    if str(out.query_variant) == "completed_axis_line_count":
+    if str(out.query_id) == "completed_axis_line_count":
         if str(execution["line_axis"]) == "row":
             assert len(execution["completed_row_indices"]) == int(expected_answer)
             assert len(out.evidence_gt.value) == 5 * int(expected_answer)
@@ -73,7 +73,7 @@ def test_games_bingo_line_sum_extremum_value_has_unique_extremum_line(
     out = GamesBingoCompletedLineCountTask().generate(
         27023,
         params={
-            "query_variant": "line_sum_extremum_value",
+            "query_id": "line_sum_extremum_value",
             "line_axis": line_axis,
             "extremum": extremum,
             "target_answer": completed_line_count,
@@ -109,14 +109,14 @@ def test_games_bingo_line_sum_extremum_value_has_unique_extremum_line(
 
 def test_games_bingo_line_sum_extremum_public_wrapper_uses_default_variant() -> None:
     out = create_task("task_games__bingo__line_sum_extremum_value").generate(27024, params={}, max_attempts=100)
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "line_sum_extremum_value"
-    assert out.trace_payload["query_spec"]["params"]["query_variant"] == "default"
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == "default"
 
 
 def test_games_bingo_completed_line_count_is_deterministic() -> None:
     params = {
-        "query_variant": "completed_axis_line_count",
+        "query_id": "completed_axis_line_count",
         "line_axis": "column",
         "target_answer": 2,
     }

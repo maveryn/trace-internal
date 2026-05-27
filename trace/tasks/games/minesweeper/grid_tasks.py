@@ -26,7 +26,7 @@ from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.minesweeper_common import (
-    SUPPORTED_MINESWEEPER_QUERY_VARIANTS,
+    SUPPORTED_MINESWEEPER_QUERY_IDS,
     SUPPORTED_MINESWEEPER_SCENE_VARIANTS,
     Coord,
     MinesweeperSample,
@@ -44,7 +44,7 @@ from ..shared.minesweeper_common import (
     validate_board_contract,
 )
 from ..shared.minesweeper_scene import MinesweeperRenderParams, render_minesweeper_grid_scene
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_MINESWEEPER_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -79,13 +79,13 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Minesweeper instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board_size: int
     target_answer: int | None
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     board_size_probabilities: Dict[str, float]
@@ -102,20 +102,20 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="mine
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="minesweeper", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str | None:
+def _target_support_key(query_id: str) -> str | None:
     """Return the configured answer-support key for one Minesweeper query."""
 
     return {
         "forced_mine_count": "forced_mine_count_support",
         "forced_safe_count": "forced_safe_count_support",
         "satisfied_clue_count": "satisfied_clue_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
-def _board_size_support_key(supported_query_variants: Sequence[str]) -> str:
+def _board_size_support_key(supported_query_ids: Sequence[str]) -> str:
     """Return the board-size support key for the active Minesweeper task."""
 
-    supported = tuple(str(value) for value in supported_query_variants)
+    supported = tuple(str(value) for value in supported_query_ids)
     if set(supported) == {"forced_mine_count", "forced_safe_count"}:
         return "forced_cell_board_size_support"
     return "board_size_support"
@@ -125,22 +125,22 @@ def _uses_uniform_query_cycle(
     params: Mapping[str, Any],
     probabilities: Mapping[str, float],
     *,
-    supported_query_variants: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_VARIANTS,
+    supported_query_ids: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_IDS,
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(tuple(supported_query_variants)):
+    if len(positives) != len(tuple(supported_query_ids)):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -148,8 +148,8 @@ def _uses_uniform_query_cycle(
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_VARIANTS,
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_IDS,
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner axes."""
 
@@ -159,28 +159,28 @@ def _params_for_query_occurrence_cycle(
         return cycle_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return cycle_params
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_VARIANTS,
+    supported_query_ids: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_IDS,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Minesweeper query variant."""
+    """Resolve one balanced Minesweeper query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=tuple(str(value) for value in supported_query_variants),
+        supported_variants=tuple(str(value) for value in supported_query_ids),
     )
 
 
@@ -213,19 +213,19 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_VARIANTS,
+    supported_query_ids: Sequence[str] = SUPPORTED_MINESWEEPER_QUERY_IDS,
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Minesweeper instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities=query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -245,7 +245,7 @@ def _resolve_axes(
         balance_flag_key="balanced_style_variant_sampling",
         supported=SUPPORTED_MINESWEEPER_STYLE_VARIANTS,
     )
-    board_size_support_key = _board_size_support_key(supported_query_variants)
+    board_size_support_key = _board_size_support_key(supported_query_ids)
     board_size, board_size_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=cycle_params,
@@ -257,7 +257,7 @@ def _resolve_axes(
         balanced_flag_key="balanced_board_size_sampling",
         namespace_support_permutation=True,
     )
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=cycle_params,
@@ -265,7 +265,7 @@ def _resolve_axes(
         support_key=str(support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -276,13 +276,13 @@ def _resolve_axes(
         fallback=getattr(_DEFAULTS, support_key),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         board_size=int(board_size),
         target_answer=None if target_answer is None else int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         board_size_probabilities=dict(board_size_probabilities),
@@ -459,12 +459,12 @@ def _make_local_rule_sample(
         forced = sorted_coords(mine_support.keys())
         support_map = mine_support
         answer: int | str = int(len(forced))
-        query_variant = "forced_mine_count"
+        query_id = "forced_mine_count"
     else:
         forced = sorted_coords(safe_support.keys())
         support_map = safe_support
         answer = int(len(forced))
-        query_variant = "forced_safe_count"
+        query_id = "forced_safe_count"
     target_set = set(hidden_targets)
     if set(forced) != target_set:
         raise ValueError("constructed Minesweeper forced-cell count does not match target")
@@ -488,7 +488,7 @@ def _make_local_rule_sample(
     )
     return MinesweeperSample(
         size=int(size),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         answer=answer,
         mine_coords=tuple(mine_coords),
         revealed_coords=tuple(revealed_coords),
@@ -620,7 +620,7 @@ def _make_satisfied_clue_sample(
             continue
         return MinesweeperSample(
             size=int(size),
-            query_variant="satisfied_clue_count",
+            query_id="satisfied_clue_count",
             answer=int(len(satisfied)),
             mine_coords=tuple(mine_coords),
             revealed_coords=tuple(revealed_coords),
@@ -642,30 +642,30 @@ def _make_satisfied_clue_sample(
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> MinesweeperSample:
     """Construct one Minesweeper scene for the requested axes."""
 
-    if str(axes.query_variant) == "forced_mine_count":
+    if str(axes.query_id) == "forced_mine_count":
         return _make_local_rule_sample(
             rng=rng,
             axes=axes,
             force_kind="mine",
             target_count=int(axes.target_answer or 1),
         )
-    if str(axes.query_variant) == "forced_safe_count":
+    if str(axes.query_id) == "forced_safe_count":
         return _make_local_rule_sample(
             rng=rng,
             axes=axes,
             force_kind="safe",
             target_count=int(axes.target_answer or 1),
         )
-    if str(axes.query_variant) == "satisfied_clue_count":
+    if str(axes.query_id) == "satisfied_clue_count":
         return _make_satisfied_clue_sample(
             rng=rng,
             axes=axes,
             target_count=int(axes.target_answer or 1),
         )
-    raise ValueError(f"unsupported Minesweeper query_variant: {axes.query_variant}")
+    raise ValueError(f"unsupported Minesweeper query_id: {axes.query_id}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Minesweeper JSON output."""
 
     answer_value = 3
@@ -682,13 +682,13 @@ class GamesMinesweeperGridTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "minesweeper"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_MINESWEEPER_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_MINESWEEPER_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(
             int(instance_seed),
             params=params,
-            supported_query_variants=tuple(self.supported_query_variants),
+            supported_query_ids=tuple(self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
@@ -721,7 +721,7 @@ class GamesMinesweeperGridTask:
             params=render_params,
             highlighted_clue_coords=(
                 sampled_scene.forcing_clue_coords
-                if str(axes.query_variant) in {"forced_mine_count", "forced_safe_count"}
+                if str(axes.query_id) in {"forced_mine_count", "forced_safe_count"}
                 else ()
             ),
         )
@@ -757,21 +757,21 @@ class GamesMinesweeperGridTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "minesweeper_rule_text": str(prompt_defaults["minesweeper_rule_text"]),
@@ -787,7 +787,7 @@ class GamesMinesweeperGridTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             board_size=int(sampled_scene.size),
             hidden_count=len(sampled_scene.hidden_coords),
             target_answer=int(target_for_complexity),
@@ -800,8 +800,7 @@ class GamesMinesweeperGridTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.size),
                     "target_answer": sampled_scene.target_answer,
@@ -809,20 +808,19 @@ class GamesMinesweeperGridTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.size),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size_probabilities": dict(axes.board_size_probabilities),
                     "target_answer": sampled_scene.target_answer,
@@ -842,8 +840,7 @@ class GamesMinesweeperGridTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "board_size": int(sampled_scene.size),
                 "target_answer": sampled_scene.target_answer,
@@ -882,14 +879,13 @@ class GamesMinesweeperGridTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="minesweeper",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
         return rewrite_public_query_output(
             output,
-            query_id=str(axes.query_variant),
-            query_variant_probabilities=axes.query_variant_probabilities,
+            query_id=str(axes.query_id),
+            query_id_probabilities=axes.query_id_probabilities,
         )
 
 
@@ -898,7 +894,7 @@ class GamesMinesweeperForcedCellCountTask(GamesMinesweeperGridTask):
     """Count hidden cells forced to be mines or safe by visible clues."""
 
     task_id = "task_games__minesweeper__forced_cell_count"
-    supported_query_variants = ("forced_mine_count", "forced_safe_count")
+    supported_query_ids = ("forced_mine_count", "forced_safe_count")
 
 
 @register_task
@@ -906,8 +902,8 @@ class GamesMinesweeperSatisfiedClueCountTask(FixedQueryVariantTaskMixin, GamesMi
     """Count opened number cells exactly satisfied by adjacent flags."""
 
     task_id = "task_games__minesweeper__satisfied_clue_count"
-    fixed_query_variant = "satisfied_clue_count"
-    supported_query_variants = ("satisfied_clue_count",)
+    fixed_query_id = "satisfied_clue_count"
+    supported_query_ids = ("satisfied_clue_count",)
 
 
 __all__ = [

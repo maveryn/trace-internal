@@ -28,14 +28,14 @@ from ..shared.diagram.complexity import (
 from ..shared.diagram.cycle_common import (
     CycleDefaults,
     SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS,
-    SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS,
+    SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS,
     build_cycle_offset_dataset,
     normalize_cycle_query_params,
     resolve_cycle_direction,
     resolve_cycle_query_relationship,
     resolve_cycle_render_params,
     resolve_cycle_scene_variant,
-    resolve_cycle_query_variant,
+    resolve_cycle_query_id,
 )
 from ..shared.diagram.cycle_scene import render_cycle_scene
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
@@ -43,7 +43,7 @@ from ..shared.public_query_task import rewrite_pages_query_output
 
 
 TASK_ID = "task_pages__cycle__offset_stage_label"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_RELATIONSHIP = {
     "after": 0.27,
@@ -86,7 +86,7 @@ class PagesCycleOffsetStageLabelTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         params = normalize_cycle_query_params(params)
-        query_variant, query_variant_probabilities = resolve_cycle_query_variant(
+        query_id, query_id_probabilities = resolve_cycle_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -111,7 +111,7 @@ class PagesCycleOffsetStageLabelTask:
             task_id=self.task_id,
         )
         dataset = build_cycle_offset_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             query_relationship=str(query_relationship),
             scene_variant=str(scene_variant),
             cycle_direction=str(cycle_direction),
@@ -164,7 +164,7 @@ class PagesCycleOffsetStageLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_cycle_ring"]),
@@ -208,7 +208,7 @@ class PagesCycleOffsetStageLabelTask:
                 "scene_kind": f"diagram_cycle_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "query_relationship": str(query_relationship),
                     "direction": str(dataset["direction"]),
@@ -218,15 +218,15 @@ class PagesCycleOffsetStageLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "query_relationship": str(query_relationship),
                     "query_relationship_probabilities": dict(query_relationship_probabilities),
@@ -259,7 +259,7 @@ class PagesCycleOffsetStageLabelTask:
                 "edge_bboxes_px": dict(rendered_scene.edge_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -299,7 +299,7 @@ class PagesCycleOffsetStageLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         query_id = f"{query_relationship}_offset_stage_label"
         return rewrite_pages_query_output(

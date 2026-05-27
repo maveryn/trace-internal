@@ -6,9 +6,9 @@ generation:
       dice_color_pool_size: 5
       single_favorable_count_min: 2
       single_favorable_count_max: 14
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         single_parity_probability: 1.0
         single_threshold_probability: 1.0
         single_value_set_probability: 1.0
@@ -24,9 +24,9 @@ generation:
       dice_color_pool_size: 5
       pair_favorable_count_min: 2
       pair_favorable_count_max: 32
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         pair_sum_probability: 1.0
         pair_sum_threshold_probability: 1.0
         pair_difference_probability: 1.0
@@ -44,9 +44,9 @@ generation:
       conditional_denominator_count_max: 6
       conditional_favorable_count_min: 2
       conditional_favorable_count_max: 3
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         conditional_value_property_given_color_probability: 1.0
         conditional_color_given_value_property_probability: 1.0
         conditional_color_given_value_set_probability: 1.0
@@ -62,9 +62,9 @@ generation:
       number_max: 12
       single_favorable_count_min: 2
       single_favorable_count_max: 8
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         single_color_probability: 1.0
         single_shape_probability: 1.0
         single_color_and_shape_probability: 1.0
@@ -81,9 +81,9 @@ generation:
       number_max: 12
       pair_favorable_count_min: 1
       pair_favorable_count_max: 30
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         pair_both_target_color_probability: 1.0
         pair_at_least_one_target_color_probability: 1.0
         pair_same_color_probability: 1.0

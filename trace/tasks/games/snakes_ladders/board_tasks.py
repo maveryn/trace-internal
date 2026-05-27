@@ -20,13 +20,13 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ..shared.complexity import build_games_snakes_ladders_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.snakes_ladders_common import (
     LAST_SQUARE,
     SUPPORTED_BOARD_SIDES,
     SUPPORTED_DIE_VALUES,
     SUPPORTED_HORIZON_ROLL_COUNTS,
-    SUPPORTED_SNAKES_LADDERS_QUERY_VARIANTS,
+    SUPPORTED_SNAKES_LADDERS_QUERY_IDS,
     SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS,
     SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS,
     SnakesLaddersJump,
@@ -74,7 +74,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Snakes and Ladders instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board_side: int
@@ -82,7 +82,7 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...]
     die_value: int
     horizon_roll_count: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     board_side_probabilities: Dict[str, float]
@@ -101,24 +101,24 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="snak
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="snakes_ladders", apply_prob=0.5)
 
 
-def _support_for_query(query_variant: str) -> Tuple[int, ...]:
+def _support_for_query(query_id: str) -> Tuple[int, ...]:
     """Return fallback answer support for one query."""
 
-    if str(query_variant) == "move_outcome_value":
+    if str(query_id) == "move_outcome_value":
         return _DEFAULTS.move_outcome_support
-    if str(query_variant) == "best_roll_value":
+    if str(query_id) == "best_roll_value":
         return _DEFAULTS.best_roll_value_support
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
-def _support_key_for_query(query_variant: str) -> str:
+def _support_key_for_query(query_id: str) -> str:
     """Return config support key for one query."""
 
-    if str(query_variant) == "move_outcome_value":
+    if str(query_id) == "move_outcome_value":
         return "move_outcome_support"
-    if str(query_variant) == "best_roll_value":
+    if str(query_id) == "best_roll_value":
         return "best_roll_value_support"
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _resolve_named_axis(
@@ -146,20 +146,20 @@ def _resolve_named_axis(
     )
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced Snakes and Ladders query."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=supported_query_variants,
+        supported_variants=supported_query_ids,
     )
 
 
@@ -167,17 +167,17 @@ def _uses_uniform_query_cycle(
     params: Mapping[str, Any],
     probabilities: Mapping[str, float],
     *,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> bool:
     """Return true when the query axis uses the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(tuple(supported_query_variants)):
+    if len(positives) != len(tuple(supported_query_ids)):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -185,8 +185,8 @@ def _uses_uniform_query_cycle(
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner answer axes."""
 
@@ -194,9 +194,9 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities, supported_query_variants=supported_query_variants):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities, supported_query_ids=supported_query_ids):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return cycle_params
 
 
@@ -204,19 +204,19 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one scene."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     answer_cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities=query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -262,12 +262,12 @@ def _resolve_axes(
         namespace_support_permutation=True,
     )
     last_square = board_last_square(int(board_side))
-    support_key = _support_key_for_query(str(query_variant))
+    support_key = _support_key_for_query(str(query_id))
     raw_target_support = resolve_integer_support(
         answer_cycle_params,
         gen_defaults=_GEN_DEFAULTS,
         key=support_key,
-        fallback=_support_for_query(str(query_variant)),
+        fallback=_support_for_query(str(query_id)),
     )
     target_support = tuple(int(value) for value in raw_target_support if int(value) <= int(last_square))
     if not target_support:
@@ -281,7 +281,7 @@ def _resolve_axes(
         support_key=support_key,
         explicit_key="target_answer",
         fallback_support=target_support,
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -308,7 +308,7 @@ def _resolve_axes(
         namespace_support_permutation=True,
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         board_side=int(board_side),
@@ -316,7 +316,7 @@ def _resolve_axes(
         target_answer_support=tuple(int(value) for value in target_support),
         die_value=int(die_value),
         horizon_roll_count=int(horizon_roll_count),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         board_side_probabilities=dict(board_side_probabilities),
@@ -591,7 +591,7 @@ def _sample_move_outcome_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSamp
         if int(move.final_square) != int(move.landing_square):
             evidence_ids.append(square_to_cell_id(int(move.final_square)))
         sample = SnakesLaddersSample(
-            query_variant="move_outcome_value",
+            query_id="move_outcome_value",
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             board_side=int(board_side),
@@ -646,7 +646,7 @@ def _sample_best_roll_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
         route = trace_best_route(int(start_square), int(horizon), jumps_tuple, board_side=int(board_side))
         evidence_ids = (square_to_cell_id(int(target_final)),)
         sample = SnakesLaddersSample(
-            query_variant="best_roll_value",
+            query_id="best_roll_value",
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             board_side=int(board_side),
@@ -667,17 +667,17 @@ def _sample_best_roll_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSample:
     """Construct one Snakes and Ladders sample."""
 
-    if str(axes.query_variant) == "move_outcome_value":
+    if str(axes.query_id) == "move_outcome_value":
         return _sample_move_outcome_scene(rng=rng, axes=axes)
-    if str(axes.query_variant) == "best_roll_value":
+    if str(axes.query_id) == "best_roll_value":
         return _sample_best_roll_scene(rng=rng, axes=axes)
-    raise ValueError(f"unsupported query_variant: {axes.query_variant}")
+    raise ValueError(f"unsupported query_id: {axes.query_id}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return prompt examples for JSON output."""
 
-    if str(query_variant) == "move_outcome_value":
+    if str(query_id) == "move_outcome_value":
         answer_value = 0
         evidence_value = [[88, 682, 178, 772], [806, 164, 894, 252], [278, 586, 368, 676]]
     else:
@@ -701,10 +701,10 @@ class GamesSnakesLaddersBoardTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "snakes_ladders"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_SNAKES_LADDERS_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_SNAKES_LADDERS_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        axes = _resolve_axes(int(instance_seed), params=params, supported_query_variants=tuple(self.supported_query_variants))
+        axes = _resolve_axes(int(instance_seed), params=params, supported_query_ids=tuple(self.supported_query_ids))
         render_params = _render_params(params, instance_seed=int(instance_seed), board_side=int(axes.board_side))
 
         sampled_scene: SnakesLaddersSample | None = None
@@ -731,7 +731,7 @@ class GamesSnakesLaddersBoardTask:
             style_variant=str(axes.style_variant),
             params=render_params,
             start_square=int(sampled_scene.start_square),
-            die_value=int(axes.die_value) if str(axes.query_variant) == "move_outcome_value" else None,
+            die_value=int(axes.die_value) if str(axes.query_id) == "move_outcome_value" else None,
             horizon_roll_count=int(sampled_scene.horizon_roll_count) if sampled_scene.horizon_roll_count is not None else None,
         )
         evidence_bboxes = [
@@ -764,14 +764,14 @@ class GamesSnakesLaddersBoardTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -783,8 +783,8 @@ class GamesSnakesLaddersBoardTask:
                 "die_value": str(int(axes.die_value)),
                 "horizon_roll_count": str(int(axes.horizon_roll_count)),
                 "horizon_roll_label": f"{int(axes.horizon_roll_count)} roll{'s' if int(axes.horizon_roll_count) != 1 else ''}",
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -798,7 +798,7 @@ class GamesSnakesLaddersBoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             jump_count=len(sampled_scene.jumps),
             horizon_roll_count=int(sampled_scene.horizon_roll_count or 1),
             target_answer=int(sampled_scene.answer),
@@ -810,8 +810,7 @@ class GamesSnakesLaddersBoardTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": "default",
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_side": int(axes.board_side),
                     "last_square": int(board_last_square(int(axes.board_side))),
@@ -820,22 +819,21 @@ class GamesSnakesLaddersBoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
+                "query_id": "default",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": "default",
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_side": int(axes.board_side),
                     "board_side_probabilities": dict(axes.board_side_probabilities),
                     "last_square": int(board_last_square(int(axes.board_side))),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -858,8 +856,7 @@ class GamesSnakesLaddersBoardTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": "default",
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "board_side": int(axes.board_side),
                 "last_square": int(board_last_square(int(axes.board_side))),
@@ -876,7 +873,7 @@ class GamesSnakesLaddersBoardTask:
                         board_side=int(axes.board_side),
                     )
                 )
-                if str(axes.query_variant) == "best_roll_value"
+                if str(axes.query_id) == "best_roll_value"
                 else None,
                 "answer": int(sampled_scene.answer),
                 "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
@@ -902,9 +899,8 @@ class GamesSnakesLaddersBoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id="snakes_ladders",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -913,8 +909,8 @@ class GamesSnakesLaddersMoveOutcomeValueTask(FixedQueryVariantTaskMixin, GamesSn
     """Return the final square after a shown one-die move."""
 
     task_id = "task_games__snakes_ladders__move_outcome_value"
-    fixed_query_variant = "move_outcome_value"
-    supported_query_variants = ("move_outcome_value",)
+    fixed_query_id = "move_outcome_value"
+    supported_query_ids = ("move_outcome_value",)
 
 
 @register_task
@@ -922,8 +918,8 @@ class GamesSnakesLaddersBestRollValueTask(FixedQueryVariantTaskMixin, GamesSnake
     """Return the highest final square reachable over a short horizon."""
 
     task_id = "task_games__snakes_ladders__best_roll_value"
-    fixed_query_variant = "best_roll_value"
-    supported_query_variants = ("best_roll_value",)
+    fixed_query_id = "best_roll_value"
+    supported_query_ids = ("best_roll_value",)
 
 
 __all__ = [

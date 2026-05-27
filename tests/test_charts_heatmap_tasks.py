@@ -10,7 +10,7 @@ from tests.helpers import assert_counter_support_within, extract_prompt_json_exa
 from trace.core.seed import hash64
 from trace.tasks.charts.heatmap.grid_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsHeatmapGridQueryTask,
 )
 
@@ -45,7 +45,7 @@ def _longest_run(mask: list[bool]) -> int:
 
 
 def _expected_answer(execution: dict) -> str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     row_labels = [str(item) for item in execution["row_labels"]]
     column_labels = [str(item) for item in execution["column_labels"]]
     values = [[int(value) for value in row] for row in execution["values"]]
@@ -116,16 +116,16 @@ def _expected_answer(execution: dict) -> str:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_heatmap_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_heatmap_variants_match_contract(query_id: str) -> None:
     task = ChartsHeatmapGridQueryTask()
-    out = task.generate(80100 + SUPPORTED_QUERY_VARIANTS.index(query_variant), params={"query_variant": query_variant}, max_attempts=10)
+    out = task.generate(80100 + SUPPORTED_QUERY_IDS.index(query_id), params={"query_id": query_id}, max_attempts=10)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -155,13 +155,13 @@ def test_chart_heatmap_variants_match_contract(query_variant: str) -> None:
             height=int(render["canvas_height"]),
         )
 
-    if str(query_variant) == "axis_condition_extremum_label":
+    if str(query_id) == "axis_condition_extremum_label":
         assert str(execution["condition_kind"]) in {"hot", "cool", "increase", "decrease"}
         assert str(execution["query_axis"]) in {"row", "column"}
-    elif str(query_variant) == "condition_run_extremum_label":
+    elif str(query_id) == "condition_run_extremum_label":
         assert len(evidence_cell_ids) >= 2
         assert str(execution["query_axis"]) == "row"
-    elif str(query_variant) == "axis_cell_extremum_label":
+    elif str(query_id) == "axis_cell_extremum_label":
         assert str(execution["query_axis"]) in {"row", "column"}
         if str(execution["query_axis"]) == "column":
             assert int(execution["answer_column_index"]) >= 0
@@ -186,8 +186,8 @@ def test_chart_heatmap_prompt_examples_match_contract() -> None:
         "condition_run_extremum_label": "Mesa",
     }
 
-    for index, (query_variant, answer) in enumerate(expected.items(), start=80200):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, (query_id, answer) in enumerate(expected.items(), start=80200):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence["answer"] == answer
@@ -206,18 +206,18 @@ def test_chart_heatmap_balanced_sampling_covers_variants_and_scenes() -> None:
     for index in range(72):
         out = task.generate(hash64(80300, "charts_heatmap", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         scenes[str(execution["scene_variant"])] += 1
-        if str(execution["query_variant"]) in {"axis_condition_extremum_label", "condition_run_extremum_label"}:
+        if str(execution["query_id"]) in {"axis_condition_extremum_label", "condition_run_extremum_label"}:
             condition_by_scene[(str(execution["scene_variant"]), str(execution["condition_kind"]))] += 1
-        if str(execution["query_variant"]) == "axis_cell_extremum_label":
+        if str(execution["query_id"]) == "axis_cell_extremum_label":
             directions[str(execution["extremum_direction"])] += 1
-        if str(execution["query_variant"]) in {"axis_condition_extremum_label", "axis_cell_extremum_label"}:
+        if str(execution["query_id"]) in {"axis_condition_extremum_label", "axis_cell_extremum_label"}:
             query_axes[str(execution["query_axis"])] += 1
 
     assert_counter_support_within(
         variants,
-        SUPPORTED_QUERY_VARIANTS,
+        SUPPORTED_QUERY_IDS,
         expected_per_key=24,
         tolerance=8,
     )
@@ -231,7 +231,7 @@ def test_chart_heatmap_balanced_sampling_covers_variants_and_scenes() -> None:
 
 def test_chart_heatmap_is_deterministic() -> None:
     task = ChartsHeatmapGridQueryTask()
-    params = {"query_variant": "condition_run_extremum_label", "scene_variant": "signed_change_heatmap"}
+    params = {"query_id": "condition_run_extremum_label", "scene_variant": "signed_change_heatmap"}
     out_a = task.generate(80400, params=params, max_attempts=10)
     out_b = task.generate(80400, params=params, max_attempts=10)
     assert out_a.prompt == out_b.prompt

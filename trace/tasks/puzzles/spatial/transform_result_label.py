@@ -35,7 +35,7 @@ from ..shared.paper_fold_common import (
 )
 from ..shared.paper_fold_cut_common import (
     PuzzleFoldCutDefaults,
-    SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS,
+    SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS,
     build_fold_cut_result_dataset_for_variant,
 )
 from ..shared.paper_fold_scene import (
@@ -63,16 +63,16 @@ OVERLAY_RESULT_LABEL_TASK_ID = "task_puzzles__overlay__overlay_result_label"
 PAPER_FOLD_SCENE_ID = "paper_fold"
 PAPER_FOLD_CUT_SCENE_ID = "paper_fold_cut"
 OVERLAY_SCENE_ID = "overlay"
-_FOLD_RESULT_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS
-_FOLD_CUT_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_FOLD_RESULT_QUERY_IDS: Tuple[str, ...] = SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS
+_FOLD_CUT_QUERY_IDS: Tuple[str, ...] = SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "paper_fold_result",
     "paper_fold_cut_result",
     "overlay_result",
 )
 _SUPPORTED_FOLD_COUNTS: Tuple[str, ...] = ("1", "2")
 _SUPPORTED_FOLD_AXES: Tuple[str, ...] = ("vertical", "horizontal")
-_SOURCE_QUERY_VARIANT_TO_PUBLIC = {
+_SOURCE_QUERY_ID_TO_PUBLIC = {
     "fold_result": "paper_fold_result",
     "vertical_fold_result": "paper_fold_result",
     "horizontal_fold_result": "paper_fold_result",
@@ -125,24 +125,24 @@ def _resolve_transform_scene_style(instance_seed: int, *, task_id: str, scene_id
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the requested spatial result variant."""
 
-    explicit_variant = params.get("query_variant")
-    if explicit_variant is not None and str(explicit_variant) in _SOURCE_QUERY_VARIANT_TO_PUBLIC:
-        selected = str(_SOURCE_QUERY_VARIANT_TO_PUBLIC[str(explicit_variant)])
-        return selected, {str(variant): float(variant == selected) for variant in _SUPPORTED_QUERY_VARIANTS}
+    explicit_variant = params.get("query_id")
+    if explicit_variant is not None and str(explicit_variant) in _SOURCE_QUERY_ID_TO_PUBLIC:
+        selected = str(_SOURCE_QUERY_ID_TO_PUBLIC[str(explicit_variant)])
+        return selected, {str(variant): float(variant == selected) for variant in _SUPPORTED_QUERY_IDS}
 
     return resolve_puzzle_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -154,7 +154,7 @@ def _resolve_fold_axis(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the orientation axis for public variants that admit mirrored folds."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_variant is not None:
         if str(explicit_variant) in {"vertical_fold_result", "single_vertical_fold_cut_result"}:
             return "vertical", {"vertical": 1.0, "horizontal": 0.0}
@@ -182,7 +182,7 @@ def _resolve_fold_axis(
 def _resolve_fold_count(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[int, Dict[str, float]]:
     """Resolve one-fold versus two-fold cut puzzles as a parameter axis."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_variant is not None:
         if str(explicit_variant) in {"single_fold_cut_result", "single_vertical_fold_cut_result", "single_horizontal_fold_cut_result"}:
             return 1, {"1": 1.0, "2": 0.0}
@@ -198,7 +198,7 @@ def _resolve_fold_count(params: Mapping[str, Any], *, instance_seed: int) -> Tup
 
     fold_count_params = decouple_axis_sampling(
         params,
-        preceding_axis_size=len(_SUPPORTED_QUERY_VARIANTS),
+        preceding_axis_size=len(_SUPPORTED_QUERY_IDS),
         explicit_key="fold_count",
     )
     selected, probabilities = resolve_puzzle_axis_variant(
@@ -215,33 +215,33 @@ def _resolve_fold_count(params: Mapping[str, Any], *, instance_seed: int) -> Tup
     return int(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
-def _internal_query_variant_for_public(
-    query_variant: str,
+def _internal_query_id_for_public(
+    query_id: str,
     *,
     fold_axis: str | None,
     fold_count: int | None,
 ) -> str:
     """Map the public variant and orientation axis to the renderer's internal grammar."""
 
-    if str(query_variant) == "paper_fold_result":
+    if str(query_id) == "paper_fold_result":
         if str(fold_axis) not in _INTERNAL_FOLD_RESULT_VARIANT_BY_AXIS:
             raise ValueError("paper_fold_result requires fold_axis=vertical|horizontal")
         return str(_INTERNAL_FOLD_RESULT_VARIANT_BY_AXIS[str(fold_axis)])
-    if str(query_variant) == "paper_fold_cut_result" and int(fold_count or 0) == 1:
+    if str(query_id) == "paper_fold_cut_result" and int(fold_count or 0) == 1:
         if str(fold_axis) not in _INTERNAL_SINGLE_FOLD_CUT_VARIANT_BY_AXIS:
             raise ValueError("one-fold paper_fold_cut_result requires fold_axis=vertical|horizontal")
         return str(_INTERNAL_SINGLE_FOLD_CUT_VARIANT_BY_AXIS[str(fold_axis)])
-    if str(query_variant) == "paper_fold_cut_result" and int(fold_count or 0) == 2:
+    if str(query_id) == "paper_fold_cut_result" and int(fold_count or 0) == 2:
         return "double_fold_cut_result"
-    if str(query_variant) == "overlay_result":
+    if str(query_id) == "overlay_result":
         return "overlay_union_same_grid"
-    raise ValueError(f"unsupported public fold query variant: {query_variant}")
+    raise ValueError(f"unsupported public fold query id: {query_id}")
 
 
 def _source_variant_fixes_fold_axis(params: Mapping[str, Any]) -> bool:
     """Return true when a compatibility variant already encodes orientation."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     return explicit_variant is not None and str(explicit_variant) in {
         "vertical_fold_result",
         "horizontal_fold_result",
@@ -253,7 +253,7 @@ def _source_variant_fixes_fold_axis(params: Mapping[str, Any]) -> bool:
 def _source_variant_fixes_fold_count(params: Mapping[str, Any]) -> bool:
     """Return true when a compatibility variant already encodes fold count."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     return explicit_variant is not None and str(explicit_variant) in {
         "single_fold_cut_result",
         "single_vertical_fold_cut_result",
@@ -265,24 +265,24 @@ def _source_variant_fixes_fold_count(params: Mapping[str, Any]) -> bool:
 def _axis_decoupling_factor(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     fold_count: int | None = None,
     include_scene_axis: bool,
 ) -> int:
     """Return the review-sampling axis product consumed before answer balancing."""
 
     factor = 1
-    if params.get("query_variant") is None:
-        factor *= len(_SUPPORTED_QUERY_VARIANTS)
+    if params.get("query_id") is None:
+        factor *= len(_SUPPORTED_QUERY_IDS)
     if (
-        str(query_variant) == "paper_fold_cut_result"
+        str(query_id) == "paper_fold_cut_result"
         and params.get("fold_count") is None
         and not _source_variant_fixes_fold_count(params)
     ):
         factor *= len(_SUPPORTED_FOLD_COUNTS)
     needs_fold_axis = (
-        str(query_variant) == "paper_fold_result"
-        or (str(query_variant) == "paper_fold_cut_result" and int(fold_count or 0) == 1)
+        str(query_id) == "paper_fold_result"
+        or (str(query_id) == "paper_fold_cut_result" and int(fold_count or 0) == 1)
     )
     if (
         bool(needs_fold_axis)
@@ -291,7 +291,7 @@ def _axis_decoupling_factor(
     ):
         factor *= len(_SUPPORTED_FOLD_AXES)
     if include_scene_axis and params.get("scene_variant") is None:
-        if str(query_variant) == "overlay_result":
+        if str(query_id) == "overlay_result":
             factor *= len(_SUPPORTED_OVERLAY_SCENE_VARIANTS)
         else:
             factor *= len(_SUPPORTED_FOLD_SCENE_VARIANTS)
@@ -312,17 +312,17 @@ def _decouple_sampling(
 def _builder_params_for_option_balance(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
-    internal_query_variant: str,
+    query_id: str,
+    internal_query_id: str,
     fold_count: int | None = None,
 ) -> Dict[str, Any]:
     """Pass a local option-letter cycle to the internal fold builders."""
 
     builder_params = dict(params)
-    builder_params["query_variant"] = str(internal_query_variant)
+    builder_params["query_id"] = str(internal_query_id)
     factor = _axis_decoupling_factor(
         params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         fold_count=fold_count,
         include_scene_axis=True,
     )
@@ -330,10 +330,10 @@ def _builder_params_for_option_balance(
     _inject_public_variant_correct_option_index(
         builder_params,
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         fallback_option_count_min=(
             int(_FOLD_CUT_DEFAULTS.option_count_min)
-            if str(query_variant) == "paper_fold_cut_result"
+            if str(query_id) == "paper_fold_cut_result"
             else int(_FOLD_RESULT_DEFAULTS.option_count_min)
         ),
     )
@@ -344,10 +344,10 @@ def _inject_public_variant_correct_option_index(
     builder_params: Dict[str, Any],
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     fallback_option_count_min: int,
 ) -> None:
-    """Balance answer-letter support inside each merged public query variant."""
+    """Balance answer-letter support inside each merged public query id."""
 
     if params.get("correct_option_index") is not None:
         return
@@ -363,7 +363,7 @@ def _inject_public_variant_correct_option_index(
         "paper_fold_result": 0,
         "paper_fold_cut_result": 1,
         "overlay_result": 2,
-    }.get(str(query_variant), 0)
+    }.get(str(query_id), 0)
     builder_params["correct_option_index"] = int(((int(within_variant_index) * 7) + int(variant_offset)) % int(option_count_floor))
 
 
@@ -376,26 +376,26 @@ class _PuzzlesSpatialTransformResultBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        if str(query_variant) == "overlay_result":
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        if str(query_id) == "overlay_result":
             return self._generate_overlay_result(
                 int(instance_seed),
                 params=params,
-                query_variant_probabilities=dict(query_variant_probabilities),
+                query_id_probabilities=dict(query_id_probabilities),
             )
 
         fold_axis: str | None = None
         fold_axis_probabilities: Dict[str, float] = {}
         fold_count: int | None = None
         fold_count_probabilities: Dict[str, float] = {}
-        if str(query_variant) == "paper_fold_cut_result":
+        if str(query_id) == "paper_fold_cut_result":
             fold_count, fold_count_probabilities = _resolve_fold_count(params, instance_seed=int(instance_seed))
-        if str(query_variant) == "paper_fold_result" or (
-            str(query_variant) == "paper_fold_cut_result" and int(fold_count or 0) == 1
+        if str(query_id) == "paper_fold_result" or (
+            str(query_id) == "paper_fold_cut_result" and int(fold_count or 0) == 1
         ):
-            fold_axis_preceding = len(_SUPPORTED_QUERY_VARIANTS)
+            fold_axis_preceding = len(_SUPPORTED_QUERY_IDS)
             if (
-                str(query_variant) == "paper_fold_cut_result"
+                str(query_id) == "paper_fold_cut_result"
                 and params.get("fold_count") is None
                 and not _source_variant_fixes_fold_count(params)
             ):
@@ -405,8 +405,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 instance_seed=int(instance_seed),
                 preceding_axis_size=int(fold_axis_preceding),
             )
-        internal_query_variant = _internal_query_variant_for_public(
-            str(query_variant),
+        internal_query_id = _internal_query_id_for_public(
+            str(query_id),
             fold_axis=fold_axis,
             fold_count=fold_count,
         )
@@ -414,7 +414,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             params,
             factor=_axis_decoupling_factor(
                 params,
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 fold_count=fold_count,
                 include_scene_axis=False,
             ),
@@ -428,8 +428,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
 
         builder_params = _builder_params_for_option_balance(
             params,
-            query_variant=str(query_variant),
-            internal_query_variant=str(internal_query_variant),
+            query_id=str(query_id),
+            internal_query_id=str(internal_query_id),
             fold_count=fold_count,
         )
         render_params = resolve_fold_result_render_params(
@@ -440,7 +440,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
         scene_style, scene_style_meta = _resolve_transform_scene_style(
             int(instance_seed),
             task_id=str(self.task_id),
-            scene_id=PAPER_FOLD_CUT_SCENE_ID if str(query_variant) == "paper_fold_cut_result" else PAPER_FOLD_SCENE_ID,
+            scene_id=PAPER_FOLD_CUT_SCENE_ID if str(query_id) == "paper_fold_cut_result" else PAPER_FOLD_SCENE_ID,
         )
         render_params = replace(
             render_params,
@@ -463,10 +463,10 @@ class _PuzzlesSpatialTransformResultBaseTask:
             style=scene_style,
         )
 
-        is_fold_cut_variant = str(internal_query_variant) in _FOLD_CUT_QUERY_VARIANTS
+        is_fold_cut_variant = str(internal_query_id) in _FOLD_CUT_QUERY_IDS
         if is_fold_cut_variant:
             dataset = build_fold_cut_result_dataset_for_variant(
-                query_variant=str(internal_query_variant),
+                query_id=str(internal_query_id),
                 params=builder_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -486,7 +486,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             )
         else:
             dataset = build_fold_result_dataset_for_variant(
-                query_variant=str(internal_query_variant),
+                query_id=str(internal_query_id),
                 params=builder_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -535,9 +535,9 @@ class _PuzzlesSpatialTransformResultBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -545,7 +545,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -578,7 +578,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             cut_scan = normalize_int_with_bounds(int(dataset["cut_count"]), [1, 3])
             reasoning_load = float(
                 clamp_unit_interval(
-                    float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+                    float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
                     + (0.16 * float(cut_scan))
                     + (0.12 if int(dataset["fold_count"]) == 2 else 0.0)
                 )
@@ -589,7 +589,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             visual_scan = float(mark_scan)
             reasoning_load = float(
                 clamp_unit_interval(
-                    float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+                    float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
                     + (0.22 * float(folded_source_scan))
                 )
             )
@@ -619,8 +619,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
         execution_trace: Dict[str, Any]
         if is_fold_cut_variant:
             execution_trace = {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "fold_count_probabilities": dict(fold_count_probabilities),
                 "question_format": str(dataset["question_format"]),
@@ -651,8 +651,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
             view_family = "paper_fold_cut_result_mcq"
         else:
             execution_trace = {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -689,8 +689,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 "scene_kind": f"puzzle_spatial_folding_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "answer_option_label": str(answer_value),
                     "correct_option_choice_id": str(correct_option_choice_id),
@@ -698,16 +698,16 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "fold_axis_probabilities": dict(fold_axis_probabilities),
                     "fold_count_probabilities": dict(fold_count_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -776,7 +776,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -785,13 +785,13 @@ class _PuzzlesSpatialTransformResultBaseTask:
         instance_seed: int,
         *,
         params: Dict[str, Any],
-        query_variant_probabilities: Dict[str, float],
+        query_id_probabilities: Dict[str, float],
     ) -> TaskOutput:
         scene_params = _decouple_sampling(
             params,
             factor=_axis_decoupling_factor(
                 params,
-                query_variant="overlay_result",
+                query_id="overlay_result",
                 include_scene_axis=False,
             ),
         )
@@ -802,15 +802,15 @@ class _PuzzlesSpatialTransformResultBaseTask:
             task_id=self.task_id,
         )
         builder_params = dict(params)
-        builder_params["query_variant"] = "overlay_union_same_grid"
+        builder_params["query_id"] = "overlay_union_same_grid"
         _inject_public_variant_correct_option_index(
             builder_params,
             params=params,
-            query_variant="overlay_result",
+            query_id="overlay_result",
             fallback_option_count_min=int(_OVERLAY_DEFAULTS.option_count_min),
         )
         dataset = build_overlay_dataset_for_variant(
-            query_variant="overlay_union_same_grid",
+            query_id="overlay_union_same_grid",
             params=builder_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -939,8 +939,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 "scene_kind": f"puzzle_spatial_transform_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "overlay_result",
-                    "internal_query_variant": "overlay_union_same_grid",
+                    "query_id": "overlay_result",
+                    "internal_query_id": "overlay_union_same_grid",
                     "scene_variant": str(scene_variant),
                     "answer_option_label": str(answer_value),
                     "correct_option_choice_id": str(correct_option_choice_id),
@@ -948,16 +948,16 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": "overlay_result",
+                "query_id": "overlay_result",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "overlay_result",
-                    "internal_query_variant": "overlay_union_same_grid",
+                    "query_id": "overlay_result",
+                    "internal_query_id": "overlay_union_same_grid",
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "grid_size": int(dataset["grid_size"]),
                     "grid_size_range": list(dataset["grid_size_range"]),
@@ -1005,8 +1005,8 @@ class _PuzzlesSpatialTransformResultBaseTask:
                 render_params.unit_size_jitter,
             ),
             "execution_trace": {
-                "query_variant": "overlay_result",
-                "internal_query_variant": "overlay_union_same_grid",
+                "query_id": "overlay_result",
+                "internal_query_id": "overlay_union_same_grid",
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -1054,7 +1054,7 @@ class _PuzzlesSpatialTransformResultBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="overlay_result",
+            query_id="overlay_result",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1063,7 +1063,7 @@ class PuzzlesSpatialPaperFoldResultLabelTask(FixedPuzzleQueryVariantTaskMixin, _
     """Choose the labeled option showing the folded paper result."""
 
     task_id = PAPER_FOLD_RESULT_LABEL_TASK_ID
-    fixed_query_variant = "paper_fold_result"
+    fixed_query_id = "paper_fold_result"
     public_scene_id = PAPER_FOLD_SCENE_ID
 
 
@@ -1072,7 +1072,7 @@ class PuzzlesSpatialPaperFoldCutResultLabelTask(FixedPuzzleQueryVariantTaskMixin
     """Choose the labeled option showing the unfolded paper-cut result."""
 
     task_id = PAPER_FOLD_CUT_RESULT_LABEL_TASK_ID
-    fixed_query_variant = "paper_fold_cut_result"
+    fixed_query_id = "paper_fold_cut_result"
     public_scene_id = PAPER_FOLD_CUT_SCENE_ID
 
 
@@ -1081,7 +1081,7 @@ class PuzzlesSpatialOverlayResultLabelTask(FixedPuzzleQueryVariantTaskMixin, _Pu
     """Choose the labeled option showing the overlay union result."""
 
     task_id = OVERLAY_RESULT_LABEL_TASK_ID
-    fixed_query_variant = "overlay_result"
+    fixed_query_id = "overlay_result"
     public_scene_id = OVERLAY_SCENE_ID
 
 

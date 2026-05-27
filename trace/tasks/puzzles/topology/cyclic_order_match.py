@@ -25,7 +25,7 @@ from ..shared.bead_loop_common import (
     build_bead_equivalence_dataset_for_variant,
     resolve_bead_loop_render_params,
     resolve_bead_loop_scene_variant,
-    resolve_bead_loop_query_variant,
+    resolve_bead_loop_query_id,
     resolve_cyclic_order_path_style,
     resolve_cyclic_order_token_render_style,
 )
@@ -97,7 +97,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = resolve_bead_loop_query_variant(
+        query_id, query_id_probabilities = resolve_bead_loop_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -141,7 +141,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
         _ = int(task_axis_divisor)
         dataset_params: Mapping[str, Any] = params
         dataset = build_bead_equivalence_dataset_for_variant(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             token_render_style=str(token_render_style),
             loop_path_style=str(loop_path_style),
             params=dataset_params,
@@ -210,9 +210,9 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         token_render_style_instruction = {
             "colored_beads": "Use the token colors when comparing cyclic order.",
             "shape_tokens": "Use the token shapes when comparing cyclic order.",
@@ -227,14 +227,14 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(evidence_hint),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "token_render_style_instruction": str(token_render_style_instruction),
@@ -252,7 +252,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
         ]
-        if str(query_variant) == "cyclic_order_equivalent_label":
+        if str(query_id) == "cyclic_order_equivalent_label":
             answer_value = str(dataset["answer_option_label"])
             answer_gt = TypedValue(type="option_letter", value=str(answer_value))
         else:
@@ -266,7 +266,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
         )
         reasoning_load = min(
             1.0,
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + float(_TOKEN_RENDER_STYLE_LOAD[str(token_render_style)])
             + float(_LOOP_PATH_STYLE_LOAD[str(loop_path_style)])
             + (
@@ -295,7 +295,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
                 "scene_kind": f"puzzle_topology_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "token_render_style": str(token_render_style),
                     "bead_token_mode": str(dataset["bead_token_mode"]),
                     "loop_path_style": str(loop_path_style),
@@ -306,18 +306,18 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "token_render_style": str(token_render_style),
                     "bead_token_mode": str(dataset["bead_token_mode"]),
                     "loop_path_style": str(loop_path_style),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "token_render_style_probabilities": dict(token_render_style_probabilities),
                     "loop_path_style_probabilities": dict(loop_path_style_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -348,12 +348,12 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
                 },
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "token_render_style": str(token_render_style),
                 "bead_token_mode": str(dataset["bead_token_mode"]),
                 "loop_path_style": str(loop_path_style),
                 "scene_variant": str(scene_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "token_render_style_probabilities": dict(token_render_style_probabilities),
                 "loop_path_style_probabilities": dict(loop_path_style_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -411,7 +411,7 @@ class _PuzzlesTopologyCyclicOrderMatchBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -424,7 +424,7 @@ class PuzzlesTopologyCyclicOrderEquivalentLabelTask(
     """Identify the unique option loop with the same cyclic token order as the reference."""
 
     task_id = CYCLIC_ORDER_EQUIVALENT_LABEL_TASK_ID
-    fixed_query_variant = "cyclic_order_equivalent_label"
+    fixed_query_id = "cyclic_order_equivalent_label"
     public_scene_id = SCENE_ID
 
 

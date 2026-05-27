@@ -46,7 +46,7 @@ class PuzzleArithmeticDefaults:
     panel_corner_radius_px: int = 28
     value_font_size_px: int = 46
     operator_font_size_px: int = 54
-    balanced_query_variant_sampling: bool = True
+    balanced_query_id_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 
@@ -76,7 +76,7 @@ class PuzzleArithmeticGridDefaults:
     panel_padding_px: int = 28
     panel_corner_radius_px: int = 28
     value_font_size_px: int = 46
-    balanced_query_variant_sampling: bool = True
+    balanced_query_id_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 def resolve_arithmetic_render_params(
@@ -464,7 +464,7 @@ def _build_equation_row(
 
 def build_arithmetic_equation_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -474,9 +474,9 @@ def build_arithmetic_equation_dataset_for_variant(
     """Construct one deterministic one-row arithmetic puzzle dataset with one unknown slot."""
 
     supported = {"result_unknown", "operand_unknown"}
-    selected_variant = str(query_variant)
+    selected_variant = str(query_id)
     if selected_variant not in supported:
-        raise ValueError(f"unsupported arithmetic puzzle variant: {query_variant}")
+        raise ValueError(f"unsupported arithmetic puzzle variant: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     answer_min, answer_max = resolve_arithmetic_answer_bounds(
@@ -555,7 +555,7 @@ def build_arithmetic_equation_dataset_for_variant(
     operator_variety = int(len(set(operator_symbols)))
 
     return {
-        "query_variant": selected_variant,
+        "query_id": selected_variant,
         "equation_rows": [[dict(token) for token in row] for row in equation_rows],
         "answer_value": int(answer_value),
         "query_slot_id": str(query_slot_id),
@@ -580,7 +580,7 @@ def build_arithmetic_equation_dataset_for_variant(
 
 def build_arithmetic_grid_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -594,9 +594,9 @@ def build_arithmetic_grid_dataset_for_variant(
         "difference_rule_missing": "-",
         "product_rule_missing": "×",
     }
-    selected_variant = str(query_variant)
+    selected_variant = str(query_id)
     if selected_variant not in operator_by_variant:
-        raise ValueError(f"unsupported arithmetic grid puzzle variant: {query_variant}")
+        raise ValueError(f"unsupported arithmetic grid puzzle variant: {query_id}")
     operator_symbol = str(operator_by_variant[str(selected_variant)])
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
@@ -690,7 +690,7 @@ def build_arithmetic_grid_dataset_for_variant(
     ]
 
     return {
-        "query_variant": str(selected_variant),
+        "query_id": str(selected_variant),
         "operator_symbol": str(operator_symbol),
         "grid_rows": [[dict(cell) for cell in row] for row in grid_rows],
         "row_values": [[int(value) for value in row] for row in row_values],

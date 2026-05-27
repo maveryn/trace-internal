@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `circle`
 3. Scene id: `circle_theorem`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `inscribed_angle_from_central`, `central_angle_from_inscribed`, `inscribed_angle_from_arc`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

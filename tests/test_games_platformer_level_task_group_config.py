@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.games.shared.platformer_common import (
-    SUPPORTED_PLATFORMER_QUERY_VARIANTS,
+    SUPPORTED_PLATFORMER_QUERY_IDS,
     SUPPORTED_PLATFORMER_SCENE_VARIANTS,
     SUPPORTED_PLATFORMER_STYLE_VARIANTS,
 )
@@ -19,13 +19,13 @@ def test_games_platformer_level_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_platform_count_sampling"]) is True
     assert bool(generation["balanced_hazard_count_sampling"]) is True
     assert bool(generation["balanced_target_collectible_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_PLATFORMER_SCENE_VARIANTS)
-    assert set(generation["query_variant_weights"].keys()) == set(SUPPORTED_PLATFORMER_QUERY_VARIANTS)
+    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_PLATFORMER_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_PLATFORMER_STYLE_VARIANTS)
     assert list(generation["platform_count_support"]) == [4, 5, 6, 7]
     assert list(generation["hazard_count_support"]) == [4, 5, 6, 7, 8]

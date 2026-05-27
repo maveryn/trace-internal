@@ -8,7 +8,7 @@
 5. Objective: count how many edges lie on the unique shortest path between two labeled nodes in an undirected or directed graph.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `undirected_shortest_path_length` or `directed_shortest_path_length`
 3. Supported `graph_directionality` values: `undirected`, `directed`
 4. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
@@ -42,8 +42,8 @@
 1. Prompt-facing evidence is the `point_sequence` of node-center pixel points along the unique shortest path, ordered from source to goal.
 2. The evidence path includes both queried endpoints.
 3. `answer_gt.value == len(evidence_gt.value) - 1` by construction.
-4. `execution_trace.query_variant == "default"` and `execution_trace.query_id` records the concrete branch.
-5. The internal generator records `internal_query_variant == "shortest_path_length"` or `internal_query_variant == "directed_shortest_path_length"` for diagnostic compatibility.
+4. `execution_trace.query_id == "default"` and `execution_trace.query_id` records the concrete branch.
+5. The internal generator records `internal_query_id == "shortest_path_length"` or `internal_query_id == "directed_shortest_path_length"` for diagnostic compatibility.
 6. `execution_trace.graph_directionality` records `undirected` or `directed`.
 7. `projected_evidence` includes `point_sequence`, `pixel_point_sequence`, and `pixel_bbox_set`.
 

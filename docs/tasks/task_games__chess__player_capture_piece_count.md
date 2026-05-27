@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set containing the capturable opponent-piece boxes.
-3. Public `query_variant` is `default`; `player_capture_piece_count` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `player_capture_piece_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games Chess-board renderer for its scene id.

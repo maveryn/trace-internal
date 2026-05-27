@@ -8,7 +8,7 @@
 5. Objective: identify the unique option loop with the same cyclic token order as a reference loop when rotation and smooth deformation are allowed but reflection is not.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `cyclic_order_equivalent_label`
 3. Supported `token_render_style` values:
    - `colored_beads`
@@ -44,7 +44,7 @@
 4. `query_key`: `cyclic_order_equivalent_label`
 5. Required slots:
    - scene: `object_description`
-   - query-variant: `token_render_style_instruction`
+   - query-id: `token_render_style_instruction`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing answer is the unique valid option letter. Prompt-facing evidence is the matching option-image bounding box.
@@ -53,7 +53,7 @@
 1. Prompt-facing evidence is a `bbox_set` containing exactly one option-image bbox.
 2. `projected_evidence` includes `bbox_set`.
 3. `render_map.option_choice_bboxes_px` stores option-image bboxes keyed by `option_choice_id`.
-4. `execution_trace` records `query_variant=default`, `query_id=cyclic_order_equivalent_label`, `internal_query_variant=cyclic_order_equivalent_label`, token/render axes, option specs, answer option id/label, valid option id, and solver trace.
+4. `execution_trace` records `query_id=cyclic_order_equivalent_label`, internal replay query fields, token/render axes, option specs, answer option id/label, valid option id, and solver trace.
 5. Prompt-facing evidence is projected from the recorded valid option id, not inferred from pixels.
 
 ## 5) Determinism + constraints

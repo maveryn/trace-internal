@@ -531,7 +531,7 @@ def _resolve_correct_option_index(
 ) -> int:
     """Resolve a stable correct-option slot from the instance seed."""
 
-    # Use a short cycle larger than the option count so balanced query-variant
+    # Use a short cycle larger than the option count so balanced query-id
     # seed partitions do not alias directly into one answer letter.
     cycle_modulus = (int(option_count) * 3) + 2
     selection_index = abs(int(instance_seed + int(option_count) + 2)) % int(cycle_modulus)
@@ -540,7 +540,7 @@ def _resolve_correct_option_index(
 
 def build_fold_result_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -549,8 +549,8 @@ def build_fold_result_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one single-fold paper puzzle with a unique correct folded result."""
 
-    if str(query_variant) not in SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS:
-        raise ValueError(f"unsupported fold-result query variant: {query_variant}")
+    if str(query_id) not in SUPPORTED_PUZZLE_FOLD_RESULT_VARIANTS:
+        raise ValueError(f"unsupported fold-result query id: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     option_count_min = int(_resolve_int_param(params, gen_defaults, "option_count_min", defaults.option_count_min))
@@ -563,7 +563,7 @@ def build_fold_result_dataset_for_variant(
     mark_count_max = int(_resolve_int_param(params, gen_defaults, "mark_count_max", defaults.mark_count_max))
     mark_count = int(rng.randint(mark_count_min, max(mark_count_min, mark_count_max)))
 
-    axis = "vertical" if str(query_variant) == "vertical_fold_result" else "horizontal"
+    axis = "vertical" if str(query_id) == "vertical_fold_result" else "horizontal"
     if str(axis) == "vertical":
         direction = str(rng.choice(("left_to_right", "right_to_left")))
     else:

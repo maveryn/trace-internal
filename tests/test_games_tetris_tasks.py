@@ -38,7 +38,7 @@ def test_games_tetris_line_clear_contract_and_rule_match() -> None:
     best_clear, _best_outcomes = _best_clear_outcomes(board, piece=str(execution["piece"]))
 
     assert out.scene_id == "tetris"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "max_clear_with_next_piece"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
@@ -58,7 +58,7 @@ def test_games_tetris_drop_result_contract() -> None:
     falling = execution["falling_placement"]
 
     assert out.scene_id == "tetris"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "single_clear_result"
     assert out.answer_gt.type == "string"
     assert answer in options

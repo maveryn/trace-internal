@@ -7,7 +7,7 @@
 4. Objective: count all cubes in one visible isometric cube structure.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `cube_count`
 3. Supported `scene_variant` values: `stack_strip`, `stack_card`, `stack_outline`
 4. `answer_gt.type`: `integer`
@@ -28,6 +28,6 @@
 
 ## 4) Evidence + Trace Contract
 1. Evidence is exactly one bbox for the visible cube structure.
-2. `execution_trace.internal_query_variant = total_cube_count`.
+2. `execution_trace.internal_query_id = total_cube_count`.
 3. Height grids, cube coordinate records, cube color, answer support, and supporting structure ids are recorded.
 4. Prompt-facing evidence is projected from structure ids, not inferred from pixels.

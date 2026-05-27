@@ -161,8 +161,8 @@ from empirical chart trend tasks: the source of truth is the generated relation
 metadata, and evidence is the selected panel bbox.
 
 ## Wrapper Rule
-Each narrowed task emits `query_variant="default"` and records the concrete query
-branch in `query_id`. Internal query/scene parameters may still appear in
+Each narrowed task records the concrete query branch in `query_id`. Internal
+query/scene parameters may still appear in
 `query_spec`, `execution_trace`, and `render_spec` for diagnostics and verifier
 payloads.
 

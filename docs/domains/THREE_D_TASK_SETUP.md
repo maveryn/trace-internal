@@ -48,7 +48,7 @@ Use this document for the active `three_d` domain contract.
 4. Prompt policy:
    - ask for a single option letter only,
    - keep the task grounded in perspective depth cues,
-   - keep closest/farthest as internal query variants rather than separate public task ids,
+   - keep closest/farthest as internal query ids rather than separate public task ids,
    - keep prompt-facing evidence on the selected object, not on the floor grid or open stage.
 
 ### `room`

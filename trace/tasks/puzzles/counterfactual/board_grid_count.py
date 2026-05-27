@@ -185,11 +185,11 @@ def _style_probability_map(gen_defaults: Mapping[str, Any], params: Mapping[str,
 
 def _query_probability_map(gen_defaults: Mapping[str, Any], params: Mapping[str, Any]) -> Dict[str, float]:
     raw = params.get(
-        "query_variant_weights",
-        group_default(gen_defaults, "query_variant_weights", {query_id: 1.0 for query_id in SUPPORTED_QUERY_IDS}),
+        "query_id_weights",
+        group_default(gen_defaults, "query_id_weights", {query_id: 1.0 for query_id in SUPPORTED_QUERY_IDS}),
     )
     if not isinstance(raw, Mapping):
-        raise ValueError("query_variant_weights must be a mapping")
+        raise ValueError("query_id_weights must be a mapping")
     return normalize_positive_weights(
         {str(query_id): float(raw.get(str(query_id), 0.0)) for query_id in SUPPORTED_QUERY_IDS},
         default_keys=SUPPORTED_QUERY_IDS,
@@ -212,7 +212,7 @@ def _resolve_style(gen_defaults: Mapping[str, Any], params: Mapping[str, Any], *
         if style not in SUPPORTED_BOARD_STYLES:
             raise ValueError(f"unsupported board_style: {style!r}")
         return style, dict(probabilities)
-    explicit_query = params.get("query_id", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     candidate_styles = SUPPORTED_BOARD_STYLES
     if explicit_query is not None:
         candidate_styles = _compatible_styles_for_query(str(explicit_query))
@@ -235,7 +235,7 @@ def _resolve_query(
 ) -> Tuple[str, Dict[str, float]]:
     probabilities = _query_probability_map(gen_defaults, params)
     valid_queries = _valid_queries_for_style(str(style))
-    explicit = params.get("query_id", params.get("query_variant"))
+    explicit = params.get("query_id")
     if explicit is not None:
         query_id = str(explicit)
         if query_id not in valid_queries:
@@ -959,11 +959,10 @@ class PuzzlesCounterfactualBoardGridCountTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         counterfactual_delta = int(answer) - int(canonical_answer)
         query_params = {
-            "query_variant": "default",
-            "query_variant_probabilities": {"default": 1.0},
+            "query_id": "default",
+            "query_id_probabilities": {"default": 1.0},
             "query_id": str(query_id),
-            "query_variant": str(query_id),
-            "query_variant_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+            "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
             "scene_id": SCENE_ID,
             "board_style": str(style),
             "board_style_probabilities": {str(key): float(value) for key, value in style_probabilities.items()},
@@ -982,9 +981,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_id": SCENE_ID,
                     "board_style": str(style),
                     "visible_rows": int(rows),
@@ -995,9 +992,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1061,7 +1056,6 @@ class PuzzlesCounterfactualBoardGridCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

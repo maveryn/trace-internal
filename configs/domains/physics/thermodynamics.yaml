@@ -18,7 +18,7 @@ generation:
         clean_grid: 1.0
         paper_grid: 1.0
         bold_grid: 1.0
-      query_variant_weights:
+      query_id_weights:
         work_value: 1.0
         process_sign_choice: 1.0
       work_mode_weights:
@@ -38,7 +38,7 @@ generation:
         G: 1.0
         H: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_work_mode_sampling: true
       balanced_target_sign_sampling: true
       balanced_correct_option_letter_sampling: true

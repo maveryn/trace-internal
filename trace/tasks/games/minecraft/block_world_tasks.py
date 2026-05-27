@@ -673,8 +673,6 @@ class GamesMinecraftBlockWorldTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "query_id": str(sampled_scene.query_id),
-                    "query_variant": str(sampled_scene.query_id),
-                    "query_variant": "default",
                     "style_variant": str(sampled_scene.style_variant),
                     "grid_width": int(sampled_scene.grid_width),
                     "grid_depth": int(sampled_scene.grid_depth),
@@ -687,16 +685,12 @@ class GamesMinecraftBlockWorldTask:
             },
             "query_spec": {
                 "query_id": str(sampled_scene.query_id),
-                "query_variant": str(sampled_scene.query_id),
-                "query_variant": "default",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(sampled_scene.query_id),
-                    "query_variant": str(sampled_scene.query_id),
-                    "query_variant": "default",
                     "style_variant": str(sampled_scene.style_variant),
                     "grid_width": int(sampled_scene.grid_width),
                     "grid_depth": int(sampled_scene.grid_depth),
@@ -714,8 +708,8 @@ class GamesMinecraftBlockWorldTask:
                     "grid_width_probabilities": dict(axes.grid_width_probabilities),
                     "grid_depth_probabilities": dict(axes.grid_depth_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),
-                    "query_variant_probabilities": {str(sampled_scene.query_id): 1.0},
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {str(sampled_scene.query_id): 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                 },
             },
             "render_spec": {
@@ -727,8 +721,6 @@ class GamesMinecraftBlockWorldTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "query_id": str(sampled_scene.query_id),
-                "query_variant": str(sampled_scene.query_id),
-                "query_variant": "default",
                 "style_variant": str(sampled_scene.style_variant),
                 "answer": int(sampled_scene.answer),
                 "grid_width": int(sampled_scene.grid_width),
@@ -768,7 +760,6 @@ class GamesMinecraftBlockWorldTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(task_id=str(self.task_id), sample=sampled_scene),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sampled_scene.query_id),
         )

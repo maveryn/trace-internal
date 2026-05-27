@@ -18,10 +18,10 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.arithmetic_common import (
-    SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_VARIANTS,
+    SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS,
     build_document_section_expression_dataset,
     resolve_document_arithmetic_scene_variant,
-    resolve_document_arithmetic_query_variant,
+    resolve_document_arithmetic_query_id,
 )
 from ..shared.common import projected_document_bbox_evidence
 from ..shared.complexity import (
@@ -38,7 +38,7 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 
 
 TASK_ID = "task_pages__form_section__section_expression_value"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "sum_two_amounts_in_section": 0.34,
     "difference_two_amounts_in_section": 0.38,
@@ -67,10 +67,10 @@ def _scene_sampling_params(params: Mapping[str, Any]) -> Mapping[str, Any]:
     return params
 
 
-def _canonical_operand_example_bboxes(*, query_variant: str) -> list[list[int]]:
+def _canonical_operand_example_bboxes(*, query_id: str) -> list[list[int]]:
     """Return stable operand-value bbox examples for prompt JSON snippets."""
 
-    if str(query_variant) == "sum_minus_amount_in_section":
+    if str(query_id) == "sum_minus_amount_in_section":
         return [
             [150, 260, 364, 294],
             [150, 320, 364, 354],
@@ -82,7 +82,7 @@ def _canonical_operand_example_bboxes(*, query_variant: str) -> list[list[int]]:
     ]
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
+def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
     """Return prompt JSON examples that match the active arithmetic variant."""
 
     answer_by_variant = {
@@ -90,9 +90,9 @@ def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
         "difference_two_amounts_in_section": "$42.50",
         "sum_minus_amount_in_section": "$133.30",
     }
-    answer_value = str(answer_by_variant[str(query_variant)])
+    answer_value = str(answer_by_variant[str(query_id)])
     answer_and_evidence = {
-        "evidence": _canonical_operand_example_bboxes(query_variant=str(query_variant)),
+        "evidence": _canonical_operand_example_bboxes(query_id=str(query_id)),
         "answer": str(answer_value),
     }
     answer_only = {"answer": str(answer_value)}
@@ -112,7 +112,7 @@ class PagesArithmeticSectionExpressionValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = resolve_document_arithmetic_query_variant(
+        query_id, query_id_probabilities = resolve_document_arithmetic_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -126,7 +126,7 @@ class PagesArithmeticSectionExpressionValueTask:
             task_id=self.task_id,
         )
         dataset = build_document_section_expression_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             instance_seed=int(instance_seed),
             task_id=self.task_id,
@@ -171,14 +171,14 @@ class PagesArithmeticSectionExpressionValueTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
@@ -205,7 +205,7 @@ class PagesArithmeticSectionExpressionValueTask:
         field_scan = normalize_int_with_bounds(int(dataset["field_count"]), list(dataset["field_count_range"]))
         operand_scan = normalize_int_with_bounds(len(list(dataset["operand_field_ids"])), [2, 3])
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)]) + (0.12 * float(operand_scan))
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]) + (0.12 * float(operand_scan))
         )
         complexity = build_pages_complexity(
             weights=_COMPLEXITY_WEIGHTS,
@@ -221,7 +221,7 @@ class PagesArithmeticSectionExpressionValueTask:
                 "scene_kind": f"document_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "query_section_id": str(dataset["query_section_id"]),
                     "query_section_label": str(dataset["query_section_label"]),
@@ -229,15 +229,15 @@ class PagesArithmeticSectionExpressionValueTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "field_count": int(dataset["field_count"]),
                     "field_count_range": list(dataset["field_count_range"]),
@@ -270,7 +270,7 @@ class PagesArithmeticSectionExpressionValueTask:
                 "field_box_bboxes_px": dict(rendered_scene.field_box_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -313,13 +313,13 @@ class PagesArithmeticSectionExpressionValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="form_section",
-            query_probabilities=query_variant_probabilities,
+            query_probabilities=query_id_probabilities,
         )
 
 

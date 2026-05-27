@@ -21,13 +21,13 @@ from tests.helpers import read_jsonl
     (
         (
             GamesBrickBreakerTrajectoryTargetLabelTask,
-            {"query_variant": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "neon"},
+            {"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 6, "style_variant": "neon"},
             "next_hit_label",
             "string",
         ),
         (
             GamesBrickBreakerTrajectoryTargetLabelTask,
-            {"query_variant": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8, "style_variant": "paper"},
+            {"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8, "style_variant": "paper"},
             "paddle_catch_label",
             "string",
         ),
@@ -52,15 +52,15 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= 1
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "brick_breaker"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -68,7 +68,7 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
 def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
     out = GamesBrickBreakerTrajectoryTargetLabelTask().generate(
         91010,
-        params={"query_variant": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 7},
+        params={"query_id": "next_hit_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 7},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -90,7 +90,7 @@ def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:
 def test_games_brick_breaker_paddle_catch_label_matches_target_lane() -> None:
     out = GamesBrickBreakerTrajectoryTargetLabelTask().generate(
         91020,
-        params={"query_variant": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8},
+        params={"query_id": "paddle_catch_label", "brick_rows": 5, "brick_cols": 6, "lane_count": 8},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

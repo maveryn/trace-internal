@@ -19,11 +19,11 @@ def test_graph_order_adjacency_traversal_label_contracts() -> None:
     task = GraphOrderAdjacencyTraversalLabelTask()
 
     assert "task_graph__adjacency__traversal_kth_label" in TASK_REGISTRY
-    for offset, query_variant in enumerate(("bfs_kth_visit_label", "dfs_kth_visit_label")):
+    for offset, query_id in enumerate(("bfs_kth_visit_label", "dfs_kth_visit_label")):
         out = task.generate(
             41100 + offset,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "node_count": 6,
                 "traversal_position": 4,
                 "label_variant": "letters",
@@ -34,7 +34,7 @@ def test_graph_order_adjacency_traversal_label_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "adjacency"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_sequence"
         assert str(out.answer_gt.value) == str(execution["visit_order"][3])
@@ -56,11 +56,11 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
     )
 
     assert "task_graph__adjacency__component_count" in TASK_REGISTRY
-    for offset, (query_variant, scene_variant) in enumerate(cases):
+    for offset, (query_id, scene_variant) in enumerate(cases):
         out = task.generate(
             41200 + offset,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variant,
                 "node_count": 8,
                 "component_count": 3,
@@ -72,7 +72,7 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "adjacency"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert int(out.answer_gt.value) == 3
@@ -100,7 +100,7 @@ def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:
     out = task.generate(
         41300,
         params={
-            "query_variant": "weighted_matrix_mst_weight",
+            "query_id": "weighted_matrix_mst_weight",
             "node_count": 5,
             "extra_edge_count": 2,
             "edge_weight_min": 1,

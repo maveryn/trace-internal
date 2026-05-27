@@ -26,7 +26,7 @@ def _coords(values: list[list[int]]) -> tuple[tuple[int, int], ...]:
 def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
     out = GamesBattleshipShipStatusCountTask().generate(
         74101,
-        params={"target_answer": 3, "board_size": 9, "style_variant": "navy", "query_variant": "sunk_ship_count"},
+        params={"target_answer": 3, "board_size": 9, "style_variant": "navy", "query_id": "sunk_ship_count"},
         max_attempts=128,
     )
     trace = out.trace_payload
@@ -35,15 +35,15 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "sunk_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "sunk_ship_count"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "sunk_ship_count"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == "sunk_ship_count"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -51,7 +51,7 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
 def test_games_battleship_sunk_ship_count_places_each_ship_once_and_counts_sunk_ships() -> None:
     out = GamesBattleshipShipStatusCountTask().generate(
         74111,
-        params={"target_answer": 4, "board_size": 10, "style_variant": "paper", "query_variant": "sunk_ship_count"},
+        params={"target_answer": 4, "board_size": 10, "style_variant": "paper", "query_id": "sunk_ship_count"},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -85,7 +85,7 @@ def test_games_battleship_sunk_ship_count_places_each_ship_once_and_counts_sunk_
 def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
     out = GamesBattleshipShipStatusCountTask().generate(
         74131,
-        params={"target_answer": 3, "board_size": 9, "style_variant": "classic", "query_variant": "partial_ship_count"},
+        params={"target_answer": 3, "board_size": 9, "style_variant": "classic", "query_id": "partial_ship_count"},
         max_attempts=128,
     )
     trace = out.trace_payload
@@ -94,15 +94,15 @@ def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "partial_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "partial_ship_count"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "partial_ship_count"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == "partial_ship_count"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -110,7 +110,7 @@ def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
 def test_games_battleship_partial_ship_count_places_each_ship_once_and_counts_partial_ships() -> None:
     out = GamesBattleshipShipStatusCountTask().generate(
         74141,
-        params={"target_answer": 4, "board_size": 10, "style_variant": "outlined", "query_variant": "partial_ship_count"},
+        params={"target_answer": 4, "board_size": 10, "style_variant": "outlined", "query_id": "partial_ship_count"},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -166,11 +166,11 @@ def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support
     assert boards == {8, 9, 10}
     assert styles == set(SUPPORTED_BATTLESHIP_STYLE_VARIANTS)
 
-    for query_variant in ("partial_ship_count", "sunk_ship_count"):
+    for query_id in ("partial_ship_count", "sunk_ship_count"):
         for target_answer in (1, 2, 3, 4):
             out = task.generate(
                 74400 + (10 * target_answer),
-                params={"query_variant": query_variant, "target_answer": target_answer},
+                params={"query_id": query_id, "target_answer": target_answer},
                 max_attempts=128,
             )
             assert int(out.answer_gt.value) == target_answer

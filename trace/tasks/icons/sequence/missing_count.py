@@ -472,7 +472,7 @@ class IconsSequenceMissingCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.missing_cell_bbox,))
-        query_variant = "arithmetic_progression"
+        query_id = "arithmetic_progression"
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         trace_payload = {
@@ -495,7 +495,7 @@ class IconsSequenceMissingCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -549,7 +549,7 @@ class IconsSequenceMissingCountTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_sequence_row",
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "sequence_length": int(scene_payload.sequence_length),
                 "sequence_length_probabilities": dict(sequence_spec.sequence_length_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -595,12 +595,12 @@ class IconsSequenceMissingCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="sequence_strip",
         )
 

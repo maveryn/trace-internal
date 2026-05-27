@@ -8,7 +8,7 @@
 5. Objective: follow visible decision-arrow labels in a process-flow diagram and return the reached step label.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `condition_path_endpoint_label`
 3. `answer_gt.type`: `string`
 4. `evidence_gt.type`: `bbox_set`

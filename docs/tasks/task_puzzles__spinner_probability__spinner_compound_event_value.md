@@ -8,7 +8,7 @@
 5. Goal: compute a reduced-fraction probability for a compound event on one equal-sector spinner.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `single_color_probability|single_shape_probability|single_color_and_shape_probability|single_color_or_shape_probability`
 3. Sector count: `6..10`
 4. Answer type: `string`

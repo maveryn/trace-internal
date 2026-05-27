@@ -40,14 +40,14 @@ RAVEN_SET_OPERATION_LABEL_TASK_ID = "task_puzzles__raven_matrix__raven_set_opera
 RAVEN_ANALOGICAL_TRANSFORM_LABEL_TASK_ID = "task_puzzles__raven_matrix__raven_analogical_transform_label"
 RAVEN_POSITION_PROGRESSION_LABEL_TASK_ID = "task_puzzles__raven_matrix__raven_position_progression_label"
 SCENE_ID = "raven_matrix"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "count_progression_matrix",
     "spatial_transform_matrix",
     "set_operation_matrix",
     "analogical_transform_matrix",
     "position_progression_matrix",
 )
-_QUERY_VARIANT_REASONING_LOAD = {
+_QUERY_ID_REASONING_LOAD = {
     "count_progression_matrix": 0.56,
     "spatial_transform_matrix": 0.78,
     "set_operation_matrix": 0.72,
@@ -118,19 +118,19 @@ def _canonical_panel_spec(panel_spec: Mapping[str, Any]) -> str:
     return json.dumps(panel_spec, sort_keys=True, separators=(",", ":"))
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the Raven matrix semantic variant."""
 
     return resolve_puzzle_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -154,7 +154,7 @@ def _resolve_correct_option_index(
     params: Mapping[str, Any],
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     option_count: int,
 ) -> int:
     """Pick a deterministic correct option index with sampler-time label balance."""
@@ -169,7 +169,7 @@ def _resolve_correct_option_index(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:{query_variant}:correct_option_index",
+            namespace=f"{TASK_ID}:{query_id}:correct_option_index",
         )
     )
     return int(selection % int(option_count))
@@ -313,7 +313,7 @@ def _build_count_progression_dataset(
     correct_option_index = _resolve_correct_option_index(
         params,
         instance_seed=int(instance_seed),
-        query_variant="count_progression_matrix",
+        query_id="count_progression_matrix",
         option_count=int(option_count),
     )
     option_specs, option_labels = _build_option_specs(
@@ -509,7 +509,7 @@ def _build_spatial_transform_dataset(
     correct_option_index = _resolve_correct_option_index(
         params,
         instance_seed=int(instance_seed),
-        query_variant="spatial_transform_matrix",
+        query_id="spatial_transform_matrix",
         option_count=int(option_count),
     )
     option_specs, option_labels = _build_option_specs(
@@ -662,7 +662,7 @@ def _build_set_operation_dataset(
     correct_option_index = _resolve_correct_option_index(
         params,
         instance_seed=int(instance_seed),
-        query_variant="set_operation_matrix",
+        query_id="set_operation_matrix",
         option_count=int(option_count),
     )
     option_specs, option_labels = _build_option_specs(
@@ -790,7 +790,7 @@ def _build_analogical_transform_dataset(
     correct_option_index = _resolve_correct_option_index(
         params,
         instance_seed=int(instance_seed),
-        query_variant="analogical_transform_matrix",
+        query_id="analogical_transform_matrix",
         option_count=int(option_count),
     )
     option_specs, option_labels = _build_option_specs(
@@ -871,7 +871,7 @@ def _build_position_progression_dataset(
     correct_option_index = _resolve_correct_option_index(
         params,
         instance_seed=int(instance_seed),
-        query_variant="position_progression_matrix",
+        query_id="position_progression_matrix",
         option_count=int(option_count),
     )
     option_specs, option_labels = _build_option_specs(
@@ -906,15 +906,15 @@ def _build_position_progression_dataset(
 
 def _build_raven_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
     """Construct one deterministic Raven matrix dataset."""
 
-    selected_variant = str(query_variant)
-    if selected_variant not in set(_SUPPORTED_QUERY_VARIANTS):
-        raise ValueError(f"unsupported Raven query_variant: {query_variant}")
+    selected_variant = str(query_id)
+    if selected_variant not in set(_SUPPORTED_QUERY_IDS):
+        raise ValueError(f"unsupported Raven query_id: {query_id}")
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     option_count = int(params.get("option_count", group_default(_GEN_DEFAULTS, "option_count", int(_DEFAULTS.option_count))))
     if int(option_count) != 6:
@@ -978,11 +978,11 @@ class _PuzzlesLogicRavenMatrixBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        query_variant_axis_size = 1 if "query_variant" in params else len(_SUPPORTED_QUERY_VARIANTS)
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        query_id_axis_size = 1 if "query_id" in params else len(_SUPPORTED_QUERY_IDS)
         scene_params = decouple_axis_sampling(
             params,
-            preceding_axis_size=query_variant_axis_size,
+            preceding_axis_size=query_id_axis_size,
             explicit_key="scene_variant",
         )
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
@@ -990,7 +990,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             instance_seed=int(instance_seed),
         )
         dataset = _build_raven_dataset_for_variant(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=params,
             instance_seed=int(instance_seed),
         )
@@ -1067,9 +1067,9 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1109,7 +1109,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 "scene_kind": f"puzzle_raven_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_option_label": str(answer_value),
                     "query_cell_id": str(dataset["query_cell_id"]),
@@ -1117,15 +1117,15 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "matrix_size": int(dataset["matrix_size"]),
                     "cell_count": int(dataset["cell_count"]),
@@ -1159,7 +1159,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 },
             }, render_params.unit_size_jitter),
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "query_cell_id": str(dataset["query_cell_id"]),
                 "query_row_index": int(dataset["query_row_index"]),
@@ -1176,7 +1176,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
                 "option_count": int(dataset["option_count"]),
                 "option_specs": [dict(option) for option in dataset["option_specs"]],
                 "solver_trace": dict(dataset["solver_trace"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_option_panel_ids": [str(correct_option_panel_id)],
                 "question_format": "raven_matrix_mcq",
@@ -1193,7 +1193,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": 1.0,
-                "reasoning_load": float(_QUERY_VARIANT_REASONING_LOAD[str(query_variant)]),
+                "reasoning_load": float(_QUERY_ID_REASONING_LOAD[str(query_id)]),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
             },
         )
@@ -1206,7 +1206,7 @@ class _PuzzlesLogicRavenMatrixBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1216,7 +1216,7 @@ class PuzzlesLogicRavenCountProgressionLabelTask(FixedPuzzleQueryVariantTaskMixi
     """Complete a Raven matrix governed by count progression."""
 
     task_id = RAVEN_COUNT_PROGRESSION_LABEL_TASK_ID
-    fixed_query_variant = "count_progression_matrix"
+    fixed_query_id = "count_progression_matrix"
     public_scene_id = SCENE_ID
 
 
@@ -1225,7 +1225,7 @@ class PuzzlesLogicRavenSpatialTransformLabelTask(FixedPuzzleQueryVariantTaskMixi
     """Complete a Raven matrix governed by spatial transforms."""
 
     task_id = RAVEN_SPATIAL_TRANSFORM_LABEL_TASK_ID
-    fixed_query_variant = "spatial_transform_matrix"
+    fixed_query_id = "spatial_transform_matrix"
     public_scene_id = SCENE_ID
 
 
@@ -1234,7 +1234,7 @@ class PuzzlesLogicRavenSetOperationLabelTask(FixedPuzzleQueryVariantTaskMixin, _
     """Complete a Raven matrix governed by set operations."""
 
     task_id = RAVEN_SET_OPERATION_LABEL_TASK_ID
-    fixed_query_variant = "set_operation_matrix"
+    fixed_query_id = "set_operation_matrix"
     public_scene_id = SCENE_ID
 
 
@@ -1243,7 +1243,7 @@ class PuzzlesLogicRavenAnalogicalTransformLabelTask(FixedPuzzleQueryVariantTaskM
     """Complete a Raven matrix governed by analogical transforms."""
 
     task_id = RAVEN_ANALOGICAL_TRANSFORM_LABEL_TASK_ID
-    fixed_query_variant = "analogical_transform_matrix"
+    fixed_query_id = "analogical_transform_matrix"
     public_scene_id = SCENE_ID
 
 
@@ -1252,7 +1252,7 @@ class PuzzlesLogicRavenPositionProgressionLabelTask(FixedPuzzleQueryVariantTaskM
     """Complete a Raven matrix governed by position progression."""
 
     task_id = RAVEN_POSITION_PROGRESSION_LABEL_TASK_ID
-    fixed_query_variant = "position_progression_matrix"
+    fixed_query_id = "position_progression_matrix"
     public_scene_id = SCENE_ID
 
 

@@ -289,7 +289,7 @@ def _sample_distinct_values(
 
 def build_pairwise_comparison_count_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -298,8 +298,8 @@ def build_pairwise_comparison_count_dataset(
 ) -> Tuple[Dict[str, Dict[str, int]], int, List[str], Dict[str, Any]]:
     """Construct one multiseries comparison-count dataset."""
 
-    if str(query_variant) not in {"series_a_gt_b_count", "series_a_lt_b_count"}:
-        raise ValueError(f"unsupported multiseries query_variant: {query_variant}")
+    if str(query_id) not in {"series_a_gt_b_count", "series_a_lt_b_count"}:
+        raise ValueError(f"unsupported multiseries query_id: {query_id}")
 
     value_min, value_max = resolve_value_bounds(
         params,
@@ -337,7 +337,7 @@ def build_pairwise_comparison_count_dataset(
         answer_candidates,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.target_answer:{str(query_variant)}",
+        namespace=f"{task_id}.target_answer:{str(query_id)}",
     )
     feasible_category_counts = [
         int(count)
@@ -348,14 +348,14 @@ def build_pairwise_comparison_count_dataset(
         feasible_category_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:{str(query_variant)}:{int(target_answer)}",
+        namespace=f"{task_id}.category_count:{str(query_id)}:{int(target_answer)}",
     )
     feasible_series_counts = [int(count) for count in range(int(series_count_min), int(series_count_max) + 1)]
     series_count = balanced_choice_from_values(
         feasible_series_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:{str(query_variant)}",
+        namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
     category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
@@ -390,7 +390,7 @@ def build_pairwise_comparison_count_dataset(
         high_value = int(sampled_values[-1])
         remaining_values = [int(value) for value in sampled_values[1:-1]]
         relation_holds = bool(int(category_index) in satisfying_indices)
-        if str(query_variant) == "series_a_gt_b_count":
+        if str(query_id) == "series_a_gt_b_count":
             left_value = int(high_value if relation_holds else low_value)
             right_value = int(low_value if relation_holds else high_value)
         else:
@@ -436,7 +436,7 @@ def build_pairwise_comparison_count_dataset(
             }
             for category_label, series_values in values_by_category.items()
         },
-        "comparison": "greater_than" if str(query_variant) == "series_a_gt_b_count" else "less_than",
+        "comparison": "greater_than" if str(query_id) == "series_a_gt_b_count" else "less_than",
     }
     return values_by_category, int(target_answer), evidence_labels, trace_extras
 
@@ -579,7 +579,7 @@ def _sample_queried_pair_for_score(
 
 def build_delta_extremum_label_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -594,8 +594,8 @@ def build_delta_extremum_label_dataset(
         "ranked_largest_gap",
         "ranked_smallest_gap",
     }
-    if str(query_variant) not in supported_variants:
-        raise ValueError(f"unsupported multiseries delta query_variant: {query_variant}")
+    if str(query_id) not in supported_variants:
+        raise ValueError(f"unsupported multiseries delta query_id: {query_id}")
 
     value_min, value_max = resolve_value_bounds(
         params,
@@ -630,14 +630,14 @@ def build_delta_extremum_label_dataset(
         feasible_category_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:{str(query_variant)}",
+        namespace=f"{task_id}.category_count:{str(query_id)}",
     )
     feasible_series_counts = [int(count) for count in range(int(series_count_min), int(series_count_max) + 1)]
     series_count = balanced_choice_from_values(
         feasible_series_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:{str(query_variant)}",
+        namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
     rank_min = int(params.get("rank_min", group_default(gen_defaults, "rank_min", 1)))
@@ -657,7 +657,7 @@ def build_delta_extremum_label_dataset(
         rank_candidates,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.answer_rank:{str(query_variant)}",
+        namespace=f"{task_id}.answer_rank:{str(query_id)}",
     )
 
     category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
@@ -670,7 +670,7 @@ def build_delta_extremum_label_dataset(
     ]
     left_series, right_series = pair_candidates[query_rng.randrange(len(pair_candidates))]
 
-    score_rng = spawn_rng(int(instance_seed), f"{task_id}.derived_scores:{str(query_variant)}")
+    score_rng = spawn_rng(int(instance_seed), f"{task_id}.derived_scores:{str(query_id)}")
     max_score = int(value_max) - int(value_min)
     scores = _sample_score_window(
         score_rng,
@@ -679,13 +679,13 @@ def build_delta_extremum_label_dataset(
         params=params,
         gen_defaults=gen_defaults,
     )
-    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.score_assignment:{str(query_variant)}")
+    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.score_assignment:{str(query_id)}")
     assignment_rng.shuffle(scores)
     scores_by_category = {
         str(category_label): int(score)
         for category_label, score in zip(category_labels, scores)
     }
-    if str(query_variant) == "ranked_smallest_gap":
+    if str(query_id) == "ranked_smallest_gap":
         sorted_score_items = sorted(
             scores_by_category.items(),
             key=lambda item: (int(item[1]), str(item[0])),
@@ -700,17 +700,17 @@ def build_delta_extremum_label_dataset(
     answer_label = str(sorted_score_items[int(answer_rank) - 1][0])
     answer_score = int(scores_by_category[str(answer_label)])
 
-    if str(query_variant) == "ranked_largest_increase":
+    if str(query_id) == "ranked_largest_increase":
         direction = "increase"
         derived_metric = "increase"
-    elif str(query_variant) == "ranked_largest_decrease":
+    elif str(query_id) == "ranked_largest_decrease":
         direction = "decrease"
         derived_metric = "decrease"
     else:
         direction = "absolute"
         derived_metric = "absolute_gap"
 
-    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_variant)}")
+    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_id)}")
     values_by_category: Dict[str, Dict[str, int]] = {}
     derived_values_by_category: Dict[str, int] = {}
     evidence_values: List[int] = []
@@ -783,7 +783,7 @@ def build_delta_extremum_label_dataset(
 
 def build_ratio_extremum_label_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -798,14 +798,14 @@ def build_ratio_extremum_label_dataset(
         "ranked_largest_pair_ratio",
         "ranked_smallest_pair_ratio",
     }
-    if str(query_variant) not in supported_variants:
-        raise ValueError(f"unsupported multiseries ratio query_variant: {query_variant}")
+    if str(query_id) not in supported_variants:
+        raise ValueError(f"unsupported multiseries ratio query_id: {query_id}")
 
-    is_share_variant = str(query_variant) in {
+    is_share_variant = str(query_id) in {
         "ranked_largest_series_share",
         "ranked_smallest_series_share",
     }
-    is_smallest_variant = str(query_variant) in {
+    is_smallest_variant = str(query_id) in {
         "ranked_smallest_series_share",
         "ranked_smallest_pair_ratio",
     }
@@ -837,7 +837,7 @@ def build_ratio_extremum_label_dataset(
         feasible_series_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:{str(query_variant)}",
+        namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
     if bool(is_share_variant):
@@ -899,7 +899,7 @@ def build_ratio_extremum_label_dataset(
         feasible_category_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:{str(query_variant)}:{int(series_count)}",
+        namespace=f"{task_id}.category_count:{str(query_id)}:{int(series_count)}",
     )
 
     rank_min = int(params.get("rank_min", group_default(gen_defaults, "rank_min", 1)))
@@ -919,12 +919,12 @@ def build_ratio_extremum_label_dataset(
         rank_candidates,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.answer_rank:{str(query_variant)}",
+        namespace=f"{task_id}.answer_rank:{str(query_id)}",
     )
 
     category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
-    query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_series:{str(query_variant)}")
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_series:{str(query_id)}")
     if bool(is_share_variant):
         target_series = str(series_labels[query_rng.randrange(len(series_labels))])
         numerator_series = str(target_series)
@@ -941,7 +941,7 @@ def build_ratio_extremum_label_dataset(
         target_series = ""
         queried_series_labels = [str(numerator_series), str(denominator_series)]
 
-    score_rng = spawn_rng(int(instance_seed), f"{task_id}.ratio_scores:{str(query_variant)}")
+    score_rng = spawn_rng(int(instance_seed), f"{task_id}.ratio_scores:{str(query_id)}")
     scores = _sample_ratio_percent_window(
         score_rng,
         count=int(category_count),
@@ -949,7 +949,7 @@ def build_ratio_extremum_label_dataset(
         params=params,
         gen_defaults=gen_defaults,
     )
-    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.ratio_score_assignment:{str(query_variant)}")
+    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.ratio_score_assignment:{str(query_id)}")
     assignment_rng.shuffle(scores)
     scores_by_category = {
         str(category_label): int(score)
@@ -964,7 +964,7 @@ def build_ratio_extremum_label_dataset(
     answer_label = str(sorted_score_items[int(answer_rank) - 1][0])
     answer_score = int(scores_by_category[str(answer_label)])
 
-    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_variant)}")
+    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_id)}")
     values_by_category: Dict[str, Dict[str, int]] = {}
     denominator_values_by_category: Dict[str, int] = {}
     ratio_percent_by_category: Dict[str, int] = {}
@@ -1080,7 +1080,7 @@ def build_ratio_extremum_label_dataset(
 
 def build_category_total_extremum_label_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     extremum_direction: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -1090,8 +1090,8 @@ def build_category_total_extremum_label_dataset(
 ) -> Tuple[Dict[str, Dict[str, int]], str, List[int], Dict[str, Any]]:
     """Construct one category-total extremum label dataset."""
 
-    if str(query_variant) != "category_total_extremum_label":
-        raise ValueError(f"unsupported multiseries category-total query_variant: {query_variant}")
+    if str(query_id) != "category_total_extremum_label":
+        raise ValueError(f"unsupported multiseries category-total query_id: {query_id}")
     if str(extremum_direction) not in {"largest", "smallest"}:
         raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
 
@@ -1119,7 +1119,7 @@ def build_category_total_extremum_label_dataset(
         feasible_series_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:{str(query_variant)}",
+        namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
     total_min = int(series_count) * int(value_min)
@@ -1135,7 +1135,7 @@ def build_category_total_extremum_label_dataset(
         feasible_category_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:{str(query_variant)}:{int(series_count)}",
+        namespace=f"{task_id}.category_count:{str(query_id)}:{int(series_count)}",
     )
 
     rank_min = int(
@@ -1165,17 +1165,17 @@ def build_category_total_extremum_label_dataset(
         rank_candidates,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.answer_rank:{str(query_variant)}:{str(extremum_direction)}",
+        namespace=f"{task_id}.answer_rank:{str(query_id)}:{str(extremum_direction)}",
     )
 
     category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
-    total_rng = spawn_rng(int(instance_seed), f"{task_id}.category_totals:{str(query_variant)}")
+    total_rng = spawn_rng(int(instance_seed), f"{task_id}.category_totals:{str(query_id)}")
     category_totals = total_rng.sample(
         [int(value) for value in range(int(total_min), int(total_max) + 1)],
         int(category_count),
     )
-    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.category_total_assignment:{str(query_variant)}")
+    assignment_rng = spawn_rng(int(instance_seed), f"{task_id}.category_total_assignment:{str(query_id)}")
     assignment_rng.shuffle(category_totals)
     totals_by_category = {
         str(category_label): int(total)
@@ -1190,7 +1190,7 @@ def build_category_total_extremum_label_dataset(
     answer_label = str(sorted_total_items[int(answer_rank) - 1][0])
     answer_total = int(totals_by_category[str(answer_label)])
 
-    value_rng = spawn_rng(int(instance_seed), f"{task_id}.category_total_values:{str(query_variant)}")
+    value_rng = spawn_rng(int(instance_seed), f"{task_id}.category_total_values:{str(query_id)}")
     values_by_category: Dict[str, Dict[str, int]] = {}
     evidence_values: List[int] = []
     for category_label in category_labels:
@@ -1290,7 +1290,7 @@ def _sample_relation_pair(
 
 def _conditional_gap_target_gaps(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1302,8 +1302,8 @@ def _conditional_gap_target_gaps(
 ) -> Tuple[List[int], int, List[int], Dict[str, Any]]:
     """Construct filtered target gaps and the numeric answer for one conditional-gap variant."""
 
-    rng = spawn_rng(int(instance_seed), f"{task_id}.conditional_gap_values:{str(query_variant)}")
-    if str(query_variant) == "conditional_gap_sum_value":
+    rng = spawn_rng(int(instance_seed), f"{task_id}.conditional_gap_values:{str(query_id)}")
+    if str(query_id) == "conditional_gap_sum_value":
         answer_min = int(params.get("sum_answer_min", group_default(gen_defaults, "sum_answer_min", int(filter_count) * int(gap_min))))
         answer_max = int(params.get("sum_answer_max", group_default(gen_defaults, "sum_answer_max", int(filter_count) * int(gap_max))))
         feasible = [
@@ -1314,7 +1314,7 @@ def _conditional_gap_target_gaps(
             feasible,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}.answer_value:{str(query_variant)}:{int(filter_count)}",
+            namespace=f"{task_id}.answer_value:{str(query_id)}:{int(filter_count)}",
         )
         gaps = sample_composition_with_sum(
             rng,
@@ -1325,7 +1325,7 @@ def _conditional_gap_target_gaps(
         )
         return [int(value) for value in gaps], int(answer_value), [min(feasible), max(feasible)], {}
 
-    if str(query_variant) == "conditional_gap_mean_value":
+    if str(query_id) == "conditional_gap_mean_value":
         answer_min = int(params.get("mean_answer_min", group_default(gen_defaults, "mean_answer_min", int(gap_min))))
         answer_max = int(params.get("mean_answer_max", group_default(gen_defaults, "mean_answer_max", int(gap_max))))
         feasible = [
@@ -1336,7 +1336,7 @@ def _conditional_gap_target_gaps(
             feasible,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}.answer_value:{str(query_variant)}",
+            namespace=f"{task_id}.answer_value:{str(query_id)}",
         )
         gaps = sample_composition_with_sum(
             rng,
@@ -1347,7 +1347,7 @@ def _conditional_gap_target_gaps(
         )
         return [int(value) for value in gaps], int(answer_value), [min(feasible), max(feasible)], {}
 
-    if str(query_variant) == "conditional_gap_range_value":
+    if str(query_id) == "conditional_gap_range_value":
         answer_min = int(params.get("range_answer_min", group_default(gen_defaults, "range_answer_min", 1)))
         answer_max = int(params.get("range_answer_max", group_default(gen_defaults, "range_answer_max", int(gap_max) - int(gap_min))))
         feasible = [
@@ -1358,7 +1358,7 @@ def _conditional_gap_target_gaps(
             feasible,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}.answer_value:{str(query_variant)}",
+            namespace=f"{task_id}.answer_value:{str(query_id)}",
         )
         low_gap = int(rng.randint(int(gap_min), int(gap_max) - int(answer_value)))
         high_gap = int(low_gap) + int(answer_value)
@@ -1368,7 +1368,7 @@ def _conditional_gap_target_gaps(
         rng.shuffle(gaps)
         return [int(value) for value in gaps], int(answer_value), [min(feasible), max(feasible)], {}
 
-    if str(query_variant) == "conditional_gap_extremum_value":
+    if str(query_id) == "conditional_gap_extremum_value":
         direction = str(extremum_direction or "largest")
         answer_min = int(params.get("extremum_answer_min", group_default(gen_defaults, "extremum_answer_min", int(gap_min))))
         answer_max = int(params.get("extremum_answer_max", group_default(gen_defaults, "extremum_answer_max", int(gap_max))))
@@ -1382,7 +1382,7 @@ def _conditional_gap_target_gaps(
                 feasible,
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{task_id}.answer_value:{str(query_variant)}:{direction}:{int(filter_count)}",
+                namespace=f"{task_id}.answer_value:{str(query_id)}:{direction}:{int(filter_count)}",
             )
             distractor_pool = [int(value) for value in range(int(answer_value) + 1, int(gap_max) + 1)]
         else:
@@ -1395,19 +1395,19 @@ def _conditional_gap_target_gaps(
                 feasible,
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{task_id}.answer_value:{str(query_variant)}:{direction}:{int(filter_count)}",
+                namespace=f"{task_id}.answer_value:{str(query_id)}:{direction}:{int(filter_count)}",
             )
             distractor_pool = [int(value) for value in range(int(gap_min), int(answer_value))]
         gaps = [int(answer_value)] + [int(value) for value in rng.sample(distractor_pool, int(filter_count) - 1)]
         rng.shuffle(gaps)
         return [int(value) for value in gaps], int(answer_value), [min(feasible), max(feasible)], {"extremum_direction": direction}
 
-    raise ValueError(f"unsupported multiseries conditional-gap query_variant: {query_variant}")
+    raise ValueError(f"unsupported multiseries conditional-gap query_id: {query_id}")
 
 
 def build_conditional_gap_value_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     condition_comparison: str,
     extremum_direction: str | None,
     params: Mapping[str, Any],
@@ -1424,8 +1424,8 @@ def build_conditional_gap_value_dataset(
         "conditional_gap_range_value",
         "conditional_gap_extremum_value",
     }
-    if str(query_variant) not in supported_variants:
-        raise ValueError(f"unsupported multiseries conditional-gap query_variant: {query_variant}")
+    if str(query_id) not in supported_variants:
+        raise ValueError(f"unsupported multiseries conditional-gap query_id: {query_id}")
     if str(condition_comparison) not in {"greater_than", "less_than"}:
         raise ValueError(f"unsupported condition_comparison: {condition_comparison}")
 
@@ -1461,14 +1461,14 @@ def build_conditional_gap_value_dataset(
         feasible_category_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:{str(query_variant)}",
+        namespace=f"{task_id}.category_count:{str(query_id)}",
     )
     feasible_series_counts = [int(count) for count in range(int(series_count_min), int(series_count_max) + 1)]
     series_count = balanced_choice_from_values(
         feasible_series_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:{str(query_variant)}",
+        namespace=f"{task_id}.series_count:{str(query_id)}",
     )
 
     filter_min = int(params.get("filtered_category_count_min", group_default(gen_defaults, "filtered_category_count_min", 3)))
@@ -1484,7 +1484,7 @@ def build_conditional_gap_value_dataset(
         feasible_filter_counts,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.filtered_category_count:{str(query_variant)}:{int(category_count)}",
+        namespace=f"{task_id}.filtered_category_count:{str(query_id)}:{int(category_count)}",
     )
 
     gap_min = int(params.get("target_gap_min", group_default(gen_defaults, "target_gap_min", 2)))
@@ -1495,7 +1495,7 @@ def build_conditional_gap_value_dataset(
         raise ValueError("target gap bounds do not fit in the sampled value window")
 
     filtered_gaps, answer_value, answer_range, extra_trace = _conditional_gap_target_gaps(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
         instance_seed=int(instance_seed),
         gen_defaults=gen_defaults,
@@ -1516,7 +1516,7 @@ def build_conditional_gap_value_dataset(
     ]
 
     category_indices = list(range(int(category_count)))
-    filter_rng = spawn_rng(int(instance_seed), f"{task_id}.filtered_categories:{str(query_variant)}")
+    filter_rng = spawn_rng(int(instance_seed), f"{task_id}.filtered_categories:{str(query_id)}")
     filter_rng.shuffle(category_indices)
     filtered_indices = set(category_indices[: int(filter_count)])
     filtered_gap_by_index = {
@@ -1524,7 +1524,7 @@ def build_conditional_gap_value_dataset(
         for category_index, gap in zip(sorted(filtered_indices), filtered_gaps)
     }
 
-    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_variant)}")
+    value_rng = spawn_rng(int(instance_seed), f"{task_id}.values:{str(query_id)}")
     values_by_category: Dict[str, Dict[str, int]] = {}
     target_gap_by_category: Dict[str, int] = {}
     condition_holds_by_category: Dict[str, bool] = {}
@@ -1571,11 +1571,11 @@ def build_conditional_gap_value_dataset(
         if int(index) in filtered_indices
     ]
     filtered_gap_values = [int(target_gap_by_category[str(label)]) for label in filtered_category_labels]
-    if str(query_variant) == "conditional_gap_sum_value":
+    if str(query_id) == "conditional_gap_sum_value":
         realized_answer = int(sum(filtered_gap_values))
-    elif str(query_variant) == "conditional_gap_mean_value":
+    elif str(query_id) == "conditional_gap_mean_value":
         realized_answer = int(sum(filtered_gap_values) // len(filtered_gap_values))
-    elif str(query_variant) == "conditional_gap_range_value":
+    elif str(query_id) == "conditional_gap_range_value":
         realized_answer = int(max(filtered_gap_values) - min(filtered_gap_values))
     elif str(extra_trace.get("extremum_direction", extremum_direction or "largest")) == "smallest":
         realized_answer = int(min(filtered_gap_values))

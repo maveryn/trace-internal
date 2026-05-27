@@ -7,7 +7,7 @@
 - Query id: `first_object_ahead`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed_pending_probe
+- Status: pending_v0_review
 
 ## Contract
 The image shows a synthetic perspective 3D warehouse aisle with a gridded full-bleed floor, shelf racks, warehouse equipment, one red-boxed robot with a red travel-direction arrow, and lettered warehouse objects. The robot body varies across low-cart, sensor-tower, and stacker-like designs with sampled base/accent colors while remaining the red-boxed reference object. The prompt asks which lettered object the robot will reach first if it moves straight along the arrow.
@@ -23,7 +23,7 @@ Evidence is the bounding box of the selected lettered warehouse object. The bbox
 The prompt bundle is `three_d_warehouse_v0` under `prompts/three_d/warehouse/`. The trace records camera pose, projection frame, scene variant, robot heading/design/color metadata, shelf rack styles/frame colors/heights/load slots, travel direction vector, path corridor polygon, candidate object types by label, forward and lateral path coordinates by label, first-reached flags by label, selected object id/type, and projected object bboxes.
 
 ## Calibration
-The manual review workbook, distribution report, and combined warehouse scene review have been regenerated. Distribution passed on `100` samples with `5` unique answers and max answer frequency `0.230`. Solve-rate calibration is pending.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D warehouse scene trace.

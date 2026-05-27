@@ -43,11 +43,11 @@ def _query_probability_map(specs: Sequence[_TileQuerySpec]) -> Dict[str, float]:
 def _has_explicit_query(params: Mapping[str, Any]) -> bool:
     """Return whether caller explicitly pinned a cell-board query branch."""
 
-    for key in ("query_id", "query_variant"):
+    for key in ("query_id", "query_id"):
         candidate = params.get(key)
         if candidate is None:
             continue
-        if key == "query_variant" and str(candidate) == "default":
+        if key == "query_id" and str(candidate) == "default":
             continue
         return True
     return False
@@ -71,11 +71,11 @@ def _select_query_spec(
     }
 
     explicit = None
-    for key in ("query_id", "query_variant"):
+    for key in ("query_id", "query_id"):
         candidate = params.get(key)
         if candidate is None:
             continue
-        if key == "query_variant" and str(candidate) == "default":
+        if key == "query_id" and str(candidate) == "default":
             continue
         explicit = str(candidate)
         break
@@ -100,7 +100,7 @@ def _rewrite_fixed_tile_output(
     source_domain: str,
     source_task_id: str,
     source_task_group: str,
-    query_variant_probabilities: Mapping[str, float] | None = None,
+    query_id_probabilities: Mapping[str, float] | None = None,
 ) -> TaskOutput:
     """Rewrite an internal Tile output to a narrow public task contract."""
 
@@ -108,7 +108,7 @@ def _rewrite_fixed_tile_output(
     query_probabilities = {
         str(key): float(value)
         for key, value in (
-            dict(query_variant_probabilities) if query_variant_probabilities is not None else {query_id_text: 1.0}
+            dict(query_id_probabilities) if query_id_probabilities is not None else {query_id_text: 1.0}
         ).items()
     }
 
@@ -119,9 +119,9 @@ def _rewrite_fixed_tile_output(
         scene_id=_SCENE_ID,
         query_id=query_id_text,
         include_render_spec=True,
-        query_variant_probabilities=dict(query_probabilities),
+        query_id_probabilities=dict(query_probabilities),
         variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as="internal_query_variant",
+        preserve_internal_query_id_as="internal_query_id",
         extra_fields={
             "public_task_id": str(public_task_id),
             "source_task_id": str(source_task_id),
@@ -154,7 +154,7 @@ class _CellBoardQueryTask:
         )
         query_id, source_task_cls, source_variant = query_spec
         source_params = dict(params)
-        source_params["query_variant"] = str(source_variant)
+        source_params["query_id"] = str(source_variant)
         source_task = source_task_cls()
         output = source_task.generate(
             int(instance_seed),
@@ -168,7 +168,7 @@ class _CellBoardQueryTask:
             source_domain=str(getattr(source_task, "domain")),
             source_task_id=str(getattr(source_task, "task_id")),
             source_task_group=str(getattr(source_task, "task_group")),
-            query_variant_probabilities=query_probabilities,
+            query_id_probabilities=query_probabilities,
         )
 
 

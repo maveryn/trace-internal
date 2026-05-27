@@ -49,7 +49,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     taxonomy = resolve_task_taxonomy(task_id)
     query_id = str(
         output.query_id
-        or resolve_task_query_id(query_variant=output.query_variant, trace_payload=output.trace_payload)
+        or resolve_task_query_id(query_id=output.query_id, trace_payload=output.trace_payload)
     )
     trace_payload = inject_taxonomy_metadata(
         output.trace_payload,
@@ -61,7 +61,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     )
 
     assert taxonomy.domain in ACTIVE_DOMAINS
-    assert str(output.query_variant) == "default"
+    assert str(output.query_id) == "default"
     assert query_id
     assert str(output.answer_gt.type)
     assert str(output.evidence_gt.type)

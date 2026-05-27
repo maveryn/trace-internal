@@ -19,7 +19,7 @@ Prompt-facing evidence is one bounding box around the charges, distance labels, 
 ## Prompt And Trace
 Prompt bundle: `physics_electrostatics_v0`; scene key: `electrostatics_field_map`; task key: `electrostatics_field_map_query`; query key: `potential_value`.
 
-Public outputs use `query_variant="default"` and `query_id="potential_value"`. The trace records charge values, distances, integer potential contributions, the final potential value, and evidence entity ids.
+Outputs `query_id="potential_value"`. The trace records charge values, distances, integer potential contributions, the final potential value, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized potential scenario.

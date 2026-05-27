@@ -19,7 +19,7 @@ generation:
       cyan: 1.0
       magenta: 1.0
       maroon: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
@@ -27,12 +27,12 @@ generation:
     year_max: 2030
   task_overrides:
     pages_timeline_milestones_base:
-      query_variant_weights:
+      query_id_weights:
         interval_membership_count: 1.0
       interval_relation_weights:
         between: 1.0
         outside: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_interval_relation_sampling: true
       event_count_support: [6, 7, 8, 9, 10, 11, 12]
       between_count_support: [0, 1, 2, 3, 4, 5]

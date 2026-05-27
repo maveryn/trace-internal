@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__pitch_interval_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `note_name_label|interval_name_label|same_pitch_truth_label|transposed_pitch_truth_label`
 3. Prompts ask for note names, interval names, pitch-equivalence truth values, or transposition truth values on a synthetic staff.
 4. Internal variation:

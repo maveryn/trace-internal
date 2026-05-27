@@ -23,11 +23,11 @@ from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.string_topology_common import (
     PuzzleStringTopologyDefaults,
-    SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS,
+    SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS,
     build_string_topology_dataset_for_variant,
     resolve_string_topology_render_params,
     resolve_string_topology_scene_variant,
-    resolve_string_topology_query_variant,
+    resolve_string_topology_query_id,
 )
 from ..shared.string_topology_scene import render_puzzle_string_topology_scene
 from ..shared.visual_defaults import load_puzzle_noise_defaults
@@ -72,15 +72,15 @@ class _PuzzlesTopologyStringComponentBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = resolve_string_topology_query_variant(
+        query_id, query_id_probabilities = resolve_string_topology_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             task_id=self.task_id,
         )
         scene_params: Mapping[str, Any] = params
-        if "query_variant" not in params:
-            scene_params = _advance_sampling(params, len(SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_VARIANTS))
+        if "query_id" not in params:
+            scene_params = _advance_sampling(params, len(SUPPORTED_PUZZLE_STRING_TOPOLOGY_QUERY_IDS))
         scene_variant, scene_variant_probabilities = resolve_string_topology_scene_variant(
             scene_params,
             gen_defaults=_GEN_DEFAULTS,
@@ -91,7 +91,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
         if "scene_variant" not in params:
             dataset_params = _advance_sampling(scene_params, len(_SCENE_LOAD_BY_VARIANT))
         dataset = build_string_topology_dataset_for_variant(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=dataset_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -161,9 +161,9 @@ class _PuzzlesTopologyStringComponentBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -171,7 +171,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -203,7 +203,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
         answer_support = [int(value) for value in dataset["target_answer_support"]]
         answer_bounds = [min(answer_support), max(answer_support)]
         answer_load = float(normalize_int_with_bounds(int(answer_value), answer_bounds)) if len(set(answer_support)) > 1 else 0.0
-        reasoning_load = min(1.0, float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)]) + (0.18 * answer_load))
+        reasoning_load = min(1.0, float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)]) + (0.18 * answer_load))
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -219,7 +219,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "scene_kind": f"puzzle_topology_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": int(answer_value),
                     "supporting_item_ids": list(supporting_item_ids),
@@ -227,15 +227,15 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "visual_group_count": int(dataset["visual_group_count"]),
                     "component_count": int(dataset["component_count"]),
@@ -278,7 +278,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "evidence_source": str(evidence_source_name),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -311,7 +311,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
                 "answer_value": int(answer_value),
                 "supporting_item_ids": list(supporting_item_ids),
                 "supporting_evidence_source": str(evidence_source_name),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "solver_trace": dict(dataset["solver_trace"]),
             },
@@ -326,9 +326,9 @@ class _PuzzlesTopologyStringComponentBaseTask:
         }
 
         component_specs = [dict(component) for component in dataset["component_specs"]]
-        if str(query_variant) == "open_rope_count":
+        if str(query_id) == "open_rope_count":
             expected = sum(1 for component in component_specs if bool(component.get("open_ended")))
-        elif str(query_variant) == "closed_loop_count":
+        elif str(query_id) == "closed_loop_count":
             expected = sum(1 for component in component_specs if bool(component["closed"]))
         else:
             expected = sum(1 for component in component_specs if int(component.get("knot_count", 0)) > 0)
@@ -344,7 +344,7 @@ class _PuzzlesTopologyStringComponentBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -357,10 +357,10 @@ class PuzzlesTopologyStringComponentCountTask(_PuzzlesTopologyStringComponentBas
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         effective_params: Dict[str, Any] = dict(params)
-        if effective_params.get("query_variant") is None:
-            for key in ("query_id", "query_variant"):
+        if effective_params.get("query_id") is None:
+            for key in ("query_id", "query_id"):
                 if effective_params.get(key) is not None:
-                    effective_params["query_variant"] = str(effective_params[key])
+                    effective_params["query_id"] = str(effective_params[key])
                     break
         output = super().generate(
             int(instance_seed),
@@ -369,7 +369,7 @@ class PuzzlesTopologyStringComponentCountTask(_PuzzlesTopologyStringComponentBas
         )
         return rewrite_fixed_puzzle_query_output(
             output,
-            query_id=str(output.query_variant),
+            query_id=str(output.query_id),
             scene_id="string_topology",
         )
 

@@ -19,7 +19,7 @@ Prompt-facing evidence is the bounding box of the correct candidate arrow option
 ## Prompt And Trace
 Prompt bundle: `physics_mechanics_v0`; scene key: `sticky_collision_diagram`; task key: `sticky_collision_query`; query key: `direction_choice`.
 
-Public outputs use `query_variant="default"` and `query_id="direction_choice"`. The trace records puck masses, input speeds, signed momenta, final velocity components, the correct option letter, option angles, and evidence entity ids.
+Outputs `query_id="direction_choice"`. The trace records puck masses, input speeds, signed momenta, final velocity components, the correct option letter, option angles, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized collision scene.

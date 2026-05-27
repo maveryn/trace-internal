@@ -16,7 +16,7 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
         "tall_columns",
     }
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "missing_output_force",
         "missing_input_force",
         "missing_piston_area",

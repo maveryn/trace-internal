@@ -43,7 +43,7 @@ from .gui_relation_common import (
 
 
 TASK_ID = "task_pages__command_matrix__command_intent_target_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "command_intent_target_label",
     "dual_guide_command_label",
 )
@@ -62,7 +62,7 @@ _SUPPORTED_INTENT_CATEGORIES: Tuple[str, ...] = (
     "format_style",
 )
 _INTENT_CATEGORY_AXIS_SIZE = len(_SUPPORTED_INTENT_CATEGORIES)
-_TASK_BALANCE_AXIS_SIZE = len(SUPPORTED_QUERY_VARIANTS) * _INTENT_CATEGORY_AXIS_SIZE
+_TASK_BALANCE_AXIS_SIZE = len(SUPPORTED_QUERY_IDS) * _INTENT_CATEGORY_AXIS_SIZE
 _BALANCE_SALT = 84127
 _ACTION_SYMBOLS: Tuple[str, ...] = ("@", "%", "&", "#", "*")
 _ACTION_CODE_LABELS: Tuple[str, ...] = ("K1", "M2", "R3", "T4", "V5")
@@ -188,7 +188,7 @@ class _ControlSpec:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     intent_category: str
     scene_variant: str
     style_variant: str
@@ -209,7 +209,7 @@ class _ResolvedQuery:
     action_support_id: str
     guide_order: Tuple[int, ...]
     candidate_label_pool: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     intent_category_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -316,14 +316,14 @@ def _instruction_for_target(
     cue_label: str,
     object_label: str,
     object_cue_label: str,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, int]:
     explicit = params.get("instruction_text")
     if explicit is not None:
         return str(explicit), 0
-    if str(query_variant) == "dual_guide_command_label":
+    if str(query_id) == "dual_guide_command_label":
         template_index = abs(
             int(
                 hash64(
@@ -422,26 +422,26 @@ def _with_candidate_labels(
     return tuple(assigned)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     rng,
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the public command-intent query variant, accepting old category names."""
+    """Resolve the public command-intent query id, accepting old category names."""
 
-    explicit = params.get("query_variant")
+    explicit = params.get("query_id")
     if explicit is not None and str(explicit) in _INTENT_CATEGORY_BY_SOURCE_VARIANT:
         return "command_intent_target_label", {"command_intent_target_label": 1.0}
     return _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        supported=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
 
 
@@ -453,7 +453,7 @@ def _resolve_intent_category(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the intent-action category used for the command matrix."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_variant is not None and str(explicit_variant) in _INTENT_CATEGORY_BY_SOURCE_VARIANT:
         selected = str(_INTENT_CATEGORY_BY_SOURCE_VARIANT[str(explicit_variant)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_INTENT_CATEGORIES}
@@ -479,7 +479,7 @@ def _resolve_intent_category(
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         rng,
         instance_seed=int(instance_seed),
         params=params,
@@ -540,12 +540,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         cue_label=str(target_control.action_cue_label),
         object_label=str(target_control.object_label),
         object_cue_label=str(target_control.object_cue_label),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         instance_seed=int(instance_seed),
         params=params,
     )
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         intent_category=str(intent_category),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
@@ -563,14 +563,14 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         guide_support_id=f"support_intent_guide_{int(target_control.action_index)}",
         object_guide_support_id=(
             f"support_object_guide_{int(target_control.row_index)}"
-            if str(query_variant) == "dual_guide_command_label"
+            if str(query_id) == "dual_guide_command_label"
             else ""
         ),
         row_support_id=f"support_object_row_{int(target_control.row_index)}",
         action_support_id=f"support_action_header_{int(target_control.action_index)}",
         guide_order=tuple(int(value) for value in guide_order),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         intent_category_probabilities=dict(intent_category_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -631,7 +631,7 @@ def _render_command_matrix_scene(
     grid_x2 = workspace[2] - 28.0
     guide_y1 = workspace[1] + 48.0
     guide_h = 50.0
-    dual_guide = str(query.query_variant) == "dual_guide_command_label"
+    dual_guide = str(query.query_id) == "dual_guide_command_label"
     grid_y1 = guide_y1 + guide_h + 8.0
     grid_y2 = workspace[3] - 22.0
     row_header_w = 210.0
@@ -857,8 +857,8 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
         raise ValueError(f"missing positive complexity criteria weights for {TASK_ID}")
     components = {
         "visual_scan": _clamp_unit((float(len(query.controls)) - 12.0) / 12.0),
-        "relational_grounding": 0.98 if str(query.query_variant) == "dual_guide_command_label" else 0.92,
-        "layout_complexity": 0.86 if str(query.query_variant) == "dual_guide_command_label" else 0.78,
+        "relational_grounding": 0.98 if str(query.query_id) == "dual_guide_command_label" else 0.92,
+        "layout_complexity": 0.86 if str(query.query_id) == "dual_guide_command_label" else 0.78,
         "output_burden": 0.45,
     }
     missing = [key for key in _COMPLEXITY_WEIGHTS if key not in components]
@@ -943,7 +943,7 @@ class PagesRelationCommandIntentTargetLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -993,7 +993,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                     for record in control_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "intent_category": str(query.intent_category),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
@@ -1016,13 +1016,13 @@ class PagesRelationCommandIntentTargetLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "intent_category": str(query.intent_category),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
@@ -1040,7 +1040,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                     "object_guide_support_id": str(query.object_guide_support_id),
                     "guide_order": [int(value) for value in query.guide_order],
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "intent_category_probabilities": dict(query.intent_category_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -1076,7 +1076,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "intent_category": str(query.intent_category),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
@@ -1099,7 +1099,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "controls": list(control_records),
                 "support_records": list(support_records),
                 "total_control_count": int(len(query.controls)),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "intent_category_probabilities": dict(query.intent_category_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -1125,15 +1125,15 @@ class PagesRelationCommandIntentTargetLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(query),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             scene_id="command_matrix",
-            query_probabilities=query.query_variant_probabilities,
+            query_probabilities=query.query_id_probabilities,
         )
 
 
-__all__ = ["PagesRelationCommandIntentTargetLabelTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["PagesRelationCommandIntentTargetLabelTask", "SUPPORTED_QUERY_IDS"]

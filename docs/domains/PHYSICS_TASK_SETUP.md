@@ -89,8 +89,8 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - require every active scene to contain a real parallel section rather than a pure series chain,
    - keep calibrated public total-resistance answers in `1..20` ohms,
    - for calibrated `total_resistance`, use one visible parallel block with optional series resistors,
-   - when `scene_variant` is not fixed for `total_resistance`, resolve the target resistance from the query-variant feasible union support first and then choose a compatible scene family for that target so the per-variant answer distribution remains healthy,
-   - filter configured answer supports down to the constructively feasible subset for the chosen scene/query-variant family before balanced sampling,
+   - when `scene_variant` is not fixed for `total_resistance`, resolve the target resistance from the query-id feasible union support first and then choose a compatible scene family for that target so the per-variant answer distribution remains healthy,
+   - filter configured answer supports down to the constructively feasible subset for the chosen scene/query-id family before balanced sampling,
    - keep calibrated public `missing_resistor_value` answers in `{1, 3, 4, 5, 6, 8}`,
    - for `missing_resistor_value`, use two side-by-side circuits with an equality cue, show the common total resistance plus the known left-side resistance excluding `?`, and keep the missing resistor visibly red in the left circuit.
 ### `electrostatics`

@@ -30,7 +30,7 @@ def _parse_cli() -> argparse.Namespace:
         "--dataset-root",
         action="append",
         default=[],
-        help="Optional TRACE dataset root used to resolve trace_ref -> query_variant. Repeat in parquet order.",
+        help="Optional TRACE dataset root used to resolve trace_ref -> query_id. Repeat in parquet order.",
     )
     parser.add_argument(
         "--out",
@@ -136,8 +136,8 @@ def _resolve_variant_fields(
     *,
     rows: Sequence[Dict[str, Any]],
 ) -> tuple[Dict[str, Dict[str, List[Dict[str, Any]]]], Dict[str, List[str]]]:
-    rows_by_query_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
-    expected_variants_by_task: Dict[str, set[str]] = {}
+    rows_by_query_id: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    expected_query_ids_by_task: Dict[str, set[str]] = {}
     trace_cache: Dict[tuple[str, str], List[Dict[str, Any]]] = {}
 
     for row in rows:
@@ -156,20 +156,20 @@ def _resolve_variant_fields(
         if not isinstance(execution_trace, Mapping):
             execution_trace = {}
         query_id = str(execution_trace.get("query_id", "") or "").strip()
-        query_variant = str(execution_trace.get("query_variant", "") or "").strip()
-        query_label = query_id or query_variant
-        probabilities = execution_trace.get("query_variant_probabilities", {})
+        query_id = str(execution_trace.get("query_id", "") or "").strip()
+        query_label = query_id or query_id
+        probabilities = execution_trace.get("query_id_probabilities", {})
         if isinstance(probabilities, Mapping):
-            expected_variants_by_task.setdefault(task_id, set()).update(
+            expected_query_ids_by_task.setdefault(task_id, set()).update(
                 str(key) for key in probabilities.keys() if str(key).strip()
             )
-        rows_by_query_variant.setdefault(task_id, {}).setdefault(query_label, []).append(row)
+        rows_by_query_id.setdefault(task_id, {}).setdefault(query_label, []).append(row)
 
     expected_lists = {
         task_id: sorted(variants)
-        for task_id, variants in expected_variants_by_task.items()
+        for task_id, variants in expected_query_ids_by_task.items()
     }
-    return rows_by_query_variant, expected_lists
+    return rows_by_query_id, expected_lists
 
 
 def _format_metrics(report: Mapping[str, Any]) -> str:
@@ -184,8 +184,8 @@ def _task_report(
     *,
     task_id: str,
     rows: Sequence[Dict[str, Any]],
-    rows_by_variant: Mapping[str, Sequence[Dict[str, Any]]],
-    expected_variants: Sequence[str],
+    rows_by_query_id: Mapping[str, Sequence[Dict[str, Any]]],
+    expected_query_ids: Sequence[str],
     min_unique_answers: int,
     max_answer_frequency: float,
 ) -> Dict[str, Any]:
@@ -195,27 +195,27 @@ def _task_report(
         max_answer_frequency=max_answer_frequency,
     )
 
-    per_query_variant: Dict[str, Dict[str, Any]] = {}
+    per_query_id: Dict[str, Dict[str, Any]] = {}
     missing_variants: List[str] = []
-    expected = list(expected_variants) if expected_variants else sorted(rows_by_variant.keys())
-    if not expected and rows_by_variant:
-        expected = sorted(rows_by_variant.keys())
+    expected = list(expected_query_ids) if expected_query_ids else sorted(rows_by_query_id.keys())
+    if not expected and rows_by_query_id:
+        expected = sorted(rows_by_query_id.keys())
 
-    for query_variant in expected:
-        variant_rows = list(rows_by_variant.get(str(query_variant), []))
+    for query_id in expected:
+        variant_rows = list(rows_by_query_id.get(str(query_id), []))
         if variant_rows:
-            per_query_variant[str(query_variant)] = evaluate_answer_distribution(
+            per_query_id[str(query_id)] = evaluate_answer_distribution(
                 _answer_rows(variant_rows),
                 min_unique_answers=min_unique_answers,
                 max_answer_frequency=max_answer_frequency,
             )
         else:
-            per_query_variant[str(query_variant)] = _empty_distribution_report()
-            missing_variants.append(str(query_variant))
+            per_query_id[str(query_id)] = _empty_distribution_report()
+            missing_variants.append(str(query_id))
 
     failing_variants = [
-        str(query_variant)
-        for query_variant, report in per_query_variant.items()
+        str(query_id)
+        for query_id, report in per_query_id.items()
         if not bool(report.get("pass"))
     ]
 
@@ -224,12 +224,12 @@ def _task_report(
         "task_id": str(task_id),
         "sample_count": int(len(rows)),
         "overall": overall,
-        "expected_variants": list(expected),
+        "expected_query_ids": list(expected),
         "observed_variant_counts": {
-            str(query_variant): int(len(rows_by_variant.get(str(query_variant), [])))
-            for query_variant in sorted(rows_by_variant.keys())
+            str(query_id): int(len(rows_by_query_id.get(str(query_id), [])))
+            for query_id in sorted(rows_by_query_id.keys())
         },
-        "per_query_variant": per_query_variant,
+        "per_query_id": per_query_id,
         "missing_variants": missing_variants,
         "failed_variants": failing_variants,
         "pass": task_pass,
@@ -259,10 +259,10 @@ def main() -> int:
         task_id = str(row.get("task", "")).strip()
         rows_by_task.setdefault(task_id, []).append(row)
 
-    rows_by_query_variant: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
-    expected_variants_by_task: Dict[str, List[str]] = {}
+    rows_by_query_id: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    expected_query_ids_by_task: Dict[str, List[str]] = {}
     if dataset_roots:
-        rows_by_query_variant, expected_variants_by_task = _resolve_variant_fields(rows=rows)
+        rows_by_query_id, expected_query_ids_by_task = _resolve_variant_fields(rows=rows)
 
     report: Dict[str, Any] = {
         "config": {
@@ -277,12 +277,12 @@ def main() -> int:
     failed_tasks: List[str] = []
     for task_id in sorted(rows_by_task.keys()):
         task_rows = list(rows_by_task.get(task_id, []))
-        variant_rows = rows_by_query_variant.get(task_id, {})
+        variant_rows = rows_by_query_id.get(task_id, {})
         task_report = _task_report(
             task_id=task_id,
             rows=task_rows,
-            rows_by_variant=variant_rows,
-            expected_variants=expected_variants_by_task.get(task_id, []),
+            rows_by_query_id=variant_rows,
+            expected_query_ids=expected_query_ids_by_task.get(task_id, []),
             min_unique_answers=int(args.min_unique_answers),
             max_answer_frequency=float(args.max_answer_frequency),
         )
@@ -290,9 +290,9 @@ def main() -> int:
 
         status = "PASS" if bool(task_report["pass"]) else "FAIL"
         print(f"[{status}] {task_id}: overall({_format_metrics(task_report['overall'])})")
-        if task_report["per_query_variant"]:
-            for query_variant, variant_report in sorted(task_report["per_query_variant"].items()):
-                label = str(query_variant).strip() or "<default>"
+        if task_report["per_query_id"]:
+            for query_id, variant_report in sorted(task_report["per_query_id"].items()):
+                label = str(query_id).strip() or "<default>"
                 variant_status = "PASS" if bool(variant_report.get("pass")) else "FAIL"
                 print(f"    - [{variant_status}] {label}: {_format_metrics(variant_report)}")
         if task_report["missing_variants"]:

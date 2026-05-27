@@ -34,7 +34,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 TASK_ID = "charts_three_d_panel_query_base"
 SCENE_ID = "surface_3d"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "reference_nearest_label",
     "surface_extremum_label",
     "series_trend_label",
@@ -115,7 +115,7 @@ class _Panel3D:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: int | str
     answer_type: str
@@ -287,17 +287,17 @@ def _balanced_choice(values: Sequence[Any], *, params: Mapping[str, Any], instan
     return support[_choice_index(params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -929,7 +929,7 @@ def _dataset_reference_nearest(params: Mapping[str, Any], *, instance_seed: int)
         x_labels=(),
         y_labels=(),
         query=_Query(
-            query_variant="reference_nearest_label",
+            query_id="reference_nearest_label",
             scene_variant="three_d_scatter",
             answer=str(answer_label),
             answer_type="string",
@@ -991,7 +991,7 @@ def _dataset_surface_extremum(params: Mapping[str, Any], *, instance_seed: int) 
         x_labels=tuple(x_labels),
         y_labels=tuple(y_labels),
         query=_Query(
-            query_variant="surface_extremum_label",
+            query_id="surface_extremum_label",
             scene_variant="three_d_surface",
             answer=str(answer_x),
             answer_type="string",
@@ -1058,7 +1058,7 @@ def _dataset_series_trend(params: Mapping[str, Any], *, instance_seed: int) -> _
         x_labels=tuple(str(value) for value in _TIME_POOL[: int(time_count)]),
         y_labels=tuple(labels),
         query=_Query(
-            query_variant="series_trend_label",
+            query_id="series_trend_label",
             scene_variant="three_d_scatter",
             answer=str(answer_label),
             answer_type="string",
@@ -1110,7 +1110,7 @@ def _dataset_panel_variation(params: Mapping[str, Any], *, instance_seed: int) -
         x_labels=(),
         y_labels=(),
         query=_Query(
-            query_variant="panel_variation_label",
+            query_id="panel_variation_label",
             scene_variant="three_d_small_multiples",
             answer=str(answer_label),
             answer_type="string",
@@ -1124,16 +1124,16 @@ def _dataset_panel_variation(params: Mapping[str, Any], *, instance_seed: int) -
     )
 
 
-def _build_dataset(query_variant: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
-    if str(query_variant) == "reference_nearest_label":
+def _build_dataset(query_id: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
+    if str(query_id) == "reference_nearest_label":
         return _dataset_reference_nearest(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "surface_extremum_label":
+    if str(query_id) == "surface_extremum_label":
         return _dataset_surface_extremum(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "series_trend_label":
+    if str(query_id) == "series_trend_label":
         return _dataset_series_trend(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "panel_variation_label":
+    if str(query_id) == "panel_variation_label":
         return _dataset_panel_variation(params, instance_seed=int(instance_seed))
-    raise ValueError(f"unsupported 3D chart query variant: {query_variant}")
+    raise ValueError(f"unsupported 3D chart query id: {query_id}")
 
 
 def _render_dataset(background: Image.Image, *, dataset: _Dataset, params: _RenderParams) -> _Rendered:
@@ -1142,13 +1142,13 @@ def _render_dataset(background: Image.Image, *, dataset: _Dataset, params: _Rend
         return _render_surface(image, dataset=dataset, params=params)
     if str(dataset.scene_variant) == "three_d_small_multiples":
         return _render_small_multiples(image, dataset=dataset, params=params)
-    title = "3D Series Trend Chart" if str(dataset.query.query_variant) == "series_trend_label" else "3D Scatter Chart"
+    title = "3D Series Trend Chart" if str(dataset.query.query_id) == "series_trend_label" else "3D Scatter Chart"
     return _render_scatter_or_lines(
         image,
         dataset=dataset,
         params=params,
         title=title,
-        connect_by_label=str(dataset.query.query_variant) == "series_trend_label",
+        connect_by_label=str(dataset.query.query_id) == "series_trend_label",
     )
 
 
@@ -1204,8 +1204,8 @@ class ChartsThreeDPanelQueryTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        dataset = _build_dataset(str(query_variant), params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        dataset = _build_dataset(str(query_id), params, instance_seed=int(instance_seed))
         render_params = _resolve_render_params(params)
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
@@ -1247,7 +1247,7 @@ class ChartsThreeDPanelQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(dataset.query.query_variant),
+            query_key=str(dataset.query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
@@ -1260,9 +1260,9 @@ class ChartsThreeDPanelQueryTask:
         trace_params = dict(dataset.query.trace or {})
         trace_params.update(
             {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "scene_variant": str(dataset.scene_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "answer": dataset.query.answer,
                 "answer_type": str(dataset.query.answer_type),
                 "x_axis_label": str(dataset.x_axis_label),
@@ -1281,7 +1281,7 @@ class ChartsThreeDPanelQueryTask:
                 "scene_kind": "chart_three_d_panel",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(dataset.query.query_variant),
+                    "query_id": str(dataset.query.query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": dataset.query.answer,
                     "evidence_point_ids": [str(value) for value in dataset.query.evidence_point_ids],
@@ -1290,7 +1290,7 @@ class ChartsThreeDPanelQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1361,7 +1361,7 @@ class ChartsThreeDPanelQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": clamp_unit_interval(float(visual_count) / 40.0),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_id)]),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(dataset.scene_variant)]),
             },
         )
@@ -1374,7 +1374,7 @@ class ChartsThreeDPanelQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(dataset.query.query_variant),
+            query_id=str(dataset.query.query_id),
             scene_id=SCENE_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
@@ -1385,7 +1385,7 @@ class ChartsThreeDReferenceNearestLabelTask(FixedChartQueryVariantTaskMixin, Cha
     """Return the 3D point label nearest to a target axis value."""
 
     task_id = "task_charts__surface_3d__reference_nearest_label"
-    fixed_query_variant = "reference_nearest_label"
+    fixed_query_id = "reference_nearest_label"
 
 
 @register_task
@@ -1393,7 +1393,7 @@ class ChartsThreeDSurfaceExtremumLabelTask(FixedChartQueryVariantTaskMixin, Char
     """Return the surface-grid category with an extremal value under a slice."""
 
     task_id = "task_charts__surface_3d__surface_extremum_label"
-    fixed_query_variant = "surface_extremum_label"
+    fixed_query_id = "surface_extremum_label"
 
 
 @register_task
@@ -1401,7 +1401,7 @@ class ChartsThreeDSeriesTrendLabelTask(FixedChartQueryVariantTaskMixin, ChartsTh
     """Return the 3D series label with the requested trend extremum."""
 
     task_id = "task_charts__surface_3d__series_trend_label"
-    fixed_query_variant = "series_trend_label"
+    fixed_query_id = "series_trend_label"
 
 
 @register_task
@@ -1409,12 +1409,12 @@ class ChartsThreeDPanelVariationLabelTask(FixedChartQueryVariantTaskMixin, Chart
     """Return the small-multiple 3D panel with the largest vertical range."""
 
     task_id = "task_charts__surface_3d__panel_variation_label"
-    fixed_query_variant = "panel_variation_label"
+    fixed_query_id = "panel_variation_label"
 
 
 __all__ = [
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "ChartsThreeDPanelQueryTask",
     "ChartsThreeDPanelVariationLabelTask",
     "ChartsThreeDReferenceNearestLabelTask",

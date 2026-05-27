@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `trapezoid_extension`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `extension_from_parallelogram_area`, `extension_from_parallelogram_perimeter`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`
@@ -15,7 +15,7 @@
 
 ## Behavior
 Infer the missing dashed extension length `BE` after completing a solid
-trapezoid into a larger parallelogram. Query variants either derive the
+trapezoid into a larger parallelogram. Query ids either derive the
 completed parallelogram base from its area and height, or from its perimeter
 and slanted side length. Answers are numeric integers.
 

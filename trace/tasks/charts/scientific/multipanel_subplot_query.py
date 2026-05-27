@@ -43,7 +43,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_curve_panels_subplot_query_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "curve_at_x_extremum_label",
     "threshold_series_count",
     "cross_panel_delta_extremum_label",
@@ -120,7 +120,7 @@ class _Intersection:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: str | int
     answer_type: str
@@ -263,29 +263,29 @@ def _balanced_choice(values: Sequence[Any], params: Mapping[str, Any], *, instan
     return support[int(index) % len(support)]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -293,15 +293,15 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -615,7 +615,7 @@ def _build_curve_at_x_dataset(params: Mapping[str, Any], *, instance_seed: int) 
 
     evidence_ids = tuple(_point_id(str(query_panel), str(method), int(x_value)) for method in method_labels)
     query = _Query(
-        query_variant="curve_at_x_extremum_label",
+        query_id="curve_at_x_extremum_label",
         scene_variant="multipanel_line_grid",
         answer=str(answer_method),
         answer_type="string",
@@ -703,7 +703,7 @@ def _build_threshold_count_dataset(params: Mapping[str, Any], *, instance_seed: 
         if str(method) in above_methods
     )
     query = _Query(
-        query_variant="threshold_series_count",
+        query_id="threshold_series_count",
         scene_variant="multipanel_line_grid",
         answer=int(target_count),
         answer_type="integer",
@@ -843,7 +843,7 @@ def _build_cross_panel_delta_dataset(params: Mapping[str, Any], *, instance_seed
         evidence_ids.append(_point_id(str(panel), str(method_label), int(start_x)))
         evidence_ids.append(_point_id(str(panel), str(method_label), int(end_x)))
     query = _Query(
-        query_variant="cross_panel_delta_extremum_label",
+        query_id="cross_panel_delta_extremum_label",
         scene_variant="multipanel_line_grid",
         answer=str(answer_panel),
         answer_type="string",
@@ -992,7 +992,7 @@ def _build_intersection_count_dataset(params: Mapping[str, Any], *, instance_see
         raise RuntimeError("intersection construction drifted from target count")
 
     query = _Query(
-        query_variant="curve_intersection_count",
+        query_id="curve_intersection_count",
         scene_variant="multipanel_line_grid",
         answer=int(target_count),
         answer_type="integer",
@@ -1095,7 +1095,7 @@ def _build_earliest_maximum_dataset(params: Mapping[str, Any], *, instance_seed:
         raise RuntimeError("earliest maximum construction lost unique target")
 
     query = _Query(
-        query_variant="earliest_maximum_panel_label",
+        query_id="earliest_maximum_panel_label",
         scene_variant="multipanel_line_grid",
         answer=str(answer_panel),
         answer_type="string",
@@ -1128,18 +1128,18 @@ def _build_earliest_maximum_dataset(params: Mapping[str, Any], *, instance_seed:
     )
 
 
-def _build_dataset(query_variant: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
-    if str(query_variant) == "curve_at_x_extremum_label":
+def _build_dataset(query_id: str, params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
+    if str(query_id) == "curve_at_x_extremum_label":
         return _build_curve_at_x_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "threshold_series_count":
+    if str(query_id) == "threshold_series_count":
         return _build_threshold_count_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "cross_panel_delta_extremum_label":
+    if str(query_id) == "cross_panel_delta_extremum_label":
         return _build_cross_panel_delta_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "curve_intersection_count":
+    if str(query_id) == "curve_intersection_count":
         return _build_intersection_count_dataset(params, instance_seed=int(instance_seed))
-    if str(query_variant) == "earliest_maximum_panel_label":
+    if str(query_id) == "earliest_maximum_panel_label":
         return _build_earliest_maximum_dataset(params, instance_seed=int(instance_seed))
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
@@ -1311,7 +1311,7 @@ def _draw_panel(
     draw.line([px1, py1, px1, py2], fill=axis_rgb, width=_resolve_int(params, "axis_line_width_px", 2))
 
     if (
-        str(dataset.query.query_variant) == "threshold_series_count"
+        str(dataset.query.query_id) == "threshold_series_count"
         and str(dataset.query.panel_label) == str(panel.panel_label)
     ):
         _, threshold_y = _scale_point(
@@ -1559,14 +1559,14 @@ class ChartsScientificMultipanelSubplotQueryTask:
             merged_params = dict(public_overrides)
             merged_params.update(dict(params))
             params = merged_params
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_sampling_params(params, query_variant_probabilities=query_variant_probabilities)
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        support_params = _support_sampling_params(params, query_id_probabilities=query_id_probabilities)
         dataset: _Dataset | None = None
         last_error: Exception | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             try:
                 attempt_params = {**dict(support_params), "_attempt_index": int(attempt_index)}
-                dataset = _build_dataset(str(query_variant), attempt_params, instance_seed=int(instance_seed) + int(attempt_index))
+                dataset = _build_dataset(str(query_id), attempt_params, instance_seed=int(instance_seed) + int(attempt_index))
                 break
             except Exception as exc:
                 last_error = exc
@@ -1614,7 +1614,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(dataset.query.query_variant),
+            query_key=str(dataset.query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_multipanel_line_grid"]),
@@ -1628,10 +1628,10 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "threshold_value": str(dataset.query.threshold_value),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(dataset.query.query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(dataset.query.query_id)}"]),
                 "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
-                "json_example": str(prompt_defaults[f"json_example_{str(dataset.query.query_variant)}"]),
-                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(dataset.query.query_variant)}"]),
+                "json_example": str(prompt_defaults[f"json_example_{str(dataset.query.query_id)}"]),
+                "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(dataset.query.query_id)}"]),
             },
             instance_seed=int(instance_seed),
         )
@@ -1646,7 +1646,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "scene_kind": f"chart_scientific_{str(dataset.scene_variant)}",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(dataset.query.query_variant),
+                    "query_id": str(dataset.query.query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": dataset.query.answer,
                     "evidence_panel_labels": list(dataset.query.evidence_panel_labels),
@@ -1655,15 +1655,15 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(dataset.query.query_variant),
+                    "query_id": str(dataset.query.query_id),
                     "scene_variant": str(dataset.scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "panel_count": int(len(dataset.panels)),
                     "method_count": int(len(method_labels)),
                     "x_tick_count": int(len(dataset.x_values)),
@@ -1688,7 +1688,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "legend_bboxes_px": dict(rendered.legend_bboxes),
             },
             "execution_trace": {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "answer": dataset.query.answer,
                 "answer_type": str(dataset.query.answer_type),
@@ -1702,7 +1702,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
                 "evidence_panel_labels": list(dataset.query.evidence_panel_labels),
                 "evidence_point_ids": list(dataset.query.evidence_point_ids),
                 "evidence_intersection_ids": list(dataset.query.evidence_intersection_ids),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "question_format": "curve_panels_subplot_query",
                 **dict(dataset.query.trace),
             },
@@ -1727,7 +1727,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(visual_count), [6 * 5 * 7, max(6 * 5 * 7, int(visual_max))]),
-                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_variant)])),
+                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_id)])),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(dataset.scene_variant)]),
             },
         )
@@ -1741,7 +1741,7 @@ class ChartsScientificMultipanelSubplotQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(dataset.query.query_variant),
+            query_id=str(dataset.query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1754,7 +1754,7 @@ class ChartsScientificCurveAtXExtremumLabelTask(
     """Return the panel or curve label with an extremal value at a shared x-position."""
 
     task_id = "task_charts__curve_panels__curve_at_x_extremum_label"
-    fixed_query_variant = "curve_at_x_extremum_label"
+    fixed_query_id = "curve_at_x_extremum_label"
 
 
 @register_task
@@ -1765,7 +1765,7 @@ class ChartsScientificThresholdSeriesCountTask(
     """Count series satisfying a threshold condition in a scientific panel."""
 
     task_id = "task_charts__curve_panels__threshold_series_count"
-    fixed_query_variant = "threshold_series_count"
+    fixed_query_id = "threshold_series_count"
 
 
 @register_task
@@ -1776,7 +1776,7 @@ class ChartsScientificCrossPanelDeltaExtremumLabelTask(
     """Return the label with an extremal cross-panel delta."""
 
     task_id = "task_charts__curve_panels__cross_panel_delta_extremum_label"
-    fixed_query_variant = "cross_panel_delta_extremum_label"
+    fixed_query_id = "cross_panel_delta_extremum_label"
 
 
 @register_task
@@ -1787,7 +1787,7 @@ class ChartsScientificCurveIntersectionCountTask(
     """Count curve intersections in a scientific subplot."""
 
     task_id = "task_charts__curve_panels__curve_intersection_count"
-    fixed_query_variant = "curve_intersection_count"
+    fixed_query_id = "curve_intersection_count"
 
 
 @register_task
@@ -1798,7 +1798,7 @@ class ChartsScientificEarliestMaximumPanelLabelTask(
     """Return the panel label whose selected curve reaches its maximum earliest."""
 
     task_id = "task_charts__curve_panels__earliest_maximum_panel_label"
-    fixed_query_variant = "earliest_maximum_panel_label"
+    fixed_query_id = "earliest_maximum_panel_label"
 
 
 __all__ = [
@@ -1809,5 +1809,5 @@ __all__ = [
     "ChartsScientificMultipanelSubplotQueryTask",
     "ChartsScientificThresholdSeriesCountTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

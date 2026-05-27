@@ -9,7 +9,7 @@
 
 ## 2) Scene + Task Contract
 1. Entities/relations: one numbered `3 x 3` grid, with exactly one icon per visible cell.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `grid_size_violation`.
 4. Answer type: `answer_gt.type = integer` (the 1-based violating grid-cell index).
 5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the violating numbered cell).
@@ -28,7 +28,7 @@
 1. The public task directly samples and renders the grid-size violation scene.
 2. Unique-answer policy: the violating index is sampled first and accepted only when the observed grid has one plausible violating cell.
 3. No-auto-relaxation guarantee: unsupported rule configs, missing assets, ambiguous explanations, and placement failures cause rejection instead of weakening constraints.
-4. Trace metadata records `scene_variant=numbered_grid`, public `query_variant=default`, and `query_id=grid_size_violation`.
+4. Trace metadata records `scene_variant=numbered_grid` and `query_id=grid_size_violation`.
 
 ## 5) Complexity + Tests
 1. Complexity definition/components: grid-size complexity based on grid rule, size-level ambiguity, answer position, and visual clutter.

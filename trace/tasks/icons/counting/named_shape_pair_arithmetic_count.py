@@ -930,7 +930,6 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1013,7 +1012,6 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_pair_arithmetic_field",
                 "arrangement_mode": str(sample.arrangement_mode),
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
                 "question_format": "count_named_shape_pair_arithmetic_icons",
                 "operation": str(sample.operation),
@@ -1084,7 +1082,6 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             trace_payload=trace_payload,
             complexity=_complexity(sample, render_params=render_params),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},

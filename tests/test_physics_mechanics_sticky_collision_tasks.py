@@ -39,15 +39,15 @@ def test_physics_mechanics_sticky_collision_direction_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == "direction_choice"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["params"]["internal_query_variant"] == "direction_choice"
-    assert execution["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["internal_query_id"] == "direction_choice"
+    assert execution["query_id"] == "default"
 
-    assert execution["internal_query_variant"] == "direction_choice"
+    assert execution["internal_query_id"] == "direction_choice"
 
     assert scenario["correct_option_letter"] == "D"
 

@@ -47,7 +47,7 @@ TASK_ID = "pages_calendar_month_view_base"
 WEEKDAY_OCCURRENCE_TASK_ID = "task_pages__calendar__weekday_occurrence_date"
 MARKED_DAY_CLASS_TASK_ID = "task_pages__calendar__marked_day_class_count"
 PUBLIC_SCENE_ID = "calendar"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "date_of_weekday_occurrence",
   "count_marked_day_class",
 )
@@ -118,7 +118,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
   """Resolved semantic and visual support for one month-view calendar query."""
 
-  query_variant: str
+  query_id: str
   marked_day_class: str | None
   scene_variant: str
   style_variant: str
@@ -140,7 +140,7 @@ class _ResolvedQuery:
   marked_weekday_count_support: Tuple[int, ...]
   marked_weekday_distractor_support: Tuple[int, ...]
   marked_weekend_distractor_support: Tuple[int, ...]
-  query_variant_probabilities: Dict[str, float]
+  query_id_probabilities: Dict[str, float]
   marked_day_class_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
   style_variant_probabilities: Dict[str, float]
@@ -199,27 +199,27 @@ def _resolve_int_support(params: Mapping[str, Any], key: str, fallback: Sequence
   return tuple(int(value) for value in resolved)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
   *,
   instance_seed: int,
   params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-  """Resolve the public calendar query variant, accepting old mirror names as aliases."""
+  """Resolve the public calendar query id, accepting old mirror names as aliases."""
 
-  explicit_variant = params.get("query_variant")
+  explicit_variant = params.get("query_id")
   if explicit_variant is not None and str(explicit_variant) in _SOURCE_MARKED_DAY_CLASS_BY_VARIANT:
     return "count_marked_day_class", {
       key: (1.0 if key == "count_marked_day_class" else 0.0)
-      for key in SUPPORTED_QUERY_VARIANTS
+      for key in SUPPORTED_QUERY_IDS
     }
   return _resolve_named_variant(
     instance_seed=int(instance_seed),
     params=params,
-    explicit_key="query_variant",
-    weights_key="query_variant_weights",
-    balance_flag_key="balanced_query_variant_sampling",
-    supported=SUPPORTED_QUERY_VARIANTS,
-    namespace="query_variant",
+    explicit_key="query_id",
+    weights_key="query_id_weights",
+    balance_flag_key="balanced_query_id_sampling",
+    supported=SUPPORTED_QUERY_IDS,
+    namespace="query_id",
   )
 
 
@@ -241,7 +241,7 @@ def _resolve_marked_day_class(
 ) -> Tuple[str, Dict[str, float]]:
   """Resolve the weekday/weekend class for marked-date count queries."""
 
-  source_variant = params.get("query_variant")
+  source_variant = params.get("query_id")
   if source_variant is not None and str(source_variant) in _SOURCE_MARKED_DAY_CLASS_BY_VARIANT:
     selected = str(_SOURCE_MARKED_DAY_CLASS_BY_VARIANT[str(source_variant)])
     return selected, {
@@ -261,7 +261,7 @@ def _resolve_marked_day_class(
     instance_seed=int(instance_seed),
     params=_axis_params_for_decoupled_sampling(
       params=params,
-      divisor=len(SUPPORTED_QUERY_VARIANTS),
+      divisor=len(SUPPORTED_QUERY_IDS),
       explicit_key="marked_day_class",
     ),
     explicit_key="marked_day_class",
@@ -421,7 +421,7 @@ def _resolve_marked_count_query(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one concrete month-calendar query from balanced supports."""
 
-  query_variant, query_variant_probabilities = _resolve_query_variant(
+  query_id, query_id_probabilities = _resolve_query_id(
     instance_seed=int(instance_seed),
     params=params,
   )
@@ -495,7 +495,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
   marked_day_class: str | None = None
   marked_day_class_probabilities: Dict[str, float] = {}
 
-  if str(query_variant) == "date_of_weekday_occurrence":
+  if str(query_id) == "date_of_weekday_occurrence":
     feasible_pairs: List[Tuple[int, int, int]] = []
     for weekday_index in range(7):
       dates_for_weekday = [int(day) for week in month_weeks for day_index, day in enumerate(week) if int(day) > 0 and int(day_index) == int(weekday_index)]
@@ -530,7 +530,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
   return _ResolvedQuery(
-    query_variant=str(query_variant),
+    query_id=str(query_id),
     marked_day_class=(str(marked_day_class) if marked_day_class is not None else None),
     scene_variant=str(scene_variant),
     style_variant=str(style_variant),
@@ -552,7 +552,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     marked_weekday_count_support=tuple(int(value) for value in marked_weekday_count_support),
     marked_weekday_distractor_support=tuple(int(value) for value in marked_weekday_distractor_support),
     marked_weekend_distractor_support=tuple(int(value) for value in marked_weekend_distractor_support),
-    query_variant_probabilities=dict(query_variant_probabilities),
+    query_id_probabilities=dict(query_id_probabilities),
     marked_day_class_probabilities=dict(marked_day_class_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
     style_variant_probabilities=dict(style_variant_probabilities),
@@ -561,7 +561,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
 
 class _PagesCalendarMonthViewBase:
-  """Reason over one month-view calendar with several numeric query variants."""
+  """Reason over one month-view calendar with several numeric query ids."""
 
   task_id = TASK_ID
   domain = "pages"
@@ -610,11 +610,11 @@ class _PagesCalendarMonthViewBase:
       for day in query.evidence_dates
     ]
 
-    answer_hint_key = f"answer_hint_{query.query_variant}"
-    evidence_hint_key = f"evidence_hint_{query.query_variant}"
-    object_description_key = f"object_description_{query.query_variant}"
-    json_example_key = f"json_example_{query.query_variant}"
-    json_example_answer_only_key = f"json_example_answer_only_{query.query_variant}"
+    answer_hint_key = f"answer_hint_{query.query_id}"
+    evidence_hint_key = f"evidence_hint_{query.query_id}"
+    object_description_key = f"object_description_{query.query_id}"
+    json_example_key = f"json_example_{query.query_id}"
+    json_example_answer_only_key = f"json_example_answer_only_{query.query_id}"
     prompt_defaults = required_group_defaults(
       _PROMPT_DEFAULTS,
       (
@@ -645,10 +645,10 @@ class _PagesCalendarMonthViewBase:
       "json_example": str(prompt_defaults[json_example_key]),
       "json_example_answer_only": str(prompt_defaults[json_example_answer_only_key]),
     }
-    if str(query.query_variant) == "date_of_weekday_occurrence":
+    if str(query.query_id) == "date_of_weekday_occurrence":
       slots["ordinal"] = str(ordinal_label(int(query.query_occurrence)))
       slots["weekday_name"] = str(weekday_name(int(query.query_weekday_index)))
-    if str(query.query_variant) == "count_marked_day_class":
+    if str(query.query_id) == "count_marked_day_class":
       if query.marked_day_class is None:
         raise ValueError("count_marked_day_class requires marked_day_class")
       slots["marked_day_class"] = str(query.marked_day_class)
@@ -660,7 +660,7 @@ class _PagesCalendarMonthViewBase:
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
-      query_key=str(query.query_variant),
+      query_key=str(query.query_id),
       answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
@@ -671,7 +671,7 @@ class _PagesCalendarMonthViewBase:
     evidence_gt = TypedValue(type="bbox_set", value=[list(box) for box in evidence_bboxes])
 
     query_params: Dict[str, Any] = {
-      "query_variant": str(query.query_variant),
+      "query_id": str(query.query_id),
       "marked_day_class": query.marked_day_class,
       "scene_variant": str(query.scene_variant),
       "style_variant": str(query.style_variant),
@@ -688,7 +688,7 @@ class _PagesCalendarMonthViewBase:
       "marked_weekday_count_support": [int(value) for value in query.marked_weekday_count_support],
       "marked_weekday_distractor_support": [int(value) for value in query.marked_weekday_distractor_support],
       "marked_weekend_distractor_support": [int(value) for value in query.marked_weekend_distractor_support],
-      "query_variant_probabilities": dict(query.query_variant_probabilities),
+      "query_id_probabilities": dict(query.query_id_probabilities),
       "marked_day_class_probabilities": dict(query.marked_day_class_probabilities),
       "scene_variant_probabilities": dict(query.scene_variant_probabilities),
       "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -705,7 +705,7 @@ class _PagesCalendarMonthViewBase:
         "scene_kind": "pages_month_calendar",
         "entities": [dict(entity) for entity in rendered_scene.entities],
         "relations": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "marked_day_class": query.marked_day_class,
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
@@ -717,7 +717,7 @@ class _PagesCalendarMonthViewBase:
         },
       },
       "query_spec": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "template_id": str(prompt_defaults["bundle_id"]),
         "prompt_variant": dict(prompt_artifacts.prompt_variant),
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -763,7 +763,7 @@ class _PagesCalendarMonthViewBase:
         "marked_dates": [int(day) for day in query.marked_dates],
       },
       "execution_trace": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "marked_day_class": query.marked_day_class,
         "scene_variant": str(query.scene_variant),
         "style_variant": str(query.style_variant),
@@ -780,7 +780,7 @@ class _PagesCalendarMonthViewBase:
         "weekend_weekday_indices": [int(value) for value in query.weekend_weekday_indices],
         "query_weekday_index": (int(query.query_weekday_index) if query.query_weekday_index is not None else None),
         "query_occurrence": (int(query.query_occurrence) if query.query_occurrence is not None else None),
-        "query_variant_probabilities": dict(query.query_variant_probabilities),
+        "query_id_probabilities": dict(query.query_id_probabilities),
         "marked_day_class_probabilities": dict(query.marked_day_class_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -801,7 +801,7 @@ class _PagesCalendarMonthViewBase:
       components={
         "calendar_lookup": min(
           1.0,
-          float(_CALENDAR_LOOKUP_BASE_BY_VARIANT[str(query.query_variant)])
+          float(_CALENDAR_LOOKUP_BASE_BY_VARIANT[str(query.query_id)])
           + (
             0.18
             * float(
@@ -852,7 +852,7 @@ class _PagesCalendarMonthViewBase:
       trace_payload=trace_payload,
       complexity=complexity,
       task_versions=default_task_versions(),
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
 
@@ -872,14 +872,14 @@ class PagesCalendarWeekdayOccurrenceDateTask(_PagesCalendarMonthViewBase):
   """Find the date of an nth weekday in one month-view calendar."""
 
   task_id = WEEKDAY_OCCURRENCE_TASK_ID
-  fixed_query_variant = "date_of_weekday_occurrence"
+  fixed_query_id = "date_of_weekday_occurrence"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     output = super().generate(
       int(instance_seed),
       params=force_time_artifact_query_params(
         params,
-        query_variant="date_of_weekday_occurrence",
+        query_id="date_of_weekday_occurrence",
       ),
       max_attempts=int(max_attempts),
     )
@@ -895,20 +895,20 @@ class PagesCalendarMarkedDayClassCountTask(_PagesCalendarMonthViewBase):
   """Count marked dates that fall in one requested weekday/weekend class."""
 
   task_id = MARKED_DAY_CLASS_TASK_ID
-  fixed_query_variant = "count_marked_day_class"
+  fixed_query_id = "count_marked_day_class"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     generation_params = dict(params)
     fixed_params: Dict[str, Any] = {}
-    explicit_variant = generation_params.get("query_variant")
+    explicit_variant = generation_params.get("query_id")
     if explicit_variant is not None and str(explicit_variant) in _SOURCE_MARKED_DAY_CLASS_BY_VARIANT:
       fixed_params["marked_day_class"] = str(_SOURCE_MARKED_DAY_CLASS_BY_VARIANT[str(explicit_variant)])
-      generation_params.pop("query_variant", None)
+      generation_params.pop("query_id", None)
     output = super().generate(
       int(instance_seed),
       params=force_time_artifact_query_params(
         generation_params,
-        query_variant="count_marked_day_class",
+        query_id="count_marked_day_class",
         fixed_params=fixed_params,
       ),
       max_attempts=int(max_attempts),

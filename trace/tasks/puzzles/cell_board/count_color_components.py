@@ -237,7 +237,7 @@ class TileColorComponentsTask:
                 "relations": {},
             },
             "query_spec": {
-                "query_variant": "color_components",
+                "query_id": "color_components",
                 "template_id": "color_components_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -276,7 +276,7 @@ class TileColorComponentsTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "query_variant": "color_components",
+                "query_id": "color_components",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette": list(palette_trace),
@@ -360,6 +360,6 @@ class TileColorComponentsTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="color_components",
+            query_id="color_components",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

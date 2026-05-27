@@ -14,9 +14,9 @@ The image shows two identical springs with visible, value-labeled extension mark
 Evidence is the pair of shown extension-marker bounding boxes. Scene variants affect card layout and texture only; they do not change the difference contract.
 
 ## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query variant key: `extension_difference`.
+Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query id key: `extension_difference`.
 
-Public outputs use `query_variant="default"` and `query_id="extension_difference"`. The trace records both measurements, the query-specific scale-factor support, answer support, and evidence entity ids.
+Outputs `query_id="extension_difference"`. The trace records both measurements, the query-specific scale-factor support, answer support, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized spring layout.

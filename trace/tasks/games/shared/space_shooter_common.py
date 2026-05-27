@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SPACE_SHOOTER_QUERY_IDS: Tuple[str, ...] = (
     "clear_shot_count",
     "projectile_intercept_count",
     "highest_threat_label",
@@ -62,7 +62,7 @@ class SpaceShooterSample:
     """Generated Space-shooter scene state."""
 
     lane_count: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: int | str
     player_lane: int
@@ -126,7 +126,7 @@ def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
     if not set(sample.safe_lane_indices) <= set(range(lane_count)):
         raise ValueError("space shooter safe lanes out of range")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "clear_shot_count":
         expected_answer: int | str = len(sample.clear_enemy_ids)
         expected_evidence = set(sample.clear_enemy_ids)
@@ -140,7 +140,7 @@ def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
         expected_answer = len(sample.safe_lane_indices)
         expected_evidence = {lane_entity_id(lane) for lane in sample.safe_lane_indices}
     else:
-        raise ValueError(f"unsupported space shooter query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported space shooter query_id: {sample.query_id}")
     if sample.answer != expected_answer:
         raise ValueError("space shooter answer does not match active query")
     if set(sample.evidence_entity_ids) != expected_evidence:
@@ -148,7 +148,7 @@ def validate_space_shooter_sample(sample: SpaceShooterSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS",
+    "SUPPORTED_SPACE_SHOOTER_QUERY_IDS",
     "SUPPORTED_SPACE_SHOOTER_SCENE_VARIANTS",
     "SUPPORTED_SPACE_SHOOTER_STYLE_VARIANTS",
     "SpaceBlocker",

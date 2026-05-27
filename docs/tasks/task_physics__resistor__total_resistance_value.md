@@ -16,9 +16,9 @@ Evidence is the set of resistor-box bounding boxes that belong to the network. S
 Calibrated public sampling uses integer equivalent-resistance answers from `1..20` ohms and one visible parallel block with optional series resistors.
 
 ## Prompt And Trace
-Prompt bundle: `physics_circuits_v0`; family key: `resistor_network_diagram`; task key: `equivalent_resistance_query`; query variant key: `total_resistance`.
+Prompt bundle: `physics_circuits_v0`; family key: `resistor_network_diagram`; task key: `equivalent_resistance_query`; query id key: `total_resistance`.
 
-Public outputs use `query_variant="default"` and `query_id="total_resistance"`. The trace keeps the internal query in `query_variant` and records the sampled scene, resistor layout, answer support, and evidence entity ids.
+Outputs `query_id="total_resistance"`. The trace keeps the internal query in `query_id` and records the sampled scene, resistor layout, answer support, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized circuit layout, and unsupported or infeasible explicit targets are rejected.

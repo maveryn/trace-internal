@@ -24,9 +24,9 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_query", "answer_type"),
     (
-        (GamesPacmanRoutePelletCountTask, {"query_variant": "path_pellet_count", "target_answer": 5, "row_count": 8, "col_count": 11}, "path_pellet_count", "integer"),
+        (GamesPacmanRoutePelletCountTask, {"query_id": "path_pellet_count", "target_answer": 5, "row_count": 8, "col_count": 11}, "path_pellet_count", "integer"),
         (GamesPacmanNextItemLabelTask, {"target_label": "E", "item_count": 6}, "next_item_label", "string"),
-        (GamesPacmanRoutePelletCountTask, {"query_variant": "pellet_count_before_ghost", "target_answer": 4, "row_count": 9, "col_count": 13}, "pellet_count_before_ghost", "integer"),
+        (GamesPacmanRoutePelletCountTask, {"query_id": "pellet_count_before_ghost", "target_answer": 4, "row_count": 9, "col_count": 13}, "pellet_count_before_ghost", "integer"),
     ),
 )
 def test_games_pacman_public_tasks_emit_expected_contract(
@@ -41,15 +41,15 @@ def test_games_pacman_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == answer_type
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "pacman"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -57,7 +57,7 @@ def test_games_pacman_public_tasks_emit_expected_contract(
 def test_games_pacman_path_pellet_count_evidence_is_on_route() -> None:
     out = GamesPacmanRoutePelletCountTask().generate(
         120010,
-        params={"query_variant": "path_pellet_count", "target_answer": 5, "row_count": 9, "col_count": 13},
+        params={"query_id": "path_pellet_count", "target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]
@@ -95,7 +95,7 @@ def test_games_pacman_next_item_label_is_first_route_item() -> None:
 def test_games_pacman_pellet_count_before_ghost_stops_at_first_route_ghost() -> None:
     out = GamesPacmanRoutePelletCountTask().generate(
         120030,
-        params={"query_variant": "pellet_count_before_ghost", "target_answer": 5, "row_count": 9, "col_count": 13},
+        params={"query_id": "pellet_count_before_ghost", "target_answer": 5, "row_count": 9, "col_count": 13},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

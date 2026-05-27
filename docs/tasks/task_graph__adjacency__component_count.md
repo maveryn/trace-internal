@@ -7,7 +7,7 @@
 4. Task id: `task_graph__adjacency__component_count`
 5. Objective: count connected components or strongly connected components from an adjacency representation.
 
-## Query Variants
+## Query IDs
 1. `undirected_component_count`: count connected components in an undirected graph.
 2. `directed_strong_component_count`: count strongly connected components in a directed graph.
 

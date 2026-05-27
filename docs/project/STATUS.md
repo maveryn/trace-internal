@@ -43,7 +43,7 @@ Current generated domain counts:
 1. Public taxonomy is `domain -> scene_id -> task_id`.
 2. `task_id` is the default sampling unit.
 3. `query_id` records task-internal semantic branches.
-4. Public `query_variant` is normally `default` for narrowed public tasks; use `query_id` for branch identity.
+4. Branch identity is recorded in `query_id`; `query_id` is internal replay metadata.
 5. Table-style data-display tasks are public `charts` tasks under scene `table`.
 6. Structured forms, diagrams, controls, schedules, timelines, and page-like layouts are represented under `pages`.
 7. Cell-board tasks are public `puzzles` tasks under scene `cell_board`.

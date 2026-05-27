@@ -249,7 +249,7 @@ def _strip_boundary_difficulty(
     scene_instances: Sequence[Mapping[str, Any]],
     anchor_a_center_xy: Sequence[float],
     anchor_b_center_xy: Sequence[float],
-    query_variant: str,
+    query_id: str,
     boundary_margin_px: int,
 ) -> float:
     """Measure how close icon centers sit to the inferred strip boundary."""
@@ -260,19 +260,19 @@ def _strip_boundary_difficulty(
     ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
     bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
     margin = float(max(0, int(boundary_margin_px)))
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         lower, upper = sorted((float(ax), float(bx)))
-    elif str(query_variant) == "inside_horizontal_strip":
+    elif str(query_id) == "inside_horizontal_strip":
         lower, upper = sorted((float(ay), float(by)))
     else:
-        raise ValueError(f"unsupported relation strip variant: {query_variant}")
+        raise ValueError(f"unsupported relation strip variant: {query_id}")
 
     distances: list[float] = []
     for entity in scene_instances:
         center_xy = entity.get("center_xy", ())
         if not isinstance(center_xy, Sequence) or len(center_xy) < 2:
             continue
-        coordinate = float(center_xy[0]) if str(query_variant) == "inside_vertical_strip" else float(center_xy[1])
+        coordinate = float(center_xy[0]) if str(query_id) == "inside_vertical_strip" else float(center_xy[1])
         distances.append(min(abs(float(coordinate) - float(lower)), abs(float(upper) - float(coordinate))))
 
     if not distances:
@@ -676,7 +676,7 @@ def build_icons_relation_between_two_anchors_count_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
     task_id: str,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int,
     object_count_min: int,
@@ -698,14 +698,14 @@ def build_icons_relation_between_two_anchors_count_complexity(
         object_count_max=int(object_count_max),
     )
     x0, y0, x1, y1 = [float(value) for value in scene_content_bbox]
-    if str(query_variant) == "inside_vertical_strip":
+    if str(query_id) == "inside_vertical_strip":
         strip_span = abs(float(anchor_a_center_xy[0]) - float(anchor_b_center_xy[0]))
         total_span = max(1.0, float(x1) - float(x0))
-    elif str(query_variant) == "inside_horizontal_strip":
+    elif str(query_id) == "inside_horizontal_strip":
         strip_span = abs(float(anchor_a_center_xy[1]) - float(anchor_b_center_xy[1]))
         total_span = max(1.0, float(y1) - float(y0))
     else:
-        raise ValueError(f"unsupported relation strip variant: {query_variant}")
+        raise ValueError(f"unsupported relation strip variant: {query_id}")
     span_ratio = float(strip_span) / float(total_span)
     span_difficulty = 1.0 - _normalize_linear(
         float(span_ratio),
@@ -716,7 +716,7 @@ def build_icons_relation_between_two_anchors_count_complexity(
         scene_instances=scene_instances,
         anchor_a_center_xy=anchor_a_center_xy,
         anchor_b_center_xy=anchor_b_center_xy,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         boundary_margin_px=int(strip_boundary_margin_px),
     )
     spatial_reasoning = _clip01((0.55 * span_difficulty) + (0.45 * visual_scan))
@@ -815,7 +815,7 @@ def build_icons_relation_mirror_symmetry_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
     task_id: str,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int,
     scene_cells: Sequence[Mapping[str, Any]],
@@ -845,7 +845,7 @@ def build_icons_relation_mirror_symmetry_complexity(
         min_value=float(min_icons_per_cell),
         max_value=float(max_icons_per_cell),
     )
-    variant_load = _MIRROR_VARIANT_DIFFICULTY.get(str(query_variant), 0.50)
+    variant_load = _MIRROR_VARIANT_DIFFICULTY.get(str(query_id), 0.50)
     distractor_count = max(1, int(object_count) - int(target_count))
     structured_distractor_share = sum(
         1

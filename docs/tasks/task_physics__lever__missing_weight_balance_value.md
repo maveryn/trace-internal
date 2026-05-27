@@ -14,9 +14,9 @@ The image shows one lever with a marked red `?` weight block. The task asks for 
 Evidence is the bounding box of the marked `?` weight block. Scene variants adjust the lever presentation but keep the same balance equation and evidence contract.
 
 ## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `lever_balance_diagram`; task key: `lever_balance_query`; query variant key: `missing_weight_to_balance`.
+Prompt bundle: `physics_mechanics_v0`; family key: `lever_balance_diagram`; task key: `lever_balance_query`; query id key: `missing_weight_to_balance`.
 
-Public outputs use `query_variant="default"` and `query_id="missing_weight_to_balance"`. The trace records known torques, placeholder side and distance, visible weight specs, and evidence entity ids.
+Outputs `query_id="missing_weight_to_balance"`. The trace records known torques, placeholder side and distance, visible weight specs, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized lever layout.

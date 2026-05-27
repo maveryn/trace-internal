@@ -110,7 +110,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     tools = tool_support(params, _GEN_DEFAULTS)
     equipment_values = equipment_support(params, _GEN_DEFAULTS)
 
-    explicit_query = params.get("query_id", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     if explicit_query is not None:
         query_id = str(explicit_query)
         if query_id not in set(query_values):
@@ -334,14 +334,12 @@ class IllustrationsCountingMaterialStackTypeCountTask:
                 "scene_id": SCENE_ID,
                 "entities": construction_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(sample.query_id),
                     "query_id": str(sample.query_id),
                     "target_material_type": str(sample.target_material_type),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -350,7 +348,7 @@ class IllustrationsCountingMaterialStackTypeCountTask:
                     "target_material_type": str(sample.target_material_type),
                     "target_count": int(sample.target_count),
                     "material_count": int(sample.material_count),
-                    "query_variant_probabilities": dict(sample.query_probabilities),
+                    "query_id_probabilities": dict(sample.query_probabilities),
                     "query_probabilities": dict(sample.query_probabilities),
                     "material_probabilities": dict(sample.material_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
@@ -375,10 +373,9 @@ class IllustrationsCountingMaterialStackTypeCountTask:
                 "counted_material_ids": list(counted_material_ids),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
-                "query_variant_probabilities": dict(sample.query_probabilities),
+                "query_id_probabilities": dict(sample.query_probabilities),
                 "target_count": int(sample.target_count),
                 "material_count": int(sample.material_count),
                 "target_material_type": str(sample.target_material_type),
@@ -399,7 +396,6 @@ class IllustrationsCountingMaterialStackTypeCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

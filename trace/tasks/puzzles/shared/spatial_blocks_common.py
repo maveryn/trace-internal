@@ -101,7 +101,7 @@ def resolve_block_scene_variant(
     )
 
 
-def resolve_cube_removal_query_variant(
+def resolve_cube_removal_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -116,10 +116,10 @@ def resolve_cube_removal_query_variant(
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_PUZZLE_BLOCK_REMOVAL_VARIANTS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -312,7 +312,7 @@ def _distribute_removals_across_columns(
 
 def build_cube_removal_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -321,7 +321,7 @@ def build_cube_removal_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one deterministic cube-removal comparison dataset."""
 
-    del query_variant
+    del query_id
     rng = spawn_rng(int(instance_seed), f"{task_id}.cube_removal_dataset")
     width_min = int(params.get("width_min", group_default(gen_defaults, "width_min", int(defaults.width_min))))
     width_max = int(params.get("width_max", group_default(gen_defaults, "width_max", int(defaults.width_max))))
@@ -482,6 +482,6 @@ __all__ = [
     "cube_records_from_height_rows",
     "resolve_block_scene_variant",
     "resolve_block_stack_render_params",
-    "resolve_cube_removal_query_variant",
+    "resolve_cube_removal_query_id",
     "total_cubes_from_height_rows",
 ]

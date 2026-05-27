@@ -46,16 +46,16 @@ def test_notation_tasks_are_registered() -> None:
 
 
 @pytest.mark.parametrize("task_cls, query_id", QUERY_CASES)
-def test_notation_query_variants_emit_public_contract(task_cls, query_id: str) -> None:
+def test_notation_query_ids_emit_public_contract(task_cls, query_id: str) -> None:
     out = task_cls().generate(
         2026052401,
-        params={"query_variant": query_id, "scene_variant": "engraved_sheet"},
+        params={"query_id": query_id, "scene_variant": "engraved_sheet"},
         max_attempts=60,
     )
     trace = out.trace_payload
 
     assert out.scene_id == SCENE_ID
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= 1
@@ -65,7 +65,7 @@ def test_notation_query_variants_emit_public_contract(task_cls, query_id: str) -
 
     assert trace["query_spec"]["params"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["query_spec"]["params"]["query_variant"] == query_id
+    assert trace["query_spec"]["params"]["query_id"] == query_id
     assert trace["render_spec"]["scene_id"] == SCENE_ID
     assert trace["render_spec"]["scene_style"]
     assert trace["render_spec"]["music_style"]
@@ -93,7 +93,7 @@ def test_notation_query_variants_emit_public_contract(task_cls, query_id: str) -
     ),
 )
 def test_notation_generation_is_deterministic(task_cls, query_id: str) -> None:
-    params = {"query_variant": query_id, "scene_variant": "notebook_staff"}
+    params = {"query_id": query_id, "scene_variant": "notebook_staff"}
     out_a = task_cls().generate(2026052499, params=params, max_attempts=60)
     out_b = task_cls().generate(2026052499, params=params, max_attempts=60)
 

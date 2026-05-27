@@ -22,7 +22,7 @@ from tests.helpers import read_jsonl
         (
             GamesRhythmHitWindowCountTask,
             {
-                "query_variant": "lane_color_hit_count",
+                "query_id": "lane_color_hit_count",
                 "lane_count": 6,
                 "row_count": 12,
                 "beat_window": 6,
@@ -34,7 +34,7 @@ from tests.helpers import read_jsonl
         (
             GamesRhythmLaneChoiceLabelTask,
             {
-                "query_variant": "earliest_hit_lane_label",
+                "query_id": "earliest_hit_lane_label",
                 "lane_count": 7,
                 "row_count": 13,
                 "beat_window": 5,
@@ -55,15 +55,15 @@ def test_games_rhythm_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "rhythm"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) >= 1
 
@@ -72,7 +72,7 @@ def test_games_rhythm_lane_color_hit_count_matches_trace() -> None:
     out = GamesRhythmHitWindowCountTask().generate(
         98410,
         params={
-            "query_variant": "lane_color_hit_count",
+            "query_id": "lane_color_hit_count",
             "lane_count": 6,
             "row_count": 12,
             "beat_window": 6,
@@ -102,7 +102,7 @@ def test_games_rhythm_most_hits_lane_label_matches_trace() -> None:
     out = GamesRhythmLaneChoiceLabelTask().generate(
         98420,
         params={
-            "query_variant": "most_hits_lane_label",
+            "query_id": "most_hits_lane_label",
             "lane_count": 8,
             "row_count": 14,
             "beat_window": 7,

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `solid_revolution`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `cylinder_volume_from_rectangle`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

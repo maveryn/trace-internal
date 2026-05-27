@@ -133,7 +133,7 @@ Recommended first implementation:
 Good first candidates:
 
 - `proposal:charts/scatter/series_point_lookup`: missing series or x value.
-- `task_charts__dashboard__source_rank_target_value`: missing panel/source/category.
+- `task_charts__dashboard__source_rank_metric_value`: missing panel/source/category.
 - `proposal:charts/table/statistics_column_summary_value`: missing column.
 - `proposal:charts/trend/interval_change_value`: missing interval endpoint.
 - `task_charts__heatmap__axis_cell_extremum_label`: missing row or column label.

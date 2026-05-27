@@ -14,7 +14,7 @@ def test_occlusion_order_answer_and_evidence() -> None:
     output = task.generate(
         20260521,
         params={
-            "query_variant": "in_front_of_reference",
+            "query_id": "in_front_of_reference",
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 1,
@@ -31,7 +31,7 @@ def test_occlusion_order_answer_and_evidence() -> None:
     reference_id = str(trace["reference_object_id"])
     reference_spec = next(spec for spec in context_specs if str(spec["object_id"]) == reference_id)
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == "in_front_of_reference"
     assert output.answer_gt.type == "option_letter"

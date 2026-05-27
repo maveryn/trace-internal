@@ -18,11 +18,11 @@ generation:
       scene_variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
-      query_variant_weights:
+      query_id_weights:
         congruent_count: 1.0
         similar_count: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
 
 rendering:
   shared:

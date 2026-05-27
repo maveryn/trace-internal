@@ -16,7 +16,7 @@ Use this whenever the task lives under `domain=icons`.
 
 ## Active-contract reminders
 - `docs/domains/ICON_TASK_SETUP.md` owns the active icons contract, asset policy, and evidence policy.
-- Active icon tasks emit public `query_variant="default"` and put the concrete branch in `query_id`; old `query_variant` params may still be used to force a query for reviews.
+- Active icon tasks put the concrete branch in `query_id`; old `query_id` params may still be used as internal replay controls for reviews.
 - Use icon manifests only through `trace/tasks/icons/shared/icon_assets.py`.
 - Use asymmetric icons when orientation, mirror symmetry, transformation identity, or attribute binding can collapse under icon symmetry.
 - Keep prompt-facing evidence on the semantic visual unit: icon-instance `bbox_set`, scene-cell `bbox_set`, or one local bbox for missing/violating slots.
@@ -25,5 +25,5 @@ Use this whenever the task lives under `domain=icons`.
 - Prefer explicit target/distractor construction over relying on random icon placement to realize the answer.
 - Keep visual ambiguity checks tied to the queried predicate: size gaps for size tasks, rendered signatures for mirror tasks, rule-hypothesis rejection for pattern tasks.
 - Reuse icon helpers under `trace/tasks/icons/shared/` before adding task-local layout or rendering utilities.
-- Add new icon-query variants inside an existing task when the scaffold and witness semantics stay the same.
+- Add new icon `query_id` branches inside an existing task when the scaffold and witness semantics stay the same.
 - Split only when a new icon query changes the perceptual contract enough to be a healthy standalone task.

@@ -29,7 +29,7 @@ from ..shared.hex_common import (
     HEX_CANDIDATE_LABELS,
     RED,
     SUPPORTED_HEX_PLAYER_COLORS,
-    SUPPORTED_HEX_QUERY_VARIANTS,
+    SUPPORTED_HEX_QUERY_IDS,
     SUPPORTED_HEX_SCENE_VARIANTS,
     Coord,
     HexCandidateSpec,
@@ -49,7 +49,7 @@ from ..shared.hex_common import (
 )
 from ..shared.hex_scene import HexRenderParams, render_hex_board_scene
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_HEX_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -84,7 +84,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Hex instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     player_color: str
@@ -94,7 +94,7 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...]
     target_label_support: Tuple[str, ...]
     candidate_count: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     player_color_probabilities: Dict[str, float]
@@ -114,15 +114,15 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="hex"
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="hex", apply_prob=0.0)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Hex query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Hex query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_HEX_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_HEX_QUERY_IDS,
     )
 
 
@@ -204,13 +204,13 @@ def _resolve_label_choice(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True)))
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_HEX_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_HEX_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -218,7 +218,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner answer axes."""
 
@@ -226,22 +226,22 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_HEX_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_HEX_QUERY_IDS))
     return cycle_params
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Hex instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
     answer_cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -298,7 +298,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         key="winning_move_label_support",
         fallback=_DEFAULTS.winning_move_label_support,
     )
-    if str(query_variant) == "connection_gap_count":
+    if str(query_id) == "connection_gap_count":
         target_answer, target_answer_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=answer_cycle_params,
@@ -335,7 +335,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         candidate_count = max(int(candidate_count), int(target_index) + 1)
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         player_color=str(player_color),
@@ -345,7 +345,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer_support=tuple(int(value) for value in target_answer_support),
         target_label_support=tuple(str(value) for value in target_label_support),
         candidate_count=int(candidate_count),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         player_color_probabilities=dict(player_color_probabilities),
@@ -486,7 +486,7 @@ def _sample_winning_move_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
         )
         sample = HexSample(
             board_size=size,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             player_color=str(axes.player_color),
             player_value=player_value,
@@ -544,7 +544,7 @@ def _sample_gap_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
             continue
         sample = HexSample(
             board_size=size,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             player_color=str(axes.player_color),
             player_value=player_value,
@@ -566,17 +566,17 @@ def _sample_gap_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> HexSample:
     """Construct one Hex scene for the requested axes."""
 
-    if str(axes.query_variant) == "winning_move_cell_label":
+    if str(axes.query_id) == "winning_move_cell_label":
         return _sample_winning_move_scene(rng=rng, axes=axes, params=params)
-    if str(axes.query_variant) == "connection_gap_count":
+    if str(axes.query_id) == "connection_gap_count":
         return _sample_gap_count_scene(rng=rng, axes=axes, params=params)
-    raise ValueError(f"unsupported Hex query_variant: {axes.query_variant}")
+    raise ValueError(f"unsupported Hex query_id: {axes.query_id}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Hex JSON output."""
 
-    if str(query_variant) == "winning_move_cell_label":
+    if str(query_id) == "winning_move_cell_label":
         answer_value: str | int = "C"
     else:
         answer_value = 3
@@ -661,16 +661,16 @@ class GamesHexBoardTask:
             context=f"prompt defaults for {self.task_id}",
         )
         query_player = color_name(sampled_scene.player_value)
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
-        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]).format(query_player=query_player)
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]).format(query_player=query_player)
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
+        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(query_player=query_player)
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(query_player=query_player)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -690,7 +690,7 @@ class GamesHexBoardTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        if str(axes.query_variant) == "winning_move_cell_label":
+        if str(axes.query_id) == "winning_move_cell_label":
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
@@ -700,7 +700,7 @@ class GamesHexBoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             board_size=int(sampled_scene.board_size),
             occupied_count=int(occupied_count),
             target_answer=sampled_scene.target_answer,
@@ -722,8 +722,7 @@ class GamesHexBoardTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "player_color": str(axes.player_color),
                     "board_size": int(sampled_scene.board_size),
@@ -731,22 +730,21 @@ class GamesHexBoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "player_color": str(axes.player_color),
                     "board_size": int(sampled_scene.board_size),
                     "candidate_count": int(len(sampled_scene.candidate_specs)),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "player_color_probabilities": dict(axes.player_color_probabilities),
                     "board_size_probabilities": dict(axes.board_size_probabilities),
@@ -770,8 +768,7 @@ class GamesHexBoardTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "player_color": str(axes.player_color),
                 "player_value": int(sampled_scene.player_value),
@@ -809,9 +806,8 @@ class GamesHexBoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="hex",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -820,7 +816,7 @@ class GamesHexWinningMoveCellLabelTask(FixedQueryVariantTaskMixin, GamesHexBoard
     """Choose the labeled empty cell that gives the queried Hex player an immediate win."""
 
     task_id = "task_games__hex__winning_move_cell_label"
-    fixed_query_variant = "winning_move_cell_label"
+    fixed_query_id = "winning_move_cell_label"
 
 
 @register_task
@@ -828,7 +824,7 @@ class GamesHexConnectionGapCountTask(FixedQueryVariantTaskMixin, GamesHexBoardTa
     """Count minimum empty cells needed for the queried Hex player to connect sides."""
 
     task_id = "task_games__hex__connection_gap_count"
-    fixed_query_variant = "connection_gap_count"
+    fixed_query_id = "connection_gap_count"
 
 
 __all__ = [

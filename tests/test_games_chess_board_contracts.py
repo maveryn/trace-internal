@@ -32,12 +32,12 @@ from tests.helpers import read_jsonl
     (
         (
             GamesChessMarkedPieceDestinationCountTask,
-            {"query_variant": "marked_piece_move_count", "target_answer": 4, "scene_variant": "sparse_board"},
+            {"query_id": "marked_piece_move_count", "target_answer": 4, "scene_variant": "sparse_board"},
             "marked_piece_move_count",
         ),
         (
             GamesChessMarkedPieceDestinationCountTask,
-            {"query_variant": "marked_piece_capture_count", "target_answer": 2, "scene_variant": "crowded_board"},
+            {"query_id": "marked_piece_capture_count", "target_answer": 2, "scene_variant": "crowded_board"},
             "marked_piece_capture_count",
         ),
         (
@@ -68,11 +68,11 @@ def test_games_chess_board_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
     assert int(execution["target_answer"]) == int(out.answer_gt.value)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
@@ -82,7 +82,7 @@ def test_games_chess_board_emits_expected_contract(
 def test_games_chess_marked_move_count_matches_rules() -> None:
     out = GamesChessMarkedPieceDestinationCountTask().generate(
         50211,
-        params={"query_variant": "marked_piece_move_count", "target_answer": 5},
+        params={"query_id": "marked_piece_move_count", "target_answer": 5},
         max_attempts=96,
     )
     execution = out.trace_payload["execution_trace"]
@@ -98,7 +98,7 @@ def test_games_chess_marked_move_count_matches_rules() -> None:
 def test_games_chess_marked_capture_count_matches_rules() -> None:
     out = GamesChessMarkedPieceDestinationCountTask().generate(
         50221,
-        params={"query_variant": "marked_piece_capture_count", "target_answer": 3},
+        params={"query_id": "marked_piece_capture_count", "target_answer": 3},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -176,7 +176,7 @@ def test_games_chess_board_query_cycle_covers_answer_scene_and_style_support() -
             max_attempts=256,
         )
         execution = out.trace_payload["execution_trace"]
-        query = str(out.query_id or out.query_variant)
+        query = str(out.query_id or out.query_id)
         answers_by_query[query].add(int(out.answer_gt.value))
         scenes_by_query[query].add(str(execution["scene_variant"]))
         styles_by_query[query].add(str(execution["style_variant"]))
@@ -195,7 +195,7 @@ def test_games_chess_board_query_cycle_covers_answer_scene_and_style_support() -
 
 def test_games_chess_board_is_deterministic() -> None:
     params = {
-        "query_variant": "check_attacker_count",
+        "query_id": "check_attacker_count",
         "target_answer": 2,
         "scene_variant": "crowded_board",
         "style_variant": "outlined",

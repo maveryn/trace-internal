@@ -8,7 +8,7 @@
 5. Goal: choose the labeled cell that can contain the missing tent for the marked tree.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `missing_tent_cell_label`
 3. Grid size: `6x6..8x8`
 4. Candidate labels: `A..F`

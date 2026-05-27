@@ -1,6 +1,6 @@
 # task_icons__named_field__shape_attribute_boolean_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending v0 review/calibration artifact refresh.
 
 ## Identity
 - domain: `icons`

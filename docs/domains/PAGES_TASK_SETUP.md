@@ -7,7 +7,7 @@ This document owns the active `pages` domain contract. Pages covers structured p
 2. `task_group` remains the implementation/config grouping: `arithmetic`, `calendar`, `concept_map`, `cross_form`, `cycle`, `hierarchy`, `infographic`, `map`, `process_flow`, `schedule`, `schema`, `timeline`, `counting`, and `relation`.
 3. Text stays OCR-light: short labels, field values, section headers, command labels, and visible guide cues.
 4. Evidence must come from the same trace-backed visible units as the answer.
-5. Active pages tasks expose one public sampling unit per `task_id` and put the concrete query branch in `query_id`. `query_variant` is an internal replay selector, not a public sampling unit.
+5. Active pages tasks expose one public sampling unit per `task_id` and put the concrete query branch in `query_id`. `query_id` is an internal replay selector, not a public sampling unit.
 
 ## Active Tasks
 1. `task_pages__form_section__section_expression_value`

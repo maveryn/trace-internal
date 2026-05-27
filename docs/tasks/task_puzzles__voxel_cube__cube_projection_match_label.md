@@ -7,7 +7,7 @@
 4. Objective: select the orthographic projection option matching a cube stack from a requested view.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `projection_match_label`
 3. Public `scene_id`: `voxel_cube`
 4. Supported query parameter: `view_direction=top|front|right`
@@ -28,6 +28,6 @@
 
 ## 4) Evidence + Trace Contract
 1. Evidence contains one bbox for the selected projection option panel.
-2. `execution_trace.internal_query_variant` records the selected view query.
+2. `execution_trace.internal_query_id` records the selected view query.
 3. Stack footprint/heights, visible counts for `top|front|right`, candidate projection cells, and the correct option label are recorded.
 4. Prompt-facing evidence is projected from the selected option panel, not inferred from pixels.

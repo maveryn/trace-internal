@@ -189,7 +189,7 @@ def _query_id_from_alias(value: Any) -> str | None:
 def _forced_query_id(params: Mapping[str, Any]) -> str | None:
     """Resolve an explicit public query id, if present."""
 
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         query_id = _query_id_from_alias(params.get(str(key)))
         if query_id is not None:
             return str(query_id)
@@ -241,18 +241,18 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
     forced_query_id = _forced_query_id(params)
     if forced_query_id is None:
-        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
         query_id, query_id_probabilities = resolve_graph_named_variant(
             query_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             explicit_key="query_id",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
             supported=SUPPORTED_EDGE_ATTRIBUTE_QUERY_IDS,
             instance_seed=int(instance_seed),
             task_id=TASK_ID,
-            namespace="query_variant",
+            namespace="query_id",
         )
     else:
         query_id = str(forced_query_id)
@@ -755,18 +755,17 @@ class GraphRelationEdgeAttributeLabelTask:
             rendered_scene=rendered_scene,
         )
 
-        query_variant_probabilities = dict(query.query_id_probabilities)
+        query_id_probabilities = dict(query.query_id_probabilities)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "graph_edge_attribute_relation",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
+                    "internal_query_id": str(query.query_id),
                     "relation_rule": "visible_text_label_on_queried_edge",
                     "graph_directionality": str(query.graph_directionality),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "query_edge": list(query_edge),
                     "query_path_labels": list(graph_sample.query_path_labels),
                     "query_path_edge_index": graph_sample.query_path_edge_index,
@@ -796,17 +795,15 @@ class GraphRelationEdgeAttributeLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "graph_directionality": str(query.graph_directionality),
                     "graph_directionality_probabilities": dict(query.graph_directionality_probabilities),
                     "node_count": int(query.node_count),
@@ -840,7 +837,7 @@ class GraphRelationEdgeAttributeLabelTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                     max_degree_key: int(max_degree),
                 },
             },
@@ -881,10 +878,9 @@ class GraphRelationEdgeAttributeLabelTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.query_id),
                 "graph_directionality": str(query.graph_directionality),
@@ -951,7 +947,6 @@ class GraphRelationEdgeAttributeLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

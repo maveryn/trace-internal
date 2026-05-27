@@ -23,7 +23,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "midgame_board",
-                "query_variant": "legal_move_count",
+                "query_id": "legal_move_count",
                 "target_answer": 3,
             },
             3,
@@ -32,7 +32,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "crowded_board",
-                "query_variant": "capture_move_count",
+                "query_id": "capture_move_count",
                 "target_answer": 2,
             },
             2,
@@ -41,7 +41,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "midgame_board",
-                "query_variant": "max_capture_chain_length",
+                "query_id": "max_capture_chain_length",
                 "target_answer": 4,
             },
             4,
@@ -62,11 +62,11 @@ def test_games_checkers_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
-    if str(params["query_variant"]) == "max_capture_chain_length":
+    if str(params["query_id"]) == "max_capture_chain_length":
         assert all(str(entity_id).startswith("piece_") for entity_id in execution["evidence_entity_ids"])
         assert execution["evidence_kind"] == "piece"
         assert execution["max_capture_chain_length"] == int(expected_answer)
@@ -79,7 +79,7 @@ def test_games_checkers_move_count_legal_evidence_tracks_unique_landing_squares(
         33011,
         params={
             "scene_variant": "midgame_board",
-            "query_variant": "legal_move_count",
+            "query_id": "legal_move_count",
             "target_answer": 5,
         },
         max_attempts=96,
@@ -97,7 +97,7 @@ def test_games_checkers_move_count_capture_evidence_tracks_capture_landings_only
         33021,
         params={
             "scene_variant": "crowded_board",
-            "query_variant": "capture_move_count",
+            "query_id": "capture_move_count",
             "target_answer": 4,
         },
         max_attempts=96,
@@ -128,7 +128,7 @@ def test_games_checkers_max_capture_chain_evidence_tracks_captured_pieces() -> N
     chain = execution["max_capture_chain_specs"][0]
     captured_coords = {tuple(coord) for coord in chain["captured"]}
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "max_capture_chain_length"
     assert int(out.answer_gt.value) == 5
     assert evidence_coords == captured_coords
@@ -155,13 +155,13 @@ def test_games_checkers_move_count_query_cycle_covers_legal_answer_support() -> 
             params={},
             max_attempts=160,
         )
-        query_variant = str(out.query_variant)
+        query_id = str(out.query_id)
         execution = out.trace_payload["execution_trace"]
-        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
-        styles_by_variant[query_variant].add(str(execution["style_variant"]))
-        if query_variant == "legal_move_count":
+        scenes_by_variant[query_id].add(str(execution["scene_variant"]))
+        styles_by_variant[query_id].add(str(execution["style_variant"]))
+        if query_id == "legal_move_count":
             legal_answers.append(int(out.answer_gt.value))
-        if query_variant == "max_capture_chain_length":
+        if query_id == "max_capture_chain_length":
             chain_answers.append(int(out.answer_gt.value))
 
     assert set(legal_answers) == {0, 1, 2, 3, 4, 5}
@@ -181,7 +181,7 @@ def test_games_checkers_move_count_query_cycle_covers_legal_answer_support() -> 
 def test_games_checkers_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "crowded_board",
-        "query_variant": "capture_move_count",
+        "query_id": "capture_move_count",
         "target_answer": 1,
     }
     task = GamesCheckersMoveCountTask()

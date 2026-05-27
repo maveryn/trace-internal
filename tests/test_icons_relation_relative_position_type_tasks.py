@@ -67,7 +67,7 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     task = IconsRelationRelativePositionTypeTask()
     out = task.generate(
         14610,
-        params={"query_variant": "right_of_anchor", "target_count": 2, "distractor_count": 3},
+        params={"query_id": "right_of_anchor", "target_count": 2, "distractor_count": 3},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -84,11 +84,11 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_anchor_relation_type"
     assert execution["question_format"] == "count_matching_scene_icons_by_reference_and_anchor_relation"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "right_of_anchor"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "right_of_anchor"
-    assert execution["internal_query_variant"] == "right_of_anchor"
+    assert execution["internal_query_id"] == "right_of_anchor"
     assert execution["direction"] == "right"
     assert int(execution["object_count"]) == 5
     assert int(execution["target_count"]) == 2
@@ -142,7 +142,7 @@ def test_icons_relation_relative_position_type_supports_zero_matches() -> None:
     task = IconsRelationRelativePositionTypeTask()
     out = task.generate(
         14611,
-        params={"query_variant": "above_anchor", "target_count": 0, "distractor_count": 4},
+        params={"query_id": "above_anchor", "target_count": 0, "distractor_count": 4},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -183,7 +183,7 @@ def test_icons_relation_relative_position_type_balanced_sampling_defaults() -> N
         distractor_count = int(execution["distractor_count"])
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) in {"left_of_anchor", "right_of_anchor", "above_anchor", "below_anchor"}
         direction = str(execution["direction"])
         direction_counts[direction] += 1

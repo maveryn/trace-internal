@@ -7,7 +7,7 @@
 - Query id: `ahead_along_lane`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: accepted
+- Status: pending_v0_review
 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object with a red travel-direction arrow, and lettered street objects. The street surface renders full-bleed: sidewalk ground fills the canvas and road strips are clipped to the visible floor-plane polygon, so the roads continue to the image edges rather than ending at a finite stage boundary. The prompt asks which lettered street object is directly ahead of the red-boxed object along the lane indicated by the arrow.
@@ -23,7 +23,7 @@ Evidence is the bounding box of the selected lettered street object. The bbox in
 The prompt bundle is `three_d_street_v0` under `prompts/three_d/street/`. The trace records camera pose, projection frame, scene variant, intersection layout, full-bleed floor polygon mode/bounds, present/missing road arms, travel mode, reference road arm/lane/direction, candidate road arms by label, forward and lateral lane distances by label, ahead flags by label, selected object id/type, and projected object bboxes.
 
 ## Calibration
-The manual review workbook, distribution report, and combined street scene review have been regenerated. Distribution passed on `100` samples with `5` unique answers and max answer frequency `0.240`. qwen25vl7b `100x24` calibration on seed `20260522` gave `hard=0.060`, `easy=0.000`, `band=0.940`, `mean=0.219`, `cap=0.000`, and prompt max `167`; the task is accepted.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D street scene trace.

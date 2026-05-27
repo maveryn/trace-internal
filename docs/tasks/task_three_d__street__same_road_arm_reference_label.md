@@ -7,7 +7,7 @@
 - Query id: `same_road_arm_as_reference`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed_pending_probe
+- Status: pending_v0_review
 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object, and lettered street objects. The street surface renders full-bleed: sidewalk ground fills the canvas and road strips are clipped to the visible floor-plane polygon, so the roads continue to the image edges rather than ending at a finite stage boundary. The prompt asks which lettered street object is on the same road arm as the red-boxed object.
@@ -23,7 +23,7 @@ Evidence is the bounding box of the selected lettered street object. The bbox in
 The prompt bundle is `three_d_street_v0` under `prompts/three_d/street/`. The trace records camera pose, projection frame, scene variant, intersection layout, full-bleed floor polygon mode/bounds, present/missing road arms, reference object id/type/name/road arm, candidate road arms by label, same-road-arm flags by label, selected object id/type, and projected object bboxes.
 
 ## Calibration
-The red-box reference-marker update has focused unit coverage. The refreshed manual review workbook, distribution report, and combined street scene review have been regenerated. Distribution review passed with `6` unique answers and max answer frequency `0.220`; solve-rate calibration for the red-box version is pending.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D street scene trace.

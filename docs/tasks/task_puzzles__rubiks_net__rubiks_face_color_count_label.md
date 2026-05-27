@@ -8,7 +8,7 @@
 5. Goal: choose the labeled numeric option for how many stickers on a queried face match the target color swatch.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `static_face_color_count_label|one_move_face_color_count_label|short_sequence_face_color_count_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

@@ -7,7 +7,7 @@
 4. Goal: use a labeled cube net to identify a face by folded-cube relation.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `opposite_face_label|marked_edge_neighbor_face_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

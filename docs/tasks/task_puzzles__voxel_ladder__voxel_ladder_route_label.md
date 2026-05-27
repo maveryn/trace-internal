@@ -5,7 +5,7 @@
 2. Scene id: `voxel_ladder`
 3. Source implementation domain/group: `puzzles/topology`
 4. Query id: sampled from `checkpoint_sequence_label`, `unreachable_checkpoint_label`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.puzzles.topology.voxel_ladder.PuzzlesTopologyVoxelLadderRouteLabelTask`

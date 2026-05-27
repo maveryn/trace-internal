@@ -17,11 +17,11 @@ generation:
       scene_variant_weights:
         parallel: 0.0
         simple_series_parallel: 1.0
-      query_variant_weights:
+      query_id_weights:
         total_resistance: 1.0
         missing_resistor_value: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
       total_resistance_target_answer_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
       parallel_target_answer_support: [1, 2, 3]

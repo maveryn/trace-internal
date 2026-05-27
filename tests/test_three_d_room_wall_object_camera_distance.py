@@ -9,7 +9,7 @@ from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.room.wall_object_camera_distance import (
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -19,7 +19,7 @@ def test_room_wall_object_camera_distance_answer_and_evidence() -> None:
     output = task.generate(
         20261003,
         params={
-            "query_variant": "closest_to_camera",
+            "query_id": "closest_to_camera",
             "scene_variant": "studio_room",
             "candidate_count": 6,
             "context_wall_count": 4,
@@ -35,7 +35,7 @@ def test_room_wall_object_camera_distance_answer_and_evidence() -> None:
     nearest = min(candidates, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
     expected_bbox = render_map["object_bboxes_px"][str(nearest["object_id"])]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_to_camera"
     assert output.answer_gt.type == "option_letter"
@@ -69,4 +69,4 @@ def test_room_wall_object_camera_distance_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "room"
-    assert SUPPORTED_QUERY_VARIANTS == ("closest_to_camera",)
+    assert SUPPORTED_QUERY_IDS == ("closest_to_camera",)

@@ -24,11 +24,11 @@
   - `tall_block`
     - the variants adjust the vertical spacing between blocks.
 
-## Query Variants
+## Query IDs
 - `force_relation`
   - `solve_for=effort_force`: the load force is shown and the effort force is marked `?`
   - `solve_for=load_force`: the effort force is shown and the load force is marked `?`
-  - public outputs use `query_variant="default"` and `query_id="force_relation"`
+  - outputs `query_id="force_relation"`
 
 ## Reasoning contract
 - The pulley system is ideal, with no friction.

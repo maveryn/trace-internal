@@ -34,7 +34,7 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(44001, params={}, max_attempts=20)
 
     assert out.scene_id == task.scene_id
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
@@ -46,7 +46,7 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == task.scene_id
     assert trace["scene_ir"]["scene_id"] == task.scene_id
     assert trace["witness_symbolic"]["scene_id"] == task.scene_id
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -75,7 +75,7 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
 
     assert out.query_id == "rectangle_triangle_shared_height_length"
     assert out.answer_gt.value == 15
-    assert out.trace_payload["query_spec"]["params"]["query_variant_probabilities"] == {
+    assert out.trace_payload["query_spec"]["params"]["query_id_probabilities"] == {
         "rectangle_triangle_shared_height_length": 1.0
     }
 

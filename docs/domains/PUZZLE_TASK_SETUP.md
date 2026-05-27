@@ -10,6 +10,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `automaton`
    - `cell_board`
    - `clock`
+   - `counterfactual`
    - `logic`
    - `notation`
    - `probability`
@@ -24,20 +25,21 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active automaton family includes agent-turning, cellular-life, and compact tape-machine simulations. Agent tasks ask for final pose or update-count values under visible state-transition rules; Life tasks ask for future-grid options or future live-cell counts under the visible neighbor rule; the tape-machine task asks for a fixed-step written-symbol count under a visible transition table.
 3. The active `cell_board` scene includes rectangular board tasks for visible color-attribute counts, color-region counts, path distance, reachability counts, and symmetry-violation counts.
-4. The active logic family currently includes missing grid-cell option selection, Raven-style matrix tasks, nonogram clue/grid tasks, matchstick arrangement tasks, arithmetic-constraint diagram tasks, tents clue-grid tasks, and Star Battle region-grid tasks. Logic answers are `option_letter` or `integer`, with evidence projected from option panels, clue rails, marked lines, candidate cells, arithmetic diagram panels, marked unknown nodes/cells/symbols, marked trees, marked regions, or marked row/column clues.
-5. The active probability family currently includes visible-top dice probability tasks and equal-sector spinner probability tasks with reduced-fraction string answers and tray/panel-level `bbox_set` evidence.
-6. The active clock family includes single-clock offset readout and multi-clock comparison tasks, with local evidence on clock hands or the winning clock face.
-7. The active spatial family currently mixes option-based transform-result puzzles, cube/voxel structure and projection puzzles, cube surface/net folding and rolling puzzles, a static 2D polyomino missing-region puzzle, Rubik-style cube-net lookup/counting/transform puzzles, Sokoban-style grid movement/path/relation puzzles, sliding-block puzzles, and tangram-style polygon-piece matching/counting puzzles. Prompt-facing evidence stays local to the winning option image/panel, visible cube/voxel structures, cube-net reference regions, ordered option-plus-target-region boxes, moved or blocking board pieces, or query-grid cells that should be filled.
-8. The active visual family includes color-gradient anomaly and completion puzzles, with evidence projected from the violating swatch or the blank-plus-option swatches.
-9. The active topology family currently includes cyclic-order loop label tasks, one string-component count task with query branches, wall-maze reachability tasks, pipe/conduit 2x2 flow-repair option selection, and voxel-ladder route/count puzzles.
-10. The active word family includes row-and-column labeled word-search grids for word location, letter counting, and word-bank presence counting. Evidence is projected from selected option cards, word chips, and ordered grid-cell paths.
-11. The active notation family includes synthetic sheet-music staff tasks for pitch/interval reading, key/scale reasoning, chord/harmony labels, and meter/rhythm/symbol reasoning. Evidence is projected from marked notes, chords, key signatures, bars, time signatures, articulation marks, and option cards.
-12. Public puzzle task ids are narrow task units. Semantic query families that remain inside a task are recorded as `query_id` or trace parameters, not as public sampling units.
-13. Puzzle visual diversity should stay non-semantic: shared panel treatments, palettes, task-local chrome, unit-size jitter, and evidence-safe layout slack are allowed when recorded in render metadata. Do not add changed option geometry, stronger spatial noise, or decorative marks that can affect maze/cube/fold/color-pattern/word-search/notation/relation-diagram reasoning.
-14. Shared puzzle background variants live in `configs/domains/puzzles/base.yaml` and are inherited by active automaton, cell-board, logic, notation, probability, clock, spatial, topology, visual, and word task groups through the puzzle visual-default loader.
-15. Puzzle scenes built from repeated cells or units should use explicit render-only unit-size jitter. Try for at least a `2x` min-to-max span first, but use a narrower documented range when readability, scene fit, or evidence integrity requires it. This applies to cell-board tiles, logic/nonogram/Star Battle/tents grids, maze and pipe cells, automaton cells, word-search cells, music-staff note spacing, polyomino unit squares, Rubik stickers, sliding/Sokoban board cells, and cube/voxel unit cubes. Board-size or option-count variation alone is not enough; evidence bboxes must be derived after the sampled cell or unit size is fixed.
-16. Broad style primitives may live in domain-level config/helpers, but concrete rendering variation is applied scene by scene. Each puzzle scene owns how palettes, strokes, board chrome, option cards, labels, unit-size jitter, and layout slack map onto its visual grammar and evidence.
-17. Do not use a blind domain-level recolor/layout pass for puzzle scenes; visual variation must preserve semantic contrast and must not alter the answer, evidence, hidden rule, or verifier contract.
+4. The active counterfactual family includes counterfactual board-count puzzles under the `counterfactual_board` scene. These ask for counts on synthetic boards whose familiar visual priors may be intentionally shifted; evidence is projected from the counted board regions/cells rather than from a hidden canonical rule.
+5. The active logic family currently includes missing grid-cell option selection, Raven-style matrix tasks, nonogram clue/grid tasks, matchstick arrangement tasks, arithmetic-constraint diagram tasks, tents clue-grid tasks, and Star Battle region-grid tasks. Logic answers are `option_letter` or `integer`, with evidence projected from option panels, clue rails, marked lines, candidate cells, arithmetic diagram panels, marked unknown nodes/cells/symbols, marked trees, marked regions, or marked row/column clues.
+6. The active probability family currently includes visible-top dice probability tasks and equal-sector spinner probability tasks with reduced-fraction string answers and tray/panel-level `bbox_set` evidence.
+7. The active clock family includes single-clock offset readout and multi-clock comparison tasks, with local evidence on clock hands or the winning clock face.
+8. The active spatial family currently mixes option-based transform-result puzzles, cube/voxel structure and projection puzzles, cube surface/net folding and rolling puzzles, a static 2D polyomino missing-region puzzle, Rubik-style cube-net lookup/counting/transform puzzles, Sokoban-style grid movement/path/relation puzzles, sliding-block puzzles, and tangram-style polygon-piece matching/counting puzzles. Prompt-facing evidence stays local to the winning option image/panel, visible cube/voxel structures, cube-net reference regions, ordered option-plus-target-region boxes, moved or blocking board pieces, or query-grid cells that should be filled.
+9. The active visual family includes color-gradient anomaly and completion puzzles, with evidence projected from the violating swatch or the blank-plus-option swatches.
+10. The active topology family currently includes cyclic-order loop label tasks, one string-component count task with query branches, wall-maze reachability tasks, pipe/conduit 2x2 flow-repair option selection, and voxel-ladder route/count puzzles.
+11. The active word family includes row-and-column labeled word-search grids for word location, letter counting, and word-bank presence counting. Evidence is projected from selected option cards, word chips, and ordered grid-cell paths.
+12. The active notation family includes synthetic sheet-music staff tasks for pitch/interval reading, key/scale reasoning, chord/harmony labels, and meter/rhythm/symbol reasoning. Evidence is projected from marked notes, chords, key signatures, bars, time signatures, articulation marks, and option cards.
+13. Public puzzle task ids are narrow task units. Semantic query families that remain inside a task are recorded as `query_id` or trace parameters, not as public sampling units.
+14. Puzzle visual diversity should stay non-semantic: shared panel treatments, palettes, task-local chrome, unit-size jitter, and evidence-safe layout slack are allowed when recorded in render metadata. Do not add changed option geometry, stronger spatial noise, or decorative marks that can affect maze/cube/fold/color-pattern/word-search/notation/relation-diagram reasoning.
+15. Shared puzzle background variants live in `configs/domains/puzzles/base.yaml` and are inherited by active automaton, cell-board, counterfactual, logic, notation, probability, clock, spatial, topology, visual, and word task groups through the puzzle visual-default loader.
+16. Puzzle scenes built from repeated cells or units should use explicit render-only unit-size jitter. Try for at least a `2x` min-to-max span first, but use a narrower documented range when readability, scene fit, or evidence integrity requires it. This applies to cell-board tiles, counterfactual boards, logic/nonogram/Star Battle/tents grids, maze and pipe cells, automaton cells, word-search cells, music-staff note spacing, polyomino unit squares, Rubik stickers, sliding/Sokoban board cells, and cube/voxel unit cubes. Board-size or option-count variation alone is not enough; evidence bboxes must be derived after the sampled cell or unit size is fixed.
+17. Broad style primitives may live in domain-level config/helpers, but concrete rendering variation is applied scene by scene. Each puzzle scene owns how palettes, strokes, board chrome, option cards, labels, unit-size jitter, and layout slack map onto its visual grammar and evidence.
+18. Do not use a blind domain-level recolor/layout pass for puzzle scenes; visual variation must preserve semantic contrast and must not alter the answer, evidence, hidden rule, or verifier contract.
 
 ## Automaton tasks
 1. Active task ids:
@@ -47,7 +49,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__life_automaton__life_population_count`
    - `task_puzzles__turing_tape__turing_written_symbol_count`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - agent final-pose records `query_id=binary_rule_final_pose|three_state_rule_final_pose`,
    - agent update-count records `query_id=target_state_flip_count|marked_region_flip_count` and records the sampled turning rule in trace metadata,
    - Life future-grid records `query_id=one_step_future_grid|two_step_future_grid`,
@@ -86,7 +88,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__cell_board__reachability_count`
    - `task_puzzles__cell_board__symmetry_violation_count`
 2. Public contract:
-   - each task uses public `domain=puzzles`, `scene_id=cell_board`, and `query_variant=default`,
+   - each task uses public `domain=puzzles` and `scene_id=cell_board`,
    - semantic branches are recorded in `query_id`,
 3. Implementation location:
    - active implementations live under `trace/tasks/puzzles/cell_board/`,
@@ -122,7 +124,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__analog_clock__offset_readout`
    - `task_puzzles__clock_collection__compare`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - readout tasks record `query_id=minutes_after|minutes_before`,
    - compare records `query_id=earliest_time_label|latest_time_label`.
 3. Supported `scene_variant` values:
@@ -141,7 +143,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__logic_grid__grid_uniqueness_completion_label`
    - `task_puzzles__logic_grid__grid_king_non_touch_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - uniqueness records `query_id=grid_uniqueness_completion`,
    - king non-touch records `query_id=king_non_touch`.
 3. Supported semantic parameter axes:
@@ -168,7 +170,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `scene_ir.entities` includes `puzzle_logic_cell`, `puzzle_logic_option_panel`, `puzzle_logic_option_label`, and `puzzle_logic_option_symbol_box` entities,
    - `render_map.cell_bboxes_px` stores each board-cell bbox keyed by `cell_id`,
    - `render_map.option_panel_bboxes_px` stores each option-panel bbox keyed by `option_panel_id`,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `internal_query_variant`, `board_values`, `grid_rows`, `symbol_pool`, `query_cell_id`, `query_row_index`, `query_col_index`, `answer_object_type`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `board_size`, `board_size_range`, `cell_count`, `cell_count_range`, `option_count`, and `solver_trace`,
+   - `execution_trace` stores `query_id`, internal replay query fields, `board_values`, `grid_rows`, `symbol_pool`, `query_cell_id`, `query_row_index`, `query_col_index`, `answer_object_type`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `board_size`, `board_size_range`, `cell_count`, `cell_count_range`, `option_count`, and `solver_trace`,
    - king non-touch also stores `neighbor_coords`, `forced_neighbor_coords`, `forced_neighbor_types`, `query_neighbor_object_types`, and `valid_option_object_types`,
    - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
 
@@ -180,7 +182,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__raven_matrix__raven_analogical_transform_label`
    - `task_puzzles__raven_matrix__raven_position_progression_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task records a fixed `query_id`: `count_progression_matrix`, `spatial_transform_matrix`, `set_operation_matrix`, `analogical_transform_matrix`, or `position_progression_matrix`.
 3. Supported `scene_variant` values:
    - `raven_strip`
@@ -203,7 +205,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `scene_ir.entities` includes `puzzle_raven_matrix_cell`, `puzzle_raven_option_panel`, `puzzle_raven_option_label`, and `puzzle_raven_option_content_box` entities,
    - `render_map.matrix_cell_bboxes_px` stores each matrix-cell bbox keyed by `cell_id`,
    - `render_map.option_panel_bboxes_px` stores each option-panel bbox keyed by `option_panel_id`,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `internal_query_variant`, `matrix_rows`, `matrix_panel_specs`, `query_cell_id`, `answer_panel_spec`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `matrix_size`, `cell_count`, `visible_matrix_cell_count`, `option_count`, and `solver_trace`,
+   - `execution_trace` stores `query_id`, internal replay query fields, `matrix_rows`, `matrix_panel_specs`, `query_cell_id`, `answer_panel_spec`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `matrix_size`, `cell_count`, `visible_matrix_cell_count`, `option_count`, and `solver_trace`,
    - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
 
 ## Nonogram logic tasks
@@ -211,7 +213,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__nonogram__nonogram_line_completion_label`
    - `task_puzzles__nonogram__nonogram_candidate_solution_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - task records fixed `query_id=line_completion_label|candidate_solution_label`.
 3. Supported `scene_variant` values:
    - `nonogram_classic`
@@ -232,14 +234,14 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 7. Trace contract:
    - `scene_ir.entities` includes `nonogram`, `nonogram_clue_panel`, `nonogram_clue`, `nonogram_cell`, and optional `nonogram_option_panel` entities,
    - `render_map.item_bboxes_px` stores clue, cell, marked-line, and option-panel bboxes used for evidence,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `scene_id`, `scene_variant`, grid dimensions, full grid, display grid, row/column clues, answer value, supporting item ids, option specs when present, and query-specific line/clue fields.
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, grid dimensions, full grid, display grid, row/column clues, answer value, supporting item ids, option specs when present, and query-specific line/clue fields.
 
 ## Matchstick logic tasks
 1. Active task ids:
    - `task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label`
    - `task_puzzles__matchstick__matchstick_number_transform_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - number transform records `query_id=add_one_stick|remove_one_stick`,
    - loose-endpoint extremum records `query_id=most_loose_endpoints|fewest_loose_endpoints`.
 3. Supported `scene_variant` values:
@@ -270,7 +272,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__arithmetic_constraint__operator_grid_value`
    - `task_puzzles__arithmetic_constraint__number_wall_value`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - semantic branches are recorded in `query_id`.
 3. Supported `query_id` values:
    - arithmetic constraint: `equal_sum_line_constraint_value`, `paired_cluster_sum_relation_value`, `consecutive_window_sum_value`
@@ -307,7 +309,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__rubiks_net__rubiks_face_color_count_label`
    - `task_puzzles__rubiks_net__rubiks_move_result_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - sticker-color records `query_id=static_sticker_color_label|one_move_sticker_color_label|short_sequence_sticker_color_label`,
    - face-color counting records `query_id=static_face_color_count_label|one_move_face_color_count_label|short_sequence_face_color_count_label`,
    - move-result selection records `query_id=one_move_result_label|two_move_result_label|inverse_sequence_result_label`.
@@ -338,7 +340,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__sokoban__sokoban_path_sequence_label`
    - `task_puzzles__sokoban__sokoban_box_target_relation_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - path-sequence records `query_id=shortest_path_sequence_label|valid_path_sequence_label|blocked_path_sequence_label`,
    - box-target relation records `query_id=nearest_target_for_marked_box_label|box_closest_to_marked_target_label|box_target_manhattan_rank_label`.
 3. Supported `scene_variant` values:
@@ -363,7 +365,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__tents__tents_missing_tent_cell_label`
    - `task_puzzles__tents__tents_valid_candidate_count`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - task records fixed `query_id=missing_tent_cell_label|valid_candidate_count`.
 3. Supported `scene_variant` values:
    - `tents_classic`
@@ -390,14 +392,14 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 8. Trace contract:
    - `scene_ir.entities` includes `puzzle_tents_panel`, `puzzle_tents_cell`, `puzzle_tents_tree`, `puzzle_tents_tent`, `puzzle_tents_row_clue`, `puzzle_tents_col_clue`, and `puzzle_tents_candidate_cell` entities,
    - `render_map.item_bboxes_px` stores clue, tree, tent, cell, and candidate bboxes used for evidence,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `scene_id`, `scene_variant`, `palette_variant`, grid dimensions, row/column clues, marked tree, visible tents, tree cells, candidate specs, legal candidate cells, answer value, and supporting item ids.
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, `palette_variant`, grid dimensions, row/column clues, marked tree, visible tents, tree cells, candidate specs, legal candidate cells, answer value, and supporting item ids.
 
 ## Star Battle logic tasks
 1. Active task ids:
    - `task_puzzles__star_battle__star_battle_valid_cell_label`
    - `task_puzzles__star_battle__star_battle_remaining_count`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - the sampled row/column/region query is recorded in `query_id`.
 3. Supported `scene_variant` values:
    - `star_battle_classic`
@@ -418,7 +420,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 7. Trace contract:
    - `scene_ir.entities` includes `puzzle_star_battle_panel`, `puzzle_star_battle_cell`, `puzzle_star_battle_region`, `puzzle_star_battle_star`, row/column clue entities, and optional candidate cell entities,
    - `render_map.item_bboxes_px` stores clue, region, cell, star, and candidate bboxes used for evidence,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `scene_id`, `scene_variant`, grid size, region grid, visible stars, candidate specs, legal cells, scoped legal cells, answer value, and supporting item ids.
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, grid size, region grid, visible stars, candidate specs, legal cells, scoped legal cells, answer value, and supporting item ids.
 
 ## Dice probability tasks
 1. Active task ids:
@@ -426,7 +428,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__dice_probability__dice_pair_event_value`
    - `task_puzzles__dice_probability__dice_conditional_event_value`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - the sampled probability event is recorded as `query_id`.
 3. Supported `scene_variant` values:
    - `dice_tray_clean`
@@ -448,7 +450,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 7. Trace contract:
    - `scene_ir.entities` includes `dice_tray` and `probability_die` entities,
    - `render_map.die_bboxes_px`, `render_map.tray_bboxes_px`, and `render_map.item_bboxes_px` store die and tray boxes,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `scene_id`, `scene_variant`, dice specs, event description, favorable outcome count, total outcome count, reduced fraction answer, tray evidence item ids, and die-level calculation support ids,
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, dice specs, event description, favorable outcome count, total outcome count, reduced fraction answer, tray evidence item ids, and die-level calculation support ids,
    - conditional tasks also store denominator support ids.
 
 ## Spinner probability tasks
@@ -456,7 +458,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__spinner_probability__spinner_compound_event_value`
    - `task_puzzles__spinner_probability__spinner_pair_event_value`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - the sampled probability event is recorded as `query_id`.
 3. Supported `scene_variant` values:
    - `spinner_clean`
@@ -478,7 +480,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 7. Trace contract:
    - `scene_ir.entities` includes `spinner_panel`, `spinner_sector`, and `spinner_pointer` entities,
    - `render_map.sector_bboxes_px` and `render_map.item_bboxes_px` store sector and panel boxes,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `scene_id`, `scene_variant`, sector specs, event description, favorable outcome count, total outcome count, reduced fraction answer, panel evidence item ids, and sector-level calculation support ids.
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, sector specs, event description, favorable outcome count, total outcome count, reduced fraction answer, panel evidence item ids, and sector-level calculation support ids.
 
 ## Spatial transform result tasks
 1. Active task ids:
@@ -486,7 +488,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__paper_fold_cut__paper_fold_cut_result_label`
    - `task_puzzles__overlay__overlay_result_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task records a fixed `query_id`: `paper_fold_result`, `paper_fold_cut_result`, or `overlay_result`.
 3. Supported semantic parameter axes:
    - paper-fold-cut samples `fold_count=1|2`
@@ -509,7 +511,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - exactly `5..6` labeled result options appear below the reference panel,
    - the answer is the option letter, not a free-form view description.
 9. Trace contract:
-   - `execution_trace.query_id` stores the public query contract and `execution_trace.internal_query_variant` stores the renderer grammar,
+   - `execution_trace.query_id` stores the public query contract and `execution_trace.internal_query_id` stores the renderer grammar,
    - `render_map.option_choice_bboxes_px` stores each option-image bbox keyed by `option_choice_id`,
    - fold-cut tasks also store `render_map.folded_packet_bbox_px`,
    - overlay tasks store `render_map.source_sheet_bboxes_px`,
@@ -524,7 +526,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__voxel_cube__cube_projection_match_label`
    - `task_puzzles__voxel_cube__cube_projection_consistency_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task records a fixed `query_id`: `cube_count`, `cube_structure_change_count`, `painted_face_count`, `visible_cube_count`, `projection_match_label`, or `projection_consistency_label`,
    - all six tasks share public `scene_id=voxel_cube`.
 3. Supported query parameters:
@@ -562,7 +564,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__cube_net__cube_net_face_relation_label`
    - `task_puzzles__cube_net__cube_rolling_result_label`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - cube-net relation records `query_id=opposite_face_label|marked_edge_neighbor_face_label`,
    - cube rolling records `query_id=final_top_face_label|final_front_face_label|final_right_face_label`,
    - both tasks share public `scene_id=cube_net`.
@@ -587,7 +589,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 1. Active task id:
    - `task_puzzles__polyomino_missing__polyomino_missing_region_piece_label`
 2. Public contract:
-   - the task uses public `query_variant=default`,
+   - the task records branch metadata in `query_id`,
    - semantic branches are recorded in `query_id`: `marked_region_piece_label` or `rectangle_complement_piece`.
 3. Supported `scene_variant` values:
    - `polyomino_strip`
@@ -611,7 +613,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__tangram__tangram_missing_piece_label`
    - `task_puzzles__tangram__tangram_contact_count`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task records a fixed `query_id`: `missing_piece_label` or `contact_count`.
 3. Supported `scene_variant` values:
    - `tangram_square`
@@ -637,7 +639,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - prompt-facing evidence is projected from traced piece and option-panel ids, not inferred from pixels.
 
 ## `task_puzzles__cyclic_order__cyclic_order_equivalent_label`
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `cyclic_order_equivalent_label`
 3. Supported `token_render_style` values:
    - `colored_beads`
@@ -674,14 +676,14 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `scene_ir.entities` includes `puzzle_topology_reference_panel`, `puzzle_topology_reference_label`, `puzzle_topology_reference_loop`, `puzzle_topology_reference_bead`, `puzzle_topology_option_choice`, `puzzle_topology_option_label`, `puzzle_topology_option_loop`, and `puzzle_topology_option_bead` entities,
    - `render_map.reference_loop_bbox_px` stores the projected reference loop bbox,
    - `render_map.option_choice_bboxes_px` stores option-image bboxes keyed by `option_choice_id`,
-   - `execution_trace` stores `query_variant=default`, `query_id=cyclic_order_equivalent_label`, `internal_query_variant=cyclic_order_equivalent_label`, token/render axes, option specs, valid option id, answer option id/label, equivalence rule, and solver trace,
+   - `execution_trace` stores `query_id=cyclic_order_equivalent_label`, internal replay query fields, token/render axes, option specs, valid option id, answer option id/label, equivalence rule, and solver trace,
    - prompt-facing evidence is projected from the recorded valid option id, not inferred from pixels.
 
 ## String-topology count tasks
 1. Active task ids:
    - `task_puzzles__string_topology__string_component_count`
 2. Public contract:
-   - the task uses public `query_variant=default`,
+   - the task records branch metadata in `query_id`,
    - the sampled predicate is recorded as `query_id`: `open_rope_count`, `closed_loop_count`, or `knotted_component_count`.
 3. Supported `scene_variant` values:
    - `string_strip`
@@ -710,11 +712,11 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `render_map.component_bboxes_px` stores separate component bboxes keyed by `component_id`,
    - `render_map.crossing_bboxes_px` stores crossing bboxes keyed by `crossing_id`,
    - `render_map.evidence_source` records the component bbox evidence source,
-   - `execution_trace` stores `query_variant=default`, `query_id`, `internal_query_variant`, `component_specs`, `visual_group_specs`, `crossing_specs`, `component_count`, `component_count_range`, `visual_group_count`, `visual_group_count_range`, `object_count`, `object_count_range`, `object_count_probabilities`, `target_count`, `target_answer`, `target_count_range`, `target_count_probabilities`, `distractor_count`, `distractor_count_range`, `distractor_count_probabilities`, `open_rope_count`, `closed_loop_count`, `knotted_component_count`, `target_answer_support`, `answer_value`, `supporting_item_ids`, `supporting_evidence_source`, `topology_rule`, and `solver_trace`,
+   - `execution_trace` stores `query_id`, internal replay query fields, `component_specs`, `visual_group_specs`, `crossing_specs`, `component_count`, `component_count_range`, `visual_group_count`, `visual_group_count_range`, `object_count`, `object_count_range`, `object_count_probabilities`, `target_count`, `target_answer`, `target_count_range`, `target_count_probabilities`, `distractor_count`, `distractor_count_range`, `distractor_count_probabilities`, `open_rope_count`, `closed_loop_count`, `knotted_component_count`, `target_answer_support`, `answer_value`, `supporting_item_ids`, `supporting_evidence_source`, `topology_rule`, and `solver_trace`,
    - prompt-facing evidence is projected from `supporting_item_ids` using the recorded evidence source, not inferred from pixels.
 
 ## Maze tasks
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. Active task ids:
    - `task_puzzles__maze__exit_reachability_label`
    - `task_puzzles__maze__reachable_exit_count`
@@ -722,7 +724,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `exit_reachability_label`
    - `reachable_exit_count`
 4. Semantic parameter axes:
-   - `query_variant`: `exit_reachability_label|reachable_exit_count`
+   - `query_id`: `exit_reachability_label|reachable_exit_count`
    - `target_reachability`: `reachable|unreachable` for `exit_reachability_label`
 5. Supported `scene_variant` values:
    - `classic_wall_maze`
@@ -744,7 +746,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `scene_ir.entities` includes one `start` entity and exit entities with reachability recorded in metadata,
    - `render_map.item_bboxes_px` stores exit label+doorway bboxes keyed by item id,
    - `render_map.evidence_source` records `item_bboxes_px`,
-   - `execution_trace` stores `query_variant=default`, selected `query_id`, `internal_query_variant`, maze dimensions, start cell, open edges, exits, reachable/unreachable labels, target reachability when applicable, answer value, supporting item ids, evidence policy, and solver trace,
+   - `execution_trace` stores selected `query_id`, internal replay query fields, maze dimensions, start cell, open edges, exits, reachable/unreachable labels, target reachability when applicable, answer value, supporting item ids, evidence policy, and solver trace,
    - prompt-facing evidence is projected from `supporting_item_ids` using item bboxes, not inferred from pixels.
 
 ## Voxel-ladder maze tasks
@@ -752,7 +754,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__voxel_ladder__voxel_ladder_route_label`
    - `task_puzzles__voxel_ladder__voxel_ladder_route_count`
 2. Public contract:
-   - both tasks use public `query_variant=default`,
+   - both tasks record branch metadata in `query_id`,
    - label queries record `query_id=checkpoint_sequence_label|unreachable_checkpoint_label`,
    - count queries record `query_id=reachable_checkpoint_count|shortest_ladder_count`.
 3. Supported `scene_variant` values:
@@ -778,7 +780,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `scene_ir.entities` includes voxel cube, checkpoint, ladder, and route-option entities,
    - `render_map.item_bboxes_px` stores cube, checkpoint, ladder, and option bboxes keyed by item id,
    - `render_map.evidence_source` records `item_bboxes_px`,
-   - `execution_trace` stores `query_variant=default`, selected `query_id`, `internal_query_variant`, scene variant, start/goal nodes, route nodes, route edges, graph edges, checkpoints with `color_name` and `color_rgb`, ladders, option specs, answer value, supporting item ids, and evidence policy,
+   - `execution_trace` stores selected `query_id`, internal replay query fields, scene variant, start/goal nodes, route nodes, route edges, graph edges, checkpoints with `color_name` and `color_rgb`, ladders, option specs, answer value, supporting item ids, and evidence policy,
    - prompt-facing evidence is projected from `supporting_item_ids` using final image bboxes, not inferred from pixels.
 
 ## Prompt contract for logic grid completion tasks
@@ -963,7 +965,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 4. `query_key`: `cyclic_order_equivalent_label`
 5. Required slots:
    - scene: `object_description`
-   - query-variant: `token_render_style_instruction`
+   - query-id: `token_render_style_instruction`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing wording should always make the rule explicit: rotation and smooth deformation are allowed, but cutting, token crossing, and reflection/flipping are not.
@@ -1026,7 +1028,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__color_gradient__color_gradient_completion_label`
    - `task_puzzles__color_gradient__color_gradient_violation_cell_label`
 2. Public contract:
-   - tasks use public `query_variant=default`,
+   - tasks record branch metadata in `query_id`,
    - query ids are `linear_gradient_completion_label` and `color_gradient_violation_cell_label`.
 3. Supported `scene_variant` values:
    - `swatch_clean`
@@ -1058,7 +1060,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 1. Active task id:
    - `task_puzzles__counterfactual_board__board_grid_count`
 2. Public contract:
-   - public `query_variant=default`,
+   - branch metadata uses `query_id`,
    - query ids are `row_count|column_count|horizontal_line_count|vertical_line_count`.
 3. Supported board styles:
    - `chess_checkers`: fixed canonical board rendering with sparse checker/chess discs; canonical prior `8 x 8`; visible rows/columns sampled `6..10`.
@@ -1112,7 +1114,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__word_search__search_letter_count_value`
    - `task_puzzles__word_search__search_present_word_count`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task maps to scene id `word_search`,
    - query ids are `word_location_label`, `letter_count_value`, and `present_word_count`.
 3. Supported `scene_variant` values:
@@ -1153,7 +1155,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__music_staff__duration_equivalence_label`
    - `task_puzzles__music_staff__bar_count_value`
 2. Public contract:
-   - each task uses public `query_variant=default`,
+   - each task records branch metadata in `query_id`,
    - each task maps to scene id `music_staff`,
    - query ids cover pitch/interval reading, key/scale reasoning, chord/harmony labels, dominant-chord counting, meter/rhythm labels, duration equivalence, and visible-bar counting.
    - public task units are intentionally grouped by coherent notation concept,
@@ -1197,6 +1199,6 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.
-2. `query_variant` and `scene_variant` are sampled independently at the task policy level.
+2. `query_id` and `scene_variant` are sampled independently at the task policy level.
 3. No semantic auto-relaxation: every generated puzzle has exactly one valid answer under its declared answer type.
 4. Review/sample overlays should use the recorded bbox maps (`render_map.slot_bboxes_px[query_slot_id]`, `render_map.box_bboxes_px[query_box_id]`, `render_map.cell_bboxes_px[query_cell_id]`, `render_map.item_bboxes_px[item_id]`, `render_map.option_panel_bboxes_px[correct_option_panel_id]`, `render_map.option_choice_bboxes_px[correct_option_choice_id]`, `render_map.structure_bboxes_px[structure_bbox_id]`, `render_map.component_bboxes_px[component_id]`, `render_map.crossing_bboxes_px[crossing_id]`, `render_map.piece_card_bboxes_px[piece_id]`, or `render_map.point_bboxes_px[point_label]`) for the prompt-facing witness. Maze shortest-path overlays use ordered centers from `projected_evidence.pixel_point_sequence`.

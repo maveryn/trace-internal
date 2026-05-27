@@ -3,7 +3,7 @@ generation:
     balanced_sampling: true
   task_overrides:
     geometry_analytical_function_property_label_base:
-      query_variant_weights:
+      query_id_weights:
         function_status_label: 1.0
         one_to_one_status_label: 1.0
         domain_match_label: 1.0
@@ -15,15 +15,15 @@ generation:
         monotonic_interval_decreasing_label: 1.0
         sign_interval_positive_label: 1.0
         sign_interval_negative_label: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_sampling: true
       candidate_label_pool: [A, B, C, D, E, F]
     geometry_analytical_intersection_property_label_base:
-      query_variant_weights:
+      query_id_weights:
         line_circle_tangent_label: 1.0
         line_circle_two_intersections_label: 1.0
         circle_circle_two_intersections_label: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_sampling: true
       candidate_label_pool: [A, B, C, D, E, F, G, H, I]
 

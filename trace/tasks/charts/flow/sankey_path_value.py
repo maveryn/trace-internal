@@ -44,16 +44,16 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_flow_sankey_path_value_base"
-PATH_VALUE_QUERY_VARIANTS: Tuple[str, ...] = (
+PATH_VALUE_QUERY_IDS: Tuple[str, ...] = (
     "source_to_target_total_flow",
     "path_bottleneck_value",
     "path_flow_difference",
 )
-NODE_SIDE_TOTAL_QUERY_VARIANTS: Tuple[str, ...] = (
+NODE_SIDE_TOTAL_QUERY_IDS: Tuple[str, ...] = (
     "source_outgoing_total_flow",
     "target_incoming_total_flow",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = PATH_VALUE_QUERY_VARIANTS + NODE_SIDE_TOTAL_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = PATH_VALUE_QUERY_IDS + NODE_SIDE_TOTAL_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("three_column_sankey",)
 
 _SOURCE_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D")
@@ -840,17 +840,17 @@ def _render_sankey(
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -868,18 +868,18 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not enabled:
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -887,15 +887,15 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -997,7 +997,7 @@ def _sample_labels(rng, *, source_count: int, middle_count: int, target_count: i
 
 def _sample_paths(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     rng,
@@ -1017,7 +1017,7 @@ def _sample_paths(
     selected_triples: List[Tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]] = []
     query_seed_params: Dict[str, Any] = {}
 
-    if str(query_variant) == "source_to_target_total_flow":
+    if str(query_id) == "source_to_target_total_flow":
         source_target_pairs = [(source, target) for source in sources for target in targets]
         pair_index = _balanced_int(
             list(range(len(source_target_pairs))),
@@ -1114,14 +1114,14 @@ def _paths_respect_side_limit(paths: Sequence[Mapping[str, Any]], *, max_paths_p
 
 def _choose_query(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     rng,
     paths: Sequence[Mapping[str, Any]],
     query_seed_params: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    if str(query_variant) == "source_to_target_total_flow":
+    if str(query_id) == "source_to_target_total_flow":
         source_id = str(query_seed_params["source_id"])
         target_id = str(query_seed_params["target_id"])
         matching = [
@@ -1161,7 +1161,7 @@ def _choose_query(
             "path_details": [dict(path) for path in matching],
         }
 
-    if str(query_variant) == "path_bottleneck_value":
+    if str(query_id) == "path_bottleneck_value":
         eligible = [dict(path) for path in paths]
         selected = dict(eligible[int(rng.randrange(len(eligible)))])
         answer = int(selected["bottleneck_value"])
@@ -1181,7 +1181,7 @@ def _choose_query(
             "path_details": [dict(selected)],
         }
 
-    if str(query_variant) == "path_flow_difference":
+    if str(query_id) == "path_flow_difference":
         diff_min, diff_max = resolve_required_int_bounds(
             params,
             _GEN_DEFAULTS,
@@ -1216,7 +1216,7 @@ def _choose_query(
             "path_details": [dict(selected)],
         }
 
-    if str(query_variant) in NODE_SIDE_TOTAL_QUERY_VARIANTS:
+    if str(query_id) in NODE_SIDE_TOTAL_QUERY_IDS:
         answer_min, answer_max = resolve_required_int_bounds(
             params,
             _GEN_DEFAULTS,
@@ -1236,7 +1236,7 @@ def _choose_query(
             context=f"{TASK_ID} node-side connected path count",
         )
 
-        if str(query_variant) == "source_outgoing_total_flow":
+        if str(query_id) == "source_outgoing_total_flow":
             source_groups: Dict[str, List[Dict[str, Any]]] = {}
             for path in paths:
                 source_groups.setdefault(str(path["source_id"]), []).append(dict(path))
@@ -1272,7 +1272,7 @@ def _choose_query(
                 "path_details": [dict(path) for path in selected_paths],
             }
 
-        if str(query_variant) == "target_incoming_total_flow":
+        if str(query_id) == "target_incoming_total_flow":
             target_groups: Dict[str, List[Dict[str, Any]]] = {}
             for path in paths:
                 target_groups.setdefault(str(path["target_id"]), []).append(dict(path))
@@ -1308,12 +1308,12 @@ def _choose_query(
                 "path_details": [dict(path) for path in selected_paths],
             }
 
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _construct_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -1384,7 +1384,7 @@ def _construct_dataset(
         )
         try:
             paths, query_seed_params = _sample_paths(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 params=params,
                 instance_seed=int(instance_seed),
                 rng=rng,
@@ -1401,7 +1401,7 @@ def _construct_dataset(
             continue
         try:
             query = _choose_query(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 params=params,
                 instance_seed=int(instance_seed),
                 rng=rng,
@@ -1412,7 +1412,7 @@ def _construct_dataset(
             continue
         return {
             "scene_title": str(rng.choice(_TITLE_OPTIONS)),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "sources": [dict(node) for node in sources],
             "middles": [dict(node) for node in middles],
@@ -1437,10 +1437,10 @@ def _construct_dataset(
     raise ValueError(f"failed to construct feasible {TASK_ID} instance")
 
 
-def _json_examples(query_variant: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
     return (
-        str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-        str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+        str(prompt_defaults[f"json_example_{str(query_id)}"]),
+        str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
     )
 
 
@@ -1453,11 +1453,11 @@ class ChartsFlowSankeyPathValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_sampling_params(params, query_variant_probabilities=query_variant_probabilities)
+        support_params = _support_sampling_params(params, query_id_probabilities=query_id_probabilities)
         dataset = _construct_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=support_params,
             instance_seed=int(instance_seed),
@@ -1513,7 +1513,7 @@ class ChartsFlowSankeyPathValueTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _json_examples(str(query_variant), prompt_defaults=prompt_defaults)
+        json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
         query = dict(dataset["query"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -1521,7 +1521,7 @@ class ChartsFlowSankeyPathValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_three_column_sankey"]),
@@ -1569,7 +1569,7 @@ class ChartsFlowSankeyPathValueTask:
         )
         visual_scan = clamp_unit_interval((0.70 * float(path_scan)) + (0.30 * float(node_scan)))
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BY_VARIANT[str(query_id)])
             + (0.10 * float(evidence_scan))
         )
         complexity = build_chart_complexity(
@@ -1581,9 +1581,9 @@ class ChartsFlowSankeyPathValueTask:
             },
         )
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
             "source_count": int(dataset["source_count"]),
             "middle_count": int(dataset["middle_count"]),
@@ -1608,7 +1608,7 @@ class ChartsFlowSankeyPathValueTask:
                 "scene_kind": "chart_sankey",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                 "answer_value": int(dataset["answer_value"]),
                 "query_path_ids": [str(path_id) for path_id in query["query_path_ids"]],
@@ -1618,7 +1618,7 @@ class ChartsFlowSankeyPathValueTask:
             },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1652,12 +1652,12 @@ class ChartsFlowSankeyPathValueTask:
                 "segment_centers_px": dict(rendered_scene.segment_center_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "sankey_node_side_total_value"
-                if str(query_variant) in NODE_SIDE_TOTAL_QUERY_VARIANTS
+                if str(query_id) in NODE_SIDE_TOTAL_QUERY_IDS
                 else "sankey_path_value",
                 "scene_title": str(dataset["scene_title"]),
                 "sources": [dict(node) for node in dataset["sources"]],
@@ -1684,11 +1684,11 @@ class ChartsFlowSankeyPathValueTask:
                 "connected_count": int(query["connected_count"]) if "connected_count" in query else None,
                 "node_side_total": int(query["node_side_total"]) if "node_side_total" in query else None,
                 "expression": str(query["expression"]),
-                "evidence_semantics": str(query_variant),
+                "evidence_semantics": str(query_id),
             },
             "witness_symbolic": {
                 "type": "sankey_node_side_total_value_witness"
-                if str(query_variant) in NODE_SIDE_TOTAL_QUERY_VARIANTS
+                if str(query_id) in NODE_SIDE_TOTAL_QUERY_IDS
                 else "sankey_path_value_witness",
                 "query_path_ids": [str(path_id) for path_id in query["query_path_ids"]],
                 "evidence_segment_ids": list(evidence_segment_ids),
@@ -1710,7 +1710,7 @@ class ChartsFlowSankeyPathValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
 
 
@@ -1722,7 +1722,7 @@ class ChartsFlowSankeyPathValuePublicTask(
     """Return one sampled path value from a Sankey flow chart."""
 
     task_id = "task_charts__sankey__path_value"
-    allowed_query_variants = PATH_VALUE_QUERY_VARIANTS
+    allowed_query_ids = PATH_VALUE_QUERY_IDS
 
 
 @register_task
@@ -1733,15 +1733,15 @@ class ChartsFlowSankeyNodeSideTotalValuePublicTask(
     """Return a one-sided total for a source or target Sankey node."""
 
     task_id = "task_charts__sankey__node_side_total_value"
-    allowed_query_variants = NODE_SIDE_TOTAL_QUERY_VARIANTS
+    allowed_query_ids = NODE_SIDE_TOTAL_QUERY_IDS
 
 
 __all__ = [
     "ChartsFlowSankeyNodeSideTotalValuePublicTask",
     "ChartsFlowSankeyPathValueTask",
     "ChartsFlowSankeyPathValuePublicTask",
-    "NODE_SIDE_TOTAL_QUERY_VARIANTS",
-    "PATH_VALUE_QUERY_VARIANTS",
+    "NODE_SIDE_TOTAL_QUERY_IDS",
+    "PATH_VALUE_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

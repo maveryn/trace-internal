@@ -52,7 +52,7 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "query_variant", "expected_scene_kind"),
+    ("task_cls", "query_id", "expected_scene_kind"),
     (
         (
             IconsReferenceCanvasAttributeMatchCountTask,
@@ -78,13 +78,13 @@ def _extract_prompt_json_example(prompt: str) -> dict:
 )
 def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
     task_cls,
-    query_variant: str,
+    query_id: str,
     expected_scene_kind: str,
 ) -> None:
     task = task_cls()
     out = task.generate(
         24010,
-        params={"query_variant": query_variant, "object_count": 8, "target_count": 3},
+        params={"query_id": query_id, "object_count": 8, "target_count": 3},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -94,31 +94,31 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
 
     assert trace["scene_ir"]["scene_kind"] == expected_scene_kind
     assert "source_task_id" not in execution
-    assert "source_query_variant" not in execution
+    assert "source_query_id" not in execution
     assert execution["scene_variant"] == "reference_scene"
-    assert execution["query_variant"] == "default"
-    assert execution["query_id"] == query_variant
+    assert execution["query_id"] == "default"
+    assert execution["query_id"] == query_id
     assert trace["query_spec"]["template_id"] == "icons_counting_v0"
     assert trace["query_spec"]["params"]["scene_variant"] == "reference_scene"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
-    assert trace["query_spec"]["params"]["query_id"] == query_variant
-    assert out.query_variant == "default"
-    assert out.query_id == query_variant
+    assert trace["query_spec"]["params"]["query_id"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == query_id
+    assert out.query_id == "default"
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 3
-    assert execution["query_variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
+    assert execution["query_id_probabilities"] == trace["query_spec"]["params"]["query_id_probabilities"]
 
     matching_indices = {int(value) for value in execution["matching_scene_indices"]}
     assert len(matching_indices) == 3
     assert len(scene_entities) == 8
-    if query_variant == "match_type":
+    if query_id == "match_type":
         reference_icon_id = str(execution["reference_icon_id"])
         for index, entity in enumerate(scene_entities):
             assert bool(entity["is_match"]) == (int(index) in matching_indices)
             if int(index) in matching_indices:
                 assert str(entity["icon_id"]) == reference_icon_id
-    elif query_variant == "match_color":
+    elif query_id == "match_color":
         reference_icon_id = str(execution["reference_icon_id"])
         reference_tint = tuple(int(channel) for channel in execution["reference_tint_rgb"])
         assert all(str(entity["icon_id"]) == reference_icon_id for entity in scene_entities)
@@ -129,7 +129,7 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
                 assert entity_tint == reference_tint
             else:
                 assert entity_tint != reference_tint
-    elif query_variant == "match_rotation":
+    elif query_id == "match_rotation":
         base_icon_id = str(execution["base_icon_id"])
         reference_rotation = int(execution["reference_rotation_degrees"])
         assert str(reference["icon_id"]) == base_icon_id
@@ -152,7 +152,7 @@ def test_icons_counting_attribute_match_count_tracks_consolidated_trace(
 
 def test_icons_counting_attribute_match_count_prompt_example_matches_contract() -> None:
     task = IconsReferenceCanvasAttributeMatchCountTask()
-    out = task.generate(24011, params={"query_variant": "match_type", "object_count": 8, "target_count": 3}, max_attempts=200)
+    out = task.generate(24011, params={"query_id": "match_type", "object_count": 8, "target_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": 2}
@@ -185,12 +185,12 @@ def test_icons_counting_multi_attribute_match_count_is_harder_than_type_for_same
     task = IconsReferenceCanvasAttributeMatchCountTask()
     type_out = task.generate(
         24016,
-        params={"query_variant": "match_type", "object_count": 9, "target_count": 3},
+        params={"query_id": "match_type", "object_count": 9, "target_count": 3},
         max_attempts=200,
     )
     binding_out = task.generate(
         24016,
-        params={"query_variant": "match_type_color_rotation", "object_count": 9, "target_count": 3},
+        params={"query_id": "match_type_color_rotation", "object_count": 9, "target_count": 3},
         max_attempts=200,
     )
     assert float(binding_out.complexity.complexity_score) > float(type_out.complexity.complexity_score)

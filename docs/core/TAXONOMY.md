@@ -8,8 +8,8 @@ TRACE public metadata uses:
 1. `domain` is the broad public domain used for balancing and reporting.
 2. `scene_id` is the visual rendering grammar for the instance.
 3. `task_id` is the sampling unit.
-4. `query_id` is optional diagnostic metadata for the query variant inside one
-   task. Use **query variant** as the human-facing term and `query_id` as the
+4. `query_id` is optional diagnostic metadata for the query id inside one
+   task. Use **query id** as the human-facing term and `query_id` as the
    canonical field. Do not use `task_variant` for this concept.
 
 `task_group` remains an implementation/config grouping field for module layout,
@@ -71,8 +71,8 @@ search, or algorithmic objective differs.
 
 ## Sampling Rule
 Equal task-level sampling remains the default. `query_id` values are diagnostics
-for query variants inside a task, not separate public sampling units.
-`query_variant` is an internal replay selector, not a public sampling unit.
+for query ids inside a task, not separate public sampling units.
+`query_id` is an internal replay selector, not a public sampling unit.
 
 ## Implementation Layer
 The active taxonomy mapping lives in `trace/core/taxonomy.py`. Build,

@@ -57,7 +57,7 @@ def test_graph_relation_component_size_after_edge_removal_contract_matches_trace
 
     assert "task_graph__node_link__component_membership_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "component_size_after_edge_removal"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"

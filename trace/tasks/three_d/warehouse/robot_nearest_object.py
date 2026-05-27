@@ -91,7 +91,7 @@ from .robot_forward_path import (
 
 
 TASK_ID = "task_three_d__warehouse__robot_nearest_object_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("closest_robot_to_reference", "closest_object_to_robot")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_robot_to_reference", "closest_object_to_robot")
 SUPPORTED_AISLE_HEADINGS: Tuple[str, ...] = tuple(SUPPORTED_ROBOT_HEADINGS)
 REFERENCE_OBJECT_TYPE = WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE
 REFERENCE_OBJECT_NAME = WAREHOUSE_NEAREST_REFERENCE_OBJECT_NAME
@@ -846,7 +846,7 @@ def _frame_from_dataset(dataset: Mapping[str, Any]):
 def _build_dataset(
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     aisle_heading: str,
     candidate_count: int,
@@ -859,7 +859,7 @@ def _build_dataset(
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     for _attempt in range(520):
         camera = _sample_camera(rng, yaw_band_degrees=tuple(float(value) for value in camera_yaw_band))
-        if str(query_variant) == "closest_robot_to_reference":
+        if str(query_id) == "closest_robot_to_reference":
             reference_specs, candidate_specs, context_specs, scene_geometry, answer_meta = _sample_reference_and_robot_candidates(
                 rng=rng,
                 candidate_count=int(candidate_count),
@@ -869,7 +869,7 @@ def _build_dataset(
                 params=params,
                 instance_seed=int(instance_seed),
             )
-        elif str(query_variant) == "closest_object_to_robot":
+        elif str(query_id) == "closest_object_to_robot":
             reference_specs, candidate_specs, context_specs, scene_geometry, answer_meta = _sample_robot_and_object_candidates(
                 rng=rng,
                 candidate_count=int(candidate_count),
@@ -880,7 +880,7 @@ def _build_dataset(
                 instance_seed=int(instance_seed),
             )
         else:
-            raise ValueError(f"unsupported query_variant: {query_variant}")
+            raise ValueError(f"unsupported query_id: {query_id}")
         all_specs = [*reference_specs, *candidate_specs, *context_specs]
         reference_points: List[Tuple[float, float, float]] = []
         for spec in all_specs:
@@ -900,7 +900,7 @@ def _build_dataset(
             continue
         answer_label = str(answer_meta["answer_label"])
         answer_spec = next(spec for spec in finalized_candidates if str(spec["point_label"]) == answer_label)
-        if str(query_variant) == "closest_robot_to_reference":
+        if str(query_id) == "closest_robot_to_reference":
             if not bool(answer_spec.get("is_nearest_robot_to_reference", False)):
                 continue
             distance_by_label = {str(spec["point_label"]): round(float(spec["distance_to_reference_object"]), 4) for spec in finalized_candidates}
@@ -933,7 +933,7 @@ def _build_dataset(
         candidate_object_types = {str(spec["point_label"]): str(spec["object_type"]) for spec in finalized_candidates}
         object_type_counts = Counter(str(spec["object_type"]) for spec in [*finalized_reference, *finalized_candidates, *finalized_context])
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "candidate_count": int(candidate_count),
             "context_object_count": int(context_object_count),
@@ -942,10 +942,10 @@ def _build_dataset(
             "reference_object_name": str(reference_object_name),
             "reference_specs": list(finalized_reference),
             "reference_object_specs": list(finalized_reference),
-            "reference_robot_specs": list(finalized_reference) if str(query_variant) == "closest_object_to_robot" else [],
+            "reference_robot_specs": list(finalized_reference) if str(query_id) == "closest_object_to_robot" else [],
             "candidate_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])),
-            "candidate_robot_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_variant) == "closest_robot_to_reference" else [],
-            "candidate_object_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_variant) == "closest_object_to_robot" else [],
+            "candidate_robot_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_id) == "closest_robot_to_reference" else [],
+            "candidate_object_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_id) == "closest_object_to_robot" else [],
             "context_object_specs": sorted(finalized_context, key=lambda spec: str(spec["object_id"])),
             "object_specs": sorted([*finalized_reference, *finalized_candidates, *finalized_context], key=lambda spec: str(spec["object_id"])),
             "target_object_ids": [str(answer_spec["object_id"])],
@@ -960,12 +960,12 @@ def _build_dataset(
             "nearest_robot_by_label": dict(nearest_robot_by_label),
             "nearest_object_by_label": dict(nearest_object_by_label),
             "distance_to_reference_by_label": dict(sorted(distance_by_label.items())),
-            "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_variant) == "closest_robot_to_reference" else {},
-            "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_variant) == "closest_object_to_robot" else {},
+            "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_robot_to_reference" else {},
+            "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_robot" else {},
             "distance_order_near_to_far": [str(label) for label in answer_meta["distance_order"]],
             "nearest_margin": float(answer_meta["nearest_margin"]),
-            "nearest_robot_margin": float(answer_meta["nearest_margin"]) if str(query_variant) == "closest_robot_to_reference" else 0.0,
-            "nearest_object_margin": float(answer_meta["nearest_margin"]) if str(query_variant) == "closest_object_to_robot" else 0.0,
+            "nearest_robot_margin": float(answer_meta["nearest_margin"]) if str(query_id) == "closest_robot_to_reference" else 0.0,
+            "nearest_object_margin": float(answer_meta["nearest_margin"]) if str(query_id) == "closest_object_to_robot" else 0.0,
             "candidate_projected_bboxes_by_label": dict(sorted(candidate_projected_bboxes.items())),
             "candidate_object_types_by_label": dict(sorted(candidate_object_types.items())),
             "object_type_counts": dict(sorted(object_type_counts.items())),
@@ -999,8 +999,8 @@ def _build_dataset(
                 "nearest_robot_by_label": dict(nearest_robot_by_label),
                 "nearest_object_by_label": dict(nearest_object_by_label),
                 "distance_to_reference_by_label": dict(sorted(distance_by_label.items())),
-                "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_variant) == "closest_robot_to_reference" else {},
-                "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_variant) == "closest_object_to_robot" else {},
+                "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_robot_to_reference" else {},
+                "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_robot" else {},
                 "distance_order_near_to_far": [str(label) for label in answer_meta["distance_order"]],
                 "answer_label": str(answer_label),
                 "answer_object_id": str(answer_object_id),
@@ -1055,16 +1055,16 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) -> Dict[str, Any]:
     locked_params = dict(params)
-    query_variant, _query_probabilities = _shared_resolve_axis_variant(
+    query_id, _query_probabilities = _shared_resolve_axis_variant(
         params=params,
         task_id=TASK_ID,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
         allow_locked=True,
     )
     scene_variant, _scene_probabilities = _shared_resolve_axis_variant(
@@ -1118,7 +1118,7 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
     _camera_yaw_band, _camera_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(params=params, instance_seed=int(instance_seed))
     locked_params.update(
         {
-            "_locked_query_variant": str(query_variant),
+            "_locked_query_id": str(query_id),
             "_locked_scene_variant": str(scene_variant),
             "_locked_aisle_heading": str(aisle_heading),
             "_locked_candidate_count": int(candidate_count),
@@ -1150,16 +1150,16 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params=params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
             allow_locked=True,
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
@@ -1214,7 +1214,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_dataset(
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             aisle_heading=str(aisle_heading),
             candidate_count=int(candidate_count),
@@ -1256,12 +1256,12 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
         )
         prompt_config = dict(_PROMPT_DEFAULTS)
         prompt_config.update(prompt_defaults)
-        object_description = str(prompt_config.get(f"object_description_{query_variant}", prompt_defaults["object_description"]))
-        evidence_hint = str(prompt_config.get(f"evidence_hint_{query_variant}", prompt_defaults["evidence_hint"]))
-        answer_hint = str(prompt_config.get(f"answer_hint_{query_variant}", prompt_defaults["answer_hint"]))
-        json_example = str(prompt_config.get(f"json_example_{query_variant}", prompt_defaults["json_example"]))
+        object_description = str(prompt_config.get(f"object_description_{query_id}", prompt_defaults["object_description"]))
+        evidence_hint = str(prompt_config.get(f"evidence_hint_{query_id}", prompt_defaults["evidence_hint"]))
+        answer_hint = str(prompt_config.get(f"answer_hint_{query_id}", prompt_defaults["answer_hint"]))
+        json_example = str(prompt_config.get(f"json_example_{query_id}", prompt_defaults["json_example"]))
         json_example_answer_only = str(
-            prompt_config.get(f"json_example_answer_only_{query_variant}", prompt_defaults["json_example_answer_only"])
+            prompt_config.get(f"json_example_answer_only_{query_id}", prompt_defaults["json_example_answer_only"])
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -1269,7 +1269,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1314,15 +1314,14 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "aisle_heading": str(aisle_heading),
@@ -1363,8 +1362,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "target_object_bboxes_px": {str(key): list(rendered_scene.object_bboxes_px[str(key)]) for key in dataset["target_object_ids"]},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "candidate_count": int(dataset["candidate_count"]),
@@ -1406,7 +1404,7 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
                 "object_type_counts": dict(dataset["object_type_counts"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_warehouse_robot",
                 "solver_trace": dict(solver_trace),
             },
@@ -1425,16 +1423,15 @@ class ThreeDWarehouseRobotNearestObjectLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 
 __all__ = [
     "MIN_NEAREST_OBJECT_MARGIN",
     "MIN_NEAREST_ROBOT_MARGIN",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "TASK_ID",
     "ThreeDWarehouseRobotNearestObjectLabelTask",
 ]

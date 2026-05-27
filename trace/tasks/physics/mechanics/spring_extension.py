@@ -22,7 +22,7 @@ from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_spring_extension_complexity
@@ -39,28 +39,28 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "staggered_springs",
     "textured_spring",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "missing_weight_for_extension",
     "missing_extension_for_weight",
     "extension_difference",
 )
-SUPPORTED_PUBLIC_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PUBLIC_QUERY_IDS: Tuple[str, ...] = (
     "missing_value",
     "extension_difference",
 )
-_SOLVE_FOR_BY_QUERY_VARIANT = {
+_SOLVE_FOR_BY_QUERY_ID = {
     "missing_weight_for_extension": "weight",
     "missing_extension_for_weight": "extension",
 }
-_QUERY_VARIANT_BY_SOLVE_FOR = {
+_QUERY_ID_BY_SOLVE_FOR = {
     "weight": "missing_weight_for_extension",
     "extension": "missing_extension_for_weight",
 }
 _SUPPORTED_SOLVE_FOR_TARGETS: Tuple[str, ...] = ("weight", "extension")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "paired_springs": SUPPORTED_QUERY_VARIANTS,
-    "staggered_springs": SUPPORTED_QUERY_VARIANTS,
-    "textured_spring": SUPPORTED_QUERY_VARIANTS,
+    "paired_springs": SUPPORTED_QUERY_IDS,
+    "staggered_springs": SUPPORTED_QUERY_IDS,
+    "textured_spring": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -121,13 +121,13 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
-    public_query_variant: str
+    query_id: str
+    public_query_id: str
     solve_for: str | None
     accent_color_name: str
     target_answer: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     solve_for_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -152,7 +152,7 @@ class _SceneSpec:
     """Resolved symbolic scene specification for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     scale_factor: int
     left: _ColumnSpec
     right: _ColumnSpec
@@ -188,7 +188,7 @@ def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_
     return params
 
 
-def _resolve_public_query_variant(
+def _resolve_public_query_id(
     rng,
     *,
     instance_seed: int,
@@ -196,26 +196,26 @@ def _resolve_public_query_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the public spring query family, accepting old inverse names as aliases."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_VARIANT:
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_ID:
         return "missing_value", {
             key: (1.0 if key == "missing_value" else 0.0)
-            for key in SUPPORTED_PUBLIC_QUERY_VARIANTS
+            for key in SUPPORTED_PUBLIC_QUERY_IDS
         }
-    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_VARIANTS:
+    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_IDS:
         selected = str(explicit_query)
         return selected, {
             key: (1.0 if key == selected else 0.0)
-            for key in SUPPORTED_PUBLIC_QUERY_VARIANTS
+            for key in SUPPORTED_PUBLIC_QUERY_IDS
         }
 
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -223,11 +223,11 @@ def _resolve_public_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -240,9 +240,9 @@ def _resolve_solve_for(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve whether the missing value is weight or extension."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_VARIANT:
-        selected = str(_SOLVE_FOR_BY_QUERY_VARIANT[str(explicit_query)])
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_ID:
+        selected = str(_SOLVE_FOR_BY_QUERY_ID[str(explicit_query)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_SOLVE_FOR_TARGETS}
 
     explicit_solve_for = params.get("solve_for")
@@ -254,7 +254,7 @@ def _resolve_solve_for(
 
     solve_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_PUBLIC_QUERY_VARIANTS),
+        divisor=len(SUPPORTED_PUBLIC_QUERY_IDS),
         explicit_keys=("solve_for",),
     )
     selected, probabilities = resolve_variant(
@@ -284,14 +284,14 @@ def _resolve_target_answer(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve one balanced answer target for the active spring query."""
 
-    if str(query_variant) == "missing_weight_for_extension":
+    if str(query_id) == "missing_weight_for_extension":
         support_key = "missing_weight_support"
         fallback = _DEFAULTS.missing_weight_support
-    elif str(query_variant) == "missing_extension_for_weight":
+    elif str(query_id) == "missing_extension_for_weight":
         support_key = "missing_extension_support"
         fallback = _DEFAULTS.missing_extension_support
     else:
@@ -305,7 +305,7 @@ def _resolve_target_answer(
         support_key=support_key,
         explicit_key="target_answer",
         fallback_support=fallback,
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -315,25 +315,25 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve one compatible scene/query pair, color, and answer target."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    public_query_variant, query_probs = _resolve_public_query_variant(
+    public_query_id, query_probs = _resolve_public_query_id(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
     )
     solve_for: str | None = None
     solve_for_probabilities: Dict[str, float] = {}
-    if str(public_query_variant) == "missing_value":
+    if str(public_query_id) == "missing_value":
         solve_for, solve_for_probabilities = _resolve_solve_for(
             axis_rng,
             instance_seed=int(instance_seed),
             params=params,
         )
-        query_variant = str(_QUERY_VARIANT_BY_SOLVE_FOR[str(solve_for)])
+        query_id = str(_QUERY_ID_BY_SOLVE_FOR[str(solve_for)])
     else:
-        query_variant = str(public_query_variant)
+        query_id = str(public_query_id)
     scene_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS),
+        divisor=len(SUPPORTED_QUERY_IDS),
         explicit_keys=("scene_variant",),
     )
     scene_variant, scene_probs = resolve_variant(
@@ -359,7 +359,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_probs = resolve_variant(
@@ -384,20 +384,20 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
-        public_query_variant=str(public_query_variant),
+        query_id=str(query_id),
+        public_query_id=str(public_query_id),
         solve_for=(str(solve_for) if solve_for is not None else None),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         solve_for_probabilities=dict(solve_for_probabilities),
         accent_color_name_probabilities=dict(accent_probs),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
 
 
-def _scale_factor_support(params: Mapping[str, Any], *, query_variant: str | None = None) -> Tuple[int, ...]:
+def _scale_factor_support(params: Mapping[str, Any], *, query_id: str | None = None) -> Tuple[int, ...]:
     """Return the active integer scale-factor support."""
 
     base_support = resolve_integer_support(
@@ -406,7 +406,7 @@ def _scale_factor_support(params: Mapping[str, Any], *, query_variant: str | Non
         key="scale_factor_support",
         fallback=_DEFAULTS.scale_factor_support,
     )
-    if str(query_variant) == "extension_difference":
+    if str(query_id) == "extension_difference":
         return resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -416,12 +416,12 @@ def _scale_factor_support(params: Mapping[str, Any], *, query_variant: str | Non
     return base_support
 
 
-def _answer_support_key(query_variant: str) -> str:
-    """Return the configured answer-support key for one query variant."""
+def _answer_support_key(query_id: str) -> str:
+    """Return the configured answer-support key for one query id."""
 
-    if str(query_variant) == "missing_weight_for_extension":
+    if str(query_id) == "missing_weight_for_extension":
         return "missing_weight_support"
-    if str(query_variant) == "missing_extension_for_weight":
+    if str(query_id) == "missing_extension_for_weight":
         return "missing_extension_support"
     return "extension_difference_support"
 
@@ -430,19 +430,19 @@ def _sample_scene_spec(
     rng,
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     params: Mapping[str, Any],
 ) -> _SceneSpec:
     """Sample one spring-extension symbolic scene that realizes the target answer."""
 
-    scale_support = _scale_factor_support(params, query_variant=str(query_variant))
+    scale_support = _scale_factor_support(params, query_id=str(query_id))
     weight_min = int(group_default(_GEN_DEFAULTS, "weight_value_min", _DEFAULTS.weight_value_min))
     weight_max = int(group_default(_GEN_DEFAULTS, "weight_value_max", _DEFAULTS.weight_value_max))
     extension_max = int(group_default(_GEN_DEFAULTS, "extension_value_max", _DEFAULTS.extension_value_max))
     target_answer = int(target_answer)
 
-    if str(query_variant) == "missing_weight_for_extension":
+    if str(query_id) == "missing_weight_for_extension":
         scale_candidates = [int(scale) for scale in scale_support if int(scale) * int(target_answer) <= int(extension_max)]
         if not scale_candidates:
             raise ValueError("no feasible scale factor for missing_weight_for_extension")
@@ -483,7 +483,7 @@ def _sample_scene_spec(
             "right_weight_block",
             "right_extension_marker",
         )
-    elif str(query_variant) == "missing_extension_for_weight":
+    elif str(query_id) == "missing_extension_for_weight":
         scale_candidates = [
             int(scale)
             for scale in scale_support
@@ -577,7 +577,7 @@ def _sample_scene_spec(
 
     return _SceneSpec(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scale_factor=int(scale_factor),
         left=left,
         right=right,
@@ -1111,10 +1111,10 @@ def _render_scene(
     )
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for the active spring query."""
 
-    if str(query_variant) == "extension_difference":
+    if str(query_id) == "extension_difference":
         evidence = [[210, 222, 260, 232], [620, 274, 670, 284]]
     else:
         evidence = [[170, 342, 248, 396], [204, 252, 256, 262], [595, 226, 647, 260], [598, 304, 650, 314]]
@@ -1139,7 +1139,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 scene_spec = _sample_scene_spec(
                     attempt_rng,
                     scene_variant=str(axes.scene_variant),
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     target_answer=int(axes.target_answer),
                     params=params,
                 )
@@ -1233,14 +1233,14 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.public_query_variant),
+                query_key=str(axes.public_query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -1252,9 +1252,9 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "json_example_answer_only": str(json_example_answer_only),
                     "evidence_hint": str(
                         prompt_defaults["evidence_hint_difference"]
-                        if str(axes.query_variant) == "extension_difference"
+                        if str(axes.query_id) == "extension_difference"
                         else prompt_defaults["evidence_hint_missing_weight"]
-                        if str(axes.query_variant) == "missing_weight_for_extension"
+                        if str(axes.query_id) == "missing_weight_for_extension"
                         else prompt_defaults["evidence_hint_missing_extension"]
                     ),
                 },
@@ -1264,12 +1264,12 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
             evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
-            target_support_key = _answer_support_key(str(axes.query_variant))
+            target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_spring_extension_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 target_answer=int(axes.target_answer),
                 scale_factor=int(scene_spec.scale_factor),
                 shown_measurement_count=int(rendered_scene.shown_measurement_count),
@@ -1281,9 +1281,8 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "solve_for": axes.solve_for,
                         "accent_color_name": str(axes.accent_color_name),
                         "scale_factor": int(scene_spec.scale_factor),
@@ -1292,21 +1291,20 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.public_query_variant),
+                    "query_id": str(axes.public_query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "solve_for": axes.solve_for,
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "solve_for_probabilities": dict(axes.solve_for_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
@@ -1325,9 +1323,8 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "internal_query_variant": str(axes.query_variant),
+                    "query_id": str(axes.public_query_id),
+                    "internal_query_id": str(axes.query_id),
                     "solve_for": axes.solve_for,
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
@@ -1339,7 +1336,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                             fallback=getattr(_DEFAULTS, target_support_key),
                         )
                     ),
-                    "scale_factor_support": list(_scale_factor_support(params, query_variant=str(axes.query_variant))),
+                    "scale_factor_support": list(_scale_factor_support(params, query_id=str(axes.query_id))),
                     "scale_factor": int(scene_spec.scale_factor),
                     "left_measurement": {
                         "shown_weight_value": None if scene_spec.left.shown_weight_value is None else int(scene_spec.left.shown_weight_value),
@@ -1375,7 +1372,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.public_query_variant),
+                query_id=str(axes.public_query_id),
                 scene_id="spring",
             )
 
@@ -1390,7 +1387,7 @@ class PhysicsMechanicsSpringMissingValueTask(
     """Return a missing weight or extension from a paired spring diagram."""
 
     task_id = "task_physics__spring__spring_missing_value"
-    fixed_query_variant = "missing_value"
+    fixed_query_id = "missing_value"
 
 
 @register_task
@@ -1401,7 +1398,7 @@ class PhysicsMechanicsSpringExtensionDifferenceTask(
     """Return the absolute extension difference between two spring diagrams."""
 
     task_id = "task_physics__spring__spring_extension_difference"
-    fixed_query_variant = "extension_difference"
+    fixed_query_id = "extension_difference"
 
 
 __all__ = [

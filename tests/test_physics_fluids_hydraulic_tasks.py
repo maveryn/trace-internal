@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "missing_output_force",
+                "query_id": "missing_output_force",
                 "scene_variant": "wide_bench",
                 "target_answer": 48,
                 "mechanical_advantage": 4,
@@ -29,7 +29,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "missing_input_force",
+                "query_id": "missing_input_force",
                 "scene_variant": "compact_frame",
                 "target_answer": 8,
                 "mechanical_advantage": 5,
@@ -39,7 +39,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "missing_piston_area",
+                "query_id": "missing_piston_area",
                 "scene_variant": "tall_columns",
                 "target_answer": 30,
                 "mechanical_advantage": 5,
@@ -66,15 +66,15 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
 
     assert len(out.evidence_gt.value) == 6
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "hydraulic"
 
-    assert out.query_id == params["query_variant"]
+    assert out.query_id == params["query_id"]
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["query_id"] == params["query_variant"]
+    assert trace["query_spec"]["query_id"] == params["query_id"]
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
 
@@ -93,12 +93,12 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
     assert int(execution["middle_mechanical_advantage"]) == int(execution["middle_area_value"]) // int(
         execution["input_area_value"]
     )
-    if str(params["query_variant"]) == "missing_output_force":
+    if str(params["query_id"]) == "missing_output_force":
 
         assert execution["shown_output_force_value"] is None
 
         assert int(execution["shown_input_force_value"]) == int(execution["input_force_value"])
-    elif str(params["query_variant"]) == "missing_input_force":
+    elif str(params["query_id"]) == "missing_input_force":
 
         assert execution["shown_input_force_value"] is None
 
@@ -112,7 +112,7 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
 
 def test_physics_fluids_hydraulic_task_is_deterministic() -> None:
     params = {
-        "query_variant": "missing_piston_area",
+        "query_id": "missing_piston_area",
         "scene_variant": "wide_bench",
         "target_answer": 24,
         "mechanical_advantage": 4,
@@ -148,9 +148,9 @@ def test_physics_fluids_hydraulic_sampling_covers_scene_query_cross_product() ->
             max_attempts=50,
         )
         execution = out.trace_payload["execution_trace"]
-        internal_query_variant = str(out.query_id)
-        combos[(str(execution["scene_variant"]), internal_query_variant)] += 1
-        answers_by_query[internal_query_variant].add(int(out.answer_gt.value))
+        internal_query_id = str(out.query_id)
+        combos[(str(execution["scene_variant"]), internal_query_id)] += 1
+        answers_by_query[internal_query_id].add(int(out.answer_gt.value))
 
 
     assert len(combos) == 9
@@ -164,11 +164,11 @@ def test_physics_fluids_hydraulic_sampling_covers_scene_query_cross_product() ->
     assert len(answers_by_query["missing_piston_area"]) >= 20
 
 
-def test_physics_fluids_hydraulic_rejects_unknown_query_variant() -> None:
+def test_physics_fluids_hydraulic_rejects_unknown_query_id() -> None:
     with pytest.raises(ValueError):
         PhysicsFluidsHydraulicMissingValueTask().generate(
             61200,
-            params={"query_variant": "missing_pressure"},
+            params={"query_id": "missing_pressure"},
             max_attempts=20,
         )
 

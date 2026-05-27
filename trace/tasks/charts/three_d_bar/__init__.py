@@ -1,15 +1,13 @@
 """3D bar-grid chart tasks."""
 
 from .grid_query import (
-    ChartsThreeDBarAxisGapValueTask,
-    ChartsThreeDBarAxisTotalValueTask,
+    ChartsThreeDBarAxisAggregateValueTask,
     ChartsThreeDBarConditionCountTask,
     ChartsThreeDBarGridQueryTask,
 )
 
 __all__ = [
-    "ChartsThreeDBarAxisGapValueTask",
-    "ChartsThreeDBarAxisTotalValueTask",
+    "ChartsThreeDBarAxisAggregateValueTask",
     "ChartsThreeDBarConditionCountTask",
     "ChartsThreeDBarGridQueryTask",
 ]

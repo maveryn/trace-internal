@@ -8,7 +8,7 @@
 5. Objective: ask for the highest or lowest degree-style value present in one labeled node-link graph.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: one of `undirected_max_degree_value`, `undirected_min_degree_value`, `directed_max_in_degree_value`, `directed_min_in_degree_value`, `directed_max_out_degree_value`, `directed_min_out_degree_value`, `directed_max_total_degree_value`, or `directed_min_total_degree_value`
 3. Supported `graph_directionality` values: `undirected`, `directed`
 4. Supported directed `degree_mode` values: `in_degree`, `out_degree`, `total_degree`

@@ -36,7 +36,7 @@ def test_person_activity_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "playing_ball_person_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_activity"
     assert out.answer_gt.type == "integer"
@@ -91,7 +91,7 @@ def test_playground_equipment_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "slide_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 3
@@ -145,7 +145,7 @@ def test_person_using_equipment_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "person_using_swing_set_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_equipment_use"
     assert out.answer_gt.type == "integer"
@@ -200,7 +200,7 @@ def test_person_in_park_zone_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "picnic_area_person_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_zone"
     assert out.answer_gt.type == "integer"

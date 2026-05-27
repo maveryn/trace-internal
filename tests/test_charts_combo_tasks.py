@@ -34,7 +34,7 @@ def test_combo_tasks_generate_default_public_variant() -> None:
             max_attempts=160,
         )
         assert output.scene_id == "combo_mark"
-        assert output.query_variant == "default"
+        assert output.query_id == "default"
         assert output.query_id
         assert output.answer_gt.value is not None
         assert output.evidence_gt.type == "point_set"

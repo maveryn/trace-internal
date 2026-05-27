@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       sparse_board: 1.0
       crowded_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       marked_piece_move_count: 1.0
       marked_piece_capture_count: 1.0
     rule_family_weights:
@@ -18,7 +18,7 @@ generation:
       outlined: 1.0
       wood_token: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_rule_family_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true

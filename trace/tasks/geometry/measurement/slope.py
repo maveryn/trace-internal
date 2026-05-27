@@ -397,7 +397,7 @@ class GeometrySlopeMeasureTask:
                 },
             },
             "query_spec": {
-                "query_variant": "line_slope",
+                "query_id": "line_slope",
                 "template_id": str(prompt_bundle_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -437,7 +437,7 @@ class GeometrySlopeMeasureTask:
                 },
             },
             "execution_trace": {
-                "query_variant": "line_slope",
+                "query_id": "line_slope",
                 "answer_value": float(slope_value),
                 "slope_tenths": int(sample.slope_tenths),
                 "slope_value": float(sample.slope_value),
@@ -446,7 +446,7 @@ class GeometrySlopeMeasureTask:
                 "required_evidence_labels": [str(axis_label)],
                 "question_format": "numeric_open",
                 "feasible_answer_values": [float(int(value) / 10.0) for value in feasible_slope_candidates],
-                "query_variant_probabilities": {"line_slope": 1.0},
+                "query_id_probabilities": {"line_slope": 1.0},
                 "graph_unit_bounds": {
                     "x_min": int(x_min),
                     "x_max": int(x_max),
@@ -477,6 +477,6 @@ class GeometrySlopeMeasureTask:
                 ),
             ),
             task_versions=default_task_versions(),
-            query_variant="line_slope",
+            query_id="line_slope",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

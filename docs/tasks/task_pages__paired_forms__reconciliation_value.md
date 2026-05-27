@@ -7,7 +7,7 @@
 4. Objective: compare two matched document forms and compute one integer reconciliation value from visible item rows.
 
 ## 2) Scene + Task Contract
-1. Supported `query_variant` values:
+1. Supported `query_id` values:
    - `total_amount_delta`
    - `shortfall_minus_overage_value`
    - `sum_absolute_quantity_differences`
@@ -59,6 +59,6 @@
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. `query_variant` and `scene_variant` are sampled independently at the policy level.
+2. `query_id` and `scene_variant` are sampled independently at the policy level.
 3. Answers and evidence come from the same execution trace.
 4. No semantic auto-relaxation.

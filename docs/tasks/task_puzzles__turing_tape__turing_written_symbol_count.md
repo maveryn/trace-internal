@@ -8,7 +8,7 @@
 5. Goal: simulate a compact tape-machine transition table for a fixed number of steps and count a queried tape symbol afterward.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `written_symbol_count`
 3. Answer type: `integer`
 4. Evidence type: `bbox_set`

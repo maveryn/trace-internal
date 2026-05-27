@@ -16,7 +16,7 @@ def test_physics_mechanics_spring_defaults_expose_scene_query_and_answer_support
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_mechanics_spring_defaults_expose_scene_query_and_answer_support
         "textured_spring",
     }
 
-    assert set(generation["query_variant_weights"].keys()) == {"missing_value", "extension_difference"}
+    assert set(generation["query_id_weights"].keys()) == {"missing_value", "extension_difference"}
 
     assert set(generation["solve_for_weights"].keys()) == {"weight", "extension"}
 

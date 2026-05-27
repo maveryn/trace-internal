@@ -69,7 +69,7 @@ class _TaskDefaults:
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one multi-angle counting instance."""
-    query_variant: str
+    query_id: str
     object_count: int
     target_count: int
     objects: Tuple[AngleSceneObject, ...]
@@ -112,7 +112,7 @@ def _angle_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> Lis
 def _variant_candidate_angles(
     *,
     candidate_angles: Sequence[int],
-    query_variant: str,
+    query_id: str,
     boundary_margin_degrees: float,
 ) -> Tuple[List[int], List[int]]:
     """Return positive and negative angle targets for one queried class."""
@@ -120,13 +120,13 @@ def _variant_candidate_angles(
     acute = [int(value) for value in candidate_angles if float(value) <= 90.0 - float(margin)]
     right = [int(value) for value in candidate_angles if int(value) == 90]
     obtuse = [int(value) for value in candidate_angles if float(value) >= 90.0 + float(margin)]
-    if str(query_variant) == "acute_angle":
+    if str(query_id) == "acute_angle":
         return acute, [*right, *obtuse]
-    if str(query_variant) == "right_angle":
+    if str(query_id) == "right_angle":
         return right, [*acute, *obtuse]
-    if str(query_variant) == "obtuse_angle":
+    if str(query_id) == "obtuse_angle":
         return obtuse, [*acute, *right]
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 def _sample_angle_targets(rng, *, candidates: Sequence[int], count: int) -> List[int]:
     """Sample one deterministic multiset of angle targets."""
@@ -141,19 +141,19 @@ def _sample_angle_targets(rng, *, candidates: Sequence[int], count: int) -> List
         return [int(value) for value in rng.sample(values, int(count))]
     return [int(rng.choice(values)) for _ in range(int(count))]
 
-def _variant_class_label(query_variant: str) -> str:
+def _variant_class_label(query_id: str) -> str:
     """Return one normalized human-readable class label."""
     mapping = {
         "acute_angle": "acute",
         "right_angle": "right",
         "obtuse_angle": "obtuse",
     }
-    return str(mapping[str(query_variant)])
+    return str(mapping[str(query_id)])
 
 def _sample_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -184,13 +184,13 @@ def _sample_scene(
     candidate_angles = [int(value) for value in sorted(catalog.keys())]
     positive_angles, negative_angles = _variant_candidate_angles(
         candidate_angles=candidate_angles,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         boundary_margin_degrees=float(boundary_margin_degrees),
     )
     if not positive_angles:
-        raise ValueError(f"no positive angle targets available for {query_variant}")
+        raise ValueError(f"no positive angle targets available for {query_id}")
     if not negative_angles:
-        raise ValueError(f"no negative angle targets available for {query_variant}")
+        raise ValueError(f"no negative angle targets available for {query_id}")
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     last_error: Exception | None = None
     for _ in range(700):
@@ -241,7 +241,7 @@ def _sample_scene(
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=objects,
@@ -249,7 +249,7 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
             },
         )
     raise RuntimeError("failed to sample angle-counting scene") from last_error
@@ -267,10 +267,10 @@ class GeometryCountingAngleTask:
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
-        query_variant = apply_balanced_variant_sampling(
+        query_id = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -278,7 +278,7 @@ class GeometryCountingAngleTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -417,7 +417,7 @@ class GeometryCountingAngleTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -486,7 +486,7 @@ class GeometryCountingAngleTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_id)}"])
         json_example = str(prompt_defaults["json_example"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
         prompt_selection = render_task_prompt_variants(
@@ -512,7 +512,7 @@ class GeometryCountingAngleTask:
         answer_value = int(scene_payload.target_count)
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="label_set", value=list(evidence_value))
-        angle_class = _variant_class_label(str(query_variant))
+        angle_class = _variant_class_label(str(query_id))
         class_by_label = {
             str(obj.label): (
                 "right"
@@ -546,7 +546,7 @@ class GeometryCountingAngleTask:
                 ],
                 "relations": {
                     "counting_target": "angle_class",
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
                 "frames": {
@@ -560,13 +560,13 @@ class GeometryCountingAngleTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -598,8 +598,8 @@ class GeometryCountingAngleTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(query_variant),
-                "query_variant": str(query_variant),
+                "scene_variant": str(query_id),
+                "query_id": str(query_id),
                 "counting_class": str(angle_class),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -626,7 +626,7 @@ class GeometryCountingAngleTask:
             object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
             target_count=int(target_count),
             task_kind="angle",
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
@@ -637,6 +637,6 @@ class GeometryCountingAngleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

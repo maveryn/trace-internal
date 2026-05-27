@@ -8,7 +8,7 @@
 5. Objective: count how many graph edges use one queried semantic edge color.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `edge_color_count`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported target colors: shared TRACE named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)

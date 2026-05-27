@@ -67,7 +67,7 @@ from .intersection_nearest import (
 
 
 TASK_ID = "task_three_d__street__lane_ahead_object_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("ahead_along_lane",)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("ahead_along_lane",)
 SUPPORTED_TRAVEL_MODES: Tuple[str, ...] = ("toward_intersection", "away_from_intersection")
 ROAD_ARMS: Tuple[str, ...] = ("north", "south", "east", "west")
 REFERENCE_OBJECT_TYPE = STREET_LANE_AHEAD_REFERENCE_OBJECT_TYPE
@@ -464,7 +464,7 @@ def _lane_candidate_screen_separation_ok(
 def _build_lane_ahead_dataset(
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     intersection_layout: str,
     travel_mode: str,
@@ -644,7 +644,7 @@ def _build_lane_ahead_dataset(
         ]
         object_type_counts = Counter(str(spec["object_type"]) for spec in all_finalized)
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "intersection_layout": str(intersection_layout),
             "missing_road_arm": _missing_arm_for_layout(str(intersection_layout)),
@@ -795,16 +795,16 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
     """Lock public sampling axes so retries do not bias review distributions."""
 
     locked_params = dict(params)
-    query_variant, _query_probabilities = _resolve_axis_variant(
+    query_id, _query_probabilities = _resolve_axis_variant(
         params=params,
         task_id=TASK_ID,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
         allow_locked=True,
     )
     scene_variant, _scene_probabilities = _resolve_axis_variant(
@@ -882,7 +882,7 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
     ) % int(candidate_count)
     locked_params.update(
         {
-            "_locked_query_variant": str(query_variant),
+            "_locked_query_id": str(query_id),
             "_locked_scene_variant": str(scene_variant),
             "_locked_intersection_layout": str(intersection_layout),
             "_locked_travel_mode": str(travel_mode),
@@ -933,16 +933,16 @@ class ThreeDStreetLaneAheadObjectLabelTask:
         )
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_probabilities = _resolve_axis_variant(
+        query_id, query_probabilities = _resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
             allow_locked=True,
         )
         scene_variant, scene_probabilities = _resolve_axis_variant(
@@ -1012,7 +1012,7 @@ class ThreeDStreetLaneAheadObjectLabelTask:
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_lane_ahead_dataset(
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             intersection_layout=str(intersection_layout),
             travel_mode=str(travel_mode),
@@ -1064,7 +1064,7 @@ class ThreeDStreetLaneAheadObjectLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1120,15 +1120,14 @@ class ThreeDStreetLaneAheadObjectLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "intersection_layout": str(intersection_layout),
@@ -1203,8 +1202,7 @@ class ThreeDStreetLaneAheadObjectLabelTask:
                 ),
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "candidate_count": int(dataset["candidate_count"]),
@@ -1239,7 +1237,7 @@ class ThreeDStreetLaneAheadObjectLabelTask:
                 "min_pairwise_candidate_ground_gap": float(dataset["min_pairwise_candidate_ground_gap"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_street",
                 "solver_trace": dict(solver_trace),
             },
@@ -1265,9 +1263,8 @@ class ThreeDStreetLaneAheadObjectLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

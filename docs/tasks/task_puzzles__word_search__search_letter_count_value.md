@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__word_search__search_letter_count_value`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `letter_count_value`
 3. Prompt asks for the number of visible cells containing a target uppercase letter.
 4. Internal variation:

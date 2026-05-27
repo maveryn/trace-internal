@@ -8,7 +8,7 @@
 5. Goal: choose the labeled candidate piece that matches a black missing region.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `missing_piece_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_puzzles__agent_automaton__agent_final_pose_label:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       agent_rows_min: 6
       agent_rows_max: 9
@@ -10,7 +10,7 @@ generation:
       agent_steps_min: 5
       agent_steps_max: 14
       pose_option_count: 5
-      query_variant_weights:
+      query_id_weights:
         binary_rule_final_pose: 1.0
         three_state_rule_final_pose: 1.0
       scene_variant_weights:
@@ -18,7 +18,7 @@ generation:
         lab_panel: 1.0
         notebook_grid: 1.0
     task_puzzles__agent_automaton__agent_cell_flip_count:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_rule_variant_sampling: true
       balanced_scene_variant_sampling: true
       agent_rows_min: 6
@@ -27,7 +27,7 @@ generation:
       agent_cols_max: 9
       agent_steps_min: 4
       agent_steps_max: 10
-      query_variant_weights:
+      query_id_weights:
         marked_region_flip_count: 1.0
       rule_variant_weights:
         binary_rule: 1.0
@@ -37,7 +37,7 @@ generation:
         lab_panel: 1.0
         notebook_grid: 1.0
     task_puzzles__life_automaton__life_future_grid_label:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       life_rows_min: 5
       life_rows_max: 5
@@ -45,7 +45,7 @@ generation:
       life_cols_max: 5
       live_density: 0.36
       grid_option_count: 5
-      query_variant_weights:
+      query_id_weights:
         one_step_future_grid: 1.0
         two_step_future_grid: 1.0
       scene_variant_weights:
@@ -53,7 +53,7 @@ generation:
         lab_panel: 1.0
         notebook_grid: 1.0
     task_puzzles__life_automaton__life_population_count:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       life_rows_min: 5
       life_rows_max: 8
@@ -62,14 +62,14 @@ generation:
       life_steps_min: 1
       life_steps_max: 1
       live_density: 0.36
-      query_variant_weights:
+      query_id_weights:
         marked_line_live_count: 1.0
       scene_variant_weights:
         clean_grid: 1.0
         lab_panel: 1.0
         notebook_grid: 1.0
     task_puzzles__turing_tape__turing_written_symbol_count:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       turing_tape_length_min: 8
       turing_tape_length_max: 11
@@ -79,7 +79,7 @@ generation:
       turing_symbol_count_max: 2
       turing_answer_min: 1
       turing_answer_max: 7
-      query_variant_weights:
+      query_id_weights:
         written_symbol_count: 1.0
       scene_variant_weights:
         clean_grid: 1.0

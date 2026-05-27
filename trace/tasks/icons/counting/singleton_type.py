@@ -122,17 +122,17 @@ class _ScenePayload:
     scene_instances: Tuple[Dict[str, Any], ...]
 
 
-def _resolve_query_variant(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     """Resolve whether to count singleton icons or repeated-type icons."""
 
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected_variant, variant_probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=_SUPPORTED_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected_variant = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -142,25 +142,25 @@ def _resolve_query_variant(instance_seed: int, params: Mapping[str, Any]) -> Tup
         variant_probabilities=variant_probabilities,
         supported_variants=_SUPPORTED_VARIANTS,
         balance_flag_key="balanced_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected_variant), {str(key): float(value) for key, value in sorted(variant_probabilities.items())}
 
 
-def _variant_prompt_text(defaults: Mapping[str, Any], key: str, *, query_variant: str) -> str:
+def _variant_prompt_text(defaults: Mapping[str, Any], key: str, *, query_id: str) -> str:
     """Resolve variant-specific prompt text with a scalar fallback."""
 
     mapped = defaults.get(f"{key}_by_variant")
     if isinstance(mapped, Mapping):
-        value = mapped.get(str(query_variant))
+        value = mapped.get(str(query_id))
         if isinstance(value, str) and value.strip():
             return str(value)
     value = defaults.get(str(key))
     if isinstance(value, str) and value.strip():
         return str(value)
-    raise ValueError(f"missing prompt {key} for {TASK_ID}:{query_variant}")
+    raise ValueError(f"missing prompt {key} for {TASK_ID}:{query_id}")
 
 
 TASK_ID = "task_icons__icon_field__type_frequency_count"
@@ -208,7 +208,7 @@ def _bounded_compositions(total: int, parts: int, *, min_part: int, max_part: in
     return compositions
 
 
-def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any], query_variant: str) -> _CountSpec:
+def _resolve_count_spec(*, instance_seed: int, params: Mapping[str, Any], query_id: str) -> _CountSpec:
     """Resolve balanced singleton and repeated-type counts for one instance."""
 
     object_count_min = int(params.get("object_count_min", group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)))
@@ -572,11 +572,11 @@ class IconsCountingSingletonTypeTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic singleton-type counting instance."""
 
-        query_variant, variant_probabilities = _resolve_query_variant(int(instance_seed), params)
+        query_id, variant_probabilities = _resolve_query_id(int(instance_seed), params)
         count_spec = _resolve_count_spec(
             instance_seed=int(instance_seed),
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         render_params = resolve_icon_render_params(
             params=params,
@@ -623,8 +623,8 @@ class IconsCountingSingletonTypeTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = _variant_prompt_text(_PROMPT_DEFAULTS, "question_text", query_variant=str(query_variant))
-        evidence_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "evidence_hint", query_variant=str(query_variant))
+        question_text = _variant_prompt_text(_PROMPT_DEFAULTS, "question_text", query_id=str(query_id))
+        evidence_hint = _variant_prompt_text(_PROMPT_DEFAULTS, "evidence_hint", query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -648,8 +648,8 @@ class IconsCountingSingletonTypeTask:
 
         singleton_count = int(scene_payload.target_count)
         repeated_icon_count = int(scene_payload.object_count) - int(scene_payload.target_count)
-        if str(query_variant) != "singleton_type_count":  # pragma: no cover - guarded by _resolve_query_variant
-            raise ValueError(f"unsupported query_variant: {query_variant}")
+        if str(query_id) != "singleton_type_count":  # pragma: no cover - guarded by _resolve_query_id
+            raise ValueError(f"unsupported query_id: {query_id}")
         evidence_bboxes = sort_bboxes_reading_order(scene_payload.singleton_bboxes)
         evidence_indices = list(scene_payload.singleton_indices)
         answer_value = int(singleton_count)
@@ -675,7 +675,7 @@ class IconsCountingSingletonTypeTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -690,7 +690,7 @@ class IconsCountingSingletonTypeTask:
                     "distinct_type_count": int(scene_payload.distinct_type_count),
                     "object_count_probabilities": dict(count_spec.object_count_probabilities),
                     "target_count_probabilities": dict(count_spec.target_count_probabilities),
-                    "query_variant_probabilities": dict(variant_probabilities),
+                    "query_id_probabilities": dict(variant_probabilities),
                     "pool_manifest": str(pool_manifest),
                     "rotation_candidates_degrees": list(_rotation_candidates()),
                 },
@@ -710,8 +710,8 @@ class IconsCountingSingletonTypeTask:
             },
             "execution_trace": {
                 "scene_variant": "single_panel_scene",
-                "query_variant": str(query_variant),
-                "query_variant_probabilities": dict(variant_probabilities),
+                "query_id": str(query_id),
+                "query_id_probabilities": dict(variant_probabilities),
                 "question_format": str(question_format),
                 "object_count": int(scene_payload.object_count),
                 "target_count": int(answer_value),
@@ -764,12 +764,12 @@ class IconsCountingSingletonTypeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="icon_field",
             query_probabilities=variant_probabilities,
         )

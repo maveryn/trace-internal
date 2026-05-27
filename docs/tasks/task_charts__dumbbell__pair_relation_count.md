@@ -5,7 +5,7 @@
 2. Scene id: `dumbbell`
 3. Source implementation domain/group: `charts/dumbbell`
 4. Query id: `absolute_gap_threshold_count`, `side_winner_count`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.dumbbell.pairwise_comparison_query.ChartsDumbbellPairRelationCountTask`

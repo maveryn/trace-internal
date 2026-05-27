@@ -8,16 +8,16 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.spatial.height_extremum import SUPPORTED_QUERY_VARIANTS, TASK_ID
+from trace.tasks.three_d.spatial.height_extremum import SUPPORTED_QUERY_IDS, TASK_ID
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_height_extremum_answer_and_evidence(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_height_extremum_answer_and_evidence(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 5,
@@ -31,11 +31,11 @@ def test_height_extremum_answer_and_evidence(query_variant: str) -> None:
     context_specs = list(trace["context_object_specs"])
     height_by_label = {str(label): float(value) for label, value in trace["height_by_label"].items()}
     sorted_labels = [str(label) for label, _value in sorted(height_by_label.items(), key=lambda item: (float(item[1]), str(item[0])))]
-    expected_label = sorted_labels[-1] if query_variant == "highest_above_floor" else sorted_labels[0]
+    expected_label = sorted_labels[-1] if query_id == "highest_above_floor" else sorted_labels[0]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
-    assert output.query_id == query_variant
+    assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 6

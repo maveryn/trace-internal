@@ -42,7 +42,7 @@ For the domain being reviewed, inspect:
 
 ### D. Sampling and answer-support audit
 1. Scene construction still supports the configured answer range by construction or explicit feasibility checks.
-2. No query variant has collapsed to a tiny answer support unintentionally.
+2. No query id has collapsed to a tiny answer support unintentionally.
 3. Reference/context objects are not accidentally counted when the prompt only asks about the candidate pool.
 4. Candidate answer and input supports are continuous across the intended range unless task semantics require structured discontinuities.
 5. Overall answer-distribution checks are supplemented with breakdowns by `query_id`, scene/style variant, option count, object count, and other task-specific knobs.

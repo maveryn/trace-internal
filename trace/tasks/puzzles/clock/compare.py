@@ -49,7 +49,7 @@ from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzl
 
 TASK_ID = "task_puzzles__clock_collection__compare"
 PUBLIC_SCENE_ID = "clock_collection"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "time_extremum_label",
 )
 _SOURCE_EXTREMUM_DIRECTION_BY_VARIANT = {
@@ -126,7 +126,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
   """Resolved semantic and visual support for one multi-clock comparison instance."""
 
-  query_variant: str
+  query_id: str
   extremum_direction: str
   scene_variant: str
   style_variant: str
@@ -141,7 +141,7 @@ class _ResolvedQuery:
   hour_support: Tuple[int, int]
   minute_support: Tuple[int, int, int]
   clock_count_support: Tuple[int, ...]
-  query_variant_probabilities: Dict[str, float]
+  query_id_probabilities: Dict[str, float]
   extremum_direction_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
   style_variant_probabilities: Dict[str, float]
@@ -237,24 +237,24 @@ def _resolve_clock_count_support(params: Mapping[str, Any]) -> Tuple[int, ...]:
   return tuple(int(value) for value in support)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
   *,
   instance_seed: int,
   params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-  """Resolve the public compare query variant and supported mirror aliases."""
+  """Resolve the public compare query id and supported mirror aliases."""
 
-  explicit_variant = params.get("query_variant")
+  explicit_variant = params.get("query_id")
   if explicit_variant is not None and str(explicit_variant) in _SOURCE_EXTREMUM_DIRECTION_BY_VARIANT:
     return "time_extremum_label", {"time_extremum_label": 1.0}
   return _resolve_named_variant(
     instance_seed=int(instance_seed),
     params=params,
-    explicit_key="query_variant",
-    weights_key="query_variant_weights",
-    balance_flag_key="balanced_query_variant_sampling",
-    supported=SUPPORTED_QUERY_VARIANTS,
-    namespace="query_variant",
+    explicit_key="query_id",
+    weights_key="query_id_weights",
+    balance_flag_key="balanced_query_id_sampling",
+    supported=SUPPORTED_QUERY_IDS,
+    namespace="query_id",
   )
 
 
@@ -274,7 +274,7 @@ def _resolve_extremum_direction(
 ) -> Tuple[str, Dict[str, float]]:
   """Resolve whether the query asks for the earliest or latest clock."""
 
-  source_variant = params.get("query_variant")
+  source_variant = params.get("query_id")
   if source_variant is not None and str(source_variant) in _SOURCE_EXTREMUM_DIRECTION_BY_VARIANT:
     selected = str(_SOURCE_EXTREMUM_DIRECTION_BY_VARIANT[str(source_variant)])
     return selected, {
@@ -422,7 +422,7 @@ def _sample_clock_labels(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one multi-clock comparison query from balanced supports."""
 
-  query_variant, query_variant_probabilities = _resolve_query_variant(
+  query_id, query_id_probabilities = _resolve_query_id(
     instance_seed=int(instance_seed),
     params=params,
   )
@@ -533,7 +533,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
   )
 
   return _ResolvedQuery(
-    query_variant=str(query_variant),
+    query_id=str(query_id),
     extremum_direction=str(extremum_direction),
     scene_variant=str(scene_variant),
     style_variant=str(style_variant),
@@ -548,7 +548,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     hour_support=(int(hour_support[0]), int(hour_support[-1])),
     minute_support=(int(minute_support[0]), int(minute_support[-1]), int(minute_step)),
     clock_count_support=tuple(int(value) for value in clock_count_support),
-    query_variant_probabilities=dict(query_variant_probabilities),
+    query_id_probabilities=dict(query_id_probabilities),
     extremum_direction_probabilities=dict(extremum_direction_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
     style_variant_probabilities=dict(style_variant_probabilities),
@@ -727,7 +727,7 @@ class PuzzlesClockCompareTask:
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
-      query_key=str(query.query_variant),
+      query_key=str(query.query_id),
       answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
       slots={
         "object_description": str(object_description),
@@ -762,7 +762,7 @@ class PuzzlesClockCompareTask:
         "scene_kind": "puzzles_clock_collection",
         "entities": list(scene_entities),
         "relations": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "extremum_direction": str(query.extremum_direction),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
@@ -774,18 +774,18 @@ class PuzzlesClockCompareTask:
         },
       },
       "query_spec": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "template_id": str(prompt_defaults["bundle_id"]),
         "prompt_variant": dict(prompt_artifacts.prompt_variant),
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
         "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
         "params": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "extremum_direction": str(query.extremum_direction),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
           "accent_color_name": str(query.accent_color_name),
-          "query_variant_probabilities": dict(query.query_variant_probabilities),
+          "query_id_probabilities": dict(query.query_id_probabilities),
           "extremum_direction_probabilities": dict(query.extremum_direction_probabilities),
           "scene_variant_probabilities": dict(query.scene_variant_probabilities),
           "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -842,7 +842,7 @@ class PuzzlesClockCompareTask:
         "winning_clock_bbox_px": list(winning_bbox),
       },
       "execution_trace": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "extremum_direction": str(query.extremum_direction),
         "scene_variant": str(query.scene_variant),
         "style_variant": str(query.style_variant),
@@ -861,12 +861,12 @@ class PuzzlesClockCompareTask:
         "hour_support": [int(query.hour_support[0]), int(query.hour_support[1])],
         "minute_support": [int(value) for value in query.minute_support],
         "min_compare_gap_minutes": int(query.min_compare_gap_minutes),
-        "query_variant_probabilities": dict(query.query_variant_probabilities),
+        "query_id_probabilities": dict(query.query_id_probabilities),
         "extremum_direction_probabilities": dict(query.extremum_direction_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
-        "question_format": str(query.query_variant),
+        "question_format": str(query.query_id),
         "supporting_parts": ["winning_clock_face"],
       },
       "witness_symbolic": {
@@ -917,7 +917,7 @@ class PuzzlesClockCompareTask:
       trace_payload=trace_payload,
       complexity=complexity,
       task_versions=default_task_versions(),
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
     return rewrite_time_artifact_query_output(

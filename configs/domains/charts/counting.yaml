@@ -6,7 +6,7 @@ generation:
     value_max: 99
     target_answer_min: 0
     target_answer_max: 20
-    query_variant_weights:
+    query_id_weights:
       threshold_count: 1.0
       in_interval: 1.0
     comparison_weights:
@@ -20,7 +20,7 @@ generation:
       horizontal_bar: 1.0
       dot_plot: 1.0
       lollipop: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:

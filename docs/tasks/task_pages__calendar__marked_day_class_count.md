@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: count how many marked dates in one month-view calendar fall on the requested day class.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `count_marked_weekend_days` or `count_marked_weekday_days`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` over the marked date cells that satisfy the query.

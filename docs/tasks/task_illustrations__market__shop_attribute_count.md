@@ -1,7 +1,6 @@
 # task_illustrations__market__shop_attribute_count
 
-Status: accepted branch merge; replaces the previous shop category, color
-attribute, and selling-object public tasks.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -15,7 +14,7 @@ attribute, and selling-object public tasks.
 The task renders a synthetic urban market with shops or stalls, signs,
 awnings, facades, and visible merchandise.
 
-Public query variants:
+Query ids:
 
 - `shop_category_count`
 - `signboard_color_count`
@@ -33,14 +32,14 @@ Public query variants:
 - color queries return the queried surface bboxes
 
 ## Trace Contract
-- `query_spec.task_id` is this merged public task id.
+- `query_spec.task_id` is this public task id.
 - `query_spec.branch_id` records the private branch generator used for the
   selected query.
-- `query_spec.params.merged_query_probabilities` records public query
+- `query_spec.params.merged_query_probabilities` records query
   sampling support.
 - Branch-specific render maps and witness fields are preserved.
 
 ## Prompt Contract
 - `scene_key = urban_market_canvas`
-- `query_key` is the selected query variant
+- `query_id` is the selected branch
 - branch-specific task keys from `illustrations_counting_v0` are reused

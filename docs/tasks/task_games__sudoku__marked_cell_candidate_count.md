@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set containing the marked cell and visible filled cells from its row, column, and 3 by 3 box.
-3. Public `query_variant` is `default`; `marked_cell_candidate_count` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `marked_cell_candidate_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games Sudoku-grid renderer for its scene id.

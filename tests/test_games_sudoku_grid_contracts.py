@@ -63,12 +63,12 @@ def test_games_sudoku_grid_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
     assert execution["query_id"] == str(expected_query)
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert int(execution["target_answer"]) == int(out.answer_gt.value)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
@@ -166,7 +166,7 @@ def test_games_sudoku_grid_query_cycle_covers_answer_scene_unit_and_style_suppor
             max_attempts=64,
         )
         execution = out.trace_payload["execution_trace"]
-        query = str(out.query_id or out.query_variant)
+        query = str(out.query_id or out.query_id)
         answers_by_query[query].add(int(out.answer_gt.value))
         scenes_by_query[query].add(str(execution["scene_variant"]))
         styles_by_query[query].add(str(execution["style_variant"]))
@@ -187,7 +187,7 @@ def test_games_sudoku_grid_query_cycle_covers_answer_scene_unit_and_style_suppor
 
 def test_games_sudoku_grid_is_deterministic() -> None:
     params = {
-        "query_variant": "repeated_digit_count",
+        "query_id": "repeated_digit_count",
         "target_answer": 3,
         "unit_type": "row",
         "scene_variant": "filled_grid",

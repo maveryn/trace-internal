@@ -1436,7 +1436,6 @@ def _build_output(
             "scene_kind": "pages_database_schema_diagram",
             "entities": table_entities,
             "relations": {
-                "query_variant": "default",
                 "query_id": str(query["query_id"]),
                 "scene_variant": str(scene["layout_variant"]),
                 "layout_variant": str(scene["layout_variant"]),
@@ -1457,18 +1456,14 @@ def _build_output(
             },
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query["query_id"]),
-            "query_variant": str(query["query_id"]),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
             "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
-                "query_variant": "default",
                 "query_id": str(query["query_id"]),
-                "query_variant": str(query["query_id"]),
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 "context_id": str(scene["context_id"]),
                 "context_probabilities": dict(context_probabilities),
                 "layout_variant": str(scene["layout_variant"]),
@@ -1482,7 +1477,6 @@ def _build_output(
         },
         "render_spec": {
             "scene_id": SCENE_ID,
-            "query_variant": "default",
             "query_id": str(query["query_id"]),
             "scene_variant": str(scene["layout_variant"]),
             "layout_variant": str(scene["layout_variant"]),
@@ -1496,9 +1490,7 @@ def _build_output(
         },
         "render_map": dict(render_map),
         "execution_trace": {
-            "query_variant": "default",
             "query_id": str(query["query_id"]),
-            "query_variant": str(query["query_id"]),
             "question_format": str(query["query_id"]),
             "view_family": SCENE_ID,
             "scene_title": str(scene["scene_title"]),
@@ -1546,7 +1538,7 @@ def _build_output(
         trace_payload=trace_payload,
         complexity=complexity,
         task_versions=default_task_versions(),
-        query_variant="default",
+        query_id="default",
     )
     return rewrite_pages_query_output(
         output,

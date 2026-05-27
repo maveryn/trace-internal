@@ -7,7 +7,7 @@
 - Query ids: `highest_above_floor`, `lowest_above_floor`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed pending probe
+- Status: pending_v0_review
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, larger support props, and `6` small lettered answer candidates placed at distinct heights above the floor.
@@ -19,6 +19,9 @@ Evidence is the bounding box of the selected lettered 3D object. Larger support 
 
 ## Prompt And Trace
 The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The trace records camera pose, projection frame, object world coordinates, sampled dimensions, prompt-facing names, support object ids, per-label vertical base heights, and the low-to-high height order.
+
+## Calibration
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.

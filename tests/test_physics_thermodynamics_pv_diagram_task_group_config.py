@@ -16,7 +16,7 @@ def test_physics_thermodynamics_pv_defaults_expose_scene_query_and_answer_suppor
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_work_mode_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_thermodynamics_pv_defaults_expose_scene_query_and_answer_suppor
 
     assert set(generation["scene_variant_weights"].keys()) == {"clean_grid", "paper_grid", "bold_grid"}
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "work_value",
         "process_sign_choice",
     }

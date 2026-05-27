@@ -13,7 +13,7 @@ generation:
       radar: 1.0
     rank_n_support: [1, 2, 3]
     condition_count_support: [1, 2, 3, 4, 5]
-    query_variant_weights:
+    query_id_weights:
       source_rank_target_value: 1.0
       source_rank_difference_value: 1.0
       dual_source_target_sum_value: 1.0
@@ -28,7 +28,7 @@ generation:
     condition_comparison_weights:
       greater_than: 1.0
       less_than: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
   task_overrides:
     task_charts__dashboard__dual_source_target_sum_value:
       panel_count_max: 5

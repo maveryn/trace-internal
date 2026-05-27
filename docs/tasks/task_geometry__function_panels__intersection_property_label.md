@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `analytical`
 3. Scene id: `function_panels`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `line_circle_tangent_label`, `line_circle_two_intersections_label`, or `circle_circle_two_intersections_label`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

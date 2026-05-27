@@ -7,7 +7,7 @@ from typing import Dict, Iterable, Sequence, Tuple
 
 
 Coord = Tuple[int, int]
-SUPPORTED_BATTLESHIP_QUERY_VARIANTS: Tuple[str, ...] = ("sunk_ship_count", "partial_ship_count")
+SUPPORTED_BATTLESHIP_QUERY_IDS: Tuple[str, ...] = ("sunk_ship_count", "partial_ship_count")
 SUPPORTED_BATTLESHIP_SCENE_VARIANTS: Tuple[str, ...] = ("standard_fleet",)
 
 
@@ -37,7 +37,7 @@ class BattleshipSample:
     """Generated Battleship tracking-grid state."""
 
     board_size: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: int
     ship_placements: Tuple[BattleshipShipPlacement, ...]
@@ -199,14 +199,14 @@ def validate_battleship_sample(sample: BattleshipSample) -> None:
         raise ValueError("Battleship partial_ship_count does not equal partially hit ships")
     if len(untouched_ships) != int(sample.untouched_ship_count):
         raise ValueError("Battleship untouched_ship_count does not equal untouched ships")
-    if str(sample.query_variant) == "sunk_ship_count":
+    if str(sample.query_id) == "sunk_ship_count":
         expected_answer = int(sample.sunk_ship_count)
         expected_evidence = {coord for ship in sunk_ships for coord in ship.coords}
-    elif str(sample.query_variant) == "partial_ship_count":
+    elif str(sample.query_id) == "partial_ship_count":
         expected_answer = int(sample.partial_ship_count)
         expected_evidence = {coord for ship in partial_ships for coord in ship.coords}
     else:
-        raise ValueError(f"unsupported Battleship query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported Battleship query_id: {sample.query_id}")
     if int(sample.answer) != int(expected_answer):
         raise ValueError("Battleship answer does not match active query count")
     evidence_set = set(sample.evidence_coords)
@@ -220,7 +220,7 @@ __all__ = [
     "Coord",
     "FLEET_SHAPES",
     "FleetShapeSpec",
-    "SUPPORTED_BATTLESHIP_QUERY_VARIANTS",
+    "SUPPORTED_BATTLESHIP_QUERY_IDS",
     "SUPPORTED_BATTLESHIP_SCENE_VARIANTS",
     "all_coords",
     "coord_to_cell_id",

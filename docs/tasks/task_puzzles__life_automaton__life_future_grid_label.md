@@ -8,7 +8,7 @@
 5. Goal: apply a cellular-life neighbor rule and choose the option showing the future grid.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `one_step_future_grid|two_step_future_grid`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

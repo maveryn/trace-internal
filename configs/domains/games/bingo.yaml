@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       single_card: 1.0
-    query_variant_weights:
+    query_id_weights:
       completed_axis_line_count: 1.0
       line_sum_extremum_value: 1.0
     line_axis_weights:
@@ -29,7 +29,7 @@ generation:
       column_tint: 1.0
       checker_tint: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_line_axis_sampling: true
     balanced_extremum_sampling: true
     balanced_style_variant_sampling: true

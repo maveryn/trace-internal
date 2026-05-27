@@ -43,7 +43,7 @@ QueryVariant = str
 SceneVariant = str
 
 TASK_ID = "charts_trend_value_base"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "turning_point_count",
     "longest_monotone_streak",
     "endpoint_change_value",
@@ -151,44 +151,44 @@ _THRESHOLD_GENERATION_KEYS: Tuple[str, ...] = (
 )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the public trend-value variant."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+    """Return true when `_sample_cursor` is driving the default query-id cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not bool(enabled):
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
 
-def _support_params_for_query_variant_cycle(
+def _support_params_for_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-public-variant occurrence index for subparameter and support cycling."""
 
@@ -196,9 +196,9 @@ def _support_params_for_query_variant_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -353,32 +353,32 @@ def _resolve_crossing_mode(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 def _internal_structure_variant(
-    query_variant: str,
+    query_id: str,
     *,
     turning_point_type: str | None,
     streak_direction: str | None,
 ) -> str:
     """Map the public structure variant plus query parameter to the construction variant."""
 
-    if str(query_variant) == "turning_point_count":
+    if str(query_id) == "turning_point_count":
         if str(turning_point_type) == "peak":
             return "peak_count"
         if str(turning_point_type) == "trough":
             return "trough_count"
         raise ValueError(f"unsupported turning_point_type: {turning_point_type}")
-    if str(query_variant) == "longest_monotone_streak":
+    if str(query_id) == "longest_monotone_streak":
         if str(streak_direction) == "increasing":
             return "longest_increasing_streak"
         if str(streak_direction) == "decreasing":
             return "longest_decreasing_streak"
         raise ValueError(f"unsupported streak_direction: {streak_direction}")
-    raise ValueError(f"unsupported structure query_variant: {query_variant}")
+    raise ValueError(f"unsupported structure query_id: {query_id}")
 
 
-def _internal_interval_variant(query_variant: str, *, endpoint_change_kind: str | None) -> str:
+def _internal_interval_variant(query_id: str, *, endpoint_change_kind: str | None) -> str:
     """Map the merged interval public variants to the construction variant."""
 
-    if str(query_variant) == "endpoint_change_value":
+    if str(query_id) == "endpoint_change_value":
         if str(endpoint_change_kind) == "absolute":
             return "absolute_change_between_labels"
         if str(endpoint_change_kind) == "signed":
@@ -386,9 +386,9 @@ def _internal_interval_variant(query_variant: str, *, endpoint_change_kind: str 
         if str(endpoint_change_kind) == "percent":
             return "percent_change_between_labels"
         raise ValueError(f"unsupported endpoint_change_kind: {endpoint_change_kind}")
-    if str(query_variant) == "interval_rate_value":
+    if str(query_id) == "interval_rate_value":
         return "average_rate_over_interval"
-    raise ValueError(f"unsupported interval query_variant: {query_variant}")
+    raise ValueError(f"unsupported interval query_id: {query_id}")
 
 
 def _internal_crossing_variant(crossing_mode: str, crossing_direction: str) -> str:
@@ -542,14 +542,14 @@ def _build_threshold_mark_specs(
 def _resolve_scene_variant(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the ordered chart scene variant."""
 
     supported_variants = (
         _SUPPORTED_THRESHOLD_SCENE_VARIANTS
-        if str(query_variant) == "threshold_crossing"
+        if str(query_id) == "threshold_crossing"
         else _SUPPORTED_SCENE_VARIANTS
     )
     return resolve_chart_axis_variant(
@@ -588,9 +588,9 @@ class ChartsTrendValueTask:
         }
         effective_params = dict(task_override_params)
         effective_params.update(dict(params))
-        if "query_variant_weights" in task_override_params:
-            raw_weights = params.get("query_variant_weights")
-            override_weights = task_override_params["query_variant_weights"]
+        if "query_id_weights" in task_override_params:
+            raw_weights = params.get("query_id_weights")
+            override_weights = task_override_params["query_id_weights"]
             override_keys = set(str(key) for key in override_weights) if isinstance(override_weights, Mapping) else set()
             raw_keys = set(str(key) for key in raw_weights) if isinstance(raw_weights, Mapping) else set()
             raw_is_uniform_allowed = (
@@ -599,15 +599,15 @@ class ChartsTrendValueTask:
                 and all(float(value) == 1.0 for value in raw_weights.values())
             )
             if raw_is_uniform_allowed:
-                effective_params["query_variant_weights"] = task_override_params["query_variant_weights"]
+                effective_params["query_id_weights"] = task_override_params["query_id_weights"]
         params = {
             **effective_params,
             "_enable_unanswerable": bool(getattr(self, "supports_unanswerable", False)),
         }
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_params_for_query_variant_cycle(
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        support_params = _support_params_for_query_id_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
         turning_point_type = None
         turning_point_type_probabilities: Dict[str, float] = {}
@@ -625,11 +625,11 @@ class ChartsTrendValueTask:
 
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
             support_params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
-        if str(query_variant) in {"turning_point_count", "longest_monotone_streak"}:
-            if str(query_variant) == "turning_point_count":
+        if str(query_id) in {"turning_point_count", "longest_monotone_streak"}:
+            if str(query_id) == "turning_point_count":
                 turning_point_type, turning_point_type_probabilities = _resolve_turning_point_type(
                     support_params,
                     instance_seed=int(instance_seed),
@@ -639,14 +639,14 @@ class ChartsTrendValueTask:
                     support_params,
                     instance_seed=int(instance_seed),
                 )
-            internal_query_variant = _internal_structure_variant(
-                str(query_variant),
+            internal_query_id = _internal_structure_variant(
+                str(query_id),
                 turning_point_type=turning_point_type,
                 streak_direction=streak_direction,
             )
             dataset_params = _branch_generation_params(support_params, branch="structure")
             values, answer_value, evidence_labels, trace_extras = build_trend_structure_dataset_for_variant(
-                trend_variant=str(internal_query_variant),
+                trend_variant=str(internal_query_id),
                 scene_variant=str(scene_variant),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
@@ -657,19 +657,19 @@ class ChartsTrendValueTask:
             ordered_evidence_labels = [str(label) for label in trace_extras.get("ordered_evidence_labels", evidence_labels)]
             evidence_kind = "point_set"
             answer_type = "integer"
-        elif str(query_variant) in {"endpoint_change_value", "interval_rate_value"}:
-            if str(query_variant) == "endpoint_change_value":
+        elif str(query_id) in {"endpoint_change_value", "interval_rate_value"}:
+            if str(query_id) == "endpoint_change_value":
                 endpoint_change_kind, endpoint_change_kind_probabilities = _resolve_endpoint_change_kind(
                     support_params,
                     instance_seed=int(instance_seed),
                 )
-            internal_query_variant = _internal_interval_variant(
-                str(query_variant),
+            internal_query_id = _internal_interval_variant(
+                str(query_id),
                 endpoint_change_kind=endpoint_change_kind,
             )
             dataset_params = _branch_generation_params(support_params, branch="interval")
             values, answer_value, evidence_labels, trace_extras = build_trend_interval_change_dataset_for_variant(
-                interval_variant=str(internal_query_variant),
+                interval_variant=str(internal_query_id),
                 scene_variant=str(scene_variant),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
@@ -695,10 +695,10 @@ class ChartsTrendValueTask:
                 crossing_support_params,
                 instance_seed=int(instance_seed),
             )
-            internal_query_variant = _internal_crossing_variant(str(crossing_mode), str(crossing_direction))
+            internal_query_id = _internal_crossing_variant(str(crossing_mode), str(crossing_direction))
             dataset_params = _threshold_generation_params(_threshold_support_params(crossing_support_params))
             values, answer_value, evidence_labels, trace_extras = build_trend_threshold_crossing_dataset_for_variant(
-                crossing_variant=str(internal_query_variant),
+                crossing_variant=str(internal_query_id),
                 scene_variant=str(scene_variant),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
@@ -758,7 +758,7 @@ class ChartsTrendValueTask:
             scene_variant=str(scene_variant),
             mark_count=len(labels),
         )
-        if str(query_variant) == "threshold_crossing":
+        if str(query_id) == "threshold_crossing":
             marks = _build_threshold_mark_specs(
                 labels=tuple(labels),
                 values=tuple(int(value) for value in values),
@@ -849,15 +849,15 @@ class ChartsTrendValueTask:
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
         prompt_task_key = (
             str(prompt_defaults["threshold_task_key"])
-            if str(query_variant) == "threshold_crossing"
+            if str(query_id) == "threshold_crossing"
             else str(prompt_defaults["task_key"])
         )
         prompt_answer_hint = (
             str(prompt_defaults["answer_hint_crossing_label"])
-            if str(query_variant) == "threshold_crossing"
+            if str(query_id) == "threshold_crossing"
             else str(prompt_defaults["answer_hint"])
         )
-        prompt_evidence_key = str(internal_query_variant) if str(query_variant) == "threshold_crossing" else str(query_variant)
+        prompt_evidence_key = str(internal_query_id) if str(query_id) == "threshold_crossing" else str(query_id)
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(prompt_evidence_key)}"])
         json_example = str(prompt_defaults[f"json_example_{str(prompt_evidence_key)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(prompt_evidence_key)}"])
@@ -873,7 +873,7 @@ class ChartsTrendValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_task_key),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -998,7 +998,7 @@ class ChartsTrendValueTask:
                         else {}
                     ),
                 }
-                if str(query_variant) == "threshold_crossing"
+                if str(query_id) == "threshold_crossing"
                 else {}
             ),
         }
@@ -1019,8 +1019,8 @@ class ChartsTrendValueTask:
                 "scene_kind": f"chart_{str(scene_variant)}_trend_value",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "evidence_labels": list(evidence_labels),
                     "ordered_evidence_labels": list(ordered_evidence_labels),
@@ -1053,16 +1053,16 @@ class ChartsTrendValueTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "mark_count": int(trace_extras["mark_count"]),
                     **dict(optional_structure_params),
@@ -1116,8 +1116,8 @@ class ChartsTrendValueTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": answer_value_for_trace,
                 "evidence_labels": list(evidence_labels),
@@ -1127,7 +1127,7 @@ class ChartsTrendValueTask:
                 "values_by_label": dict(values_by_label),
                 "mark_count": int(trace_extras["mark_count"]),
                 "mark_count_range": list(trace_extras["mark_count_range"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": str(question_format),
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
@@ -1175,11 +1175,11 @@ class ChartsTrendValueTask:
             },
         }
 
-        if str(query_variant) in _STRUCTURE_REASONING_LOADS:
-            reasoning_load = float(_STRUCTURE_REASONING_LOADS[str(query_variant)])
-        elif str(query_variant) == "endpoint_change_value":
+        if str(query_id) in _STRUCTURE_REASONING_LOADS:
+            reasoning_load = float(_STRUCTURE_REASONING_LOADS[str(query_id)])
+        elif str(query_id) == "endpoint_change_value":
             reasoning_load = float(_ENDPOINT_CHANGE_REASONING_LOADS[str(endpoint_change_kind)])
-        elif str(query_variant) == "interval_rate_value":
+        elif str(query_id) == "interval_rate_value":
             reasoning_load = min(
                 1.0,
                 (0.75 * float(_INTERVAL_RATE_REASONING_LOAD))
@@ -1216,7 +1216,7 @@ class ChartsTrendValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1226,7 +1226,7 @@ class ChartsTrendTurningPointCountTask(FixedChartQueryVariantTaskMixin, ChartsTr
     """Count peaks or troughs in an ordered single-series chart."""
 
     task_id = "task_charts__single_series__turning_point_count"
-    fixed_query_variant = "turning_point_count"
+    fixed_query_id = "turning_point_count"
 
 
 @register_task
@@ -1234,7 +1234,7 @@ class ChartsTrendMonotoneStreakLengthTask(FixedChartQueryVariantTaskMixin, Chart
     """Return the longest increasing or decreasing streak length."""
 
     task_id = "task_charts__single_series__monotone_streak_length"
-    fixed_query_variant = "longest_monotone_streak"
+    fixed_query_id = "longest_monotone_streak"
 
 
 @register_task
@@ -1242,7 +1242,7 @@ class ChartsTrendIntervalChangeValueTask(MergedChartQueryVariantTaskMixin, Chart
     """Compute one sampled numeric change over an ordered chart interval."""
 
     task_id = "task_charts__single_series__interval_change_value"
-    allowed_query_variants = ("endpoint_change_value", "interval_rate_value")
+    allowed_query_ids = ("endpoint_change_value", "interval_rate_value")
 
 
 @register_task
@@ -1250,7 +1250,7 @@ class ChartsTrendThresholdCrossingLabelTask(FixedChartQueryVariantTaskMixin, Cha
     """Return the first observed or projected label crossing a threshold."""
 
     task_id = "task_charts__single_series__threshold_crossing_label"
-    fixed_query_variant = "threshold_crossing"
+    fixed_query_id = "threshold_crossing"
     supports_unanswerable = True
 
 

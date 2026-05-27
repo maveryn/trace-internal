@@ -444,14 +444,12 @@ class IllustrationsCountingVisiblePartCountTask:
                 "scene_id": SCENE_ID,
                 "entities": scene_entities(scene),
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                     "queried_part_kind": str(sample.part_kind),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -485,7 +483,6 @@ class IllustrationsCountingVisiblePartCountTask:
                 "counted_part_ids": list(counted_part_ids),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
                 "part_kind": str(sample.part_kind),
@@ -517,7 +514,6 @@ class IllustrationsCountingVisiblePartCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample=sample, distractor_part_count=int(distractor_part_count)),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

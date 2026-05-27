@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       standard_table: 1.0
-    query_variant_weights:
+    query_id_weights:
       pottable_ball_count: 1.0
       legal_group_pottable_count: 1.0
       blocking_ball_count: 1.0
@@ -13,7 +13,7 @@ generation:
       charcoal: 1.0
       light_rail: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_object_ball_count_sampling: true
     balanced_target_answer_sampling: true

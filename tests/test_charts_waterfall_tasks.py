@@ -37,7 +37,7 @@ def test_waterfall_tasks_generate_default_query_outputs() -> None:
             params={},
             max_attempts=100,
         )
-        assert output.query_variant == "default"
+        assert output.query_id == "default"
         assert output.scene_id == "waterfall"
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
@@ -53,10 +53,10 @@ def test_waterfall_tasks_generate_each_query_branch_and_answer_contract() -> Non
         for query_id in sorted(allowed_query_ids):
             output = task.generate(
                 104_000 + seed_index,
-                params={"query_variant": query_id},
+                params={"query_id": query_id},
                 max_attempts=100,
             )
-            assert output.query_variant == "default"
+            assert output.query_id == "default"
             assert output.scene_id == "waterfall"
             assert output.query_id == query_id
             execution = output.trace_payload["execution_trace"]

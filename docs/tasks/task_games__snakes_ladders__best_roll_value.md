@@ -13,4 +13,4 @@
 1. The horizon is sampled as `1`, `2`, or `3` rolls and shown in the side panel.
 2. The answer is sampled from `20..100`; the token start square is chosen so the sampled final square is the highest reachable board position for the horizon.
 3. The scene uses the same 10 x 10 Snakes and Ladders renderer as the other tasks.
-4. Public `query_variant` is `default`; `best_roll_value` is retained as `query_id`.
+4. `best_roll_value` is retained as `query_id`.

@@ -5,7 +5,7 @@
 2. Scene id: `parallel_coords`
 3. Source implementation domain/group: `charts/parallel_coordinates`
 4. Query id: `above_on_both_axes`, `above_on_one_below_on_other`, `below_on_both_axes`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.parallel_coordinates.profile_query.ChartsParallelCoordinatesAxisConditionCountTask`

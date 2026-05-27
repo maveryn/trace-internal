@@ -1,6 +1,6 @@
 # task_illustrations__object_field__visible_part_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -12,18 +12,18 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 
 ## Scene And Query
 The task renders a mixed canvas of recognizable synthetic objects. Object
-families include animals, vehicles, and household/tool objects. The calibrated
+families include animals, vehicles, and household/tool objects. The configured
 scene uses `6..9` objects and records semantic part bboxes for visible doors,
 eyes, handles, tails, and wings.
 
-The public task uses `query_variant=default` and records
+The task records
 `query_id=visible_part_count`. The queried part kind is recorded in trace
 metadata as `part_kind`.
 
 ## Answer Contract
 - `answer_gt.type = integer`
 - value is the number of visible queried parts rendered in the image
-- calibrated answer support is `1..6`
+- configured answer support is `1..6`
 
 ## Evidence Contract
 - `evidence_gt.type = bbox_set`
@@ -41,7 +41,7 @@ metadata as `part_kind`.
 ## Prompt Contract
 - `scene_key = mixed_object_canvas`
 - `task_key = visible_part_count_task`
-- `query_key = visible_part_count`
+- `query_id = visible_part_count`
 - prompts ask for a visible part count and do not mention canonical real-world
   object priors
 - answer-only and answer+evidence modes both include contract-valid JSON

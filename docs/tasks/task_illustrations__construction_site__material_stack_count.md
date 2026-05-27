@@ -1,6 +1,6 @@
 # task_illustrations__construction_site__material_stack_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -14,7 +14,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 The task renders a synthetic construction site with labeled zones, workers,
 vehicles/equipment, and multiple visible material stacks or bundles.
 
-Public query variants:
+Query ids:
 
 - `brick_stack_count`
 - `pipe_bundle_count`
@@ -23,7 +23,7 @@ Public query variants:
 
 Each variant asks for the count of one material type.
 
-Default calibration uses target answer support `2..6`, with `8..14` visible
+Default sampling uses target answer support `2..6`, with `8..14` visible
 material stacks/bundles in the scene.
 
 ## Answer Contract
@@ -48,6 +48,6 @@ material stacks/bundles in the scene.
 ## Prompt Contract
 - `scene_key = construction_site_canvas`
 - `task_key = material_stack_type_count_task`
-- `query_key` is one of the four material-count variants above
+- `query_id` is one of the four material-count branches above
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

@@ -42,7 +42,7 @@ def test_pages_process_flow_filtered_node_count_contract() -> None:
         expected = [trace["render_map"]["node_bboxes_px"][node_id] for node_id in evidence_ids]
 
         assert out.scene_id == "process_flow"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
@@ -66,7 +66,7 @@ def test_pages_process_flow_condition_path_endpoint_contract() -> None:
         expected.append(render_map["edge_label_bboxes_px"][str(edge_id)])
 
     assert out.scene_id == "process_flow"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "condition_path_endpoint_label"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) == str(query["answer"])
@@ -87,7 +87,7 @@ def test_pages_process_flow_actor_handoff_count_contract() -> None:
         expected = [trace["render_map"]["edge_bboxes_px"][edge_id] for edge_id in evidence_ids]
 
         assert out.scene_id == "process_flow"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(query["answer"])

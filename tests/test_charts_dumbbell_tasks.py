@@ -12,7 +12,7 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks import create_task
 from trace.tasks.charts.dumbbell.pairwise_comparison_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsDumbbellPairwiseComparisonQueryTask,
 )
 
@@ -26,7 +26,7 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 def _expected_answer(execution: dict) -> str | int:
     rows = list(execution["rows"])
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
 
     if variant == "gap_rank_row_label":
         reverse = str(execution["rank_order"]) == "largest"
@@ -52,19 +52,19 @@ def _expected_answer(execution: dict) -> str | int:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_dumbbell_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_dumbbell_variants_match_contract(query_id: str) -> None:
     task = ChartsDumbbellPairwiseComparisonQueryTask()
     out = task.generate(
-        hash64(20260503, "charts_dumbbell", SUPPORTED_QUERY_VARIANTS.index(query_variant)),
-        params={"query_variant": query_variant},
+        hash64(20260503, "charts_dumbbell", SUPPORTED_QUERY_IDS.index(query_id)),
+        params={"query_id": query_id},
         max_attempts=80,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(execution["question_format"]) == "dumbbell_pairwise_comparison_query"
     assert out.evidence_gt.type == "bbox_set"
@@ -77,7 +77,7 @@ def test_chart_dumbbell_variants_match_contract(query_variant: str) -> None:
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    if query_variant in {"side_winner_count", "absolute_gap_threshold_count"}:
+    if query_id in {"side_winner_count", "absolute_gap_threshold_count"}:
         assert out.answer_gt.type == "integer"
         assert 2 <= int(out.answer_gt.value) <= 10
     else:
@@ -89,7 +89,7 @@ def test_chart_dumbbell_variants_match_contract(query_variant: str) -> None:
     assert out.evidence_gt.value == expected_bboxes
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert trace["projected_evidence"]["row_ids"] == evidence_row_ids
-    if query_variant in {"side_winner_count", "absolute_gap_threshold_count"}:
+    if query_id in {"side_winner_count", "absolute_gap_threshold_count"}:
         assert len(evidence_row_ids) == int(out.answer_gt.value)
     else:
         assert len(evidence_row_ids) == 1
@@ -112,12 +112,12 @@ def test_chart_dumbbell_variants_match_contract(query_variant: str) -> None:
 
 def test_chart_dumbbell_prompt_examples_match_contract() -> None:
     task = ChartsDumbbellPairwiseComparisonQueryTask()
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS, start=92100):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=80)
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=92100):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert "evidence" in answer_and_evidence
-        if query_variant in {"side_winner_count", "absolute_gap_threshold_count"}:
+        if query_id in {"side_winner_count", "absolute_gap_threshold_count"}:
             assert isinstance(answer_and_evidence["answer"], int)
             assert isinstance(answer_only["answer"], int)
         else:
@@ -138,18 +138,18 @@ def test_chart_dumbbell_balanced_sampling_covers_axes() -> None:
     for index in range(96):
         out = task.generate(hash64(92200, "charts_dumbbell", index), params={}, max_attempts=120)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         row_counts[int(execution["row_count"])] += 1
         answers[str(execution["answer"])] += 1
-        if str(execution["query_variant"]) == "gap_rank_row_label":
+        if str(execution["query_id"]) == "gap_rank_row_label":
             rank_orders[str(execution["rank_order"])] += 1
             rank_ns[int(execution["rank_n"])] += 1
-        if str(execution["query_variant"]) == "side_winner_count":
+        if str(execution["query_id"]) == "side_winner_count":
             side_directions[str(execution["side_direction"])] += 1
-        if str(execution["query_variant"]) == "absolute_gap_threshold_count":
+        if str(execution["query_id"]) == "absolute_gap_threshold_count":
             gap_relations[str(execution["gap_threshold_relation"])] += 1
 
-    assert_counter_support_within(variants, SUPPORTED_QUERY_VARIANTS, expected_per_key=32, tolerance=12)
+    assert_counter_support_within(variants, SUPPORTED_QUERY_IDS, expected_per_key=32, tolerance=12)
     assert set(row_counts).issubset(set(range(10, 17)))
     assert 10 in row_counts
     assert 16 in row_counts
@@ -162,7 +162,7 @@ def test_chart_dumbbell_balanced_sampling_covers_axes() -> None:
 
 def test_chart_dumbbell_is_deterministic() -> None:
     task = ChartsDumbbellPairwiseComparisonQueryTask()
-    params = {"query_variant": "gap_rank_row_label", "rank_order": "largest", "rank_n": 3}
+    params = {"query_id": "gap_rank_row_label", "rank_order": "largest", "rank_n": 3}
     out_a = task.generate(92300, params=params, max_attempts=80)
     out_b = task.generate(92300, params=params, max_attempts=80)
 
@@ -184,7 +184,7 @@ def test_chart_dumbbell_registered_and_group_config_loaded() -> None:
     generation = cfg["generation"]["shared"]
     assert int(generation["row_count_min"]) == 10
     assert int(generation["row_count_max"]) == 16
-    assert sorted(generation["query_variant_weights"].keys()) == sorted(SUPPORTED_QUERY_VARIANTS)
+    assert sorted(generation["query_id_weights"].keys()) == sorted(SUPPORTED_QUERY_IDS)
 
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_dumbbell_v0"

@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_three_d__object_scene__camera_distance_extremum_label:
-      query_variant_weights:
+      query_id_weights:
         closest_to_camera: 1.0
         farthest_from_camera: 1.0
       scene_variant_weights:
@@ -12,10 +12,10 @@ generation:
       point_count_max: 6
       context_object_count_min: 2
       context_object_count_max: 2
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__object_relation_label:
-      query_variant_weights:
+      query_id_weights:
         on_top_of_prop: 1.0
         under_prop: 1.0
         inside_prop: 1.0
@@ -27,10 +27,10 @@ generation:
       point_count_max: 6
       context_object_count_min: 2
       context_object_count_max: 2
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__reference_nearest_label:
-      query_variant_weights:
+      query_id_weights:
         closest_to_reference: 1.0
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -40,10 +40,10 @@ generation:
       point_count_max: 6
       large_candidate_count_min: 2
       large_candidate_count_max: 2
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__between_references_label:
-      query_variant_weights:
+      query_id_weights:
         between_references: 1.0
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -53,10 +53,10 @@ generation:
       point_count_max: 6
       context_object_count_min: 2
       context_object_count_max: 2
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__occlusion_order_label:
-      query_variant_weights:
+      query_id_weights:
         in_front_of_reference: 1.0
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -66,10 +66,10 @@ generation:
       point_count_max: 6
       context_object_count_min: 1
       context_object_count_max: 1
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__height_extremum_label:
-      query_variant_weights:
+      query_id_weights:
         highest_above_floor: 1.0
         lowest_above_floor: 1.0
       scene_variant_weights:
@@ -80,7 +80,7 @@ generation:
       point_count_max: 6
       context_object_count_min: 5
       context_object_count_max: 5
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
 
 rendering:

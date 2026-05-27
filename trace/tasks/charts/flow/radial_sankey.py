@@ -44,16 +44,16 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_flow_radial_sankey_base"
-TRANSFER_TOTAL_QUERY_VARIANTS: Tuple[str, ...] = (
+TRANSFER_TOTAL_QUERY_IDS: Tuple[str, ...] = (
     "source_to_targets_total",
     "sources_to_target_total",
 )
-DOMINANT_ENDPOINT_QUERY_VARIANTS: Tuple[str, ...] = (
+DOMINANT_ENDPOINT_QUERY_IDS: Tuple[str, ...] = (
     "largest_target_for_source",
     "largest_source_for_target",
     "second_largest_target_for_source",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = TRANSFER_TOTAL_QUERY_VARIANTS + DOMINANT_ENDPOINT_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = TRANSFER_TOTAL_QUERY_IDS + DOMINANT_ENDPOINT_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("radial_chord_sankey",)
 
 _SOURCE_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
@@ -447,17 +447,17 @@ def _resolve_count(
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -475,18 +475,18 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not enabled:
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -494,15 +494,15 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -599,7 +599,7 @@ def _join_quoted(labels: Sequence[str]) -> str:
 
 def _choose_query(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     rng,
@@ -624,7 +624,7 @@ def _choose_query(
         context=f"{TASK_ID} radial transfer answer",
     )
 
-    if str(query_variant) == "source_to_targets_total":
+    if str(query_id) == "source_to_targets_total":
         group_size = _balanced_int(
             list(range(int(group_min), int(group_max) + 1)),
             params=params,
@@ -668,7 +668,7 @@ def _choose_query(
             "link_details": [dict(link) for link in selected_links],
         }
 
-    if str(query_variant) == "sources_to_target_total":
+    if str(query_id) == "sources_to_target_total":
         group_size = _balanced_int(
             list(range(int(group_min), int(group_max) + 1)),
             params=params,
@@ -712,7 +712,7 @@ def _choose_query(
             "link_details": [dict(link) for link in selected_links],
         }
 
-    if str(query_variant) == "largest_target_for_source":
+    if str(query_id) == "largest_target_for_source":
         by_source: Dict[str, List[Dict[str, Any]]] = {}
         for link in links:
             by_source.setdefault(str(link["source_id"]), []).append(dict(link))
@@ -744,7 +744,7 @@ def _choose_query(
             "link_details": [dict(link) for link in selected_group],
         }
 
-    if str(query_variant) == "largest_source_for_target":
+    if str(query_id) == "largest_source_for_target":
         by_target: Dict[str, List[Dict[str, Any]]] = {}
         for link in links:
             by_target.setdefault(str(link["target_id"]), []).append(dict(link))
@@ -776,7 +776,7 @@ def _choose_query(
             "link_details": [dict(link) for link in selected_group],
         }
 
-    if str(query_variant) == "second_largest_target_for_source":
+    if str(query_id) == "second_largest_target_for_source":
         by_source: Dict[str, List[Dict[str, Any]]] = {}
         for link in links:
             by_source.setdefault(str(link["source_id"]), []).append(dict(link))
@@ -808,12 +808,12 @@ def _choose_query(
             "link_details": [dict(link) for link in selected_group],
         }
 
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _construct_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -884,7 +884,7 @@ def _construct_dataset(
             continue
         try:
             query = _choose_query(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 params=params,
                 instance_seed=int(instance_seed),
                 rng=rng,
@@ -894,7 +894,7 @@ def _construct_dataset(
             continue
         return {
             "scene_title": str(rng.choice(_TITLE_OPTIONS)),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "sources": [dict(node) for node in sources],
             "targets": [dict(node) for node in targets],
@@ -1334,10 +1334,10 @@ def _render_radial_sankey(
     )
 
 
-def _json_examples(query_variant: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
     return (
-        str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-        str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+        str(prompt_defaults[f"json_example_{str(query_id)}"]),
+        str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
     )
 
 
@@ -1350,11 +1350,11 @@ class ChartsFlowRadialSankeyTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_sampling_params(params, query_variant_probabilities=query_variant_probabilities)
+        support_params = _support_sampling_params(params, query_id_probabilities=query_id_probabilities)
         dataset = _construct_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=support_params,
             instance_seed=int(instance_seed),
@@ -1412,7 +1412,7 @@ class ChartsFlowRadialSankeyTask:
             context=f"prompt defaults for {self.task_id}",
         )
         query = dict(dataset["query"])
-        json_example, json_example_answer_only = _json_examples(str(query_variant), prompt_defaults=prompt_defaults)
+        json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
         answer_hint = (
             str(prompt_defaults["radial_answer_hint_value"])
             if str(dataset["answer_type"]) == "integer"
@@ -1424,7 +1424,7 @@ class ChartsFlowRadialSankeyTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["radial_scene_key"]),
             task_key=str(prompt_defaults["radial_task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_radial_chord_sankey"]),
@@ -1481,7 +1481,7 @@ class ChartsFlowRadialSankeyTask:
         ]
         node_scan = normalize_int_with_bounds(int(dataset["source_count"]) + int(dataset["target_count"]), node_bounds)
         visual_scan = clamp_unit_interval((0.65 * float(link_scan)) + (0.35 * float(node_scan)))
-        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]) + (0.10 * float(evidence_scan)))
+        reasoning_load = clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)]) + (0.10 * float(evidence_scan)))
         complexity = build_chart_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -1492,9 +1492,9 @@ class ChartsFlowRadialSankeyTask:
         )
 
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
             "source_count": int(dataset["source_count"]),
             "target_count": int(dataset["target_count"]),
@@ -1517,7 +1517,7 @@ class ChartsFlowRadialSankeyTask:
                 "scene_kind": "chart_radial_sankey",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": dataset["answer_value"],
                     "query_link_ids": [str(link_id) for link_id in query["query_link_ids"]],
@@ -1526,7 +1526,7 @@ class ChartsFlowRadialSankeyTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1565,12 +1565,12 @@ class ChartsFlowRadialSankeyTask:
                 "link_centers_px": dict(rendered_scene.link_center_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "radial_sankey_transfer_total_value"
-                if str(query_variant) in TRANSFER_TOTAL_QUERY_VARIANTS
+                if str(query_id) in TRANSFER_TOTAL_QUERY_IDS
                 else "radial_sankey_dominant_endpoint_label",
                 "scene_title": str(dataset["scene_title"]),
                 "sources": [dict(node) for node in dataset["sources"]],
@@ -1597,11 +1597,11 @@ class ChartsFlowRadialSankeyTask:
                 "target_labels": [str(value) for value in query.get("target_labels", [])],
                 "group_size": int(query.get("group_size", 0)),
                 "expression": str(query["expression"]),
-                "evidence_semantics": str(query_variant),
+                "evidence_semantics": str(query_id),
             },
             "witness_symbolic": {
                 "type": "radial_sankey_transfer_total_value_witness"
-                if str(query_variant) in TRANSFER_TOTAL_QUERY_VARIANTS
+                if str(query_id) in TRANSFER_TOTAL_QUERY_IDS
                 else "radial_sankey_dominant_endpoint_label_witness",
                 "query_link_ids": [str(link_id) for link_id in query["query_link_ids"]],
                 "evidence_link_ids": list(evidence_link_ids),
@@ -1624,7 +1624,7 @@ class ChartsFlowRadialSankeyTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
 
 
@@ -1636,7 +1636,7 @@ class ChartsFlowRadialSankeyTransferTotalValuePublicTask(
     """Return a grouped transfer total from a radial Sankey chart."""
 
     task_id = "task_charts__radial_sankey__transfer_total_value"
-    allowed_query_variants = TRANSFER_TOTAL_QUERY_VARIANTS
+    allowed_query_ids = TRANSFER_TOTAL_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         transfer_params = dict(params)
@@ -1659,15 +1659,15 @@ class ChartsFlowRadialSankeyDominantEndpointLabelPublicTask(
     """Return a dominant source or target endpoint from a radial Sankey chart."""
 
     task_id = "task_charts__radial_sankey__dominant_endpoint_label"
-    allowed_query_variants = DOMINANT_ENDPOINT_QUERY_VARIANTS
+    allowed_query_ids = DOMINANT_ENDPOINT_QUERY_IDS
 
 
 __all__ = [
     "ChartsFlowRadialSankeyDominantEndpointLabelPublicTask",
     "ChartsFlowRadialSankeyTask",
     "ChartsFlowRadialSankeyTransferTotalValuePublicTask",
-    "DOMINANT_ENDPOINT_QUERY_VARIANTS",
+    "DOMINANT_ENDPOINT_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
-    "TRANSFER_TOTAL_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
+    "TRANSFER_TOTAL_QUERY_IDS",
 ]

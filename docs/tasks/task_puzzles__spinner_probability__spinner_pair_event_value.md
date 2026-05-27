@@ -8,7 +8,7 @@
 5. Goal: compute a reduced-fraction probability over one independent spin from each of two equal-sector spinners.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `pair_both_target_color_probability|pair_at_least_one_target_color_probability|pair_same_color_probability`
 3. Sectors per spinner: `3..5`
 4. Answer type: `string`

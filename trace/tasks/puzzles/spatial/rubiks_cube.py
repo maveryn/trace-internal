@@ -104,18 +104,18 @@ def _resolve_query_id(
     """Resolve one internal Rubik query branch for a public task."""
 
     effective_params = dict(params)
-    if effective_params.get("query_variant") is None and effective_params.get("query_variant") is not None:
-        effective_params["query_variant"] = str(effective_params["query_variant"])
+    if effective_params.get("query_id") is None and effective_params.get("query_id") is not None:
+        effective_params["query_id"] = str(effective_params["query_id"])
     return resolve_puzzle_axis_variant(
         params=effective_params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=[str(query) for query in supported_queries],
         task_id=INTERNAL_TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -330,30 +330,27 @@ class _RubiksCubeBaseTask:
                 "scene_kind": "puzzle_spatial_rubiks_cube_net",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
+                    "query_id": "default",
                     "scene_id": RUBIKS_SCENE_ID,
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_option_label": str(answer_value),
                     "view_family": RUBIKS_SCENE_ID,
                 },
             },
             "query_spec": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": RUBIKS_SCENE_ID,
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
+                    "query_id": "default",
                     "scene_id": RUBIKS_SCENE_ID,
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "option_count": int(option_count),
@@ -398,12 +395,11 @@ class _RubiksCubeBaseTask:
                 "evidence_source": "option_panel_bboxes_px",
             }, render_params.unit_size_jitter or {}),
             "execution_trace": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": RUBIKS_SCENE_ID,
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "scene_variant": str(scene_variant),
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "face_color_names": dict(dataset["face_color_names"]),
                 "color_map": dict(dataset["color_map"]),
@@ -454,7 +450,6 @@ class _RubiksCubeBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=RUBIKS_SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

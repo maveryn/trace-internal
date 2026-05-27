@@ -7,7 +7,7 @@
 4. Objective: select the labeled projection or cube-stack option that resolves a cube-stack projection consistency question.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `projection_consistency_label`
 3. Public `scene_id`: `voxel_cube`
 4. Supported internal query parameter: `consistency_query=inconsistent_projection_label|candidate_stack_from_views_label`

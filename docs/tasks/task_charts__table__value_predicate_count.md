@@ -5,7 +5,7 @@
 2. Scene id: `table`
 3. Source implementation domain/group: `charts/table_counting`
 4. Query id: `categorical_value_count`, `in_interval`, `threshold_count`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.table.counting.value_count.ChartsTableValuePredicateCountTask`

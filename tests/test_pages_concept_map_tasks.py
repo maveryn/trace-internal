@@ -43,7 +43,7 @@ def test_pages_concept_map_branch_item_count_contract() -> None:
     ]
 
     assert out.scene_id == "concept_map"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "branch_child_count"
     assert trace["execution_trace"]["node_shape_profile"] in {"mixed_hub_circle", "oval_branch_mix", "mixed_cards_ovals"}
     assert out.answer_gt.type == "integer"
@@ -66,7 +66,7 @@ def test_pages_concept_map_ordered_child_label_contract() -> None:
     ]
 
     assert out.scene_id == "concept_map"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "nth_child_label"
     assert out.answer_gt.type == "string"
     assert 2 <= int(query["rank"]) <= 5
@@ -87,7 +87,7 @@ def test_pages_concept_map_filtered_node_count_contract() -> None:
     ]
 
     assert out.scene_id == "concept_map"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "marked_child_count"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(query["answer"])

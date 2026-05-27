@@ -34,7 +34,7 @@ generation:
     radial_transfer_answer_max: 100
     radial_group_size_min: 2
     radial_group_size_max: 3
-    query_variant_weights:
+    query_id_weights:
       source_to_target_total_flow: 1.0
       path_bottleneck_value: 1.0
       path_flow_difference: 1.0
@@ -48,7 +48,7 @@ generation:
     scene_variant_weights:
       three_column_sankey: 1.0
       radial_chord_sankey: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:

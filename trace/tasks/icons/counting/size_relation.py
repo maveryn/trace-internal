@@ -110,7 +110,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons__reference_canvas__size_relation_count",
 )
-_PUBLIC_QUERY_VARIANT = "size_relation_count"
+_PUBLIC_QUERY_ID = "size_relation_count"
 
 
 def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
@@ -137,14 +137,14 @@ def _resolve_size_relation(
     """Resolve whether the query asks for smaller or larger scene icons."""
 
     relation_params = dict(params)
-    if relation_params.get("size_relation") is None and relation_params.get("query_variant") is not None:
-        query_variant = str(relation_params["query_variant"]).strip()
-        if query_variant == "size_smaller":
+    if relation_params.get("size_relation") is None and relation_params.get("query_id") is not None:
+        query_id = str(relation_params["query_id"]).strip()
+        if query_id == "size_smaller":
             relation_params["size_relation"] = "smaller"
-        elif query_variant == "size_larger":
+        elif query_id == "size_larger":
             relation_params["size_relation"] = "larger"
-        elif query_variant in {"smaller", "larger"}:
-            relation_params["size_relation"] = query_variant
+        elif query_id in {"smaller", "larger"}:
+            relation_params["size_relation"] = query_id
     raw_supported = params.get(
         "size_relation_candidates",
         group_default(_GEN_DEFAULTS, "size_relation_candidates", list(_DEFAULTS.size_relation_candidates)),
@@ -528,8 +528,8 @@ class IconsCountingSizeRelationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
-        query_variant = str(_PUBLIC_QUERY_VARIANT)
-        query_variant_probabilities = {str(_PUBLIC_QUERY_VARIANT): 1.0}
+        query_id = str(_PUBLIC_QUERY_ID)
+        query_id_probabilities = {str(_PUBLIC_QUERY_ID): 1.0}
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         trace_payload = {
@@ -537,7 +537,7 @@ class IconsCountingSizeRelationTask:
                 "scene_kind": "icons_reference_counting_size_relation",
                 "entities": [dict(scene_payload.reference_instance), *[dict(item) for item in scene_payload.scene_instances]],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "counting_target": f"same_icon_type_and_{size_relation}_than_reference",
                     "reference_icon_id": str(scene_payload.reference_icon_id),
                     "reference_nominal_size_px": int(scene_payload.reference_nominal_size_px),
@@ -551,7 +551,7 @@ class IconsCountingSizeRelationTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -567,7 +567,7 @@ class IconsCountingSizeRelationTask:
                     "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
                     "size_relation": str(size_relation),
                     "size_relation_probabilities": dict(size_relation_probabilities),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "size_relation_min_delta_px": int(min_size_delta_px),
                 },
             },
@@ -589,7 +589,7 @@ class IconsCountingSizeRelationTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_scene",
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -605,7 +605,7 @@ class IconsCountingSizeRelationTask:
                 "matching_scene_indices": list(scene_payload.match_indices),
                 "size_relation": str(size_relation),
                 "size_relation_probabilities": dict(size_relation_probabilities),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "size_relation_min_delta_px": int(scene_payload.size_relation_min_delta_px),
                 "question_format": "count_matching_scene_icons_by_size_relation",
             },
@@ -643,7 +643,7 @@ class IconsCountingSizeRelationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

@@ -247,7 +247,7 @@ visual:
 generation:
   task_overrides:
     task_pages__paired_forms__reconciliation_value:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       item_count_min: 6
       item_count_max: 9
@@ -260,7 +260,7 @@ generation:
       mismatch_count_min: 3
       mismatch_count_max: 5
       direction_count_min: 1
-      query_variant_weights:
+      query_id_weights:
         total_amount_delta: 1.0
         shortfall_minus_overage_value: 1.0
         sum_absolute_quantity_differences: 1.0

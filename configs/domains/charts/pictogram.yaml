@@ -9,11 +9,11 @@ generation:
     difference_mark_max: 10
     threshold_answer_min: 1
     threshold_answer_max: 5
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_threshold_direction_sampling: true
     balanced_glyph_sampling: true
-    query_variant_weights:
+    query_id_weights:
       category_total_value: 1.0
       group_difference_value: 1.0
       threshold_count: 1.0

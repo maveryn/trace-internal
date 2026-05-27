@@ -13,7 +13,7 @@ from trace.tasks.three_d.street.intersection_nearest import (
     MIN_NEAREST_DISTANCE_MARGIN,
     SCENE_ID,
     STREET_OBJECT_TYPES,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -27,7 +27,7 @@ def test_street_intersection_nearest_answer_evidence_and_geometry(scene_variant:
     output = task.generate(
         20260522,
         params={
-            "query_variant": "closest_to_intersection",
+            "query_id": "closest_to_intersection",
             "scene_variant": scene_variant,
             "candidate_count": 6,
             "context_object_count": 10,
@@ -55,7 +55,7 @@ def test_street_intersection_nearest_answer_evidence_and_geometry(scene_variant:
     }
     sorted_labels = sorted(distances, key=lambda label: (distances[label], label))
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_to_intersection"
     assert output.answer_gt.type == "option_letter"
@@ -93,7 +93,7 @@ def test_street_intersection_nearest_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "street"
-    assert SUPPORTED_QUERY_VARIANTS == ("closest_to_intersection",)
+    assert SUPPORTED_QUERY_IDS == ("closest_to_intersection",)
     assert {
         "motorcycle",
         "fire_hydrant",

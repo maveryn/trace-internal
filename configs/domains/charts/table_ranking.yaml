@@ -11,13 +11,13 @@ generation:
       zebra: 1.0
       ledger: 1.0
       card_table: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
     task_charts__table__column_rank_label:
       row_count_min: 10
       row_count_max: 20
-      query_variant_weights:
+      query_id_weights:
         kth_rank_in_column: 1.0
       rank_direction_weights:
         highest: 1.0

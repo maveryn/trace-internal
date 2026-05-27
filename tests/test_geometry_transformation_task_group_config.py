@@ -14,9 +14,9 @@ def test_geometry_transformation_task_overrides_expose_scene_and_query_axes() ->
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"triangle", "quadrilateral"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "translation_match",
         "reflection_match",
         "rotation_match",

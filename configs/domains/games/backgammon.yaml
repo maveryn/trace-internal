@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       standard_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       legal_move_count: 1.0
       hit_move_count: 1.0
       blocked_destination_count: 1.0
@@ -13,7 +13,7 @@ generation:
       slate: 1.0
       tournament: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     legal_count_support:

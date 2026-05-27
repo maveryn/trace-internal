@@ -15,14 +15,14 @@ def test_games_2048_board_defaults_expose_query_style_move_and_answer_axes() -> 
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_move_direction_sampling"]) is True
     assert bool(generation["balanced_goal_cell_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert bool(generation["balanced_target_label_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"standard_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "merge_count",
         "score_value",
         "max_tile_value",

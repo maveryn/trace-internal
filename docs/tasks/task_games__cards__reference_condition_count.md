@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: `bbox_set` over every counted non-reference card.
-3. Public `query_variant` is `default`; the sampled condition is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. The sampled condition is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
 
 ## Implementation
 1. This task uses the shared games card renderer with the `multi_row` scene variant.

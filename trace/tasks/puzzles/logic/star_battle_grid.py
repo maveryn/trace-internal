@@ -222,18 +222,18 @@ def _resolve_query_id(
     supported_queries: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
     effective_params = dict(params)
-    if effective_params.get("query_variant") is None and effective_params.get("query_variant") is not None:
-        effective_params["query_variant"] = str(effective_params["query_variant"])
+    if effective_params.get("query_id") is None and effective_params.get("query_id") is not None:
+        effective_params["query_id"] = str(effective_params["query_id"])
     return resolve_puzzle_axis_variant(
         params=effective_params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         supported_variants=[str(query) for query in supported_queries],
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -921,7 +921,7 @@ class _PuzzlesLogicStarBattleBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         gen_defaults, render_defaults, prompt_defaults, complexity_weights = _load_defaults(str(self.task_id))
-        query_id, query_variant_probabilities = _resolve_query_id(
+        query_id, query_id_probabilities = _resolve_query_id(
             params,
             gen_defaults=gen_defaults,
             instance_seed=int(instance_seed),
@@ -1006,11 +1006,10 @@ class _PuzzlesLogicStarBattleBaseTask:
             for spec in dataset.get("candidate_specs", [])
         ]
         query_params = {
-            "query_variant": "default",
-            "query_variant_probabilities": {"default": 1.0},
+            "query_id": "default",
+            "query_id_probabilities": {"default": 1.0},
             "query_id": str(query_id),
-            "query_variant": str(query_id),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1027,18 +1026,14 @@ class _PuzzlesLogicStarBattleBaseTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_id": SCENE_ID,
                     "scene_variant": str(scene_variant),
                     "answer_value": int(answer_value) if answer_type == "integer" else str(answer_value),
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1108,7 +1103,6 @@ class _PuzzlesLogicStarBattleBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

@@ -26,7 +26,7 @@ from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     is_uniform_probability_map,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_waves_interference_complexity
@@ -44,7 +44,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "grid_tank",
     "lab_sheet",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "interference_point_choice",
     "path_difference_value",
 )
@@ -53,9 +53,9 @@ SUPPORTED_TARGET_CONDITIONS: Tuple[str, ...] = ("constructive", "destructive")
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E")
 SOURCE_SEPARATION_STEPS = 8
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "clean_tank": SUPPORTED_QUERY_VARIANTS,
-    "grid_tank": SUPPORTED_QUERY_VARIANTS,
-    "lab_sheet": SUPPORTED_QUERY_VARIANTS,
+    "clean_tank": SUPPORTED_QUERY_IDS,
+    "grid_tank": SUPPORTED_QUERY_IDS,
+    "lab_sheet": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -89,7 +89,7 @@ class _ResolvedAxes:
     """Resolved scene/query axes for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     phase_relation: str
     target_condition: str | None
     correct_option_letter: str | None
@@ -97,7 +97,7 @@ class _ResolvedAxes:
     accent_color_name: str
     target_answer: int | str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     phase_relation_probabilities: Dict[str, float]
     target_condition_probabilities: Dict[str, float]
     correct_option_letter_probabilities: Dict[str, float]
@@ -157,7 +157,7 @@ class _SceneSpec:
     """Resolved symbolic wave-interference scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     phase_relation: str
     choice_scenario: _ChoiceScenario | None
     path_scenario: _PathScenario | None
@@ -219,16 +219,16 @@ def _resolve_scene_query(instance_seed: int, *, params: Mapping[str, Any]) -> Tu
     """Resolve the public scene/query axes."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_query")
-    return resolve_compatible_scene_query_variants(
+    return resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
 
@@ -263,13 +263,13 @@ def _resolve_target_condition(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the requested interference condition for choice tasks."""
 
-    if str(query_variant) != "interference_point_choice":
+    if str(query_id) != "interference_point_choice":
         return None, {}
-    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("target_condition",))
+    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("target_condition",))
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.target_condition"),
         params=adjusted_params,
@@ -297,11 +297,11 @@ def _resolve_correct_option_letter(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the correct candidate label for point-choice scenes."""
 
-    if str(query_variant) != "interference_point_choice":
+    if str(query_id) != "interference_point_choice":
         return None, {}
     adjusted_params = dict(_with_sampling_divisor(params, divisor=1, explicit_keys=("correct_option_letter",)))
     if adjusted_params.get("correct_option_letter") is None and adjusted_params.get("target_answer") is not None:
@@ -338,11 +338,11 @@ def _resolve_path_difference_steps(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int | None, Dict[str, float]]:
     """Resolve the integer path difference in half-wavelength steps."""
 
-    if str(query_variant) != "path_difference_value":
+    if str(query_id) != "path_difference_value":
         return None, {}
     support = tuple(int(value) for value in _path_difference_support(params) if int(value) > 0)
     if not support:
@@ -372,11 +372,11 @@ def _resolve_path_difference_steps(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve scene/query/color/answer axes for one instance."""
 
-    scene_variant, scene_probs, query_variant, query_probs = _resolve_scene_query(int(instance_seed), params=params)
+    scene_variant, scene_probs, query_id, query_probs = _resolve_scene_query(int(instance_seed), params=params)
     phase_relation, phase_probs = _resolve_phase_relation(int(instance_seed), params=params)
-    target_condition, condition_probs = _resolve_target_condition(int(instance_seed), params=params, query_variant=str(query_variant))
-    correct_option_letter, option_probs = _resolve_correct_option_letter(int(instance_seed), params=params, query_variant=str(query_variant))
-    path_difference_steps, path_probs = _resolve_path_difference_steps(int(instance_seed), params=params, query_variant=str(query_variant))
+    target_condition, condition_probs = _resolve_target_condition(int(instance_seed), params=params, query_id=str(query_id))
+    correct_option_letter, option_probs = _resolve_correct_option_letter(int(instance_seed), params=params, query_id=str(query_id))
+    path_difference_steps, path_probs = _resolve_path_difference_steps(int(instance_seed), params=params, query_id=str(query_id))
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent")
     accent_name, accent_probs = resolve_variant(
@@ -400,7 +400,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         sampling_namespace=f"{TASK_ID}.accent_color_name",
     )
 
-    if str(query_variant) == "interference_point_choice":
+    if str(query_id) == "interference_point_choice":
         if correct_option_letter is None or target_condition is None:
             raise ValueError("interference_point_choice requires target condition and correct option")
         target_answer: int | str = str(correct_option_letter)
@@ -413,7 +413,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         phase_relation=str(phase_relation),
         target_condition=target_condition,
         correct_option_letter=correct_option_letter,
@@ -421,7 +421,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         accent_color_name=str(accent_name),
         target_answer=target_answer,
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         phase_relation_probabilities=dict(phase_probs),
         target_condition_probabilities=dict(condition_probs),
         correct_option_letter_probabilities=dict(option_probs),
@@ -571,29 +571,29 @@ def _sample_path_scenario(rng, *, axes: _ResolvedAxes) -> _PathScenario:
 def _sample_scene_spec(rng, *, axes: _ResolvedAxes) -> _SceneSpec:
     """Sample one symbolic wave-interference scene."""
 
-    if str(axes.query_variant) == "interference_point_choice":
+    if str(axes.query_id) == "interference_point_choice":
         scenario = _sample_choice_scenario(rng, axes=axes)
         return _SceneSpec(
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             phase_relation=str(axes.phase_relation),
             choice_scenario=scenario,
             path_scenario=None,
             target_answer=str(scenario.correct_option_letter),
             evidence_entity_ids=(f"candidate_{str(scenario.correct_option_letter)}",),
         )
-    if str(axes.query_variant) == "path_difference_value":
+    if str(axes.query_id) == "path_difference_value":
         scenario = _sample_path_scenario(rng, axes=axes)
         return _SceneSpec(
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             phase_relation=str(axes.phase_relation),
             choice_scenario=None,
             path_scenario=scenario,
             target_answer=int(scenario.path_difference_steps),
             evidence_entity_ids=("path_difference_witness_region",),
         )
-    raise ValueError(f"unsupported waves query variant: {axes.query_variant}")
+    raise ValueError(f"unsupported waves query id: {axes.query_id}")
 
 
 def _line_bbox(start: Tuple[float, float], end: Tuple[float, float], *, padding_px: float) -> List[float]:
@@ -831,10 +831,10 @@ def _condition_phrase(target_condition: str | None) -> str:
     return "the requested interference condition"
 
 
-def _object_description_for_query(prompt_defaults: Mapping[str, Any], *, scene_variant: str, query_variant: str) -> str:
+def _object_description_for_query(prompt_defaults: Mapping[str, Any], *, scene_variant: str, query_id: str) -> str:
     """Return the most specific prompt-facing scene description available."""
 
-    query_specific_key = f"object_description_{str(scene_variant)}_{str(query_variant)}"
+    query_specific_key = f"object_description_{str(scene_variant)}_{str(query_id)}"
     if query_specific_key in prompt_defaults:
         return str(prompt_defaults[query_specific_key])
     return str(prompt_defaults[f"object_description_{str(scene_variant)}"])
@@ -1036,24 +1036,24 @@ def _render_scene(
     )
 
 
-def _answer_type(query_variant: str) -> str:
+def _answer_type(query_id: str) -> str:
     """Return answer type for one query."""
 
-    if str(query_variant) == "interference_point_choice":
+    if str(query_id) == "interference_point_choice":
         return "option_letter"
-    if str(query_variant) == "path_difference_value":
+    if str(query_id) == "path_difference_value":
         return "integer"
-    raise ValueError(f"unsupported waves query variant: {query_variant}")
+    raise ValueError(f"unsupported waves query id: {query_id}")
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Build deterministic JSON examples for one query."""
 
-    if str(query_variant) == "interference_point_choice":
+    if str(query_id) == "interference_point_choice":
         return build_prompt_json_examples(evidence_value=[[224, 202, 270, 248]], answer_type="option_letter")
-    if str(query_variant) == "path_difference_value":
+    if str(query_id) == "path_difference_value":
         return build_prompt_json_examples(evidence_value=[[212, 164, 754, 474]], answer_type="integer")
-    raise ValueError(f"unsupported waves query variant: {query_variant}")
+    raise ValueError(f"unsupported waves query id: {query_id}")
 
 
 class _PhysicsWavesInterferenceTankBaseTask:
@@ -1150,34 +1150,34 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": _object_description_for_query(
                         prompt_defaults,
                         scene_variant=str(axes.scene_variant),
-                        query_variant=str(axes.query_variant),
+                        query_id=str(axes.query_id),
                     ),
                     "target_condition_phrase": _condition_phrase(axes.target_condition),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
+                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 },
                 instance_seed=int(instance_seed),
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            answer_type = _answer_type(str(axes.query_variant))
+            answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str = scene_spec.target_answer
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
             evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
@@ -1186,8 +1186,8 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
-                option_count=len(OPTION_LETTERS) if str(axes.query_variant) == "interference_point_choice" else 0,
+                query_id=str(axes.query_id),
+                option_count=len(OPTION_LETTERS) if str(axes.query_id) == "interference_point_choice" else 0,
                 path_difference_steps=int(path_steps_for_complexity),
                 evidence_count=len(rendered_scene.evidence_bboxes),
             )
@@ -1231,8 +1231,7 @@ class _PhysicsWavesInterferenceTankBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "phase_relation": str(axes.phase_relation),
                         "target_condition": axes.target_condition,
                         "target_answer": answer_value,
@@ -1243,23 +1242,22 @@ class _PhysicsWavesInterferenceTankBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "phase_relation": str(axes.phase_relation),
                         "target_condition": axes.target_condition,
                         "correct_option_letter": axes.correct_option_letter,
                         "path_difference_steps": axes.path_difference_steps,
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "phase_relation_probabilities": dict(axes.phase_relation_probabilities),
                         "target_condition_probabilities": dict(axes.target_condition_probabilities),
                         "correct_option_letter_probabilities": dict(axes.correct_option_letter_probabilities),
@@ -1282,8 +1280,7 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "phase_relation": str(axes.phase_relation),
                     "target_condition": axes.target_condition,
                     "correct_option_letter": axes.correct_option_letter,
@@ -1317,9 +1314,8 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
                 scene_id=SCENE_ID,
-                query_id=str(axes.query_variant),
+                query_id=str(axes.query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
@@ -1333,7 +1329,7 @@ class PhysicsWavesInterferencePointChoiceTask(
     """Choose a point where two-source wave interference has the requested condition."""
 
     task_id = "task_physics__wave_interference__interference_point_choice"
-    fixed_query_variant = "interference_point_choice"
+    fixed_query_id = "interference_point_choice"
 
 
 @register_task
@@ -1344,4 +1340,4 @@ class PhysicsWavesPathDifferenceValueTask(
     """Compute the source-to-point path difference in half-wavelength steps."""
 
     task_id = "task_physics__wave_interference__path_difference_value"
-    fixed_query_variant = "path_difference_value"
+    fixed_query_id = "path_difference_value"

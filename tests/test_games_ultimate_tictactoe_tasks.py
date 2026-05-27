@@ -16,13 +16,13 @@ def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
     cfg = get_task_group_defaults("games", "ultimate_tictactoe")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(cfg)
 
-    assert set(generation["status_count_query_variant_weights"].keys()) == {
+    assert set(generation["status_count_query_id_weights"].keys()) == {
         "x_won_board_count",
         "o_won_board_count",
         "neither_won_board_count",
         "drawn_board_count",
     }
-    assert set(generation["local_tactic_query_variant_weights"].keys()) == {
+    assert set(generation["local_tactic_query_id_weights"].keys()) == {
         "x_winning_move_label",
         "o_winning_move_label",
         "x_blocking_move_label",
@@ -66,14 +66,14 @@ def test_games_ultimate_tictactoe_registry_and_taxonomy() -> None:
 def test_games_ultimate_tictactoe_status_count_matches_trace() -> None:
     out = create_task("task_games__ultimate_tictactoe__small_board_status_count").generate(
         81021,
-        params={"query_variant": "x_won_board_count", "target_answer": 3},
+        params={"query_id": "x_won_board_count", "target_answer": 3},
         max_attempts=500,
     )
     boards = out.trace_payload["execution_trace"]["small_boards"]
     matching = [board for board in boards if board["status"] == "X_won"]
 
     assert out.query_id == "x_won_board_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert len(matching) == 3
@@ -83,7 +83,7 @@ def test_games_ultimate_tictactoe_status_count_matches_trace() -> None:
 def test_games_ultimate_tictactoe_local_tactic_has_unique_winning_cell() -> None:
     out = create_task("task_games__ultimate_tictactoe__local_tactic_label").generate(
         81031,
-        params={"query_variant": "o_blocking_move_label", "answer_option_index": 2},
+        params={"query_id": "o_blocking_move_label", "answer_option_index": 2},
         max_attempts=500,
     )
     trace = out.trace_payload["execution_trace"]

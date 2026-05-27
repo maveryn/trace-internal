@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `cone_net`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `base_radius_from_sector_angle` or `height_from_sector_angle`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

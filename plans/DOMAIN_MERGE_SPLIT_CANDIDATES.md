@@ -7,7 +7,7 @@ TRACE task surface.
 
 Scope:
 
-- Current default tasks: `487`
+- Current default tasks: `480`
 - Domains audited alphabetically: `charts`, `games`, `geometry`, `graph`,
   `icons`, `illustrations`, `pages`, `physics`, `puzzles`, `three_d`
 - Audit basis: current registry/taxonomy plus sampled generated contracts
@@ -47,7 +47,7 @@ generation.
 
 | Domain | Current Tasks | Scenes | Merge Delta | Split Delta | Projected Tasks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| charts | 100 | 33 | -7 | 0 | 93 |
+| charts | 93 | 33 | 0 | 0 | 93 |
 | games | 80 | 36 | 0 | 0 | 80 |
 | geometry | 75 | 23 | -1 | 0 | 74 |
 | graph | 39 | 8 | 0 | +1 | 40 |
@@ -57,67 +57,16 @@ generation.
 | physics | 20 | 12 | -2 | 0 | 18 |
 | puzzles | 77 | 34 | 0 | 0 | 77 |
 | three_d | 15 | 4 | -1 | 0 | 14 |
-| **Total** | **487** | **182** | **-22** | **+2** | **467** |
+| **Total** | **480** | **182** | **-15** | **+2** | **467** |
 
 ## charts
 
-Current: `100` tasks across `33` scenes.
+Current: `93` tasks across `33` scenes.
 
 ### Merge Candidates
 
-1. `bar_3d`
-   - Merge:
-     - `task_charts__bar_3d__axis_total_value`
-     - `task_charts__bar_3d__axis_gap_value`
-   - Reason: both aggregate the same 3D bar values over an axis/category/series
-     support. A gap is a local arithmetic transform after the same support is
-     located.
-   - Delta: `-1`
-
-2. `dashboard`
-   - Merge:
-     - `task_charts__dashboard__source_rank_target_value`
-     - `task_charts__dashboard__source_rank_difference_value`
-   - Reason: both use the same source-rank lookup contract over dashboard
-     cards; difference is a local arithmetic transform over the located source
-     metric(s).
-   - Delta: `-1`
-
-3. `part_whole`
-   - Merge:
-     - `task_charts__part_whole__order_share_sum_value`
-     - `task_charts__part_whole__order_count_conversion_value`
-     - `task_charts__part_whole__order_sector_angle_value`
-   - Reason: all use ordered/positional pie/donut segment support and the same
-     share table; count and angle are answer transforms from the same located
-     sector/share support.
-   - Delta: `-2`
-
-4. `region_map`
-   - Merge:
-     - `task_charts__region_map__region_category_count`
-     - `task_charts__region_map__region_value_count`
-   - Reason: both count visible map regions satisfying a legend/predicate
-     condition. Categorical vs numeric legend predicates are query-local
-     predicate forms.
-   - Delta: `-1`
-
-5. `pictogram`
-   - Merge:
-     - `task_charts__pictogram__category_total_value`
-     - `task_charts__pictogram__group_difference_value`
-   - Reason: both locate repeated pictogram marks for one or two named groups
-     and compute an integer aggregate. Difference is a local transform over
-     group totals.
-   - Delta: `-1`
-
-6. `violin`
-   - Merge:
-     - `task_charts__violin__feature_extremum_label`
-     - `task_charts__violin__shape_feature_label`
-   - Reason: both select a violin/category by a whole-violin distribution-shape
-     feature.
-   - Delta: `-1`
+None pending. The approved chart merge pass is reflected in the current active
+inventory.
 
 ### Split Candidates
 

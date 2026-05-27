@@ -9,7 +9,7 @@
 
 ## 2) Scene + Task Contract
 1. Entities/relations: one numbered `3 x 3` grid, with exactly one icon per visible cell.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `grid_color_violation`.
 4. Answer type: `answer_gt.type = integer` (the 1-based violating grid-cell index).
 5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the violating numbered cell).

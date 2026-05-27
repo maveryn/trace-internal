@@ -25,7 +25,7 @@ from ..shared.card_scene import CardInstance, CardRenderParams, render_cards_han
 from ..shared.complexity import build_games_cards_hand_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -34,7 +34,7 @@ TASK_ID = "games_cards_hand_count_base"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "multi_row",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "same_suit_as_reference_count",
     "higher_than_reference_count",
     "exact_triple_count",
@@ -92,14 +92,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one hand-analysis scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
     card_count: int
     card_count_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -129,22 +129,22 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="card
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="cards", apply_prob=0.0)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    return resolve_games_query_variant(
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
     )
 
 
@@ -173,32 +173,32 @@ def _resolve_named_axis(
     )
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured answer-support key for one query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured answer-support key for one query id."""
 
     return {
         "same_suit_as_reference_count": "same_suit_target_answer_support",
         "higher_than_reference_count": "higher_rank_target_answer_support",
         "exact_triple_count": "exact_triple_count_support",
         "longest_run_length": "longest_run_length_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -206,15 +206,15 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _target_answer_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced target-answer cycling.
 
-    The raw build `_sample_cursor` also drives uniform query-variant cycling.
+    The raw build `_sample_cursor` also drives uniform query-id cycling.
     For cards, reference-count variants have 6 answer values while the query
     cycle has 4 variants; using the raw index for both axes only visits half of
     those answer values. Once the active query has been selected, floor-dividing
-    by the number of query variants yields the occurrence index inside that
+    by the number of query ids yields the occurrence index inside that
     variant and keeps target-answer support broad for each query.
     """
 
@@ -222,9 +222,9 @@ def _target_answer_params_for_query_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return target_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return target_params
-    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return target_params
 
 
@@ -270,7 +270,7 @@ def _can_fill_non_triple_rank_counts(*, rank_count: int, total_count: int) -> bo
 
 def _feasible_card_count_support(
     *,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     raw_support: Sequence[int],
 ) -> Tuple[int, ...]:
@@ -279,7 +279,7 @@ def _feasible_card_count_support(
     feasible: List[int] = []
     for raw_value in raw_support:
         card_count = int(raw_value)
-        if str(query_variant) == "exact_triple_count":
+        if str(query_id) == "exact_triple_count":
             if int(card_count) < 3 * int(target_answer):
                 continue
             if not _can_fill_non_triple_rank_counts(
@@ -287,7 +287,7 @@ def _feasible_card_count_support(
                 total_count=int(card_count) - (3 * int(target_answer)),
             ):
                 continue
-        elif str(query_variant) == "longest_run_length":
+        elif str(query_id) == "longest_run_length":
             if int(card_count) < int(target_answer):
                 continue
         else:
@@ -300,7 +300,7 @@ def _feasible_card_count_support(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve semantic/visual axes plus target answer and visible-card count."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -314,10 +314,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported=SUPPORTED_GAMES_STYLE_VARIANTS,
     )
 
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _target_answer_params_for_query_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -326,7 +326,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -337,7 +337,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=getattr(_DEFAULTS, target_support_key),
     )
 
-    query_card_count_support_key = f"{str(query_variant)}_card_count_support"
+    query_card_count_support_key = f"{str(query_id)}_card_count_support"
     card_count_support_key = (
         str(query_card_count_support_key)
         if str(query_card_count_support_key) in params or str(query_card_count_support_key) in _GEN_DEFAULTS
@@ -350,13 +350,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=_DEFAULTS.card_count_support,
     )
     card_count_support = _feasible_card_count_support(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_answer=int(target_answer),
         raw_support=raw_card_count_support,
     )
     if not card_count_support:
         raise ValueError(
-            f"no feasible card_count values remain for {query_variant} at target {target_answer}"
+            f"no feasible card_count values remain for {query_id} at target {target_answer}"
         )
     card_params = dict(params)
     card_params["card_count_support"] = list(int(value) for value in card_count_support)
@@ -367,7 +367,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key="card_count_support",
         explicit_key="card_count",
         fallback_support=card_count_support,
-        namespace=f"{TASK_ID}.card_count.{str(query_variant)}",
+        namespace=f"{TASK_ID}.card_count.{str(query_id)}",
         balanced_flag_key="balanced_card_count_sampling",
         namespace_support_permutation=True,
     )
@@ -375,14 +375,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     scene_variant_probabilities = {"multi_row": 1.0}
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         card_count=int(card_count),
         card_count_support=tuple(int(value) for value in card_count_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -801,21 +801,21 @@ def _sample_hand(
 ) -> _SampledHand:
     """Sample one visible hand for the resolved query family."""
 
-    if str(axes.query_variant) == "same_suit_as_reference_count":
+    if str(axes.query_id) == "same_suit_as_reference_count":
         return _sample_same_suit_hand(
             rng,
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
             order_by_suit=bool(same_suit_order_by_suit),
         )
-    if str(axes.query_variant) == "higher_than_reference_count":
+    if str(axes.query_id) == "higher_than_reference_count":
         return _sample_higher_rank_hand(
             rng,
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
             order_by_rank=bool(higher_rank_order_by_rank),
         )
-    if str(axes.query_variant) == "exact_triple_count":
+    if str(axes.query_id) == "exact_triple_count":
         return _sample_exact_triple_count_hand(
             rng,
             card_count=int(axes.card_count),
@@ -825,10 +825,10 @@ def _sample_hand(
     return _sample_longest_run_hand(rng, card_count=int(axes.card_count), target_answer=int(axes.target_answer))
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active query semantics."""
 
-    if str(query_variant) == "same_suit_as_reference_count":
+    if str(query_id) == "same_suit_as_reference_count":
         answer_and_evidence = {
             "evidence": [
                 [164, 188, 262, 330],
@@ -838,7 +838,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
             "answer": 3,
         }
         answer_only = {"answer": 3}
-    elif str(query_variant) == "higher_than_reference_count":
+    elif str(query_id) == "higher_than_reference_count":
         answer_and_evidence = {
             "evidence": [
                 [276, 188, 374, 330],
@@ -847,7 +847,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
             "answer": 2,
         }
         answer_only = {"answer": 2}
-    elif str(query_variant) == "exact_triple_count":
+    elif str(query_id) == "exact_triple_count":
         answer_and_evidence = {
             "evidence": [
                 [164, 188, 262, 330],
@@ -988,7 +988,7 @@ class GamesCardsHandCountTask:
                 ),
             )
         )
-        if str(axes.query_variant) == "higher_than_reference_count":
+        if str(axes.query_id) == "higher_than_reference_count":
             render_params = replace(
                 render_params,
                 center_label_mode=str(
@@ -1002,7 +1002,7 @@ class GamesCardsHandCountTask:
                     )
                 ),
             )
-        if str(axes.query_variant) == "exact_triple_count":
+        if str(axes.query_id) == "exact_triple_count":
             render_params = replace(
                 render_params,
                 center_label_mode=str(
@@ -1016,7 +1016,7 @@ class GamesCardsHandCountTask:
                     )
                 ),
             )
-        if str(axes.query_variant) == "longest_run_length":
+        if str(axes.query_id) == "longest_run_length":
             render_params = replace(
                 render_params,
                 center_label_mode=str(
@@ -1060,7 +1060,7 @@ class GamesCardsHandCountTask:
                 style_variant=str(axes.style_variant),
                 params=render_params,
                 show_continuation_cue=bool(
-                    str(axes.query_variant) == "longest_run_length"
+                    str(axes.query_id) == "longest_run_length"
                     and int(axes.card_count) > int(render_params.max_cards_per_row)
                 ),
             )
@@ -1102,21 +1102,21 @@ class GamesCardsHandCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "rank_order_text": str(prompt_defaults["rank_order_text"]),
@@ -1132,7 +1132,7 @@ class GamesCardsHandCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             card_count=int(axes.card_count),
             target_answer=int(axes.target_answer),
             evidence_count=len(sampled_hand.evidence_card_ids),
@@ -1144,8 +1144,7 @@ class GamesCardsHandCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "card_count": int(axes.card_count),
                     "row_count": int(rendered_scene.render_map["row_count"]),
@@ -1156,31 +1155,30 @@ class GamesCardsHandCountTask:
                     "reference_card_id": None if sampled_hand.reference_card_id is None else str(sampled_hand.reference_card_id),
                     "card_ordering": (
                         "suit_grouped"
-                        if str(axes.query_variant) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
+                        if str(axes.query_id) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
                         else
                         "rank_grouped"
-                        if str(axes.query_variant) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
+                        if str(axes.query_id) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
                         else
                         "rank_grouped"
-                        if str(axes.query_variant) == "exact_triple_count" and bool(exact_triple_order_by_rank)
+                        if str(axes.query_id) == "exact_triple_count" and bool(exact_triple_order_by_rank)
                         else "sampled"
                     ),
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -1192,13 +1190,13 @@ class GamesCardsHandCountTask:
                     "max_cards_per_row": int(rendered_scene.render_map["max_cards_per_row"]),
                     "card_ordering": (
                         "suit_grouped"
-                        if str(axes.query_variant) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
+                        if str(axes.query_id) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
                         else
                         "rank_grouped"
-                        if str(axes.query_variant) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
+                        if str(axes.query_id) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
                         else
                         "rank_grouped"
-                        if str(axes.query_variant) == "exact_triple_count" and bool(exact_triple_order_by_rank)
+                        if str(axes.query_id) == "exact_triple_count" and bool(exact_triple_order_by_rank)
                         else "sampled"
                     ),
                 },
@@ -1216,8 +1214,7 @@ class GamesCardsHandCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "target_answer": int(axes.target_answer),
                 "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -1225,13 +1222,13 @@ class GamesCardsHandCountTask:
                 "card_count_support": [int(value) for value in axes.card_count_support],
                 "card_ordering": (
                     "suit_grouped"
-                    if str(axes.query_variant) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
+                    if str(axes.query_id) == "same_suit_as_reference_count" and bool(same_suit_order_by_suit)
                     else
                     "rank_grouped"
-                    if str(axes.query_variant) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
+                    if str(axes.query_id) == "higher_than_reference_count" and bool(higher_rank_order_by_rank)
                     else
                     "rank_grouped"
-                    if str(axes.query_variant) == "exact_triple_count" and bool(exact_triple_order_by_rank)
+                    if str(axes.query_id) == "exact_triple_count" and bool(exact_triple_order_by_rank)
                     else "sampled"
                 ),
                 "row_count": int(rendered_scene.render_map["row_count"]),
@@ -1274,7 +1271,7 @@ class GamesCardsHandCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_id="cards",
         )
 
@@ -1284,7 +1281,7 @@ class GamesCardsReferenceConditionCountTask(QuerySubsetTaskMixin, GamesCardsHand
     """Count non-reference cards satisfying a sampled reference-card condition."""
 
     task_id = "task_games__cards__reference_condition_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "same_suit_as_reference_count",
         "higher_than_reference_count",
     )
@@ -1295,7 +1292,7 @@ class GamesCardsExactTripleCountTask(FixedQueryVariantTaskMixin, GamesCardsHandC
     """Count card ranks that appear exactly three times."""
 
     task_id = "task_games__cards__exact_triple_count"
-    fixed_query_variant = "exact_triple_count"
+    fixed_query_id = "exact_triple_count"
 
 
 @register_task
@@ -1303,7 +1300,7 @@ class GamesCardsLongestRunLengthTask(FixedQueryVariantTaskMixin, GamesCardsHandC
     """Return the longest consecutive rank run in row-major card order."""
 
     task_id = "task_games__cards__longest_run_length"
-    fixed_query_variant = "longest_run_length"
+    fixed_query_id = "longest_run_length"
 
 
 HAND_LABELS: Tuple[str, ...] = ("Hand A", "Hand B", "Hand C", "Hand D", "Hand E", "Hand F")
@@ -1938,7 +1935,7 @@ class _GamesCardsRuleTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(sample.scene_variant),
-            query_variant=str(sample.query_key),
+            query_id=str(sample.query_key),
             card_count=len(sample.cards),
             target_answer=int(sample.option_count),
             evidence_count=len(sample.evidence_card_ids),
@@ -1964,8 +1961,6 @@ class _GamesCardsRuleTask:
                 "relations": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_key),
-                    "query_variant": str(sample.query_key),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
                     "card_count": len(sample.cards),
                     "option_count": int(sample.option_count),
@@ -1975,8 +1970,6 @@ class _GamesCardsRuleTask:
             },
             "query_spec": {
                 "query_id": str(sample.query_key),
-                "query_variant": str(sample.query_key),
-                "query_variant": "default",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1984,9 +1977,7 @@ class _GamesCardsRuleTask:
                 "params": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_key),
-                    "query_variant": str(sample.query_key),
-                    "query_variant": "default",
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                     "style_variant": str(style_variant),
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     "option_count": int(sample.option_count),
@@ -2008,8 +1999,6 @@ class _GamesCardsRuleTask:
             "execution_trace": {
                 "scene_variant": str(sample.scene_variant),
                 "query_id": str(sample.query_key),
-                "query_variant": str(sample.query_key),
-                "query_variant": "default",
                 "style_variant": str(style_variant),
                 "answer_label": str(sample.answer),
                 "card_count": len(sample.cards),
@@ -2038,7 +2027,6 @@ class _GamesCardsRuleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id="cards",
             query_id=str(sample.query_key),
         )

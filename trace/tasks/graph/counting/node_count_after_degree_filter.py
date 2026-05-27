@@ -123,7 +123,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="counting", app
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
-def _degree_count_query_variant(graph_directionality: str) -> str:
+def _degree_count_query_id(graph_directionality: str) -> str:
     """Return the existing degree-count sampler variant for one graph directionality."""
 
     return "directed_degree_count" if str(graph_directionality) == "directed" else "degree_count"
@@ -152,13 +152,13 @@ def _feasible_node_counts_for_remaining_count(
     """Return node counts that can realize exactly ``target_count`` remaining nodes."""
 
     feasible = []
-    sampler_variant = _degree_count_query_variant(str(graph_directionality))
+    sampler_variant = _degree_count_query_id(str(graph_directionality))
     for node_count in range(int(node_count_min), int(node_count_max) + 1):
         removed_count = int(node_count) - int(target_count)
         if int(removed_count) < 0:
             continue
         support = feasible_node_counts_for_degree_count(
-            query_variant=str(sampler_variant),
+            query_id=str(sampler_variant),
             degree_mode=str(degree_mode),
             query_degree=FILTER_DEGREE,
             target_count=int(removed_count),
@@ -506,7 +506,7 @@ class GraphCountingNodeCountAfterDegreeFilterTask:
             try:
                 graph_sample = sample_degree_count_graph(
                     graph_rng,
-                    query_variant=_degree_count_query_variant(str(query.graph_directionality)),
+                    query_id=_degree_count_query_id(str(query.graph_directionality)),
                     degree_mode=str(query.degree_mode),
                     node_count=int(query.node_count),
                     query_degree=FILTER_DEGREE,
@@ -653,7 +653,6 @@ class GraphCountingNodeCountAfterDegreeFilterTask:
                 "scene_kind": "graph_degree_filter_remaining_counting",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
                     "filter_rule": "remove_nodes_with_queried_degree_equal_to_filter_degree",
                     "filter_degree": int(FILTER_DEGREE),
@@ -676,17 +675,15 @@ class GraphCountingNodeCountAfterDegreeFilterTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
-                    "internal_query_variant": str(query_id),
-                    "query_variant_probabilities": {str(query_id): 1.0},
+                    "internal_query_id": str(query_id),
+                    "query_id_probabilities": {str(query_id): 1.0},
                     "graph_directionality": str(query.graph_directionality),
                     "graph_directionality_probabilities": dict(query.graph_directionality_probabilities),
                     "degree_mode": str(query.degree_mode),
@@ -751,10 +748,9 @@ class GraphCountingNodeCountAfterDegreeFilterTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "internal_query_variant": str(query_id),
-                "query_variant_probabilities": {str(query_id): 1.0},
+                "internal_query_id": str(query_id),
+                "query_id_probabilities": {str(query_id): 1.0},
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query_id),
                 "graph_directionality": str(query.graph_directionality),
@@ -811,7 +807,6 @@ class GraphCountingNodeCountAfterDegreeFilterTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

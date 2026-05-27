@@ -170,7 +170,7 @@ def _query_id_from_alias(value: Any) -> str | None:
 def _forced_query_id(params: Mapping[str, Any]) -> str | None:
     """Resolve an explicitly requested query id, if present."""
 
-    for key in ("query_id", "query_variant"):
+    for key in ("query_id", "query_id"):
         query_id = _query_id_from_alias(params.get(str(key)))
         if query_id is not None:
             return str(query_id)
@@ -225,10 +225,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             int(instance_seed),
             params=params,
             explicit_key="query_id",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
             supported=SUPPORTED_QUERY_IDS,
-            namespace="query_variant",
+            namespace="query_id",
         )
     else:
         query_id = str(forced_query_id)
@@ -866,7 +866,6 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "scene_kind": "automaton_string_acceptance",
                 "entities": [*node_entities, *edge_entities, *option_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
                     "automaton_kind": str(query.automaton_kind),
                     "acceptance_rule": "a candidate string is accepted when at least one path from the start state ends in a double-ring accepting state after all symbols are consumed",
@@ -882,7 +881,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                         for state, per_symbol in sample.transition_function.items()
                     },
                     "transition_labels_by_edge": list(transition_entries),
-                    "query_variant_probabilities": dict(query.query_id_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "state_count_probabilities": dict(query.state_count_probabilities),
                     "input_length_probabilities": dict(query.input_length_probabilities),
                     "answer_option_probabilities": dict(query.answer_option_probabilities),
@@ -893,16 +892,14 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_id),
                     "query_id": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_id_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "automaton_kind": str(query.automaton_kind),
                     "state_count": int(query.state_count),
                     "state_count_probabilities": dict(query.state_count_probabilities),
@@ -963,9 +960,8 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "query_variant": str(query.query_id),
                 "query_id": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.query_id),
                 "automaton_kind": str(query.automaton_kind),
@@ -1021,7 +1017,6 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

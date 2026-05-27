@@ -14,9 +14,9 @@ def test_puzzles_spatial_solid_view_task_overrides_expose_scene_query_and_count_
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) >= {"stack_strip", "stack_card", "stack_outline"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "visible_cube_count",
     }
     assert set(generation["view_direction_weights"].keys()) == {"top", "front", "right"}

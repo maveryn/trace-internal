@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       sparse_grid: 1.0
       filled_grid: 1.0
-    query_variant_weights:
+    query_id_weights:
       marked_cell_value: 1.0
       marked_cell_candidate_count: 1.0
       unit_missing_digits_count: 1.0
@@ -20,7 +20,7 @@ generation:
       slate: 1.0
       warm_paper: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_unit_type_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true

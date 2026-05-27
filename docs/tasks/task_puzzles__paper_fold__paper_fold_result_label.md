@@ -9,10 +9,10 @@
 6. Evidence type: `bbox_set`
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `paper_fold_result`
 3. The scene shows one paper-fold reference transformation and `5..6` labeled result options.
 4. Parameter axis: `fold_axis=vertical|horizontal`
 5. Scene axis: `fold_strip|fold_card|fold_outline`
 6. Prompt-facing evidence is exactly one bbox for the winning option image.
-7. `execution_trace.internal_query_variant` records the fold-axis renderer grammar.
+7. `execution_trace.internal_query_id` records the fold-axis renderer grammar.

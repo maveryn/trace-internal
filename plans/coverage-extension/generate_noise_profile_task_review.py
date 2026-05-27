@@ -945,7 +945,7 @@ def main() -> int:
                     "domain": str(taxonomy.domain),
                     "scene_id": str(taxonomy.scene_id),
                     "query_id": str(getattr(current_output, "query_id", "")),
-                    "query_variant": str(getattr(current_output, "query_variant", "")),
+                    "query_id": str(getattr(current_output, "query_id", "")),
                     "answer_gt": current_output.answer_gt.to_dict(),
                     "current_post_image_noise": _post_image_noise_meta(current_output),
                     "updated_profile": str(profile),

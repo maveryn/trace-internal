@@ -1,7 +1,6 @@
 # task_illustrations__transit_terminal__entity_location_count
 
-Status: accepted branch merge; replaces the previous transit terminal person,
-luggage, and queue counting public tasks.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -15,7 +14,7 @@ luggage, and queue counting public tasks.
 The task renders a synthetic transit terminal with labeled boarding areas,
 service points, people, loose luggage, and terminal decor.
 
-Public query variants:
+Query ids:
 
 - `boarding_area_a_person_count`
 - `boarding_area_b_person_count`
@@ -38,14 +37,14 @@ Public query variants:
 - luggage queries return one bbox around each counted luggage item
 
 ## Trace Contract
-- `query_spec.task_id` is this merged public task id.
+- `query_spec.task_id` is this public task id.
 - `query_spec.branch_id` records the private branch generator used for the
   selected query.
-- `query_spec.params.merged_query_probabilities` records public query
+- `query_spec.params.merged_query_probabilities` records query
   sampling support.
 - Branch-specific render maps and witness fields are preserved.
 
 ## Prompt Contract
 - `scene_key = transit_terminal_canvas`
-- `query_key` is the selected query variant
+- `query_id` is the selected branch
 - branch-specific task keys from `illustrations_counting_v0` are reused

@@ -25,7 +25,7 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_games_dots_and_boxes_capture_complexity
 from ..shared.dots_boxes_common import (
-    SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS,
+    SUPPORTED_DOTS_AND_BOXES_QUERY_IDS,
     SUPPORTED_DOTS_AND_BOXES_SCENE_VARIANTS,
     DotsAndBoxesBoardState,
     box_drawn_side_counts,
@@ -40,7 +40,7 @@ from ..shared.visual_defaults import load_games_background_defaults, load_games_
 
 
 TASK_ID = "games_dots_and_boxes_capture_count_base"
-_CAPTURE_MOVE_QUERY_VARIANTS: Tuple[str, ...] = (
+_CAPTURE_MOVE_QUERY_IDS: Tuple[str, ...] = (
     "capture_move_count",
     "highlighted_candidate_capture_count",
 )
@@ -74,12 +74,12 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one dots-and-boxes scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -95,7 +95,7 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="dots
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="dots_and_boxes", apply_prob=0.0)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
@@ -103,16 +103,16 @@ def _resolve_query_variant(
     """Resolve one balanced dots-and-boxes semantic variant."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_DOTS_AND_BOXES_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -120,11 +120,11 @@ def _resolve_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_DOTS_AND_BOXES_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), dict(probabilities)
 
@@ -132,54 +132,54 @@ def _resolve_query_variant(
 def _has_explicit_query_axis(params: Mapping[str, Any]) -> bool:
     """Return true when a caller forces one concrete internal query branch."""
 
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         value = params.get(str(key))
         if value is not None and str(value).strip() and str(value) != "default":
             return True
     return False
 
 
-def _resolve_public_capture_query_variant(
+def _resolve_public_capture_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the internal capture-query branch for the merged public task."""
 
-    allowed = tuple(str(value) for value in _CAPTURE_MOVE_QUERY_VARIANTS)
+    allowed = tuple(str(value) for value in _CAPTURE_MOVE_QUERY_IDS)
     allowed_set = set(allowed)
     alias_params = dict(params)
     explicit_values = []
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         value = alias_params.get(str(key))
         if value is not None and str(value).strip() and str(value) != "default":
             explicit_values.append(str(value))
     if len(set(explicit_values)) > 1:
-        raise ValueError("query_id, query_variant, and query_variant must not disagree")
+        raise ValueError("query_id, query_id, and query_id must not disagree")
     if explicit_values:
         selected = str(explicit_values[0])
         if selected not in allowed_set:
-            raise ValueError(f"unsupported capture-move query variant: {selected}")
-        alias_params["query_variant"] = selected
-        alias_params["query_variant"] = selected
+            raise ValueError(f"unsupported capture-move query id: {selected}")
+        alias_params["query_id"] = selected
+        alias_params["query_id"] = selected
 
-    raw_weights = alias_params.get("capture_move_query_variant_weights")
+    raw_weights = alias_params.get("capture_move_query_id_weights")
     if isinstance(raw_weights, Mapping):
         positive = {str(key) for key, value in raw_weights.items() if float(value) > 0.0}
         invalid = sorted(positive.difference(allowed_set))
         if invalid:
             raise ValueError(f"unsupported positive capture-move query weights: {invalid}")
     elif raw_weights is not None:
-        raise ValueError("capture_move_query_variant_weights must be a mapping when provided")
+        raise ValueError("capture_move_query_id_weights must be a mapping when provided")
 
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.public_capture_query_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.public_capture_query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=allowed,
-        explicit_key="query_variant",
-        weights_key="capture_move_query_variant_weights",
+        explicit_key="query_id",
+        weights_key="capture_move_query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -188,10 +188,10 @@ def _resolve_public_capture_query_variant(
         selected_variant=str(selected),
         variant_probabilities=probabilities,
         supported_variants=allowed,
-        balance_flag_key="balanced_capture_move_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="capture_move_query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.public_capture_query_variant",
+        balance_flag_key="balanced_capture_move_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="capture_move_query_id_weights",
+        sampling_namespace=f"{TASK_ID}.public_capture_query_id",
     )
     return str(selected), dict(probabilities)
 
@@ -202,7 +202,7 @@ def _params_for_public_capture_occurrence_cycle(params: Mapping[str, Any]) -> Di
     if _has_explicit_query_axis(params) or params.get("_sample_cursor") is None:
         return dict(params)
     cycle_params = dict(params)
-    cycle_params["_sample_cursor"] = abs(int(params["_sample_cursor"])) // max(1, len(_CAPTURE_MOVE_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(params["_sample_cursor"])) // max(1, len(_CAPTURE_MOVE_QUERY_IDS))
     return cycle_params
 
 
@@ -245,47 +245,47 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     raw_weights = params.get(
-        "query_variant_weights",
-        group_default(_GEN_DEFAULTS, "query_variant_weights", {key: 1.0 for key in SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS}),
+        "query_id_weights",
+        group_default(_GEN_DEFAULTS, "query_id_weights", {key: 1.0 for key in SUPPORTED_DOTS_AND_BOXES_QUERY_IDS}),
     )
     if not isinstance(raw_weights, Mapping):
         return False
     positives = [
         str(value)
-        for value in SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS
+        for value in SUPPORTED_DOTS_AND_BOXES_QUERY_IDS
         if float(raw_weights.get(str(value), 0.0)) > 0.0
     ]
-    if len(positives) != len(SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_DOTS_AND_BOXES_QUERY_IDS):
         return False
-    positive_probs = [float(probabilities.get(str(value), 0.0)) for value in SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS]
+    positive_probs = [float(probabilities.get(str(value), 0.0)) for value in SUPPORTED_DOTS_AND_BOXES_QUERY_IDS]
     return max(positive_probs) - min(positive_probs) <= 1e-9
 
 
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Cycle secondary balanced axes by per-query occurrence index."""
 
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return dict(params)
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return dict(params)
     cycle_params = dict(params)
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_DOTS_AND_BOXES_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_DOTS_AND_BOXES_QUERY_IDS))
     return cycle_params
 
 
@@ -375,30 +375,30 @@ def _resolve_board_shape(instance_seed: int, *, params: Mapping[str, Any]) -> Tu
     return int(box_rows), int(box_cols), {f"{int(row)}x{int(col)}": float(probability) for row, col in shapes}
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the answer-support config key for one dots-and-boxes query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the answer-support config key for one dots-and-boxes query id."""
 
     return {
         "three_sided_box_count": "three_sided_box_count_support",
         "capture_move_count": "capture_move_count_support",
         "highlighted_candidate_capture_count": "highlighted_candidate_capture_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
-def _fallback_support(query_variant: str) -> Tuple[int, ...]:
-    """Return the fallback support for one dots-and-boxes query variant."""
+def _fallback_support(query_id: str) -> Tuple[int, ...]:
+    """Return the fallback support for one dots-and-boxes query id."""
 
     return {
         "three_sided_box_count": _DEFAULTS.three_sided_box_count_support,
         "capture_move_count": _DEFAULTS.capture_move_count_support,
         "highlighted_candidate_capture_count": _DEFAULTS.highlighted_candidate_capture_count_support,
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve semantic/visual axes plus one target answer for the dots-and-boxes task."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -413,23 +413,23 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     style_variant, style_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
-        params=_params_for_query_occurrence_cycle(params, query_variant_probabilities=query_variant_probabilities),
+        params=_params_for_query_occurrence_cycle(params, query_id_probabilities=query_id_probabilities),
         namespace="style_variant",
         explicit_key="style_variant",
         weights_key="style_variant_weights",
         balance_flag_key="balanced_style_variant_sampling",
         supported=SUPPORTED_DOTS_AND_BOXES_STYLE_VARIANTS,
     )
-    target_support_key = _target_support_key(str(query_variant))
-    target_params = _params_for_query_occurrence_cycle(params, query_variant_probabilities=query_variant_probabilities)
+    target_support_key = _target_support_key(str(query_id))
+    target_params = _params_for_query_occurrence_cycle(params, query_id_probabilities=query_id_probabilities)
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=target_params,
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(target_support_key),
         explicit_key="target_answer",
-        fallback_support=_fallback_support(str(query_variant)),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        fallback_support=_fallback_support(str(query_id)),
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -437,15 +437,15 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_params,
         gen_defaults=_GEN_DEFAULTS,
         key=str(target_support_key),
-        fallback=_fallback_support(str(query_variant)),
+        fallback=_fallback_support(str(query_id)),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -517,7 +517,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> DotsAndB
     )
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return answer+evidence and answer-only JSON examples for the dots-and-boxes task."""
 
     answer_value = 2
@@ -539,11 +539,11 @@ def _evidence_ids_and_bboxes(
     *,
     board_state: DotsAndBoxesBoardState,
     rendered_scene,
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[Tuple[str, ...], list[list[float]]]:
     """Return query-specific symbolic evidence ids and projected bboxes."""
 
-    if str(query_variant) == "three_sided_box_count":
+    if str(query_id) == "three_sided_box_count":
         evidence_ids = tuple(str(box_id) for box_id in board_state.counted_box_ids)
         return evidence_ids, [list(rendered_scene.render_map["box_bboxes_px"][str(box_id)]) for box_id in evidence_ids]
     evidence_ids = tuple(str(edge_id) for edge_id in board_state.counted_edge_ids)
@@ -559,7 +559,7 @@ class GamesDotsAndBoxesCaptureCountTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
-        count_params = _params_for_query_occurrence_cycle(params, query_variant_probabilities=axes.query_variant_probabilities)
+        count_params = _params_for_query_occurrence_cycle(params, query_id_probabilities=axes.query_id_probabilities)
         box_rows, box_cols, board_shape_probabilities = _resolve_board_shape(
             int(instance_seed),
             params=count_params,
@@ -581,7 +581,7 @@ class GamesDotsAndBoxesCaptureCountTask:
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             board_state = build_dots_and_boxes_count_board_state(
                 rng=attempt_rng,
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 target_answer=int(axes.target_answer),
                 box_rows=int(box_rows),
                 box_cols=int(box_cols),
@@ -609,7 +609,7 @@ class GamesDotsAndBoxesCaptureCountTask:
         evidence_ids, evidence_bboxes = _evidence_ids_and_bboxes(
             board_state=board_state,
             rendered_scene=rendered_scene,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -627,26 +627,26 @@ class GamesDotsAndBoxesCaptureCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_single_board",
-                f"answer_hint_{str(axes.query_variant)}",
-                f"evidence_hint_{str(axes.query_variant)}",
+                f"answer_hint_{str(axes.query_id)}",
+                f"evidence_hint_{str(axes.query_id)}",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_board"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -659,7 +659,7 @@ class GamesDotsAndBoxesCaptureCountTask:
         complexity = build_games_dots_and_boxes_capture_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             box_rows=int(board_state.box_rows),
             box_cols=int(board_state.box_cols),
             drawn_edge_count=len(board_state.drawn_edge_ids),
@@ -684,8 +684,7 @@ class GamesDotsAndBoxesCaptureCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(axes.target_answer),
                     "evidence_entity_ids": list(evidence_ids),
@@ -697,19 +696,18 @@ class GamesDotsAndBoxesCaptureCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -734,8 +732,7 @@ class GamesDotsAndBoxesCaptureCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "target_answer": int(axes.target_answer),
                 "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -797,7 +794,7 @@ class GamesDotsAndBoxesCaptureCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_id="dots_and_boxes",
         )
 
@@ -807,7 +804,7 @@ class GamesDotsAndBoxesThreeSidedBoxCountTask(FixedQueryVariantTaskMixin, GamesD
     """Count boxes that currently have exactly three drawn sides."""
 
     task_id = "task_games__dots_and_boxes__three_sided_box_count"
-    fixed_query_variant = "three_sided_box_count"
+    fixed_query_id = "three_sided_box_count"
 
 
 @register_task
@@ -818,20 +815,20 @@ class GamesDotsAndBoxesCaptureMoveCountTask(GamesDotsAndBoxesCaptureCountTask):
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, query_probabilities = _resolve_public_capture_query_variant(
+        query_id, query_probabilities = _resolve_public_capture_query_id(
             instance_seed=int(instance_seed),
             params=params,
         )
         occurrence_params = _params_for_public_capture_occurrence_cycle(params)
         output = super().generate(
             int(instance_seed),
-            params=forced_query_params(occurrence_params, query_variant=str(query_variant)),
+            params=forced_query_params(occurrence_params, query_id=str(query_id)),
             max_attempts=int(max_attempts),
         )
         return rewrite_fixed_query_output(
             output,
-            query_id=str(query_variant),
-            query_variant_probabilities=query_probabilities,
+            query_id=str(query_id),
+            query_id_probabilities=query_probabilities,
         )
 
 

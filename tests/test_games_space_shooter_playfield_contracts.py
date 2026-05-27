@@ -66,15 +66,15 @@ def test_games_space_shooter_public_tasks_emit_expected_contract(
     if expected_answer is not None:
         assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "space_shooter"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -164,7 +164,7 @@ def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
 def test_games_space_shooter_non_lane_entities_do_not_share_lane_slots() -> None:
     out = GamesSpaceShooterPlayfieldTask().generate(
         88150,
-        params={"query_variant": "safe_lane_count", "target_answer": 5, "lane_count": 8, "enemy_count": 16},
+        params={"query_id": "safe_lane_count", "target_answer": 5, "lane_count": 8, "enemy_count": 16},
         max_attempts=256,
     )
     execution = out.trace_payload["execution_trace"]

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `paper_fold`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `fold_angle_from_total_label`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

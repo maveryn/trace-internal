@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       putting_course: 1.0
-    query_variant_weights:
+    query_id_weights:
       first_obstacle_label: 1.0
       shot_path_label: 1.0
     style_variant_weights:
@@ -12,7 +12,7 @@ generation:
       garden: 1.0
       blueprint: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_obstacle_count_sampling: true
     balanced_path_option_count_sampling: true

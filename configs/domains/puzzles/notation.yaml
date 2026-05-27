@@ -1,6 +1,6 @@
 generation:
   shared:
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       engraved_sheet: 1.0
@@ -8,34 +8,34 @@ generation:
       notebook_staff: 1.0
   task_overrides:
     task_puzzles__music_staff__pitch_interval_label:
-      query_variant_weights:
+      query_id_weights:
         note_name_label: 0.85
         interval_name_label: 0.70
         same_pitch_truth_label: 1.0
         transposed_pitch_truth_label: 1.45
     task_puzzles__music_staff__key_scale_label:
-      query_variant_weights:
+      query_id_weights:
         key_signature_label: 1.0
         scale_validation_truth_label: 1.0
         scale_degree_function_label: 1.0
     task_puzzles__music_staff__chord_harmony_label:
-      query_variant_weights:
+      query_id_weights:
         chord_quality_label: 1.0
         roman_numeral_label: 1.0
         chord_inversion_label: 1.0
     task_puzzles__music_staff__dominant_chord_count:
-      query_variant_weights:
+      query_id_weights:
         dominant_count_value: 1.0
     task_puzzles__music_staff__meter_rhythm_label:
-      query_variant_weights:
+      query_id_weights:
         time_signature_label: 1.30
         meter_type_label: 0.25
         articulation_symbol_label: 1.0
     task_puzzles__music_staff__duration_equivalence_label:
-      query_variant_weights:
+      query_id_weights:
         duration_equivalence_label: 1.0
     task_puzzles__music_staff__bar_count_value:
-      query_variant_weights:
+      query_id_weights:
         bar_count_value: 1.0
 
 rendering:

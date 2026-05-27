@@ -39,13 +39,13 @@ def test_graph_relation_common_neighbor_undirected_contract_matches_trace() -> N
 
     assert "task_graph__node_link__common_neighbor_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "undirected_common_neighbor_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_common_neighbor_relation"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_common_neighbor_count"
     assert execution["graph_directionality"] == "undirected"
     assert execution["common_neighbor_mode"] == "undirected_common_neighbor"

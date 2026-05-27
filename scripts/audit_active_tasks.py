@@ -219,13 +219,13 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
                 source_domain=str(getattr(task, "domain", "")),
                 source_task_group=str(getattr(task, "task_group", "")),
             )
-            query_variant = str(getattr(output, "query_variant", "") or "default")
+            query_id = str(getattr(output, "query_id", "") or "default")
             trace_payload = getattr(output, "trace_payload", {})
             if not isinstance(trace_payload, Mapping):
                 trace_payload = {}
             query_id = str(
                 getattr(output, "query_id", "")
-                or resolve_task_query_id(query_variant=query_variant, trace_payload=trace_payload)
+                or resolve_task_query_id(query_id=query_id, trace_payload=trace_payload)
             )
             injected = inject_taxonomy_metadata(
                 dict(trace_payload),
@@ -252,7 +252,6 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
                 "ok": True,
                 "seed_index": seed_index,
                 "instance_seed": instance_seed,
-                "query_variant": query_variant,
                 "query_id": query_id,
                 "output_scene_id": output_scene_id,
                 "resolved_scene_id": taxonomy.scene_id,
@@ -280,7 +279,6 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
     return {
         "ok": False,
         "error": last_error or f"failed across {smoke_seeds} seeds",
-        "query_variant": "",
         "query_id": "",
         "output_scene_id": "",
         "resolved_scene_id": "",
@@ -359,7 +357,7 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
     has_global_contract_test = (
         global_contract_path.exists()
         and "list_default_task_ids" in global_contract_text
-        and "query_variant" in global_contract_text
+        and "query_id" in global_contract_text
         and "query_id" in global_contract_text
     )
     config_texts = _load_file_texts(_paths_under(Path("configs/domains"), (".yaml", ".yml")))
@@ -428,8 +426,8 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 blocking.append("output_scene_id_mismatch")
             if not smoke.get("query_id"):
                 gaps.append("query_id_missing")
-            if smoke.get("query_variant") != "default":
-                gaps.append("non_default_query_variant")
+            if smoke.get("query_id") != "default":
+                gaps.append("non_default_query_id")
             if smoke.get("missing_prompt_template_paths"):
                 gaps.append("prompt_template_path_missing")
 
@@ -672,7 +670,7 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                     task["scene_id"],
                     task["audit_status"],
                     progress.get("status", "-"),
-                    smoke.get("query_variant", "-"),
+                    smoke.get("query_id", "-"),
                     smoke.get("query_id", "-"),
                     smoke.get("answer_type", "-"),
                     smoke.get("evidence_type", "-"),

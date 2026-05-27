@@ -31,7 +31,7 @@ def test_object_difference_count_variants_contract() -> None:
         trace = out.trace_payload
         assert out.scene_id == "difference_pair"
         assert out.query_id == variant
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert int(out.answer_gt.value) == 2
@@ -72,7 +72,7 @@ def test_jigsaw_piece_order_contract() -> None:
     labels = str(out.answer_gt.value).split()
     assert out.scene_id == "image_cutout_board"
     assert out.query_id == "jigsaw_piece_order"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_sequence"
     assert len(labels) == 3
@@ -141,7 +141,7 @@ def test_rotated_tile_label_contract() -> None:
     trace = out.trace_payload
     assert out.scene_id == "image_cutout_board"
     assert out.query_id == "rotated_tile_label"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
     assert out.evidence_gt.type == "bbox_set"
@@ -189,7 +189,7 @@ def test_missing_patch_label_variants_contract() -> None:
         trace = out.trace_payload
         assert out.scene_id == "missing_patch"
         assert out.query_id == mode
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == expected_label
         assert out.evidence_gt.type == "bbox_set"
@@ -240,7 +240,7 @@ def test_odd_scene_label_contract() -> None:
     trace = out.trace_payload
     assert out.scene_id == "scene_options"
     assert out.query_id == "odd_scene_label"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
     assert out.evidence_gt.type == "bbox_set"

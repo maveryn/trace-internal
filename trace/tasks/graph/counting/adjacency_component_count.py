@@ -32,7 +32,7 @@ from ..shared.visual_defaults import load_graph_background_defaults, load_graph_
 
 
 TASK_ID = "task_graph__adjacency__component_count"
-SUPPORTED_ADJACENCY_COMPONENT_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_ADJACENCY_COMPONENT_QUERY_IDS: Tuple[str, ...] = (
     "undirected_component_count",
     "directed_strong_component_count",
 )
@@ -60,13 +60,13 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support axes for one adjacency component-count instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     node_count: int
     component_count: int
     extra_edge_count: int
     label_variant: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     component_count_probabilities: Dict[str, float]
@@ -87,18 +87,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_ADJACENCY_COMPONENT_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_ADJACENCY_COMPONENT_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
@@ -164,13 +164,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         extra_edge_count = int(extra_support[int(extra_index % len(extra_support))])
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         node_count=int(node_count),
         component_count=int(component_count),
         extra_edge_count=int(extra_edge_count),
         label_variant=str(label_variant),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         scene_variant_probabilities=dict(scene_probs),
         node_count_probabilities=uniform_probability_map(node_support, selected=int(node_count) if explicit_node is not None else None),
         component_count_probabilities=uniform_probability_map(
@@ -236,7 +236,7 @@ class GraphCountingAdjacencyComponentCountTask:
             node_count=int(query.node_count),
             max_chars=int(group_default(_GEN_DEFAULTS, "label_max_chars", _DEFAULTS.label_max_chars)),
         )
-        directed = str(query.query_variant) == "directed_strong_component_count"
+        directed = str(query.query_id) == "directed_strong_component_count"
         sample = sample_component_adjacency(
             instance_seed=int(instance_seed),
             task_id=TASK_ID,
@@ -292,7 +292,7 @@ class GraphCountingAdjacencyComponentCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
@@ -344,7 +344,7 @@ class GraphCountingAdjacencyComponentCountTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "representation_variant": str(rendered.representation_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "directed": bool(directed),
                     "components": [list(component) for component in sample.components],
                     "component_representatives": list(representatives),
@@ -357,14 +357,13 @@ class GraphCountingAdjacencyComponentCountTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant": str(query.scene_variant),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "node_count": int(query.node_count),
@@ -397,8 +396,7 @@ class GraphCountingAdjacencyComponentCountTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "representation_variant": str(rendered.representation_variant),
                 "answer": int(len(sample.components)),
                 "component_representatives": list(representatives),
@@ -432,9 +430,8 @@ class GraphCountingAdjacencyComponentCountTask:
                 component_count=int(len(sample.components)),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

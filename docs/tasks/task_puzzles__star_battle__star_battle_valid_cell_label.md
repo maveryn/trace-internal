@@ -8,7 +8,7 @@
 5. Goal: choose the labeled cell where a star can still be legally placed.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `valid_cell_anywhere_label|valid_cell_in_marked_region_label|valid_cell_for_marked_row_label`
 3. Grid size: `6x6..9x9`
 4. Candidate labels: `A..H` with `5..8` shown per instance

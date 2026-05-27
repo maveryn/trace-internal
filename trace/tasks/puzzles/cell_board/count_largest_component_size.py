@@ -298,7 +298,7 @@ class TileLargestComponentSizeTask:
                 "relations": {},
             },
             "query_spec": {
-                "query_variant": "largest_component_size",
+                "query_id": "largest_component_size",
                 "template_id": "largest_component_size_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -343,7 +343,7 @@ class TileLargestComponentSizeTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "query_variant": "largest_component_size",
+                "query_id": "largest_component_size",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette": list(palette_trace),
@@ -441,6 +441,6 @@ class TileLargestComponentSizeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="largest_component_size",
+            query_id="largest_component_size",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

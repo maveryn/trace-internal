@@ -8,17 +8,17 @@ from tests.helpers import extract_prompt_json_example
 
 def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
     task = ChartsTableTemporalValueTaskBase()
-    query_variants = (
+    query_ids = (
         "absolute_difference_between_rows_over_year_interval",
         "sum_absolute_differences_between_rows_over_year_interval",
     )
     scene_variants = ("spreadsheet", "zebra", "ledger", "card_table")
-    for variant_index, query_variant in enumerate(query_variants):
+    for query_id_index, query_id in enumerate(query_ids):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 19010 + (variant_index * 20) + scene_index
+            seed = 19010 + (query_id_index * 20) + scene_index
             out = task.generate(
                 seed,
-                params={"query_variant": query_variant, "scene_variant": scene_variant},
+                params={"query_id": query_id, "scene_variant": scene_variant},
                 max_attempts=10,
             )
             trace = out.trace_payload
@@ -41,7 +41,7 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             supporting_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == str(query_variant)
+            assert str(out.query_id) == str(query_id)
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -83,7 +83,7 @@ def test_table_temporal_value_contract_matches_queried_year_cells() -> None:
             sum_b = int(sum(values_b))
             assert int(execution["row_interval_sums"][row_a]) == int(sum_a)
             assert int(execution["row_interval_sums"][row_b]) == int(sum_b)
-            if str(query_variant) == "absolute_difference_between_rows_over_year_interval":
+            if str(query_id) == "absolute_difference_between_rows_over_year_interval":
                 assert int(out.answer_gt.value) == int(abs(sum(values_a) - sum(values_b)))
             else:
                 paired_differences = [
@@ -120,8 +120,8 @@ def test_table_temporal_prompt_examples_match_selected_variants() -> None:
             {"answer": 17},
         ),
     }
-    for index, (query_variant, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=19040):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, (query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=19040):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
@@ -130,7 +130,7 @@ def test_table_temporal_prompt_examples_match_selected_variants() -> None:
 
 def test_table_temporal_value_task_is_deterministic() -> None:
     task = ChartsTableTemporalValueTaskBase()
-    params = {"query_variant": "sum_absolute_differences_between_rows_over_year_interval", "scene_variant": "spreadsheet"}
+    params = {"query_id": "sum_absolute_differences_between_rows_over_year_interval", "scene_variant": "spreadsheet"}
     out_a = task.generate(19080, params=params, max_attempts=10)
     out_b = task.generate(19080, params=params, max_attempts=10)
 

@@ -254,14 +254,12 @@ class MarketShopCategoryBranch:
                 "scene_id": SCENE_ID,
                 "entities": urban_market_scene_entities(scene),
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                     "target_shop_type": str(sample.shop_type),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -297,7 +295,6 @@ class MarketShopCategoryBranch:
                 "shop_bboxes_by_id_px": shop_bbox_map(scene),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
                 "setting_id": str(scene.setting_id),
@@ -328,7 +325,6 @@ class MarketShopCategoryBranch:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

@@ -71,14 +71,14 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
     ),
     (
         (
-            {"query_variant": "diameter_perpendicular_chord_length", "target_answer": 8},
+            {"query_id": "diameter_perpendicular_chord_length", "target_answer": 8},
             8,
             2,
             "BE",
         ),
         (
             {
-                "query_variant": "secant_secant_variable_segment_length",
+                "query_id": "secant_secant_variable_segment_length",
                 "target_answer": 24,
                 "secant_secant_variable_target_kind": "inside_first",
             },
@@ -88,7 +88,7 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
         ),
         (
             {
-                "query_variant": "tangent_secant_length",
+                "query_id": "tangent_secant_length",
                 "target_answer": 24,
                 "tangent_secant_target_kind": "outside",
             },
@@ -97,49 +97,49 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
             "PA",
         ),
         (
-            {"query_variant": "secant_secant_length", "target_answer": 10},
+            {"query_id": "secant_secant_length", "target_answer": 10},
             10,
             3,
             "PA",
         ),
         (
-            {"query_variant": "intersecting_chords_arc_measure", "target_answer": 120},
+            {"query_id": "intersecting_chords_arc_measure", "target_answer": 120},
             120,
             2,
             "arcCD",
         ),
         (
-            {"query_variant": "multi_step_angle_value", "target_answer": 85},
+            {"query_id": "multi_step_angle_value", "target_answer": 85},
             85,
             2,
             "angleAEB",
         ),
         (
-            {"query_variant": "inscribed_angle_from_central", "target_answer": 35},
+            {"query_id": "inscribed_angle_from_central", "target_answer": 35},
             35,
             1,
             "angleACB",
         ),
         (
-            {"query_variant": "central_angle_from_inscribed", "target_answer": 70},
+            {"query_id": "central_angle_from_inscribed", "target_answer": 70},
             70,
             1,
             "angleAOB",
         ),
         (
-            {"query_variant": "inscribed_angle_from_arc", "target_answer": 35},
+            {"query_id": "inscribed_angle_from_arc", "target_answer": 35},
             35,
             1,
             "angleACB",
         ),
         (
-            {"query_variant": "tangent_chord_angle_from_arc", "target_answer": 45},
+            {"query_id": "tangent_chord_angle_from_arc", "target_answer": 45},
             45,
             1,
             "anglePTA",
         ),
         (
-            {"query_variant": "tangent_chord_angle_from_inscribed", "target_answer": 45},
+            {"query_id": "tangent_chord_angle_from_inscribed", "target_answer": 45},
             45,
             1,
             "anglePTA",
@@ -166,8 +166,8 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
     )
     assert out.trace_payload["execution_trace"]["target_answer"] == int(expected_answer)
     assert (
-        out.trace_payload["query_spec"]["params"]["query_variant"]
-        == params["query_variant"]
+        out.trace_payload["query_spec"]["params"]["query_id"]
+        == params["query_id"]
     )
     assert len(out.trace_payload["execution_trace"]["distractor_tokens"]) >= 1
     evidence_tokens = set(out.trace_payload["witness_symbolic"]["evidence_tokens"])
@@ -197,7 +197,7 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
 
 def test_geometry_circle_theorem_value_is_deterministic() -> None:
     params = {
-        "query_variant": "secant_secant_variable_segment_length",
+        "query_id": "secant_secant_variable_segment_length",
         "target_answer": 24,
         "secant_secant_variable_target_kind": "inside_first",
     }
@@ -232,9 +232,9 @@ def test_geometry_circle_theorem_reserves_visible_o_for_center() -> None:
     )
 
     for seed in range(23450, 23460):
-        for query_variant in variants:
+        for query_id in variants:
             out = task.generate(
-                seed, params={"query_variant": query_variant}, max_attempts=100
+                seed, params={"query_id": query_id}, max_attempts=100
             )
             label_map = out.trace_payload["execution_trace"]["label_map"]
 
@@ -250,7 +250,7 @@ def test_geometry_circle_theorem_value_rejects_unsupported_variant() -> None:
     with pytest.raises(ValueError):
         GeometryCircleTheoremValueTask().generate(
             23421,
-            params={"query_variant": "inscribed_angle_measure", "target_answer": 8},
+            params={"query_id": "inscribed_angle_measure", "target_answer": 8},
             max_attempts=20,
         )
 
@@ -259,7 +259,7 @@ def test_tangent_secant_variant_places_tangent_point_on_circle() -> None:
     out = GeometryCircleTheoremValueTask().generate(
         23431,
         params={
-            "query_variant": "tangent_secant_length",
+            "query_id": "tangent_secant_length",
             "target_answer": 24,
             "tangent_secant_target_kind": "outside",
         },
@@ -307,7 +307,7 @@ def test_tangent_secant_variant_supports_multiple_missing_segments(
     out = GeometryCircleTheoremValueTask().generate(
         23435,
         params={
-            "query_variant": "tangent_secant_length",
+            "query_id": "tangent_secant_length",
             "target_answer": target_answer,
             "tangent_secant_target_kind": target_kind,
         },
@@ -327,7 +327,7 @@ def test_secant_secant_variant_places_intersections_on_circle_and_preserves_powe
 ):
     out = GeometryCircleTheoremValueTask().generate(
         23441,
-        params={"query_variant": "secant_secant_length", "target_answer": 10},
+        params={"query_id": "secant_secant_length", "target_answer": 10},
         max_attempts=40,
     )
     point_model = out.trace_payload["render_map"]["point_model"]
@@ -362,7 +362,7 @@ def test_secant_secant_variable_variant_supports_multiple_missing_segments(
     out = GeometryCircleTheoremValueTask().generate(
         23445,
         params={
-            "query_variant": "secant_secant_variable_segment_length",
+            "query_id": "secant_secant_variable_segment_length",
             "target_answer": target_answer,
             "secant_secant_variable_target_kind": target_kind,
         },
@@ -384,7 +384,7 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
     out = GeometryCircleTheoremValueTask().generate(
         23451,
         params={
-            "query_variant": "intersecting_chords_arc_measure",
+            "query_id": "intersecting_chords_arc_measure",
             "target_answer": 120,
         },
         max_attempts=40,
@@ -402,7 +402,7 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
 def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
     out = GeometryCircleTheoremValueTask().generate(
         23453,
-        params={"query_variant": "multi_step_angle_value", "target_answer": 85},
+        params={"query_id": "multi_step_angle_value", "target_answer": 85},
         max_attempts=40,
     )
     trace = out.trace_payload["execution_trace"]
@@ -416,7 +416,7 @@ def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "target_answer"),
+    ("query_id", "target_answer"),
     (
         ("inscribed_angle_from_central", 35),
         ("central_angle_from_inscribed", 70),
@@ -424,11 +424,11 @@ def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
     ),
 )
 def test_inscribed_angle_variants_use_half_arc_relationship(
-    query_variant: str, target_answer: int
+    query_id: str, target_answer: int
 ) -> None:
     out = GeometryCircleTheoremValueTask().generate(
         23455,
-        params={"query_variant": query_variant, "target_answer": target_answer},
+        params={"query_id": query_id, "target_answer": target_answer},
         max_attempts=40,
     )
     trace = out.trace_payload["execution_trace"]
@@ -443,15 +443,15 @@ def test_inscribed_angle_variants_use_half_arc_relationship(
 
 
 @pytest.mark.parametrize(
-    "query_variant",
+    "query_id",
     ("tangent_chord_angle_from_arc", "tangent_chord_angle_from_inscribed"),
 )
 def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
-    query_variant: str,
+    query_id: str,
 ) -> None:
     out = GeometryCircleTheoremValueTask().generate(
         23457,
-        params={"query_variant": query_variant, "target_answer": 45},
+        params={"query_id": query_id, "target_answer": 45},
         max_attempts=40,
     )
     trace = out.trace_payload["execution_trace"]
@@ -481,9 +481,9 @@ def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
     )
 
     for seed in (50000, 50001):
-        for query_variant in variants:
+        for query_id in variants:
             out = task.generate(
-                seed, params={"query_variant": query_variant}, max_attempts=100
+                seed, params={"query_id": query_id}, max_attempts=100
             )
             render_map = out.trace_payload["render_map"]
             segments = [
@@ -503,12 +503,12 @@ def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:
             for label, bbox in label_boxes.items():
                 assert not any(
                     _segment_crosses_bbox(a, b, bbox) for a, b in segments
-                ), (query_variant, seed, label, bbox)
+                ), (query_id, seed, label, bbox)
                 assert not _circle_crosses_bbox(
                     render_map["circle_center_pixel"],
                     float(render_map["circle_radius_px"]),
                     bbox,
-                ), (query_variant, seed, label, bbox)
+                ), (query_id, seed, label, bbox)
 
 
 def test_geometry_circle_task_group_config_exposes_variants_and_prompts() -> None:
@@ -518,9 +518,9 @@ def test_geometry_circle_task_group_config_exposes_variants_and_prompts() -> Non
         task_id="geometry_circle_theorem_value_base",
     )
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_answer_sampling"]) is True
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "diameter_perpendicular_chord_length",
         "secant_secant_variable_segment_length",
         "tangent_secant_length",

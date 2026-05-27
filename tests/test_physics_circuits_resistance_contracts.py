@@ -72,22 +72,22 @@ def test_physics_circuits_resistance_tasks_emit_expected_contract(
 
     assert out.evidence_gt.type == "bbox_set"
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["internal_query_variant"] == expected_query_id
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_query_id
 
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_variant"] == expected_query_id
+    assert execution["internal_query_id"] == expected_query_id
 
     assert int(execution["target_answer"]) == int(expected_answer)
     if expected_query_id == "missing_resistor_value":
@@ -257,11 +257,11 @@ def test_physics_circuits_resistance_tasks_reject_unknown_scene_variant() -> Non
         )
 
 
-def test_physics_circuits_resistance_tasks_reject_source_query_variant_param() -> None:
-    with pytest.raises(ValueError, match="must match query_variant"):
+def test_physics_circuits_resistance_tasks_reject_source_query_id_param() -> None:
+    with pytest.raises(ValueError, match="must match query_id"):
         PhysicsCircuitsTotalResistanceValueTask().generate(
             26033,
-            params={"query_variant": "missing_resistor_value"},
+            params={"query_id": "missing_resistor_value"},
             max_attempts=20,
         )
 

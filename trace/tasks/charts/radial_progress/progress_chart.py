@@ -45,7 +45,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 TASK_ID = "charts_radial_progress_base"
 SCENE_ID = "radial_progress"
 
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "at_least_threshold_count",
     "below_threshold_count",
     "within_range_count",
@@ -199,17 +199,17 @@ def _public_task_param_overrides(task_id: str) -> Dict[str, Any]:
     return overrides
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -854,7 +854,7 @@ class ChartsRadialProgressChartTask:
             merged_params.update(dict(params))
             params = merged_params
 
-        query_id, query_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = _construct_dataset(
             query_id=str(query_id),
@@ -947,11 +947,9 @@ class ChartsRadialProgressChartTask:
         )
 
         query_params = {
-            "query_variant": str(query_id),
-            "query_variant": str(query_id),
             "query_id": str(query_id),
-            "query_variant_probabilities": dict(dataset.query_probabilities),
-            "query_variant_probabilities": dict(dataset.query_probabilities),
+            "query_id_probabilities": dict(dataset.query_probabilities),
+            "query_id_probabilities": dict(dataset.query_probabilities),
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "item_count": int(len(dataset.items)),
@@ -963,8 +961,6 @@ class ChartsRadialProgressChartTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_id),
-                    "query_variant": str(query_id),
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": int(dataset.query.answer),
@@ -972,8 +968,6 @@ class ChartsRadialProgressChartTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_id),
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -995,8 +989,6 @@ class ChartsRadialProgressChartTask:
                 "progress_bboxes_px": dict(rendered.progress_bboxes_px),
             },
             "execution_trace": {
-                "query_variant": str(query_id),
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
                 "question_format": "radial_progress_condition_count",
                 "scene_variant": str(scene_variant),
@@ -1033,7 +1025,6 @@ class ChartsRadialProgressChartTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_id),
             scene_id=SCENE_ID,
             query_id=str(query_id),
         )
@@ -1045,12 +1036,12 @@ class ChartsRadialProgressConditionCountTask(MergedChartQueryVariantTaskMixin, C
 
     task_id = "task_charts__radial_progress__condition_count"
     default_dataset_enabled = True
-    allowed_query_variants = SUPPORTED_QUERY_VARIANTS
+    allowed_query_ids = SUPPORTED_QUERY_IDS
 
 
 __all__ = [
     "ChartsRadialProgressChartTask",
     "ChartsRadialProgressConditionCountTask",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
 ]

@@ -11,7 +11,7 @@
 1. Answer type: `string`; the answer is the compact option letter only, such as `A` or `C`, not the full rendered label `Hand A`.
 2. Evidence type: bbox_set over every card in the winning poker hand.
 3. The execution trace records both `winning_label` for the full rendered label and `winning_option` for the public answer.
-4. Public `query_variant` is `default`; `poker_best_hand_label` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+4. `poker_best_hand_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games card renderer with the `poker_multi_hand` scene variant.

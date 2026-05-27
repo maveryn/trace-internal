@@ -18,14 +18,14 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_variant": "perimeter"}),
+        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_id": "perimeter"}),
         (
             GeometryComparisonValueTask,
-            {"scene_variant": "rectangle", "query_variant": "area_extremum", "extremum_direction": "largest"},
+            {"scene_variant": "rectangle", "query_id": "area_extremum", "extremum_direction": "largest"},
         ),
         (
             GeometryCountingValueTask,
-            {"scene_variant": "triangle", "query_variant": "triangle_type_count", "triangle_type": "right"},
+            {"scene_variant": "triangle", "query_id": "triangle_type_count", "triangle_type": "right"},
         ),
     ),
 )
@@ -43,19 +43,19 @@ def test_geometry_consolidated_tasks_are_deterministic(task_cls, params) -> None
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_variant": "perimeter"}),
-        (GeometryComparisonValueTask, {"scene_variant": "rectangle", "query_variant": "largest_area"}),
+        (GeometryMeasurementValueTask, {"scene_variant": "circle", "query_id": "perimeter"}),
+        (GeometryComparisonValueTask, {"scene_variant": "rectangle", "query_id": "largest_area"}),
         (
             GeometryCountingValueTask,
-            {"scene_variant": "triangle", "query_variant": "triangle_type_count", "triangle_type": "right"},
+            {"scene_variant": "triangle", "query_id": "triangle_type_count", "triangle_type": "right"},
         ),
     ),
 )
-def test_geometry_consolidated_tasks_accept_query_variant_alias(task_cls, params) -> None:
+def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> None:
     task = task_cls()
     out = task.generate(23121, params=params, max_attempts=40)
-    expected_variant = "area_extremum" if params["query_variant"] == "largest_area" else params["query_variant"]
-    assert out.query_variant == expected_variant
+    expected_variant = "area_extremum" if params["query_id"] == "largest_area" else params["query_id"]
+    assert out.query_id == expected_variant
 
 
 @pytest.mark.parametrize(

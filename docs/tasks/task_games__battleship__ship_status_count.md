@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set over cells belonging to qualifying ships.
-3. Public `query_variant` is `default`; the sampled condition is retained as `query_id`.
+3. The sampled condition is retained as `query_id`.
 
 ## Implementation
 1. Prompt bundle: `games_battleship_v0`

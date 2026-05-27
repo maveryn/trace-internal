@@ -11,4 +11,4 @@ tasks:
     count: 6
     params:
       scene_variant: triangle
-      query_variant: rotation_match
+      query_id: rotation_match

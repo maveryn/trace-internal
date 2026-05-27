@@ -26,7 +26,7 @@ from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.rhythm_common import (
     SUPPORTED_RHYTHM_COLOR_KEYS,
-    SUPPORTED_RHYTHM_QUERY_VARIANTS,
+    SUPPORTED_RHYTHM_QUERY_IDS,
     SUPPORTED_RHYTHM_SCENE_VARIANTS,
     SUPPORTED_RHYTHM_STYLE_VARIANTS,
     RhythmNote,
@@ -37,13 +37,13 @@ from ..shared.rhythm_common import (
     validate_rhythm_sample,
 )
 from ..shared.rhythm_scene import RhythmRenderParams, render_rhythm_lanes_scene
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
 TASK_ID = "games_rhythm_lanes_base"
-COUNT_QUERY_VARIANTS: Tuple[str, ...] = ("lane_hit_count", "lane_color_hit_count")
-LANE_CHOICE_QUERY_VARIANTS: Tuple[str, ...] = ("most_hits_lane_label", "earliest_hit_lane_label")
+COUNT_QUERY_IDS: Tuple[str, ...] = ("lane_hit_count", "lane_color_hit_count")
+LANE_CHOICE_QUERY_IDS: Tuple[str, ...] = ("most_hits_lane_label", "earliest_hit_lane_label")
 
 
 @dataclass(frozen=True)
@@ -70,14 +70,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one rhythm instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     lane_count: int
     row_count: int
     beat_window: int
     target_hit_count: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     lane_count_probabilities: Dict[str, float]
@@ -158,20 +158,20 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="rhyt
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="rhythm", apply_prob=0.5)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced rhythm query variant."""
+    """Resolve one balanced rhythm query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=tuple(str(value) for value in supported_query_variants),
+        supported_variants=tuple(str(value) for value in supported_query_ids),
     )
 
 
@@ -204,14 +204,14 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one rhythm instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -280,14 +280,14 @@ def _resolve_axes(
     if int(target_hit_count) > int(beat_window):
         raise ValueError("target_hit_count cannot exceed beat_window")
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         lane_count=int(lane_count),
         row_count=int(row_count),
         beat_window=int(beat_window),
         target_hit_count=int(target_hit_count),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         lane_count_probabilities=dict(lane_count_probabilities),
@@ -367,7 +367,7 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
     """Construct a lane-specific hit-count rhythm query."""
 
     selected_lane = _select_lane(rng=rng, lane_count=int(axes.lane_count), params=params)
-    target_color = _target_color(rng=rng, params=params) if str(axes.query_variant) == "lane_color_hit_count" else None
+    target_color = _target_color(rng=rng, params=params) if str(axes.query_id) == "lane_color_hit_count" else None
     target_count = int(axes.target_hit_count)
     builder = _NoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
     target_rows = list(range(1, int(axes.beat_window) + 1))
@@ -378,7 +378,7 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
         note = builder.add_note(lane=selected_lane, bottom_row=int(row), length=1, color_key=color)
         evidence_ids.append(str(note.note_id))
 
-    if str(axes.query_variant) == "lane_color_hit_count":
+    if str(axes.query_id) == "lane_color_hit_count":
         other_colors = [color for color in SUPPORTED_RHYTHM_COLOR_KEYS if str(color) != str(target_color)]
         for _ in range(int(rng.randrange(1, 3))):
             builder.add_random_note(
@@ -409,7 +409,7 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
         lane_count=int(axes.lane_count),
         row_count=int(axes.row_count),
         beat_window=int(axes.beat_window),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         selected_lane_index=int(selected_lane),
         selected_lane_label=lane_label(int(selected_lane)),
@@ -417,7 +417,7 @@ def _sample_count_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) 
         answer=int(target_count),
         notes=notes,
         evidence_entity_ids=tuple(evidence_ids),
-        construction_mode=f"{str(axes.query_variant)}_constructed_count",
+        construction_mode=f"{str(axes.query_id)}_constructed_count",
     )
     validate_rhythm_sample(sample)
     return sample
@@ -460,7 +460,7 @@ def _sample_most_hits_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, An
         lane_count=int(axes.lane_count),
         row_count=int(axes.row_count),
         beat_window=int(axes.beat_window),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         selected_lane_index=None,
         selected_lane_label=None,
@@ -504,7 +504,7 @@ def _sample_earliest_hit_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
         lane_count=int(axes.lane_count),
         row_count=int(axes.row_count),
         beat_window=int(axes.beat_window),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         selected_lane_index=None,
         selected_lane_label=None,
@@ -521,20 +521,20 @@ def _sample_earliest_hit_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str,
 def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> RhythmSample:
     """Construct one rhythm scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query in {"lane_hit_count", "lane_color_hit_count"}:
         return _sample_count_scene(rng=rng, axes=axes, params=params)
     if query == "most_hits_lane_label":
         return _sample_most_hits_scene(rng=rng, axes=axes, params=params)
     if query == "earliest_hit_lane_label":
         return _sample_earliest_hit_scene(rng=rng, axes=axes, params=params)
-    raise ValueError(f"unsupported rhythm query_variant: {query}")
+    raise ValueError(f"unsupported rhythm query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for rhythm JSON output."""
 
-    if str(query_variant) in {"most_hits_lane_label", "earliest_hit_lane_label"}:
+    if str(query_id) in {"most_hits_lane_label", "earliest_hit_lane_label"}:
         answer_value = 4
         evidence_value = [[318, 392, 401, 438]]
     else:
@@ -552,13 +552,13 @@ class GamesRhythmLanesTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "rhythm"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_RHYTHM_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_RHYTHM_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(
             int(instance_seed),
             params=params,
-            supported_query_variants=tuple(getattr(self, "supported_query_variants", SUPPORTED_RHYTHM_QUERY_VARIANTS)),
+            supported_query_ids=tuple(getattr(self, "supported_query_ids", SUPPORTED_RHYTHM_QUERY_IDS)),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
@@ -621,7 +621,7 @@ class GamesRhythmLanesTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         selected_lane_label = sampled_scene.selected_lane_label or ""
         target_color = sampled_scene.target_color_key or ""
         prompt_selection = render_task_prompt_variants(
@@ -630,7 +630,7 @@ class GamesRhythmLanesTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_falling_notes"]),
@@ -640,8 +640,8 @@ class GamesRhythmLanesTask:
                 "target_color": str(target_color),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -654,7 +654,7 @@ class GamesRhythmLanesTask:
         complexity = build_games_rhythm_lanes_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             lane_count=int(sampled_scene.lane_count),
             row_count=int(sampled_scene.row_count),
             beat_window=int(sampled_scene.beat_window),
@@ -679,8 +679,7 @@ class GamesRhythmLanesTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
@@ -689,15 +688,14 @@ class GamesRhythmLanesTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
@@ -708,8 +706,8 @@ class GamesRhythmLanesTask:
                     "target_color_key": sampled_scene.target_color_key,
                     "answer_lane_label": str(sampled_scene.answer),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),
@@ -727,8 +725,7 @@ class GamesRhythmLanesTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "lane_count": int(sampled_scene.lane_count),
                 "row_count": int(sampled_scene.row_count),
@@ -761,9 +758,8 @@ class GamesRhythmLanesTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="rhythm",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -777,10 +773,10 @@ def _rewrite_generated_output(output: TaskOutput) -> TaskOutput:
     if isinstance(query_spec, Mapping):
         spec_params = query_spec.get("params")
         if isinstance(spec_params, Mapping):
-            raw_probabilities = spec_params.get("query_variant_probabilities")
+            raw_probabilities = spec_params.get("query_id_probabilities")
             if isinstance(raw_probabilities, Mapping):
                 probabilities = {str(key): float(value) for key, value in raw_probabilities.items()}
-    return rewrite_public_query_output(output, query_id=query_id, query_variant_probabilities=probabilities)
+    return rewrite_public_query_output(output, query_id=query_id, query_id_probabilities=probabilities)
 
 
 @register_task
@@ -788,7 +784,7 @@ class GamesRhythmHitWindowCountTask(GamesRhythmLanesTask):
     """Count notes in a lane that reach the hit line within a beat window."""
 
     task_id = "task_games__rhythm__hit_window_count"
-    supported_query_variants = COUNT_QUERY_VARIANTS
+    supported_query_ids = COUNT_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
@@ -799,7 +795,7 @@ class GamesRhythmLaneChoiceLabelTask(GamesRhythmLanesTask):
     """Choose a lane by hit-count or earliest-hit timing."""
 
     task_id = "task_games__rhythm__lane_choice_value"
-    supported_query_variants = LANE_CHOICE_QUERY_VARIANTS
+    supported_query_ids = LANE_CHOICE_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))

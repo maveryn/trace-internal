@@ -134,7 +134,7 @@ class _ResolvedQuery:
     edge_routing_variant: str
     node_color_name: str
     common_neighbor_mode_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -187,7 +187,7 @@ def _forced_common_neighbor_mode(params: Mapping[str, Any]) -> str | None:
         if mode is None:
             raise ValueError(f"unsupported common_neighbor_mode: {explicit}")
         return str(mode)
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         mode = _mode_from_query_alias(params.get(str(key)))
         if mode is not None:
             return str(mode)
@@ -433,7 +433,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
         common_neighbor_mode_probabilities=dict(common_neighbor_probabilities),
-        query_variant_probabilities=dict(query_probabilities),
+        query_id_probabilities=dict(query_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -697,16 +697,15 @@ class GraphRelationCommonNeighborCountTask:
                 "scene_kind": "graph_common_neighbor_relation",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
+                    "internal_query_id": str(query.query_id),
                     "relation_rule": str(RELATION_RULE_BY_MODE[str(query.common_neighbor_mode)]),
                     "graph_directionality": str(query.graph_directionality),
                     "common_neighbor_mode": str(query.common_neighbor_mode),
                     "query_label_a": str(graph_sample.query_label_a),
                     "query_label_b": str(graph_sample.query_label_b),
                     "matching_labels": list(evidence_labels),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "common_neighbor_mode_probabilities": dict(query.common_neighbor_mode_probabilities),
                     **common_relation_sets,
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -723,17 +722,15 @@ class GraphRelationCommonNeighborCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "common_neighbor_mode": str(query.common_neighbor_mode),
                     "common_neighbor_mode_probabilities": dict(query.common_neighbor_mode_probabilities),
                     "graph_directionality": str(query.graph_directionality),
@@ -758,7 +755,7 @@ class GraphRelationCommonNeighborCountTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                     max_degree_key: int(max_degree),
                 },
             },
@@ -798,10 +795,9 @@ class GraphRelationCommonNeighborCountTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.prompt_query_key),
                 "graph_directionality": str(query.graph_directionality),
@@ -857,7 +853,6 @@ class GraphRelationCommonNeighborCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

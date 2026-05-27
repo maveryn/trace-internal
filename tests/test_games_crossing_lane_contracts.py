@@ -54,7 +54,7 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
         (
             GamesCrossingSafeRouteLabelTask,
             {
-                "query_variant": "safe_start_label",
+                "query_id": "safe_start_label",
                 "target_label_index": 2,
                 "lane_count": 6,
                 "row_count": 5,
@@ -84,7 +84,7 @@ def _routes(execution: dict) -> tuple[CrossingRouteOption, ...]:
         (
             GamesCrossingSafeRouteLabelTask,
             {
-                "query_variant": "goal_reachable_label",
+                "query_id": "goal_reachable_label",
                 "target_label_index": 2,
                 "route_option_count": 5,
                 "lane_count": 6,
@@ -114,15 +114,15 @@ def test_games_crossing_public_tasks_emit_expected_contract(
     assert out.answer_gt.value == expected_answer
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == evidence_count
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "crossing"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -130,7 +130,7 @@ def test_games_crossing_public_tasks_emit_expected_contract(
 def test_games_crossing_safe_start_label_is_unique_straight_safe_start() -> None:
     out = GamesCrossingSafeRouteLabelTask().generate(
         77110,
-        params={"query_variant": "safe_start_label", "target_label_index": 4, "lane_count": 6, "row_count": 6},
+        params={"query_id": "safe_start_label", "target_label_index": 4, "lane_count": 6, "row_count": 6},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -187,7 +187,7 @@ def test_games_crossing_goal_reachable_label_is_unique_safe_route() -> None:
     out = GamesCrossingSafeRouteLabelTask().generate(
         77140,
         params={
-            "query_variant": "goal_reachable_label",
+            "query_id": "goal_reachable_label",
             "target_label_index": 5,
             "route_option_count": 6,
             "lane_count": 8,
@@ -218,7 +218,7 @@ def test_games_crossing_lane_build_smoke(tmp_path: Path) -> None:
             BuildTaskConfig(
                 task_id="task_games__crossing__safe_route_label",
                 count=1,
-                params={"query_variant": "safe_start_label", "target_label_index": 1},
+                params={"query_id": "safe_start_label", "target_label_index": 1},
             ),
             BuildTaskConfig(task_id="task_games__crossing__collision_time_value", count=1, params={"target_answer": 3}),
             BuildTaskConfig(task_id="task_games__crossing__moving_object_count", count=1, params={"target_answer": 2}),

@@ -14,9 +14,9 @@ The image shows one lever with a fulcrum, integer distance marks, and labeled we
 Evidence is the set of weight-block bounding boxes on the queried side. `torque_side=left|right` is a role mirror inside the task, not a public task split.
 
 ## Prompt And Trace
-Prompt bundle: `physics_mechanics_v0`; family key: `lever_balance_diagram`; task key: `lever_balance_query`; query variant key: `side_torque`.
+Prompt bundle: `physics_mechanics_v0`; family key: `lever_balance_diagram`; task key: `lever_balance_query`; query id key: `side_torque`.
 
-Public outputs use `query_variant="default"` and `query_id="side_torque"`. The trace records the side, weight specs, distances, relevant weight ids, and evidence entity ids.
+Outputs `query_id="side_torque"`. The trace records the side, weight specs, distances, relevant weight ids, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized lever layout.

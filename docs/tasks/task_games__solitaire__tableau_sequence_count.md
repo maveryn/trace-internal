@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`.
 2. Evidence type: `bbox_set` over cards that belong to counted adjacent tableau pairs.
-3. Public `query_variant` is `default`; `tableau_sequence_count` is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. `tableau_sequence_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared `solitaire` renderer with Klondike-like and FreeCell-like layouts.

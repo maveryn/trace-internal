@@ -150,7 +150,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", app
 
 def _task_params_for_query_id(params: Mapping[str, Any]) -> Dict[str, Any]:
     out = dict(params)
-    source = out.get("query_variant")
+    source = out.get("query_id")
     if "query_id" not in out and source is not None and str(source) != "default":
         out["query_id"] = str(source)
     return out
@@ -941,7 +941,7 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 },
             },
             "query_spec": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -949,7 +949,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
                     "query_id_probabilities": dict(query_probs),
                     "scene_variant": str(scene_variant),
@@ -975,7 +974,7 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 "evidence_source": "face_bboxes_px+option_panel_bboxes_px",
             },
             "execution_trace": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
@@ -1010,7 +1009,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1098,7 +1096,7 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 },
             },
             "query_spec": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -1106,7 +1104,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
                     "query_id_probabilities": dict(query_probs),
                     "scene_variant": str(scene_variant),
@@ -1135,7 +1132,7 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 "evidence_source": "start_cube_bbox_px+path_panel_bbox_px+option_panel_bboxes_px",
             },
             "execution_trace": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
@@ -1174,7 +1171,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -13,7 +13,7 @@ from .common import resolve_pages_axis_variant
 from .text_generation import sample_company_name, sample_identifier
 
 
-SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_IDS: Tuple[str, ...] = (
     "total_amount_delta",
     "shortfall_minus_overage_value",
     "sum_absolute_quantity_differences",
@@ -209,25 +209,25 @@ def resolve_reconciliation_render_params(
     )
 
 
-def resolve_reconciliation_query_variant(
+def resolve_reconciliation_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic reconciliation query variant."""
+    """Resolve the semantic reconciliation query id."""
 
     return resolve_pages_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -344,10 +344,10 @@ def _sample_item_specs(
     return specs
 
 
-def _supporting_bbox_ids(*, query_variant: str, item_specs: Sequence[Mapping[str, Any]]) -> list[str]:
+def _supporting_bbox_ids(*, query_id: str, item_specs: Sequence[Mapping[str, Any]]) -> list[str]:
     """Return ordered bbox ids supporting one reconciliation answer."""
 
-    if str(query_variant) == "total_amount_delta":
+    if str(query_id) == "total_amount_delta":
         support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
         ids = []
         for spec in support_items:
@@ -362,7 +362,7 @@ def _supporting_bbox_ids(*, query_variant: str, item_specs: Sequence[Mapping[str
             )
         return ids
 
-    if str(query_variant) == "shortfall_minus_overage_value":
+    if str(query_id) == "shortfall_minus_overage_value":
         support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
         ids = []
         for spec in support_items:
@@ -377,7 +377,7 @@ def _supporting_bbox_ids(*, query_variant: str, item_specs: Sequence[Mapping[str
             )
         return ids
 
-    if str(query_variant) == "sum_absolute_quantity_differences":
+    if str(query_id) == "sum_absolute_quantity_differences":
         support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
         ids = []
         for spec in support_items:
@@ -391,31 +391,31 @@ def _supporting_bbox_ids(*, query_variant: str, item_specs: Sequence[Mapping[str
             )
         return ids
 
-    raise ValueError(f"unsupported reconciliation query_variant '{query_variant}'")
+    raise ValueError(f"unsupported reconciliation query_id '{query_id}'")
 
 
-def _answer_for_variant(*, query_variant: str, item_specs: Sequence[Mapping[str, Any]]) -> int:
+def _answer_for_variant(*, query_id: str, item_specs: Sequence[Mapping[str, Any]]) -> int:
     """Compute the integer answer for one reconciliation variant."""
 
-    if str(query_variant) == "total_amount_delta":
+    if str(query_id) == "total_amount_delta":
         return sum(
             int(spec["absolute_quantity_difference"]) * int(spec["unit_value"])
             for spec in item_specs
             if int(spec["absolute_quantity_difference"]) > 0
         )
-    if str(query_variant) == "shortfall_minus_overage_value":
+    if str(query_id) == "shortfall_minus_overage_value":
         return sum(
             (int(spec["order_qty"]) - int(spec["received_qty"])) * int(spec["unit_value"])
             for spec in item_specs
         )
-    if str(query_variant) == "sum_absolute_quantity_differences":
+    if str(query_id) == "sum_absolute_quantity_differences":
         return sum(int(spec["absolute_quantity_difference"]) for spec in item_specs)
-    raise ValueError(f"unsupported reconciliation query_variant '{query_variant}'")
+    raise ValueError(f"unsupported reconciliation query_id '{query_id}'")
 
 
 def build_cross_form_reconciliation_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -507,7 +507,7 @@ def build_cross_form_reconciliation_dataset(
         if len(unique_abs_diffs) != len(mismatch_items):
             continue
 
-        answer_value = _answer_for_variant(query_variant=str(query_variant), item_specs=item_specs)
+        answer_value = _answer_for_variant(query_id=str(query_id), item_specs=item_specs)
         visible_numbers = {
             int(value)
             for spec in item_specs
@@ -534,12 +534,12 @@ def build_cross_form_reconciliation_dataset(
             {"field_id": "dock", "field_label": "Dock", "field_value": str(rng.choice(_DOCK_CODES))},
             {"field_id": "received_date", "field_label": "Received", "field_value": receipt_date.strftime("%Y-%m-%d")},
         ]
-        supporting_bbox_ids = _supporting_bbox_ids(query_variant=str(query_variant), item_specs=item_specs)
+        supporting_bbox_ids = _supporting_bbox_ids(query_id=str(query_id), item_specs=item_specs)
         return {
             "scene_variant": str(scene_variant),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_title": "Order Reconciliation Packet",
-            "question_text": str(_QUESTION_TEXT_BY_VARIANT[str(query_variant)]),
+            "question_text": str(_QUESTION_TEXT_BY_VARIANT[str(query_id)]),
             "question_format": "cross_form_reconciliation_value",
             "view_family": "cross_form_reconciliation",
             "purchase_title": "Purchase Order",
@@ -570,9 +570,9 @@ __all__ = [
     "ReconciliationDefaults",
     "ReconciliationRenderParams",
     "SUPPORTED_DOCUMENT_RECONCILIATION_SCENE_VARIANTS",
-    "SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_VARIANTS",
+    "SUPPORTED_DOCUMENT_RECONCILIATION_QUERY_IDS",
     "build_cross_form_reconciliation_dataset",
     "resolve_reconciliation_render_params",
     "resolve_reconciliation_scene_variant",
-    "resolve_reconciliation_query_variant",
+    "resolve_reconciliation_query_id",
 ]

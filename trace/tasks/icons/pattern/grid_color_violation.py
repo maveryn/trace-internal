@@ -860,7 +860,7 @@ class IconsPatternGridColorViolationTask:
                 },
             },
             "query_spec": {
-                "query_variant": QUERY_ID,
+                "query_id": QUERY_ID,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -935,7 +935,7 @@ class IconsPatternGridColorViolationTask:
             },
             "execution_trace": {
                 "scene_variant": "numbered_grid",
-                "query_variant": QUERY_ID,
+                "query_id": QUERY_ID,
                 "grid_rows": int(scene_payload.grid_rows),
                 "grid_cols": int(scene_payload.grid_cols),
                 "answer_index": int(scene_payload.answer_index),
@@ -1002,7 +1002,7 @@ class IconsPatternGridColorViolationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=QUERY_ID,
+            query_id=QUERY_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__word_search__search_present_word_count`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `present_word_count`
 3. Prompt asks how many of the five word-bank words appear in the grid.
 4. Internal variation:

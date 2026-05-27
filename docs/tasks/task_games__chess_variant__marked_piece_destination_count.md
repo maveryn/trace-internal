@@ -11,7 +11,7 @@
 1. Answer type: `integer`
 2. Evidence type: `bbox_set` over qualifying destination board cells.
 3. For `marked_piece_capture_count`, evidence is the occupied destination cell, not the tighter opponent-token box.
-4. Public `query_variant` is `default`; the sampled condition is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+4. The sampled condition is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
 
 ## Implementation
 1. The scene shows an 8 by 8 chess-like board with W/B tokens and a visible rule card.

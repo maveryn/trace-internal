@@ -12,7 +12,7 @@ Point = Tuple[float, float]
 TABLE_GEOM_ASPECT = 0.58
 POOL_BALL_NUMBERS: Tuple[int, ...] = tuple(range(1, 16))
 DEFAULT_MAX_DIRECT_SHOT_ANGLE_DEGREES = 45.0
-SUPPORTED_POOL_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_POOL_QUERY_IDS: Tuple[str, ...] = (
     "pottable_ball_count",
     "legal_group_pottable_count",
     "blocking_ball_count",
@@ -45,7 +45,7 @@ class PoolBall:
 class PoolSample:
     """Generated Pool-table state and query witnesses."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: int
     balls: Tuple[PoolBall, ...]
@@ -315,7 +315,7 @@ def validate_pool_sample(sample: PoolSample) -> None:
     if any(str(pocket_id) not in set(pocket_ids) for pocket_id in sample.evidence_pocket_ids):
         raise ValueError("pool pocket evidence references unknown pocket")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "pottable_ball_count":
         expected_answer = len(sample.pottable_ball_ids)
         expected_balls = set(sample.pottable_ball_ids)
@@ -329,7 +329,7 @@ def validate_pool_sample(sample: PoolSample) -> None:
         expected_balls = set(sample.blocking_ball_ids)
         expected_pockets = set()
     else:
-        raise ValueError(f"unsupported pool query variant: {sample.query_variant}")
+        raise ValueError(f"unsupported pool query id: {sample.query_id}")
     if int(sample.answer) != int(expected_answer):
         raise ValueError("pool answer does not match active query")
     if set(sample.evidence_ball_ids) != expected_balls:
@@ -346,7 +346,7 @@ __all__ = [
     "PoolBall",
     "PoolPocket",
     "PoolSample",
-    "SUPPORTED_POOL_QUERY_VARIANTS",
+    "SUPPORTED_POOL_QUERY_IDS",
     "SUPPORTED_POOL_SCENE_VARIANTS",
     "ball_entity_id",
     "ball_group",

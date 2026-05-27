@@ -1,6 +1,6 @@
 # task_illustrations__market__customer_at_shop_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -18,7 +18,7 @@ customer-plaza market layout with `8..12` shops or stalls and `6..12` customer
 figures on a `1280x960` canvas. Customers are placed close to their associated
 shop fronts rather than in the middle of the path.
 
-The public task uses `query_variant=default` and records
+The task records
 `query_id=customer_at_shop_type_count`. The query asks how many customers are
 standing at shops or stalls with a named sign label.
 
@@ -47,7 +47,7 @@ standing at shops or stalls with a named sign label.
 ## Prompt Contract
 - `scene_key = urban_market_canvas`
 - `task_key = customer_at_shop_type_count_task`
-- `query_key = customer_at_shop_type_count`
+- `query_id = customer_at_shop_type_count`
 - prompts ask for customers at shops or stalls labeled with a named sign
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

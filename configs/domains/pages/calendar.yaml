@@ -19,7 +19,7 @@ generation:
       cyan: 1.0
       magenta: 1.0
       maroon: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
@@ -27,13 +27,13 @@ generation:
     year_max: 2030
   task_overrides:
     pages_calendar_month_view_base:
-      query_variant_weights:
+      query_id_weights:
         date_of_weekday_occurrence: 1.0
         count_marked_day_class: 1.0
       marked_day_class_weights:
         weekend: 1.0
         weekday: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_marked_day_class_sampling: true
       weekend_weekday_indices: [5, 6]
       date_occurrence_support: [1, 2, 3, 4, 5]

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `angle_relations`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `triangle_exterior_angle` or `parallel_supplement_angle`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

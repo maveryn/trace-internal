@@ -11,7 +11,7 @@ from .professional_target_common import (
 
 
 TASK_ID = "task_pages__workspace__professional_target_label"
-SUPPORTED_QUERY_VARIANTS = (
+SUPPORTED_QUERY_IDS = (
     "toolbar_palette_control_label",
     "property_panel_control_label",
     "canvas_workspace_control_label",
@@ -71,7 +71,7 @@ TASK_DEFINITION = ProfessionalTaskDefinition(
     task_id=TASK_ID,
     scene_kind="gui_professional_target",
     question_format="gui_professional_target_label",
-    supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+    supported_query_ids=SUPPORTED_QUERY_IDS,
     variants=(
         _variant(
             "toolbar_palette_control_label",
@@ -165,4 +165,4 @@ class PagesRelationProfessionalTargetLabelTask(ProfessionalGuiRelationTaskBase):
     definition = TASK_DEFINITION
 
 
-__all__ = ["PagesRelationProfessionalTargetLabelTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["PagesRelationProfessionalTargetLabelTask", "SUPPORTED_QUERY_IDS"]

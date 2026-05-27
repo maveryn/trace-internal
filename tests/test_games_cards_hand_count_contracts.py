@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "same_suit_as_reference_count",
+                "query_id": "same_suit_as_reference_count",
                 "target_answer": 3,
                 "card_count": 16,
             },
@@ -28,7 +28,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "higher_than_reference_count",
+                "query_id": "higher_than_reference_count",
                 "target_answer": 4,
                 "card_count": 17,
             },
@@ -37,7 +37,7 @@ from tests.helpers import read_jsonl
         ),
         (
                 {
-                    "query_variant": "exact_triple_count",
+                    "query_id": "exact_triple_count",
                     "target_answer": 3,
                     "card_count": 22,
                 },
@@ -46,7 +46,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "longest_run_length",
+                "query_id": "longest_run_length",
                 "target_answer": 5,
                 "card_count": 40,
             },
@@ -68,7 +68,7 @@ def test_games_cards_hand_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
@@ -78,7 +78,7 @@ def test_games_cards_hand_count_exact_triple_count_uses_exact_triples_only() -> 
     out = GamesCardsHandCountTask().generate(
         25017,
         params={
-            "query_variant": "exact_triple_count",
+            "query_id": "exact_triple_count",
             "target_answer": 4,
             "card_count": 22,
         },
@@ -99,7 +99,7 @@ def test_games_cards_hand_count_multi_row_run_emits_continuation_cue() -> None:
     out = GamesCardsHandCountTask().generate(
         25021,
         params={
-            "query_variant": "longest_run_length",
+            "query_id": "longest_run_length",
             "target_answer": 6,
             "card_count": 40,
         },
@@ -115,7 +115,7 @@ def test_games_cards_hand_count_multi_row_run_emits_continuation_cue() -> None:
 
 def test_games_cards_hand_count_is_deterministic() -> None:
     params = {
-        "query_variant": "higher_than_reference_count",
+        "query_id": "higher_than_reference_count",
         "target_answer": 5,
         "card_count": 26,
     }
@@ -194,7 +194,7 @@ def test_games_cards_reference_condition_public_task_records_query_id(
     out = GamesCardsReferenceConditionCountTask().generate(
         25041,
         params={
-            "query_variant": query_id,
+            "query_id": query_id,
             "target_answer": target_answer,
             "card_count": card_count,
         },
@@ -202,11 +202,11 @@ def test_games_cards_reference_condition_public_task_records_query_id(
     )
     trace = out.trace_payload
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_variant"] == "default"
+    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
     assert int(out.answer_gt.value) == int(target_answer)
 
@@ -240,10 +240,10 @@ def test_games_cards_rule_tasks_emit_label_contracts(
     assert str(execution[label_key]).endswith(answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= int(min_evidence_count)
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query_id
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
 

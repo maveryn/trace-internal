@@ -1292,11 +1292,10 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         query_params = {
-            "query_variant": "default",
-            "query_variant_probabilities": {"default": 1.0},
+            "query_id": "default",
+            "query_id_probabilities": {"default": 1.0},
             "query_id": QUERY_ID,
-            "query_variant": QUERY_ID,
-            "query_variant_probabilities": {QUERY_ID: 1.0},
+            "query_id_probabilities": {QUERY_ID: 1.0},
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1327,9 +1326,7 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
-                    "query_variant": QUERY_ID,
                     "scene_id": SCENE_ID,
                     "scene_variant": str(scene_variant),
                     "grid_size_variant": str(dataset.grid_size_variant),
@@ -1338,9 +1335,7 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
-                "query_variant": QUERY_ID,
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1411,7 +1406,6 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
             prompt_variants=dict(prompt_variants),
@@ -1551,11 +1545,10 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         query_params = {
-            "query_variant": "default",
-            "query_variant_probabilities": {"default": 1.0},
+            "query_id": "default",
+            "query_id_probabilities": {"default": 1.0},
             "query_id": COMPLETION_QUERY_ID,
-            "query_variant": COMPLETION_QUERY_ID,
-            "query_variant_probabilities": {COMPLETION_QUERY_ID: 1.0},
+            "query_id_probabilities": {COMPLETION_QUERY_ID: 1.0},
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1594,9 +1587,7 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": COMPLETION_QUERY_ID,
-                    "query_variant": COMPLETION_QUERY_ID,
                     "scene_id": SCENE_ID,
                     "scene_variant": str(scene_variant),
                     "sequence_length_variant": str(dataset.sequence_length_variant),
@@ -1606,9 +1597,7 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": COMPLETION_QUERY_ID,
-                "query_variant": COMPLETION_QUERY_ID,
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1677,7 +1666,6 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=COMPLETION_QUERY_ID,
             prompt_variants=dict(prompt_variants),

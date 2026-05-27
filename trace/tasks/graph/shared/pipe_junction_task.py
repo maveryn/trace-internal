@@ -563,7 +563,6 @@ class PipeJunctionGraphTaskBase:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(self.query_id),
                 "scene_id": PUBLIC_PIPE_SCENE_ID,
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -602,7 +601,6 @@ class PipeJunctionGraphTaskBase:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(self.query_id),
                 "scene_variant": str(rendered_scene.grid_shape_variant),
                 "scene_id": PUBLIC_PIPE_SCENE_ID,
@@ -730,7 +728,6 @@ class PipeJunctionGraphTaskBase:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=PUBLIC_PIPE_SCENE_ID,
             query_id=str(self.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

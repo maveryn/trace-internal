@@ -22,7 +22,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ..shared.brick_breaker_common import (
-    SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS,
+    SUPPORTED_BRICK_BREAKER_QUERY_IDS,
     SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS,
     SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS,
     BrickBreakerBrick,
@@ -36,7 +36,7 @@ from ..shared.brick_breaker_scene import BrickBreakerRenderParams, render_brick_
 from ..shared.complexity import build_games_brick_breaker_complexity
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
@@ -71,14 +71,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Brick-breaker instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     brick_rows: int
     brick_cols: int
     lane_count: int
     row_remaining_count: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     brick_rows_probabilities: Dict[str, float]
@@ -97,20 +97,20 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="bric
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="brick_breaker", apply_prob=0.5)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Brick-breaker query variant."""
+    """Resolve one balanced Brick-breaker query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=tuple(str(value) for value in supported_query_variants),
+        supported_variants=tuple(str(value) for value in supported_query_ids),
     )
 
 
@@ -143,14 +143,14 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Brick-breaker instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=tuple(str(value) for value in supported_query_variants),
+        supported_query_ids=tuple(str(value) for value in supported_query_ids),
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -214,18 +214,18 @@ def _resolve_axes(
         balanced_flag_key="balanced_row_remaining_count_sampling",
         namespace_support_permutation=True,
     )
-    if str(query_variant) == "hit_row_remaining_count" and int(brick_cols) <= int(row_remaining_count):
+    if str(query_id) == "hit_row_remaining_count" and int(brick_cols) <= int(row_remaining_count):
         brick_cols = int(row_remaining_count) + 1
         brick_cols_probabilities = {str(brick_cols): 1.0}
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         brick_rows=int(brick_rows),
         brick_cols=int(brick_cols),
         lane_count=int(lane_count),
         row_remaining_count=int(row_remaining_count),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         brick_rows_probabilities=dict(brick_rows_probabilities),
@@ -362,7 +362,7 @@ def _sample_next_hit_scene(*, rng, axes: _ResolvedAxes) -> BrickBreakerSample:
         brick_rows=rows,
         brick_cols=cols,
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=str(target_brick.label),
         bricks=bricks,
@@ -407,7 +407,7 @@ def _sample_paddle_catch_scene(*, rng, axes: _ResolvedAxes) -> BrickBreakerSampl
         brick_rows=rows,
         brick_cols=cols,
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=lane_label(target_lane),
         bricks=bricks,
@@ -469,7 +469,7 @@ def _sample_hit_row_remaining_scene(*, rng, axes: _ResolvedAxes) -> BrickBreaker
         brick_rows=rows,
         brick_cols=cols,
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=int(len(remaining_ids)),
         bricks=bricks,
@@ -490,23 +490,23 @@ def _sample_hit_row_remaining_scene(*, rng, axes: _ResolvedAxes) -> BrickBreaker
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> BrickBreakerSample:
     """Construct one Brick-breaker scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "next_hit_label":
         return _sample_next_hit_scene(rng=rng, axes=axes)
     if query == "paddle_catch_label":
         return _sample_paddle_catch_scene(rng=rng, axes=axes)
     if query == "hit_row_remaining_count":
         return _sample_hit_row_remaining_scene(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Brick-breaker query_variant: {query}")
+    raise ValueError(f"unsupported Brick-breaker query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Brick-breaker JSON output."""
 
-    if str(query_variant) == "paddle_catch_label":
+    if str(query_id) == "paddle_catch_label":
         answer_value = "C"
         evidence_value = [[375, 650, 475, 692]]
-    elif str(query_variant) == "hit_row_remaining_count":
+    elif str(query_id) == "hit_row_remaining_count":
         answer_value = 4
         evidence_value = [[120, 255, 220, 302], [230, 255, 330, 302], [340, 255, 440, 302], [450, 255, 550, 302]]
     else:
@@ -524,13 +524,13 @@ class GamesBrickBreakerPlayfieldTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "brick_breaker"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_BRICK_BREAKER_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(
             int(instance_seed),
             params=params,
-            supported_query_variants=tuple(str(value) for value in self.supported_query_variants),
+            supported_query_ids=tuple(str(value) for value in self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
@@ -557,7 +557,7 @@ class GamesBrickBreakerPlayfieldTask:
             brick_cols=int(sampled_scene.brick_cols),
             lane_count=int(sampled_scene.lane_count),
             bricks=sampled_scene.bricks,
-            query_variant=str(sampled_scene.query_variant),
+            query_id=str(sampled_scene.query_id),
             target_brick_id=sampled_scene.target_brick_id,
             target_lane_index=sampled_scene.target_lane_index,
             ball_start_lane_index=sampled_scene.ball_start_lane_index,
@@ -595,22 +595,22 @@ class GamesBrickBreakerPlayfieldTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "brick_breaker_motion_rule_text": str(prompt_defaults["brick_breaker_motion_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -627,7 +627,7 @@ class GamesBrickBreakerPlayfieldTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             brick_count=len(sampled_scene.bricks),
             lane_count=int(sampled_scene.lane_count),
             evidence_count=len(sampled_scene.evidence_entity_ids),
@@ -647,8 +647,7 @@ class GamesBrickBreakerPlayfieldTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "brick_rows": int(sampled_scene.brick_rows),
                     "brick_cols": int(sampled_scene.brick_cols),
@@ -657,23 +656,22 @@ class GamesBrickBreakerPlayfieldTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "brick_rows": int(sampled_scene.brick_rows),
                     "brick_cols": int(sampled_scene.brick_cols),
                     "brick_count": len(sampled_scene.bricks),
                     "lane_count": int(sampled_scene.lane_count),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "brick_rows_probabilities": dict(axes.brick_rows_probabilities),
                     "brick_cols_probabilities": dict(axes.brick_cols_probabilities),
@@ -697,8 +695,7 @@ class GamesBrickBreakerPlayfieldTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "brick_rows": int(sampled_scene.brick_rows),
                 "brick_cols": int(sampled_scene.brick_cols),
@@ -734,14 +731,13 @@ class GamesBrickBreakerPlayfieldTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="brick_breaker",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
         return rewrite_public_query_output(
             output,
-            query_id=str(axes.query_variant),
-            query_variant_probabilities=axes.query_variant_probabilities,
+            query_id=str(axes.query_id),
+            query_id_probabilities=axes.query_id_probabilities,
         )
 
 
@@ -750,7 +746,7 @@ class GamesBrickBreakerTrajectoryTargetLabelTask(GamesBrickBreakerPlayfieldTask)
     """Identify the labeled target reached by the visible ball trajectory."""
 
     task_id = "task_games__brick_breaker__trajectory_target_label"
-    supported_query_variants = ("next_hit_label", "paddle_catch_label")
+    supported_query_ids = ("next_hit_label", "paddle_catch_label")
 
 
 @register_task
@@ -758,7 +754,7 @@ class GamesBrickBreakerHitRowRemainingCountTask(GamesBrickBreakerPlayfieldTask):
     """Count bricks remaining in the row after the shown shot removes one brick."""
 
     task_id = "task_games__brick_breaker__hit_row_remaining_count"
-    supported_query_variants = ("hit_row_remaining_count",)
+    supported_query_ids = ("hit_row_remaining_count",)
 
 
 __all__ = [

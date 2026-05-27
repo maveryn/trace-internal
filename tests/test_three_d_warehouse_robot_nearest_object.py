@@ -13,7 +13,7 @@ from trace.tasks.three_d.warehouse.robot_nearest_object import (
     MIN_NEAREST_OBJECT_MARGIN,
     MIN_NEAREST_ROBOT_MARGIN,
     SUPPORTED_AISLE_HEADINGS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -34,7 +34,7 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
     output = task.generate(
         20260524,
         params={
-            "query_variant": "closest_robot_to_reference",
+            "query_id": "closest_robot_to_reference",
             "scene_variant": scene_variant,
             "aisle_heading": aisle_heading,
             "candidate_count": 5,
@@ -58,7 +58,7 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_robot_to_reference"
     assert output.answer_gt.type == "option_letter"
@@ -122,7 +122,7 @@ def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
     output = task.generate(
         20260525,
         params={
-            "query_variant": "closest_object_to_robot",
+            "query_id": "closest_object_to_robot",
             "scene_variant": scene_variant,
             "aisle_heading": aisle_heading,
             "candidate_count": 5,
@@ -146,7 +146,7 @@ def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_object_to_robot"
     assert output.answer_gt.type == "option_letter"
@@ -196,5 +196,5 @@ def test_warehouse_robot_nearest_object_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "warehouse"
-    assert SUPPORTED_QUERY_VARIANTS == ("closest_robot_to_reference", "closest_object_to_robot")
+    assert SUPPORTED_QUERY_IDS == ("closest_robot_to_reference", "closest_object_to_robot")
     assert SUPPORTED_AISLE_HEADINGS == ("east", "north", "west", "south")

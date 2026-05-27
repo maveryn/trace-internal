@@ -305,7 +305,7 @@ def render_brick_breaker_scene(
     brick_cols: int,
     lane_count: int,
     bricks: Tuple[BrickBreakerBrick, ...],
-    query_variant: str,
+    query_id: str,
     target_brick_id: str | None,
     target_lane_index: int | None,
     ball_start_lane_index: int | None,
@@ -431,7 +431,7 @@ def render_brick_breaker_scene(
 
     path_start: Tuple[float, float]
     path_end: Tuple[float, float]
-    if str(query_variant) in {"next_hit_label", "hit_row_remaining_count"}:
+    if str(query_id) in {"next_hit_label", "hit_row_remaining_count"}:
         if target_brick_id is None or str(target_brick_id) not in brick_bboxes:
             raise ValueError("brick-hit render requires target brick bbox")
         if ball_start_lane_index is None:
@@ -462,7 +462,7 @@ def render_brick_breaker_scene(
             float(target_lane[1] + 3.0),
         )
 
-    visible_fraction = 0.42 if str(query_variant) == "paddle_catch_label" else 0.75
+    visible_fraction = 0.42 if str(query_id) == "paddle_catch_label" else 0.75
     visible_end = (
         float(path_start[0] + (float(visible_fraction) * (path_end[0] - path_start[0]))),
         float(path_start[1] + (float(visible_fraction) * (path_end[1] - path_start[1]))),

@@ -14,9 +14,9 @@ The image shows a graph-paper ray setup with an initial direction, one to three 
 Evidence is the set of rendered hit-target pixel points. Mirror-count scene variants stay inside this task because they are scene support knobs for the same target-hit counting contract.
 
 ## Prompt And Trace
-Prompt bundle: `physics_optics_v0`; family key: `mirror_ray_diagram`; task key: `ray_trace_query`; query variant key: `target_hit_count`.
+Prompt bundle: `physics_optics_v0`; family key: `mirror_ray_diagram`; task key: `ray_trace_query`; query id key: `target_hit_count`.
 
-Public outputs use `query_variant="default"` and `query_id="target_hit_count"`. The calibrated public mix uses answers `1..5`, four or five target points, and no `quad_mirror` scenes. The trace records mirror placements, target placements, path cells, answer support, and evidence points.
+Outputs `query_id="target_hit_count"`. The calibrated public mix uses answers `1..5`, four or five target points, and no `quad_mirror` scenes. The trace records mirror placements, target placements, path cells, answer support, and evidence points.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. The prompt image does not draw the solved full ray path; evidence comes from the hidden trace path.

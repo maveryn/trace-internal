@@ -5,7 +5,7 @@
 2. Task group: `relation`
 3. Scene id: `graph_options`
 4. Goal: choose the labeled option graph that satisfies a structure relation against the top graph.
-5. Public `query_variant`: `default`
+5. Branch metadata: `query_id`
 6. Query ids: `same_structure_label`, `contained_subgraph_label`
 
 ## Contract

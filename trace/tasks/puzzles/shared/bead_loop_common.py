@@ -27,7 +27,7 @@ SOURCE_PUZZLE_BEAD_LOOP_SCENE_VARIANT_MAP = {
     "loop_outline": "token_ring_outline",
 }
 SUPPORTED_PUZZLE_BEAD_LOOP_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_PUZZLE_CYCLIC_ORDER_SCENE_VARIANTS
-SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_IDS: Tuple[str, ...] = (
     "cyclic_order_equivalent_label",
 )
 SUPPORTED_PUZZLE_CYCLIC_ORDER_TOKEN_RENDER_STYLES: Tuple[str, ...] = (
@@ -92,22 +92,22 @@ def _variant_param(
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     key: str,
     fallback: Any,
 ) -> Any:
-    """Resolve one generation value with optional query-variant-specific defaults."""
+    """Resolve one generation value with optional query-id-specific defaults."""
 
     if str(key) in params:
         return params.get(str(key))
 
     for source in (
-        params.get("query_variant_overrides"),
-        group_default(gen_defaults, "query_variant_overrides", {}),
+        params.get("query_id_overrides"),
+        group_default(gen_defaults, "query_id_overrides", {}),
     ):
         if not isinstance(source, Mapping):
             continue
-        variant_defaults = source.get(str(query_variant), {})
+        variant_defaults = source.get(str(query_id), {})
         if isinstance(variant_defaults, Mapping) and str(key) in variant_defaults:
             return variant_defaults.get(str(key))
 
@@ -194,7 +194,7 @@ def resolve_bead_loop_scene_variant(
     )
 
 
-def resolve_bead_loop_query_variant(
+def resolve_bead_loop_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -207,12 +207,12 @@ def resolve_bead_loop_query_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -490,7 +490,7 @@ def _invalid_candidate_sequences(reference_tokens: Sequence[str]) -> List[Tuple[
 
 def build_bead_equivalence_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     token_render_style: str | None = None,
     bead_token_mode: str | None = None,
     loop_path_style: str = "ellipse",
@@ -502,9 +502,9 @@ def build_bead_equivalence_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one deterministic topology bead-loop equivalence dataset."""
 
-    selected_variant = str(query_variant)
-    if selected_variant not in set(SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_VARIANTS):
-        raise ValueError(f"unsupported topology bead-loop query_variant: {query_variant}")
+    selected_variant = str(query_id)
+    if selected_variant not in set(SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_IDS):
+        raise ValueError(f"unsupported topology bead-loop query_id: {query_id}")
     if token_render_style is None:
         token_render_style = SOURCE_PUZZLE_BEAD_TOKEN_MODE_MAP.get(str(bead_token_mode), str(bead_token_mode))
     selected_token_style = str(token_render_style)
@@ -520,7 +520,7 @@ def build_bead_equivalence_dataset_for_variant(
         _variant_param(
             params,
             gen_defaults,
-            query_variant=str(selected_variant),
+            query_id=str(selected_variant),
             key="option_count_min",
             fallback=int(defaults.option_count_min),
         )
@@ -529,7 +529,7 @@ def build_bead_equivalence_dataset_for_variant(
         _variant_param(
             params,
             gen_defaults,
-            query_variant=str(selected_variant),
+            query_id=str(selected_variant),
             key="option_count_max",
             fallback=int(defaults.option_count_max),
         )
@@ -551,7 +551,7 @@ def build_bead_equivalence_dataset_for_variant(
         _variant_param(
             params,
             gen_defaults,
-            query_variant=str(selected_variant),
+            query_id=str(selected_variant),
             key="bead_count_min",
             fallback=int(bead_count_min),
         )
@@ -560,7 +560,7 @@ def build_bead_equivalence_dataset_for_variant(
         _variant_param(
             params,
             gen_defaults,
-            query_variant=str(selected_variant),
+            query_id=str(selected_variant),
             key="bead_count_max",
             fallback=int(bead_count_max),
         )
@@ -740,7 +740,7 @@ def build_bead_equivalence_dataset_for_variant(
         "question_format": str(selected_variant),
         "view_family": "topology_loop_option_label",
         "solver_trace": {
-            "query_variant": str(selected_variant),
+            "query_id": str(selected_variant),
             "token_render_style": str(selected_token_style),
             "bead_token_mode": str(source_token_mode),
             "loop_path_style": str(selected_loop_path_style),
@@ -771,7 +771,7 @@ __all__ = [
     "SUPPORTED_PUZZLE_CYCLIC_ORDER_SCENE_VARIANTS",
     "SUPPORTED_PUZZLE_CYCLIC_ORDER_TOKEN_RENDER_STYLES",
     "SUPPORTED_PUZZLE_BEAD_LOOP_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_VARIANTS",
+    "SUPPORTED_PUZZLE_BEAD_LOOP_QUERY_IDS",
     "SUPPORTED_PUZZLE_BEAD_TOKEN_MODES",
     "SUPPORTED_PUZZLE_LOOP_PATH_STYLES",
     "TOKEN_RENDER_STYLE_SOURCE_MODE",
@@ -781,7 +781,7 @@ __all__ = [
     "resolve_cyclic_order_token_render_style",
     "resolve_bead_loop_render_params",
     "resolve_bead_loop_scene_variant",
-    "resolve_bead_loop_query_variant",
+    "resolve_bead_loop_query_id",
     "resolve_bead_loop_token_mode",
     "rotate_token_sequence",
 ]

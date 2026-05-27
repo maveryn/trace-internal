@@ -13,7 +13,7 @@ generation:
       object_count_max: 16
       target_count_min: 0
       target_count_max: 8
-      query_variant_weights:
+      query_id_weights:
         match_type: 1.0
         match_color: 1.0
         match_rotation: 1.0
@@ -31,7 +31,7 @@ generation:
           rotation_candidates_degrees: [0, 90, 180, 270]
     task_icons__icon_field__type_frequency_count:
       pool_manifest: all_icons.txt
-      query_variant_weights:
+      query_id_weights:
         singleton_type_count: 1.0
         most_frequent_type_count: 1.0
       variant_generation_params:

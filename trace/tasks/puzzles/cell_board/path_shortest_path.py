@@ -387,7 +387,7 @@ class TileShortestPathTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
-                "query_variant": "shortest_path",
+                "query_id": "shortest_path",
                 "template_id": "shortest_path_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -429,7 +429,7 @@ class TileShortestPathTask:
             ),
             "render_map": render_map,
             "execution_trace": {
-                "query_variant": "shortest_path",
+                "query_id": "shortest_path",
                 "rows": int(rows),
                 "cols": int(cols),
                 **dict(board_metadata),
@@ -495,6 +495,6 @@ class TileShortestPathTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="shortest_path",
+            query_id="shortest_path",
             prompt_variants=prompt_variants,
         )

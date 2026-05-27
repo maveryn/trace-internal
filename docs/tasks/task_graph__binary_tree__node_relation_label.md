@@ -7,7 +7,7 @@
 4. Task id: `task_graph__binary_tree__node_relation_label`
 5. Objective: return a node label for a binary-tree structural relation.
 
-## Query Variants
+## Query IDs
 1. `parent_label`: answer the parent of a named node.
 2. `left_child_label`: answer the left child of a named node.
 3. `right_child_label`: answer the right child of a named node.

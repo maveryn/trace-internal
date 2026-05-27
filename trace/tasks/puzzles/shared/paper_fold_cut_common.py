@@ -14,7 +14,7 @@ from .common import resolve_puzzle_axis_variant
 
 Cells = Tuple[Tuple[int, int], ...]
 
-SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS: Tuple[str, ...] = (
     "single_vertical_fold_cut_result",
     "single_horizontal_fold_cut_result",
     "double_fold_cut_result",
@@ -54,7 +54,7 @@ def _canonicalize_cells(cells: Iterable[Tuple[int, int]]) -> Cells:
     return tuple(sorted((int(cell_x), int(cell_y)) for cell_x, cell_y in cells))
 
 
-def resolve_fold_cut_query_variant(
+def resolve_fold_cut_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -67,12 +67,12 @@ def resolve_fold_cut_query_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -98,10 +98,10 @@ def resolve_fold_cut_scene_variant(
     )
 
 
-def _fold_sequence_for_variant(query_variant: str, *, rng) -> List[Dict[str, Any]]:
-    """Build a deterministic center-fold sequence for one query variant."""
+def _fold_sequence_for_variant(query_id: str, *, rng) -> List[Dict[str, Any]]:
+    """Build a deterministic center-fold sequence for one query id."""
 
-    if str(query_variant) == "single_vertical_fold_cut_result":
+    if str(query_id) == "single_vertical_fold_cut_result":
         return [
             {
                 "fold_index": 1,
@@ -109,7 +109,7 @@ def _fold_sequence_for_variant(query_variant: str, *, rng) -> List[Dict[str, Any
                 "fold_direction": str(rng.choice(("left_to_right", "right_to_left"))),
             }
         ]
-    if str(query_variant) == "single_horizontal_fold_cut_result":
+    if str(query_id) == "single_horizontal_fold_cut_result":
         return [
             {
                 "fold_index": 1,
@@ -117,7 +117,7 @@ def _fold_sequence_for_variant(query_variant: str, *, rng) -> List[Dict[str, Any
                 "fold_direction": str(rng.choice(("top_to_bottom", "bottom_to_top"))),
             }
         ]
-    if str(query_variant) == "double_fold_cut_result":
+    if str(query_id) == "double_fold_cut_result":
         first_axis = str(rng.choice(("vertical", "horizontal")))
         second_axis = "horizontal" if str(first_axis) == "vertical" else "vertical"
         sequence: List[Dict[str, Any]] = []
@@ -134,7 +134,7 @@ def _fold_sequence_for_variant(query_variant: str, *, rng) -> List[Dict[str, Any
                 }
             )
         return sequence
-    raise ValueError(f"unsupported fold-cut variant: {query_variant}")
+    raise ValueError(f"unsupported fold-cut variant: {query_id}")
 
 
 def _folded_dimensions(
@@ -351,7 +351,7 @@ def _build_fold_cut_options(
 
 def build_fold_cut_result_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -360,8 +360,8 @@ def build_fold_cut_result_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Build one fold-cut puzzle with a unique unfolded-result option."""
 
-    if str(query_variant) not in SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS:
-        raise ValueError(f"unsupported fold-cut query variant: {query_variant}")
+    if str(query_id) not in SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS:
+        raise ValueError(f"unsupported fold-cut query id: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     option_count_min, option_count_max = resolve_required_int_bounds(
@@ -388,7 +388,7 @@ def build_fold_cut_result_dataset_for_variant(
         context=f"{task_id} cut-count bounds",
     )
 
-    fold_sequence = _fold_sequence_for_variant(str(query_variant), rng=rng)
+    fold_sequence = _fold_sequence_for_variant(str(query_id), rng=rng)
     folded_grid_cols, folded_grid_rows, dimensions = _folded_dimensions(
         grid_size=int(grid_size),
         fold_sequence=fold_sequence,
@@ -423,7 +423,7 @@ def build_fold_cut_result_dataset_for_variant(
     answer_option_label = str(option_label_for_index(int(correct_option_index)))
 
     return {
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "question_format": "fold_cut_unfolded_result_mcq",
         "view_family": "paper_fold_cut_result_mcq",
         "grid_size": int(grid_size),
@@ -447,7 +447,7 @@ def build_fold_cut_result_dataset_for_variant(
         "correct_option_choice_id": str(correct_option_choice_id),
         "valid_option_choice_ids": [str(correct_option_choice_id)],
         "solver_trace": {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "fold_sequence": [dict(step) for step in fold_sequence],
             "cut_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in cut_cells],
             "unfolded_hole_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in unfolded_hole_cells],
@@ -465,8 +465,8 @@ def build_fold_cut_result_dataset_for_variant(
 __all__ = [
     "PuzzleFoldCutDefaults",
     "SUPPORTED_PUZZLE_FOLD_CUT_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_FOLD_CUT_QUERY_VARIANTS",
+    "SUPPORTED_PUZZLE_FOLD_CUT_QUERY_IDS",
     "build_fold_cut_result_dataset_for_variant",
     "resolve_fold_cut_scene_variant",
-    "resolve_fold_cut_query_variant",
+    "resolve_fold_cut_query_id",
 ]

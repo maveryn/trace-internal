@@ -5,7 +5,7 @@
 2. Scene id: `part_whole`
 3. Source implementation domain/group: `charts/composition`
 4. Query id: `chart_order_adjacent_transfer_gap`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.composition.share_arithmetic_value.ChartsCompositionChartAdjacentTransferGapValueTask`

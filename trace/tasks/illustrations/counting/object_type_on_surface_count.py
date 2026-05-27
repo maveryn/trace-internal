@@ -309,7 +309,6 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
                 "scene_id": SCENE_ID,
                 "entities": indoor_scene_entities(scene),
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                     "surface_type": str(sample.surface_type),
                     "object_type": str(sample.object_type),
@@ -317,7 +316,6 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -361,7 +359,6 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
                 "counted_object_ids": list(counted_ids),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "scene_id": SCENE_ID,
                 "theme_id": str(scene.theme_id),
@@ -392,7 +389,6 @@ class IllustrationsCountingObjectTypeOnSurfaceCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

@@ -11,13 +11,13 @@ EMPTY = 0
 Coord = Tuple[int, int]
 Board = Tuple[Tuple[int, ...], ...]
 
-SUPPORTED_2048_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_2048_QUERY_IDS: Tuple[str, ...] = (
     "merge_count",
     "score_value",
     "max_tile_value",
     "best_move_label",
 )
-MOVE_RESULT_QUERY_VARIANTS: Tuple[str, ...] = (
+MOVE_RESULT_QUERY_IDS: Tuple[str, ...] = (
     "merge_count",
     "score_value",
     "max_tile_value",
@@ -52,7 +52,7 @@ class Move2048Result:
 class Sample2048:
     """Generated 2048 board state and grounded query target."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: str | int
@@ -185,25 +185,25 @@ def validate_2048_sample(sample: Sample2048) -> None:
     """Validate answer/evidence consistency for one generated 2048 sample."""
 
     validate_board(sample.board)
-    if str(sample.query_variant) not in SUPPORTED_2048_QUERY_VARIANTS:
-        raise ValueError(f"unsupported 2048 query_variant: {sample.query_variant}")
+    if str(sample.query_id) not in SUPPORTED_2048_QUERY_IDS:
+        raise ValueError(f"unsupported 2048 query_id: {sample.query_id}")
     if str(sample.move_direction) not in SUPPORTED_2048_DIRECTIONS:
         raise ValueError("2048 sample has unsupported move direction")
 
     expected_answer: str | int
     expected_coords: Tuple[Coord, ...]
-    if str(sample.query_variant) == "merge_count":
+    if str(sample.query_id) == "merge_count":
         expected_answer = int(len(sample.move_result.merge_pairs))
         expected_coords = tuple(coord for pair in sample.move_result.merge_pairs for coord in pair)
-    elif str(sample.query_variant) == "score_value":
+    elif str(sample.query_id) == "score_value":
         expected_answer = int(sample.move_result.score)
         expected_coords = tuple(coord for pair in sample.move_result.merge_pairs for coord in pair)
-    elif str(sample.query_variant) == "max_tile_value":
+    elif str(sample.query_id) == "max_tile_value":
         max_value = board_max_tile(sample.move_result.after)
         max_cells = [coord for coord, sources in sample.move_result.result_sources.items() if sample.move_result.after[coord[0]][coord[1]] == max_value and sources]
         expected_answer = int(max_value)
         expected_coords = tuple(coord for cell in max_cells for coord in sample.move_result.result_sources[cell])
-    elif str(sample.query_variant) == "best_move_label":
+    elif str(sample.query_id) == "best_move_label":
         if sample.goal_cell is None:
             raise ValueError("best_move_label requires a goal cell")
         values = {
@@ -219,7 +219,7 @@ def validate_2048_sample(sample: Sample2048) -> None:
         sources = sample.all_move_results[best_direction].result_sources.get(sample.goal_cell, tuple())
         expected_coords = tuple(sources)
     else:  # pragma: no cover - guarded above.
-        raise ValueError(f"unsupported 2048 query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported 2048 query_id: {sample.query_id}")
 
     if sample.answer != expected_answer:
         raise ValueError("2048 answer does not match active query")
@@ -232,12 +232,12 @@ __all__ = [
     "Board",
     "Coord",
     "EMPTY",
-    "MOVE_RESULT_QUERY_VARIANTS",
+    "MOVE_RESULT_QUERY_IDS",
     "SIZE",
     "SUPPORTED_2048_DIRECTIONS",
     "SUPPORTED_2048_GOAL_CELLS",
     "SUPPORTED_2048_LABELS",
-    "SUPPORTED_2048_QUERY_VARIANTS",
+    "SUPPORTED_2048_QUERY_IDS",
     "SUPPORTED_2048_SCENE_VARIANTS",
     "SUPPORTED_2048_STYLE_VARIANTS",
     "Move2048Result",

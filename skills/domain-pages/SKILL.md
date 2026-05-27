@@ -16,7 +16,7 @@ Use this whenever the task lives under `domain=pages`.
 
 ## Active-contract reminders
 - Treat `pages` as structured page reasoning over forms, diagrams, static maps, timelines, schedules, schemas, and GUI/web screens, not generic OCR over arbitrary prose.
-- Active page tasks put the concrete query branch in `query_id`; `query_variant` is an internal replay selector.
+- Active page tasks put the concrete query branch in `query_id`; `query_id` is an internal replay selector.
 - Prefer broad task groups such as `arithmetic`, `calendar`, `concept_map`, `cross_form`, `cycle`, `hierarchy`, `infographic`, `map`, `process_flow`, `schedule`, `schema`, `counting`, and `relation` over one-off page templates.
 - Keep one reusable page grammar whenever multiple tasks share the same scaffold.
 - Keep prompts explicit about the requested field, section, control, event, route, or node so correctness does not depend on hidden layout assumptions.

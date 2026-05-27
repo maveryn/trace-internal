@@ -7,7 +7,7 @@
 4. Goal: roll a labeled cube along a visible arrow path and choose the requested final face label.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `final_top_face_label|final_front_face_label|final_right_face_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

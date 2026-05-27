@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.seed import hash64
 from trace.tasks.geometry.analytical.function_property_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
     GeometryAnalyticalFunctionPropertyLabelTask,
 )
@@ -58,16 +58,16 @@ def _matching_labels(variant: str, relations_by_label: dict[str, dict], answer_l
     raise AssertionError(f"unsupported variant in test: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_geometry_analytical_function_property_label_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_geometry_analytical_function_property_label_contract(query_id: str) -> None:
     task = GeometryAnalyticalFunctionPropertyLabelTask()
     out = task.generate(
         hash64(93210, TASK_ID, 3),
-        params={"query_variant": query_variant, "winner_label": "C"},
+        params={"query_id": query_id, "winner_label": "C"},
         max_attempts=10,
     )
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
     assert out.evidence_gt.type == "bbox_set"
@@ -78,26 +78,26 @@ def test_geometry_analytical_function_property_label_contract(query_variant: str
 
     relations = out.trace_payload["execution_trace"]["relations_by_label"]
     assert set(relations.keys()) == {"A", "B", "C", "D", "E", "F"}
-    assert _matching_labels(query_variant, relations, "C") == ["C"]
+    assert _matching_labels(query_id, relations, "C") == ["C"]
 
 
 def test_geometry_analytical_function_property_label_balances_variants_and_answers() -> None:
     task = GeometryAnalyticalFunctionPropertyLabelTask()
-    per_variant_labels = {variant: Counter() for variant in SUPPORTED_QUERY_VARIANTS}
+    per_query_id_labels = {variant: Counter() for variant in SUPPORTED_QUERY_IDS}
 
-    total = len(SUPPORTED_QUERY_VARIANTS) * 30
+    total = len(SUPPORTED_QUERY_IDS) * 30
     for index in range(total):
         out = task.generate(
             hash64(93220, TASK_ID, index),
             params={},
             max_attempts=10,
         )
-        per_variant_labels[str(out.query_variant)][str(out.answer_gt.value)] += 1
+        per_query_id_labels[str(out.query_id)][str(out.answer_gt.value)] += 1
 
-    variant_counts = {variant: sum(counter.values()) for variant, counter in per_variant_labels.items()}
-    assert set(variant_counts) == set(SUPPORTED_QUERY_VARIANTS)
+    variant_counts = {variant: sum(counter.values()) for variant, counter in per_query_id_labels.items()}
+    assert set(variant_counts) == set(SUPPORTED_QUERY_IDS)
     assert all(20 <= count <= 40 for count in variant_counts.values())
-    for counts in per_variant_labels.values():
+    for counts in per_query_id_labels.values():
         assert set(counts.keys()).issubset({"A", "B", "C", "D", "E", "F"})
         assert len(counts) >= 5
         assert max(counts.values()) <= 12
@@ -111,7 +111,7 @@ def test_geometry_analytical_function_property_label_randomizes_relation_geometr
     for index in range(12):
         out = task.generate(
             hash64(93230, TASK_ID, index),
-            params={"query_variant": "one_to_one_status_label", "winner_label": "A"},
+            params={"query_id": "one_to_one_status_label", "winner_label": "A"},
             max_attempts=10,
         )
         winner = out.trace_payload["execution_trace"]["winner_relation"]

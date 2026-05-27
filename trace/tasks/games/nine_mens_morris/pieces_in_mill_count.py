@@ -26,7 +26,7 @@ from ..shared.complexity import build_games_nine_mens_morris_pieces_in_mill_comp
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.morris_common import (
-    SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS,
+    SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS,
     SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS,
     NineMensMorrisBoardState,
     build_nine_mens_morris_board_state,
@@ -63,14 +63,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one nine-men's-morris scene."""
 
-    query_variant: str
+    query_id: str
     player_color: str | None
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
     player_color_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -85,21 +85,21 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="nine_mens_morris")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="nine_mens_morris", apply_prob=0.0)
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -107,11 +107,11 @@ def _resolve_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), dict(probabilities)
 
@@ -155,18 +155,18 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -174,7 +174,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for axes balanced under the query cycle."""
 
@@ -182,16 +182,16 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS))
     return cycle_params
 
 
 def _style_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Decorrelate balanced style cycling from balanced query cycling."""
 
@@ -226,22 +226,22 @@ def _style_variant_params_for_query_cycle(
         return dict(params)
     return _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured target-support key for one Morris query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured target-support key for one Morris query id."""
 
     return {
         "all_pieces_in_mill_count": "all_pieces_in_mill_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve semantic/visual axes plus one target answer for the Morris task."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -260,7 +260,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=_style_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="style_variant",
         explicit_key="style_variant",
@@ -269,10 +269,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported=SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS,
     )
 
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -280,8 +280,8 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(target_support_key),
         explicit_key="target_answer",
-        fallback_support=supported_targets_for_query(str(query_variant), player_color=player_color),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        fallback_support=supported_targets_for_query(str(query_id), player_color=player_color),
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -289,17 +289,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         params,
         gen_defaults=_GEN_DEFAULTS,
         key=str(target_support_key),
-        fallback=supported_targets_for_query(str(query_variant), player_color=player_color),
+        fallback=supported_targets_for_query(str(query_id), player_color=player_color),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         player_color=str(player_color) if player_color is not None else None,
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         player_color_probabilities=dict(player_color_probabilities),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -380,7 +380,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             board_state = build_nine_mens_morris_board_state(
                 rng=attempt_rng,
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 player_color=axes.player_color,
                 target_answer=int(axes.target_answer),
             )
@@ -405,7 +405,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
 
         evidence_ids = evidence_piece_ids(
             board_state,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             player_color=axes.player_color,
         )
         evidence_bboxes = [
@@ -441,16 +441,16 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_board"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]).format(
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color or "white")
                 ),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]).format(
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(
                     player_color=str(axes.player_color or "white")
                 ),
                 "json_example": str(json_example),
@@ -468,7 +468,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
         complexity = build_games_nine_mens_morris_pieces_in_mill_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             total_piece_count=int(total_piece_count),
             target_answer=int(axes.target_answer),
             overlapping_piece_count=len(board_state.overlapping_piece_ids),
@@ -481,8 +481,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "player_color": axes.player_color,
                     "style_variant": str(axes.style_variant),
                     "target_answer": int(axes.target_answer),
@@ -490,20 +489,19 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "player_color": axes.player_color,
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "player_color_probabilities": dict(axes.player_color_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(axes.target_answer),
@@ -521,8 +519,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "player_color": axes.player_color,
                 "style_variant": str(axes.style_variant),
                 "target_answer": int(axes.target_answer),
@@ -564,7 +561,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_id="nine_mens_morris",
         )
 
@@ -577,7 +574,7 @@ class GamesNineMensMorrisAllPiecesInMillCountTask(
     """Count all pieces that belong to at least one mill."""
 
     task_id = "task_games__nine_mens_morris__pieces_in_mill_count"
-    fixed_query_variant = "all_pieces_in_mill_count"
+    fixed_query_id = "all_pieces_in_mill_count"
 
 
 __all__ = [

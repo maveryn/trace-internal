@@ -16,18 +16,18 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
-def _expected_count(query_variant: str, values: list[int], trace: dict) -> int:
-    if str(query_variant) == "threshold_count" and str(trace["comparison"]) == "greater_than":
+def _expected_count(query_id: str, values: list[int], trace: dict) -> int:
+    if str(query_id) == "threshold_count" and str(trace["comparison"]) == "greater_than":
         threshold = int(trace["threshold"])
         return sum(1 for value in values if int(value) > int(threshold))
-    if str(query_variant) == "threshold_count" and str(trace["comparison"]) == "less_than":
+    if str(query_id) == "threshold_count" and str(trace["comparison"]) == "less_than":
         threshold = int(trace["threshold"])
         return sum(1 for value in values if int(value) < int(threshold))
-    if str(query_variant) == "in_interval":
+    if str(query_id) == "in_interval":
         interval_min = int(trace["interval_min"])
         interval_max = int(trace["interval_max"])
         return sum(1 for value in values if int(interval_min) <= int(value) <= int(interval_max))
-    raise AssertionError(f"unsupported variant: {query_variant}")
+    raise AssertionError(f"unsupported variant: {query_id}")
 
 
 def _assert_normalized_complexity(out: object) -> None:
@@ -59,10 +59,10 @@ def test_chart_counting_variants_match_contract() -> None:
         ("threshold_count", "line", {"comparison": "less_than"}),
         ("in_interval", "scatter", {}),
     )
-    for seed, (query_variant, scene_variant, extra_params) in enumerate(cases, start=9910):
+    for seed, (query_id, scene_variant, extra_params) in enumerate(cases, start=9910):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, **extra_params},
+            params={"query_id": query_id, "scene_variant": scene_variant, **extra_params},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -75,7 +75,7 @@ def test_chart_counting_variants_match_contract() -> None:
         evidence_labels = [str(label) for label in execution["evidence_labels"]]
         values_by_label = {str(label): int(value) for label, value in execution["values_by_label"].items()}
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -87,20 +87,20 @@ def test_chart_counting_variants_match_contract() -> None:
         assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
         assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
         assert int(out.answer_gt.value) == int(execution["answer_value"])
-        assert int(out.answer_gt.value) == _expected_count(str(query_variant), values, execution)
+        assert int(out.answer_gt.value) == _expected_count(str(query_id), values, execution)
         assert len(evidence_labels) == int(out.answer_gt.value)
         assert len(evidence_points) == int(out.answer_gt.value)
-        assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+        assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
         _assert_value_axis_covers_values(render, values)
 
-        if str(query_variant) == "threshold_count" and str(execution["comparison"]) == "greater_than":
+        if str(query_id) == "threshold_count" and str(execution["comparison"]) == "greater_than":
             threshold = int(execution["threshold"])
             assert all(int(values_by_label[label]) > int(threshold) for label in evidence_labels)
-        elif str(query_variant) == "threshold_count" and str(execution["comparison"]) == "less_than":
+        elif str(query_id) == "threshold_count" and str(execution["comparison"]) == "less_than":
             threshold = int(execution["threshold"])
             assert all(int(values_by_label[label]) < int(threshold) for label in evidence_labels)
         else:
@@ -115,9 +115,9 @@ def test_chart_counting_variants_match_contract() -> None:
 
 def test_chart_counting_line_and_scatter_prompts_mention_y_values() -> None:
     task = ChartsCountingValueCountTask()
-    line = task.generate(9921, params={"query_variant": "threshold_count", "comparison": "greater_than", "scene_variant": "line"}, max_attempts=10)
-    scatter = task.generate(9922, params={"query_variant": "threshold_count", "comparison": "less_than", "scene_variant": "scatter"}, max_attempts=10)
-    area = task.generate(9923, params={"query_variant": "threshold_count", "comparison": "greater_than", "scene_variant": "area"}, max_attempts=10)
+    line = task.generate(9921, params={"query_id": "threshold_count", "comparison": "greater_than", "scene_variant": "line"}, max_attempts=10)
+    scatter = task.generate(9922, params={"query_id": "threshold_count", "comparison": "less_than", "scene_variant": "scatter"}, max_attempts=10)
+    area = task.generate(9923, params={"query_id": "threshold_count", "comparison": "greater_than", "scene_variant": "area"}, max_attempts=10)
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
@@ -130,7 +130,7 @@ def test_chart_counting_supports_additional_scene_variants() -> None:
     for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop"), start=9924):
         out = task.generate(
             seed,
-            params={"query_variant": "threshold_count", "comparison": "greater_than", "scene_variant": scene_variant},
+            params={"query_id": "threshold_count", "comparison": "greater_than", "scene_variant": scene_variant},
             max_attempts=10,
         )
         prompts[str(scene_variant)] = str(out.prompt)
@@ -152,7 +152,7 @@ def test_chart_counting_bar_evidence_uses_value_endpoint() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "threshold_count",
+                "query_id": "threshold_count",
                 "comparison": "greater_than",
                 "scene_variant": scene_variant,
                 "target_answer_min": 3,
@@ -185,7 +185,7 @@ def test_chart_counting_excludes_pie_donut_and_radar_scene_variants() -> None:
         with pytest.raises(ValueError, match="unsupported scene_variant"):
             task.generate(
                 9929,
-                params={"query_variant": "threshold_count", "comparison": "greater_than", "scene_variant": scene_variant},
+                params={"query_id": "threshold_count", "comparison": "greater_than", "scene_variant": scene_variant},
                 max_attempts=10,
             )
 
@@ -196,17 +196,17 @@ def test_chart_counting_prompt_examples_match_selected_variant() -> None:
         "threshold_count": {"evidence": [[180, 260], [390, 180], [610, 320]], "answer": 3},
         "in_interval": {"evidence": [[165, 310], [380, 250], [590, 285]], "answer": 3},
     }
-    for index, query_variant in enumerate(expected, start=9930):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=9930):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_counting_task_is_deterministic() -> None:
     task = ChartsCountingValueCountTask()
-    params = {"query_variant": "in_interval", "scene_variant": "scatter"}
+    params = {"query_id": "in_interval", "scene_variant": "scatter"}
     out_a = task.generate(9941, params=params, max_attempts=10)
     out_b = task.generate(9941, params=params, max_attempts=10)
 
@@ -222,12 +222,12 @@ def test_chart_counting_complexity_is_normalized_and_monotonic() -> None:
     task = ChartsCountingValueCountTask()
     easy = task.generate(
         9942,
-        params={"query_variant": "threshold_count", "comparison": "greater_than", "scene_variant": "bar"},
+        params={"query_id": "threshold_count", "comparison": "greater_than", "scene_variant": "bar"},
         max_attempts=10,
     )
     hard = task.generate(
         9942,
-        params={"query_variant": "in_interval", "scene_variant": "scatter"},
+        params={"query_id": "in_interval", "scene_variant": "scatter"},
         max_attempts=10,
     )
     _assert_normalized_complexity(easy)
@@ -242,11 +242,11 @@ def test_chart_counting_supports_zero_answer_with_empty_evidence() -> None:
         ("threshold_count", {"comparison": "less_than"}),
         ("in_interval", {}),
     )
-    for seed, (query_variant, extra_params) in enumerate(zero_cases, start=9950):
+    for seed, (query_id, extra_params) in enumerate(zero_cases, start=9950):
         out = task.generate(
             seed,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 **extra_params,
                 "target_answer_min": 0,
                 "target_answer_max": 0,
@@ -264,10 +264,10 @@ def test_chart_counting_supports_explicit_mark_count_20() -> None:
         ("threshold_count", {"comparison": "less_than"}),
         ("in_interval", {}),
     )
-    for seed, (query_variant, extra_params) in enumerate(count_cases, start=9960):
+    for seed, (query_id, extra_params) in enumerate(count_cases, start=9960):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, **extra_params, "scene_variant": "bar", "mark_count": 20},
+            params={"query_id": query_id, **extra_params, "scene_variant": "bar", "mark_count": 20},
             max_attempts=10,
         )
         assert int(out.trace_payload["execution_trace"]["mark_count"]) == 20

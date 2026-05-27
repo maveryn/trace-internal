@@ -7,7 +7,7 @@
 4. Objective: count filled cells in an orthographic projection of a cube stack.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `visible_cube_count`
 3. Supported query parameter: `view_direction=top|front|right`
 4. Supported `scene_variant`: `cube_stack`
@@ -28,6 +28,6 @@
 
 ## 4) Evidence + Trace Contract
 1. Evidence contains one bbox for each query-grid cell that should be filled.
-2. `execution_trace.internal_query_variant` records the selected view query.
+2. `execution_trace.internal_query_id` records the selected view query.
 3. Stack footprint/heights, visible counts for `top|front|right`, projection-cell coordinates, and query-panel geometry are recorded.
 4. Prompt-facing evidence is projected from projection cells, not inferred from pixels.

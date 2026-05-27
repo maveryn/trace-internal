@@ -38,14 +38,14 @@ def test_physics_electrostatics_field_direction_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "electrostatic_field"
 
     assert out.query_id == "field_direction_choice"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["params"]["internal_query_variant"] == "field_direction_choice"
+    assert trace["query_spec"]["params"]["internal_query_id"] == "field_direction_choice"
 
     assert execution["direction_mode"] == "force_on_negative_charge"
 

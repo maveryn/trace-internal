@@ -57,7 +57,7 @@ from .camera_distance import (
 
 
 TASK_ID = "task_three_d__object_scene__reference_nearest_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("closest_to_reference",)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_reference",)
 REFERENCE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES
 SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
 LARGE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_CONTEXT_SHAPE_TYPES)
@@ -164,7 +164,7 @@ def _finalize_specs(
 
 def _build_reference_nearest_scene_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     large_candidate_count: int,
@@ -343,7 +343,7 @@ def _build_reference_nearest_scene_dataset(
         sorted_candidates = sorted(finalized_candidates, key=lambda spec: str(spec["point_label"]))
         distance_order = [str(spec["point_label"]) for spec in sorted_by_gap]
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
@@ -478,16 +478,16 @@ class ThreeDSpatialReferenceNearestLabelTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -524,7 +524,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_reference_nearest_scene_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             large_candidate_count=int(large_candidate_count),
@@ -569,7 +569,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -623,15 +623,14 @@ class ThreeDSpatialReferenceNearestLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "point_count": int(point_count),
@@ -667,8 +666,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "point_count": int(point_count),
                 "candidate_count": int(point_count),
@@ -686,7 +684,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
                 "candidate_reference_gaps_by_label": dict(dataset["candidate_reference_gaps_by_label"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_scene",
                 "solver_trace": dict(solver_trace),
             },
@@ -711,9 +709,8 @@ class ThreeDSpatialReferenceNearestLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

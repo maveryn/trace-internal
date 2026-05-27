@@ -1,6 +1,6 @@
 # task_illustrations__construction_site__worker_attribute_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -15,7 +15,7 @@ The task renders a varied synthetic construction site with workers, labeled
 zones, material stacks, construction equipment, scaffold/crane/roadwork decor,
 and one of the active illustration styles.
 
-Public query variants:
+Query ids:
 
 - `hard_hat_color_worker_count`
 - `vest_color_worker_count`
@@ -44,6 +44,6 @@ tool condition.
 ## Prompt Contract
 - `scene_key = construction_site_canvas`
 - `task_key = worker_safety_gear_count_task`
-- `query_key` is one of the three worker-safety query variants above
+- `query_id` is one of the three worker-safety branches above
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

@@ -8,7 +8,7 @@
 5. Goal: count the labeled cells around the marked tree where a tent could legally be added.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `valid_candidate_count`
 3. Grid size: `6x6..8x8`
 4. Candidate cells: four labeled orthogonal neighbors of the marked tree

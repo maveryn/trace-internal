@@ -45,22 +45,22 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_multiseries_comparison_query_base"
-_CHANGE_QUERY_VARIANT = "ranked_change_extremum"
-_RATIO_QUERY_VARIANT = "ranked_ratio_extremum"
-_PAIRWISE_QUERY_VARIANT = "series_comparison_count"
-_CONDITIONAL_AGGREGATE_QUERY_VARIANT = "conditional_gap_aggregate_value"
-_CONDITIONAL_SUM_QUERY_VARIANT = "conditional_gap_sum_value"
-_CONDITIONAL_MEAN_QUERY_VARIANT = "conditional_gap_mean_value"
-_CONDITIONAL_RANGE_QUERY_VARIANT = "conditional_gap_range_value"
-_CONDITIONAL_EXTREMUM_QUERY_VARIANT = "conditional_gap_extremum_value"
-_CATEGORY_TOTAL_QUERY_VARIANT = "category_total_extremum_label"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
-    _CHANGE_QUERY_VARIANT,
-    _RATIO_QUERY_VARIANT,
-    _PAIRWISE_QUERY_VARIANT,
-    _CONDITIONAL_AGGREGATE_QUERY_VARIANT,
-    _CONDITIONAL_EXTREMUM_QUERY_VARIANT,
-    _CATEGORY_TOTAL_QUERY_VARIANT,
+_CHANGE_QUERY_ID = "ranked_change_extremum"
+_RATIO_QUERY_ID = "ranked_ratio_extremum"
+_PAIRWISE_QUERY_ID = "series_comparison_count"
+_CONDITIONAL_AGGREGATE_QUERY_ID = "conditional_gap_aggregate_value"
+_CONDITIONAL_SUM_QUERY_ID = "conditional_gap_sum_value"
+_CONDITIONAL_MEAN_QUERY_ID = "conditional_gap_mean_value"
+_CONDITIONAL_RANGE_QUERY_ID = "conditional_gap_range_value"
+_CONDITIONAL_EXTREMUM_QUERY_ID = "conditional_gap_extremum_value"
+_CATEGORY_TOTAL_QUERY_ID = "category_total_extremum_label"
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
+    _CHANGE_QUERY_ID,
+    _RATIO_QUERY_ID,
+    _PAIRWISE_QUERY_ID,
+    _CONDITIONAL_AGGREGATE_QUERY_ID,
+    _CONDITIONAL_EXTREMUM_QUERY_ID,
+    _CATEGORY_TOTAL_QUERY_ID,
 )
 _SUPPORTED_CHANGE_MEASURES: Tuple[str, ...] = (
     "directional_change",
@@ -88,13 +88,13 @@ _SUPPORTED_CONDITIONAL_GAP_AGGREGATE_KINDS: Tuple[str, ...] = (
     "range",
 )
 _CONDITIONAL_GAP_AGGREGATE_KIND_TO_INTERNAL: Dict[str, str] = {
-    "sum": _CONDITIONAL_SUM_QUERY_VARIANT,
-    "mean": _CONDITIONAL_MEAN_QUERY_VARIANT,
-    "range": _CONDITIONAL_RANGE_QUERY_VARIANT,
+    "sum": _CONDITIONAL_SUM_QUERY_ID,
+    "mean": _CONDITIONAL_MEAN_QUERY_ID,
+    "range": _CONDITIONAL_RANGE_QUERY_ID,
 }
-_CONDITIONAL_QUERY_VARIANTS: Tuple[str, ...] = (
-    _CONDITIONAL_AGGREGATE_QUERY_VARIANT,
-    _CONDITIONAL_EXTREMUM_QUERY_VARIANT,
+_CONDITIONAL_QUERY_IDS: Tuple[str, ...] = (
+    _CONDITIONAL_AGGREGATE_QUERY_ID,
+    _CONDITIONAL_EXTREMUM_QUERY_ID,
 )
 
 _DEFAULTS = MultiseriesChartDefaults()
@@ -107,12 +107,12 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="mult
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="multiseries", apply_prob=0.0)
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
-    _PAIRWISE_QUERY_VARIANT: 0.0,
-    _CHANGE_QUERY_VARIANT: 0.75,
-    _RATIO_QUERY_VARIANT: 0.20,
-    _CONDITIONAL_AGGREGATE_QUERY_VARIANT: 0.70,
-    _CONDITIONAL_EXTREMUM_QUERY_VARIANT: 0.66,
-    _CATEGORY_TOTAL_QUERY_VARIANT: 0.46,
+    _PAIRWISE_QUERY_ID: 0.0,
+    _CHANGE_QUERY_ID: 0.75,
+    _RATIO_QUERY_ID: 0.20,
+    _CONDITIONAL_AGGREGATE_QUERY_ID: 0.70,
+    _CONDITIONAL_EXTREMUM_QUERY_ID: 0.66,
+    _CATEGORY_TOTAL_QUERY_ID: 0.46,
 }
 _CONDITIONAL_AGGREGATE_REASONING_LOADS: Dict[str, float] = {
     "sum": 0.62,
@@ -205,20 +205,20 @@ def _normalize_multiseries_visual_scan(trace_extras: Mapping[str, Any]) -> float
     return min(1.0, (0.70 * float(category_norm)) + (0.30 * float(series_norm)))
 
 
-def _variant_family(query_variant: str) -> str:
+def _variant_family(query_id: str) -> str:
     """Return the config/prompt family for the merged extremum variant."""
 
-    if str(query_variant) == _CHANGE_QUERY_VARIANT:
+    if str(query_id) == _CHANGE_QUERY_ID:
         return "delta"
-    if str(query_variant) == _RATIO_QUERY_VARIANT:
+    if str(query_id) == _RATIO_QUERY_ID:
         return "ratio"
-    if str(query_variant) == _PAIRWISE_QUERY_VARIANT:
+    if str(query_id) == _PAIRWISE_QUERY_ID:
         return "pairwise"
-    if str(query_variant) in _CONDITIONAL_QUERY_VARIANTS:
+    if str(query_id) in _CONDITIONAL_QUERY_IDS:
         return "conditional_gap"
-    if str(query_variant) == _CATEGORY_TOTAL_QUERY_VARIANT:
+    if str(query_id) == _CATEGORY_TOTAL_QUERY_ID:
         return "category_total"
-    raise ValueError(f"unsupported multiseries comparison query_variant: {query_variant}")
+    raise ValueError(f"unsupported multiseries comparison query_id: {query_id}")
 
 
 def _resolve_change_measure(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -367,17 +367,17 @@ def _conditional_gap_aggregate_prompt_slots(aggregate_kind: str | None) -> Dict[
     }
 
 
-def _conditional_gap_internal_query_variant(query_variant: str, aggregate_kind: str | None) -> str:
+def _conditional_gap_internal_query_id(query_id: str, aggregate_kind: str | None) -> str:
     """Map the public conditional-gap variant to the shared dataset-builder variant."""
 
-    if str(query_variant) == _CONDITIONAL_AGGREGATE_QUERY_VARIANT:
-        internal_query_variant = _CONDITIONAL_GAP_AGGREGATE_KIND_TO_INTERNAL.get(str(aggregate_kind))
-        if internal_query_variant is None:
+    if str(query_id) == _CONDITIONAL_AGGREGATE_QUERY_ID:
+        internal_query_id = _CONDITIONAL_GAP_AGGREGATE_KIND_TO_INTERNAL.get(str(aggregate_kind))
+        if internal_query_id is None:
             raise ValueError(f"unsupported conditional_gap_aggregate_kind: {aggregate_kind}")
-        return str(internal_query_variant)
-    if str(query_variant) == _CONDITIONAL_EXTREMUM_QUERY_VARIANT:
-        return str(_CONDITIONAL_EXTREMUM_QUERY_VARIANT)
-    raise ValueError(f"unsupported conditional-gap query_variant: {query_variant}")
+        return str(internal_query_id)
+    if str(query_id) == _CONDITIONAL_EXTREMUM_QUERY_ID:
+        return str(_CONDITIONAL_EXTREMUM_QUERY_ID)
+    raise ValueError(f"unsupported conditional-gap query_id: {query_id}")
 
 
 def _internal_pairwise_variant(comparison: str) -> str:
@@ -391,7 +391,7 @@ def _internal_pairwise_variant(comparison: str) -> str:
 
 
 def _internal_extremum_variant(
-    query_variant: str,
+    query_id: str,
     *,
     change_measure: str | None,
     ratio_measure: str | None,
@@ -400,31 +400,31 @@ def _internal_extremum_variant(
 ) -> str:
     """Map the public multiseries variant plus query parameter to the construction variant."""
 
-    if str(query_variant) == _CHANGE_QUERY_VARIANT and str(change_measure) == "directional_change":
+    if str(query_id) == _CHANGE_QUERY_ID and str(change_measure) == "directional_change":
         if str(change_direction) == "increase":
             return "ranked_largest_increase"
         if str(change_direction) == "decrease":
             return "ranked_largest_decrease"
         raise ValueError(f"unsupported change_direction: {change_direction}")
-    if str(query_variant) == _CHANGE_QUERY_VARIANT and str(change_measure) == "absolute_gap":
+    if str(query_id) == _CHANGE_QUERY_ID and str(change_measure) == "absolute_gap":
         if str(extremum_direction) == "largest":
             return "ranked_largest_gap"
         if str(extremum_direction) == "smallest":
             return "ranked_smallest_gap"
         raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
-    if str(query_variant) == _RATIO_QUERY_VARIANT and str(ratio_measure) == "series_share":
+    if str(query_id) == _RATIO_QUERY_ID and str(ratio_measure) == "series_share":
         if str(extremum_direction) == "largest":
             return "ranked_largest_series_share"
         if str(extremum_direction) == "smallest":
             return "ranked_smallest_series_share"
         raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
-    if str(query_variant) == _RATIO_QUERY_VARIANT and str(ratio_measure) == "pair_ratio":
+    if str(query_id) == _RATIO_QUERY_ID and str(ratio_measure) == "pair_ratio":
         if str(extremum_direction) == "largest":
             return "ranked_largest_pair_ratio"
         if str(extremum_direction) == "smallest":
             return "ranked_smallest_pair_ratio"
         raise ValueError(f"unsupported extremum_direction: {extremum_direction}")
-    raise ValueError(f"unsupported multiseries extremum query_variant: {query_variant}")
+    raise ValueError(f"unsupported multiseries extremum query_id: {query_id}")
 
 
 def _change_prompt_slots(change_direction: str | None) -> Dict[str, str]:
@@ -522,44 +522,44 @@ def _params_for_variant_family(params: Mapping[str, Any], *, family: str) -> Dic
     return resolved
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic multiseries extremum variant."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    """Return true when `_sample_cursor` is driving the default query-variant cycle."""
+    """Return true when `_sample_cursor` is driving the default query-id cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not bool(enabled):
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
 
-def _support_params_for_query_variant_cycle(
+def _support_params_for_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-public-variant occurrence index for subparameter and support cycling."""
 
@@ -567,9 +567,9 @@ def _support_params_for_query_variant_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -623,15 +623,15 @@ def _support_params_for_query_axis_cycle(
     return support_params
 
 
-def _scene_sampling_params(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
-    """Decorrelate balanced scene cycling from balanced query-variant cycling."""
+def _scene_sampling_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
+    """Decorrelate balanced scene cycling from balanced query-id cycling."""
 
     scene_params = dict(params)
     if "scene_variant" in scene_params or "_sample_cursor" not in scene_params:
         return scene_params
-    query_variant_index = _SUPPORTED_QUERY_VARIANTS.index(str(query_variant))
-    scene_params["_sample_cursor"] = (int(scene_params["_sample_cursor"]) // len(_SUPPORTED_QUERY_VARIANTS)) + int(
-        query_variant_index
+    query_id_index = _SUPPORTED_QUERY_IDS.index(str(query_id))
+    scene_params["_sample_cursor"] = (int(scene_params["_sample_cursor"]) // len(_SUPPORTED_QUERY_IDS)) + int(
+        query_id_index
     )
     return scene_params
 
@@ -639,13 +639,13 @@ def _scene_sampling_params(params: Mapping[str, Any], *, query_variant: str) -> 
 def _resolve_scene_variant(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the multiseries chart scene variant."""
 
     return resolve_chart_axis_variant(
-        params=_scene_sampling_params(params, query_variant=str(query_variant)),
+        params=_scene_sampling_params(params, query_id=str(query_id)),
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS,
@@ -660,7 +660,7 @@ def _resolve_scene_variant(
 def _balanced_answer_label_target(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     instance_seed: int | None = None,
 ) -> str | None:
     """Return a deterministic answer-label target for review/probe builds."""
@@ -668,7 +668,7 @@ def _balanced_answer_label_target(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None and instance_seed is None:
         return None
-    variant_index = _SUPPORTED_QUERY_VARIANTS.index(str(query_variant))
+    variant_index = _SUPPORTED_QUERY_IDS.index(str(query_id))
     occurrence_index = (
         int(sampling_index)
         if sampling_index is not None
@@ -697,7 +697,7 @@ def _remap_category_labels(value: Any, mapping: Mapping[str, str]) -> Any:
 
 def _balance_answer_label_for_indexed_probe(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     values_by_category: Mapping[str, Mapping[str, int]],
@@ -712,7 +712,7 @@ def _balance_answer_label_for_indexed_probe(
     }
     target_label = _balanced_answer_label_target(
         params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         instance_seed=int(instance_seed),
     )
     if target_label is None or str(target_label) == str(answer_label):
@@ -742,14 +742,14 @@ class ChartsMultiseriesComparisonQueryTask:
         instance_seed: int,
         *,
         params: Dict[str, Any],
-        query_variant: str,
+        query_id: str,
         query_params: Dict[str, Any],
-        query_variant_probabilities: Mapping[str, float],
+        query_id_probabilities: Mapping[str, float],
     ) -> TaskOutput:
         conditional_gap_aggregate_kind = None
         conditional_gap_aggregate_kind_probabilities: Dict[str, float] = {}
         condition_query_params = dict(query_params)
-        if str(query_variant) == _CONDITIONAL_AGGREGATE_QUERY_VARIANT:
+        if str(query_id) == _CONDITIONAL_AGGREGATE_QUERY_ID:
             conditional_gap_aggregate_kind, conditional_gap_aggregate_kind_probabilities = (
                 _resolve_conditional_gap_aggregate_kind(
                     query_params,
@@ -782,19 +782,19 @@ class ChartsMultiseriesComparisonQueryTask:
         dataset_params = dict(query_params)
         extremum_direction = None
         extremum_direction_probabilities: Dict[str, float] = {}
-        if str(query_variant) == _CONDITIONAL_EXTREMUM_QUERY_VARIANT:
+        if str(query_id) == _CONDITIONAL_EXTREMUM_QUERY_ID:
             extremum_direction, extremum_direction_probabilities = _resolve_extremum_direction(
                 extremum_query_params,
                 instance_seed=int(instance_seed),
             )
-        internal_query_variant = _conditional_gap_internal_query_variant(
-            str(query_variant),
+        internal_query_id = _conditional_gap_internal_query_id(
+            str(query_id),
             conditional_gap_aggregate_kind,
         )
 
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
             params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         (
@@ -804,7 +804,7 @@ class ChartsMultiseriesComparisonQueryTask:
             evidence_series_by_category,
             trace_extras,
         ) = build_conditional_gap_value_dataset(
-            query_variant=str(internal_query_variant),
+            query_id=str(internal_query_id),
             condition_comparison=str(condition_comparison),
             extremum_direction=extremum_direction,
             params=dataset_params,
@@ -883,7 +883,7 @@ class ChartsMultiseriesComparisonQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key_conditional_gap"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -923,8 +923,8 @@ class ChartsMultiseriesComparisonQueryTask:
                 "scene_kind": f"chart_{str(scene_variant)}_multiseries",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "variant_family": "conditional_gap",
                     "evidence_labels": list(evidence_labels),
@@ -953,17 +953,17 @@ class ChartsMultiseriesComparisonQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "variant_family": "conditional_gap",
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     **(
                         {"conditional_gap_aggregate_kind": str(conditional_gap_aggregate_kind)}
                         if conditional_gap_aggregate_kind is not None
@@ -1034,8 +1034,8 @@ class ChartsMultiseriesComparisonQueryTask:
                 "category_label_centers_px": dict(category_label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "variant_family": "conditional_gap",
                 "answer_value": int(answer_value),
@@ -1080,7 +1080,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 "answer_range": list(trace_extras["answer_range"]),
                 "value_range": list(trace_extras["value_range"]),
                 "values_by_category": dict(trace_extras["values_by_category"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "question_format": "numeric_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
@@ -1114,7 +1114,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 "reasoning_load": float(
                     _CONDITIONAL_AGGREGATE_REASONING_LOADS[str(conditional_gap_aggregate_kind)]
                     if conditional_gap_aggregate_kind is not None
-                    else _REASONING_LOAD_BY_VARIANT[str(query_variant)]
+                    else _REASONING_LOAD_BY_VARIANT[str(query_id)]
                 ),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
@@ -1128,25 +1128,25 @@ class ChartsMultiseriesComparisonQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        query_params = _support_params_for_query_variant_cycle(
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        query_params = _support_params_for_query_id_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
-        family = _variant_family(str(query_variant))
+        family = _variant_family(str(query_id))
         if str(family) == "conditional_gap":
             return self._generate_conditional_gap(
                 int(instance_seed),
                 params=params,
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 query_params=query_params,
-                query_variant_probabilities=query_variant_probabilities,
+                query_id_probabilities=query_id_probabilities,
             )
 
         change_measure = None
@@ -1254,25 +1254,25 @@ class ChartsMultiseriesComparisonQueryTask:
         pairwise_variant = ""
         if str(family) in {"delta", "ratio"}:
             extremum_variant = _internal_extremum_variant(
-                str(query_variant),
+                str(query_id),
                 change_measure=change_measure,
                 ratio_measure=ratio_measure,
                 change_direction=change_direction,
                 extremum_direction=extremum_direction,
             )
         elif str(family) == "category_total":
-            extremum_variant = str(_CATEGORY_TOTAL_QUERY_VARIANT)
+            extremum_variant = str(_CATEGORY_TOTAL_QUERY_ID)
         else:
             pairwise_variant = _internal_pairwise_variant(str(comparison))
         family_params = _params_for_variant_family(dataset_params, family=str(family))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
             params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         if str(family) == "delta":
             values_by_category, answer_label, evidence_values, trace_extras = build_delta_extremum_label_dataset(
-                query_variant=str(extremum_variant),
+                query_id=str(extremum_variant),
                 params=family_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -1281,7 +1281,7 @@ class ChartsMultiseriesComparisonQueryTask:
             )
         elif str(family) == "ratio":
             values_by_category, answer_label, evidence_values, trace_extras = build_ratio_extremum_label_dataset(
-                query_variant=str(extremum_variant),
+                query_id=str(extremum_variant),
                 params=family_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -1290,7 +1290,7 @@ class ChartsMultiseriesComparisonQueryTask:
             )
         elif str(family) == "category_total":
             values_by_category, answer_label, evidence_values, trace_extras = build_category_total_extremum_label_dataset(
-                query_variant=str(extremum_variant),
+                query_id=str(extremum_variant),
                 extremum_direction=str(extremum_direction),
                 params=family_params,
                 instance_seed=int(instance_seed),
@@ -1300,7 +1300,7 @@ class ChartsMultiseriesComparisonQueryTask:
             )
         else:
             values_by_category, answer_value, evidence_labels, trace_extras = build_pairwise_comparison_count_dataset(
-                query_variant=str(pairwise_variant),
+                query_id=str(pairwise_variant),
                 params=family_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -1311,7 +1311,7 @@ class ChartsMultiseriesComparisonQueryTask:
             evidence_values = []
         if str(family) in {"delta", "ratio", "category_total"}:
             values_by_category, answer_label, trace_extras = _balance_answer_label_for_indexed_probe(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
                 values_by_category=values_by_category,
@@ -1428,7 +1428,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(task_key),
-                query_key=str(query_variant),
+                query_key=str(query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(object_description),
@@ -1463,10 +1463,10 @@ class ChartsMultiseriesComparisonQueryTask:
                     "scene_kind": f"chart_{str(scene_variant)}_multiseries",
                     "entities": [dict(entity) for entity in rendered_scene.entities],
                     "relations": {
-                        "query_variant": str(query_variant),
+                        "query_id": str(query_id),
                         "scene_variant": str(scene_variant),
                         "variant_family": str(family),
-                        "internal_query_variant": str(pairwise_variant),
+                        "internal_query_id": str(pairwise_variant),
                         "evidence_labels": list(evidence_labels),
                         "queried_series_labels": list(trace_extras["queried_series_labels"]),
                         "comparison": str(trace_extras["comparison"]),
@@ -1474,17 +1474,17 @@ class ChartsMultiseriesComparisonQueryTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
-                        "query_variant": str(query_variant),
+                        "query_id": str(query_id),
                         "scene_variant": str(scene_variant),
                         "variant_family": str(family),
-                        "internal_query_variant": str(pairwise_variant),
-                        "query_variant_probabilities": dict(query_variant_probabilities),
+                        "internal_query_id": str(pairwise_variant),
+                        "query_id_probabilities": dict(query_id_probabilities),
                         "comparison": str(comparison),
                         "comparison_probabilities": dict(comparison_probabilities),
                         "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1530,10 +1530,10 @@ class ChartsMultiseriesComparisonQueryTask:
                     "category_label_centers_px": dict(category_label_centers),
                 },
                 "execution_trace": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "variant_family": str(family),
-                    "internal_query_variant": str(pairwise_variant),
+                    "internal_query_id": str(pairwise_variant),
                     "answer_value": int(answer_value),
                     "evidence_labels": list(evidence_labels),
                     "category_labels": list(category_labels),
@@ -1548,7 +1548,7 @@ class ChartsMultiseriesComparisonQueryTask:
                     "target_answer": int(trace_extras["target_answer"]),
                     "target_answer_range": list(trace_extras["target_answer_range"]),
                     "values_by_category": dict(trace_extras["values_by_category"]),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "comparison": str(comparison),
                     "comparison_probabilities": dict(comparison_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -1569,7 +1569,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 weights=_COMPLEXITY_WEIGHTS,
                 components={
                     "visual_scan": _normalize_multiseries_visual_scan(trace_extras),
-                    "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                    "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                     "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
                 },
             )
@@ -1582,7 +1582,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
             )
 
@@ -1592,7 +1592,7 @@ class ChartsMultiseriesComparisonQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(task_key),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1690,10 +1690,10 @@ class ChartsMultiseriesComparisonQueryTask:
                 "scene_kind": f"chart_{str(scene_variant)}_multiseries",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "variant_family": str(family),
-                    "internal_query_variant": str(extremum_variant),
+                    "internal_query_id": str(extremum_variant),
                     "answer_label": str(answer_label),
                     "evidence_values": [int(value) for value in evidence_values],
                     "queried_series_labels": list(trace_extras["queried_series_labels"]),
@@ -1703,17 +1703,17 @@ class ChartsMultiseriesComparisonQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "variant_family": str(family),
-                    "internal_query_variant": str(extremum_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "internal_query_id": str(extremum_variant),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     **(
                         {"change_direction": str(change_direction)}
                         if change_direction is not None
@@ -1779,10 +1779,10 @@ class ChartsMultiseriesComparisonQueryTask:
                 "category_label_centers_px": dict(category_label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "variant_family": str(family),
-                "internal_query_variant": str(extremum_variant),
+                "internal_query_id": str(extremum_variant),
                 "answer_label": str(answer_label),
                 "answer_score": int(trace_extras["answer_score"]),
                 "answer_rank": int(trace_extras["answer_rank"]),
@@ -1800,7 +1800,7 @@ class ChartsMultiseriesComparisonQueryTask:
                 "derived_metric": str(trace_extras["derived_metric"]),
                 "rank_order": str(trace_extras["rank_order"]),
                 "ranked_category_labels": list(trace_extras["ranked_category_labels"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 **(
                     {"change_direction": str(change_direction)}
                     if change_direction is not None
@@ -1847,7 +1847,7 @@ class ChartsMultiseriesComparisonQueryTask:
                     * float(
                         _REASONING_LOAD_BY_MEASURE.get(
                             str(change_measure or ratio_measure),
-                            _REASONING_LOAD_BY_VARIANT[str(query_variant)],
+                            _REASONING_LOAD_BY_VARIANT[str(query_id)],
                         )
                     )
                     + 0.15
@@ -1868,7 +1868,7 @@ class ChartsMultiseriesComparisonQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1881,7 +1881,7 @@ class ChartsMultiseriesRankedMetricExtremumTask(
     """Return the category label at a sampled ranked multiseries metric extremum."""
 
     task_id = "task_charts__multiseries__ranked_metric_extremum_label"
-    allowed_query_variants = ("ranked_change_extremum", "ranked_ratio_extremum")
+    allowed_query_ids = ("ranked_change_extremum", "ranked_ratio_extremum")
 
 
 @register_task
@@ -1892,7 +1892,7 @@ class ChartsMultiseriesSeriesComparisonCountTask(
     """Count categories satisfying a pairwise series comparison."""
 
     task_id = "task_charts__multiseries__series_comparison_count"
-    fixed_query_variant = "series_comparison_count"
+    fixed_query_id = "series_comparison_count"
 
 
 @register_task
@@ -1903,7 +1903,7 @@ class ChartsMultiseriesCategoryTotalExtremumLabelTask(
     """Return a category label ranked by total across all series."""
 
     task_id = "task_charts__multiseries__category_total_extremum_label"
-    fixed_query_variant = "category_total_extremum_label"
+    fixed_query_id = "category_total_extremum_label"
 
 
 __all__ = [

@@ -51,32 +51,32 @@ from .visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_
 TASK_ID = "puzzles_spatial_cube_structure_internal"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("cube_stack",)
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     TOP_VIEW_QUERY,
     FRONT_VIEW_QUERY,
     RIGHT_VIEW_QUERY,
 )
-SUPPORTED_PUBLIC_QUERY_VARIANTS: Tuple[str, ...] = ("visible_cube_count",)
+SUPPORTED_PUBLIC_QUERY_IDS: Tuple[str, ...] = ("visible_cube_count",)
 PROJECTION_MATCH_QUERY = "projection_match_label"
 PROJECTION_CONSISTENCY_QUERY = "projection_consistency_label"
 PROJECTION_MATCH_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-PROJECTION_CONSISTENCY_QUERY_VARIANTS: Tuple[str, ...] = (
+PROJECTION_CONSISTENCY_QUERY_IDS: Tuple[str, ...] = (
     "inconsistent_projection_label",
     "candidate_stack_from_views_label",
 )
-_VIEW_DIRECTION_BY_QUERY_VARIANT = {
+_VIEW_DIRECTION_BY_QUERY_ID = {
     TOP_VIEW_QUERY: "top",
     FRONT_VIEW_QUERY: "front",
     RIGHT_VIEW_QUERY: "right",
 }
-_QUERY_VARIANT_BY_VIEW_DIRECTION = {
+_QUERY_ID_BY_VIEW_DIRECTION = {
     "top": TOP_VIEW_QUERY,
     "front": FRONT_VIEW_QUERY,
     "right": RIGHT_VIEW_QUERY,
 }
 _SUPPORTED_VIEW_DIRECTIONS: Tuple[str, ...] = ("top", "front", "right")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "cube_stack": SUPPORTED_QUERY_VARIANTS,
+    "cube_stack": SUPPORTED_QUERY_IDS,
 }
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="spatial")
@@ -116,12 +116,12 @@ class _ResolvedQuery:
     """Resolved scene/query axes and answer-count support for one instance."""
 
     scene_variant: str
-    query_variant: str
-    public_query_variant: str
+    query_id: str
+    public_query_id: str
     view_direction: str
     target_count: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     view_direction_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
 
@@ -179,7 +179,7 @@ def _resolve_target_count(
     rng,
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve the answer-count support with deterministic balanced defaults."""
@@ -207,7 +207,7 @@ def _resolve_target_count(
     overridden = any(params.get(key) is not None for key in ("target_count", "target_count_weights"))
     if bool(balanced_enabled) and (not overridden):
         ordered_support = [int(value) for value in support]
-        selection_index = abs(int(hash64(int(instance_seed), f"{TASK_ID}.target_count.{query_variant}", _TARGET_COUNT_BALANCE_SALT)))
+        selection_index = abs(int(hash64(int(instance_seed), f"{TASK_ID}.target_count.{query_id}", _TARGET_COUNT_BALANCE_SALT)))
         selected = int(ordered_support[int(selection_index) % len(ordered_support)])
     return int(selected), {
         str(key): float(value)
@@ -215,7 +215,7 @@ def _resolve_target_count(
     }
 
 
-def _resolve_public_query_variant(
+def _resolve_public_query_id(
     rng,
     *,
     instance_seed: int,
@@ -223,21 +223,21 @@ def _resolve_public_query_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the public solid-view query family, accepting old view names as aliases."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _VIEW_DIRECTION_BY_QUERY_VARIANT:
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _VIEW_DIRECTION_BY_QUERY_ID:
         return "visible_cube_count", {"visible_cube_count": 1.0}
     if explicit_query is not None and str(explicit_query) == "view_visible_count":
         return "visible_cube_count", {"visible_cube_count": 1.0}
-    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_VARIANTS:
+    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_IDS:
         return str(explicit_query), {str(explicit_query): 1.0}
 
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -245,11 +245,11 @@ def _resolve_public_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -262,9 +262,9 @@ def _resolve_view_direction(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the orthographic view direction to query."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _VIEW_DIRECTION_BY_QUERY_VARIANT:
-        selected = str(_VIEW_DIRECTION_BY_QUERY_VARIANT[str(explicit_query)])
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _VIEW_DIRECTION_BY_QUERY_ID:
+        selected = str(_VIEW_DIRECTION_BY_QUERY_ID[str(explicit_query)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_VIEW_DIRECTIONS}
 
     explicit_direction = params.get("view_direction")
@@ -311,7 +311,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve chart-style scene/query axes plus balanced target-count support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    public_query_variant, query_probs = _resolve_public_query_variant(
+    public_query_id, query_probs = _resolve_public_query_id(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
@@ -321,7 +321,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=params,
     )
-    query_variant = str(_QUERY_VARIANT_BY_VIEW_DIRECTION[str(view_direction)])
+    query_id = str(_QUERY_ID_BY_VIEW_DIRECTION[str(view_direction)])
     scene_variant, scene_probs = resolve_variant(
         axis_rng,
         params=params,
@@ -345,17 +345,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_count, target_count_probs = _resolve_target_count(
         axis_rng,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
     )
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
-        public_query_variant=str(public_query_variant),
+        query_id=str(query_id),
+        public_query_id=str(public_query_id),
         view_direction=str(view_direction),
         target_count=int(target_count),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         view_direction_probabilities=dict(view_direction_probs),
         target_count_probabilities=dict(target_count_probs),
     )
@@ -365,17 +365,17 @@ def _resolve_projection_match_axes(instance_seed: int, *, params: Mapping[str, A
     """Resolve solid-view axes for the projection-option label task."""
 
     axis_params = dict(params)
-    axis_params.pop("query_variant", None)
-    axis_params.pop("query_variant", None)
+    axis_params.pop("query_id", None)
+    axis_params.pop("query_id", None)
     base = _resolve_axes(int(instance_seed), params=axis_params)
     return _ResolvedQuery(
         scene_variant=str(base.scene_variant),
-        query_variant=str(base.query_variant),
-        public_query_variant=PROJECTION_MATCH_QUERY,
+        query_id=str(base.query_id),
+        public_query_id=PROJECTION_MATCH_QUERY,
         view_direction=str(base.view_direction),
         target_count=int(base.target_count),
         scene_variant_probabilities=dict(base.scene_variant_probabilities),
-        query_variant_probabilities={PROJECTION_MATCH_QUERY: 1.0},
+        query_id_probabilities={PROJECTION_MATCH_QUERY: 1.0},
         view_direction_probabilities=dict(base.view_direction_probabilities),
         target_count_probabilities=dict(base.target_count_probabilities),
     )
@@ -389,7 +389,7 @@ def _resolve_projection_consistency_query(instance_seed: int, *, params: Mapping
         axis_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=PROJECTION_CONSISTENCY_QUERY_VARIANTS,
+        supported_variants=PROJECTION_CONSISTENCY_QUERY_IDS,
         explicit_key="consistency_query",
         weights_key="consistency_query_weights",
     )
@@ -399,7 +399,7 @@ def _resolve_projection_consistency_query(instance_seed: int, *, params: Mapping
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=PROJECTION_CONSISTENCY_QUERY_VARIANTS,
+        supported_variants=PROJECTION_CONSISTENCY_QUERY_IDS,
         balance_flag_key="balanced_consistency_query_sampling",
         explicit_key="consistency_query",
         weights_key="consistency_query_weights",
@@ -411,7 +411,7 @@ def _resolve_projection_consistency_query(instance_seed: int, *, params: Mapping
 def _sample_stack_matching_target(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     params: Mapping[str, Any],
 ) -> Tuple[CubeStack, Dict[str, int]]:
@@ -457,15 +457,15 @@ def _sample_stack_matching_target(
         if int(stack.max_height) < 2 or len(stack.heights) < 2:
             continue
         visible_counts_by_query = {
-            TOP_VIEW_QUERY: len(projected_view_cells(stack, query_variant=TOP_VIEW_QUERY)),
-            FRONT_VIEW_QUERY: len(projected_view_cells(stack, query_variant=FRONT_VIEW_QUERY)),
-            RIGHT_VIEW_QUERY: len(projected_view_cells(stack, query_variant=RIGHT_VIEW_QUERY)),
+            TOP_VIEW_QUERY: len(projected_view_cells(stack, query_id=TOP_VIEW_QUERY)),
+            FRONT_VIEW_QUERY: len(projected_view_cells(stack, query_id=FRONT_VIEW_QUERY)),
+            RIGHT_VIEW_QUERY: len(projected_view_cells(stack, query_id=RIGHT_VIEW_QUERY)),
         }
-        if int(visible_counts_by_query[str(query_variant)]) != int(target_count):
+        if int(visible_counts_by_query[str(query_id)]) != int(target_count):
             continue
-        query_grid_dims = view_grid_dimensions(stack, query_variant=str(query_variant))
+        query_grid_dims = view_grid_dimensions(stack, query_id=str(query_id))
         if (not allow_full_query_projection) and (
-            int(visible_counts_by_query[str(query_variant)]) >= int(query_grid_dims[0]) * int(query_grid_dims[1])
+            int(visible_counts_by_query[str(query_id)]) >= int(query_grid_dims[0]) * int(query_grid_dims[1])
         ):
             continue
         if len(set(int(value) for value in visible_counts_by_query.values())) < int(min_distinct_view_counts):
@@ -505,18 +505,18 @@ def _sample_consistency_stack(rng, *, params: Mapping[str, Any]) -> Tuple[CubeSt
         if int(stack.max_height) < 2 or len(stack.heights) < 3:
             continue
         visible_counts_by_query = {
-            TOP_VIEW_QUERY: len(projected_view_cells(stack, query_variant=TOP_VIEW_QUERY)),
-            FRONT_VIEW_QUERY: len(projected_view_cells(stack, query_variant=FRONT_VIEW_QUERY)),
-            RIGHT_VIEW_QUERY: len(projected_view_cells(stack, query_variant=RIGHT_VIEW_QUERY)),
+            TOP_VIEW_QUERY: len(projected_view_cells(stack, query_id=TOP_VIEW_QUERY)),
+            FRONT_VIEW_QUERY: len(projected_view_cells(stack, query_id=FRONT_VIEW_QUERY)),
+            RIGHT_VIEW_QUERY: len(projected_view_cells(stack, query_id=RIGHT_VIEW_QUERY)),
         }
         if len(set(int(value) for value in visible_counts_by_query.values())) < int(min_distinct_view_counts):
             continue
         try:
-            for query_variant in SUPPORTED_QUERY_VARIANTS:
+            for query_id in SUPPORTED_QUERY_IDS:
                 _projection_distractor_sets(
                     rng,
-                    correct_cells=projected_view_cells(stack, query_variant=str(query_variant)),
-                    grid_dims=view_grid_dimensions(stack, query_variant=str(query_variant)),
+                    correct_cells=projected_view_cells(stack, query_id=str(query_id)),
+                    grid_dims=view_grid_dimensions(stack, query_id=str(query_id)),
                     option_count=2,
                 )
         except RuntimeError:
@@ -530,11 +530,11 @@ def _stack_projection_signature(stack: CubeStack) -> Tuple[Tuple[str, Tuple[int,
 
     return tuple(
         (
-            str(query_variant),
-            tuple(int(value) for value in view_grid_dimensions(stack, query_variant=str(query_variant))),
-            _projection_cell_key(projected_view_cells(stack, query_variant=str(query_variant))),
+            str(query_id),
+            tuple(int(value) for value in view_grid_dimensions(stack, query_id=str(query_id))),
+            _projection_cell_key(projected_view_cells(stack, query_id=str(query_id))),
         )
-        for query_variant in SUPPORTED_QUERY_VARIANTS
+        for query_id in SUPPORTED_QUERY_IDS
     )
 
 
@@ -666,7 +666,7 @@ def _render_scene(
 
     stack, visible_counts_by_query = _sample_stack_matching_target(
         rng,
-        query_variant=str(query.query_variant),
+        query_id=str(query.query_id),
         target_count=int(query.target_count),
         params=params,
     )
@@ -689,15 +689,15 @@ def _render_scene(
         voxel_scale=_voxel_scale_from_percent(int(stack_voxel_scale_percent)),
     )
 
-    projection_cells = projected_view_cells(stack, query_variant=str(query.query_variant))
+    projection_cells = projected_view_cells(stack, query_id=str(query.query_id))
     query_panel_meta = draw_query_view_panel(
         draw,
         panel_bbox=query_panel_bbox,
-        grid_dims=view_grid_dimensions(stack, query_variant=str(query.query_variant)),
+        grid_dims=view_grid_dimensions(stack, query_id=str(query.query_id)),
         occupied_cells=projection_cells,
         scene_scale=int(scene_scale),
         line_width=int(max(1, line_width - 1)) * int(scene_scale),
-        title_text=view_title_for_query(str(query.query_variant)),
+        title_text=view_title_for_query(str(query.query_id)),
         title_font_size_px=int(panel_title_font_size_px) * int(scene_scale),
         style=style,
     )
@@ -724,8 +724,8 @@ def _render_scene(
             "entity_id": "query_panel",
             "type": "projection_panel",
             "bbox": list(query_panel_meta["panel_bbox"]),
-            "query_variant": str(query.query_variant),
-            "grid_dimensions": [int(view_grid_dimensions(stack, query_variant=str(query.query_variant))[0]), int(view_grid_dimensions(stack, query_variant=str(query.query_variant))[1])],
+            "query_id": str(query.query_id),
+            "grid_dimensions": [int(view_grid_dimensions(stack, query_id=str(query.query_id))[0]), int(view_grid_dimensions(stack, query_id=str(query.query_id))[1])],
         }
     )
 
@@ -736,8 +736,8 @@ def _render_scene(
         "stack_panel_bbox": list(stack_panel_meta["panel_bbox"]),
         "query_panel_bbox": list(query_panel_meta["panel_bbox"]),
         "query_grid_bbox": list(query_panel_meta["grid_bbox"]),
-        "query_grid_dimensions": list(view_grid_dimensions(stack, query_variant=str(query.query_variant))),
-        "query_view_title": str(view_title_for_query(str(query.query_variant))),
+        "query_grid_dimensions": list(view_grid_dimensions(stack, query_id=str(query.query_id))),
+        "query_view_title": str(view_title_for_query(str(query.query_id))),
         "stack_voxel_scale_percent": int(stack_voxel_scale_percent),
         "projection_cells": list(projection_cells_out),
         "projection_cell_bboxes": list(evidence_bboxes),
@@ -755,7 +755,7 @@ def _render_scene(
         query_panel_bbox=list(query_panel_meta["panel_bbox"]),
         stack_panel_bbox=list(stack_panel_meta["panel_bbox"]),
         query_grid_bbox=list(query_panel_meta["grid_bbox"]),
-        query_grid_dims=tuple(int(value) for value in view_grid_dimensions(stack, query_variant=str(query.query_variant))),
+        query_grid_dims=tuple(int(value) for value in view_grid_dimensions(stack, query_id=str(query.query_id))),
         projection_cells=list(projection_cells_out),
         visible_counts_by_query={str(key): int(value) for key, value in visible_counts_by_query.items()},
         scene_entities=scene_entities,
@@ -763,24 +763,24 @@ def _render_scene(
     )
 
 
-def _solid_view_reasoning_score(*, query_variant: str, max_height: int) -> float:
+def _solid_view_reasoning_score(*, query_id: str, max_height: int) -> float:
     """Return normalized reasoning load for one solid-view query."""
 
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     base_by_query = {
         TOP_VIEW_QUERY: 0.34,
         FRONT_VIEW_QUERY: 0.56,
         RIGHT_VIEW_QUERY: 0.58,
     }
     if normalized_query not in base_by_query:
-        raise ValueError(f"unsupported puzzle solid-view query_variant: {query_variant}")
+        raise ValueError(f"unsupported puzzle solid-view query_id: {query_id}")
     height_bonus = normalize_int_with_bounds(int(max_height), [2, 3]) * 0.12
     return clamp_unit_interval(float(base_by_query[normalized_query]) + float(height_bonus))
 
 
 def _build_solid_view_complexity(
     *,
-    query_variant: str,
+    query_id: str,
     cube_count: int,
     max_height: int,
     target_count: int,
@@ -795,7 +795,7 @@ def _build_solid_view_complexity(
     ambiguity = clamp_unit_interval(
         (0.50 * normalize_int_with_bounds(int(target_count), [2, 7]))
         + (0.30 * normalize_int_with_bounds(int(cube_count - target_count), [0, 5]))
-        + (0.12 if str(query_variant) != TOP_VIEW_QUERY else 0.0)
+        + (0.12 if str(query_id) != TOP_VIEW_QUERY else 0.0)
     )
     output_burden = normalize_int_with_bounds(int(evidence_count), [2, 7])
     return build_puzzle_complexity(
@@ -803,7 +803,7 @@ def _build_solid_view_complexity(
         components={
             "visual_scan": float(visual_scan),
             "projection_reasoning": _solid_view_reasoning_score(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 max_height=int(max_height),
             ),
             "ambiguity": float(ambiguity),
@@ -1049,13 +1049,13 @@ def _render_projection_match_scene(
 ) -> _ProjectionMatchRenderedScene:
     stack, visible_counts_by_query = _sample_stack_matching_target(
         rng,
-        query_variant=str(query.query_variant),
+        query_id=str(query.query_id),
         target_count=int(query.target_count),
         params=params,
     )
     option_count = _resolve_projection_match_option_count(rng, params=params)
-    correct_cells = projected_view_cells(stack, query_variant=str(query.query_variant))
-    grid_dims = view_grid_dimensions(stack, query_variant=str(query.query_variant))
+    correct_cells = projected_view_cells(stack, query_id=str(query.query_id))
+    grid_dims = view_grid_dimensions(stack, query_id=str(query.query_id))
     candidate_sets = _projection_distractor_sets(
         rng,
         correct_cells=correct_cells,
@@ -1148,7 +1148,7 @@ def _render_projection_match_scene(
         "correct_option_label": str(answer_label),
         "stack_voxel_scale_percent": int(stack_voxel_scale_percent),
         "correct_projection_cells": list(correct_projection_cells),
-        "query_view_title": str(view_title_for_query(str(query.query_variant))),
+        "query_view_title": str(view_title_for_query(str(query.query_id))),
         "query_grid_dimensions": [int(grid_dims[0]), int(grid_dims[1])],
         "stack_width": int(stack.width),
         "stack_depth": int(stack.depth),
@@ -1175,7 +1175,7 @@ def _render_projection_match_scene(
 
 def _build_projection_match_complexity(
     *,
-    query_variant: str,
+    query_id: str,
     cube_count: int,
     max_height: int,
     option_count: int,
@@ -1186,7 +1186,7 @@ def _build_projection_match_complexity(
         + (0.25 * normalize_int_with_bounds(int(option_count), [4, 6]))
         + (0.15 * normalize_int_with_bounds(int(max_height), [2, 3]))
     )
-    reasoning_load = clamp_unit_interval(_solid_view_reasoning_score(query_variant=str(query_variant), max_height=int(max_height)) + 0.08)
+    reasoning_load = clamp_unit_interval(_solid_view_reasoning_score(query_id=str(query_id), max_height=int(max_height)) + 0.08)
     ambiguity = clamp_unit_interval(normalize_int_with_bounds(int(target_count), [3, 7]))
     return build_puzzle_complexity(
         weights=_COMPLEXITY_WEIGHTS,
@@ -1227,13 +1227,13 @@ def _projection_consistency_answer_index(
     instance_seed: int,
     params: Mapping[str, Any],
     option_count: int,
-    query_variant: str,
+    query_id: str,
 ) -> int:
     """Resolve the correct option slot from the instance seed."""
 
     _ = params
     return int(
-        abs(int(hash64(int(instance_seed), f"{TASK_ID}.{query_variant}.answer_slot", 30491)))
+        abs(int(hash64(int(instance_seed), f"{TASK_ID}.{query_id}.answer_slot", 30491)))
         % max(1, int(option_count))
     )
 
@@ -1292,9 +1292,9 @@ def _projection_consistency_panel_layout(
     reference_width = float(round((usable_width - gap) * 0.34))
     reference_bboxes = {}
     view_height = float((usable_height - (2.0 * small_gap)) / 3.0)
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         y0 = float(margin + (float(index) * (view_height + small_gap)))
-        reference_bboxes[str(query_variant)] = (
+        reference_bboxes[str(query_id)] = (
             float(margin),
             float(y0),
             float(margin + reference_width),
@@ -1362,7 +1362,7 @@ def _render_inconsistent_projection_scene(
         instance_seed=int(instance_seed),
         params=params,
         option_count=int(option_count),
-        query_variant="inconsistent_projection_label",
+        query_id="inconsistent_projection_label",
     )
     answer_label = str(PROJECTION_MATCH_OPTION_LABELS[int(answer_index)])
     style = build_solid_render_style(shape_style=shape_style, background_meta=background_meta)
@@ -1375,7 +1375,7 @@ def _render_inconsistent_projection_scene(
         params=params,
     )
     panel_queries = [
-        str(SUPPORTED_QUERY_VARIANTS[int(index) % len(SUPPORTED_QUERY_VARIANTS)])
+        str(SUPPORTED_QUERY_IDS[int(index) % len(SUPPORTED_QUERY_IDS)])
         for index in range(int(option_count))
     ]
     corrupt_query = str(panel_queries[int(answer_index)])
@@ -1396,12 +1396,12 @@ def _render_inconsistent_projection_scene(
     option_cells: Dict[str, List[List[int]]] = {}
     panel_query_by_label: Dict[str, str] = {}
 
-    for index, query_variant in enumerate(panel_queries):
+    for index, query_id in enumerate(panel_queries):
         label = str(PROJECTION_MATCH_OPTION_LABELS[int(index)])
-        correct_cells = projected_view_cells(stack, query_variant=str(query_variant))
-        grid_dims = view_grid_dimensions(stack, query_variant=str(query_variant))
+        correct_cells = projected_view_cells(stack, query_id=str(query_id))
+        grid_dims = view_grid_dimensions(stack, query_id=str(query_id))
         shown_cells: Sequence[ViewCell]
-        if str(query_variant) == str(corrupt_query):
+        if str(query_id) == str(corrupt_query):
             shown_cells = _corrupt_projection_cells(rng, correct_cells=correct_cells, grid_dims=grid_dims)
         else:
             shown_cells = correct_cells
@@ -1410,7 +1410,7 @@ def _render_inconsistent_projection_scene(
             panel_bbox=option_bboxes_scaled[str(label)],
             grid_dims=grid_dims,
             filled_cells=shown_cells,
-            label=f"{label} {view_title_for_query(str(query_variant))}",
+            label=f"{label} {view_title_for_query(str(query_id))}",
             scene_scale=int(scene_scale),
             line_width=int(max(1, line_width - 1)) * int(scene_scale),
             title_font_size_px=int(max(12, panel_title_font_size_px - 2)) * int(scene_scale),
@@ -1419,7 +1419,7 @@ def _render_inconsistent_projection_scene(
         option_panel_bboxes[str(label)] = list(option_meta["panel_bbox"])
         option_grid_bboxes[str(label)] = list(option_meta["grid_bbox"])
         option_cells[str(label)] = [[int(col), int(row)] for col, row in shown_cells]
-        panel_query_by_label[str(label)] = str(query_variant)
+        panel_query_by_label[str(label)] = str(query_id)
 
     evidence_bboxes = [list(option_panel_bboxes[str(answer_label)])]
     scene_entities: List[Dict[str, Any]] = [
@@ -1446,7 +1446,7 @@ def _render_inconsistent_projection_scene(
                 "type": "projection_panel",
                 "bbox": list(option_panel_bboxes[str(label)]),
                 "label": str(label),
-                "query_variant": str(panel_query_by_label[str(label)]),
+                "query_id": str(panel_query_by_label[str(label)]),
                 "is_inconsistent": bool(str(label) == str(answer_label)),
                 "cells": list(option_cells[str(label)]),
             }
@@ -1461,7 +1461,7 @@ def _render_inconsistent_projection_scene(
         "panel_query_by_label": dict(panel_query_by_label),
         "correct_option_label": str(answer_label),
         "stack_voxel_scale_percent": int(stack_voxel_scale_percent),
-        "inconsistent_query_variant": str(corrupt_query),
+        "inconsistent_query_id": str(corrupt_query),
         "stack_width": int(stack.width),
         "stack_depth": int(stack.depth),
         "stack_heights": [
@@ -1502,7 +1502,7 @@ def _render_candidate_stack_from_views_scene(
         instance_seed=int(instance_seed),
         params=params,
         option_count=int(option_count),
-        query_variant="candidate_stack_from_views_label",
+        query_id="candidate_stack_from_views_label",
     )
     answer_label = str(PROJECTION_MATCH_OPTION_LABELS[int(answer_index)])
     distractor_stacks = _sample_projection_distractor_stacks(
@@ -1525,23 +1525,23 @@ def _render_candidate_stack_from_views_scene(
     reference_panel_bboxes: Dict[str, List[float]] = {}
     reference_grid_bboxes: Dict[str, List[float]] = {}
     reference_cells: Dict[str, List[List[int]]] = {}
-    for query_variant in SUPPORTED_QUERY_VARIANTS:
-        cells = projected_view_cells(reference_stack, query_variant=str(query_variant))
-        grid_dims = view_grid_dimensions(reference_stack, query_variant=str(query_variant))
+    for query_id in SUPPORTED_QUERY_IDS:
+        cells = projected_view_cells(reference_stack, query_id=str(query_id))
+        grid_dims = view_grid_dimensions(reference_stack, query_id=str(query_id))
         panel_meta = _draw_projection_option_panel(
             draw,
-            panel_bbox=reference_bboxes[str(query_variant)],
+            panel_bbox=reference_bboxes[str(query_id)],
             grid_dims=grid_dims,
             filled_cells=cells,
-            label=view_title_for_query(str(query_variant)),
+            label=view_title_for_query(str(query_id)),
             scene_scale=int(scene_scale),
             line_width=int(max(1, line_width - 1)) * int(scene_scale),
             title_font_size_px=int(max(12, panel_title_font_size_px - 2)) * int(scene_scale),
             style=style,
         )
-        reference_panel_bboxes[str(query_variant)] = list(panel_meta["panel_bbox"])
-        reference_grid_bboxes[str(query_variant)] = list(panel_meta["grid_bbox"])
-        reference_cells[str(query_variant)] = [[int(col), int(row)] for col, row in cells]
+        reference_panel_bboxes[str(query_id)] = list(panel_meta["panel_bbox"])
+        reference_grid_bboxes[str(query_id)] = list(panel_meta["grid_bbox"])
+        reference_cells[str(query_id)] = [[int(col), int(row)] for col, row in cells]
 
     option_panel_bboxes: Dict[str, List[float]] = {}
     option_stack_heights: Dict[str, List[Dict[str, int]]] = {}
@@ -1569,14 +1569,14 @@ def _render_candidate_stack_from_views_scene(
 
     evidence_bboxes = [list(option_panel_bboxes[str(answer_label)])]
     scene_entities: List[Dict[str, Any]] = []
-    for query_variant in SUPPORTED_QUERY_VARIANTS:
+    for query_id in SUPPORTED_QUERY_IDS:
         scene_entities.append(
             {
-                "entity_id": f"reference_projection_{str(query_variant)}",
+                "entity_id": f"reference_projection_{str(query_id)}",
                 "type": "projection_panel",
-                "bbox": list(reference_panel_bboxes[str(query_variant)]),
-                "query_variant": str(query_variant),
-                "cells": list(reference_cells[str(query_variant)]),
+                "bbox": list(reference_panel_bboxes[str(query_id)]),
+                "query_id": str(query_id),
+                "cells": list(reference_cells[str(query_id)]),
             }
         )
     for index, label in enumerate(labels):
@@ -1778,7 +1778,7 @@ class SolidViewCountGenerator:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.public_query_variant),
+            query_key=str(query.public_query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_visible_cube_count"]),
@@ -1800,13 +1800,12 @@ class SolidViewCountGenerator:
 
         query_params = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.public_query_variant),
-            "query_variant": str(query.public_query_variant),
-            "internal_query_variant": str(query.query_variant),
+            "query_id": str(query.public_query_id),
+            "internal_query_id": str(query.query_id),
             "view_direction": str(query.view_direction),
-            "variant_probabilities": dict(query.query_variant_probabilities),
+            "variant_probabilities": dict(query.query_id_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "view_direction_probabilities": dict(query.view_direction_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
@@ -1818,16 +1817,15 @@ class SolidViewCountGenerator:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant": str(query.public_query_variant),
-                    "query_variant": str(query.public_query_variant),
-                    "internal_query_variant": str(query.query_variant),
+                    "query_id": str(query.public_query_id),
+                    "internal_query_id": str(query.query_id),
                     "view_direction": str(query.view_direction),
                     "visible_counts_by_query": dict(rendered_scene.visible_counts_by_query),
                     "target_count": int(query.target_count),
                 },
             },
             "query_spec": {
-                "query_variant": str(query.public_query_variant),
+                "query_id": str(query.public_query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1848,13 +1846,12 @@ class SolidViewCountGenerator:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(query.scene_variant),
-                "query_variant": str(query.public_query_variant),
-                "query_variant": str(query.public_query_variant),
-                "internal_query_variant": str(query.query_variant),
+                "query_id": str(query.public_query_id),
+                "internal_query_id": str(query.query_id),
                 "view_direction": str(query.view_direction),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "view_direction_probabilities": dict(query.view_direction_probabilities),
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),
@@ -1885,7 +1882,7 @@ class SolidViewCountGenerator:
         }
 
         complexity = _build_solid_view_complexity(
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             cube_count=int(rendered_scene.stack.cube_count),
             max_height=int(rendered_scene.stack.max_height),
             target_count=int(query.target_count),
@@ -1904,7 +1901,7 @@ class SolidViewCountGenerator:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.public_query_variant),
+            query_id=str(query.public_query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -2080,13 +2077,12 @@ class SolidViewProjectionMatchGenerator:
         evidence_gt = TypedValue(type="bbox_set", value=list(rendered_scene.evidence_bboxes))
         query_params = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": PROJECTION_MATCH_QUERY,
-            "query_variant": PROJECTION_MATCH_QUERY,
-            "internal_query_variant": str(query.query_variant),
+            "query_id": PROJECTION_MATCH_QUERY,
+            "internal_query_id": str(query.query_id),
             "view_direction": str(query.view_direction),
             "variant_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
+            "query_id_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
             "view_direction_probabilities": dict(query.view_direction_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
@@ -2097,16 +2093,14 @@ class SolidViewProjectionMatchGenerator:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant": PROJECTION_MATCH_QUERY,
-                    "query_variant": PROJECTION_MATCH_QUERY,
-                    "internal_query_variant": str(query.query_variant),
+                    "query_id": PROJECTION_MATCH_QUERY,
+                    "internal_query_id": str(query.query_id),
                     "view_direction": str(query.view_direction),
                     "visible_counts_by_query": dict(rendered_scene.visible_counts_by_query),
                     "answer_label": str(rendered_scene.answer_label),
                 },
             },
             "query_spec": {
-                "query_variant": PROJECTION_MATCH_QUERY,
                 "query_id": PROJECTION_MATCH_QUERY,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -2129,14 +2123,12 @@ class SolidViewProjectionMatchGenerator:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(query.scene_variant),
-                "query_variant": PROJECTION_MATCH_QUERY,
                 "query_id": PROJECTION_MATCH_QUERY,
-                "query_variant": PROJECTION_MATCH_QUERY,
-                "internal_query_variant": str(query.query_variant),
+                "internal_query_id": str(query.query_id),
                 "view_direction": str(query.view_direction),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_variant_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
-                "query_variant_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
+                "query_id_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
+                "query_id_probabilities": {PROJECTION_MATCH_QUERY: 1.0},
                 "view_direction_probabilities": dict(query.view_direction_probabilities),
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),
@@ -2167,7 +2159,7 @@ class SolidViewProjectionMatchGenerator:
             },
         }
         complexity = _build_projection_match_complexity(
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             cube_count=int(rendered_scene.stack.cube_count),
             max_height=int(rendered_scene.stack.max_height),
             option_count=len(rendered_scene.option_panel_bboxes),
@@ -2186,7 +2178,6 @@ class SolidViewProjectionMatchGenerator:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=PROJECTION_MATCH_QUERY,
             query_id=PROJECTION_MATCH_QUERY,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
@@ -2377,29 +2368,24 @@ class SolidViewProjectionConsistencyGenerator:
         answer_gt = TypedValue(type="string", value=str(rendered_scene.answer_label))
         evidence_gt = TypedValue(type="bbox_set", value=list(rendered_scene.evidence_bboxes))
         query_params = {
-            "query_variant": PROJECTION_CONSISTENCY_QUERY,
             "query_id": PROJECTION_CONSISTENCY_QUERY,
-            "query_variant": PROJECTION_CONSISTENCY_QUERY,
             "consistency_query": str(rendered_scene.consistency_query),
             "consistency_query_probabilities": dict(consistency_query_probabilities),
             "variant_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
-            "query_variant_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
+            "query_id_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
         }
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "puzzles_spatial_cube_projection_consistency",
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
-                    "query_variant": PROJECTION_CONSISTENCY_QUERY,
                     "query_id": PROJECTION_CONSISTENCY_QUERY,
-                    "query_variant": PROJECTION_CONSISTENCY_QUERY,
                     "consistency_query": str(rendered_scene.consistency_query),
                     "visible_counts_by_query": dict(rendered_scene.visible_counts_by_query),
                     "answer_label": str(rendered_scene.answer_label),
                 },
             },
             "query_spec": {
-                "query_variant": PROJECTION_CONSISTENCY_QUERY,
                 "query_id": PROJECTION_CONSISTENCY_QUERY,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -2420,13 +2406,11 @@ class SolidViewProjectionConsistencyGenerator:
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
-                "query_variant": PROJECTION_CONSISTENCY_QUERY,
                 "query_id": PROJECTION_CONSISTENCY_QUERY,
-                "query_variant": PROJECTION_CONSISTENCY_QUERY,
                 "consistency_query": str(rendered_scene.consistency_query),
                 "consistency_query_probabilities": dict(consistency_query_probabilities),
-                "query_variant_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
-                "query_variant_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
+                "query_id_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
+                "query_id_probabilities": {PROJECTION_CONSISTENCY_QUERY: 1.0},
                 "cube_count": int(rendered_scene.reference_stack.cube_count),
                 "stack_width": int(rendered_scene.reference_stack.width),
                 "stack_depth": int(rendered_scene.reference_stack.depth),
@@ -2471,7 +2455,6 @@ class SolidViewProjectionConsistencyGenerator:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=PROJECTION_CONSISTENCY_QUERY,
             query_id=PROJECTION_CONSISTENCY_QUERY,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

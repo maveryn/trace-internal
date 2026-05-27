@@ -34,7 +34,7 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18310,
-        params={"object_count": 9, "target_count": 3, "query_variant": "singleton_type_count"},
+        params={"object_count": 9, "target_count": 3, "query_id": "singleton_type_count"},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -48,10 +48,10 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_singleton_type_counting"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "singleton_type_count"
     assert execution["question_format"] == "count_singleton_type_icons"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "singleton_type_count"
     assert execution["scene_variant"] == "single_panel_scene"
     assert int(execution["object_count"]) == 9
@@ -100,7 +100,7 @@ def test_icons_counting_singleton_type_supports_zero_singletons() -> None:
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18311,
-        params={"object_count": 8, "target_count": 0, "query_variant": "singleton_type_count"},
+        params={"object_count": 8, "target_count": 0, "query_id": "singleton_type_count"},
         max_attempts=200,
     )
     execution = out.trace_payload["execution_trace"]
@@ -113,7 +113,7 @@ def test_icons_counting_singleton_type_prompt_example_matches_contract() -> None
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18312,
-        params={"object_count": 9, "target_count": 2, "query_variant": "singleton_type_count"},
+        params={"object_count": 9, "target_count": 2, "query_id": "singleton_type_count"},
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
@@ -129,7 +129,7 @@ def test_icons_counting_singleton_type_repeated_distractors_share_visual_style()
     task = IconsCountingSingletonTypeTask()
     out = task.generate(
         18314,
-        params={"object_count": 8, "target_count": 2, "query_variant": "singleton_type_count"},
+        params={"object_count": 8, "target_count": 2, "query_id": "singleton_type_count"},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -183,17 +183,17 @@ def test_icons_counting_type_frequency_sampling_defaults() -> None:
         execution = out.trace_payload["execution_trace"]
         object_count = int(execution["object_count"])
         target_count = int(execution["target_count"])
-        query_variant = str(execution["query_id"])
+        query_id = str(execution["query_id"])
         object_counts[object_count] += 1
-        variant_counts[query_variant] += 1
+        variant_counts[query_id] += 1
         target_counts[target_count] += 1
-        if query_variant == "singleton_type_count":
+        if query_id == "singleton_type_count":
             singleton_targets[target_count] += 1
             assert 5 <= object_count <= 10
             assert 0 <= target_count <= 4
         else:
             most_frequent_targets[target_count] += 1
-            assert query_variant == "most_frequent_type_count"
+            assert query_id == "most_frequent_type_count"
             assert 7 <= object_count <= 12
             assert 3 <= target_count <= 5
     assert set(variant_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}

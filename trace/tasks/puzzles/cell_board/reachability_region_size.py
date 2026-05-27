@@ -408,7 +408,7 @@ class TileRegionSizeTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
-                "query_variant": "region_size",
+                "query_id": "region_size",
                 "template_id": "region_size_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -452,7 +452,7 @@ class TileRegionSizeTask:
                 "anchors": pixel_anchor_map_from_bboxes(bbox_map),
             },
             "execution_trace": {
-                "query_variant": "region_size",
+                "query_id": "region_size",
                 "rows": int(rows),
                 "cols": int(cols),
                 "answer_min": int(answer_min),
@@ -539,6 +539,6 @@ class TileRegionSizeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="region_size",
+            query_id="region_size",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

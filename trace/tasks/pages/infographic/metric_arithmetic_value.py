@@ -43,7 +43,7 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 
 TASK_ID = "pages_infographic_metric_arithmetic_value_base"
 SCENE_ID = "infographic"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "sum_named_metrics",
     "section_extrema_arithmetic",
     "section_total_extrema_difference",
@@ -61,8 +61,8 @@ COLUMN_PROFILE_COMPARISON_VARIANTS: Tuple[str, ...] = (
 FILTERED_SECTION_EXTREMUM_VARIANTS: Tuple[str, ...] = (
     "section_icon_extremum_label",
 )
-ALL_QUERY_VARIANTS: Tuple[str, ...] = (
-    *SUPPORTED_QUERY_VARIANTS,
+ALL_QUERY_IDS: Tuple[str, ...] = (
+    *SUPPORTED_QUERY_IDS,
     *SECTION_RANKED_TOTAL_VARIANTS,
     *FILTERED_METRIC_TOTAL_VARIANTS,
     *COLUMN_PROFILE_COMPARISON_VARIANTS,
@@ -214,36 +214,36 @@ def _probability_map_for_selection(supported: Sequence[str], selected: str) -> D
     return {str(key): (1.0 if str(key) == str(selected) else 0.0) for key in supported}
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    raw_supported = params.get("_supported_query_variants", SUPPORTED_QUERY_VARIANTS)
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    raw_supported = params.get("_supported_query_ids", SUPPORTED_QUERY_IDS)
     if isinstance(raw_supported, str):
         supported_variants = tuple(value.strip() for value in raw_supported.split(",") if value.strip())
     else:
         supported_variants = tuple(str(value) for value in raw_supported)
     if not supported_variants:
-        supported_variants = tuple(SUPPORTED_QUERY_VARIANTS)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, probabilities = resolve_variant(
+        supported_variants = tuple(SUPPORTED_QUERY_IDS)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=supported_variants,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     balanced = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(query_variant),
+        selected_variant=str(query_id),
         variant_probabilities=probabilities,
         supported_variants=supported_variants,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
-    if balanced != query_variant and params.get("query_variant") is not None:
+    if balanced != query_id and params.get("query_id") is not None:
         return str(balanced), _probability_map_for_selection(supported_variants, str(balanced))
     return str(balanced), dict(probabilities)
 
@@ -292,7 +292,7 @@ def _resolve_section_count(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     card_count: int,
     instance_seed: int,
 ) -> Tuple[int, Tuple[int, int], Dict[str, float]]:
@@ -306,7 +306,7 @@ def _resolve_section_count(
         context=f"generation defaults for {TASK_ID}",
     )
     support = [int(value) for value in range(int(lower), int(upper) + 1)]
-    if str(query_variant) == "section_total_except_named":
+    if str(query_id) == "section_total_except_named":
         _, exclusion_max = resolve_required_int_bounds(
             params,
             gen_defaults,
@@ -329,23 +329,23 @@ def _resolve_section_count(
             if max(_partition_cards(int(card_count), int(section_count))) >= int(required_section_size)
         ]
     if not support:
-        raise ValueError(f"no feasible section_count values for {query_variant} with card_count={card_count}")
+        raise ValueError(f"no feasible section_count values for {query_id} with card_count={card_count}")
     explicit = params.get("section_count")
     if explicit is not None:
         selected = int(explicit)
         if int(selected) not in set(support):
-            raise ValueError(f"section_count={selected} is infeasible for {query_variant} with card_count={card_count}")
+            raise ValueError(f"section_count={selected} is infeasible for {query_id} with card_count={card_count}")
         return int(selected), (min(support), max(support)), {str(int(selected)): 1.0}
     balanced = bool(params.get("balanced_count_sampling", group_default(gen_defaults, "balanced_count_sampling", True)))
     if balanced:
         index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.section_count.{query_variant}.{card_count}",
+            namespace=f"{TASK_ID}.section_count.{query_id}.{card_count}",
         )
         selected = int(support[int(index) % len(support)])
     else:
-        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.section_count.{query_variant}")
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.section_count.{query_id}")
         selected = int(support[int(rng.randrange(len(support)))])
     probability = 1.0 / float(len(support))
     return int(selected), (min(support), max(support)), {str(value): float(probability) for value in support}
@@ -1146,7 +1146,7 @@ def _render_infographic(
 
 def _build_cards(
     *,
-    query_variant: str,
+    query_id: str,
     card_count: int,
     section_titles: Sequence[str],
     section_card_counts: Sequence[int],
@@ -1158,7 +1158,7 @@ def _build_cards(
     labels = list(values_by_label.keys())
     cards: List[_MetricCard] = []
     label_index = 0
-    repeated_icon_offset = int(rng.randrange(len(_ICON_KINDS))) if str(query_variant) == "section_icon_extremum_label" else 0
+    repeated_icon_offset = int(rng.randrange(len(_ICON_KINDS))) if str(query_id) == "section_icon_extremum_label" else 0
     for section_index, section_title in enumerate(section_titles):
         for local_index in range(int(section_card_counts[section_index])):
             label = labels[label_index]
@@ -1166,7 +1166,7 @@ def _build_cards(
             unit = "%" if bool(percent_mode) else ""
             display = f"{value}%" if bool(percent_mode) else str(value)
             color = _PALETTE[(label_index + int(rng.randrange(len(_PALETTE)))) % len(_PALETTE)]
-            if str(query_variant) == "section_icon_extremum_label":
+            if str(query_id) == "section_icon_extremum_label":
                 icon_kind = _ICON_KINDS[(int(local_index) + int(repeated_icon_offset)) % len(_ICON_KINDS)]
             else:
                 icon_kind = _ICON_KINDS[(label_index + int(rng.randrange(len(_ICON_KINDS)))) % len(_ICON_KINDS)]
@@ -1186,7 +1186,7 @@ def _build_cards(
             )
             label_index += 1
     if len(cards) != int(card_count):
-        raise ValueError(f"expected {card_count} cards, built {len(cards)} for {query_variant}")
+        raise ValueError(f"expected {card_count} cards, built {len(cards)} for {query_id}")
     return cards
 
 
@@ -1516,7 +1516,7 @@ def _sample_section_icon_extremum_query(
 
 def _build_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Dict[str, Any]:
@@ -1534,7 +1534,7 @@ def _build_dataset(
     section_count, section_count_range, section_count_probabilities = _resolve_section_count(
         params,
         gen_defaults=_GEN_DEFAULTS,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         card_count=int(card_count),
         instance_seed=int(instance_seed),
     )
@@ -1560,7 +1560,7 @@ def _build_dataset(
         context=f"generation defaults for {TASK_ID}",
     )
 
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset.{query_variant}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset.{query_id}")
     labels = list(_METRIC_LABEL_POOL)
     rng.shuffle(labels)
     labels = labels[: int(card_count)]
@@ -1600,7 +1600,7 @@ def _build_dataset(
     filtered_section_totals: Dict[str, int] = {}
     prebuilt_cards: List[_MetricCard] | None = None
 
-    if str(query_variant) == "sum_named_metrics":
+    if str(query_id) == "sum_named_metrics":
         operand_count, operand_count_range, operand_count_probabilities = _resolve_int_range(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -1617,7 +1617,7 @@ def _build_dataset(
         target_values = [int(values_by_label[label]) for label in target_labels]
         answer_value = int(sum(target_values))
         arithmetic_expression = " + ".join(str(value) for value in target_values)
-    elif str(query_variant) == "section_extrema_arithmetic":
+    elif str(query_id) == "section_extrema_arithmetic":
         extrema_query = _sample_section_extrema_query(
             rng=rng,
             section_titles=section_titles,
@@ -1644,7 +1644,7 @@ def _build_dataset(
             arithmetic_expression = f"{target_extrema[0]}({section_a}) + {target_extrema[1]}({section_b})"
         else:
             arithmetic_expression = f"abs({target_extrema[0]}({section_a}) - {target_extrema[1]}({section_b}))"
-    elif str(query_variant) == "section_total_extrema_difference":
+    elif str(query_id) == "section_total_extrema_difference":
         total_query = _sample_section_total_extrema_query(
             section_titles=section_titles,
             labels_by_section=labels_by_section,
@@ -1669,7 +1669,7 @@ def _build_dataset(
         target_extrema = ["highest_total", "lowest_total"]
         extrema_operation = "absolute_difference"
         arithmetic_expression = f"sum({section_a}) - sum({section_b})"
-    elif str(query_variant) == "section_total_except_named":
+    elif str(query_id) == "section_total_except_named":
         exclusion_count, exclusion_count_range, _exclusion_count_probabilities = _resolve_int_range(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -1693,7 +1693,7 @@ def _build_dataset(
         if not eligible_sections:
             raise ValueError(
                 f"no section has at least {included_count_min} included cards after excluding "
-                f"{exclusion_count} cards for {query_variant}"
+                f"{exclusion_count} cards for {query_id}"
             )
         target_section = str(eligible_sections[int(rng.randrange(len(eligible_sections)))])
         section_labels = list(labels_by_section[target_section])
@@ -1711,7 +1711,7 @@ def _build_dataset(
         operand_count_probabilities = {str(target_operand_count): 1.0}
         answer_value = int(sum(int(values_by_label[label]) for label in included_labels))
         arithmetic_expression = f"sum({target_section}) - ({' + '.join(str(values_by_label[label]) for label in excluded_labels)})"
-    elif str(query_variant) == "section_ranked_total_label":
+    elif str(query_id) == "section_ranked_total_label":
         ranked_query = _sample_section_ranked_total_query(
             params=params,
             section_titles=section_titles,
@@ -1738,9 +1738,9 @@ def _build_dataset(
         rank_direction_probabilities = dict(ranked_query["rank_direction_probabilities"])
         rank_position_probabilities = dict(ranked_query["rank_position_probabilities"])
         arithmetic_expression = f"rank_{rank_position}_{rank_direction}_section_total"
-    elif str(query_variant) == "section_icon_total_value":
+    elif str(query_id) == "section_icon_total_value":
         prebuilt_cards = _build_cards(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             card_count=int(card_count),
             section_titles=section_titles,
             section_card_counts=section_card_counts,
@@ -1774,9 +1774,9 @@ def _build_dataset(
         operand_count_probabilities = {str(target_operand_count): 1.0}
         answer_value = int(sum(target_values))
         arithmetic_expression = f"sum({target_section}, icon={filter_icon_kind})"
-    elif str(query_variant) == "section_icon_total_difference_value":
+    elif str(query_id) == "section_icon_total_difference_value":
         prebuilt_cards = _build_cards(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             card_count=int(card_count),
             section_titles=section_titles,
             section_card_counts=section_card_counts,
@@ -1830,9 +1830,9 @@ def _build_dataset(
         operand_count_probabilities = {str(target_operand_count): 1.0}
         answer_value = int(selected["gap"])
         arithmetic_expression = f"abs(sum({section_a}, icon={comparison_icon_kind}) - sum({section_b}, icon={comparison_icon_kind}))"
-    elif str(query_variant) == "section_icon_extremum_label":
+    elif str(query_id) == "section_icon_extremum_label":
         prebuilt_cards = _build_cards(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             card_count=int(card_count),
             section_titles=section_titles,
             section_card_counts=section_card_counts,
@@ -1866,10 +1866,10 @@ def _build_dataset(
         rank_direction_probabilities = dict(extremum_query["rank_direction_probabilities"])
         arithmetic_expression = f"{rank_direction}_section_total(icon={comparison_icon_kind})"
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     cards = prebuilt_cards or _build_cards(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         card_count=int(card_count),
         section_titles=section_titles,
         section_card_counts=section_card_counts,
@@ -1955,8 +1955,8 @@ class PagesInfographicMetricArithmeticValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        dataset = _build_dataset(query_variant=str(query_variant), params=params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        dataset = _build_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
 
         canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", 940)))
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", 900)))
@@ -2065,7 +2065,7 @@ class PagesInfographicMetricArithmeticValueTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
@@ -2095,8 +2095,7 @@ class PagesInfographicMetricArithmeticValueTask:
                 "scene_kind": "pages_infographic_metric_cards",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "query_id": str(query_variant),
+                    "query_id": str(query_id),
                     "target_labels": list(target_labels),
                     "target_values": list(target_values),
                     "target_groups": dict(target_groups),
@@ -2116,16 +2115,14 @@ class PagesInfographicMetricArithmeticValueTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
-                "query_id": str(query_variant),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "card_count": int(dataset["card_count"]),
                     "section_count": int(dataset["section_count"]),
                     "target_labels": list(target_labels),
@@ -2168,9 +2165,7 @@ class PagesInfographicMetricArithmeticValueTask:
                 "value_bboxes_px": dict(value_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "query_id": str(query_variant),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "answer_value": answer_value_for_trace,
                 "answer_type": str(answer_type),
                 "arithmetic_expression": str(dataset["arithmetic_expression"]),
@@ -2207,7 +2202,7 @@ class PagesInfographicMetricArithmeticValueTask:
                 "target_operand_count": int(dataset["target_operand_count"]),
                 "target_operand_count_range": list(dataset["target_operand_count_range"]),
                 "target_operand_count_probabilities": dict(dataset["target_operand_count_probabilities"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "question_format": "label_open" if answer_type == "string" else "numeric_open",
                 "percent_mode": bool(dataset["percent_mode"]),
                 "value_min": int(dataset["value_min"]),
@@ -2240,8 +2235,8 @@ class PagesInfographicMetricArithmeticValueTask:
             },
         }
 
-        reasoning_load = float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])
-        if str(query_variant) == "sum_named_metrics":
+        reasoning_load = float(_REASONING_LOAD_BY_VARIANT[str(query_id)])
+        if str(query_id) == "sum_named_metrics":
             reasoning_load = min(
                 1.0,
                 reasoning_load
@@ -2264,7 +2259,7 @@ class PagesInfographicMetricArithmeticValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -2272,51 +2267,51 @@ class PagesInfographicMetricArithmeticValueTask:
 def _scoped_infographic_params(
     params: Mapping[str, Any],
     *,
-    allowed_query_variants: Sequence[str],
+    allowed_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Restrict the shared infographic generator to one public task's query set."""
 
-    allowed = tuple(str(value) for value in allowed_query_variants if str(value).strip())
+    allowed = tuple(str(value) for value in allowed_query_ids if str(value).strip())
     allowed_set = set(allowed)
     scoped = dict(params)
-    explicit_query = scoped.get("query_variant")
-    explicit_task = scoped.get("query_variant")
+    explicit_query = scoped.get("query_id")
+    explicit_task = scoped.get("query_id")
     if explicit_query is not None:
         if explicit_task is not None and str(explicit_task) != str(explicit_query):
-            raise ValueError("query_variant conflicts with query_variant")
-        scoped["query_variant"] = str(explicit_query)
-    explicit_task = scoped.get("query_variant")
+            raise ValueError("query_id conflicts with query_id")
+        scoped["query_id"] = str(explicit_query)
+    explicit_task = scoped.get("query_id")
     if explicit_task is not None and str(explicit_task) not in allowed_set:
-        raise ValueError(f"unsupported query variant for infographic task: {explicit_task}")
-    scoped["_supported_query_variants"] = tuple(allowed)
+        raise ValueError(f"unsupported query id for infographic task: {explicit_task}")
+    scoped["_supported_query_ids"] = tuple(allowed)
     if explicit_task is None:
-        scoped.pop("query_variant_weights", None)
+        scoped.pop("query_id_weights", None)
     return scoped
 
 
 def _query_probabilities_from_output(output: TaskOutput, query_id: str) -> Dict[str, float]:
     payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
     execution = payload.get("execution_trace") if isinstance(payload, Mapping) else {}
-    if isinstance(execution, Mapping) and isinstance(execution.get("query_variant_probabilities"), Mapping):
-        return {str(key): float(value) for key, value in execution["query_variant_probabilities"].items()}
+    if isinstance(execution, Mapping) and isinstance(execution.get("query_id_probabilities"), Mapping):
+        return {str(key): float(value) for key, value in execution["query_id_probabilities"].items()}
     return {str(query_id): 1.0}
 
 
 class _PagesInfographicPublicTaskMixin:
     default_dataset_enabled = True
-    allowed_query_variants: Sequence[str] = ()
+    allowed_query_ids: Sequence[str] = ()
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         scoped_params = _scoped_infographic_params(
             params,
-            allowed_query_variants=tuple(self.allowed_query_variants),
+            allowed_query_ids=tuple(self.allowed_query_ids),
         )
         output = super().generate(  # type: ignore[misc]
             int(instance_seed),
             params=scoped_params,
             max_attempts=int(max_attempts),
         )
-        query_id = str(output.query_variant)
+        query_id = str(output.query_id)
         return rewrite_pages_query_output(
             output,
             query_id=str(query_id),
@@ -2333,7 +2328,7 @@ class PagesInfographicMetricArithmeticValuePublicTask(
     """Compute one sampled arithmetic value over infographic metric cards."""
 
     task_id = "task_pages__infographic__metric_arithmetic_value"
-    allowed_query_variants = SUPPORTED_QUERY_VARIANTS
+    allowed_query_ids = SUPPORTED_QUERY_IDS
 
 
 @register_task
@@ -2344,7 +2339,7 @@ class PagesInfographicSectionRankedTotalLabelTask(
     """Identify a section by ranked aggregate total over infographic metric cards."""
 
     task_id = "task_pages__infographic__section_ranked_total_label"
-    allowed_query_variants = SECTION_RANKED_TOTAL_VARIANTS
+    allowed_query_ids = SECTION_RANKED_TOTAL_VARIANTS
 
 
 @register_task
@@ -2355,7 +2350,7 @@ class PagesInfographicFilteredMetricTotalValueTask(
     """Sum visible metric cards matching an icon filter inside one section."""
 
     task_id = "task_pages__infographic__filtered_metric_total_value"
-    allowed_query_variants = FILTERED_METRIC_TOTAL_VARIANTS
+    allowed_query_ids = FILTERED_METRIC_TOTAL_VARIANTS
 
 
 @register_task
@@ -2366,7 +2361,7 @@ class PagesInfographicColumnProfileComparisonValueTask(
     """Compare same-icon metric totals between two infographic sections."""
 
     task_id = "task_pages__infographic__column_profile_comparison_value"
-    allowed_query_variants = COLUMN_PROFILE_COMPARISON_VARIANTS
+    allowed_query_ids = COLUMN_PROFILE_COMPARISON_VARIANTS
 
 
 @register_task
@@ -2377,11 +2372,11 @@ class PagesInfographicFilteredSectionExtremumLabelTask(
     """Identify the section with an extreme total after filtering by card icon."""
 
     task_id = "task_pages__infographic__filtered_section_extremum_label"
-    allowed_query_variants = FILTERED_SECTION_EXTREMUM_VARIANTS
+    allowed_query_ids = FILTERED_SECTION_EXTREMUM_VARIANTS
 
 
 __all__ = [
-    "ALL_QUERY_VARIANTS",
+    "ALL_QUERY_IDS",
     "COLUMN_PROFILE_COMPARISON_VARIANTS",
     "FILTERED_SECTION_EXTREMUM_VARIANTS",
     "FILTERED_METRIC_TOTAL_VARIANTS",
@@ -2392,5 +2387,5 @@ __all__ = [
     "PagesInfographicMetricArithmeticValuePublicTask",
     "PagesInfographicSectionRankedTotalLabelTask",
     "SECTION_RANKED_TOTAL_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

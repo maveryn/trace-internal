@@ -28,7 +28,7 @@ Each generated instance should include:
 
 ## Core engineering rules
 - Use public taxonomy consistently: `domain -> scene_id -> task_id`; `task_group` remains a module/config grouping layer.
-- Task ids use taxonomy-v0 form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. Default implementation layout remains `trace/tasks/<domain>/<task_group>/<task_name>.py`; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
+- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The source layout `trace/tasks/<domain>/<task_group>/<task_name>.py` is implementation routing only, not a task-id format; cell-board puzzle implementations live under `trace/tasks/puzzles/cell_board/`.
 - Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep intra-task query branches in `query_id`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.

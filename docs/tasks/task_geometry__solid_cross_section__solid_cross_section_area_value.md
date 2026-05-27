@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `solid_cross_section`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `cone_parallel_slice_area`, `square_pyramid_parallel_slice_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

@@ -7,7 +7,7 @@
 4. Objective: answer painted-face counting questions for a solid cube structure.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `painted_face_count`
 3. Supported query parameter: `painted_query=exterior_face_total|exact_k_faces_cube_count`
 4. Supported `scene_variant` values: `stack_strip`, `stack_card`, `stack_outline`
@@ -29,6 +29,6 @@
 
 ## 4) Evidence + Trace Contract
 1. Evidence is exactly one bbox for the visible cube structure.
-2. `execution_trace.internal_query_variant` records the selected painted-face query.
+2. `execution_trace.internal_query_id` records the selected painted-face query.
 3. Exterior painted-face counts per cube, height grids, cube coordinate records, cube color, answer support, and supporting structure ids are recorded.
 4. Prompt-facing evidence is projected from structure ids, not inferred from pixels.

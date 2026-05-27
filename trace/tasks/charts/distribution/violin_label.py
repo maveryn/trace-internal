@@ -41,7 +41,7 @@ QueryVariant = str
 TASK_ID = "charts_distribution_violin_label_base"
 SCENE_ID = "violin"
 SCENE_VARIANT = "violin"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "highest_mode",
     "lowest_mode",
     "bimodal_label",
@@ -68,19 +68,19 @@ _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
 }
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the concrete violin query branch."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -93,7 +93,7 @@ class ChartsDistributionViolinLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         mark_style = resolve_chart_mark_colors(
             params,
             render_defaults=_RENDER_DEFAULTS,
@@ -103,7 +103,7 @@ class ChartsDistributionViolinLabelTask:
             mark_count=1,
         )
         violins, answer_label, evidence_values, trace_extras = build_density_dataset_for_variant(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -159,7 +159,7 @@ class ChartsDistributionViolinLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_violin"]),
@@ -200,7 +200,7 @@ class ChartsDistributionViolinLabelTask:
                 "scene_kind": "chart_violin_distribution",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
                     "answer_label": str(answer_label),
                     "evidence_label": str(answer_label),
@@ -209,15 +209,15 @@ class ChartsDistributionViolinLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": SCENE_VARIANT,
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "category_count": int(trace_extras["category_count"]),
                     "category_count_range": list(trace_extras["category_count_range"]),
                     "value_range": list(trace_extras["value_range"]),
@@ -287,7 +287,7 @@ class ChartsDistributionViolinLabelTask:
                 "label_centers_px": dict(label_centers),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": SCENE_VARIANT,
                 "answer_label": str(answer_label),
                 "evidence_label": str(answer_label),
@@ -299,7 +299,7 @@ class ChartsDistributionViolinLabelTask:
                 "category_count": int(trace_extras["category_count"]),
                 "category_count_range": list(trace_extras["category_count_range"]),
                 "value_range": list(trace_extras["value_range"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "question_format": "label_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
                 "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),
@@ -336,7 +336,7 @@ class ChartsDistributionViolinLabelTask:
                     int(trace_extras["category_count"]),
                     trace_extras["category_count_range"],
                 ),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": 0.0,
             },
         )
@@ -349,36 +349,30 @@ class ChartsDistributionViolinLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_id=SCENE_ID,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
 @register_task
-class ChartsDistributionViolinFeatureExtremumLabelTask(
+class ChartsDistributionViolinDistributionFeatureLabelTask(
     MergedChartQueryVariantTaskMixin,
     ChartsDistributionViolinLabelTask,
 ):
-    """Return the label with an extremal violin distribution feature."""
+    """Return the label with a requested violin distribution feature."""
 
-    task_id = "task_charts__violin__feature_extremum_label"
-    allowed_query_variants = ("highest_mode", "lowest_mode", "widest_support", "narrowest_support")
-
-
-@register_task
-class ChartsDistributionViolinShapeFeatureLabelTask(
-    MergedChartQueryVariantTaskMixin,
-    ChartsDistributionViolinLabelTask,
-):
-    """Return the label with the requested violin shape feature."""
-
-    task_id = "task_charts__violin__shape_feature_label"
-    allowed_query_variants = ("bimodal_label",)
+    task_id = "task_charts__violin__distribution_feature_label"
+    allowed_query_ids = (
+        "highest_mode",
+        "lowest_mode",
+        "widest_support",
+        "narrowest_support",
+        "bimodal_label",
+    )
 
 
 __all__ = [
-    "ChartsDistributionViolinFeatureExtremumLabelTask",
+    "ChartsDistributionViolinDistributionFeatureLabelTask",
     "ChartsDistributionViolinLabelTask",
-    "ChartsDistributionViolinShapeFeatureLabelTask",
 ]

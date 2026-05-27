@@ -8,7 +8,7 @@
 5. Objective: count graph edges whose endpoint nodes have two queried semantic colors.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `cross_color_edge_count` for undirected graphs, `directed_cross_color_edge_count` for directed graphs
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported node colors: shared TRACE named-color palette

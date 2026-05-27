@@ -7,7 +7,7 @@
 4. Objective: count how many labeled nodes are reachable from one queried source node in a directed graph, either directly or after one hypothetical arrow edit.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `reachable_count`, `reachable_count_after_edge_removal`, or `reachable_count_after_edge_addition`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
@@ -76,7 +76,7 @@
    - `pixel_bbox_set`
 7. `execution_trace` records:
    - `query_id`
-   - `query_variant` (always `default`)
+   - `query_id` (always `default`)
    - `scene_variant`
    - `target_reachable_count`
    - feasible support distributions for node count / reachable count

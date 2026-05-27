@@ -9,7 +9,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` icon on the left and a `Scene` panel on the right; exactly one Scene icon is marked as the `Anchor` with a visible outline and `Anchor` label.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `left_of_anchor|right_of_anchor|above_anchor|below_anchor`.
 4. Supported semantic parameter axis: `direction=left|right|above|below`.
 5. Answer type: `answer_gt.type = integer`.
@@ -45,7 +45,7 @@
 7. Balanced defaults: seeded sampling first balances the four directions, then the task passes a decoupled index to independent count sampling so each direction cycles through the full target-count support.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query variant.
+1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_relative_position_type_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_relative_position_type_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

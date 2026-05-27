@@ -20,15 +20,14 @@ Column guide:
 
 ## Charts
 
-charts has 100 active public task ids across 33 scenes. Fresh v0 review and solve-rate calibration are pending.
+charts has 93 active public task ids across 33 scenes. Fresh v0 review and solve-rate calibration are pending.
 
 | Task | Best status | Best config | Hard | Easy | Band | Artifacts | Notes |
 |---|---|---|---:|---:|---:|---|---|
 | `task_charts__area__interval_area_value` | pending_v0_review | current public task; scene `area` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__area__stacked_band_dominance_label` | pending_v0_review | current public task; scene `area` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__area__stacked_band_interval_sum_value` | pending_v0_review | current public task; scene `area` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__bar_3d__axis_gap_value` | pending_v0_review | current public task; scene `bar_3d` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__bar_3d__axis_total_value` | pending_v0_review | current public task; scene `bar_3d` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__bar_3d__axis_aggregate_value` | pending_v0_review | current public task; scene `bar_3d` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__bar_3d__condition_count` | pending_v0_review | current public task; scene `bar_3d` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__boxplot__median_rank_difference_value` | pending_v0_review | current public task; scene `boxplot` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__boxplot__paired_median_shift_label` | pending_v0_review | current public task; scene `boxplot` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
@@ -48,8 +47,7 @@ charts has 100 active public task ids across 33 scenes. Fresh v0 review and solv
 | `task_charts__dashboard__dual_condition_count` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__dashboard__dual_source_target_sum_value` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__dashboard__panel_gap_extremum_category_label` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__dashboard__source_rank_difference_value` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__dashboard__source_rank_target_value` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__dashboard__source_rank_metric_value` | pending_v0_review | current public task; scene `dashboard` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__dumbbell__gap_rank_row_label` | pending_v0_review | current public task; scene `dumbbell` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__dumbbell__pair_relation_count` | pending_v0_review | current public task; scene `dumbbell` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__error_interval__interval_width_rank_label` | pending_v0_review | current public task; scene `error_interval` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
@@ -70,11 +68,8 @@ charts has 100 active public task ids across 33 scenes. Fresh v0 review and solv
 | `task_charts__parallel_coords__axis_delta_extremum_label` | pending_v0_review | current public task; scene `parallel_coords` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__parallel_coords__crossing_count` | pending_v0_review | current public task; scene `parallel_coords` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__part_whole__adjacent_transfer_gap_value` | pending_v0_review | current public task; scene `part_whole` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__part_whole__order_count_conversion_value` | pending_v0_review | current public task; scene `part_whole` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__part_whole__order_sector_angle_value` | pending_v0_review | current public task; scene `part_whole` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__part_whole__order_share_sum_value` | pending_v0_review | current public task; scene `part_whole` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__pictogram__category_total_value` | pending_v0_review | current public task; scene `pictogram` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__pictogram__group_difference_value` | pending_v0_review | current public task; scene `pictogram` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__part_whole__ordered_segment_value` | pending_v0_review | current public task; scene `part_whole` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__pictogram__group_arithmetic_value` | pending_v0_review | current public task; scene `pictogram` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__pictogram__threshold_count` | pending_v0_review | current public task; scene `pictogram` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__radar__profile_advantage_count` | pending_v0_review | current public task; scene `radar` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__radar__threshold_metric_count_for_panel` | pending_v0_review | current public task; scene `radar` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
@@ -85,8 +80,7 @@ charts has 100 active public task ids across 33 scenes. Fresh v0 review and solv
 | `task_charts__region_map__adjacent_condition_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__region_map__border_neighbor_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__region_map__continent_filtered_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__region_map__region_category_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__region_map__region_value_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__region_map__legend_predicate_region_count` | pending_v0_review | current public task; scene `region_map` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__sankey__node_side_total_value` | pending_v0_review | current public task; scene `sankey` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__sankey__path_value` | pending_v0_review | current public task; scene `sankey` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__scatter_cluster__cluster_feature_extremum_label` | pending_v0_review | current public task; scene `scatter_cluster` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
@@ -119,8 +113,7 @@ charts has 100 active public task ids across 33 scenes. Fresh v0 review and solv
 | `task_charts__table__value_predicate_count` | pending_v0_review | current public task; scene `table` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__treemap__group_total_value` | pending_v0_review | current public task; scene `treemap` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__treemap__repeated_leaf_aggregate_value` | pending_v0_review | current public task; scene `treemap` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__violin__feature_extremum_label` | pending_v0_review | current public task; scene `violin` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
-| `task_charts__violin__shape_feature_label` | pending_v0_review | current public task; scene `violin` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
+| `task_charts__violin__distribution_feature_label` | pending_v0_review | current public task; scene `violin` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__waterfall__counterfactual_final_value` | pending_v0_review | current public task; scene `waterfall` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__waterfall__running_total_value` | pending_v0_review | current public task; scene `waterfall` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |
 | `task_charts__waterfall__threshold_crossing_label` | pending_v0_review | current public task; scene `waterfall` | n/a | n/a | n/a |  | fresh v0 task review, distribution check, and solve-rate calibration pending |

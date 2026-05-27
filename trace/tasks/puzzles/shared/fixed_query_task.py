@@ -5,13 +5,13 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping
 
 from ...base import TaskOutput
-from ...shared.fixed_query import force_query_variant_params, rewrite_public_query_output
+from ...shared.fixed_query import force_query_id_params, rewrite_public_query_output
 
 
-def forced_puzzle_query_params(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
-    """Return params that force one internal puzzle query variant."""
+def forced_puzzle_query_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
+    """Return params that force one internal puzzle query id."""
 
-    return force_query_variant_params(params, query_variant=str(query_variant))
+    return force_query_id_params(params, query_id=str(query_id))
 
 
 def rewrite_fixed_puzzle_query_output(output: TaskOutput, *, query_id: str, scene_id: str = "") -> TaskOutput:
@@ -23,27 +23,27 @@ def rewrite_fixed_puzzle_query_output(output: TaskOutput, *, query_id: str, scen
         query_id=query_id_text,
         scene_id=str(scene_id) if str(scene_id).strip() else None,
         include_render_spec=True,
-        query_variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as="internal_query_variant",
+        query_id_probabilities={"default": 1.0},
+        preserve_internal_query_id_as="internal_query_id",
     )
 
 
 class FixedPuzzleQueryVariantTaskMixin:
-    """Mixin for wrapper tasks that force one source puzzle query variant."""
+    """Mixin for wrapper tasks that force one source puzzle query id."""
 
     default_dataset_enabled = True
-    fixed_query_variant: str
+    fixed_query_id: str
     public_scene_id: str = ""
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         output = super().generate(  # type: ignore[misc]
             int(instance_seed),
-            params=forced_puzzle_query_params(params, query_variant=str(self.fixed_query_variant)),
+            params=forced_puzzle_query_params(params, query_id=str(self.fixed_query_id)),
             max_attempts=int(max_attempts),
         )
         return rewrite_fixed_puzzle_query_output(
             output,
-            query_id=str(self.fixed_query_variant),
+            query_id=str(self.fixed_query_id),
             scene_id=str(self.public_scene_id),
         )
 

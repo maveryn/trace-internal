@@ -13,12 +13,12 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
         task_id="task_games__dots_and_boxes__capture_move_count",
     )
     assert generation["scene_variant_weights"] == {"single_board": 1.0}
-    assert generation["query_variant_weights"] == {
+    assert generation["query_id_weights"] == {
         "three_sided_box_count": 1.0,
         "capture_move_count": 1.0,
         "highlighted_candidate_capture_count": 1.0,
     }
-    assert generation["capture_move_query_variant_weights"] == {
+    assert generation["capture_move_query_id_weights"] == {
         "capture_move_count": 1.0,
         "highlighted_candidate_capture_count": 1.0,
     }
@@ -39,7 +39,7 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
     assert generation["balanced_target_answer_sampling"] is True
     assert generation["balanced_board_shape_sampling"] is True
     assert generation["balanced_candidate_edge_count_sampling"] is True
-    assert generation["balanced_capture_move_query_variant_sampling"] is True
+    assert generation["balanced_capture_move_query_id_sampling"] is True
     assert int(rendering["board_width_px"]) > 0
     assert int(rendering["board_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_dots_and_boxes_v0"

@@ -16,7 +16,7 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_phase_relation_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert set(generation["scene_variant_weights"].keys()) == {"clean_tank", "grid_tank", "lab_sheet"}
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "interference_point_choice",
         "path_difference_value",
     }

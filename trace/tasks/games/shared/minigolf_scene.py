@@ -264,7 +264,7 @@ def render_minigolf_scene(
     *,
     obstacles: Tuple[MinigolfObstacle, ...],
     shot_options: Tuple[MinigolfShotOption, ...],
-    query_variant: str,
+    query_id: str,
     ball_xy_norm: Tuple[float, float],
     hole_xy_norm: Tuple[float, float],
     cue_visible_fraction: float,
@@ -337,7 +337,7 @@ def render_minigolf_scene(
 
     motion_paths_px: Dict[str, Dict[str, Any]] = {}
     path_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
-    if str(query_variant) == "first_obstacle_label":
+    if str(query_id) == "first_obstacle_label":
         path = hidden_paths_norm.get("shown_path", tuple())
         if len(path) >= 2:
             start = _to_px(course_bbox, path[0])

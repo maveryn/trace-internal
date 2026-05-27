@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `graph_paper`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `perimeter`
 6. Answer type: `pi_expression`
 7. Evidence type: `point_set`

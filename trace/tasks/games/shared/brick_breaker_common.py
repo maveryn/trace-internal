@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BRICK_BREAKER_QUERY_IDS: Tuple[str, ...] = (
     "next_hit_label",
     "paddle_catch_label",
     "hit_row_remaining_count",
@@ -39,7 +39,7 @@ class BrickBreakerSample:
     brick_rows: int
     brick_cols: int
     lane_count: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     answer: int | str
     bricks: Tuple[BrickBreakerBrick, ...]
@@ -95,7 +95,7 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
     if not set(sample.evidence_entity_ids) <= known_entities:
         raise ValueError("brick breaker evidence references unknown entities")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "next_hit_label":
         if sample.target_brick_id is None or sample.target_brick_label is None:
             raise ValueError("next_hit_label requires a target brick")
@@ -134,7 +134,7 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
         expected_answer = str(sample.target_lane_label)
         expected_evidence = {lane_entity_id(int(sample.target_lane_index))}
     else:
-        raise ValueError(f"unsupported brick breaker query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported brick breaker query_id: {sample.query_id}")
     if sample.answer != expected_answer:
         raise ValueError("brick breaker answer does not match active query")
     if set(sample.evidence_entity_ids) != expected_evidence:
@@ -142,7 +142,7 @@ def validate_brick_breaker_sample(sample: BrickBreakerSample) -> None:
 
 
 __all__ = [
-    "SUPPORTED_BRICK_BREAKER_QUERY_VARIANTS",
+    "SUPPORTED_BRICK_BREAKER_QUERY_IDS",
     "SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS",
     "SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS",
     "BrickBreakerBrick",

@@ -1094,10 +1094,10 @@ class GeometryAngleMeasure2DTask:
             raise RuntimeError("resolved angle exceeds nearest-integer rounding tolerance")
         scene_variant_value = str(scene_payload["scene_variant"])
         source_kind_value = str(scene_payload["source_kind"])
-        query_variant_probabilities: Dict[str, float] = {}
+        query_id_probabilities: Dict[str, float] = {}
         for source_kind_key, probability in source_kind_probabilities.items():
             variant_key = _scene_variant_for_source_kind(str(source_kind_key))
-            query_variant_probabilities[str(variant_key)] = float(query_variant_probabilities.get(str(variant_key), 0.0)) + float(probability)
+            query_id_probabilities[str(variant_key)] = float(query_id_probabilities.get(str(variant_key), 0.0)) + float(probability)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "geometry_2d_angle_measurement",
@@ -1114,7 +1114,7 @@ class GeometryAngleMeasure2DTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(scene_variant_value),
+                "query_id": str(scene_variant_value),
                 "template_id": "geometry_angle_measure_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1162,7 +1162,7 @@ class GeometryAngleMeasure2DTask:
                 "question_format": "numeric_open",
                 "feasible_target_angles": [int(value) for value in target_candidates_for_source],
                 "feasible_answer_values": [int(value) for value in target_candidates_for_source],
-                "query_variant_probabilities": {str(key): float(value) for key, value in sorted(query_variant_probabilities.items())},
+                "query_id_probabilities": {str(key): float(value) for key, value in sorted(query_id_probabilities.items())},
             },
             "witness_symbolic": dict(evidence["witness_symbolic"]),
             "projected_evidence": dict(evidence["projected_evidence"]),
@@ -1191,6 +1191,6 @@ class GeometryAngleMeasure2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(scene_variant_value),
+            query_id=str(scene_variant_value),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

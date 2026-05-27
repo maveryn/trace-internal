@@ -41,7 +41,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_scatter_cluster_query_base"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "cluster_trend_direction_label",
     "cluster_separation_extremum_label",
     "cluster_spread_extremum_label",
@@ -52,7 +52,7 @@ _SUPPORTED_SPREAD_AXES: Tuple[str, ...] = ("horizontal", "vertical", "overall")
 _SUPPORTED_SPREAD_EXTREMA: Tuple[str, ...] = ("largest", "smallest")
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("single_scatter",)
 
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "scatter")
@@ -117,7 +117,7 @@ class _Cluster:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     answer_label: str
     answer_type: str
     evidence_cluster_labels: Tuple[str, ...]
@@ -212,17 +212,17 @@ def _clamp(value: float, low: float, high: float) -> float:
     return max(float(low), min(float(high), float(value)))
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -285,15 +285,15 @@ def _resolve_spread_extremum(params: Mapping[str, Any], *, instance_seed: int) -
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = params.get("_sample_cursor")
-    if sampling_index is None or params.get("query_variant") is not None:
+    if sampling_index is None or params.get("query_id") is not None:
         return support_params
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) == len(_SUPPORTED_QUERY_VARIANTS) and max(positives) - min(positives) <= 1e-9:
-        support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_VARIANTS))
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) == len(_SUPPORTED_QUERY_IDS) and max(positives) - min(positives) <= 1e-9:
+        support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(_SUPPORTED_QUERY_IDS))
     return support_params
 
 
@@ -565,7 +565,7 @@ def _dataset_for_trend(
         scene_variant="single_scatter",
         clusters=clusters,
         query=_Query(
-            query_variant="cluster_trend_direction_label",
+            query_id="cluster_trend_direction_label",
             answer_label=str(answer_label),
             answer_type="string",
             evidence_cluster_labels=(str(answer_label),),
@@ -639,7 +639,7 @@ def _dataset_for_separation(
         scene_variant="single_scatter",
         clusters=clusters,
         query=_Query(
-            query_variant="cluster_separation_extremum_label",
+            query_id="cluster_separation_extremum_label",
             answer_label=str(answer_label),
             answer_type="string",
             evidence_cluster_labels=(str(reference_label), str(answer_label)),
@@ -713,7 +713,7 @@ def _dataset_for_spread(
         scene_variant="single_scatter",
         clusters=clusters,
         query=_Query(
-            query_variant="cluster_spread_extremum_label",
+            query_id="cluster_spread_extremum_label",
             answer_label=str(answer_label),
             answer_type="string",
             evidence_cluster_labels=(str(answer_label),),
@@ -959,8 +959,8 @@ class ChartsScatterClusterQueryTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
-        support_params = _support_sampling_params(params, query_variant_probabilities=query_variant_probabilities)
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
+        support_params = _support_sampling_params(params, query_id_probabilities=query_id_probabilities)
         cluster_min = _gen_int(params, "cluster_count_min", 5)
         cluster_max = _gen_int(params, "cluster_count_max", 8)
         cluster_count_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.cluster_count")
@@ -973,7 +973,7 @@ class ChartsScatterClusterQueryTask:
         points_per_cluster = int(point_count_rng.randint(int(points_min), int(points_max)))
         answer_label = _target_answer_label(support_params, instance_seed=int(instance_seed), labels=labels)
 
-        if str(query_variant) == "cluster_trend_direction_label":
+        if str(query_id) == "cluster_trend_direction_label":
             trend_direction, trend_direction_probabilities = _resolve_trend_direction(
                 support_params,
                 instance_seed=int(instance_seed),
@@ -987,7 +987,7 @@ class ChartsScatterClusterQueryTask:
                 trend_direction=str(trend_direction),
                 trend_direction_probabilities=trend_direction_probabilities,
             )
-        elif str(query_variant) == "cluster_separation_extremum_label":
+        elif str(query_id) == "cluster_separation_extremum_label":
             separation_extremum, separation_extremum_probabilities = _resolve_separation_extremum(
                 support_params,
                 instance_seed=int(instance_seed),
@@ -1062,7 +1062,7 @@ class ChartsScatterClusterQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
@@ -1094,7 +1094,7 @@ class ChartsScatterClusterQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(total_points), [24, 60]),
-                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])),
+                "reasoning_load": clamp_unit_interval(float(_REASONING_LOAD_BY_VARIANT[str(query_id)])),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(dataset.scene_variant)]),
             },
         )
@@ -1120,7 +1120,7 @@ class ChartsScatterClusterQueryTask:
                 "scene_kind": "chart_scatter_cluster",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": str(dataset.query.answer_label),
                     "evidence_point_ids": list(evidence_point_ids),
@@ -1128,15 +1128,15 @@ class ChartsScatterClusterQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": {"single_scatter": 1.0},
                     "cluster_count": int(cluster_count),
                     "points_per_cluster": int(points_per_cluster),
@@ -1162,7 +1162,7 @@ class ChartsScatterClusterQueryTask:
                 "legend_bboxes_px": dict(rendered.legend_bboxes),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "question_format": "scatter_cluster_query",
                 "answer": str(dataset.query.answer_label),
@@ -1174,7 +1174,7 @@ class ChartsScatterClusterQueryTask:
                 "values_by_cluster": dict(values_by_cluster),
                 "evidence_point_ids": list(evidence_point_ids),
                 "evidence_cluster_labels": list(evidence_cluster_labels),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 **dict(dataset.query.trace),
             },
             "witness_symbolic": {
@@ -1196,7 +1196,7 @@ class ChartsScatterClusterQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1206,7 +1206,7 @@ class ChartsScatterClusterTrendDirectionLabelTask(FixedChartQueryVariantTaskMixi
     """Return the cluster label with a requested trend direction."""
 
     task_id = "task_charts__scatter_cluster__cluster_trend_direction_label"
-    fixed_query_variant = "cluster_trend_direction_label"
+    fixed_query_id = "cluster_trend_direction_label"
 
 
 @register_task
@@ -1217,7 +1217,7 @@ class ChartsScatterClusterFeatureExtremumLabelTask(
     """Return the cluster label with a requested extremal feature."""
 
     task_id = "task_charts__scatter_cluster__cluster_feature_extremum_label"
-    allowed_query_variants = ("cluster_separation_extremum_label", "cluster_spread_extremum_label")
+    allowed_query_ids = ("cluster_separation_extremum_label", "cluster_spread_extremum_label")
 
 
 __all__ = [
@@ -1225,5 +1225,5 @@ __all__ = [
     "ChartsScatterClusterQueryTask",
     "ChartsScatterClusterTrendDirectionLabelTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

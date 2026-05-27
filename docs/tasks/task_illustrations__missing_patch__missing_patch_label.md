@@ -1,6 +1,6 @@
 # task_illustrations__missing_patch__missing_patch_label
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -11,7 +11,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 
 ## Contract
 The task shows a source illustration with one blacked-out missing region and
-four labeled patch options. Public variants are `plain_patch_label`,
+four labeled patch options. Query ids are `plain_patch_label`,
 `transformed_patch_label`, and `irregular_cutout_patch_label`. All missing
 regions are axis-aligned rectangles; no cutout uses diagonal or diamond-shaped
 edges.
@@ -26,6 +26,6 @@ rotated or reflected before fitting the missing region.
   - the missing region in the Source panel
   - the selected option panel
 
-Source illustrations are sampled from accepted illustration scene renderers,
+Source illustrations are sampled from current illustration scene renderers,
 excluding `object_field` and `market`. Missing regions keep
 a minimum configured margin from the source-image boundary.

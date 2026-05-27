@@ -16,7 +16,7 @@ generation:
     gap_threshold_step: 4
     gap_threshold_count_min: 2
     gap_threshold_count_max: 10
-    query_variant_weights:
+    query_id_weights:
       gap_rank_row_label: 1.0
       side_winner_count: 1.0
       absolute_gap_threshold_count: 1.0
@@ -33,7 +33,7 @@ generation:
     gap_threshold_relation_weights:
       at_least: 1.0
       at_most: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_rank_order_sampling: true
     balanced_rank_n_sampling: true
     balanced_side_direction_sampling: true

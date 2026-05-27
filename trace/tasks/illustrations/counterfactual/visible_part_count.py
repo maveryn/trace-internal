@@ -33,7 +33,7 @@ GLOVE_VARIANT = "glove_visible_finger_count"
 FORK_VARIANT = "fork_visible_tine_count"
 SNOWFLAKE_VARIANT = "snowflake_visible_arm_count"
 CHAIR_VARIANT = "chair_visible_leg_count"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     BIRD_VARIANT,
     QUADRUPED_VARIANT,
     AIRPLANE_VARIANT,
@@ -155,10 +155,10 @@ class _PartSpec:
 
 @dataclass(frozen=True)
 class _SampleSpec:
-    query_variant: str
+    query_id: str
     visible_count: int
     style_id: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     visible_count_probabilities: Dict[str, float]
     style_probabilities: Dict[str, float]
 
@@ -218,92 +218,92 @@ def _poly(draw: ImageDraw.ImageDraw, points: Sequence[Tuple[float, float]], *, f
     draw.line(_scale_points([*points, points[0]], int(scale)), fill=outline, width=max(1, int(width) * int(scale)), joint="curve")
 
 
-def _support_for_variant(query_variant: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
-    if query_variant == BIRD_VARIANT:
+def _support_for_variant(query_id: str, params: Mapping[str, Any]) -> Tuple[int, ...]:
+    if query_id == BIRD_VARIANT:
         low_key, high_key, fallback = "bird_leg_count_min", "bird_leg_count_max", (1, 5)
-    elif query_variant == QUADRUPED_VARIANT:
+    elif query_id == QUADRUPED_VARIANT:
         low_key, high_key, fallback = "quadruped_leg_count_min", "quadruped_leg_count_max", (2, 6)
-    elif query_variant == AIRPLANE_VARIANT:
+    elif query_id == AIRPLANE_VARIANT:
         low_key, high_key, fallback = "airplane_wing_count_min", "airplane_wing_count_max", (1, 5)
-    elif query_variant == BUTTERFLY_VARIANT:
+    elif query_id == BUTTERFLY_VARIANT:
         low_key, high_key, fallback = "butterfly_wing_count_min", "butterfly_wing_count_max", (2, 6)
-    elif query_variant == BICYCLE_VARIANT:
+    elif query_id == BICYCLE_VARIANT:
         low_key, high_key, fallback = "bicycle_wheel_count_min", "bicycle_wheel_count_max", (1, 4)
-    elif query_variant == TRAFFIC_LIGHT_VARIANT:
+    elif query_id == TRAFFIC_LIGHT_VARIANT:
         low_key, high_key, fallback = "traffic_light_lens_count_min", "traffic_light_lens_count_max", (1, 5)
-    elif query_variant == CLOVER_VARIANT:
+    elif query_id == CLOVER_VARIANT:
         low_key, high_key, fallback = "clover_leaf_count_min", "clover_leaf_count_max", (2, 6)
-    elif query_variant == STAR_VARIANT:
+    elif query_id == STAR_VARIANT:
         low_key, high_key, fallback = "star_point_count_min", "star_point_count_max", (3, 8)
-    elif query_variant == GLOVE_VARIANT:
+    elif query_id == GLOVE_VARIANT:
         low_key, high_key, fallback = "glove_finger_count_min", "glove_finger_count_max", (3, 7)
-    elif query_variant == FORK_VARIANT:
+    elif query_id == FORK_VARIANT:
         low_key, high_key, fallback = "fork_tine_count_min", "fork_tine_count_max", (2, 6)
-    elif query_variant == SNOWFLAKE_VARIANT:
+    elif query_id == SNOWFLAKE_VARIANT:
         low_key, high_key, fallback = "snowflake_arm_count_min", "snowflake_arm_count_max", (3, 8)
     else:
         low_key, high_key, fallback = "chair_leg_count_min", "chair_leg_count_max", (2, 6)
     low = int(params.get(low_key, group_default(_GEN_DEFAULTS, low_key, fallback[0])))
     high = int(params.get(high_key, group_default(_GEN_DEFAULTS, high_key, fallback[1])))
     if low < 1 or high < low:
-        raise ValueError(f"invalid visible count support for {query_variant}")
+        raise ValueError(f"invalid visible count support for {query_id}")
     return tuple(range(low, high + 1))
 
 
 def _resolve_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    explicit = params.get("query_variant", params.get("query_id"))
+    explicit = params.get("query_id")
     if explicit is not None:
         value = str(explicit)
-        if value not in set(SUPPORTED_QUERY_VARIANTS):
-            raise ValueError(f"query_variant must be one of {SUPPORTED_QUERY_VARIANTS}")
+        if value not in set(SUPPORTED_QUERY_IDS):
+            raise ValueError(f"query_id must be one of {SUPPORTED_QUERY_IDS}")
         return value, {value: 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query_variant")
-    value = str(SUPPORTED_QUERY_VARIANTS[int(index) % len(SUPPORTED_QUERY_VARIANTS)])
-    return value, {variant: 1.0 / float(len(SUPPORTED_QUERY_VARIANTS)) for variant in SUPPORTED_QUERY_VARIANTS}
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query_id")
+    value = str(SUPPORTED_QUERY_IDS[int(index) % len(SUPPORTED_QUERY_IDS)])
+    return value, {variant: 1.0 / float(len(SUPPORTED_QUERY_IDS)) for variant in SUPPORTED_QUERY_IDS}
 
 
-def _resolve_visible_count(query_variant: str, params: Mapping[str, Any], *, instance_seed: int) -> Tuple[int, Dict[str, float]]:
-    support = _support_for_variant(str(query_variant), params)
+def _resolve_visible_count(query_id: str, params: Mapping[str, Any], *, instance_seed: int) -> Tuple[int, Dict[str, float]]:
+    support = _support_for_variant(str(query_id), params)
     explicit = params.get("target_answer", params.get("visible_count"))
     if explicit is not None:
         selected = int(explicit)
         if selected not in set(support):
             raise ValueError(f"visible_count must be one of {support}")
         return selected, uniform_probability_map(support, selected=selected)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:{query_variant}:visible_count")
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:{query_id}:visible_count")
     selected = int(support[int(index) % len(support)])
     return selected, uniform_probability_map(support)
 
 
-def _resolve_style(query_variant: str, params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    support = STYLE_SUPPORT[str(query_variant)]
+def _resolve_style(query_id: str, params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    support = STYLE_SUPPORT[str(query_id)]
     explicit = params.get("style_id")
     if explicit is not None:
         style = str(explicit)
         if style not in set(support):
             raise ValueError(f"style_id must be one of {support}")
         return style, {style: 1.0}
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style:{query_variant}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style:{query_id}")
     style = str(support[int(rng.randint(0, len(support) - 1))])
     return style, {value: 1.0 / float(len(support)) for value in support}
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
-    query_variant, variant_probs = _resolve_variant(params, instance_seed=int(instance_seed))
-    visible_count, count_probs = _resolve_visible_count(str(query_variant), params, instance_seed=int(instance_seed))
-    style_id, style_probs = _resolve_style(str(query_variant), params, instance_seed=int(instance_seed))
+    query_id, variant_probs = _resolve_variant(params, instance_seed=int(instance_seed))
+    visible_count, count_probs = _resolve_visible_count(str(query_id), params, instance_seed=int(instance_seed))
+    style_id, style_probs = _resolve_style(str(query_id), params, instance_seed=int(instance_seed))
     return _SampleSpec(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         visible_count=int(visible_count),
         style_id=str(style_id),
-        query_variant_probabilities=dict(variant_probs),
+        query_id_probabilities=dict(variant_probs),
         visible_count_probabilities={str(key): float(value) for key, value in count_probs.items()},
         style_probabilities=dict(style_probs),
     )
 
 
-def _sample_colors(query_variant: str, rng: Any) -> Dict[str, Tuple[int, int, int]]:
-    if query_variant == TRAFFIC_LIGHT_VARIANT:
+def _sample_colors(query_id: str, rng: Any) -> Dict[str, Tuple[int, int, int]]:
+    if query_id == TRAFFIC_LIGHT_VARIANT:
         palette = TRAFFIC_LIGHT_COLOR_PALETTE[int(rng.randint(0, len(TRAFFIC_LIGHT_COLOR_PALETTE) - 1))]
         return {
             "primary": tuple(palette["traffic_casing"]),
@@ -312,7 +312,7 @@ def _sample_colors(query_variant: str, rng: Any) -> Dict[str, Tuple[int, int, in
             "leg": (92, 69, 48),
             **{str(key): tuple(value) for key, value in palette.items()},
         }
-    if query_variant == CLOVER_VARIANT:
+    if query_id == CLOVER_VARIANT:
         palette = CLOVER_COLOR_PALETTE[int(rng.randint(0, len(CLOVER_COLOR_PALETTE) - 1))]
         return {
             "primary": tuple(palette["clover_fill"]),
@@ -321,7 +321,7 @@ def _sample_colors(query_variant: str, rng: Any) -> Dict[str, Tuple[int, int, in
             "leg": (92, 69, 48),
             **{str(key): tuple(value) for key, value in palette.items()},
         }
-    if query_variant == SNOWFLAKE_VARIANT:
+    if query_id == SNOWFLAKE_VARIANT:
         primary, accent, outline = SNOWFLAKE_COLOR_PALETTE[int(rng.randint(0, len(SNOWFLAKE_COLOR_PALETTE) - 1))]
         return {
             "primary": tuple(primary),
@@ -852,7 +852,7 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     pad = float(params.get("evidence_padding_px", group_default(_RENDER_DEFAULTS, "evidence_padding_px", _DEFAULTS.evidence_padding_px)))
     scale_min = float(params.get("object_scale_min", group_default(_RENDER_DEFAULTS, "object_scale_min", _DEFAULTS.object_scale_min)))
     scale_max = float(params.get("object_scale_max", group_default(_RENDER_DEFAULTS, "object_scale_max", _DEFAULTS.object_scale_max)))
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:render:{sample.query_variant}:{sample.visible_count}:{sample.style_id}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:render:{sample.query_id}:{sample.visible_count}:{sample.style_id}")
     image = Image.new("RGB", (width * scale, height * scale), (238, 246, 252))
     draw = ImageDraw.Draw(image)
     horizon = int(height * float(rng.uniform(0.68, 0.76)))
@@ -860,25 +860,25 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     for x in range(0, width, 120):
         draw.ellipse((int((x + 18) * scale), int((horizon + 28) * scale), int((x + 74) * scale), int((horizon + 56) * scale)), fill=(205, 222, 198))
     object_scale = float(rng.uniform(scale_min, scale_max))
-    if sample.query_variant == AIRPLANE_VARIANT:
+    if sample.query_id == AIRPLANE_VARIANT:
         base_w, base_h = 520.0, 360.0
-    elif sample.query_variant == BUTTERFLY_VARIANT:
+    elif sample.query_id == BUTTERFLY_VARIANT:
         base_w, base_h = 430.0, 430.0
-    elif sample.query_variant == BICYCLE_VARIANT:
+    elif sample.query_id == BICYCLE_VARIANT:
         base_w, base_h = 560.0, 360.0
-    elif sample.query_variant == TRAFFIC_LIGHT_VARIANT:
+    elif sample.query_id == TRAFFIC_LIGHT_VARIANT:
         base_w, base_h = 300.0, 500.0
-    elif sample.query_variant == CLOVER_VARIANT:
+    elif sample.query_id == CLOVER_VARIANT:
         base_w, base_h = 430.0, 430.0
-    elif sample.query_variant == STAR_VARIANT:
+    elif sample.query_id == STAR_VARIANT:
         base_w, base_h = 440.0, 440.0
-    elif sample.query_variant == GLOVE_VARIANT:
+    elif sample.query_id == GLOVE_VARIANT:
         base_w, base_h = 430.0, 470.0
-    elif sample.query_variant == FORK_VARIANT:
+    elif sample.query_id == FORK_VARIANT:
         base_w, base_h = 340.0, 520.0
-    elif sample.query_variant == SNOWFLAKE_VARIANT:
+    elif sample.query_id == SNOWFLAKE_VARIANT:
         base_w, base_h = 460.0, 460.0
-    elif sample.query_variant == CHAIR_VARIANT:
+    elif sample.query_id == CHAIR_VARIANT:
         base_w, base_h = 430.0, 500.0
     else:
         base_w, base_h = 520.0, 430.0
@@ -887,28 +887,28 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     cx = width * float(rng.uniform(0.49, 0.53))
     cy = height * float(rng.uniform(0.44, 0.48))
     box = (cx - box_w * 0.5, cy - box_h * 0.5, cx + box_w * 0.5, cy + box_h * 0.5)
-    colors = _sample_colors(str(sample.query_variant), rng)
-    if sample.query_variant == BIRD_VARIANT:
+    colors = _sample_colors(str(sample.query_id), rng)
+    if sample.query_id == BIRD_VARIANT:
         parts, object_bbox = _draw_bird(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == QUADRUPED_VARIANT:
+    elif sample.query_id == QUADRUPED_VARIANT:
         parts, object_bbox = _draw_quadruped(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == AIRPLANE_VARIANT:
+    elif sample.query_id == AIRPLANE_VARIANT:
         parts, object_bbox = _draw_airplane(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == BUTTERFLY_VARIANT:
+    elif sample.query_id == BUTTERFLY_VARIANT:
         parts, object_bbox = _draw_butterfly(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == BICYCLE_VARIANT:
+    elif sample.query_id == BICYCLE_VARIANT:
         parts, object_bbox = _draw_bicycle(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == TRAFFIC_LIGHT_VARIANT:
+    elif sample.query_id == TRAFFIC_LIGHT_VARIANT:
         parts, object_bbox = _draw_traffic_light(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == CLOVER_VARIANT:
+    elif sample.query_id == CLOVER_VARIANT:
         parts, object_bbox = _draw_clover(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == STAR_VARIANT:
+    elif sample.query_id == STAR_VARIANT:
         parts, object_bbox = _draw_star(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == GLOVE_VARIANT:
+    elif sample.query_id == GLOVE_VARIANT:
         parts, object_bbox = _draw_glove(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == FORK_VARIANT:
+    elif sample.query_id == FORK_VARIANT:
         parts, object_bbox = _draw_fork(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
-    elif sample.query_variant == SNOWFLAKE_VARIANT:
+    elif sample.query_id == SNOWFLAKE_VARIANT:
         parts, object_bbox = _draw_snowflake(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
     else:
         parts, object_bbox = _draw_chair(draw, box=box, style=sample.style_id, visible_count=sample.visible_count, scale=scale, pad=pad, colors=colors)
@@ -922,7 +922,7 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
         "horizon_y_px": int(horizon),
         "colors_rgb": _colors_for_trace(colors),
     }
-    if sample.query_variant == TRAFFIC_LIGHT_VARIANT:
+    if sample.query_id == TRAFFIC_LIGHT_VARIANT:
         render_meta["traffic_lens_color_policy"] = "fixed_signal_order"
         render_meta["traffic_lens_colors_rgb"] = [
             [int(channel) for channel in TRAFFIC_LENS_COLORS[index % len(TRAFFIC_LENS_COLORS)]]
@@ -932,7 +932,7 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
 
 
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
-    support = _support_for_variant(sample.query_variant, {})
+    support = _support_for_variant(sample.query_id, {})
     answer_load = (int(sample.visible_count) - min(support)) / max(1, max(support) - min(support))
     return TaskComplexity(
         complexity_score=round(0.36 + 0.30 * float(answer_load), 3),
@@ -989,9 +989,9 @@ class IllustrationsCounterfactualVisiblePartCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(sample.query_variant),
+            query_key=str(sample.query_id),
             slots={
-                "object_description": OBJECT_DESCRIPTION[str(sample.query_variant)],
+                "object_description": OBJECT_DESCRIPTION[str(sample.query_id)],
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]),
@@ -1004,7 +1004,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
             preferred_mode="answer_and_evidence",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        canonical = int(CANONICAL_BIAS_ANSWER[str(sample.query_variant)])
+        canonical = int(CANONICAL_BIAS_ANSWER[str(sample.query_id)])
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
@@ -1013,22 +1013,20 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                     "object": {
                         "entity_id": "object_0",
                         "entity_type": "counterfactual_object",
-                        "object_description": OBJECT_DESCRIPTION[str(sample.query_variant)],
+                        "object_description": OBJECT_DESCRIPTION[str(sample.query_id)],
                         "style_id": str(sample.style_id),
                         "bbox": [round(float(value), 3) for value in object_bbox],
                     },
                     "parts": list(part_records),
                 },
                 "relations": {
-                    "query_variant": str(sample.query_variant),
-                    "query_id": str(sample.query_variant),
-                    "counted_part_kind": str(COUNTED_PART_KIND[str(sample.query_variant)]),
+                    "query_id": str(sample.query_id),
+                    "counted_part_kind": str(COUNTED_PART_KIND[str(sample.query_id)]),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_variant),
-                "query_id": str(sample.query_variant),
+                "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -1037,7 +1035,7 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                     "style_id": str(sample.style_id),
                     "canonical_bias_answer": int(canonical),
                     "counterfactual_delta": int(sample.visible_count) - int(canonical),
-                    "query_variant_probabilities": dict(sample.query_variant_probabilities),
+                    "query_id_probabilities": dict(sample.query_id_probabilities),
                     "visible_count_probabilities": dict(sample.visible_count_probabilities),
                     "style_probabilities": dict(sample.style_probabilities),
                 },
@@ -1055,11 +1053,10 @@ class IllustrationsCounterfactualVisiblePartCountTask:
                 "evidence_part_ids": [str(part.part_id) for part in parts],
             },
             "execution_trace": {
-                "query_variant": str(sample.query_variant),
-                "query_id": str(sample.query_variant),
+                "query_id": str(sample.query_id),
                 "answer": int(sample.visible_count),
                 "visible_part_count": int(sample.visible_count),
-                "counted_part_kind": str(COUNTED_PART_KIND[str(sample.query_variant)]),
+                "counted_part_kind": str(COUNTED_PART_KIND[str(sample.query_id)]),
                 "canonical_bias_answer": int(canonical),
                 "counterfactual_delta": int(sample.visible_count) - int(canonical),
                 "counterfactual_edit_type": "visible_part_count_changed",
@@ -1082,9 +1079,8 @@ class IllustrationsCounterfactualVisiblePartCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_variant),
             scene_id=SCENE_ID,
-            query_id=str(sample.query_variant),
+            query_id=str(sample.query_id),
         )
 
 
@@ -1100,7 +1096,7 @@ __all__ = [
     "QUADRUPED_VARIANT",
     "SNOWFLAKE_VARIANT",
     "STAR_VARIANT",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "TRAFFIC_LIGHT_VARIANT",
     "IllustrationsCounterfactualVisiblePartCountTask",
 ]

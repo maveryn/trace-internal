@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: count scheduled events longer than the highlighted reference event.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `longer_than_reference_count`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` over all longer-than-reference event blocks.

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `composite_shape`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `missing_width_from_semicircle_cap_area` or `missing_width_from_semicircle_cutout_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

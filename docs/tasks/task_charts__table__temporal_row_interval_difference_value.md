@@ -5,7 +5,7 @@
 2. Scene id: `table`
 3. Source implementation domain/group: `charts/table_temporal`
 4. Query id: `absolute_difference_between_rows_over_year_interval`, `sum_absolute_differences_between_rows_over_year_interval`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.table.temporal.value.ChartsTableTemporalRowIntervalDifferenceValueTask`

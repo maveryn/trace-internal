@@ -146,10 +146,10 @@ Measure:
 
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
-- Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
+- Geometry usually wants criterion values from explicit `scene_variant` / `query_id` structure, not from answer magnitude alone.
 - Keep raw givens counts, winner gaps, or derivation depth in trace if they help debug the score.
 - For analytical geometry, prefer annotation-count, formula-family, and answer-format signals over raw answer magnitude; answer size alone is usually a poor proxy for derivation difficulty.
-- In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_variant` determine the per-instance component values.
+- In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_id` determine the per-instance component values.
 - Geometry transformation tasks should stay evidence-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
 - Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
 - Geometry coordinate-relation tasks should keep the evidence contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint evidence for every matching segment, while point-membership/count variants should expose graph-point evidence whenever the visible witness is an unlabeled point set rather than a label identity problem.

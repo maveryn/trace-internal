@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__duration_equivalence_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `duration_equivalence_label`
 3. Prompts ask which image-visible option card has the same duration as the marked note.
 4. Internal variation includes eighth, quarter, dotted-quarter, half, dotted-half, and whole durations with `engraved_sheet|exam_scan|notebook_staff` scene variants.

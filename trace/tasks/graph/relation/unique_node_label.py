@@ -232,18 +232,18 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
     forced_query_id = resolve_forced_graph_query_id(params, query_id_from_alias=_query_id_from_alias)
     if forced_query_id is None:
-        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
         query_id, query_id_probabilities = resolve_graph_named_variant(
             query_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             explicit_key="query_id",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
             supported=SUPPORTED_UNIQUE_NODE_LABEL_QUERY_IDS,
             instance_seed=int(instance_seed),
             task_id=TASK_ID,
-            namespace="query_variant",
+            namespace="query_id",
         )
     else:
         query_id = str(forced_query_id)
@@ -662,9 +662,8 @@ class GraphRelationUniqueNodeLabelTask:
                 "scene_kind": "graph_unique_node_label_relation",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
+                    "internal_query_id": str(query.query_id),
                     "relation_rule": str(RELATION_RULE_BY_QUERY_ID[str(query.query_id)]),
                     "relation_mode": str(graph_sample.relation_mode),
                     "graph_directionality": str(query.graph_directionality),
@@ -672,7 +671,7 @@ class GraphRelationUniqueNodeLabelTask:
                     "answer_label": str(graph_sample.answer_label),
                     "target_labels": list(graph_sample.target_labels),
                     "supporting_edge": list(supporting_edge),
-                    "query_variant_probabilities": dict(query.query_id_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "relation_mode_probabilities": dict(query.relation_mode_probabilities),
                     "graph_directionality_probabilities": dict(query.graph_directionality_probabilities),
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
@@ -689,17 +688,15 @@ class GraphRelationUniqueNodeLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_id_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "relation_mode": str(query.relation_mode),
                     "relation_mode_probabilities": dict(query.relation_mode_probabilities),
                     "graph_directionality": str(query.graph_directionality),
@@ -731,7 +728,7 @@ class GraphRelationUniqueNodeLabelTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                     max_degree_key: int(max_degree),
                 },
             },
@@ -771,10 +768,9 @@ class GraphRelationUniqueNodeLabelTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_id_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.query_id),
                 "relation_mode": str(graph_sample.relation_mode),
@@ -832,7 +828,6 @@ class GraphRelationUniqueNodeLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -8,7 +8,7 @@ from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.illustrations.counterfactual.object_count_after_edit import (
     ADDED_VARIANT,
     REMOVED_VARIANT,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -34,7 +34,7 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
         out = task.generate(
             2026052800 + index,
             params={
-                "query_variant": variant,
+                "query_id": variant,
                 "source_query_key": "mixed_car",
                 "current_count": current_count,
                 "edit_count_k": edit_count_k,
@@ -43,7 +43,7 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
         )
         trace = out.trace_payload
         assert out.scene_id == "source_scene_edit"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(expected_answer)
@@ -58,13 +58,13 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
 def test_illustrations_counterfactual_object_count_after_edit_sampling_distribution() -> None:
     task = create_task(TASK_ID)
     variants = Counter()
-    answers_by_variant: dict[str, Counter[int]] = {variant: Counter() for variant in SUPPORTED_QUERY_VARIANTS}
+    answers_by_variant: dict[str, Counter[int]] = {variant: Counter() for variant in SUPPORTED_QUERY_IDS}
     for index in range(100):
         out = task.generate(2026052900 + index, params={}, max_attempts=120)
         variants[str(out.query_id)] += 1
         answers_by_variant[str(out.query_id)][int(out.answer_gt.value)] += 1
         assert len(out.evidence_gt.value) == int(out.trace_payload["execution_trace"]["current_count"])
-    _assert_hash_balanced_counts(variants, SUPPORTED_QUERY_VARIANTS)
+    _assert_hash_balanced_counts(variants, SUPPORTED_QUERY_IDS)
     assert len(answers_by_variant[ADDED_VARIANT]) >= 5
     assert len(answers_by_variant[REMOVED_VARIANT]) >= 5
     assert max(answers_by_variant[ADDED_VARIANT].values()) <= 13

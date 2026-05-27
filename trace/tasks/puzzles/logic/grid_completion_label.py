@@ -40,21 +40,21 @@ TASK_ID = "puzzles_logic_grid_completion_internal"
 GRID_UNIQUENESS_COMPLETION_LABEL_TASK_ID = "task_puzzles__logic_grid__grid_uniqueness_completion_label"
 GRID_KING_NON_TOUCH_LABEL_TASK_ID = "task_puzzles__logic_grid__grid_king_non_touch_label"
 SCENE_ID = "logic_grid"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "axis_uniqueness",
     "row_and_column_uniqueness",
     "king_non_touch",
 )
-_SOURCE_AXIS_BY_QUERY_VARIANT = {
+_SOURCE_AXIS_BY_QUERY_ID = {
     "row_uniqueness": "row",
     "column_uniqueness": "column",
 }
-_INTERNAL_QUERY_VARIANT_BY_AXIS = {
+_INTERNAL_QUERY_ID_BY_AXIS = {
     "row": "row_uniqueness",
     "column": "column_uniqueness",
 }
 _SUPPORTED_UNIQUENESS_AXES: Tuple[str, ...] = ("row", "column")
-_SUPPORTED_UNIQUENESS_QUERY_VARIANTS: Tuple[str, ...] = ("axis_uniqueness", "row_and_column_uniqueness")
+_SUPPORTED_UNIQUENESS_QUERY_IDS: Tuple[str, ...] = ("axis_uniqueness", "row_and_column_uniqueness")
 _SAMPLING_VARIANT_AXIS_SIZE = 4
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "row_uniqueness": 0.00,
@@ -79,34 +79,34 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="log
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.0)
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic logic-grid variant."""
 
-    explicit = params.get("query_variant")
-    if explicit is not None and str(explicit) in _SOURCE_AXIS_BY_QUERY_VARIANT:
+    explicit = params.get("query_id")
+    if explicit is not None and str(explicit) in _SOURCE_AXIS_BY_QUERY_ID:
         return "axis_uniqueness", {
             key: (1.0 if key == "axis_uniqueness" else 0.0)
-            for key in _SUPPORTED_QUERY_VARIANTS
+            for key in _SUPPORTED_QUERY_IDS
         }
     return resolve_puzzle_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
 def _resolve_uniqueness_axis(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str | None, Dict[str, float]]:
     """Resolve row vs column for the axis-uniqueness public variant."""
 
-    explicit_query_variant = params.get("query_variant")
-    if explicit_query_variant is not None and str(explicit_query_variant) in _SOURCE_AXIS_BY_QUERY_VARIANT:
-        selected = str(_SOURCE_AXIS_BY_QUERY_VARIANT[str(explicit_query_variant)])
+    explicit_query_id = params.get("query_id")
+    if explicit_query_id is not None and str(explicit_query_id) in _SOURCE_AXIS_BY_QUERY_ID:
+        selected = str(_SOURCE_AXIS_BY_QUERY_ID[str(explicit_query_id)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_UNIQUENESS_AXES}
 
     explicit_axis = params.get("uniqueness_axis", params.get("axis"))
@@ -130,11 +130,11 @@ def _resolve_uniqueness_axis(params: Mapping[str, Any], *, instance_seed: int) -
     return str(axis), dict(probabilities)
 
 
-def _dataset_params_for_variant(params: Mapping[str, Any], *, internal_query_variant: str) -> Dict[str, Any]:
+def _dataset_params_for_variant(params: Mapping[str, Any], *, internal_query_id: str) -> Dict[str, Any]:
     """Return generation params adjusted for variant-local support ranges."""
 
     updated = dict(params)
-    if str(internal_query_variant) != "king_non_touch":
+    if str(internal_query_id) != "king_non_touch":
         return updated
     lower = int(_GEN_DEFAULTS.get("king_non_touch_board_size_min", updated.get("board_size_min", _DEFAULTS.board_size_min)))
     upper = int(_GEN_DEFAULTS.get("king_non_touch_board_size_max", updated.get("board_size_max", _DEFAULTS.board_size_max)))
@@ -145,31 +145,31 @@ def _dataset_params_for_variant(params: Mapping[str, Any], *, internal_query_var
     return updated
 
 
-def _select_uniqueness_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
+def _select_uniqueness_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float], Dict[str, Any]]:
     """Choose the internal uniqueness-grid query while keeping it inside one public task."""
 
     explicit = params.get("uniqueness_query")
     if explicit is None:
-        query_variant = params.get("query_variant")
-        if query_variant is not None and str(query_variant) != "grid_uniqueness_completion":
-            explicit = query_variant
+        query_id = params.get("query_id")
+        if query_id is not None and str(query_id) != "grid_uniqueness_completion":
+            explicit = query_id
     if explicit is not None:
         selected = str(explicit)
         updated = dict(params)
-        updated.pop("query_variant", None)
-        if selected in _SOURCE_AXIS_BY_QUERY_VARIANT:
-            axis = str(_SOURCE_AXIS_BY_QUERY_VARIANT[selected])
+        updated.pop("query_id", None)
+        if selected in _SOURCE_AXIS_BY_QUERY_ID:
+            axis = str(_SOURCE_AXIS_BY_QUERY_ID[selected])
             updated["uniqueness_axis"] = axis
             selected = "axis_uniqueness"
-        if selected not in _SUPPORTED_UNIQUENESS_QUERY_VARIANTS:
-            raise ValueError(f"unsupported uniqueness query variant: {explicit}")
-        return selected, {key: float(key == selected) for key in _SUPPORTED_UNIQUENESS_QUERY_VARIANTS}, updated
+        if selected not in _SUPPORTED_UNIQUENESS_QUERY_IDS:
+            raise ValueError(f"unsupported uniqueness query id: {explicit}")
+        return selected, {key: float(key == selected) for key in _SUPPORTED_UNIQUENESS_QUERY_IDS}, updated
 
     updated = dict(params)
-    updated.pop("query_variant", None)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.uniqueness_query_variant")
-    selected = _SUPPORTED_UNIQUENESS_QUERY_VARIANTS[int(rng.randrange(len(_SUPPORTED_UNIQUENESS_QUERY_VARIANTS)))]
-    return selected, {key: 0.5 for key in _SUPPORTED_UNIQUENESS_QUERY_VARIANTS}, updated
+    updated.pop("query_id", None)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.uniqueness_query_id")
+    selected = _SUPPORTED_UNIQUENESS_QUERY_IDS[int(rng.randrange(len(_SUPPORTED_UNIQUENESS_QUERY_IDS)))]
+    return selected, {key: 0.5 for key in _SUPPORTED_UNIQUENESS_QUERY_IDS}, updated
 
 
 class _PuzzlesLogicGridCompletionBaseTask:
@@ -181,18 +181,18 @@ class _PuzzlesLogicGridCompletionBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         uniqueness_axis: str | None = None
         uniqueness_axis_probabilities: Dict[str, float] = {}
-        if str(query_variant) == "axis_uniqueness":
+        if str(query_id) == "axis_uniqueness":
             uniqueness_axis, uniqueness_axis_probabilities = _resolve_uniqueness_axis(
                 params,
                 instance_seed=int(instance_seed),
             )
-            internal_query_variant = str(_INTERNAL_QUERY_VARIANT_BY_AXIS[str(uniqueness_axis)])
+            internal_query_id = str(_INTERNAL_QUERY_ID_BY_AXIS[str(uniqueness_axis)])
         else:
-            internal_query_variant = str(query_variant)
-        dataset_params = _dataset_params_for_variant(params, internal_query_variant=str(internal_query_variant))
+            internal_query_id = str(query_id)
+        dataset_params = _dataset_params_for_variant(params, internal_query_id=str(internal_query_id))
         board_size_range = resolve_logic_board_size_bounds(
             dataset_params,
             gen_defaults=_GEN_DEFAULTS,
@@ -206,7 +206,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
         )
         scene_params = decouple_axis_sampling(
             params,
-            preceding_axis_size=(1 if "query_variant" in params else _SAMPLING_VARIANT_AXIS_SIZE) * int(board_size_axis_size),
+            preceding_axis_size=(1 if "query_id" in params else _SAMPLING_VARIANT_AXIS_SIZE) * int(board_size_axis_size),
             explicit_key="scene_variant",
         )
         scene_variant, scene_variant_probabilities = resolve_logic_scene_variant(
@@ -215,9 +215,9 @@ class _PuzzlesLogicGridCompletionBaseTask:
             instance_seed=int(instance_seed),
             task_id=self.task_id,
         )
-        if str(internal_query_variant) == "king_non_touch":
+        if str(internal_query_id) == "king_non_touch":
             dataset = build_logic_adjacency_dataset_for_variant(
-                query_variant=str(internal_query_variant),
+                query_id=str(internal_query_id),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -226,7 +226,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
             )
         else:
             dataset = build_logic_grid_dataset_for_variant(
-                query_variant=str(internal_query_variant),
+                query_id=str(internal_query_id),
                 params=dataset_params,
                 instance_seed=int(instance_seed),
                 gen_defaults=_GEN_DEFAULTS,
@@ -300,9 +300,9 @@ class _PuzzlesLogicGridCompletionBaseTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -310,7 +310,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -344,8 +344,8 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "scene_kind": f"puzzle_logic_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "uniqueness_axis": uniqueness_axis,
                     "scene_variant": str(scene_variant),
                     "answer_option_label": str(answer_value),
@@ -354,17 +354,17 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "uniqueness_axis": uniqueness_axis,
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "uniqueness_axis_probabilities": dict(uniqueness_axis_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "board_size": int(dataset["board_size"]),
@@ -398,8 +398,8 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 },
             }, render_params.unit_size_jitter),
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "uniqueness_axis": uniqueness_axis,
                 "scene_variant": str(scene_variant),
                 "query_cell_id": str(dataset["query_cell_id"]),
@@ -419,7 +419,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "option_count": int(dataset["option_count"]),
                 "option_specs": [dict(option) for option in dataset["option_specs"]],
                 "solver_trace": dict(dataset["solver_trace"]),
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "uniqueness_axis_probabilities": dict(uniqueness_axis_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_option_panel_ids": [str(correct_option_panel_id)],
@@ -433,7 +433,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "bbox_set": list(evidence_bboxes),
             },
         }
-        if str(internal_query_variant) == "king_non_touch":
+        if str(internal_query_id) == "king_non_touch":
             trace_payload["query_spec"]["params"]["query_neighbor_count"] = int(len(dataset["neighbor_coords"]))
             trace_payload["execution_trace"].update(
                 {
@@ -455,7 +455,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
         )
         reasoning_load = min(
             1.0,
-            (0.75 * float(_REASONING_LOAD_BASE_BY_VARIANT[str(internal_query_variant)]))
+            (0.75 * float(_REASONING_LOAD_BASE_BY_VARIANT[str(internal_query_id)]))
             + (0.25 * float(board_size_norm)),
         )
         complexity = build_puzzle_complexity(
@@ -475,7 +475,7 @@ class _PuzzlesLogicGridCompletionBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -486,16 +486,16 @@ class PuzzlesLogicGridUniquenessCompletionLabelTask(_PuzzlesLogicGridCompletionB
 
     task_id = GRID_UNIQUENESS_COMPLETION_LABEL_TASK_ID
     default_dataset_enabled = True
-    fixed_query_variant = "grid_uniqueness_completion"
+    fixed_query_id = "grid_uniqueness_completion"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        selected, probabilities, selected_params = _select_uniqueness_query_variant(
+        selected, probabilities, selected_params = _select_uniqueness_query_id(
             params,
             instance_seed=int(instance_seed),
         )
         normalized_params = dict(selected_params)
-        normalized_params.pop("query_variant", None)
-        forced_params = forced_puzzle_query_params(normalized_params, query_variant=str(selected))
+        normalized_params.pop("query_id", None)
+        forced_params = forced_puzzle_query_params(normalized_params, query_id=str(selected))
         output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
         rewritten = rewrite_fixed_puzzle_query_output(
             output,
@@ -522,7 +522,6 @@ class PuzzlesLogicGridUniquenessCompletionLabelTask(_PuzzlesLogicGridCompletionB
             trace_payload=trace_payload,
             complexity=rewritten.complexity,
             task_versions=rewritten.task_versions,
-            query_variant=rewritten.query_variant,
             prompt_variants=rewritten.prompt_variants,
             scene_id=rewritten.scene_id,
             query_id=rewritten.query_id,
@@ -534,7 +533,7 @@ class PuzzlesLogicGridKingNonTouchLabelTask(FixedPuzzleQueryVariantTaskMixin, _P
     """Complete a logic grid under the king non-touch rule."""
 
     task_id = GRID_KING_NON_TOUCH_LABEL_TASK_ID
-    fixed_query_variant = "king_non_touch"
+    fixed_query_id = "king_non_touch"
     public_scene_id = SCENE_ID
 
 

@@ -8,7 +8,7 @@
 5. Objective: count the minimum colored-route changes for a metro trip from a source station to a goal station through a required via station.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `metro_transfer_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_sequence`

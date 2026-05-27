@@ -45,7 +45,7 @@ from ..shared.checkers_scene import CheckersRenderParams, render_checkers_board_
 from ..shared.complexity import build_games_checkers_move_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_CHECKERS_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -55,7 +55,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "midgame_board",
     "crowded_board",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "legal_move_count",
     "capture_move_count",
     "max_capture_chain_length",
@@ -90,12 +90,12 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Checkers scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -137,31 +137,31 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="chec
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="checkers", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured answer-support key for one query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured answer-support key for one query id."""
 
     return {
         "legal_move_count": "legal_move_count_support",
         "capture_move_count": "capture_move_count_support",
         "max_capture_chain_length": "max_capture_chain_length_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -169,7 +169,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _target_answer_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced target-answer cycling."""
 
@@ -177,16 +177,16 @@ def _target_answer_params_for_query_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return target_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return target_params
-    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    target_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return target_params
 
 
 def _scene_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Decorrelate balanced scene cycling from balanced query cycling."""
 
@@ -196,7 +196,7 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if params.get("scene_variant") is not None:
         return scene_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return scene_params
     enabled = bool(
         params.get(
@@ -221,14 +221,14 @@ def _scene_variant_params_for_query_cycle(
         return scene_params
     if max(positives) - min(positives) > 1e-9:
         return scene_params
-    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    scene_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return scene_params
 
 
 def _style_variant_params_for_query_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Decorrelate balanced style cycling from balanced query cycling."""
 
@@ -238,7 +238,7 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if params.get("style_variant") is not None:
         return style_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return style_params
     enabled = bool(
         params.get(
@@ -263,26 +263,26 @@ def _style_variant_params_for_query_cycle(
         return style_params
     if max(positives) - min(positives) > 1e-9:
         return style_params
-    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    style_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return style_params
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    return resolve_games_query_variant(
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
     )
 
 
@@ -314,7 +314,7 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual sampling axes for one Checkers instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
@@ -322,7 +322,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=_scene_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="scene_variant",
         explicit_key="scene_variant",
@@ -334,7 +334,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=_style_variant_params_for_query_cycle(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         ),
         namespace="style_variant",
         explicit_key="style_variant",
@@ -342,10 +342,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balance_flag_key="balanced_style_variant_sampling",
         supported=SUPPORTED_CHECKERS_STYLE_VARIANTS,
     )
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _target_answer_params_for_query_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -354,7 +354,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -365,12 +365,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=getattr(_DEFAULTS, target_support_key),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -557,14 +557,14 @@ def _evaluate_board(
     *,
     board: Board,
     current_player: int,
-    query_variant: str,
+    query_id: str,
     marked_coord: Coord | None = None,
 ) -> _SceneEvaluation | None:
     """Evaluate one finalized board under the active query semantics."""
 
     legal_moves = tuple(enumerate_legal_moves(board, int(current_player)))
     capture_moves = tuple(move for move in legal_moves if move.captured is not None)
-    if str(query_variant) == "max_capture_chain_length":
+    if str(query_id) == "max_capture_chain_length":
         if marked_coord is None:
             return None
         marked = (int(marked_coord[0]), int(marked_coord[1]))
@@ -592,7 +592,7 @@ def _evaluate_board(
             max_capture_chains=max_chains,
             selected_capture_chain=selected,
         )
-    relevant_moves = legal_moves if str(query_variant) == "legal_move_count" else capture_moves
+    relevant_moves = legal_moves if str(query_id) == "legal_move_count" else capture_moves
     destinations = tuple((int(move.landing[0]), int(move.landing[1])) for move in relevant_moves)
     if len(set(destinations)) != len(destinations):
         return None
@@ -606,11 +606,11 @@ def _evaluate_board(
     )
 
 
-def _base_board_for_axes(*, rng, current_player: int, query_variant: str, target_answer: int) -> Tuple[Board, str, Coord | None]:
+def _base_board_for_axes(*, rng, current_player: int, query_id: str, target_answer: int) -> Tuple[Board, str, Coord | None]:
     """Construct one sparse base board that already meets the requested answer."""
 
     mutable = [list(int(cell) for cell in row) for row in empty_board()]
-    if str(query_variant) == "max_capture_chain_length":
+    if str(query_id) == "max_capture_chain_length":
         board, marked_coord = _base_king_chain_board(
             rng=rng,
             current_player=int(current_player),
@@ -618,7 +618,7 @@ def _base_board_for_axes(*, rng, current_player: int, query_variant: str, target
         )
         return board, "marked_king_capture_chain", marked_coord
 
-    if str(query_variant) == "legal_move_count":
+    if str(query_id) == "legal_move_count":
         if int(target_answer) > 0:
             selected_slots = list(rng.sample(_quiet_slots(int(current_player)), k=int(target_answer)))
             for origin, _landing in selected_slots:
@@ -646,7 +646,7 @@ def _try_add_fillers(
     rng,
     board: Board,
     current_player: int,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     scene_variant: str,
     marked_coord: Coord | None = None,
@@ -660,7 +660,7 @@ def _try_add_fillers(
     evaluation = _evaluate_board(
         board=freeze_board(mutable),
         current_player=int(current_player),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         marked_coord=marked_coord,
     )
     if evaluation is None or int(evaluation.answer) != int(target_answer):
@@ -681,7 +681,7 @@ def _try_add_fillers(
         candidate = _evaluate_board(
             board=frozen,
             current_player=int(current_player),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             marked_coord=marked_coord,
         )
         if candidate is None or int(candidate.answer) != int(target_answer):
@@ -694,7 +694,7 @@ def _try_add_fillers(
     evaluation = _evaluate_board(
         board=frozen,
         current_player=int(current_player),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         marked_coord=marked_coord,
     )
     final_occupied = int(occupied_piece_count(frozen))
@@ -712,14 +712,14 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
     base_board, base_mode, marked_coord = _base_board_for_axes(
         rng=rng,
         current_player=int(current_player),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         target_answer=int(axes.target_answer),
     )
     board, evaluation, occupied_count = _try_add_fillers(
         rng=rng,
         board=base_board,
         current_player=int(current_player),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         target_answer=int(axes.target_answer),
         scene_variant=str(axes.scene_variant),
         marked_coord=marked_coord,
@@ -733,10 +733,10 @@ def _sample_scene(*, rng, axes: _ResolvedAxes, params: Mapping[str, Any]) -> _Sa
     )
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
-    """Return deterministic prompt examples for the active Checkers query variant."""
+def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
+    """Return deterministic prompt examples for the active Checkers query id."""
 
-    answer_value = 4 if str(query_variant) == "max_capture_chain_length" else 2 if str(query_variant) == "capture_move_count" else 3
+    answer_value = 4 if str(query_id) == "max_capture_chain_length" else 2 if str(query_id) == "capture_move_count" else 3
     evidence_value = [[132, 188, 196, 252], [204, 188, 268, 252]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -830,7 +830,7 @@ class GamesCheckersMoveCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(axes.query_id))
         current_player_name = player_name(int(sampled_scene.current_player))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -838,14 +838,14 @@ class GamesCheckersMoveCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "current_player_name": str(current_player_name),
@@ -865,7 +865,7 @@ class GamesCheckersMoveCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             occupied_count=int(sampled_scene.occupied_count),
             target_answer=int(axes.target_answer),
             evidence_count=len(sampled_scene.evaluation.evidence_entity_ids),
@@ -890,8 +890,7 @@ class GamesCheckersMoveCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(BOARD_SIZE),
                     "current_player": str(current_player_name),
@@ -900,19 +899,18 @@ class GamesCheckersMoveCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size": int(BOARD_SIZE),
                     "current_player": str(current_player_name),
@@ -931,8 +929,7 @@ class GamesCheckersMoveCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "board_size": int(BOARD_SIZE),
                 "current_player": str(current_player_name),
@@ -985,9 +982,8 @@ class GamesCheckersMoveCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="checkers",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -996,7 +992,7 @@ class GamesCheckersMoveCountPublicTask(QuerySubsetTaskMixin, GamesCheckersMoveCo
     """Count Checkers landing squares matching one sampled move condition."""
 
     task_id = "task_games__checkers__move_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "legal_move_count",
         "capture_move_count",
     )
@@ -1007,7 +1003,7 @@ class GamesCheckersMaxCaptureChainLengthTask(FixedQueryVariantTaskMixin, GamesCh
     """Find the maximum capture-chain length for the marked king checker."""
 
     task_id = "task_games__checkers__max_capture_chain_length"
-    fixed_query_variant = "max_capture_chain_length"
+    fixed_query_id = "max_capture_chain_length"
 
 
 __all__ = [

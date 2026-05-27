@@ -1,6 +1,6 @@
 # task_illustrations__environment__lit_window_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -14,7 +14,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 The task renders an illustrated street or canal-city environment with building
 facades and visible lit/unlit windows.
 
-The public task uses `query_variant=default` and records
+The task records
 `query_id=building_window_count`. The query asks how many lit windows are shown
 on the buildings.
 
@@ -37,7 +37,7 @@ on the buildings.
 ## Prompt Contract
 - `scene_key = environment_object_canvas`
 - `task_key = building_window_count_task`
-- `query_key = building_window_count`
+- `query_id = building_window_count`
 - prompts ask for lit windows on buildings
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

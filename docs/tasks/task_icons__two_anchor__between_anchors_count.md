@@ -9,7 +9,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one single-panel `Scene` image of free-placed icons; exactly two Scene icons are visibly marked as `Anchor A` and `Anchor B`.
-2. Supported `query_variant` values: `between_anchors_strip_count`.
+2. Supported `query_id` values: `inside_vertical_strip|inside_horizontal_strip`.
 3. Supported semantic parameter axis: `strip_axis=vertical|horizontal`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
@@ -44,7 +44,7 @@
 7. Balanced defaults: seeded sampling first balances the vertical/horizontal strip axis, then the task passes a decoupled index to independent count sampling so each axis cycles through the full target-count support.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query variant.
+1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_between_two_anchors_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_between_two_anchors_count_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

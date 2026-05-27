@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: count scheduled events that overlap the highlighted reference event.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `overlap_count`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` over all event blocks that overlap the reference event.

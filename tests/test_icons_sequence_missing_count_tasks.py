@@ -48,9 +48,9 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert len(out.evidence_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "icons_sequence_missing_count"
     assert execution["question_format"] == "infer_missing_sequence_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "arithmetic_progression"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "arithmetic_progression"
     assert int(execution["sequence_length"]) == 5
     assert int(execution["missing_cell_index"]) == 2

@@ -33,4 +33,4 @@ Measure:
 
 ## Notes
 - Physics tasks should keep difficulty tied to the visible diagram structure plus the arithmetic/readout burden, not raw answer magnitude alone.
-- Early physics tasks usually want one family weighting policy per task group, with `scene_variant` and `query_variant` modulating the per-instance criterion values.
+- Early physics tasks usually want one family weighting policy per task group, with `scene_variant` and `query_id` modulating the per-instance criterion values.

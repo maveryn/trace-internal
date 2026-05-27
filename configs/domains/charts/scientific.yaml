@@ -13,13 +13,13 @@ generation:
     y_value_min: 0
     y_value_max: 100
     threshold_values: [45, 55, 65]
-    query_variant_weights:
+    query_id_weights:
       curve_at_x_extremum_label: 1.0
       threshold_series_count: 1.0
       cross_panel_delta_extremum_label: 1.0
       curve_intersection_count: 1.0
       earliest_maximum_panel_label: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
   task_overrides:
     task_charts__curve_panels__curve_at_x_extremum_label:
       panel_count_min: 6

@@ -79,7 +79,7 @@ def test_games_solitaire_move_legality_has_one_legal_option() -> None:
         execution["legal_source_id"],
         execution["legal_target_id"],
     }
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == "solitaire"
     assert out.query_id == "move_legality_label"
 

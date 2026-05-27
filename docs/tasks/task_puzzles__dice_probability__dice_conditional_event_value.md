@@ -8,7 +8,7 @@
 5. Goal: compute a reduced-fraction conditional probability for selecting one visible-top die from a shown dice tray.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `conditional_value_property_given_color_probability|conditional_color_given_value_property_probability|conditional_color_given_value_set_probability`
 3. Dice count: `8..12`
 4. Conditional denominator support: `4..6` visible dice

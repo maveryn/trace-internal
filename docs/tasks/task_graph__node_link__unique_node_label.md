@@ -8,7 +8,7 @@
 5. Objective: identify the visible node label that is the unique neighbor, successor, or predecessor of one queried node.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `unique_neighbor_label`, `unique_successor_label`, or `unique_predecessor_label`
 3. Supported `graph_directionality`: `undirected|directed`
 4. `answer_gt.type`: `string`

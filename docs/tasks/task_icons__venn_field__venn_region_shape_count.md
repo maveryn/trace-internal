@@ -1,6 +1,6 @@
 # `task_icons__venn_field__venn_region_shape_count`
 
-Status: reviewed pending qwen25vl7b solve-rate calibration.
+Status: pending v0 review/calibration artifact refresh.
 
 ## Identity
 - domain: `icons`
@@ -69,10 +69,6 @@ three-attribute bindings; color and fill style are separate target modes.
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
 
-## Calibration Artifacts
-- Calibration parquet and distribution report live under `out/calibration/current/icons/venn_field/task_icons__venn_field__venn_region_shape_count/`.
-- Review workbook: `plans/task-reviews/icons/venn_field/task_icons__venn_field__venn_region_shape_count/task_icons__venn_field__venn_region_shape_count.xlsx`
-- Scene workbook: `plans/task-reviews/icons/venn_field/scene_review.xlsx`
-- Distribution gate passed on cumulative validation at `400` samples; the
-  standard solve-rate probe still uses the original `100`-sample parquet.
-  qwen25vl7b solve-rate is pending.
+## Current Review Status
+Current v0 review and solve-rate artifacts are pending. Use
+`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.

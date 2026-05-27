@@ -36,9 +36,9 @@ def test_icons_relation_reflection_match_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_reflection_match_label"
     assert execution["question_format"] == "select_scene_cell_matching_requested_reference_reflection"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "diagonal_main_reflection_match"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "diagonal_main_reflection_match"
     assert execution["reflection_axis"] == "mirror_diagonal_main"
     assert int(execution["object_count"]) == 5
@@ -93,7 +93,7 @@ def test_icons_relation_reflection_match_balanced_sampling_defaults() -> None:
             max_attempts=200,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(execution["query_id"])
         assert int(execution["object_count"]) == 5
         assert len([cell for cell in out.trace_payload["scene_ir"]["entities"] if cell.get("panel") == "scene"]) == 5

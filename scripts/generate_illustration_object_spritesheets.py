@@ -438,9 +438,9 @@ def _draw_environment_feature(draw: ImageDraw.ImageDraw, item: SpriteItem, bound
 
 
 def _draw_counterfactual_object(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    query_variant = str(item["query_variant"])
+    query_id = str(item["query_id"])
     style = str(item.get("style_id", item.get("id", "")))
-    colors = cf_visible._sample_colors(query_variant, rng)
+    colors = cf_visible._sample_colors(query_id, rng)
     aspect = {
         cf_visible.BUTTERFLY_VARIANT: 1.25,
         cf_visible.BICYCLE_VARIANT: 1.60,
@@ -451,30 +451,30 @@ def _draw_counterfactual_object(draw: ImageDraw.ImageDraw, item: SpriteItem, bou
         cf_visible.FORK_VARIANT: 0.55,
         cf_visible.SNOWFLAKE_VARIANT: 1.0,
         cf_visible.CHAIR_VARIANT: 0.86,
-    }.get(query_variant, 1.4)
+    }.get(query_id, 1.4)
     box = _object_box(bounds, aspect)
-    visible_count = int(item.get("visible_count", cf_visible.CANONICAL_BIAS_ANSWER[query_variant]))
-    if query_variant == cf_visible.BIRD_VARIANT:
+    visible_count = int(item.get("visible_count", cf_visible.CANONICAL_BIAS_ANSWER[query_id]))
+    if query_id == cf_visible.BIRD_VARIANT:
         cf_visible._draw_bird(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.QUADRUPED_VARIANT:
+    elif query_id == cf_visible.QUADRUPED_VARIANT:
         cf_visible._draw_quadruped(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.AIRPLANE_VARIANT:
+    elif query_id == cf_visible.AIRPLANE_VARIANT:
         cf_visible._draw_airplane(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.BUTTERFLY_VARIANT:
+    elif query_id == cf_visible.BUTTERFLY_VARIANT:
         cf_visible._draw_butterfly(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.BICYCLE_VARIANT:
+    elif query_id == cf_visible.BICYCLE_VARIANT:
         cf_visible._draw_bicycle(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.TRAFFIC_LIGHT_VARIANT:
+    elif query_id == cf_visible.TRAFFIC_LIGHT_VARIANT:
         cf_visible._draw_traffic_light(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.CLOVER_VARIANT:
+    elif query_id == cf_visible.CLOVER_VARIANT:
         cf_visible._draw_clover(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.STAR_VARIANT:
+    elif query_id == cf_visible.STAR_VARIANT:
         cf_visible._draw_star(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.GLOVE_VARIANT:
+    elif query_id == cf_visible.GLOVE_VARIANT:
         cf_visible._draw_glove(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.FORK_VARIANT:
+    elif query_id == cf_visible.FORK_VARIANT:
         cf_visible._draw_fork(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_variant == cf_visible.SNOWFLAKE_VARIANT:
+    elif query_id == cf_visible.SNOWFLAKE_VARIANT:
         cf_visible._draw_snowflake(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
     else:
         cf_visible._draw_chair(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
@@ -492,7 +492,7 @@ def _part_plural(part_kind: str) -> str:
 
 
 def _make_counterfactual_count_sheet(*, manifest: list[dict[str, Any]], taxonomy: list[dict[str, Any]]) -> None:
-    query_variants = [
+    query_ids = [
         cf_visible.BIRD_VARIANT,
         cf_visible.QUADRUPED_VARIANT,
         cf_visible.AIRPLANE_VARIANT,
@@ -506,7 +506,7 @@ def _make_counterfactual_count_sheet(*, manifest: list[dict[str, Any]], taxonomy
         cf_visible.SNOWFLAKE_VARIANT,
         cf_visible.CHAIR_VARIANT,
     ]
-    row_specs = [(query_variant, style_id) for query_variant in query_variants for style_id in cf_visible.STYLE_SUPPORT[query_variant]]
+    row_specs = [(query_id, style_id) for query_id in query_ids for style_id in cf_visible.STYLE_SUPPORT[query_id]]
     label_w = 230
     tile_w = 158
     row_h = 164
@@ -519,13 +519,13 @@ def _make_counterfactual_count_sheet(*, manifest: list[dict[str, Any]], taxonomy
     _draw_text(draw, (22, 50), "Each object style gets one row: canonical/original count first, then every noncanonical visible count.", size=12, fill=MUTED, bold=False)
     generated_items: list[dict[str, Any]] = []
 
-    for row_index, (query_variant, style_id) in enumerate(row_specs):
+    for row_index, (query_id, style_id) in enumerate(row_specs):
         row_y = HEADER_H + row_index * row_h
-        part_kind = str(cf_visible.COUNTED_PART_KIND[query_variant])
-        canonical = int(cf_visible.CANONICAL_BIAS_ANSWER[query_variant])
-        support = tuple(int(value) for value in cf_visible._support_for_variant(query_variant, {}))
+        part_kind = str(cf_visible.COUNTED_PART_KIND[query_id])
+        canonical = int(cf_visible.CANONICAL_BIAS_ANSWER[query_id])
+        support = tuple(int(value) for value in cf_visible._support_for_variant(query_id, {}))
         counts = (canonical, *(count for count in support if int(count) != canonical))
-        object_name = cf_visible.OBJECT_DESCRIPTION[query_variant].replace("a stylized ", "")
+        object_name = cf_visible.OBJECT_DESCRIPTION[query_id].replace("a stylized ", "")
         label_panel = (12.0, row_y + 10.0, label_w - 14.0, row_y + row_h - 10.0)
         draw.rounded_rectangle(_scale_box(label_panel), radius=9 * SCALE, fill=(246, 247, 241), outline=(211, 214, 204), width=max(1, SCALE))
         _draw_text(draw, (label_panel[0] + 12.0, label_panel[1] + 18.0), object_name, size=14, fill=TEXT, bold=True)
@@ -541,22 +541,22 @@ def _make_counterfactual_count_sheet(*, manifest: list[dict[str, Any]], taxonomy
             draw.rounded_rectangle(_scale_box(badge), radius=5 * SCALE, fill=(229, 239, 229) if is_original else (238, 232, 231), outline=(184, 200, 184) if is_original else (207, 190, 187), width=max(1, SCALE))
             _center_text(draw, badge, "original" if is_original else "counterfactual", size=8, fill=(51, 80, 58) if is_original else (92, 60, 56), bold=True)
             item = {
-                "id": f"{query_variant}_{style_id}_{visible_count}",
+                "id": f"{query_id}_{style_id}_{visible_count}",
                 "name": f"{object_name}: {_part_phrase(part_kind, int(visible_count))}",
                 "group": part_kind,
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "style_id": style_id,
                 "visible_count": int(visible_count),
                 "is_original": bool(is_original),
             }
             object_area = (panel[0] + 12.0, panel[1] + 34.0, panel[2] - 12.0, panel[3] - 36.0)
-            if query_variant == cf_visible.TRAFFIC_LIGHT_VARIANT:
+            if query_id == cf_visible.TRAFFIC_LIGHT_VARIANT:
                 object_area = (panel[0] + 4.0, panel[1] + 30.0, panel[2] - 4.0, panel[3] - 8.0)
-            elif query_variant == cf_visible.FORK_VARIANT:
+            elif query_id == cf_visible.FORK_VARIANT:
                 object_area = (panel[0] + 8.0, panel[1] + 28.0, panel[2] - 8.0, panel[3] - 34.0)
-            elif query_variant in {cf_visible.GLOVE_VARIANT, cf_visible.CHAIR_VARIANT}:
+            elif query_id in {cf_visible.GLOVE_VARIANT, cf_visible.CHAIR_VARIANT}:
                 object_area = (panel[0] + 8.0, panel[1] + 30.0, panel[2] - 8.0, panel[3] - 36.0)
-            elif query_variant == cf_visible.BUTTERFLY_VARIANT:
+            elif query_id == cf_visible.BUTTERFLY_VARIANT:
                 object_area = (object_area[0] + 8.0, object_area[1] + 18.0, object_area[2] - 8.0, object_area[3] - 3.0)
             _draw_counterfactual_object(draw, item, object_area, random.Random(_seed(str(item["id"]))))
             _center_text(draw, (panel[0] + 6.0, panel[3] - 29.0, panel[2] - 6.0, panel[3] - 10.0), _part_phrase(part_kind, int(visible_count)), size=10, fill=TEXT, bold=True)

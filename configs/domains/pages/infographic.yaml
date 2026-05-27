@@ -11,9 +11,9 @@ generation:
     excluded_metric_count_min: 2
     excluded_metric_count_max: 2
     section_except_included_count_min: 3
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_count_sampling: true
-    query_variant_weights:
+    query_id_weights:
       sum_named_metrics: 1.0
       section_extrema_arithmetic: 1.0
       section_total_extrema_difference: 1.0

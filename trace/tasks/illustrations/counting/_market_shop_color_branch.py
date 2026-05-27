@@ -373,7 +373,6 @@ class MarketShopColorBranch:
                 "scene_id": SCENE_ID,
                 "entities": urban_market_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(sample.query_id),
                     "query_id": str(sample.query_id),
                     "target_surface": str(sample.surface_key),
                     "target_color_name": str(sample.color_name),
@@ -381,7 +380,6 @@ class MarketShopColorBranch:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -424,7 +422,6 @@ class MarketShopColorBranch:
                 "shop_bboxes_by_id_px": shop_bbox_map(scene),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
                 "setting_id": str(scene.setting_id),
@@ -458,7 +455,6 @@ class MarketShopColorBranch:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

@@ -45,21 +45,21 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 TASK_ID = "charts_parallel_coords_base"
 SCENE_ID = "parallel_coords"
 
-CONDITION_QUERY_VARIANTS: Tuple[str, ...] = (
+CONDITION_QUERY_IDS: Tuple[str, ...] = (
     "above_on_both_axes",
     "below_on_both_axes",
     "above_on_one_below_on_other",
 )
-DELTA_QUERY_VARIANTS: Tuple[str, ...] = (
+DELTA_QUERY_IDS: Tuple[str, ...] = (
     "largest_increase_between_axes",
     "largest_decrease_between_axes",
     "largest_absolute_change_between_axes",
 )
-CROSSING_QUERY_VARIANTS: Tuple[str, ...] = (
+CROSSING_QUERY_IDS: Tuple[str, ...] = (
     "all_crossings_between_adjacent_axes",
     "crossings_involving_profile_between_axes",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = CONDITION_QUERY_VARIANTS + DELTA_QUERY_VARIANTS + CROSSING_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = CONDITION_QUERY_IDS + DELTA_QUERY_IDS + CROSSING_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("vertical_parallel_coordinates",)
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "parallel_coordinates")
@@ -231,17 +231,17 @@ def _balanced_int(
     return int(values[int(index) % len(values)]), uniform_probability_map(values)
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -367,8 +367,8 @@ def _sample_base(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    query_variant: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
 ) -> Tuple[str, Tuple[str, ...], List[str], int, int, int, int, Dict[str, Any]]:
     scene_variant, scene_probs = _resolve_scene_variant(params, instance_seed=int(instance_seed))
     axis_min, axis_max = resolve_required_int_bounds(
@@ -389,7 +389,7 @@ def _sample_base(
         fallback_max=8,
         context=f"generation defaults for {TASK_ID}",
     )
-    if str(query_variant) in CROSSING_QUERY_VARIANTS:
+    if str(query_id) in CROSSING_QUERY_IDS:
         axis_min, axis_max = resolve_required_int_bounds(
             params,
             _GEN_DEFAULTS,
@@ -435,10 +435,9 @@ def _sample_base(
     metrics = list(_METRIC_LABEL_POOL)
     metric_rng.shuffle(metrics)
     trace_params = {
-        "query_variant": str(query_variant),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": str(scene_variant),
-        "query_variant_probabilities": dict(query_variant_probabilities),
+        "query_id_probabilities": dict(query_id_probabilities),
         "scene_variant_probabilities": dict(scene_probs),
         "axis_count": int(axis_count),
         "axis_count_probabilities": dict(axis_count_probs),
@@ -463,8 +462,8 @@ def _build_dataset(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
-    query_variant: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
 ) -> _Dataset:
     (
         scene_variant,
@@ -478,10 +477,10 @@ def _build_dataset(
     ) = _sample_base(
         params=params,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
-        query_variant_probabilities=query_variant_probabilities,
+        query_id=str(query_id),
+        query_id_probabilities=query_id_probabilities,
     )
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.values.{query_variant}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.values.{query_id}")
     values: List[List[int]] = [
         [int(rng.randint(int(value_min), int(value_max))) for _ in range(int(axis_count))]
         for _ in range(int(profile_count))
@@ -490,21 +489,21 @@ def _build_dataset(
         params,
         instance_seed=int(instance_seed),
         axis_count=int(axis_count),
-        adjacent_only=str(query_variant) in CROSSING_QUERY_VARIANTS,
-        namespace=f"{TASK_ID}.{query_variant}.axis_pair",
+        adjacent_only=str(query_id) in CROSSING_QUERY_IDS,
+        namespace=f"{TASK_ID}.{query_id}.axis_pair",
     )
     threshold: int | None = None
     reference_profile_id: str | None = None
     evidence_profile_ids: Tuple[str, ...] = ()
     crossing_pairs: Tuple[Tuple[str, str], ...] = ()
 
-    if str(query_variant) in CONDITION_QUERY_VARIANTS:
+    if str(query_id) in CONDITION_QUERY_IDS:
         threshold_min = _gen_int(params, "condition_threshold_min", 8)
         threshold_max = _gen_int(params, "condition_threshold_max", 14)
         threshold, threshold_probs = _balanced_int(
             params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.threshold",
+            namespace=f"{TASK_ID}.{query_id}.threshold",
             low=int(threshold_min),
             high=int(threshold_max),
         )
@@ -513,14 +512,14 @@ def _build_dataset(
         target_count, target_count_probs = _balanced_int(
             params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.answer",
+            namespace=f"{TASK_ID}.{query_id}.answer",
             low=int(count_min),
             high=max(int(count_min), int(count_max)),
         )
         evidence_indices = set(rng.sample(list(range(int(profile_count))), int(target_count)))
         for profile_index in range(int(profile_count)):
             is_target = int(profile_index) in evidence_indices
-            if str(query_variant) == "above_on_both_axes":
+            if str(query_id) == "above_on_both_axes":
                 if is_target:
                     values[profile_index][axis_i] = int(rng.randint(int(threshold) + 1, int(value_max)))
                     values[profile_index][axis_j] = int(rng.randint(int(threshold) + 1, int(value_max)))
@@ -529,7 +528,7 @@ def _build_dataset(
                     values[profile_index][axis_i] = int(rng.randint(int(value_min), int(value_max)))
                     values[profile_index][axis_j] = int(rng.randint(int(value_min), int(value_max)))
                     values[profile_index][fail_axis] = int(rng.randint(int(value_min), int(threshold)))
-            elif str(query_variant) == "below_on_both_axes":
+            elif str(query_id) == "below_on_both_axes":
                 if is_target:
                     values[profile_index][axis_i] = int(rng.randint(int(value_min), int(threshold) - 1))
                     values[profile_index][axis_j] = int(rng.randint(int(value_min), int(threshold) - 1))
@@ -558,11 +557,11 @@ def _build_dataset(
                 "target_count_probabilities": dict(target_count_probs),
             }
         )
-    elif str(query_variant) in DELTA_QUERY_VARIANTS:
+    elif str(query_id) in DELTA_QUERY_IDS:
         target_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.target_profile",
+            namespace=f"{TASK_ID}.{query_id}.target_profile",
         ) % int(profile_count)
         deltas = list(range(1, min(12, int(value_max) - int(value_min)) + 1))
         rng.shuffle(deltas)
@@ -575,10 +574,10 @@ def _build_dataset(
             base_low = int(value_min)
             base_high = int(value_max) - int(delta)
             base = int(rng.randint(int(base_low), int(base_high)))
-            if str(query_variant) == "largest_increase_between_axes":
+            if str(query_id) == "largest_increase_between_axes":
                 values[profile_index][axis_i] = int(base)
                 values[profile_index][axis_j] = int(base + delta)
-            elif str(query_variant) == "largest_decrease_between_axes":
+            elif str(query_id) == "largest_decrease_between_axes":
                 values[profile_index][axis_i] = int(base + delta)
                 values[profile_index][axis_j] = int(base)
             else:
@@ -592,13 +591,13 @@ def _build_dataset(
         answer = str(profile_labels[int(target_index)])
         answer_type = "string"
         trace_params.update({"target_profile_index": int(target_index), "target_delta": int(target_delta)})
-    elif str(query_variant) == "all_crossings_between_adjacent_axes":
+    elif str(query_id) == "all_crossings_between_adjacent_axes":
         max_crossings = min(_gen_int(params, "crossing_answer_count_max", 10), (int(profile_count) * (int(profile_count) - 1)) // 2)
         min_crossings = min(_gen_int(params, "crossing_answer_count_min", 1), int(max_crossings))
         target_count, target_count_probs = _balanced_int(
             params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.answer",
+            namespace=f"{TASK_ID}.{query_id}.answer",
             low=int(min_crossings),
             high=int(max_crossings),
         )
@@ -619,20 +618,20 @@ def _build_dataset(
         answer = int(len(crossing_pairs))
         answer_type = "integer"
         trace_params.update({"target_count": int(target_count), "target_count_probabilities": dict(target_count_probs)})
-    elif str(query_variant) == "crossings_involving_profile_between_axes":
+    elif str(query_id) == "crossings_involving_profile_between_axes":
         max_cross = min(_gen_int(params, "profile_crossing_answer_count_max", 5), int(profile_count) - 1)
         min_cross = min(_gen_int(params, "profile_crossing_answer_count_min", 1), int(max_cross))
         target_count, target_count_probs = _balanced_int(
             params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.answer",
+            namespace=f"{TASK_ID}.{query_id}.answer",
             low=int(min_cross),
             high=int(max_cross),
         )
         target_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.target_profile",
+            namespace=f"{TASK_ID}.{query_id}.target_profile",
         ) % int(profile_count)
         others = [index for index in range(int(profile_count)) if int(index) != int(target_index)]
         order_a = [int(target_index)] + others
@@ -656,7 +655,7 @@ def _build_dataset(
             }
         )
     else:
-        raise ValueError(f"unsupported query variant: {query_variant}")
+        raise ValueError(f"unsupported query id: {query_id}")
 
     profiles = tuple(
         _Profile(
@@ -684,7 +683,7 @@ def _build_dataset(
         metrics=tuple(metrics),
         profiles=profiles,
         query=_Query(
-            query_id=str(query_variant),
+            query_id=str(query_id),
             answer=answer,
             answer_type=str(answer_type),
             axis_i=int(axis_i),
@@ -939,12 +938,12 @@ class ChartsParallelCoordinatesProfileTask:
         raise RuntimeError(f"failed to generate {self.task_id} after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         dataset = _build_dataset(
             params=params,
             instance_seed=int(instance_seed),
-            query_variant=str(query_variant),
-            query_variant_probabilities=query_variant_probabilities,
+            query_id=str(query_id),
+            query_id_probabilities=query_id_probabilities,
         )
         render_params = _resolve_render_params({**dict(params), "_render_style_seed": int(instance_seed)})
         background, background_meta = make_background_canvas(
@@ -987,7 +986,7 @@ class ChartsParallelCoordinatesProfileTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
@@ -1024,7 +1023,7 @@ class ChartsParallelCoordinatesProfileTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(len(dataset.profiles) * len(dataset.metrics), [20, 54]),
-                "reasoning_load": clamp_unit_interval(_QUERY_LOADS[str(query_variant)]),
+                "reasoning_load": clamp_unit_interval(_QUERY_LOADS[str(query_id)]),
                 "scene_variant_load": 0.68,
             },
         )
@@ -1033,8 +1032,7 @@ class ChartsParallelCoordinatesProfileTask:
                 "scene_kind": "chart_parallel_coords",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
                     "axis_pair": list(axis_pair),
@@ -1042,8 +1040,7 @@ class ChartsParallelCoordinatesProfileTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1073,8 +1070,7 @@ class ChartsParallelCoordinatesProfileTask:
                 "threshold_bboxes_px": {str(key): list(value) for key, value in rendered.threshold_bboxes_px.items()},
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "question_format": "parallel_coords_query",
                 "answer": answer_value,
@@ -1110,7 +1106,7 @@ class ChartsParallelCoordinatesProfileTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             scene_id=SCENE_ID,
         )
@@ -1124,7 +1120,7 @@ class ChartsParallelCoordinatesAxisConditionCountTask(
     """Count profiles satisfying two axis predicates."""
 
     task_id = "task_charts__parallel_coords__axis_condition_count"
-    allowed_query_variants = CONDITION_QUERY_VARIANTS
+    allowed_query_ids = CONDITION_QUERY_IDS
 
 
 @register_task
@@ -1135,7 +1131,7 @@ class ChartsParallelCoordinatesAxisDeltaExtremumLabelTask(
     """Return the profile with the largest axis-to-axis change."""
 
     task_id = "task_charts__parallel_coords__axis_delta_extremum_label"
-    allowed_query_variants = DELTA_QUERY_VARIANTS
+    allowed_query_ids = DELTA_QUERY_IDS
 
 
 @register_task
@@ -1146,7 +1142,7 @@ class ChartsParallelCoordinatesCrossingCountTask(
     """Count profile-line crossings between adjacent axes."""
 
     task_id = "task_charts__parallel_coords__crossing_count"
-    allowed_query_variants = CROSSING_QUERY_VARIANTS
+    allowed_query_ids = CROSSING_QUERY_IDS
 
 
 __all__ = [
@@ -1154,9 +1150,9 @@ __all__ = [
     "ChartsParallelCoordinatesAxisDeltaExtremumLabelTask",
     "ChartsParallelCoordinatesCrossingCountTask",
     "ChartsParallelCoordinatesProfileTask",
-    "CONDITION_QUERY_VARIANTS",
-    "CROSSING_QUERY_VARIANTS",
-    "DELTA_QUERY_VARIANTS",
+    "CONDITION_QUERY_IDS",
+    "CROSSING_QUERY_IDS",
+    "DELTA_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

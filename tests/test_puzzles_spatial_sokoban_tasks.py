@@ -42,7 +42,7 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
         for query_index, query_id in enumerate(sorted(queries)):
             out = task_cls().generate(
                 2026052300 + (task_index * 30) + query_index,
-                params={"query_variant": query_id},
+                params={"query_id": query_id},
                 max_attempts=30,
             )
             trace = out.trace_payload
@@ -50,9 +50,9 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
 
             json.dumps(trace)
             assert out.scene_id == "sokoban"
-            assert out.query_variant == "default"
+            assert out.query_id == "default"
             assert out.query_id == query_id
-            assert execution["query_variant"] == "default"
+            assert execution["query_id"] == "default"
             assert execution["query_id"] == query_id
             assert trace["query_spec"]["query_id"] == query_id
             assert trace["render_spec"]["scene_id"] == "sokoban"
@@ -86,7 +86,7 @@ def test_sokoban_tasks_emit_public_contracts() -> None:
 def test_sokoban_generation_is_deterministic() -> None:
     task = PuzzlesSpatialSokobanPathSequenceLabelTask()
     params = {
-        "query_variant": "shortest_path_sequence_label",
+        "query_id": "shortest_path_sequence_label",
         "scene_variant": "paper_grid",
     }
     out_a = task.generate(2026052399, params=params, max_attempts=30)

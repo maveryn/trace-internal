@@ -19,7 +19,7 @@ Prompt-facing evidence is one bounding box around the correct labeled candidate 
 ## Prompt And Trace
 Prompt bundle: `physics_electrostatics_v0`; scene key: `electrostatics_field_map`; task key: `electrostatics_field_map_query`; query key: `zero_field_point_label`.
 
-Public outputs use `query_variant="default"` and `query_id="zero_field_point_label"`. The trace records the charge-axis orientation, charge coordinates, candidate point coordinates, selected option letter, and evidence entity ids.
+Outputs `query_id="zero_field_point_label"`. The trace records the charge-axis orientation, charge coordinates, candidate point coordinates, selected option letter, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized field-map scenario.

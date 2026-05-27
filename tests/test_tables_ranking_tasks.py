@@ -18,7 +18,7 @@ def test_table_ranking_label_variants_match_contract() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "kth_rank_in_column",
+                "query_id": "kth_rank_in_column",
                 "rank_direction": rank_direction,
                 "scene_variant": scene_variant,
             },
@@ -39,7 +39,7 @@ def test_table_ranking_label_variants_match_contract() -> None:
         query_column = str(execution["query_column"])
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-        assert str(out.query_variant) == "kth_rank_in_column"
+        assert str(out.query_id) == "kth_rank_in_column"
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -78,7 +78,7 @@ def test_table_ranking_label_prompt_examples_match_selected_variant() -> None:
     for index, rank_direction in enumerate(("highest", "lowest"), start=18640):
         out = task.generate(
             index,
-            params={"query_variant": "kth_rank_in_column", "rank_direction": rank_direction},
+            params={"query_id": "kth_rank_in_column", "rank_direction": rank_direction},
             max_attempts=10,
         )
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -89,7 +89,7 @@ def test_table_ranking_label_prompt_examples_match_selected_variant() -> None:
 
 def test_table_ranking_label_task_is_deterministic() -> None:
     task = TablesRankingLabelTask()
-    params = {"query_variant": "kth_highest_in_column", "scene_variant": "spreadsheet"}
+    params = {"query_id": "kth_highest_in_column", "scene_variant": "spreadsheet"}
     out_a = task.generate(18670, params=params, max_attempts=10)
     out_b = task.generate(18670, params=params, max_attempts=10)
 

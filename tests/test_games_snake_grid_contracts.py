@@ -22,13 +22,13 @@ from tests.helpers import read_jsonl
     (
         (
             GamesSnakeMoveSafetyTask,
-            {"query_variant": "safe_direction_count", "target_safe_direction_count": 2, "board_size": 8},
+            {"query_id": "safe_direction_count", "target_safe_direction_count": 2, "board_size": 8},
             "safe_direction_count",
             "integer",
         ),
         (
             GamesSnakePathOutcomeTask,
-            {"query_variant": "path_result_option_label", "target_planned_outcome": "game_over", "board_size": 8},
+            {"query_id": "path_result_option_label", "target_planned_outcome": "game_over", "board_size": 8},
             "path_result_option_label",
             "option_letter",
         ),
@@ -46,13 +46,13 @@ def test_games_snake_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == expected_type
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "snake"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) >= 1
     if expected_type == "option_letter":
@@ -69,7 +69,7 @@ def test_games_snake_public_tasks_emit_expected_contract(
 def test_games_snake_safe_count_matches_trace() -> None:
     out = GamesSnakeMoveSafetyTask().generate(
         98210,
-        params={"query_variant": "safe_direction_count", "target_safe_direction_count": 3},
+        params={"query_id": "safe_direction_count", "target_safe_direction_count": 3},
         max_attempts=512,
     )
     state_payload = out.trace_payload["execution_trace"]["state"]
@@ -90,7 +90,7 @@ def test_games_snake_safe_count_matches_trace() -> None:
 def test_games_snake_path_result_option_matches_simulation() -> None:
     out = GamesSnakePathOutcomeTask().generate(
         98230,
-        params={"query_variant": "path_result_option_label", "target_planned_outcome": "point"},
+        params={"query_id": "path_result_option_label", "target_planned_outcome": "point"},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]

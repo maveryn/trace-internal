@@ -192,10 +192,10 @@ def shared_liberty_coords(board: Sequence[Sequence[int]], group: Iterable[Coord]
     return tuple(sorted(shared))
 
 
-def supported_targets_for_query(query_variant: str = "marked_group_liberty_count") -> Tuple[int, ...]:
+def supported_targets_for_query(query_id: str = "marked_group_liberty_count") -> Tuple[int, ...]:
     """Return supported count targets for one Go group-property query."""
 
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant in {"marked_black_group_liberty_count", "marked_white_group_liberty_count"}:
         variant = "marked_group_liberty_count"
     if variant == "marked_group_liberty_count":
@@ -204,7 +204,7 @@ def supported_targets_for_query(query_variant: str = "marked_group_liberty_count
         return (1, 2, 3, 4, 5, 6)
     if variant == "marked_group_shared_liberty_count":
         return (1, 2, 3, 4, 5)
-    raise ValueError(f"unsupported Go query variant: {query_variant}")
+    raise ValueError(f"unsupported Go query id: {query_id}")
 
 
 def _sample_connected_group(rng, *, board_size: int, size: int, favor_center: bool) -> Tuple[Coord, ...]:
@@ -293,7 +293,7 @@ def _stone_specs(board: Sequence[Sequence[int]], *, marked_group_coords: Iterabl
 def build_go_board_state(
     *,
     rng,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     target_answer: int,
     player_color: str | None = None,
@@ -305,7 +305,7 @@ def build_go_board_state(
     target = int(target_answer)
     if int(board_size) < 5:
         raise ValueError("Go liberty boards require board_size >= 5")
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "marked_black_group_liberty_count":
         variant = "marked_group_liberty_count"
         player_color = "black"
@@ -317,7 +317,7 @@ def build_go_board_state(
         "marked_group_adjacent_enemy_count",
         "marked_group_shared_liberty_count",
     }:
-        raise ValueError(f"unsupported Go query variant: {query_variant}")
+        raise ValueError(f"unsupported Go query id: {query_id}")
     if target not in supported_targets_for_query(variant):
         raise ValueError(f"unsupported Go target {target} for {variant}")
     color = str(player_color or "black")
@@ -461,7 +461,7 @@ def build_go_board_state(
         )
 
     raise RuntimeError(
-        f"failed to construct a visible Go board with target {target} for {query_variant}/{color}/{scene_variant}"
+        f"failed to construct a visible Go board with target {target} for {query_id}/{color}/{scene_variant}"
     )
 
 

@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: `bbox_set` over every counted note.
-3. Public `query_variant` is `default`; the active timing/count branch is retained as `query_id` and `query_spec.params.query_variant`.
+3. The active timing/count branch is retained as `query_id` and `query_spec.params.query_id`.
 
 ## Implementation
 1. This task uses the shared games rhythm-lanes renderer.

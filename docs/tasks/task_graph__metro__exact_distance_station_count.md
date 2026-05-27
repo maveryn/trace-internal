@@ -8,7 +8,7 @@
 5. Objective: count stations at shortest metro-route distance exactly `k` route segments from a queried station.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `metro_exact_distance_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_set`

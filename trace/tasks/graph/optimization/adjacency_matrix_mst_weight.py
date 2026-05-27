@@ -31,7 +31,7 @@ from ..shared.visual_defaults import load_graph_background_defaults, load_graph_
 
 
 TASK_ID = "task_graph__adjacency__mst_weight"
-SUPPORTED_ADJACENCY_MATRIX_MST_QUERY_VARIANTS: Tuple[str, ...] = ("weighted_matrix_mst_weight",)
+SUPPORTED_ADJACENCY_MATRIX_MST_QUERY_IDS: Tuple[str, ...] = ("weighted_matrix_mst_weight",)
 
 
 @dataclass(frozen=True)
@@ -55,13 +55,13 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support axes for one weighted adjacency-matrix MST instance."""
 
-    query_variant: str
+    query_id: str
     node_count: int
     extra_edge_count: int
     edge_weight_min: int
     edge_weight_max: int
     label_variant: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     extra_edge_count_probabilities: Dict[str, float]
     label_variant_probabilities: Dict[str, float]
@@ -80,18 +80,18 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_ADJACENCY_MATRIX_MST_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_ADJACENCY_MATRIX_MST_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     label_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.label_variant")
     label_variant, label_probs = resolve_graph_named_variant(
@@ -136,13 +136,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         raise ValueError("edge_weight_max must leave room for non-MST distractor weights")
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         node_count=int(node_count),
         extra_edge_count=int(extra_edge_count),
         edge_weight_min=int(edge_weight_min),
         edge_weight_max=int(edge_weight_max),
         label_variant=str(label_variant),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         node_count_probabilities=uniform_probability_map(node_support, selected=int(node_count) if explicit_node is not None else None),
         extra_edge_count_probabilities=uniform_probability_map(
             extra_support,
@@ -248,7 +248,7 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -293,7 +293,7 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "representation_variant": str(rendered.representation_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "directed": False,
                     "weights": [{"edge": [str(left), str(right)], "weight": int(weight)} for (left, right), weight in sorted(sample.weights.items())],
                     "minimum_spanning_tree_edges": [list(edge) for edge in sample.mst_edges],
@@ -307,14 +307,13 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "node_count_probabilities": dict(query.node_count_probabilities),
                     "extra_edge_count": int(query.extra_edge_count),
@@ -345,8 +344,7 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "representation_variant": str(rendered.representation_variant),
                 "answer": int(sample.mst_weight),
                 "node_count": int(query.node_count),
@@ -380,9 +378,8 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
                 extra_edge_count=int(query.extra_edge_count),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

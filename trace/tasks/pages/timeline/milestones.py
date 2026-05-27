@@ -46,7 +46,7 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 TASK_ID = "pages_timeline_milestones_base"
 INTERVAL_MEMBERSHIP_TASK_ID = "task_pages__timeline__interval_membership_count"
 PUBLIC_SCENE_ID = "timeline"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "interval_membership_count",
 )
 _SOURCE_INTERVAL_RELATION_BY_VARIANT = {
@@ -137,7 +137,7 @@ class _RawTimelineEvent:
 class _ResolvedQuery:
   """Resolved semantic and visual support for one milestone-timeline query."""
 
-  query_variant: str
+  query_id: str
   interval_relation: str
   scene_variant: str
   style_variant: str
@@ -154,7 +154,7 @@ class _ResolvedQuery:
   event_count_support: Tuple[int, ...]
   between_count_support: Tuple[int, ...]
   outside_count_support: Tuple[int, ...]
-  query_variant_probabilities: Dict[str, float]
+  query_id_probabilities: Dict[str, float]
   interval_relation_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
   style_variant_probabilities: Dict[str, float]
@@ -227,24 +227,24 @@ def _resolve_str_support(params: Mapping[str, Any], key: str, fallback: Sequence
   return tuple(str(value) for value in resolved)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
   *,
   instance_seed: int,
   params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-  """Resolve the public timeline query variant, accepting old mirror names as aliases."""
+  """Resolve the public timeline query id, accepting old mirror names as aliases."""
 
-  explicit_variant = params.get("query_variant")
+  explicit_variant = params.get("query_id")
   if explicit_variant is not None and str(explicit_variant) in _SOURCE_INTERVAL_RELATION_BY_VARIANT:
     return "interval_membership_count", {"interval_membership_count": 1.0}
   return _resolve_named_variant(
     instance_seed=int(instance_seed),
     params=params,
-    explicit_key="query_variant",
-    weights_key="query_variant_weights",
-    balance_flag_key="balanced_query_variant_sampling",
-    supported=SUPPORTED_QUERY_VARIANTS,
-    namespace="query_variant",
+    explicit_key="query_id",
+    weights_key="query_id_weights",
+    balance_flag_key="balanced_query_id_sampling",
+    supported=SUPPORTED_QUERY_IDS,
+    namespace="query_id",
   )
 
 
@@ -264,7 +264,7 @@ def _resolve_interval_relation(
 ) -> Tuple[str, Dict[str, float]]:
   """Resolve whether to count events inside or outside the reference interval."""
 
-  source_variant = params.get("query_variant")
+  source_variant = params.get("query_id")
   if source_variant is not None and str(source_variant) in _SOURCE_INTERVAL_RELATION_BY_VARIANT:
     selected = str(_SOURCE_INTERVAL_RELATION_BY_VARIANT[str(source_variant)])
     return selected, {
@@ -297,7 +297,7 @@ def _resolve_support_selection_index(
   instance_seed: int,
   namespace: str,
 ) -> int:
-  """Return a support index decoupled from query-variant cycling."""
+  """Return a support index decoupled from query-id cycling."""
 
   return int(resolve_time_artifact_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
 
@@ -308,7 +308,7 @@ def _decoupled_named_axis_params(
   axis_key: str,
   namespace: str,
 ) -> Mapping[str, Any]:
-  """Return params with one balanced visual axis decoupled from query variants."""
+  """Return params with one balanced visual axis decoupled from query ids."""
 
   _ = axis_key, namespace
   return params
@@ -390,7 +390,7 @@ def _build_raw_events(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one concrete milestone-timeline query from balanced supports."""
 
-  query_variant, query_variant_probabilities = _resolve_query_variant(
+  query_id, query_id_probabilities = _resolve_query_id(
     instance_seed=int(instance_seed),
     params=params,
   )
@@ -559,7 +559,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
   )
 
   return _ResolvedQuery(
-    query_variant=str(query_variant),
+    query_id=str(query_id),
     interval_relation=str(interval_relation),
     scene_variant=str(scene_variant),
     style_variant=str(style_variant),
@@ -576,7 +576,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     event_count_support=tuple(int(value) for value in event_count_support),
     between_count_support=tuple(int(value) for value in between_count_support),
     outside_count_support=tuple(int(value) for value in outside_count_support),
-    query_variant_probabilities=dict(query_variant_probabilities),
+    query_id_probabilities=dict(query_id_probabilities),
     interval_relation_probabilities=dict(interval_relation_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
     style_variant_probabilities=dict(style_variant_probabilities),
@@ -658,7 +658,7 @@ class _PagesTimelineMilestonesBase:
 
     answer_hint_key = f"answer_hint_{query.interval_relation}"
     evidence_hint_key = f"evidence_hint_{query.interval_relation}"
-    object_description_key = f"object_description_{query.query_variant}"
+    object_description_key = f"object_description_{query.query_id}"
     interval_relation_description_key = f"interval_relation_description_{query.interval_relation}"
     json_example_key = f"json_example_{query.interval_relation}"
     json_example_answer_only_key = f"json_example_answer_only_{query.interval_relation}"
@@ -700,7 +700,7 @@ class _PagesTimelineMilestonesBase:
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
-      query_key=str(query.query_variant),
+      query_key=str(query.query_id),
       answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
@@ -728,7 +728,7 @@ class _PagesTimelineMilestonesBase:
         "scene_kind": "pages_milestone_timeline",
         "entities": [dict(entity) for entity in rendered_scene.entities],
         "relations": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "interval_relation": str(query.interval_relation),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
@@ -740,13 +740,13 @@ class _PagesTimelineMilestonesBase:
         },
       },
       "query_spec": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "template_id": str(prompt_defaults["bundle_id"]),
         "prompt_variant": dict(prompt_artifacts.prompt_variant),
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
         "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
         "params": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "interval_relation": str(query.interval_relation),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
@@ -757,7 +757,7 @@ class _PagesTimelineMilestonesBase:
           "event_count_support": [int(value) for value in query.event_count_support],
           "between_count_support": [int(value) for value in query.between_count_support],
           "outside_count_support": [int(value) for value in query.outside_count_support],
-          "query_variant_probabilities": dict(query.query_variant_probabilities),
+          "query_id_probabilities": dict(query.query_id_probabilities),
           "interval_relation_probabilities": dict(query.interval_relation_probabilities),
           "scene_variant_probabilities": dict(query.scene_variant_probabilities),
           "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -803,7 +803,7 @@ class _PagesTimelineMilestonesBase:
         "answer_event_ids": [str(value) for value in query.answer_event_ids],
       },
       "execution_trace": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "interval_relation": str(query.interval_relation),
         "scene_variant": str(query.scene_variant),
         "style_variant": str(query.style_variant),
@@ -816,7 +816,7 @@ class _PagesTimelineMilestonesBase:
         "answer_event_ids": [str(value) for value in query.answer_event_ids],
         "reference_event_ids": [str(value) for value in query.reference_event_ids],
         "events": event_records,
-        "query_variant_probabilities": dict(query.query_variant_probabilities),
+        "query_id_probabilities": dict(query.query_id_probabilities),
         "interval_relation_probabilities": dict(query.interval_relation_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -909,7 +909,7 @@ class _PagesTimelineMilestonesBase:
       trace_payload=trace_payload,
       complexity=complexity,
       task_versions=default_task_versions(),
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
 
@@ -931,7 +931,7 @@ class PagesTimelineIntervalMembershipCountTask(_PagesTimelineMilestonesBase):
   """Count timeline events inside or outside a highlighted reference interval."""
 
   task_id = INTERVAL_MEMBERSHIP_TASK_ID
-  fixed_query_variant = "interval_membership_count"
+  fixed_query_id = "interval_membership_count"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     output = super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts))

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `triangle_relations`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `height_from_angle_and_ground`, `ground_from_angle_and_height`, `hypotenuse_from_angle_and_height`, `height_from_angle_and_hypotenuse`, or `ground_from_angle_and_hypotenuse`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

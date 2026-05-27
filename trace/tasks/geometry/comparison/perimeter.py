@@ -506,7 +506,7 @@ class GeometryComparisonPerimeterTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(scene_variant_name),
+                "query_id": str(scene_variant_name),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -577,6 +577,6 @@ class GeometryComparisonPerimeterTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(scene_variant_name),
+            query_id=str(scene_variant_name),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

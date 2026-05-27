@@ -9,7 +9,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of option cells on the right.
-2. Supported public `query_variant` value: `reflection_match_label`.
+2. Query id: `reflection_match_label`.
 3. Supported `query_id` values: `vertical_reflection_match`, `horizontal_reflection_match`, `diagonal_main_reflection_match`, `diagonal_anti_reflection_match`.
 4. Answer type: `answer_gt.type = option_letter`.
 5. Evidence type: `evidence_gt.type = bbox_set` containing exactly one pixel-space box around the matching Scene cell.

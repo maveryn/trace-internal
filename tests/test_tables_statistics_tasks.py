@@ -15,8 +15,8 @@ def test_table_statistics_column_summary_value_variants_match_contract() -> None
         ("column_mean", "zebra"),
         ("column_median", "ledger"),
     )
-    for seed, (query_variant, scene_variant) in enumerate(cases, start=18110):
-        out = task.generate(seed, params={"query_variant": query_variant, "scene_variant": scene_variant}, max_attempts=10)
+    for seed, (query_id, scene_variant) in enumerate(cases, start=18110):
+        out = task.generate(seed, params={"query_id": query_id, "scene_variant": scene_variant}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
@@ -32,7 +32,7 @@ def test_table_statistics_column_summary_value_variants_match_contract() -> None
         }
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -53,9 +53,9 @@ def test_table_statistics_column_summary_value_variants_match_contract() -> None
             float(value) for value in trace["render_map"]["column_region_bboxes_px"][query_column]
         ]
 
-        if str(query_variant) == "column_sum":
+        if str(query_id) == "column_sum":
             assert int(out.answer_gt.value) == sum(query_values)
-        elif str(query_variant) == "column_mean":
+        elif str(query_id) == "column_mean":
             assert int(out.answer_gt.value) == (sum(query_values) // len(query_values))
             assert sum(query_values) % len(query_values) == 0
         else:
@@ -71,17 +71,17 @@ def test_table_statistics_column_summary_value_prompt_examples_match_selected_va
         "column_mean": {"evidence": [[260, 180, 372, 520]], "answer": 14},
         "column_median": {"evidence": [[260, 180, 372, 520]], "answer": 13},
     }
-    for index, query_variant in enumerate(expected, start=18130):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=18130):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_table_statistics_column_summary_value_task_is_deterministic() -> None:
     task = TablesStatisticsColumnSummaryValueTask()
-    params = {"query_variant": "column_mean", "scene_variant": "spreadsheet"}
+    params = {"query_id": "column_mean", "scene_variant": "spreadsheet"}
     out_a = task.generate(18160, params=params, max_attempts=10)
     out_b = task.generate(18160, params=params, max_attempts=10)
 
@@ -106,8 +106,8 @@ def test_table_statistics_filtered_subset_value_variants_match_contract() -> Non
         ("filtered_column_sum", "ledger"),
         ("filtered_column_mean", "card_table"),
     )
-    for seed, (query_variant, scene_variant) in enumerate(cases, start=18190):
-        out = task.generate(seed, params={"query_variant": query_variant, "scene_variant": scene_variant}, max_attempts=10)
+    for seed, (query_id, scene_variant) in enumerate(cases, start=18190):
+        out = task.generate(seed, params={"query_id": query_id, "scene_variant": scene_variant}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
@@ -126,7 +126,7 @@ def test_table_statistics_filtered_subset_value_variants_match_contract() -> Non
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
         expected_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -166,7 +166,7 @@ def test_table_statistics_filtered_subset_value_variants_match_contract() -> Non
         ]
 
         target_values = [int(values_by_row[str(row_labels[int(index)])][target_column]) for index in selected_row_indices]
-        if str(query_variant) == "filtered_column_sum":
+        if str(query_id) == "filtered_column_sum":
             assert int(out.answer_gt.value) == sum(target_values)
         else:
             assert int(out.answer_gt.value) == (sum(target_values) // len(target_values))
@@ -191,17 +191,17 @@ def test_table_statistics_filtered_subset_value_prompt_examples_match_selected_v
             "answer": 14,
         },
     }
-    for index, query_variant in enumerate(expected, start=18230):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=18230):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_table_statistics_filtered_subset_value_task_is_deterministic() -> None:
     task = TablesStatisticsFilteredSubsetValueTask()
-    params = {"query_variant": "filtered_column_mean", "scene_variant": "spreadsheet"}
+    params = {"query_id": "filtered_column_mean", "scene_variant": "spreadsheet"}
     out_a = task.generate(18260, params=params, max_attempts=10)
     out_b = task.generate(18260, params=params, max_attempts=10)
 

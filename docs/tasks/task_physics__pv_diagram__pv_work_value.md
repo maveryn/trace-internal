@@ -19,7 +19,7 @@ Prompt-facing evidence is one bounding box around the highlighted PV process or 
 ## Prompt And Trace
 Prompt bundle: `physics_thermodynamics_v0`; scene key: `thermodynamics_pv_diagram`; task key: `pv_diagram_query`; query key: `work_value`.
 
-Public outputs use `query_variant="default"` and `query_id="work_value"`. The current calibrated task uses the single horizontal process mode: the answer is `pressure * (final volume - initial volume)` with expansion positive and compression negative. The trace records the resolved work mode, pressure/volume values, signed work value, axis metadata, rendered witness bbox, and evidence entity ids.
+Outputs `query_id="work_value"`. The current calibrated task uses the single horizontal process mode: the answer is `pressure * (final volume - initial volume)` with expansion positive and compression negative. The trace records the resolved work mode, pressure/volume values, signed work value, axis metadata, rendered witness bbox, and evidence entity ids.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized PV scenario.

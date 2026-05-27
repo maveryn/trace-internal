@@ -79,7 +79,7 @@ class _PolygonSceneObject:
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one polygon-convexity counting instance."""
-    query_variant: str
+    query_id: str
     object_count: int
     target_count: int
     objects: Tuple[_PolygonSceneObject, ...]
@@ -223,13 +223,13 @@ _PROTOTYPES_BY_KEY: Dict[Tuple[str, int], Tuple[_PolygonPrototype, ...]] = {
     ),
 }
 
-def _variant_class_label(query_variant: str) -> str:
+def _variant_class_label(query_id: str) -> str:
     """Return one normalized convexity class label for prompts and trace."""
     mapping = {
         "convex_polygon": "convex",
         "concave_polygon": "concave",
     }
-    return str(mapping[str(query_variant)])
+    return str(mapping[str(query_id)])
 
 def _resolve_side_count_weights(
     *,
@@ -321,7 +321,7 @@ def _object_fits_canvas(obj: _PolygonSceneObject, *, context: GraphSceneContext)
 def _sample_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -335,7 +335,7 @@ def _sample_scene(
     draw_object_labels: bool = True,
 ) -> _ScenePayload:
     """Sample and draw one polygon-convexity counting scene."""
-    target_class = str(_variant_class_label(str(query_variant)))
+    target_class = str(_variant_class_label(str(query_id)))
     opposite_class = "concave" if str(target_class) == "convex" else "convex"
     last_error: Exception | None = None
     for _ in range(700):
@@ -391,7 +391,7 @@ def _sample_scene(
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -399,7 +399,7 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
             },
         )
     raise RuntimeError("failed to sample polygon-convexity counting scene") from last_error
@@ -417,10 +417,10 @@ class GeometryCountingConvexityTask:
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
-        query_variant = apply_balanced_variant_sampling(
+        query_id = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -428,7 +428,7 @@ class GeometryCountingConvexityTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -514,7 +514,7 @@ class GeometryCountingConvexityTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -575,7 +575,7 @@ class GeometryCountingConvexityTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -625,18 +625,18 @@ class GeometryCountingConvexityTask:
                 ],
                 "relations": {
                     "counting_target": "polygon_convexity",
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -665,9 +665,9 @@ class GeometryCountingConvexityTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(query_variant),
-                "query_variant": str(query_variant),
-                "counting_class": str(_variant_class_label(str(query_variant))),
+                "scene_variant": str(query_id),
+                "query_id": str(query_id),
+                "counting_class": str(_variant_class_label(str(query_id))),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -678,7 +678,7 @@ class GeometryCountingConvexityTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(_variant_class_label(str(query_variant))),
+                "counting_class": str(_variant_class_label(str(query_id))),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
@@ -700,9 +700,8 @@ class GeometryCountingConvexityTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="convexity",
-                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

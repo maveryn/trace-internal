@@ -440,16 +440,16 @@ def _query_fields_from_trace_record(trace_record: Mapping[str, Any]) -> dict[str
     scene_ir = trace_record.get("scene_ir") if isinstance(trace_record.get("scene_ir"), Mapping) else {}
     taxonomy = trace_record.get("taxonomy") if isinstance(trace_record.get("taxonomy"), Mapping) else {}
 
-    query_query_variant = query_spec.get("query_variant")
-    execution_query_variant = execution_trace.get("query_variant")
-    if query_query_variant is not None and execution_query_variant is not None:
-        if str(query_query_variant) != str(execution_query_variant):
+    query_query_id = query_spec.get("query_id")
+    execution_query_id = execution_trace.get("query_id")
+    if query_query_id is not None and execution_query_id is not None:
+        if str(query_query_id) != str(execution_query_id):
             raise ValueError(
-                "TRACE sidecar query_variant mismatch: "
-                f"query_spec={query_query_variant!r} execution_trace={execution_query_variant!r}"
+                "TRACE sidecar query_id mismatch: "
+                f"query_spec={query_query_id!r} execution_trace={execution_query_id!r}"
             )
 
-    query_variant = query_query_variant if query_query_variant is not None else execution_query_variant
+    query_id = query_query_id if query_query_id is not None else execution_query_id
     scene_variant = render_spec.get("scene_variant")
     if scene_variant is None:
         scene_variant = execution_trace.get("scene_variant")
@@ -461,7 +461,7 @@ def _query_fields_from_trace_record(trace_record: Mapping[str, Any]) -> dict[str
         taxonomy.get("query_id")
         or query_spec.get("query_id")
         or execution_trace.get("query_id")
-        or resolve_task_query_id(query_variant="" if query_variant is None else str(query_variant), trace_payload=trace_record)
+        or resolve_task_query_id(query_id="" if query_id is None else str(query_id), trace_payload=trace_record)
     )
 
     return {

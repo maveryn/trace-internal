@@ -32,11 +32,11 @@ from ..shared.complexity import (
 from ..shared.graph_sampling import (
     SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_PATH_QUERY_VARIANTS,
+    SUPPORTED_PATH_QUERY_IDS,
     SUPPORTED_TOPOLOGY_PROFILES,
     canonicalize_graph_edge_label,
     feasible_node_counts_for_shortest_path_length,
-    graph_directionality_for_query_variant,
+    graph_directionality_for_query_id,
     graph_label_sort_key,
     sample_shortest_path_length_graph,
 )
@@ -98,7 +98,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one shortest-path instance."""
 
-    query_variant: str
+    query_id: str
     graph_directionality: str
     node_count: int
     target_shortest_path_length: int
@@ -109,7 +109,7 @@ class _ResolvedQuery:
     layout_transform_variant: str
     edge_routing_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_shortest_path_length_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -146,9 +146,9 @@ def _query_support_selection_index(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> int:
-    """Return a query-support index decorrelated from balanced query variants."""
+    """Return a query-support index decorrelated from balanced query ids."""
 
     selection_index = int(
         resolve_selection_index(
@@ -157,19 +157,19 @@ def _query_support_selection_index(
             namespace=f"{TASK_ID}:query_support",
         )
     )
-    balanced_query_variants = bool(
+    balanced_query_ids = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
-    query_variant_overridden = any(has_non_null_param(params, key) for key in ("query_variant", "query_variant_weights"))
+    query_id_overridden = any(has_non_null_param(params, key) for key in ("query_id", "query_id_weights"))
     if (
-        bool(balanced_query_variants)
-        and not bool(query_variant_overridden)
-        and is_uniform_probability_map(query_variant_probabilities)
+        bool(balanced_query_ids)
+        and not bool(query_id_overridden)
+        and is_uniform_probability_map(query_id_probabilities)
     ):
-        active_variant_count = sum(1 for value in query_variant_probabilities.values() if float(value) > 0.0)
+        active_variant_count = sum(1 for value in query_id_probabilities.values() if float(value) > 0.0)
         if int(active_variant_count) > 1:
             return int(selection_index // int(active_variant_count))
     return int(selection_index)
@@ -178,20 +178,20 @@ def _query_support_selection_index(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one graph shortest-path query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_id_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_PATH_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_PATH_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
-    graph_directionality = str(graph_directionality_for_query_variant(str(query_variant)))
+    graph_directionality = str(graph_directionality_for_query_id(str(query_id)))
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max_key = "directed_node_count_max" if str(graph_directionality) == "directed" else "node_count_max"
     node_count_max_fallback = _DEFAULTS.directed_node_count_max if str(graph_directionality) == "directed" else _DEFAULTS.node_count_max
@@ -224,7 +224,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     selection_index = _query_support_selection_index(
         int(instance_seed),
         params=params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
 
     feasible_support_by_target: Dict[int, Tuple[int, ...]] = {}
@@ -357,7 +357,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         graph_directionality=str(graph_directionality),
         node_count=int(node_count),
         target_shortest_path_length=int(target_shortest_path_length),
@@ -368,7 +368,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         layout_transform_variant=str(layout_transform_variant),
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -485,7 +485,7 @@ class _GraphPathShortestPathLengthBaseTask:
         graph_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.graph")
         graph_sample = sample_shortest_path_length_graph(
             graph_rng,
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             node_count=int(query.node_count),
             target_shortest_path_length=int(query.target_shortest_path_length),
             topology_profile=str(query.topology_profile),
@@ -676,14 +676,14 @@ class _GraphPathShortestPathLengthBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": str(query.graph_directionality),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "target_shortest_path_length": int(query.target_shortest_path_length),
@@ -743,7 +743,7 @@ class _GraphPathShortestPathLengthBaseTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "count_edges_in_unique_shortest_path",
                 "graph_directionality": str(query.graph_directionality),
@@ -792,7 +792,7 @@ class _GraphPathShortestPathLengthBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

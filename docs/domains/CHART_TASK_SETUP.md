@@ -10,8 +10,8 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 - `boxplot`: 3 active task(s)
 - `candlestick`: 2 active task(s)
 - `combo_mark`: 5 active task(s)
-- `part_whole`: 4 active task(s)
-- `dashboard`: 5 active task(s)
+- `part_whole`: 2 active task(s)
+- `dashboard`: 4 active task(s)
 - `table`: 4 active task(s)
 - `dumbbell`: 2 active task(s)
 - `error_interval`: 2 active task(s)
@@ -19,11 +19,11 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 - `histogram`: 2 active task(s)
 - `matrix`: 2 active task(s)
 - `marker_map`: 2 active task(s)
-- `region_map`: 5 active task(s)
+- `region_map`: 4 active task(s)
 - `multiseries`: 3 active task(s)
 - `scatter_readout`: 2 active task(s)
 - `parallel_coords`: 3 active task(s)
-- `pictogram`: 3 active task(s)
+- `pictogram`: 2 active task(s)
 - `radar`: 3 active task(s)
 - `radial_progress`: 1 active task(s)
 - `radial_sankey`: 2 active task(s)
@@ -34,10 +34,10 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 - `size_encoding`: 3 active task(s)
 - `small_multiple`: 2 active task(s)
 - `sunburst`: 3 active task(s)
-- `bar_3d`: 3 active task(s)
+- `bar_3d`: 2 active task(s)
 - `surface_3d`: 4 active task(s)
 - `treemap`: 2 active task(s)
-- `violin`: 2 active task(s)
+- `violin`: 1 active task(s)
 - `waterfall`: 3 active task(s)
 
 ## Active Tasks
@@ -60,19 +60,15 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 | `region_map` | `task_charts__region_map__adjacent_condition_count` | sampled from `adjacent_same_category_count`, `adjacent_category_count`, `adjacent_numeric_threshold_count` |
 | `region_map` | `task_charts__region_map__border_neighbor_count` | `border_neighbor_count` |
 | `region_map` | `task_charts__region_map__continent_filtered_count` | sampled from `continent_region_count`, `continent_category_region_count`, `continent_threshold_region_count` |
-| `region_map` | `task_charts__region_map__region_category_count` | `categorical_region_count` |
-| `region_map` | `task_charts__region_map__region_value_count` | sampled from `numeric_threshold_region_count`, `numeric_interval_region_count` |
+| `region_map` | `task_charts__region_map__legend_predicate_region_count` | sampled from `numeric_threshold_region_count`, `numeric_interval_region_count`, `categorical_region_count` |
 | `marker_map` | `task_charts__marker_map__marker_region_extremum_label` | `marker_region_extremum_label` |
 | `marker_map` | `task_charts__marker_map__marker_region_threshold_count` | `marker_region_threshold_count` |
-| `part_whole` | `task_charts__part_whole__order_share_sum_value` | sampled from `contiguous_chart_order_sum`, `positional_segment_share_sum` |
-| `part_whole` | `task_charts__part_whole__order_count_conversion_value` | `chart_order_share_to_count` |
-| `part_whole` | `task_charts__part_whole__order_sector_angle_value` | `sector_share_to_angle` |
+| `part_whole` | `task_charts__part_whole__ordered_segment_value` | sampled from `contiguous_chart_order_sum`, `positional_segment_share_sum`, `chart_order_share_to_count`, `sector_share_to_angle` |
 | `part_whole` | `task_charts__part_whole__adjacent_transfer_gap_value` | `chart_order_adjacent_transfer_gap` |
 | `dashboard` | `task_charts__dashboard__dual_condition_count` | `dual_condition_count` |
 | `dashboard` | `task_charts__dashboard__dual_source_target_sum_value` | `dual_source_target_sum_value` |
 | `dashboard` | `task_charts__dashboard__panel_gap_extremum_category_label` | `panel_gap_extremum_category_label` |
-| `dashboard` | `task_charts__dashboard__source_rank_difference_value` | `source_rank_difference_value` |
-| `dashboard` | `task_charts__dashboard__source_rank_target_value` | `source_rank_target_value` |
+| `dashboard` | `task_charts__dashboard__source_rank_metric_value` | sampled from `source_rank_target_value`, `source_rank_difference_value` |
 | `table` | `task_charts__table__value_predicate_count` | sampled from `threshold_count`, `in_interval`, `categorical_value_count` |
 | `table` | `task_charts__table__column_rank_label` | `kth_rank_in_column` |
 | `table` | `task_charts__table__column_summary_value` | sampled from `column_sum`, `column_mean`, `column_median`, `filtered_column_mean` |
@@ -94,8 +90,7 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 | `parallel_coords` | `task_charts__parallel_coords__axis_condition_count` | sampled from `above_on_both_axes`, `below_on_both_axes`, `above_on_one_below_on_other` |
 | `parallel_coords` | `task_charts__parallel_coords__axis_delta_extremum_label` | sampled from `largest_increase_between_axes`, `largest_decrease_between_axes`, `largest_absolute_change_between_axes` |
 | `parallel_coords` | `task_charts__parallel_coords__crossing_count` | sampled from `all_crossings_between_adjacent_axes`, `crossings_involving_profile_between_axes` |
-| `pictogram` | `task_charts__pictogram__category_total_value` | `category_total_value` |
-| `pictogram` | `task_charts__pictogram__group_difference_value` | `group_difference_value` |
+| `pictogram` | `task_charts__pictogram__group_arithmetic_value` | sampled from `category_total_value`, `group_difference_value` |
 | `pictogram` | `task_charts__pictogram__threshold_count` | `threshold_count` |
 | `radial_progress` | `task_charts__radial_progress__condition_count` | sampled from `at_least_threshold_count`, `below_threshold_count`, `within_range_count`, `remaining_at_least_threshold_count` |
 | `scatter_readout` | `task_charts__scatter_readout__series_x_extremum_label` | sampled from `series_highest_x_label`, `series_lowest_x_label` |
@@ -132,22 +127,20 @@ The public taxonomy is `domain -> scene_id -> task_id`. Public `task_id` is the 
 | `sunburst` | `task_charts__sunburst__parent_total_value` | `parent_total_from_leaves_value` |
 | `treemap_part_whole` | `task_charts__treemap__group_total_value` | `treemap_group_total_value` |
 | `treemap_part_whole` | `task_charts__treemap__repeated_leaf_aggregate_value` | sampled from `treemap_repeated_leaf_sum_value`, `treemap_repeated_leaf_average_value` |
-| `bar_3d` | `task_charts__bar_3d__axis_gap_value` | sampled from `series_total_gap_value`, `category_total_gap_value`, `category_extremum_gap_value` |
-| `bar_3d` | `task_charts__bar_3d__axis_total_value` | sampled from `series_total_value`, `category_total_value`, `series_interval_total_value` |
+| `bar_3d` | `task_charts__bar_3d__axis_aggregate_value` | sampled from `series_total_value`, `category_total_value`, `series_interval_total_value`, `series_total_gap_value`, `category_total_gap_value`, `category_extremum_gap_value` |
 | `bar_3d` | `task_charts__bar_3d__condition_count` | sampled from `series_threshold_count`, `category_threshold_count`, `series_comparison_count` |
 | `surface_3d` | `task_charts__surface_3d__panel_variation_label` | `panel_variation_label` |
 | `surface_3d` | `task_charts__surface_3d__reference_nearest_label` | `reference_nearest_label` |
 | `surface_3d` | `task_charts__surface_3d__series_trend_label` | `series_trend_label` |
 | `surface_3d` | `task_charts__surface_3d__surface_extremum_label` | `surface_extremum_label` |
-| `violin` | `task_charts__violin__feature_extremum_label` | sampled from `highest_mode`, `lowest_mode`, `widest_support`, `narrowest_support` |
-| `violin` | `task_charts__violin__shape_feature_label` | `bimodal_label` |
+| `violin` | `task_charts__violin__distribution_feature_label` | sampled from `highest_mode`, `lowest_mode`, `widest_support`, `narrowest_support`, `bimodal_label` |
 | `waterfall` | `task_charts__waterfall__counterfactual_final_value` | sampled from `remove_step_final_total`, `reverse_step_final_total` |
 | `waterfall` | `task_charts__waterfall__running_total_value` | `running_total_after_step` |
 | `waterfall` | `task_charts__waterfall__threshold_crossing_label` | sampled from `first_total_at_least_threshold`, `first_total_at_most_threshold` |
 
 ## Refactor Rules
 1. The meaningful semantic branch is kept in `query_id` and trace params.
-2. `query_variant` is an internal replay selector, not a public sampling unit.
+2. `query_id` is an internal replay selector, not a public sampling unit.
 3. Chart type, palette, background, row/column axis, largest/smallest, highest/lowest, clockwise/counterclockwise, and other mirror/rendering choices stay internal query or render params.
 4. Shared broad generators may remain internal implementation details, but only active public task IDs are registered.
 5. Fresh task-review workbooks and solve-rate probes are required for current public task IDs.

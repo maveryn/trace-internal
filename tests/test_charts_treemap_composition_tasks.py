@@ -28,7 +28,7 @@ def test_treemap_tasks_generate_default_query_outputs() -> None:
             params={},
             max_attempts=160,
         )
-        assert output.query_variant == "default"
+        assert output.query_id == "default"
         assert output.scene_id == "treemap_part_whole"
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
@@ -47,10 +47,10 @@ def test_treemap_tasks_generate_each_query_branch() -> None:
         for query_id in sorted(allowed_query_ids):
             output = task.generate(
                 204_000 + seed_index,
-                params={"query_variant": query_id},
+                params={"query_id": query_id},
                 max_attempts=200,
             )
-            assert output.query_variant == "default"
+            assert output.query_id == "default"
             assert output.scene_id == "treemap_part_whole"
             assert output.query_id == query_id
             assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id

@@ -44,7 +44,7 @@ OVERLAP_COUNT_TASK_ID = "task_pages__schedule__overlap_count"
 LONGER_THAN_REFERENCE_TASK_ID = "task_pages__schedule__longer_than_reference_count"
 MAXIMUM_NON_OVERLAPPING_TASK_ID = "task_pages__schedule__maximum_non_overlapping_count"
 PUBLIC_SCENE_ID = "schedule"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "overlap_count",
   "longer_than_reference_count",
   "maximum_non_overlapping_count",
@@ -136,7 +136,7 @@ class _RawEvent:
 class _ResolvedQuery:
   """Resolved semantic and visual support for one single-day schedule query."""
 
-  query_variant: str
+  query_id: str
   scene_variant: str
   style_variant: str
   accent_color_name: str
@@ -160,7 +160,7 @@ class _ResolvedQuery:
   answer_value: int
   answer_event_ids: Tuple[str, ...]
   reference_event_id: str | None
-  query_variant_probabilities: Dict[str, float]
+  query_id_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
   style_variant_probabilities: Dict[str, float]
   accent_color_name_probabilities: Dict[str, float]
@@ -238,7 +238,7 @@ def _resolve_support_selection_index(
   instance_seed: int,
   namespace: str,
 ) -> int:
-  """Return a support index decoupled from query-variant cycling."""
+  """Return a support index decoupled from query-id cycling."""
 
   return int(resolve_time_artifact_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
 
@@ -249,7 +249,7 @@ def _decoupled_named_axis_params(
   axis_key: str,
   namespace: str,
 ) -> Mapping[str, Any]:
-  """Return params with one balanced visual axis decoupled from query variants."""
+  """Return params with one balanced visual axis decoupled from query ids."""
 
   _ = axis_key, namespace
   return params
@@ -640,14 +640,14 @@ def _sample_unique_optimal_variant(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one concrete single-day planner query from balanced supports."""
 
-  query_variant, query_variant_probabilities = _resolve_named_variant(
+  query_id, query_id_probabilities = _resolve_named_variant(
     instance_seed=int(instance_seed),
     params=params,
-    explicit_key="query_variant",
-    weights_key="query_variant_weights",
-    balance_flag_key="balanced_query_variant_sampling",
-    supported=SUPPORTED_QUERY_VARIANTS,
-    namespace="query_variant",
+    explicit_key="query_id",
+    weights_key="query_id_weights",
+    balance_flag_key="balanced_query_id_sampling",
+    supported=SUPPORTED_QUERY_IDS,
+    namespace="query_id",
   )
   scene_variant, scene_variant_probabilities = _resolve_named_variant(
     instance_seed=int(instance_seed),
@@ -749,7 +749,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     ]
   )
 
-  if str(query_variant) == "overlap_count":
+  if str(query_id) == "overlap_count":
     raw_events, answer_event_ids, reference_event_id = _sample_overlap_variant(
       instance_seed=int(instance_seed),
       total_slots=int(total_slots),
@@ -762,7 +762,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
       max_lane_count=min(int(max_lane_count), int(overlap_max_lane_count)),
       nonoverlap_min_gap_slots=int(overlap_nonoverlap_min_gap_slots),
     )
-  elif str(query_variant) == "longer_than_reference_count":
+  elif str(query_id) == "longer_than_reference_count":
     raw_events, answer_event_ids, reference_event_id = _sample_longer_variant(
       instance_seed=int(instance_seed),
       total_slots=int(total_slots),
@@ -795,7 +795,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
   )
 
   return _ResolvedQuery(
-    query_variant=str(query_variant),
+    query_id=str(query_id),
     scene_variant=str(scene_variant),
     style_variant=str(style_variant),
     accent_color_name=str(accent_color_name),
@@ -819,7 +819,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     answer_value=len(answer_event_ids),
     answer_event_ids=tuple(str(value) for value in answer_event_ids),
     reference_event_id=(str(reference_event_id) if reference_event_id is not None else None),
-    query_variant_probabilities=dict(query_variant_probabilities),
+    query_id_probabilities=dict(query_id_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
     style_variant_probabilities=dict(style_variant_probabilities),
     accent_color_name_probabilities=dict(accent_color_name_probabilities),
@@ -867,7 +867,7 @@ class _PagesScheduleDayPlannerBase:
       scene_variant=str(query.scene_variant),
       render_params=render_params,
       visual_theme=schedule_theme,
-      show_reference_time_band=bool(query.show_reference_time_band) and str(query.query_variant) == "overlap_count",
+      show_reference_time_band=bool(query.show_reference_time_band) and str(query.query_id) == "overlap_count",
     )
     image, post_noise_meta = apply_post_image_noise(
       image,
@@ -883,15 +883,15 @@ class _PagesScheduleDayPlannerBase:
     raw_events_by_id = {str(event.event_id): event for event in query.raw_events}
     rendered_events_by_id = {str(event.event_id): event for event in query.rendered_events}
 
-    answer_hint_key = f"answer_hint_{query.query_variant}"
+    answer_hint_key = f"answer_hint_{query.query_id}"
     evidence_hint_key = (
       "evidence_hint_maximum_non_overlapping_count"
-      if str(query.query_variant) == "maximum_non_overlapping_count"
+      if str(query.query_id) == "maximum_non_overlapping_count"
       else "evidence_hint_satisfying_event_blocks"
     )
-    object_description_key = f"object_description_{query.query_variant}"
-    json_example_key = f"json_example_{query.query_variant}"
-    json_example_answer_only_key = f"json_example_answer_only_{query.query_variant}"
+    object_description_key = f"object_description_{query.query_id}"
+    json_example_key = f"json_example_{query.query_id}"
+    json_example_answer_only_key = f"json_example_answer_only_{query.query_id}"
     prompt_defaults = required_group_defaults(
       _PROMPT_DEFAULTS,
       (
@@ -926,7 +926,7 @@ class _PagesScheduleDayPlannerBase:
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
-      query_key=str(query.query_variant),
+      query_key=str(query.query_id),
       answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
       slots=slots,
       instance_seed=int(instance_seed),
@@ -937,7 +937,7 @@ class _PagesScheduleDayPlannerBase:
     evidence_gt = TypedValue(type="bbox_set", value=[list(box) for box in evidence_bboxes])
 
     query_params: Dict[str, Any] = {
-      "query_variant": str(query.query_variant),
+      "query_id": str(query.query_id),
       "scene_variant": str(query.scene_variant),
       "style_variant": str(query.style_variant),
       "accent_color_name": str(query.accent_color_name),
@@ -957,7 +957,7 @@ class _PagesScheduleDayPlannerBase:
       "maximum_non_overlapping_support": [int(value) for value in query.maximum_non_overlapping_support],
       "answer_event_ids": [str(value) for value in query.answer_event_ids],
       "reference_event_id": str(query.reference_event_id) if query.reference_event_id is not None else None,
-      "query_variant_probabilities": dict(query.query_variant_probabilities),
+      "query_id_probabilities": dict(query.query_id_probabilities),
       "scene_variant_probabilities": dict(query.scene_variant_probabilities),
       "style_variant_probabilities": dict(query.style_variant_probabilities),
       "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
@@ -968,7 +968,7 @@ class _PagesScheduleDayPlannerBase:
         "scene_kind": "pages_day_schedule",
         "entities": [dict(entity) for entity in rendered_scene.entities],
         "relations": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
           "accent_color_name": str(query.accent_color_name),
@@ -977,7 +977,7 @@ class _PagesScheduleDayPlannerBase:
         },
       },
       "query_spec": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "template_id": str(prompt_defaults["bundle_id"]),
         "prompt_variant": dict(prompt_artifacts.prompt_variant),
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1024,7 +1024,7 @@ class _PagesScheduleDayPlannerBase:
         "reference_event_id": str(query.reference_event_id) if query.reference_event_id is not None else None,
       },
       "execution_trace": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "scene_variant": str(query.scene_variant),
         "style_variant": str(query.style_variant),
         "accent_color_name": str(query.accent_color_name),
@@ -1059,7 +1059,7 @@ class _PagesScheduleDayPlannerBase:
         "overlap_count_support": [int(value) for value in query.overlap_count_support],
         "longer_than_count_support": [int(value) for value in query.longer_than_count_support],
         "maximum_non_overlapping_support": [int(value) for value in query.maximum_non_overlapping_support],
-        "query_variant_probabilities": dict(query.query_variant_probabilities),
+        "query_id_probabilities": dict(query.query_id_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
@@ -1102,7 +1102,7 @@ class _PagesScheduleDayPlannerBase:
       components={
         "interval_reasoning": min(
           1.0,
-          float(_INTERVAL_REASONING_BASE_BY_VARIANT[str(query.query_variant)])
+          float(_INTERVAL_REASONING_BASE_BY_VARIANT[str(query.query_id)])
           + (0.14 * float(normalize_int_with_bounds(int(query.answer_value), [0, 5])))
           + (0.12 * float(normalize_int_with_bounds(int(event_count), [3, 10]))),
         ),
@@ -1121,8 +1121,8 @@ class _PagesScheduleDayPlannerBase:
               normalize_int_with_bounds(
                 int(
                   touching_reference_count
-                  if str(query.query_variant) == "overlap_count"
-                  else close_duration_count if str(query.query_variant) == "longer_than_reference_count" else max(0, int(query.event_count - query.answer_value))
+                  if str(query.query_id) == "overlap_count"
+                  else close_duration_count if str(query.query_id) == "longer_than_reference_count" else max(0, int(query.event_count - query.answer_value))
                 ),
                 [0, 5],
               )
@@ -1151,26 +1151,26 @@ class _PagesScheduleDayPlannerBase:
       trace_payload=trace_payload,
       complexity=complexity,
       task_versions=default_task_versions(),
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
 
 
 class _FixedScheduleTask(_PagesScheduleDayPlannerBase):
-  fixed_query_variant: str
+  fixed_query_id: str
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     output = super().generate(
       int(instance_seed),
       params=force_time_artifact_query_params(
         params,
-        query_variant=str(self.fixed_query_variant),
+        query_id=str(self.fixed_query_id),
       ),
       max_attempts=int(max_attempts),
     )
     return rewrite_time_artifact_query_output(
       output,
-      query_id=str(self.fixed_query_variant),
+      query_id=str(self.fixed_query_id),
       scene_id=PUBLIC_SCENE_ID,
     )
 
@@ -1180,8 +1180,8 @@ class PagesScheduleOverlapCountTask(_FixedScheduleTask):
   """Count scheduled events that overlap a highlighted reference event."""
 
   task_id = OVERLAP_COUNT_TASK_ID
-  fixed_query_variant = "overlap_count"
-  fixed_query_variant = "overlap_count"
+  fixed_query_id = "overlap_count"
+  fixed_query_id = "overlap_count"
 
 
 @register_task
@@ -1189,8 +1189,8 @@ class PagesScheduleLongerThanReferenceCountTask(_FixedScheduleTask):
   """Count scheduled events longer than a highlighted reference event."""
 
   task_id = LONGER_THAN_REFERENCE_TASK_ID
-  fixed_query_variant = "longer_than_reference_count"
-  fixed_query_variant = "longer_than_reference_count"
+  fixed_query_id = "longer_than_reference_count"
+  fixed_query_id = "longer_than_reference_count"
 
 
 @register_task
@@ -1198,8 +1198,8 @@ class PagesScheduleMaximumNonOverlappingCountTask(_FixedScheduleTask):
   """Find the maximum number of mutually non-overlapping scheduled events."""
 
   task_id = MAXIMUM_NON_OVERLAPPING_TASK_ID
-  fixed_query_variant = "maximum_non_overlapping_count"
-  fixed_query_variant = "maximum_non_overlapping_count"
+  fixed_query_id = "maximum_non_overlapping_count"
+  fixed_query_id = "maximum_non_overlapping_count"
 
 
 __all__ = [

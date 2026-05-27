@@ -59,10 +59,10 @@ from ..shared.single_object_scene import (
 TASK_ID = "geometry_similarity_count_base"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("triangle", "quadrilateral")
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("congruent_count", "similar_count")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("congruent_count", "similar_count")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "triangle": SUPPORTED_QUERY_VARIANTS,
-    "quadrilateral": SUPPORTED_QUERY_VARIANTS,
+    "triangle": SUPPORTED_QUERY_IDS,
+    "quadrilateral": SUPPORTED_QUERY_IDS,
 }
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="similarity")
@@ -112,10 +112,10 @@ class _ResolvedQuery:
     """Resolved scene/query axes plus target-count support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     target_count: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     candidate_label_pool: Tuple[str, ...]
 
@@ -194,7 +194,7 @@ def _resolve_target_count(
     *,
     instance_seed: int,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     selection_namespace: str,
 ) -> Tuple[int, Dict[str, float]]:
@@ -246,41 +246,41 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
     scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
-    query_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
+    query_supported = [str(value) for value in SUPPORTED_QUERY_IDS]
     compatibility_map = {
         str(scene): tuple(str(query) for query in queries)
         for scene, queries in COMPATIBILITY.items()
     }
     explicit_scene = params.get("scene_variant")
-    explicit_query = params.get("query_variant", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     if explicit_scene is not None and str(explicit_scene) not in set(scene_supported):
         raise ValueError(f"unsupported scene_variant: {explicit_scene}")
     if explicit_query is not None and str(explicit_query) not in set(query_supported):
-        raise ValueError(f"unsupported query_variant: {explicit_query}")
+        raise ValueError(f"unsupported query_id: {explicit_query}")
 
     if explicit_query is not None:
-        query_variant = str(explicit_query)
-        query_probs = _full_probability_map(query_supported, {query_variant: 1.0})
+        query_id = str(explicit_query)
+        query_probs = _full_probability_map(query_supported, {query_id: 1.0})
     else:
         selected_query, restricted_query_probs = resolve_variant(
             axis_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=query_supported,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
         )
-        query_variant = apply_balanced_variant_sampling(
+        query_id = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             selected_variant=str(selected_query),
             variant_probabilities=restricted_query_probs,
             supported_variants=query_supported,
-            balance_flag_key="balanced_query_variant_sampling",
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            sampling_namespace=f"{TASK_ID}.query_variant",
+            balance_flag_key="balanced_query_id_sampling",
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            sampling_namespace=f"{TASK_ID}.query_id",
         )
         query_probs = _full_probability_map(query_supported, restricted_query_probs)
 
@@ -288,21 +288,21 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         axis_rng,
         instance_seed=int(instance_seed),
         scene_variant=str(explicit_scene) if explicit_scene is not None else "",
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
-        selection_namespace=f"{TASK_ID}.target_count.{query_variant}",
+        selection_namespace=f"{TASK_ID}.target_count.{query_id}",
     )
 
     if explicit_scene is not None:
         scene_variant = str(explicit_scene)
-        if str(query_variant) not in set(compatibility_map.get(scene_variant, ())):
-            raise ValueError(f"incompatible scene/query combination: {scene_variant} + {query_variant}")
+        if str(query_id) not in set(compatibility_map.get(scene_variant, ())):
+            raise ValueError(f"incompatible scene/query combination: {scene_variant} + {query_id}")
         scene_probs = _full_probability_map(scene_supported, {scene_variant: 1.0})
     else:
         allowed_scenes = [
             scene
             for scene in scene_supported
-            if str(query_variant) in set(compatibility_map.get(scene, ()))
+            if str(query_id) in set(compatibility_map.get(scene, ()))
         ]
         selected_scene, restricted_scene_probs = resolve_variant(
             axis_rng,
@@ -326,7 +326,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balance_flag_key="balanced_scene_variant_sampling",
             explicit_key="scene_variant",
             weights_key="scene_variant_weights",
-            sampling_namespace=f"{TASK_ID}.scene_variant.{query_variant}.{target_count}",
+            sampling_namespace=f"{TASK_ID}.scene_variant.{query_id}.{target_count}",
         )
         scene_probs = _full_probability_map(scene_supported, restricted_scene_probs)
 
@@ -341,10 +341,10 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         raise ValueError("geometry similarity requires exactly five unique candidate labels")
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_count=int(target_count),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         target_count_probabilities=dict(target_count_probs),
         candidate_label_pool=tuple(label_pool),
     )
@@ -352,17 +352,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
 def _candidate_is_match(
     *,
-    query_variant: str,
+    query_id: str,
     reference_vertices_graph: Sequence[Tuple[float, float]],
     candidate_vertices_graph: Sequence[Tuple[float, float]],
 ) -> bool:
     """Return whether one candidate satisfies the requested similarity predicate."""
 
-    if str(query_variant) == "congruent_count":
+    if str(query_id) == "congruent_count":
         return bool(polygons_are_congruent(reference_vertices_graph, candidate_vertices_graph))
-    if str(query_variant) == "similar_count":
+    if str(query_id) == "similar_count":
         return bool(polygons_are_similar(reference_vertices_graph, candidate_vertices_graph))
-    raise ValueError(f"unsupported similarity query_variant: {query_variant}")
+    raise ValueError(f"unsupported similarity query_id: {query_id}")
 
 
 def _sample_match_labels(rng, *, label_pool: Sequence[str], target_count: int) -> Tuple[str, ...]:
@@ -376,7 +376,7 @@ def _sample_match_labels(rng, *, label_pool: Sequence[str], target_count: int) -
 def _build_matching_candidate(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     template: Polygon,
     slot_center: Tuple[int, int],
     force_large_scale: bool,
@@ -385,7 +385,7 @@ def _build_matching_candidate(
     """Build one matching candidate polygon by construction."""
 
     scale_factor = 1
-    if str(query_variant) == "similar_count":
+    if str(query_id) == "similar_count":
         allowed_scales = [int(value) for value in similar_scale_support if int(value) > 0]
         if not allowed_scales:
             raise ValueError("similar_scale_support must be non-empty")
@@ -402,14 +402,14 @@ def _build_matching_candidate(
 def _build_distractor_candidate(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     template: Polygon,
     slot_center: Tuple[int, int],
     non_uniform_pairs: Sequence[Tuple[int, int]],
 ) -> Polygon:
     """Build one distractor candidate polygon."""
 
-    if str(query_variant) == "congruent_count" and bool(rng.randint(0, 1)):
+    if str(query_id) == "congruent_count" and bool(rng.randint(0, 1)):
         base_vertices = scale_polygon(template, factor=2)
     else:
         scale_x, scale_y = rng.choice(list(non_uniform_pairs))
@@ -455,7 +455,7 @@ def _sample_similarity_scene(
     )
     matching_label_set = set(matching_labels)
     highlight_large_label: str | None = None
-    if str(query.query_variant) == "similar_count" and matching_labels:
+    if str(query.query_id) == "similar_count" and matching_labels:
         highlight_large_label = str(rng.choice(list(matching_labels)))
 
     candidate_vertices_graph_by_label: Dict[str, Polygon] = {}
@@ -496,14 +496,14 @@ def _sample_similarity_scene(
             if is_match:
                 candidate_vertices_graph = _build_matching_candidate(
                     rng,
-                    query_variant=str(query.query_variant),
+                    query_id=str(query.query_id),
                     template=template,
                     slot_center=slot_center,
                     force_large_scale=bool(str(label) == str(highlight_large_label)),
                     similar_scale_support=similar_scale_support,
                 )
                 if not _candidate_is_match(
-                    query_variant=str(query.query_variant),
+                    query_id=str(query.query_id),
                     reference_vertices_graph=reference_vertices_graph,
                     candidate_vertices_graph=candidate_vertices_graph,
                 ):
@@ -512,13 +512,13 @@ def _sample_similarity_scene(
             else:
                 candidate_vertices_graph = _build_distractor_candidate(
                     rng,
-                    query_variant=str(query.query_variant),
+                    query_id=str(query.query_id),
                     template=template,
                     slot_center=slot_center,
                     non_uniform_pairs=non_uniform_pairs,
                 )
                 if _candidate_is_match(
-                    query_variant=str(query.query_variant),
+                    query_id=str(query.query_id),
                     reference_vertices_graph=reference_vertices_graph,
                     candidate_vertices_graph=candidate_vertices_graph,
                 ):
@@ -778,7 +778,7 @@ class GeometrySimilarityCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -800,11 +800,10 @@ class GeometrySimilarityCountTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         query_params = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
             "candidate_label_pool": list(query.candidate_label_pool),
@@ -816,14 +815,14 @@ class GeometrySimilarityCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "matching_labels": list(evidence_labels),
                     "target_count": int(query.target_count),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -851,11 +850,10 @@ class GeometrySimilarityCountTask:
             },
             "execution_trace": {
                 "scene_variant": str(query.scene_variant),
-                "query_variant": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),
                 "matching_labels": list(evidence_labels),
@@ -881,7 +879,7 @@ class GeometrySimilarityCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
             scene_variant=str(query.scene_variant),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             object_count=len(query.candidate_label_pool),
             target_count=int(query.target_count),
         )
@@ -895,7 +893,7 @@ class GeometrySimilarityCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -905,6 +903,6 @@ class GeometrySimilarityShapeRelationCountTask(MultiFixedGeometryQueryTaskMixin,
     """Count candidate polygons with the requested relation to the reference polygon."""
 
     task_id = "task_geometry__shape_gallery__shape_relation_count"
-    fixed_query_variants = ("congruent_count", "similar_count")
+    fixed_query_ids = ("congruent_count", "similar_count")
     public_scene_id = "shape_gallery"
     allowed_scene_variants = SUPPORTED_SCENE_VARIANTS

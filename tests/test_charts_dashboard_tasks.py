@@ -13,7 +13,7 @@ from trace.tasks import create_task
 from trace.tasks.charts.dashboard.cross_panel_query import (
     SUPPORTED_PANEL_KINDS,
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsDashboardCrossPanelQueryTask,
 )
 
@@ -30,7 +30,7 @@ def _value(execution: dict, panel_id: str, category_id: str) -> int:
 
 
 def _expected_answer(execution: dict) -> int | str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
 
     if variant == "source_rank_target_value":
         return _value(execution, execution["target_panel_id"], execution["selected_category_id"])
@@ -83,19 +83,19 @@ def _expected_answer(execution: dict) -> int | str:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_dashboard_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_dashboard_variants_match_contract(query_id: str) -> None:
     task = ChartsDashboardCrossPanelQueryTask()
     out = task.generate(
-        hash64(20260503, "charts_dashboard", SUPPORTED_QUERY_VARIANTS.index(query_variant)),
-        params={"query_variant": query_variant},
+        hash64(20260503, "charts_dashboard", SUPPORTED_QUERY_IDS.index(query_id)),
+        params={"query_id": query_id},
         max_attempts=100,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(execution["question_format"]) == "dashboard_cross_panel_query"
     assert out.evidence_gt.type == "bbox_set"
@@ -111,7 +111,7 @@ def test_chart_dashboard_variants_match_contract(query_variant: str) -> None:
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    if query_variant == "panel_gap_extremum_category_label":
+    if query_id == "panel_gap_extremum_category_label":
         assert out.answer_gt.type == "string"
     else:
         assert out.answer_gt.type == "integer"
@@ -131,9 +131,9 @@ def test_chart_dashboard_variants_match_contract(query_variant: str) -> None:
             height=int(render["canvas_height"]),
         )
 
-    if query_variant == "dual_condition_count":
+    if query_id == "dual_condition_count":
         assert len(out.evidence_gt.value) == int(out.answer_gt.value) * 2
-    if query_variant == "panel_gap_extremum_category_label":
+    if query_id == "panel_gap_extremum_category_label":
         assert len(out.evidence_gt.value) == 2
 
     complexity = out.complexity.to_dict()
@@ -147,12 +147,12 @@ def test_chart_dashboard_variants_match_contract(query_variant: str) -> None:
 
 def test_chart_dashboard_prompt_examples_match_contract() -> None:
     task = ChartsDashboardCrossPanelQueryTask()
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS, start=93100):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=100)
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=93100):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=100)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert "evidence" in answer_and_evidence
-        if query_variant == "panel_gap_extremum_category_label":
+        if query_id == "panel_gap_extremum_category_label":
             assert isinstance(answer_and_evidence["answer"], str)
             assert isinstance(answer_only["answer"], str)
         else:
@@ -171,13 +171,13 @@ def test_chart_dashboard_balanced_sampling_covers_variants() -> None:
     for index in range(100):
         out = task.generate(hash64(93200, "charts_dashboard", index), params={}, max_attempts=160)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         category_counts[int(execution["category_count"])] += 1
         panel_counts[int(execution["panel_count"])] += 1
         duplicate_kind_instances += int(len(set(str(kind) for kind in execution["panel_kinds"])) < int(execution["panel_count"]))
         answer_types[str(out.answer_gt.type)] += 1
 
-    assert_counter_support_within(variants, SUPPORTED_QUERY_VARIANTS, expected_per_key=20, tolerance=10)
+    assert_counter_support_within(variants, SUPPORTED_QUERY_IDS, expected_per_key=20, tolerance=10)
     assert set(category_counts).issubset({4, 5, 6, 7, 8, 9, 10, 11, 12})
     assert set(category_counts) == {4, 5, 6, 7, 8, 9, 10, 11, 12}
     assert set(panel_counts).issubset({4, 5, 6, 7, 8, 9})
@@ -190,7 +190,7 @@ def test_chart_dashboard_balanced_sampling_covers_variants() -> None:
 
 def test_chart_dashboard_is_deterministic() -> None:
     task = ChartsDashboardCrossPanelQueryTask()
-    params = {"query_variant": "dual_condition_count", "first_condition_comparison": "greater_than"}
+    params = {"query_id": "dual_condition_count", "first_condition_comparison": "greater_than"}
     out_a = task.generate(93300, params=params, max_attempts=100)
     out_b = task.generate(93300, params=params, max_attempts=100)
 
@@ -202,7 +202,10 @@ def test_chart_dashboard_is_deterministic() -> None:
 
 
 def test_chart_dashboard_registered_and_group_config_loaded() -> None:
-    assert create_task("task_charts__dashboard__source_rank_target_value").task_id == "task_charts__dashboard__source_rank_target_value"
+    assert (
+        create_task("task_charts__dashboard__source_rank_metric_value").task_id
+        == "task_charts__dashboard__source_rank_metric_value"
+    )
 
     cfg = get_task_group_defaults("charts", "dashboard")
     assert isinstance(cfg.get("generation"), dict)
@@ -210,7 +213,7 @@ def test_chart_dashboard_registered_and_group_config_loaded() -> None:
     assert isinstance(cfg.get("prompt"), dict)
 
     generation = cfg["generation"]["shared"]
-    assert sorted(generation["query_variant_weights"].keys()) == sorted(SUPPORTED_QUERY_VARIANTS)
+    assert sorted(generation["query_id_weights"].keys()) == sorted(SUPPORTED_QUERY_IDS)
     assert int(generation["panel_count_min"]) == 4
     assert int(generation["panel_count_max"]) == 9
     assert int(generation["category_count_min"]) == 4

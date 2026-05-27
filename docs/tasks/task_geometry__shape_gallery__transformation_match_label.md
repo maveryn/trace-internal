@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `transformation`
 3. Scene id: `shape_gallery`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `translation_match`, `reflection_match`, or `rotation_match`
 6. Answer type: `option_letter`
 7. Evidence type: `point_set`

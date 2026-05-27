@@ -10,12 +10,12 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.charts.composition.small_multiples_aggregate_value import (
     ChartsCompositionSmallMultiplesAggregateValueTask,
-    SUPPORTED_QUERY_VARIANTS as SMALL_MULTIPLES_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS as SMALL_MULTIPLES_QUERY_IDS,
 )
 from trace.tasks.charts.composition.share_arithmetic_value import (
     ChartsCompositionShareArithmeticValueTask,
     SUPPORTED_SCENE_VARIANTS as SHARE_ARITHMETIC_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS as SHARE_ARITHMETIC_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS as SHARE_ARITHMETIC_QUERY_IDS,
 )
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
@@ -33,7 +33,7 @@ def _panel_by_label(trace: dict) -> dict[str, dict]:
 
 def _expected_answer(trace: dict) -> int:
     panels = list(trace["panels"])
-    variant = str(trace["query_variant"])
+    variant = str(trace["query_id"])
     if variant == "top_k_by_segment_then_sum_other_segment_count":
         ranked = sorted(
             panels,
@@ -98,17 +98,17 @@ def test_chart_composition_task_overrides_do_not_inherit_sibling_variants() -> N
         task_id="charts_composition_share_arithmetic_value_base",
     )
 
-    assert sorted(small_generation["query_variant_weights"].keys()) == sorted(SMALL_MULTIPLES_QUERY_VARIANTS)
+    assert sorted(small_generation["query_id_weights"].keys()) == sorted(SMALL_MULTIPLES_QUERY_IDS)
     assert sorted(small_generation["scene_variant_weights"].keys()) == [
         "small_multiple_donut",
         "small_multiple_pie",
     ]
-    assert sorted(share_generation["query_variant_weights"].keys()) == sorted(SHARE_ARITHMETIC_QUERY_VARIANTS)
+    assert sorted(share_generation["query_id_weights"].keys()) == sorted(SHARE_ARITHMETIC_QUERY_IDS)
     assert sorted(share_generation["scene_variant_weights"].keys()) == sorted(SHARE_ARITHMETIC_SCENE_VARIANTS)
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "scene_variant"),
+    ("query_id", "scene_variant"),
     [
         ("top_k_by_segment_then_sum_other_segment_count", "small_multiple_pie"),
         ("conditioned_panel_sum_from_percent", "small_multiple_donut"),
@@ -116,18 +116,18 @@ def test_chart_composition_task_overrides_do_not_inherit_sibling_variants() -> N
         ("composition_shift_l1_distance", "small_multiple_donut"),
     ],
 )
-def test_chart_composition_variants_match_contract(query_variant: str, scene_variant: str) -> None:
+def test_chart_composition_variants_match_contract(query_id: str, scene_variant: str) -> None:
     task = ChartsCompositionSmallMultiplesAggregateValueTask()
     out = task.generate(
-        30000 + SMALL_MULTIPLES_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant, "scene_variant": scene_variant},
+        30000 + SMALL_MULTIPLES_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "scene_variant": scene_variant},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -153,7 +153,7 @@ def test_chart_composition_variants_match_contract(query_variant: str, scene_var
         for bbox in trace["projected_evidence"]["bbox_set"]
     )
     assert len(trace["scene_ir"]["entities"]) == int(execution["panel_count"]) * int(execution["segment_count"])
-    assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+    assert str(trace["query_spec"]["query_id"]) == str(query_id)
     _assert_normalized_complexity(out)
 
 
@@ -163,7 +163,7 @@ def test_chart_composition_balances_variants_and_scenes() -> None:
     scenes = []
     for index in range(32):
         out = task.generate(30100 + index, params={}, max_attempts=10)
-        variants.append(str(out.query_variant))
+        variants.append(str(out.query_id))
         scenes.append(str(out.trace_payload["execution_trace"]["scene_variant"]))
     assert {variant: variants.count(variant) for variant in set(variants)} == {
         "top_k_by_segment_then_sum_other_segment_count": 8,
@@ -184,10 +184,10 @@ def test_chart_composition_decouples_count_axes_from_variant_axes() -> None:
     for index in range(96):
         out = task.generate(30500 + index, params={}, max_attempts=10)
         trace = out.trace_payload["execution_trace"]
-        by_variant.setdefault(str(out.query_variant), set()).add(int(trace["panel_count"]))
+        by_variant.setdefault(str(out.query_id), set()).add(int(trace["panel_count"]))
         by_scene.setdefault(str(trace["scene_variant"]), set()).add(int(trace["segment_count"]))
 
-    assert set(by_variant) == set(SMALL_MULTIPLES_QUERY_VARIANTS)
+    assert set(by_variant) == set(SMALL_MULTIPLES_QUERY_IDS)
     assert all(values == {4, 5, 6, 7, 8, 9} for values in by_variant.values())
     assert by_scene == {
         "small_multiple_pie": {5, 6, 7},
@@ -221,12 +221,12 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
             "answer": 28,
         },
     }
-    for index, query_variant in enumerate(expected, start=30200):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=30200):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_composition_rejects_non_small_multiple_scene_variants() -> None:
@@ -236,7 +236,7 @@ def test_chart_composition_rejects_non_small_multiple_scene_variants() -> None:
             task.generate(
                 30300,
                 params={
-                    "query_variant": "top_k_by_segment_then_sum_other_segment_count",
+                    "query_id": "top_k_by_segment_then_sum_other_segment_count",
                     "scene_variant": scene_variant,
                 },
                 max_attempts=10,
@@ -248,7 +248,7 @@ def test_chart_composition_task_is_registered_and_deterministic() -> None:
     assert "task_charts__small_multiple__difference_value" in TASK_REGISTRY
     task = ChartsCompositionSmallMultiplesAggregateValueTask()
     params = {
-        "query_variant": "composition_shift_l1_distance",
+        "query_id": "composition_shift_l1_distance",
         "scene_variant": "small_multiple_donut",
     }
     out_a = task.generate(30400, params=params, max_attempts=10)
@@ -264,7 +264,7 @@ def test_chart_composition_task_is_registered_and_deterministic() -> None:
 
 def _expected_share_arithmetic_answer(trace: dict) -> int:
     values_by_label = {str(label): int(value) for label, value in trace["category_values"].items()}
-    variant = str(trace["query_variant"])
+    variant = str(trace["query_id"])
     if variant == "ranked_position_set_sum":
         return int(sum(values_by_label[str(label)] for label in trace["category_list"]))
     if variant == "conditional_share_sum":
@@ -454,9 +454,9 @@ def _expected_share_arithmetic_answer(trace: dict) -> int:
     raise AssertionError(f"unsupported share-arithmetic variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SHARE_ARITHMETIC_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SHARE_ARITHMETIC_QUERY_IDS)
 @pytest.mark.parametrize("scene_variant", SHARE_ARITHMETIC_SCENE_VARIANTS)
-def test_chart_composition_share_arithmetic_variants_match_contract(query_variant: str, scene_variant: str) -> None:
+def test_chart_composition_share_arithmetic_variants_match_contract(query_id: str, scene_variant: str) -> None:
     task = ChartsCompositionShareArithmeticValueTask()
     circular_only_variants = {
         "contiguous_chart_order_sum",
@@ -474,24 +474,24 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_varian
         "chart_order_remaining_count",
         "sector_share_to_angle",
     }
-    if query_variant in circular_only_variants and scene_variant not in {"pie", "donut"}:
+    if query_id in circular_only_variants and scene_variant not in {"pie", "donut"}:
         with pytest.raises(ValueError):
             task.generate(
-                41000 + (SHARE_ARITHMETIC_QUERY_VARIANTS.index(query_variant) * 10) + SHARE_ARITHMETIC_SCENE_VARIANTS.index(scene_variant),
-                params={"query_variant": query_variant, "scene_variant": scene_variant},
+                41000 + (SHARE_ARITHMETIC_QUERY_IDS.index(query_id) * 10) + SHARE_ARITHMETIC_SCENE_VARIANTS.index(scene_variant),
+                params={"query_id": query_id, "scene_variant": scene_variant},
                 max_attempts=10,
             )
         return
     out = task.generate(
-        41000 + (SHARE_ARITHMETIC_QUERY_VARIANTS.index(query_variant) * 10) + SHARE_ARITHMETIC_SCENE_VARIANTS.index(scene_variant),
-        params={"query_variant": query_variant, "scene_variant": scene_variant},
+        41000 + (SHARE_ARITHMETIC_QUERY_IDS.index(query_id) * 10) + SHARE_ARITHMETIC_SCENE_VARIANTS.index(scene_variant),
+        params={"query_id": query_id, "scene_variant": scene_variant},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -499,17 +499,17 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_varian
     assert str(render["scene_variant"]) == str(scene_variant)
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert int(execution["category_count"]) == len(execution["categories"])
-    if query_variant == "contiguous_chart_order_sum":
+    if query_id == "contiguous_chart_order_sum":
         assert 4 <= int(execution["category_count"]) <= 8
         assert int(execution["span_count"]) < int(execution["category_count"])
-    elif query_variant in transfer_variants:
+    elif query_id in transfer_variants:
         assert 4 <= int(execution["category_count"]) <= 8
-    elif query_variant in part_whole_variants:
+    elif query_id in part_whole_variants:
         assert 4 <= int(execution["category_count"]) <= 8
         assert int(execution["span_count"]) < int(execution["category_count"])
-        if query_variant == "sector_share_to_angle":
+        if query_id == "sector_share_to_angle":
             assert int(execution["sector_angle_degrees"]) != 360
-    elif query_variant == "positional_segment_share_sum":
+    elif query_id == "positional_segment_share_sum":
         assert int(execution["category_count"]) in {4, 6, 8}
     else:
         assert 16 <= int(execution["category_count"]) <= 24
@@ -529,7 +529,7 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_varian
         min_row_height = 12.0 if is_special_evidence else 18.0
         max_row_height = (
             64.0
-            if query_variant
+            if query_id
             in {
                 "contiguous_chart_order_sum",
                 "chart_order_adjacent_transfer_gap",
@@ -542,7 +542,7 @@ def test_chart_composition_share_arithmetic_variants_match_contract(query_varian
         )
         assert float(min_row_height) <= float(bbox[3]) - float(bbox[1]) <= float(max_row_height)
     assert len(trace["scene_ir"]["entities"]) >= int(execution["category_count"]) * 2
-    assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+    assert str(trace["query_spec"]["query_id"]) == str(query_id)
     _assert_normalized_complexity(out)
 
 
@@ -552,7 +552,7 @@ def test_chart_composition_share_arithmetic_balances_variants_and_scenes() -> No
     scenes = []
     for index in range(72):
         out = task.generate(41100 + index, params={}, max_attempts=10)
-        variants.append(str(out.query_variant))
+        variants.append(str(out.query_id))
         scenes.append(str(out.trace_payload["execution_trace"]["scene_variant"]))
     assert {variant: variants.count(variant) for variant in set(variants)} == {
         "contiguous_chart_order_sum": 12,
@@ -563,7 +563,7 @@ def test_chart_composition_share_arithmetic_balances_variants_and_scenes() -> No
         "chart_order_adjacent_transfer_gap": 12,
     }
     assert set(scenes) == {"pie", "donut"}
-    for restricted_variant in set(SHARE_ARITHMETIC_QUERY_VARIANTS):
+    for restricted_variant in set(SHARE_ARITHMETIC_QUERY_IDS):
         restricted_scenes = [
             scene
             for index, scene in enumerate(scenes)
@@ -579,10 +579,10 @@ def test_chart_composition_share_arithmetic_decouples_category_count_from_varian
     for index in range(280):
         out = task.generate(41200 + index, params={}, max_attempts=10)
         trace = out.trace_payload["execution_trace"]
-        by_variant.setdefault(str(out.query_variant), set()).add(int(trace["category_count"]))
+        by_variant.setdefault(str(out.query_id), set()).add(int(trace["category_count"]))
         by_scene.setdefault(str(trace["scene_variant"]), set()).add(int(trace["category_count"]))
 
-    assert set(by_variant) == set(SHARE_ARITHMETIC_QUERY_VARIANTS)
+    assert set(by_variant) == set(SHARE_ARITHMETIC_QUERY_IDS)
     assert by_variant["contiguous_chart_order_sum"] == set(range(4, 9))
     assert by_variant["positional_segment_share_sum"] == {4, 6, 8}
     for variant in {
@@ -625,12 +625,12 @@ def test_chart_composition_share_arithmetic_prompt_examples_match_selected_varia
             "answer": 13,
         },
     }
-    for index, query_variant in enumerate(expected, start=41300):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=41300):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_composition_share_arithmetic_rejects_unsupported_scene_variant() -> None:
@@ -639,7 +639,7 @@ def test_chart_composition_share_arithmetic_rejects_unsupported_scene_variant() 
         task.generate(
             41400,
             params={
-                "query_variant": "contiguous_chart_order_sum",
+                "query_id": "contiguous_chart_order_sum",
                 "scene_variant": "small_multiple_pie",
             },
             max_attempts=10,
@@ -647,13 +647,11 @@ def test_chart_composition_share_arithmetic_rejects_unsupported_scene_variant() 
 
 
 def test_chart_composition_share_arithmetic_task_is_registered_and_deterministic() -> None:
-    assert "task_charts__part_whole__order_share_sum_value" in TASK_REGISTRY
-    assert "task_charts__part_whole__order_count_conversion_value" in TASK_REGISTRY
-    assert "task_charts__part_whole__order_sector_angle_value" in TASK_REGISTRY
+    assert "task_charts__part_whole__ordered_segment_value" in TASK_REGISTRY
     assert "task_charts__part_whole__adjacent_transfer_gap_value" in TASK_REGISTRY
     task = ChartsCompositionShareArithmeticValueTask()
     params = {
-        "query_variant": "chart_order_remaining_count",
+        "query_id": "chart_order_remaining_count",
         "scene_variant": "donut",
     }
     out_a = task.generate(41500, params=params, max_attempts=10)

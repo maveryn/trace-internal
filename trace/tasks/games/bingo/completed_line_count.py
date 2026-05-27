@@ -24,7 +24,7 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from ..shared.bingo_common import (
     SUPPORTED_BINGO_EXTREMA,
     SUPPORTED_BINGO_LINE_AXES,
-    SUPPORTED_BINGO_QUERY_VARIANTS,
+    SUPPORTED_BINGO_QUERY_IDS,
     SUPPORTED_BINGO_SCENE_VARIANTS,
     BingoCardState,
     build_bingo_card_state,
@@ -79,7 +79,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one bingo-card scene."""
 
-    query_variant: str
+    query_id: str
     line_axis: str | None
     extremum: str | None
     scene_variant: str
@@ -90,7 +90,7 @@ class _ResolvedAxes:
     target_answer_support: Tuple[int, ...]
     line_axis_probabilities: Dict[str, float]
     extremum_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     mark_shape_probabilities: Dict[str, float]
@@ -106,49 +106,49 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="bingo", apply_prob=0.0)
 
-_SOURCE_QUERY_VARIANT_LINE_AXES: Dict[str, str] = {
+_SOURCE_QUERY_ID_LINE_AXES: Dict[str, str] = {
     "completed_row_count": "row",
     "completed_column_count": "column",
 }
 
 
 def _params_with_source_query_aliases(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Map old row/column query variants to the canonical axis query plus `line_axis`."""
+    """Map old row/column query ids to the canonical axis query plus `line_axis`."""
 
     alias_params = dict(params)
-    explicit_query = alias_params.get("query_variant")
-    if explicit_query is None and alias_params.get("query_variant") is not None:
-        explicit_query = alias_params.get("query_variant")
-        alias_params["query_variant"] = explicit_query
+    explicit_query = alias_params.get("query_id")
+    if explicit_query is None and alias_params.get("query_id") is not None:
+        explicit_query = alias_params.get("query_id")
+        alias_params["query_id"] = explicit_query
     if explicit_query is None:
         return alias_params
-    source_axis = _SOURCE_QUERY_VARIANT_LINE_AXES.get(str(explicit_query))
+    source_axis = _SOURCE_QUERY_ID_LINE_AXES.get(str(explicit_query))
     if source_axis is None:
         return alias_params
     explicit_axis = alias_params.get("line_axis")
     if explicit_axis is not None and str(explicit_axis) != str(source_axis):
-        raise ValueError(f"conflicting line_axis={explicit_axis!r} for source query_variant={explicit_query!r}")
-    alias_params["query_variant"] = "completed_axis_line_count"
+        raise ValueError(f"conflicting line_axis={explicit_axis!r} for source query_id={explicit_query!r}")
+    alias_params["query_id"] = "completed_axis_line_count"
     alias_params["line_axis"] = str(source_axis)
     return alias_params
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query variant, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query id, honoring `query_id` as an alias."""
 
     alias_params = _params_with_source_query_aliases(params)
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_BINGO_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_BINGO_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -156,11 +156,11 @@ def _resolve_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_BINGO_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_BINGO_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), dict(probabilities)
 
@@ -169,18 +169,18 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
     """Return true when the query axis is using the default balanced cycle."""
 
     normalized_params = _params_with_source_query_aliases(params)
-    if normalized_params.get("query_variant") is not None or normalized_params.get("query_variant") is not None:
+    if normalized_params.get("query_id") is not None or normalized_params.get("query_id") is not None:
         return False
     enabled = bool(
         normalized_params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_BINGO_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_BINGO_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -188,7 +188,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for axes balanced below the query cycle."""
 
@@ -196,9 +196,9 @@ def _params_for_query_occurrence_cycle(
     sampling_index = cycle_params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(cycle_params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(cycle_params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_BINGO_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_BINGO_QUERY_IDS))
     return cycle_params
 
 
@@ -274,13 +274,13 @@ def _resolve_named_axis(
     return str(selected), dict(probabilities)
 
 
-def _target_support_key(query_variant: str) -> str:
-    """Return the configured target-support key for one bingo query variant."""
+def _target_support_key(query_id: str) -> str:
+    """Return the configured target-support key for one bingo query id."""
 
     return {
         "completed_axis_line_count": "completed_axis_line_count_support",
         "line_sum_extremum_value": "line_sum_completed_line_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _cross_line_axis_target_cycle(
@@ -337,18 +337,18 @@ def _configured_target_answer_cycle(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve semantic/visual axes plus one target answer for the bingo task."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
     line_axis = None
     line_axis_probabilities: Dict[str, float] = {}
-    if str(query_variant) in {"completed_axis_line_count", "line_sum_extremum_value"}:
+    if str(query_id) in {"completed_axis_line_count", "line_sum_extremum_value"}:
         line_axis, line_axis_probabilities = _resolve_named_axis(
             instance_seed=int(instance_seed),
             params=_params_for_query_occurrence_cycle(
                 params,
-                query_variant_probabilities=query_variant_probabilities,
+                query_id_probabilities=query_id_probabilities,
             ),
             namespace="line_axis",
             explicit_key="line_axis",
@@ -358,12 +358,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
     extremum = None
     extremum_probabilities: Dict[str, float] = {}
-    if str(query_variant) == "line_sum_extremum_value":
+    if str(query_id) == "line_sum_extremum_value":
         extremum, extremum_probabilities = _resolve_named_axis(
             instance_seed=int(instance_seed),
             params=_params_for_query_occurrence_cycle(
                 params,
-                query_variant_probabilities=query_variant_probabilities,
+                query_id_probabilities=query_id_probabilities,
             ),
             namespace="extremum",
             explicit_key="extremum",
@@ -408,12 +408,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported=SUPPORTED_BINGO_CELL_FILL_PATTERNS,
     )
 
-    target_support_key = _target_support_key(str(query_variant))
+    target_support_key = _target_support_key(str(query_id))
     target_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
-    if str(query_variant) == "line_sum_extremum_value" and target_params.get("completed_line_count_target") is not None:
+    if str(query_id) == "line_sum_extremum_value" and target_params.get("completed_line_count_target") is not None:
         target_params = dict(target_params)
         target_params["target_answer"] = int(target_params["completed_line_count_target"])
     balance_target_within_line_axis = bool(
@@ -422,7 +422,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             group_default(_GEN_DEFAULTS, "balanced_target_answer_within_line_axis", _DEFAULTS.balanced_target_answer_within_line_axis),
         )
     )
-    if str(query_variant) in {"completed_axis_line_count", "line_sum_extremum_value"} and bool(balance_target_within_line_axis):
+    if str(query_id) in {"completed_axis_line_count", "line_sum_extremum_value"} and bool(balance_target_within_line_axis):
         target_params = _params_for_line_axis_occurrence_cycle(
             target_params,
             line_axis_probabilities=line_axis_probabilities,
@@ -440,7 +440,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(target_support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, target_support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -452,7 +452,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     if params.get("target_answer") is None and configured_cycle is not None:
         target_answer, target_answer_probabilities = configured_cycle
     elif (
-        str(query_variant) == "completed_axis_line_count"
+        str(query_id) == "completed_axis_line_count"
         and not bool(balance_target_within_line_axis)
         and params.get("target_answer") is None
     ):
@@ -463,7 +463,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         if cycled_answer is not None:
             target_answer = int(cycled_answer)
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         line_axis=str(line_axis) if line_axis is not None else None,
         extremum=str(extremum) if extremum is not None else None,
         scene_variant=str(scene_variant),
@@ -474,7 +474,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_answer_support=tuple(int(value) for value in target_answer_support),
         line_axis_probabilities=dict(line_axis_probabilities),
         extremum_probabilities=dict(extremum_probabilities),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         mark_shape_probabilities=dict(mark_shape_probabilities),
@@ -578,10 +578,10 @@ def _render_params(
     )
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return answer+evidence and answer-only JSON examples for the bingo task."""
 
-    if str(query_variant) == "line_sum_extremum_value":
+    if str(query_id) == "line_sum_extremum_value":
         json_example = json.dumps(
             {
                 "evidence": [
@@ -678,14 +678,14 @@ class GamesBingoCompletedLineCountTask:
         last_generation_error: ValueError | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
-            if str(axes.query_variant) == "line_sum_extremum_value":
+            if str(axes.query_id) == "line_sum_extremum_value":
                 distractor_mark_prob = float(line_sum_distractor_mark_prob)
             else:
                 distractor_mark_prob = float(axis_distractor_mark_prob)
             try:
                 sampled_card = build_bingo_card_state(
                     rng=attempt_rng,
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     line_axis=axes.line_axis,
                     extremum=axes.extremum,
                     target_answer=int(axes.target_answer),
@@ -709,7 +709,7 @@ class GamesBingoCompletedLineCountTask:
 
         evidence_cell_ids = evidence_cell_ids_for_query(
             card_state=sampled_card,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             line_axis=axes.line_axis,
         )
         evidence_bboxes = [
@@ -741,7 +741,7 @@ class GamesBingoCompletedLineCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(axes.query_id))
         extremum_text = "maximum" if str(axes.extremum or "max") == "max" else "minimum"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -749,17 +749,17 @@ class GamesBingoCompletedLineCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_single_card"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]).format(
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]).format(
                     line_axis=str(axes.line_axis or "row"),
                     extremum=str(extremum_text),
                 ),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]).format(
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]).format(
                     line_axis=str(axes.line_axis or "row"),
                     extremum=str(extremum_text),
                 ),
@@ -779,7 +779,7 @@ class GamesBingoCompletedLineCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        if str(axes.query_variant) == "line_sum_extremum_value" and sampled_card.line_sum_target_value is not None:
+        if str(axes.query_id) == "line_sum_extremum_value" and sampled_card.line_sum_target_value is not None:
             answer_value = int(sampled_card.line_sum_target_value)
         else:
             answer_value = int(axes.target_answer)
@@ -789,28 +789,28 @@ class GamesBingoCompletedLineCountTask:
         complexity = build_games_bingo_completed_line_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             marked_cell_count=int(marked_cell_count),
             target_answer=(
                 int(answer_value)
-                if str(axes.query_variant) == "line_sum_extremum_value"
+                if str(axes.query_id) == "line_sum_extremum_value"
                 else int(axes.target_answer)
             ),
             evidence_count=len(evidence_cell_ids),
         )
         target_answer_support_for_trace = (
             []
-            if str(axes.query_variant) == "line_sum_extremum_value"
+            if str(axes.query_id) == "line_sum_extremum_value"
             else [int(value) for value in axes.target_answer_support]
         )
         target_answer_probabilities_for_trace = (
             {}
-            if str(axes.query_variant) == "line_sum_extremum_value"
+            if str(axes.query_id) == "line_sum_extremum_value"
             else dict(axes.target_answer_probabilities)
         )
         completed_line_count_target = (
             int(axes.target_answer)
-            if str(axes.query_variant) == "line_sum_extremum_value"
+            if str(axes.query_id) == "line_sum_extremum_value"
             else None
         )
 
@@ -820,8 +820,7 @@ class GamesBingoCompletedLineCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "line_axis": axes.line_axis,
                     "extremum": axes.extremum,
                     "style_variant": str(axes.style_variant),
@@ -848,15 +847,14 @@ class GamesBingoCompletedLineCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "line_axis": axes.line_axis,
                     "extremum": axes.extremum,
                     "style_variant": str(axes.style_variant),
@@ -865,8 +863,8 @@ class GamesBingoCompletedLineCountTask:
                     "axis_distractor_mark_prob": float(axis_distractor_mark_prob),
                     "line_sum_distractor_mark_prob": float(line_sum_distractor_mark_prob),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "line_axis_probabilities": dict(axes.line_axis_probabilities),
                     "extremum_probabilities": dict(axes.extremum_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
@@ -879,7 +877,7 @@ class GamesBingoCompletedLineCountTask:
                     "completed_line_count_support": [int(value) for value in axes.target_answer_support],
                     "completed_line_count_probabilities": (
                         dict(axes.target_answer_probabilities)
-                        if str(axes.query_variant) == "line_sum_extremum_value"
+                        if str(axes.query_id) == "line_sum_extremum_value"
                         else {}
                     ),
                     "line_sum_extremum": sampled_card.line_sum_extremum,
@@ -902,8 +900,7 @@ class GamesBingoCompletedLineCountTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "line_axis": axes.line_axis,
                 "extremum": axes.extremum,
                 "style_variant": str(axes.style_variant),
@@ -965,9 +962,8 @@ class GamesBingoCompletedLineCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="bingo",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -976,7 +972,7 @@ class GamesBingoAxisCompletedLineCountTask(FixedQueryVariantTaskMixin, GamesBing
     """Count completed bingo lines along one sampled board axis."""
 
     task_id = "task_games__bingo__completed_line_count"
-    fixed_query_variant = "completed_axis_line_count"
+    fixed_query_id = "completed_axis_line_count"
 
 
 @register_task
@@ -984,7 +980,7 @@ class GamesBingoLineSumExtremumValueTask(FixedQueryVariantTaskMixin, GamesBingoC
     """Return the unique min/max sum among completed bingo rows or columns."""
 
     task_id = "task_games__bingo__line_sum_extremum_value"
-    fixed_query_variant = "line_sum_extremum_value"
+    fixed_query_id = "line_sum_extremum_value"
 
 
 __all__ = [

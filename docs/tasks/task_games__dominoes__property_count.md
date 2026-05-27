@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `integer`
 2. Evidence type: bbox_set over the loose dominoes being counted.
-3. Public `query_variant` is `default`; the sampled property is recorded as `query_id` and `query_spec.params.query_variant`.
+3. The sampled property is recorded as `query_id` and `query_spec.params.query_id`.
 
 ## Implementation
 1. This task uses the shared games domino-chain renderer for its scene id.

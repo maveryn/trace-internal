@@ -8,7 +8,7 @@
 5. Objective: count route segments in the unique shortest station path between two labeled stations.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `metro_shortest_path_length`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_sequence`

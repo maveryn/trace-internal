@@ -4,7 +4,7 @@ generation:
     mark_count_max: 10
     value_min: 1
     value_max: 20
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
     charts_trend_value_base:
@@ -29,7 +29,7 @@ generation:
       percent_change_step: 5
       average_rate_abs_min: 2
       average_rate_abs_max: 12
-      query_variant_weights:
+      query_id_weights:
         turning_point_count: 1.0
         longest_monotone_streak: 1.0
         endpoint_change_value: 1.0
@@ -80,7 +80,7 @@ generation:
         dot_plot: 1.0
         lollipop: 1.0
     task_charts__single_series__interval_change_value:
-      query_variant_weights:
+      query_id_weights:
         endpoint_change_value: 1.0
         interval_rate_value: 0.0
       endpoint_change_kind_weights:

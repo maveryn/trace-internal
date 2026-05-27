@@ -587,7 +587,7 @@ class GeometryComparisonAngleTask:
                 },
             },
             "query_spec": {
-                "query_variant": "primitive_angle_set",
+                "query_id": "primitive_angle_set",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -657,6 +657,6 @@ class GeometryComparisonAngleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="primitive_angle_set",
+            query_id="primitive_angle_set",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

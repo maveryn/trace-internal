@@ -14,11 +14,11 @@ def test_games_chess_board_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"sparse_board", "crowded_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "marked_piece_move_count",
         "marked_piece_capture_count",
         "player_capture_piece_count",

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `analytical`
 3. Scene id: `function_panels`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `function_status_label` or `one_to_one_status_label`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

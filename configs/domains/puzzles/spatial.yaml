@@ -31,10 +31,10 @@ generation:
       complement_cutout_cell_count_max: 7
       complement_transform_allowed_cutout_cell_count_min: 5
       complement_shape_bbox_max_dim: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_matching_policy_sampling: true
-      query_variant_weights:
+      query_id_weights:
         marked_region_piece_label: 1.0
         rectangle_complement_piece: 1.0
       matching_policy_weights:
@@ -65,9 +65,9 @@ generation:
       option_count_min: 6
       option_count_max: 6
       rubiks_dataset_max_attempts: 128
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         static_sticker_color_label: 1.0
         one_move_sticker_color_label: 1.0
         short_sequence_sticker_color_label: 1.0
@@ -112,9 +112,9 @@ generation:
       option_count: 6
       path_length_min: 4
       path_length_max: 12
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         shortest_path_sequence_label: 1.0
         valid_path_sequence_label: 1.0
         blocked_path_sequence_label: 1.0
@@ -163,11 +163,11 @@ generation:
       sheet_mark_count_max: 5
       overlap_count_min: 1
       overlap_count_max: 2
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_fold_count_sampling: true
       balanced_fold_axis_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         paper_fold_result: 1.0
         paper_fold_cut_result: 1.0
         overlay_result: 1.0
@@ -214,13 +214,13 @@ generation:
       exact_k_painted_cube_count_min: 0
       exact_k_painted_cube_count_max: 8
       cube_color_name_support: [orange, blue, green, purple, cyan, magenta, brown]
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_change_type_sampling: true
       balanced_painted_query_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_view_direction_sampling: true
       balanced_scene_variant_sampling: true
-      query_variant_weights:
+      query_id_weights:
         cube_count: 1.0
         cube_structure_change_count: 1.0
         painted_face_count: 1.0
@@ -255,7 +255,7 @@ generation:
       projection_consistency_option_count_max: 5
       min_distinct_view_counts: 2
       allow_full_query_projection: false
-      query_variant_weights:
+      query_id_weights:
         visible_cube_count: 1.0
       view_direction_weights:
         top: 1.0

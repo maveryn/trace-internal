@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: find the maximum number of mutually non-overlapping scheduled events.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `maximum_non_overlapping_count`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` over the unique maximum-cardinality non-overlapping event set.

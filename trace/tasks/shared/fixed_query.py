@@ -12,17 +12,17 @@ from ..base import TaskOutput
 _UNSET = object()
 
 
-def force_query_variant_params(params: Mapping[str, Any], *, query_variant: str) -> Dict[str, Any]:
+def force_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[str, Any]:
     """Return params that force one internal query branch."""
 
     forced = dict(params)
-    requested_query_variant = forced.get("query_variant")
-    if requested_query_variant is not None and str(requested_query_variant) != str(query_variant):
+    requested_query_id = forced.get("query_id")
+    if requested_query_id is not None and str(requested_query_id) != str(query_id):
         raise ValueError(
-            "public task query_variant must match query_variant "
-            f"'{query_variant}' (got: {requested_query_variant})"
+            "public task query_id must match query_id "
+            f"'{query_id}' (got: {requested_query_id})"
         )
-    forced["query_variant"] = str(query_variant)
+    forced["query_id"] = str(query_id)
     return forced
 
 
@@ -50,11 +50,11 @@ def rewrite_public_query_output(
     task_id: str | None = None,
     include_render_spec: bool = False,
     include_scene_ir_root: bool = False,
-    query_variant_probabilities: Mapping[str, float] | object = _UNSET,
-    params_query_variant_probabilities: Mapping[str, float] | object = _UNSET,
+    query_id_probabilities: Mapping[str, float] | object = _UNSET,
+    params_query_id_probabilities: Mapping[str, float] | object = _UNSET,
     variant_probabilities: Mapping[str, float] | object = _UNSET,
     scene_variant_probabilities: Mapping[str, float] | object = _UNSET,
-    preserve_internal_query_variant_as: str | Sequence[str] | None = None,
+    preserve_internal_query_id_as: str | Sequence[str] | None = None,
     preserve_prior_task_id_as: str | None = None,
     clear_keys: Sequence[str] = (),
     extra_fields: Mapping[str, Any] | None = None,
@@ -76,21 +76,21 @@ def rewrite_public_query_output(
     extra_field_map = {str(key): value for key, value in dict(extra_fields or {}).items()}
     extra_param_field_map = {str(key): value for key, value in dict(extra_param_fields or extra_field_map).items()}
     prompt_metadata_map = {str(key): value for key, value in dict(prompt_metadata or {}).items()}
-    if preserve_internal_query_variant_as is None:
+    if preserve_internal_query_id_as is None:
         preserve_internal_keys: tuple[str, ...] = ()
-    elif isinstance(preserve_internal_query_variant_as, str):
-        preserve_internal_keys = (str(preserve_internal_query_variant_as),)
+    elif isinstance(preserve_internal_query_id_as, str):
+        preserve_internal_keys = (str(preserve_internal_query_id_as),)
     else:
-        preserve_internal_keys = tuple(str(key) for key in preserve_internal_query_variant_as)
+        preserve_internal_keys = tuple(str(key) for key in preserve_internal_query_id_as)
     top_query_probabilities = (
         _UNSET
-        if query_variant_probabilities is _UNSET
-        else normalize_probability_map(query_variant_probabilities)  # type: ignore[arg-type]
+        if query_id_probabilities is _UNSET
+        else normalize_probability_map(query_id_probabilities)  # type: ignore[arg-type]
     )
-    if params_query_variant_probabilities is _UNSET:
+    if params_query_id_probabilities is _UNSET:
         params_probabilities = top_query_probabilities
     else:
-        params_probabilities = normalize_probability_map(params_query_variant_probabilities)  # type: ignore[arg-type]
+        params_probabilities = normalize_probability_map(params_query_id_probabilities)  # type: ignore[arg-type]
     variant_probability_map = (
         _UNSET
         if variant_probabilities is _UNSET
@@ -105,7 +105,7 @@ def rewrite_public_query_output(
     def _preserve_internal(value: Dict[str, Any]) -> None:
         if not preserve_internal_keys:
             return
-        prior_variant = value.get("query_variant")
+        prior_variant = value.get("query_id")
         if prior_variant is not None and str(prior_variant) != "default":
             for key in preserve_internal_keys:
                 value.setdefault(str(key), str(prior_variant))
@@ -151,9 +151,8 @@ def rewrite_public_query_output(
         if scene_id_text is not None:
             value["scene_id"] = scene_id_text
         value["query_id"] = query_id_text
-        value["query_variant"] = "default"
         if top_query_probabilities is not _UNSET:
-            value["query_variant_probabilities"] = dict(top_query_probabilities)  # type: ignore[arg-type]
+            value["query_id_probabilities"] = dict(top_query_probabilities)  # type: ignore[arg-type]
         if variant_probability_map is not _UNSET:
             value["variant_probabilities"] = dict(variant_probability_map)  # type: ignore[arg-type]
         if scene_variant_probability_map is not _UNSET and scene_variant_probability_map:
@@ -170,9 +169,8 @@ def rewrite_public_query_output(
         if scene_id_text is not None:
             params["scene_id"] = scene_id_text
         params["query_id"] = query_id_text
-        params["query_variant"] = "default"
         if params_probabilities is not _UNSET:
-            params["query_variant_probabilities"] = dict(params_probabilities)  # type: ignore[arg-type]
+            params["query_id_probabilities"] = dict(params_probabilities)  # type: ignore[arg-type]
         if variant_probability_map is not _UNSET:
             params["variant_probabilities"] = dict(variant_probability_map)  # type: ignore[arg-type]
         if scene_variant_probability_map is not _UNSET and scene_variant_probability_map:
@@ -188,7 +186,6 @@ def rewrite_public_query_output(
         if scene_id_text is not None:
             value["scene_id"] = scene_id_text
         value["query_id"] = query_id_text
-        value["query_variant"] = "default"
 
     def _rewrite_existing_taxonomy() -> None:
         if not update_existing_taxonomy:
@@ -232,14 +229,13 @@ def rewrite_public_query_output(
     return replace(
         output,
         trace_payload=payload,
-        query_variant="default",
         query_id=query_id_text,
         scene_id=scene_id_text if scene_id_text is not None else output.scene_id,
     )
 
 
 __all__ = [
-    "force_query_variant_params",
+    "force_query_id_params",
     "normalize_probability_map",
     "probability_map",
     "rewrite_public_query_output",

@@ -372,14 +372,12 @@ class ParkPersonEquipmentUseBranch:
                 "scene_id": SCENE_ID,
                 "entities": park_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(sample.query_id),
                     "query_id": str(sample.query_id),
                     "target_equipment_type": str(sample.equipment_type),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -391,7 +389,7 @@ class ParkPersonEquipmentUseBranch:
                     "equipment_count": int(sample.equipment_count),
                     "person_count": int(sample.person_count),
                     "query_probabilities": dict(sample.query_probabilities),
-                    "query_variant_probabilities": dict(sample.query_probabilities),
+                    "query_id_probabilities": dict(sample.query_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "equipment_count_probabilities": dict(sample.equipment_count_probabilities),
                     "person_count_probabilities": dict(sample.person_count_probabilities),
@@ -414,7 +412,6 @@ class ParkPersonEquipmentUseBranch:
                 "counted_person_ids": list(counted_person_ids),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
                 "target_equipment_type": str(sample.equipment_type),
@@ -424,7 +421,7 @@ class ParkPersonEquipmentUseBranch:
                 "person_count": int(sample.person_count),
                 "usage_counts": usage_counts,
                 "equipment_counts": equipment_counts,
-                "query_variant_probabilities": dict(sample.query_probabilities),
+                "query_id_probabilities": dict(sample.query_probabilities),
                 "counted_person_ids": list(counted_person_ids),
                 "persons": serialized_scene[0]["persons"],
                 "decor": serialized_scene[0]["decor"],
@@ -448,7 +445,6 @@ class ParkPersonEquipmentUseBranch:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

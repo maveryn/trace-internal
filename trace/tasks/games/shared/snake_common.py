@@ -18,14 +18,14 @@ DIRECTION_DELTAS: Mapping[str, Coord] = {
 DIRECTION_NAMES: Tuple[str, ...] = ("up", "down", "left", "right")
 PLANNED_MOVE_OUTCOMES: Tuple[str, ...] = ("point", "game_over")
 
-SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS: Tuple[str, ...] = (
     "safe_direction_count",
 )
-SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS: Tuple[str, ...] = (
     "path_result_option_label",
 )
-SUPPORTED_SNAKE_QUERY_VARIANTS: Tuple[str, ...] = (
-    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS + SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_VARIANTS
+SUPPORTED_SNAKE_QUERY_IDS: Tuple[str, ...] = (
+    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS + SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS
 )
 SUPPORTED_SNAKE_SCENE_VARIANTS: Tuple[str, ...] = ("square_grid",)
 SUPPORTED_SNAKE_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -66,7 +66,7 @@ class SnakeSimulation:
 class SnakeSample:
     """Generated Snake scene state and query result."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     answer: str | int
@@ -257,7 +257,7 @@ def validate_snake_sample(sample: SnakeSample) -> None:
     """Validate one generated Snake sample."""
 
     validate_snake_state(sample.state)
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     known_cell_ids = {coord_to_cell_id(coord) for coord in all_coords(sample.state.board_size)}
     if not set(sample.evidence_cell_ids) <= known_cell_ids:
         raise ValueError("snake evidence references unknown cells")
@@ -310,7 +310,7 @@ def validate_snake_sample(sample: SnakeSample) -> None:
         if tuple(sample.evidence_cell_ids) != expected_ids:
             raise ValueError("snake planned-move evidence mismatch")
     else:
-        raise ValueError(f"unsupported snake query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported snake query_id: {sample.query_id}")
 
 
 def _planned_move_evidence_ids(state: SnakeState, simulation: SnakeSimulation) -> Tuple[str, ...]:
@@ -345,9 +345,9 @@ __all__ = [
     "DIRECTION_DELTAS",
     "DIRECTION_NAMES",
     "PLANNED_MOVE_OUTCOMES",
-    "SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS",
-    "SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_VARIANTS",
-    "SUPPORTED_SNAKE_QUERY_VARIANTS",
+    "SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS",
+    "SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS",
+    "SUPPORTED_SNAKE_QUERY_IDS",
     "SUPPORTED_SNAKE_SCENE_VARIANTS",
     "SUPPORTED_SNAKE_STYLE_VARIANTS",
     "SnakeSample",

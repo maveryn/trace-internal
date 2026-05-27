@@ -5,7 +5,7 @@
 2. Scene id: `bar_3d`
 3. Source implementation domain/group: `charts/three_d_bar`
 4. Query id: sampled internally and recorded in `query_id`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.three_d_bar.grid_query.ChartsThreeDBarConditionCountTask`

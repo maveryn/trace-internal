@@ -24,7 +24,7 @@ def test_games_pacman_defaults_expose_scene_query_answer_and_style_axes() -> Non
         task_id="task_games__pacman__route_pellet_count",
     )
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "path_pellet_count",
         "next_item_label",
         "pellet_count_before_ghost",

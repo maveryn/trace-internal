@@ -46,7 +46,7 @@ class PuzzleLogicDefaults:
     panel_corner_radius_px: int = 28
     value_font_size_px: int = 46
     option_label_font_size_px: int = 30
-    balanced_query_variant_sampling: bool = True
+    balanced_query_id_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 
@@ -280,7 +280,7 @@ def _resolve_grid_correct_option_index(
     *,
     instance_seed: int,
     task_id: str,
-    query_variant: str,
+    query_id: str,
     supported_variants: Sequence[str],
     board_size_axis_size: int,
     query_row_index: int,
@@ -307,7 +307,7 @@ def _resolve_grid_correct_option_index(
         resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{task_id}:{query_variant}:correct_option_index",
+            namespace=f"{task_id}:{query_id}:correct_option_index",
         )
     )
     return int(selection % int(option_count))
@@ -395,7 +395,7 @@ def _fill_board_with_king_non_touch(
 
 def build_logic_adjacency_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -404,10 +404,10 @@ def build_logic_adjacency_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic explicit-rule adjacency logic puzzle dataset."""
 
-    selected_variant = str(query_variant)
+    selected_variant = str(query_id)
     supported = {"king_non_touch"}
     if selected_variant not in supported:
-        raise ValueError(f"unsupported logic adjacency variant: {query_variant}")
+        raise ValueError(f"unsupported logic adjacency variant: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     board_size_range = resolve_logic_board_size_bounds(
@@ -500,7 +500,7 @@ def build_logic_adjacency_dataset_for_variant(
         params,
         instance_seed=int(instance_seed),
         task_id=task_id,
-        query_variant=str(selected_variant),
+        query_id=str(selected_variant),
         supported_variants=(str(selected_variant),),
         board_size_axis_size=int(board_size_axis_size),
         query_row_index=int(query_row_index),
@@ -565,7 +565,7 @@ def build_logic_adjacency_dataset_for_variant(
 
 def build_logic_grid_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -574,14 +574,14 @@ def build_logic_grid_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic logic-grid puzzle dataset."""
 
-    selected_variant = str(query_variant)
+    selected_variant = str(query_id)
     supported = (
         "row_uniqueness",
         "column_uniqueness",
         "row_and_column_uniqueness",
     )
     if selected_variant not in supported:
-        raise ValueError(f"unsupported logic-grid variant: {query_variant}")
+        raise ValueError(f"unsupported logic-grid variant: {query_id}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     board_size_range = resolve_logic_board_size_bounds(
@@ -642,7 +642,7 @@ def build_logic_grid_dataset_for_variant(
         params,
         instance_seed=int(instance_seed),
         task_id=str(task_id),
-        query_variant=str(selected_variant),
+        query_id=str(selected_variant),
         supported_variants=supported,
         board_size_axis_size=int(board_size_axis_size),
         query_row_index=int(query_row_index),

@@ -542,7 +542,7 @@ class IconsTransformationPairCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "same_pair_transform",
+                "query_id": "same_pair_transform",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -578,7 +578,7 @@ class IconsTransformationPairCountTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_pair_grid",
-                "query_variant": "same_pair_transform",
+                "query_id": "same_pair_transform",
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -621,7 +621,7 @@ class IconsTransformationPairCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="same_pair_transform",
+            query_id="same_pair_transform",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

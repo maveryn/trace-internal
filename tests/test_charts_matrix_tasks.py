@@ -10,7 +10,7 @@ from tests.helpers import assert_counter_support_within, extract_prompt_json_exa
 from trace.core.seed import hash64
 from trace.tasks.charts.matrix.cell_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsMatrixCellQueryTask,
 )
 
@@ -40,7 +40,7 @@ def _line_cell_ids(execution: dict, *, query_axis: str, axis_index: int) -> list
 
 
 def _expected_answer(execution: dict, query_params: dict) -> int | str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     row_labels = [str(item) for item in execution["row_labels"]]
     column_labels = [str(item) for item in execution["column_labels"]]
     cells_by_id = {str(key): dict(value) for key, value in execution["cells_by_id"].items()}
@@ -104,12 +104,12 @@ def _expected_evidence_bboxes(trace: dict) -> list[list[float]]:
     return expected
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_matrix_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_matrix_variants_match_contract(query_id: str) -> None:
     task = ChartsMatrixCellQueryTask()
     out = task.generate(
-        hash64(20260503, "charts_matrix", SUPPORTED_QUERY_VARIANTS.index(query_variant)),
-        params={"query_variant": query_variant},
+        hash64(20260503, "charts_matrix", SUPPORTED_QUERY_IDS.index(query_id)),
+        params={"query_id": query_id},
         max_attempts=30,
     )
     trace = out.trace_payload
@@ -117,7 +117,7 @@ def test_chart_matrix_variants_match_contract(query_variant: str) -> None:
     render = trace["render_spec"]
     query_params = trace["query_spec"]["params"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -128,7 +128,7 @@ def test_chart_matrix_variants_match_contract(query_variant: str) -> None:
     assert len(execution["cells"]) == int(execution["row_count"]) * int(execution["column_count"])
     assert len(trace["render_map"]["cell_bboxes_px"]) == len(execution["cells"])
 
-    if query_variant in {"axis_extremum_label", "off_diagonal_confusion_label"}:
+    if query_id in {"axis_extremum_label", "off_diagonal_confusion_label"}:
         assert out.answer_gt.type == "string"
     else:
         assert out.answer_gt.type == "integer"
@@ -149,9 +149,9 @@ def test_chart_matrix_variants_match_contract(query_variant: str) -> None:
             height=int(render["canvas_height"]),
         )
 
-    if query_variant == "off_diagonal_confusion_label":
+    if query_id == "off_diagonal_confusion_label":
         assert str(execution["scene_variant"]) == "confusion_matrix_counts"
-    if query_variant == "threshold_cell_count":
+    if query_id == "threshold_cell_count":
         assert str(execution["comparison"]) in {"at_least", "at_most"}
         assert "threshold_value" in query_params
 
@@ -172,8 +172,8 @@ def test_chart_matrix_prompt_examples_match_contract() -> None:
         "threshold_cell_count": 4,
     }
 
-    for index, (query_variant, answer) in enumerate(expected.items(), start=90100):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=30)
+    for index, (query_id, answer) in enumerate(expected.items(), start=90100):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=30)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence["answer"] == answer
@@ -191,14 +191,14 @@ def test_chart_matrix_balanced_sampling_covers_variants_and_scenes() -> None:
     for index in range(90):
         out = task.generate(hash64(90200, "charts_matrix", index), params={}, max_attempts=30)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         scenes[str(execution["scene_variant"])] += 1
         row_counts[int(execution["row_count"])] += 1
         column_counts[int(execution["column_count"])] += 1
 
     assert_counter_support_within(
         variants,
-        SUPPORTED_QUERY_VARIANTS,
+        SUPPORTED_QUERY_IDS,
         expected_per_key=30,
         tolerance=12,
     )
@@ -212,7 +212,7 @@ def test_chart_matrix_balanced_sampling_covers_variants_and_scenes() -> None:
 def test_chart_matrix_is_deterministic() -> None:
     task = ChartsMatrixCellQueryTask()
     params = {
-        "query_variant": "threshold_cell_count",
+        "query_id": "threshold_cell_count",
         "scene_variant": "clustered_block_matrix",
         "palette_variant": "yellow_purple",
         "header_layout": "dual_headers",

@@ -29,7 +29,7 @@ from ..shared.gui_render_params import resolve_gui_window_render_params
 
 
 TASK_ID = "gui_counting_control_filter_internal"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "disabled_controls_in_group_count",
     "selected_enabled_controls_in_group_count",
 )
@@ -142,7 +142,7 @@ class _ControlSpec:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     controls: Tuple[_ControlSpec, ...]
@@ -154,7 +154,7 @@ class _ResolvedQuery:
     evidence_control_ids: Tuple[str, ...]
     state_count_support: Tuple[int, ...]
     candidate_label_pool: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
 
@@ -557,7 +557,7 @@ def _select_values(
 def _group_query_state_sets(
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     target_group_index: int,
     target_group_size: int,
     answer_value: int,
@@ -567,18 +567,18 @@ def _group_query_state_sets(
     selected: set[Tuple[int, int]] = set()
     target_indices = _select_indices(
         instance_seed=int(instance_seed),
-        namespace=f"target_state.{query_variant}.{target_group_index}",
+        namespace=f"target_state.{query_id}.{target_group_index}",
         count=int(answer_value),
         size=int(target_group_size),
     )
     target_keys = {(int(target_group_index), int(idx)) for idx in target_indices}
-    if str(query_variant) == "disabled_controls_in_group_count":
+    if str(query_id) == "disabled_controls_in_group_count":
         disabled.update(target_keys)
-    elif str(query_variant) == "selected_enabled_controls_in_group_count":
+    elif str(query_id) == "selected_enabled_controls_in_group_count":
         selected.update(target_keys)
 
     for group_index, group_size in enumerate(group_sizes):
-        if str(query_variant) == "selected_enabled_controls_in_group_count":
+        if str(query_id) == "selected_enabled_controls_in_group_count":
             group_keys = [(int(group_index), int(idx)) for idx in range(int(group_size))]
             if int(group_index) == int(target_group_index):
                 remaining = [key for key in group_keys if key not in target_keys]
@@ -617,7 +617,7 @@ def _group_query_state_sets(
 
         non_target_state_count = 1 + int(
             _support_selection_index(
-                {"query_variant": query_variant},
+                {"query_id": query_id},
                 instance_seed=int(instance_seed) + int(group_index),
                 namespace=f"state_distractors.{group_index}",
             )
@@ -631,7 +631,7 @@ def _group_query_state_sets(
             continue
         choices = _select_indices(
             instance_seed=int(instance_seed) + (97 * int(group_index)),
-            namespace=f"distractor_state.{query_variant}.{group_index}",
+            namespace=f"distractor_state.{query_id}.{group_index}",
             count=int(distractor_count),
             size=int(group_size),
         )
@@ -639,9 +639,9 @@ def _group_query_state_sets(
             key = (int(group_index), int(idx))
             if key in disabled or key in selected:
                 continue
-            if str(query_variant) == "disabled_controls_in_group_count":
+            if str(query_id) == "disabled_controls_in_group_count":
                 selected.add(key)
-            elif str(query_variant) == "selected_enabled_controls_in_group_count":
+            elif str(query_id) == "selected_enabled_controls_in_group_count":
                 disabled.add(key)
                 selected.add(key)
     return disabled, selected
@@ -649,20 +649,20 @@ def _group_query_state_sets(
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = _resolve_named_axis(
+    query_id, query_id_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        supported=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="scene_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="scene_variant"),
         supported=SUPPORTED_SCENE_VARIANTS,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -672,7 +672,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     style_variant, style_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="style_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="style_variant"),
         supported=SUPPORTED_STYLE_VARIANTS,
         explicit_key="style_variant",
         weights_key="style_variant_weights",
@@ -686,7 +686,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     state_count_support = _normalize_int_support(params, "state_count_support", _DEFAULTS.state_count_support)
     answer_support = _normalize_int_support(
         params,
-        f"{query_variant}_state_count_support",
+        f"{query_id}_state_count_support",
         state_count_support,
     )
     candidate_label_pool = _normalize_str_support(params, "candidate_label_pool", _DEFAULTS.candidate_label_pool)
@@ -699,18 +699,18 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     else:
         answer_value = int(
             answer_support[
-                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_value.{query_variant}")
+                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_value.{query_id}")
                 % len(answer_support)
             ]
         )
 
     target_group_index = int(
-        _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target_group.{query_variant}")
+        _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target_group.{query_id}")
         % len(group_names)
     )
-    if str(query_variant) == "selected_enabled_controls_in_group_count":
+    if str(query_id) == "selected_enabled_controls_in_group_count":
         target_group_size = 8
-    elif str(query_variant) == "disabled_controls_in_group_count":
+    elif str(query_id) == "disabled_controls_in_group_count":
         target_group_size = min(8, max(int(answer_value) + 2, 6))
     else:
         target_group_size = min(8, max(int(answer_value) + 2, 6))
@@ -719,9 +719,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     for group_index in range(len(group_names)):
         if int(group_index) == int(target_group_index):
             group_sizes.append(int(target_group_size))
-        elif str(query_variant) == "selected_enabled_controls_in_group_count":
+        elif str(query_id) == "selected_enabled_controls_in_group_count":
             group_sizes.append(6)
-        elif str(query_variant) == "disabled_controls_in_group_count":
+        elif str(query_id) == "disabled_controls_in_group_count":
             group_sizes.append(5)
         else:
             group_sizes.append(4 + int((group_index + target_group_index + answer_value) % 3))
@@ -736,7 +736,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     command_rng.shuffle(command_options)
     disabled_set, selected_set = _group_query_state_sets(
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_group_index=int(target_group_index),
         target_group_size=int(target_group_size),
         answer_value=int(answer_value),
@@ -754,10 +754,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             disabled = (int(group_index), int(order_in_group)) in disabled_set
             selected = (int(group_index), int(order_in_group)) in selected_set
             is_reference = False
-            if str(query_variant) == "disabled_controls_in_group_count":
+            if str(query_id) == "disabled_controls_in_group_count":
                 if int(group_index) == int(target_group_index) and bool(disabled):
                     evidence_ids.append(str(control_id))
-            elif str(query_variant) == "selected_enabled_controls_in_group_count":
+            elif str(query_id) == "selected_enabled_controls_in_group_count":
                 if int(group_index) == int(target_group_index) and bool(selected) and not bool(disabled):
                     evidence_ids.append(str(control_id))
 
@@ -779,12 +779,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
     if len(evidence_ids) != int(answer_value):
         raise RuntimeError(
-            f"GUI counting evidence cardinality does not match answer for {query_variant}: "
+            f"GUI counting evidence cardinality does not match answer for {query_id}: "
             f"{len(evidence_ids)} != {answer_value}"
         )
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         controls=tuple(controls),
@@ -796,7 +796,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         evidence_control_ids=tuple(str(value) for value in evidence_ids),
         state_count_support=tuple(int(value) for value in answer_support),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -1089,7 +1089,7 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
         raise ValueError(f"missing positive complexity criteria weights for {TASK_ID}")
     total_controls = len(query.controls)
     scan = (float(total_controls) - 16.0) / 10.0
-    if str(query.query_variant) == "selected_enabled_controls_in_group_count":
+    if str(query.query_id) == "selected_enabled_controls_in_group_count":
         state_filtering = 0.86
         grouping = 0.58
     else:
@@ -1179,7 +1179,7 @@ class GuiCountingControlFilterCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1242,7 +1242,7 @@ class GuiCountingControlFilterCountTask:
                     for record in control_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_group_name": str(query.target_group_name),
@@ -1256,13 +1256,13 @@ class GuiCountingControlFilterCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_group_name": str(query.target_group_name),
@@ -1270,7 +1270,7 @@ class GuiCountingControlFilterCountTask:
                     "answer_value": int(query.answer_value),
                     "state_count_support": [int(value) for value in query.state_count_support],
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
                 },
@@ -1306,7 +1306,7 @@ class GuiCountingControlFilterCountTask:
                 "evidence_control_ids": [str(value) for value in query.evidence_control_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
                 "answer_value": int(query.answer_value),
@@ -1318,7 +1318,7 @@ class GuiCountingControlFilterCountTask:
                 "matching_control_ids": [str(value) for value in query.evidence_control_ids],
                 "matching_controls": list(matched_records),
                 "total_control_count": int(len(query.controls)),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
                 "question_format": "gui_control_filter_count",
@@ -1342,9 +1342,9 @@ class GuiCountingControlFilterCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(query),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["GuiCountingControlFilterCountTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["GuiCountingControlFilterCountTask", "SUPPORTED_QUERY_IDS"]

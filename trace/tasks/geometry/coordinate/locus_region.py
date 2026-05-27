@@ -31,7 +31,7 @@ from ..shared.coordinate_panel_grid import (
     panel_bbox_for_index,
     plot_bbox_for_panel,
 )
-from ..shared.fixed_query_task import select_geometry_query_variant
+from ..shared.fixed_query_task import select_geometry_query_id
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
@@ -55,13 +55,13 @@ POINT_TASK_ID = "task_geometry__coordinate_plane__locus_point_label"
 PANEL_TASK_ID = "task_geometry__coordinate_plane__locus_panel_match_label"
 SCENE_ID = "coordinate_plane"
 
-POINT_QUERY_VARIANTS: Tuple[str, ...] = (
+POINT_QUERY_IDS: Tuple[str, ...] = (
     "circle_region_point",
     "annulus_region_point",
     "vertical_strip_region_point",
     "half_plane_intersection_region_point",
 )
-PANEL_QUERY_VARIANTS: Tuple[str, ...] = (
+PANEL_QUERY_IDS: Tuple[str, ...] = (
     "circle_inequality_panel_match",
     "vertical_strip_panel_match",
     "horizontal_halfplane_panel_match",
@@ -232,14 +232,14 @@ def _select_winner_label(
 def _resolve_query(
     *,
     task_id: str,
-    query_variants: Sequence[str],
+    query_ids: Sequence[str],
     label_pool: Sequence[str],
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _ResolvedQuery:
-    query_id, query_probabilities = select_geometry_query_variant(
+    query_id, query_probabilities = select_geometry_query_id(
         params,
-        query_variants=tuple(query_variants),
+        query_ids=tuple(query_ids),
         task_id=str(task_id),
         instance_seed=int(instance_seed),
     )
@@ -1006,15 +1006,13 @@ def _point_trace_payload(
             "relations": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "query_variant": "default",
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "region": _region_trace(rendered.region),
             },
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1022,10 +1020,9 @@ def _point_trace_payload(
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.candidate_points_by_label.keys()),
@@ -1051,14 +1048,13 @@ def _point_trace_payload(
         "execution_trace": {
             "scene_id": SCENE_ID,
             "query_id": str(query.query_id),
-            "query_variant": "default",
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "region": _region_trace(rendered.region),
             "center_point_px": list(rendered.center_point_px) if rendered.center_point_px is not None else None,
             "candidate_points_by_label": dict(candidate_trace),
             "variant_probabilities": {"default": 1.0},
-            "query_variant_probabilities": dict(query.query_probabilities),
+            "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_locus_point_membership",
@@ -1099,15 +1095,13 @@ def _panel_trace_payload(
             "relations": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "query_variant": "default",
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "condition_text": str(rendered.condition_text),
             },
         },
         "query_spec": {
-            "query_variant": "default",
             "query_id": str(query.query_id),
             "template_id": str(prompt_defaults["bundle_id"]),
             "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1115,10 +1109,9 @@ def _panel_trace_payload(
             "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
             "params": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "variant_probabilities": {"default": 1.0},
-                "query_variant_probabilities": dict(query.query_probabilities),
+                "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "candidate_label_pool": list(rendered.panels_by_label.keys()),
@@ -1144,13 +1137,12 @@ def _panel_trace_payload(
         "execution_trace": {
             "scene_id": SCENE_ID,
             "query_id": str(query.query_id),
-            "query_variant": "default",
             "answer_type": "option_letter",
             "answer_value": str(query.winner_label),
             "condition_text": str(rendered.condition_text),
             "panels_by_label": dict(panels_trace),
             "variant_probabilities": {"default": 1.0},
-            "query_variant_probabilities": dict(query.query_probabilities),
+            "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
             "type": "coordinate_locus_panel_match",
@@ -1181,7 +1173,7 @@ class GeometryCoordinateLocusPointLabelTask:
         label_pool = _resolve_label_pool(params, generation_defaults, "locus_candidate_labels", DEFAULT_LABEL_POOL)
         query = _resolve_query(
             task_id=self.task_id,
-            query_variants=POINT_QUERY_VARIANTS,
+            query_ids=POINT_QUERY_IDS,
             label_pool=label_pool,
             instance_seed=int(instance_seed),
             params=params,
@@ -1248,11 +1240,9 @@ class GeometryCoordinateLocusPointLabelTask:
             ),
             complexity=_build_complexity(
                 task_id=self.task_id,
-                query_id=str(query.query_id),
                 object_count=len(rendered.candidate_points_by_label),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1274,7 +1264,7 @@ class GeometryCoordinateLocusPanelMatchLabelTask:
         label_pool = _resolve_label_pool(params, generation_defaults, "locus_panel_labels", DEFAULT_LABEL_POOL)
         query = _resolve_query(
             task_id=self.task_id,
-            query_variants=PANEL_QUERY_VARIANTS,
+            query_ids=PANEL_QUERY_IDS,
             label_pool=label_pool,
             instance_seed=int(instance_seed),
             params=params,
@@ -1341,12 +1331,10 @@ class GeometryCoordinateLocusPanelMatchLabelTask:
             ),
             complexity=_build_complexity(
                 task_id=self.task_id,
-                query_id=str(query.query_id),
                 object_count=len(rendered.panels_by_label),
                 panel_count=len(rendered.panels_by_label),
             ),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -82,7 +82,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "sinusoid",
     "piecewise_linear",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     REFERENCE_LINE_CROSSING_COUNT,
     TURNING_POINT_COUNT,
     LOCAL_EXTREMUM_COUNT,
@@ -142,12 +142,12 @@ class _ResolvedQuery:
     """Resolved scene/query axes plus one balanced count target."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     reference_line_kind: str | None
     extremum_kind: str | None
     target_count: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     reference_line_kind_probabilities: Dict[str, float]
     extremum_kind_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
@@ -206,7 +206,7 @@ def _int_tuple_default(
     return values
 
 
-def _count_target_support(*, scene_variant: str, query_variant: str) -> Tuple[int, ...]:
+def _count_target_support(*, scene_variant: str, query_id: str) -> Tuple[int, ...]:
     """Return supported count answers for one compatible scene/query pair."""
 
     support_map = {
@@ -256,10 +256,10 @@ def _count_target_support(*, scene_variant: str, query_variant: str) -> Tuple[in
             _DEFAULTS.piecewise_local_extremum_support,
         ),
     }
-    key = (str(scene_variant).strip().lower(), str(query_variant).strip().lower())
+    key = (str(scene_variant).strip().lower(), str(query_id).strip().lower())
     support = support_map.get(key)
     if support is None:
-        raise ValueError(f"unsupported graphing scene/query pair: {scene_variant} x {query_variant}")
+        raise ValueError(f"unsupported graphing scene/query pair: {scene_variant} x {query_id}")
     return tuple(int(value) for value in support)
 
 
@@ -273,17 +273,17 @@ def _full_probability_map(supported: Sequence[str], probabilities: Mapping[str, 
     }
 
 
-def _query_target_support(query_variant: str) -> Tuple[int, ...]:
+def _query_target_support(query_id: str) -> Tuple[int, ...]:
     """Return the union count support for one query across compatible scene families."""
 
     supports = {
         int(value)
-        for scene_variant, query_variants in COMPATIBILITY.items()
-        if str(query_variant) in set(str(item) for item in query_variants)
-        for value in _count_target_support(scene_variant=str(scene_variant), query_variant=str(query_variant))
+        for scene_variant, query_ids in COMPATIBILITY.items()
+        if str(query_id) in set(str(item) for item in query_ids)
+        for value in _count_target_support(scene_variant=str(scene_variant), query_id=str(query_id))
     }
     if not supports:
-        raise ValueError(f"unsupported graphing query_variant: {query_variant}")
+        raise ValueError(f"unsupported graphing query_id: {query_id}")
     return tuple(sorted(int(value) for value in supports))
 
 
@@ -298,7 +298,7 @@ def _resolve_target_count(
     """Resolve one balanced count answer inside the feasible support.
 
     We intentionally use a second deterministic salt for target-count cycling
-    so it stays decoupled from the separate query-variant balancing stream
+    so it stays decoupled from the separate query-id balancing stream
     during review collection.
     """
 
@@ -381,12 +381,12 @@ def _resolve_query_parameters(
     rng,
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
 ) -> Tuple[str | None, Dict[str, float], str | None, Dict[str, float]]:
-    """Resolve parameter axes that are meaningful for the selected query variant."""
+    """Resolve parameter axes that are meaningful for the selected query id."""
 
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     has_reference_line_kind = params.get("reference_line_kind") is not None
     has_extremum_kind = params.get("extremum_kind") is not None
 
@@ -425,7 +425,7 @@ def _resolve_query_parameters(
             raise ValueError("extremum_kind is only supported for local_extremum_count")
         return None, {}, None, {}
 
-    raise ValueError(f"unsupported graphing query_variant: {query_variant}")
+    raise ValueError(f"unsupported graphing query_id: {query_id}")
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -433,26 +433,26 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
     scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
-    query_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
+    query_supported = [str(value) for value in SUPPORTED_QUERY_IDS]
     compatibility_map = {
         str(scene): tuple(str(query) for query in queries)
         for scene, queries in COMPATIBILITY.items()
     }
     explicit_scene = params.get("scene_variant")
-    explicit_query = params.get("query_variant", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     if explicit_scene is not None and str(explicit_scene) not in set(scene_supported):
         raise ValueError(f"unsupported scene_variant: {explicit_scene}")
     if explicit_query is not None and str(explicit_query) not in set(query_supported):
-        raise ValueError(f"unsupported query_variant: {explicit_query}")
+        raise ValueError(f"unsupported query_id: {explicit_query}")
 
     if explicit_scene is not None and explicit_query is not None:
         if str(explicit_query) not in set(compatibility_map.get(str(explicit_scene), ())):
             raise ValueError(f"incompatible geometry scene/query combination: {explicit_scene} + {explicit_query}")
         scene_variant = str(explicit_scene)
-        query_variant = str(explicit_query)
+        query_id = str(explicit_query)
         scene_probs = _full_probability_map(scene_supported, {scene_variant: 1.0})
-        query_probs = _full_probability_map(query_supported, {query_variant: 1.0})
-        support = _count_target_support(scene_variant=scene_variant, query_variant=query_variant)
+        query_probs = _full_probability_map(query_supported, {query_id: 1.0})
+        support = _count_target_support(scene_variant=scene_variant, query_id=query_id)
     else:
         if explicit_query is None:
             selected_query, restricted_query_probs = resolve_variant(
@@ -460,46 +460,46 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
                 params=params,
                 gen_defaults=_GEN_DEFAULTS,
                 supported_variants=query_supported,
-                explicit_key="query_variant",
-                weights_key="query_variant_weights",
+                explicit_key="query_id",
+                weights_key="query_id_weights",
             )
-            query_variant = apply_balanced_variant_sampling(
+            query_id = apply_balanced_variant_sampling(
                 instance_seed=int(instance_seed),
                 params=params,
                 gen_defaults=_GEN_DEFAULTS,
                 selected_variant=str(selected_query),
                 variant_probabilities=restricted_query_probs,
                 supported_variants=query_supported,
-                balance_flag_key="balanced_query_variant_sampling",
-                explicit_key="query_variant",
-                weights_key="query_variant_weights",
-                sampling_namespace=f"{TASK_ID}.query_variant",
+                balance_flag_key="balanced_query_id_sampling",
+                explicit_key="query_id",
+                weights_key="query_id_weights",
+                sampling_namespace=f"{TASK_ID}.query_id",
             )
             query_probs = _full_probability_map(query_supported, restricted_query_probs)
         else:
-            query_variant = str(explicit_query)
-            query_probs = _full_probability_map(query_supported, {query_variant: 1.0})
+            query_id = str(explicit_query)
+            query_probs = _full_probability_map(query_supported, {query_id: 1.0})
 
         if explicit_scene is not None:
             scene_variant = str(explicit_scene)
-            if str(query_variant) not in set(compatibility_map.get(scene_variant, ())):
-                raise ValueError(f"incompatible geometry scene/query combination: {scene_variant} + {query_variant}")
+            if str(query_id) not in set(compatibility_map.get(scene_variant, ())):
+                raise ValueError(f"incompatible geometry scene/query combination: {scene_variant} + {query_id}")
             scene_probs = _full_probability_map(scene_supported, {scene_variant: 1.0})
-            support = _count_target_support(scene_variant=scene_variant, query_variant=query_variant)
+            support = _count_target_support(scene_variant=scene_variant, query_id=query_id)
         else:
-            support = _query_target_support(query_variant)
+            support = _query_target_support(query_id)
             target_count, target_count_probs = _resolve_target_count(
                 axis_rng,
                 instance_seed=int(instance_seed),
                 support=support,
-                selection_namespace=f"{TASK_ID}.target_count.{query_variant}",
+                selection_namespace=f"{TASK_ID}.target_count.{query_id}",
                 params=params,
             )
             allowed_scenes = [
                 scene
                 for scene in scene_supported
-                if str(query_variant) in set(compatibility_map.get(scene, ()))
-                and int(target_count) in set(_count_target_support(scene_variant=scene, query_variant=query_variant))
+                if str(query_id) in set(compatibility_map.get(scene, ()))
+                and int(target_count) in set(_count_target_support(scene_variant=scene, query_id=query_id))
             ]
             selected_scene, restricted_scene_probs = resolve_variant(
                 axis_rng,
@@ -511,7 +511,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             )
             scene_sampling_params = _decoupled_scene_sampling_params(
                 params=params,
-                selection_namespace=f"{TASK_ID}.scene_variant.{query_variant}.{target_count}",
+                selection_namespace=f"{TASK_ID}.scene_variant.{query_id}.{target_count}",
             )
             scene_variant = apply_balanced_variant_sampling(
                 instance_seed=int(instance_seed),
@@ -529,17 +529,17 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             reference_line_kind, reference_line_probs, extremum_kind, extremum_probs = _resolve_query_parameters(
                 axis_rng,
                 instance_seed=int(instance_seed),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 params=params,
             )
             return _ResolvedQuery(
                 scene_variant=str(scene_variant),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 reference_line_kind=reference_line_kind,
                 extremum_kind=extremum_kind,
                 target_count=int(target_count),
                 scene_variant_probabilities=dict(scene_probs),
-                query_variant_probabilities=dict(query_probs),
+                query_id_probabilities=dict(query_probs),
                 reference_line_kind_probabilities=dict(reference_line_probs),
                 extremum_kind_probabilities=dict(extremum_probs),
                 target_count_probabilities=dict(target_count_probs),
@@ -549,23 +549,23 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         axis_rng,
         instance_seed=int(instance_seed),
         support=support,
-        selection_namespace=f"{TASK_ID}.target_count.{scene_variant}.{query_variant}",
+        selection_namespace=f"{TASK_ID}.target_count.{scene_variant}.{query_id}",
         params=params,
     )
     reference_line_kind, reference_line_probs, extremum_kind, extremum_probs = _resolve_query_parameters(
         axis_rng,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         params=params,
     )
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         reference_line_kind=reference_line_kind,
         extremum_kind=extremum_kind,
         target_count=int(target_count),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         reference_line_kind_probabilities=dict(reference_line_probs),
         extremum_kind_probabilities=dict(extremum_probs),
         target_count_probabilities=dict(target_count_probs),
@@ -595,7 +595,7 @@ def _quadratic_sample_points(*, a_value: int, h_value: int, k_value: int) -> Tup
 def _build_quadratic_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     target_count: int,
 ) -> _SampledGraphScene:
@@ -606,8 +606,8 @@ def _build_quadratic_scene(
     query_line_y: int | None = None
     evidence_points: Tuple[GraphPoint, ...]
 
-    if str(query_variant) != REFERENCE_LINE_CROSSING_COUNT:
-        raise ValueError(f"unsupported quadratic query_variant: {query_variant}")
+    if str(query_id) != REFERENCE_LINE_CROSSING_COUNT:
+        raise ValueError(f"unsupported quadratic query_id: {query_id}")
 
     if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
         if int(target_count) == 0:
@@ -698,7 +698,7 @@ def _absolute_value_sample_points(
 def _build_absolute_value_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     target_count: int,
 ) -> _SampledGraphScene:
@@ -710,8 +710,8 @@ def _build_absolute_value_scene(
     query_line_y: int | None = None
     evidence_points: Tuple[GraphPoint, ...]
 
-    if str(query_variant) != REFERENCE_LINE_CROSSING_COUNT:
-        raise ValueError(f"unsupported absolute-value query_variant: {query_variant}")
+    if str(query_id) != REFERENCE_LINE_CROSSING_COUNT:
+        raise ValueError(f"unsupported absolute-value query_id: {query_id}")
 
     if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
         if int(target_count) == 0:
@@ -863,7 +863,7 @@ def _cubic_roots_for_target(
 def _build_cubic_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     target_count: int,
 ) -> _SampledGraphScene:
@@ -874,8 +874,8 @@ def _build_cubic_scene(
     query_line_y: int | None = None
     visible_roots = tuple(int(root) for root in roots if -9 <= int(root) <= 9)
 
-    if str(query_variant) != REFERENCE_LINE_CROSSING_COUNT:
-        raise ValueError(f"unsupported cubic query_variant: {query_variant}")
+    if str(query_id) != REFERENCE_LINE_CROSSING_COUNT:
+        raise ValueError(f"unsupported cubic query_id: {query_id}")
 
     if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
         baseline_y = 0
@@ -1001,7 +1001,7 @@ def _phase_shift_for_sinusoid_count(*, target_count: int, mode: str) -> int:
 def _build_sinusoid_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     extremum_kind: str | None,
     target_count: int,
@@ -1013,7 +1013,7 @@ def _build_sinusoid_scene(
     midline_y = 0
     evidence_points: Tuple[GraphPoint, ...]
 
-    if str(query_variant) == REFERENCE_LINE_CROSSING_COUNT:
+    if str(query_id) == REFERENCE_LINE_CROSSING_COUNT:
         if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
             if int(target_count) == 0:
                 phase_shift = int(_sample_from(range(-5, 7), rng))
@@ -1042,7 +1042,7 @@ def _build_sinusoid_scene(
                 raise ValueError(f"unsupported sinusoid reference-line target_count: {target_count}")
         else:
             raise ValueError(f"unsupported reference_line_kind: {reference_line_kind}")
-    elif str(query_variant) == TURNING_POINT_COUNT:
+    elif str(query_id) == TURNING_POINT_COUNT:
         if int(target_count) not in {3, 4}:
             raise ValueError(f"unsupported sinusoid turning target_count: {target_count}")
         phase_shift = _phase_shift_for_sinusoid_count(target_count=(1 if int(target_count) == 3 else 2), mode="maxima")
@@ -1067,7 +1067,7 @@ def _build_sinusoid_scene(
         ) + tuple(
             (int(x_value), int(midline_y - amplitude)) for x_value in _sinusoid_minima_positions(int(phase_shift))
         )
-    elif str(query_variant) == LOCAL_EXTREMUM_COUNT:
+    elif str(query_id) == LOCAL_EXTREMUM_COUNT:
         if int(target_count) not in {1, 2}:
             raise ValueError(f"unsupported sinusoid local-extremum target_count: {target_count}")
         if str(extremum_kind) == MINIMUM_EXTREMUM:
@@ -1087,7 +1087,7 @@ def _build_sinusoid_scene(
         else:
             raise ValueError(f"unsupported extremum_kind: {extremum_kind}")
     else:
-        raise ValueError(f"unsupported sinusoid query_variant: {query_variant}")
+        raise ValueError(f"unsupported sinusoid query_id: {query_id}")
 
     sample_points = _sinusoid_sample_points(
         amplitude=int(amplitude),
@@ -1265,14 +1265,14 @@ def _piecewise_polyline_for_local_extrema(
 def _build_piecewise_linear_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     extremum_kind: str | None,
     target_count: int,
 ) -> _SampledGraphScene:
     """Sample one piecewise-linear graph that realizes the requested count."""
 
-    if str(query_variant) == REFERENCE_LINE_CROSSING_COUNT:
+    if str(query_id) == REFERENCE_LINE_CROSSING_COUNT:
         if str(reference_line_kind) == X_AXIS_REFERENCE_LINE:
             vertices, evidence_points = _piecewise_polyline_for_intersections(
                 rng,
@@ -1297,13 +1297,13 @@ def _build_piecewise_linear_scene(
             query_line_y = int(baseline_y)
         else:
             raise ValueError(f"unsupported reference_line_kind: {reference_line_kind}")
-    elif str(query_variant) == TURNING_POINT_COUNT:
+    elif str(query_id) == TURNING_POINT_COUNT:
         vertices, evidence_points = _piecewise_polyline_for_turning_points(
             rng,
             target_count=int(target_count),
         )
         query_line_y = None
-    elif str(query_variant) == LOCAL_EXTREMUM_COUNT:
+    elif str(query_id) == LOCAL_EXTREMUM_COUNT:
         vertices, evidence_points = _piecewise_polyline_for_local_extrema(
             rng,
             target_count=int(target_count),
@@ -1311,7 +1311,7 @@ def _build_piecewise_linear_scene(
         )
         query_line_y = None
     else:
-        raise ValueError(f"unsupported piecewise-linear query_variant: {query_variant}")
+        raise ValueError(f"unsupported piecewise-linear query_id: {query_id}")
 
     return _SampledGraphScene(
         polyline_graph=tuple((float(point[0]), float(point[1])) for point in vertices),
@@ -1345,7 +1345,7 @@ def _sample_scene(
     rng,
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
     extremum_kind: str | None,
     target_count: int,
@@ -1355,28 +1355,28 @@ def _sample_scene(
     if str(scene_variant) == "quadratic":
         return _build_quadratic_scene(
             rng,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             reference_line_kind=reference_line_kind,
             target_count=int(target_count),
         )
     if str(scene_variant) == "absolute_value":
         return _build_absolute_value_scene(
             rng,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             reference_line_kind=reference_line_kind,
             target_count=int(target_count),
         )
     if str(scene_variant) == "cubic":
         return _build_cubic_scene(
             rng,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             reference_line_kind=reference_line_kind,
             target_count=int(target_count),
         )
     if str(scene_variant) == "sinusoid":
         return _build_sinusoid_scene(
             rng,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             reference_line_kind=reference_line_kind,
             extremum_kind=extremum_kind,
             target_count=int(target_count),
@@ -1384,7 +1384,7 @@ def _sample_scene(
     if str(scene_variant) == "piecewise_linear":
         return _build_piecewise_linear_scene(
             rng,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             reference_line_kind=reference_line_kind,
             extremum_kind=extremum_kind,
             target_count=int(target_count),
@@ -1396,14 +1396,14 @@ def _build_object_description(
     *,
     prompt_defaults: Mapping[str, Any],
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None,
 ) -> str:
     """Resolve one prompt-facing scene description without hardcoding prose here."""
 
     suffix = (
         "_with_guide_line"
-        if str(query_variant) == REFERENCE_LINE_CROSSING_COUNT
+        if str(query_id) == REFERENCE_LINE_CROSSING_COUNT
         and str(reference_line_kind) == HORIZONTAL_REFERENCE_LINE
         else ""
     )
@@ -1649,7 +1649,7 @@ class GeometryGraphingCountTask:
         sampled_scene = _sample_scene(
             rng,
             scene_variant=str(query.scene_variant),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             reference_line_kind=query.reference_line_kind,
             extremum_kind=query.extremum_kind,
             target_count=int(query.target_count),
@@ -1675,7 +1675,7 @@ class GeometryGraphingCountTask:
         object_description = _build_object_description(
             prompt_defaults=_PROMPT_DEFAULTS,
             scene_variant=str(query.scene_variant),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             reference_line_kind=query.reference_line_kind,
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
@@ -1692,17 +1692,17 @@ class GeometryGraphingCountTask:
             query_line_y=sampled_scene.query_line_y,
         )
         evidence_hint = str(prompt_defaults["evidence_hint_pixel_point_set"])
-        if str(query.query_variant) == REFERENCE_LINE_CROSSING_COUNT:
+        if str(query.query_id) == REFERENCE_LINE_CROSSING_COUNT:
             evidence_hint = str(prompt_defaults["evidence_hint_reference_line_crossing_count"]).format(
                 reference_line_description=str(reference_line_description)
             )
             json_example = str(prompt_defaults["json_example_reference_line_crossing_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_reference_line_crossing_count"])
-        elif str(query.query_variant) == TURNING_POINT_COUNT:
+        elif str(query.query_id) == TURNING_POINT_COUNT:
             evidence_hint = str(prompt_defaults["evidence_hint_turning_point_count"])
             json_example = str(prompt_defaults["json_example_turning_point_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_turning_point_count"])
-        elif str(query.query_variant) == LOCAL_EXTREMUM_COUNT:
+        elif str(query.query_id) == LOCAL_EXTREMUM_COUNT:
             evidence_hint = str(prompt_defaults["evidence_hint_local_extremum_count"]).format(**dict(extremum_slots))
             json_example = str(prompt_defaults["json_example_local_extremum_count"])
             json_example_answer_only = str(prompt_defaults["json_example_answer_only_local_extremum_count"])
@@ -1712,7 +1712,7 @@ class GeometryGraphingCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1737,11 +1737,10 @@ class GeometryGraphingCountTask:
 
         query_params = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
         }
@@ -1754,11 +1753,10 @@ class GeometryGraphingCountTask:
 
         execution_trace = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
+            "query_id": str(query.query_id),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
             "question_format": "count_graph_feature_points",
@@ -1778,8 +1776,7 @@ class GeometryGraphingCountTask:
                 "entities": list(rendered_scene.scene_entities),
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant": str(query.query_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "target_count": int(query.target_count),
                     **(
                         {"reference_line_kind": str(query.reference_line_kind)}
@@ -1794,7 +1791,7 @@ class GeometryGraphingCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1822,7 +1819,7 @@ class GeometryGraphingCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
             scene_variant=str(query.scene_variant),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             reference_line_kind=query.reference_line_kind,
             extremum_kind=query.extremum_kind,
             object_count=int(rendered_scene.object_count),
@@ -1840,7 +1837,7 @@ class GeometryGraphingCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1850,7 +1847,7 @@ class GeometryGraphingReferenceLineCrossingCountTask(FixedGeometryQueryTaskMixin
     """Count intersections between a plotted function and the marked reference line."""
 
     task_id = "task_geometry__function_graph__reference_line_crossing_count"
-    fixed_query_variant = REFERENCE_LINE_CROSSING_COUNT
+    fixed_query_id = REFERENCE_LINE_CROSSING_COUNT
     public_scene_id = "function_graph"
 
 
@@ -1859,5 +1856,5 @@ class GeometryGraphingExtremumCountTask(MultiFixedGeometryQueryTaskMixin, Geomet
     """Count turning points or local extrema on a plotted function."""
 
     task_id = "task_geometry__function_graph__extremum_count"
-    fixed_query_variants = (TURNING_POINT_COUNT, LOCAL_EXTREMUM_COUNT)
+    fixed_query_ids = (TURNING_POINT_COUNT, LOCAL_EXTREMUM_COUNT)
     public_scene_id = "function_graph"

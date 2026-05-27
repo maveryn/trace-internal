@@ -12,7 +12,7 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks import create_task
 from trace.tasks.charts.scientific.multipanel_subplot_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsScientificMultipanelSubplotQueryTask,
 )
 
@@ -25,7 +25,7 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def _expected_answer(execution: dict) -> str | int:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
 
     if variant == "curve_at_x_extremum_label":
         values = {str(key): int(value) for key, value in execution["values_at_query_x"].items()}
@@ -50,12 +50,12 @@ def _expected_answer(execution: dict) -> str | int:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_charts_scientific_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_charts_scientific_variants_match_contract(query_id: str) -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
     out = task.generate(
-        93100 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant},
+        93100 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id},
         max_attempts=80,
     )
     trace = out.trace_payload
@@ -63,7 +63,7 @@ def test_charts_scientific_variants_match_contract(query_variant: str) -> None:
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert str(execution["question_format"]) == "curve_panels_subplot_query"
@@ -97,10 +97,10 @@ def test_charts_scientific_variants_match_contract(query_variant: str) -> None:
         expected_boxes.append(render_map["intersection_bboxes_px"][str(intersection_id)])
     assert out.evidence_gt.value == expected_boxes
 
-    if query_variant == "threshold_series_count":
+    if query_id == "threshold_series_count":
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == len(trace["projected_evidence"]["point_ids"])
-    elif query_variant == "curve_intersection_count":
+    elif query_id == "curve_intersection_count":
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == len(trace["projected_evidence"]["intersection_ids"])
     else:
@@ -118,8 +118,8 @@ def test_charts_scientific_variants_match_contract(query_variant: str) -> None:
 
 def test_charts_scientific_prompt_examples_match_contract() -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS, start=93200):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=80)
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=93200):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["evidence"], list)
@@ -143,7 +143,7 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
     for index in range(150):
         out = task.generate(hash64(93300, "charts_scientific", index), params={}, max_attempts=120)
         execution = out.trace_payload["execution_trace"]
-        variant = str(execution["query_variant"])
+        variant = str(execution["query_id"])
         variants[variant] += 1
         if variant == "curve_at_x_extremum_label":
             curve_answers[str(execution["answer"])] += 1
@@ -156,7 +156,7 @@ def test_charts_scientific_balanced_sampling_covers_axes() -> None:
         elif variant == "earliest_maximum_panel_label":
             earliest_answers[str(execution["answer"])] += 1
 
-    assert set(variants) == set(SUPPORTED_QUERY_VARIANTS)
+    assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert set(curve_answers) == {"M1", "M2", "M3", "M4", "M5", "M6"}
     assert set(threshold_answers).issubset({1, 2, 3, 4, 5, 6})
     assert {1, 2, 3, 4}.issubset(set(threshold_answers))
@@ -185,7 +185,7 @@ def test_charts_scientific_intersection_count_review_distribution() -> None:
 
 def test_charts_scientific_is_deterministic() -> None:
     task = ChartsScientificMultipanelSubplotQueryTask()
-    params = {"query_variant": "cross_panel_delta_extremum_label"}
+    params = {"query_id": "cross_panel_delta_extremum_label"}
     out_a = task.generate(93400, params=params, max_attempts=80)
     out_b = task.generate(93400, params=params, max_attempts=80)
 
@@ -212,7 +212,7 @@ def test_charts_scientific_registered_and_group_config_loaded() -> None:
     assert int(generation["x_tick_count_max"]) == 10
     assert int(generation["x_step_min"]) == 5
     assert int(generation["x_step_max"]) == 20
-    assert sorted(generation["query_variant_weights"].keys()) == sorted(SUPPORTED_QUERY_VARIANTS)
+    assert sorted(generation["query_id_weights"].keys()) == sorted(SUPPORTED_QUERY_IDS)
 
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_scientific_v0"
@@ -225,7 +225,7 @@ def test_scientific_curve_at_x_public_task_uses_calibrated_density() -> None:
     out = task.generate(2026052301, params={}, max_attempts=120)
     execution = out.trace_payload["execution_trace"]
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "curve_at_x_extremum_label"
     assert 6 <= int(execution["panel_count"]) <= 8
     assert int(execution["method_count"]) == 6

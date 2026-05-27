@@ -602,7 +602,6 @@ class IconsPatternSequenceRotationViolationTask:
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
             "task_id": str(self.task_id),
-            "query_variant": "default",
             "query_id": str(query_id),
         }
         trace_payload = {
@@ -623,7 +622,6 @@ class IconsPatternSequenceRotationViolationTask:
                 ],
                 "relations": {
                     "query_id": str(query_id),
-                    "query_variant": "default",
                     "sequence_rule": "constant_rotation_step",
                     "sequence_icon_id": str(scene_payload.sequence_icon_id),
                     "start_rotation_degrees": int(scene_payload.start_rotation_degrees),
@@ -646,8 +644,7 @@ class IconsPatternSequenceRotationViolationTask:
                 "params": {
                     "scene_id": taxonomy.scene_id,
                     "query_id": str(query_id),
-                    "query_variant": "default",
-                    "query_variant_probabilities": {str(query_id): 1.0},
+                    "query_id_probabilities": {str(query_id): 1.0},
                     "variant_probabilities": {str(query_id): 1.0},
                     "sequence_length": int(scene_payload.sequence_length),
                     "sequence_length_probabilities": dict(sequence_spec.sequence_length_probabilities),
@@ -702,7 +699,7 @@ class IconsPatternSequenceRotationViolationTask:
             "execution_trace": {
                 **common_ids,
                 "scene_variant": "sequence_row",
-                "query_variant_probabilities": {str(query_id): 1.0},
+                "query_id_probabilities": {str(query_id): 1.0},
                 "variant_probabilities": {str(query_id): 1.0},
                 "sequence_length": int(scene_payload.sequence_length),
                 "answer_index": int(scene_payload.answer_index),
@@ -754,7 +751,6 @@ class IconsPatternSequenceRotationViolationTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=taxonomy.scene_id,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

@@ -7,7 +7,7 @@
 - Query id: `closest_to_camera`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: probed
+- Status: pending_v0_review
 
 ## Contract
 The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, and lettered wall-mounted objects. The prompt asks which lettered wall-mounted object is closest to the camera.
@@ -27,7 +27,7 @@ Evidence is the bounding box of the selected lettered wall-mounted object. The b
 The prompt bundle is `three_d_room_v0` under `prompts/three_d/room/`. The trace records camera pose, projection frame, room scene variant, render-only floor front (`render_front_y`), render-only side-wall front (`render_side_wall_front_y`), bounded semantic room front (`semantic_front_y`), wall and floor object specs, per-label camera distances, candidate wall assignments, candidate projected bboxes before label expansion, near-to-far order, selected object id/type/wall, and projected object bboxes.
 
 ## Calibration
-The manual review workbook and combined room scene review have been regenerated after the render-only open-front room expansion. The current qwen25vl7b `100x24` solve-rate probe on seed `20260523` accepted the task with `hard=0.040`, `easy=0.000`, `band=0.960`, `mean=0.253`, response cap `0.000`, and prompt max `137`.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D room scene trace.

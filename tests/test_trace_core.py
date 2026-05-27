@@ -66,11 +66,11 @@ def _generate_first_successful_output(task_id: str) -> TaskOutput:
 
 
 def _register_dummy_tasks() -> None:
-    if "task_dummy_weights_weighted_a" not in TASK_REGISTRY:
+    if "task_dummy__weights__weighted_a" not in TASK_REGISTRY:
 
         @register_task
         class DummyWeightedTaskA:
-            task_id = "task_dummy_weights_weighted_a"
+            task_id = "task_dummy__weights__weighted_a"
             domain = "dummy"
             task_group = "weights"
             default_dataset_enabled = False
@@ -87,7 +87,7 @@ def _register_dummy_tasks() -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "query_variant": "default",
+                            "query_id": "default",
                             "template_id": "dummy",
                             "prompt_variant": {
                                 "prompt_bundle_id": "dummy_weights_v0",
@@ -121,14 +121,14 @@ def _register_dummy_tasks() -> None:
                         "domain_capability_version": "v0",
                         "renderer_version": "v0",
                     },
-                    query_variant="default",
+                    query_id="default",
                 )
 
-    if "task_dummy_weights_weighted_b" not in TASK_REGISTRY:
+    if "task_dummy__weights__weighted_b" not in TASK_REGISTRY:
 
         @register_task
         class DummyWeightedTaskB:
-            task_id = "task_dummy_weights_weighted_b"
+            task_id = "task_dummy__weights__weighted_b"
             domain = "dummy"
             task_group = "weights"
             default_dataset_enabled = False
@@ -145,7 +145,7 @@ def _register_dummy_tasks() -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "query_variant": "default",
+                            "query_id": "default",
                             "template_id": "dummy",
                             "prompt_variant": {
                                 "prompt_bundle_id": "dummy_weights_v0",
@@ -179,14 +179,14 @@ def _register_dummy_tasks() -> None:
                         "domain_capability_version": "v0",
                         "renderer_version": "v0",
                     },
-                    query_variant="default",
+                    query_id="default",
                 )
 
-    if "task_dummy_weights_variant_support" not in TASK_REGISTRY:
+    if "task_dummy__weights__variant_support" not in TASK_REGISTRY:
 
         @register_task
         class DummyWeightedQueryVariantSupport:
-            task_id = "task_dummy_weights_variant_support"
+            task_id = "task_dummy__weights__variant_support"
             domain = "dummy"
             task_group = "weights"
             default_dataset_enabled = False
@@ -204,9 +204,9 @@ def _register_dummy_tasks() -> None:
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "query_variant": "alpha",
+                            "query_id": "alpha",
                             "template_id": "dummy",
-                            "params": {"query_variant_probabilities": probabilities},
+                            "params": {"query_id_probabilities": probabilities},
                             "prompt_variant": {
                                 "prompt_bundle_id": "dummy_weights_v0",
                                 "scene_key": "weighted_task",
@@ -228,7 +228,7 @@ def _register_dummy_tasks() -> None:
                         },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
-                        "execution_trace": {"answer": 5, "query_variant_probabilities": probabilities},
+                        "execution_trace": {"answer": 5, "query_id_probabilities": probabilities},
                         "witness_symbolic": {"type": "point_set", "count": 1},
                         "projected_evidence": {"pixel_point_set": point},
                     },
@@ -240,7 +240,7 @@ def _register_dummy_tasks() -> None:
                         "domain_capability_version": "v0",
                         "renderer_version": "v0",
                     },
-                    query_variant="alpha",
+                    query_id="alpha",
                 )
 
 
@@ -586,37 +586,37 @@ def test_variant_aware_task_weight_helpers() -> None:
     counts = resolve_weighted_task_counts(
         num_instances=10,
         task_weights={
-            "task_dummy_weights_weighted_a": 1.0,
-            "task_dummy_weights_variant_support": 2.0,
+            "task_dummy__weights__weighted_a": 1.0,
+            "task_dummy__weights__variant_support": 2.0,
         },
     )
     assert counts == {
-        "task_dummy_weights_variant_support": 7,
-        "task_dummy_weights_weighted_a": 3,
+        "task_dummy__weights__variant_support": 7,
+        "task_dummy__weights__weighted_a": 3,
     }
 
     assert resolve_task_active_variant_count(
-        "task_dummy_weights_variant_support",
+        "task_dummy__weights__variant_support",
         probe_samples=1,
         max_attempts_per_instance=10,
     ) == 3
 
     weights, variant_counts = resolve_variant_aware_task_weights(
         task_ids=[
-            "task_dummy_weights_weighted_a",
-            "task_dummy_weights_variant_support",
+            "task_dummy__weights__weighted_a",
+            "task_dummy__weights__variant_support",
         ],
         alpha=0.5,
         probe_samples=1,
         max_attempts_per_instance=10,
     )
     assert variant_counts == {
-        "task_dummy_weights_variant_support": 3,
-        "task_dummy_weights_weighted_a": 1,
+        "task_dummy__weights__variant_support": 3,
+        "task_dummy__weights__weighted_a": 1,
     }
     assert weights == {
-        "task_dummy_weights_variant_support": 2.0,
-        "task_dummy_weights_weighted_a": 1.0,
+        "task_dummy__weights__variant_support": 2.0,
+        "task_dummy__weights__weighted_a": 1.0,
     }
 
 
@@ -631,8 +631,8 @@ def test_weighted_task_sampler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
         image_format="png",
         num_instances=30,
         tasks=[
-            BuildTaskConfig(task_id="task_dummy_weights_weighted_a", weight=3.0, params={}),
-            BuildTaskConfig(task_id="task_dummy_weights_weighted_b", weight=1.0, params={}),
+            BuildTaskConfig(task_id="task_dummy__weights__weighted_a", weight=3.0, params={}),
+            BuildTaskConfig(task_id="task_dummy__weights__weighted_b", weight=1.0, params={}),
         ],
         strict_repro=False,
         max_attempts_per_instance=20,
@@ -644,21 +644,21 @@ def test_weighted_task_sampler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
 
     sampler = build_report["sampler"]
     assert sampler["mode"] == "weighted_task_sampler"
-    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy_weights_weighted_a"], rel=1e-9) == 0.75
-    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy_weights_weighted_b"], rel=1e-9) == 0.25
+    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy__weights__weighted_a"], rel=1e-9) == 0.75
+    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy__weights__weighted_b"], rel=1e-9) == 0.25
     assert (
-        build_report["accepted_counts_by_task"]["task_dummy_weights_weighted_a"]
-        + build_report["accepted_counts_by_task"]["task_dummy_weights_weighted_b"]
+        build_report["accepted_counts_by_task"]["task_dummy__weights__weighted_a"]
+        + build_report["accepted_counts_by_task"]["task_dummy__weights__weighted_b"]
     ) == 30
 
 
 def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TRACE_PROMPT_ROOT", str(DUMMY_PROMPT_ROOT.resolve()))
-    if "task_dummy_query_prompt_missing" not in TASK_REGISTRY:
+    if "task_dummy__query__prompt_missing" not in TASK_REGISTRY:
 
         @register_task
         class DummyPromptMissingTask:
-            task_id = "task_dummy_query_prompt_missing"
+            task_id = "task_dummy__query__prompt_missing"
             domain = "dummy"
             task_group = "query"
 
@@ -673,7 +673,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                     image_id="img0",
                     trace_payload={
                         "scene_ir": {"entities": []},
-                        "query_spec": {"query_variant": "default", "template_id": "dummy_query"},
+                        "query_spec": {"query_id": "default", "template_id": "dummy_query"},
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 3},
@@ -688,14 +688,14 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "domain_capability_version": "v0",
                         "renderer_version": "v0",
                     },
-                    query_variant="default",
+                    query_id="default",
                 )
 
-    if "task_dummy_weights_prompt_unresolved" not in TASK_REGISTRY:
+    if "task_dummy__weights__prompt_unresolved" not in TASK_REGISTRY:
 
         @register_task
         class DummyPromptUnresolvedTask:
-            task_id = "task_dummy_weights_prompt_unresolved"
+            task_id = "task_dummy__weights__prompt_unresolved"
             domain = "dummy"
             task_group = "weights"
 
@@ -711,7 +711,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
-                            "query_variant": "default",
+                            "query_id": "default",
                             "template_id": "dummy_query",
                             "prompt_variant": {
                                 "prompt_bundle_id": "dummy_weights_v0",
@@ -745,20 +745,20 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
                         "domain_capability_version": "v0",
                         "renderer_version": "v0",
                     },
-                    query_variant="default",
+                    query_id="default",
                 )
 
     cases = [
         (
             "test_prompt_metadata_missing",
-            "task_dummy_query_prompt_missing",
+            "task_dummy__query__prompt_missing",
             17,
             "prompt-missing",
             "prompt_metadata_missing",
         ),
         (
             "test_prompt_unresolved_placeholder",
-            "task_dummy_weights_prompt_unresolved",
+            "task_dummy__weights__prompt_unresolved",
             21,
             "prompt-unresolved",
             "prompt_unresolved_placeholder",

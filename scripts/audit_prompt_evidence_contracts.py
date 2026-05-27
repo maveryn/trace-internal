@@ -19,7 +19,7 @@ from PIL import Image as PILImage
 from trace.core.evidence_sanitization import PUBLIC_IMAGE_EVIDENCE_TYPES, sanitize_trace_payload_for_public_evidence
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
 from trace.core.seed import hash64
-from trace.core.task_review_sampling import collect_variant_samples
+from trace.core.task_review_sampling import collect_query_id_samples
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.registry import list_default_task_ids
 
@@ -72,8 +72,8 @@ _ANSWER_ONLY_MODE = "answer_only"
 
 _EXPLICIT_VARIANT_PARAMS: dict[str, list[tuple[str, dict[str, Any]]]] = {
     "task_games__connect_four__move_count": [
-        ("winning_move_count", {"query_variant": "winning_move_count"}),
-        ("safe_move_count", {"query_variant": "safe_move_count"}),
+        ("winning_move_count", {"query_id": "winning_move_count"}),
+        ("safe_move_count", {"query_id": "safe_move_count"}),
     ],
 }
 
@@ -576,22 +576,22 @@ def _audit_evidence_payload(output: Any) -> tuple[dict[str, Any], list[dict[str,
 
 
 def _trace_question_variant(task_id: str, output: Any, fallback: str) -> str:
-    return str(fallback or getattr(output, "query_variant", "") or "default")
+    return str(fallback or getattr(output, "query_id", "") or "default")
 
 
 def _audit_output(task_id: str, output: Any, *, instance_seed: int, requested_variant: str = "") -> dict[str, Any]:
-    query_variant = _trace_question_variant(task_id, output, requested_variant)
+    query_id = _trace_question_variant(task_id, output, requested_variant)
     prompt_rows, prompt_issues = _audit_prompts(output)
     evidence_summary, evidence_issues = _audit_evidence_payload(output)
     issues = [dict(issue) for issue in prompt_issues + evidence_issues]
     for issue in issues:
         issue["task"] = str(task_id)
-        issue["query_variant"] = str(query_variant)
+        issue["query_id"] = str(query_id)
         issue["instance_seed"] = str(int(instance_seed))
     return {
         "task": str(task_id),
-        "query_variant": str(query_variant),
-        "observed_query_variant": str(getattr(output, "query_variant", "") or ""),
+        "query_id": str(query_id),
+        "observed_query_id": str(getattr(output, "query_id", "") or ""),
         "instance_seed": int(instance_seed),
         "answer_type": str(getattr(output.answer_gt, "type", "")),
         "evidence": evidence_summary,
@@ -641,17 +641,17 @@ def _generate_explicit_samples(
                     requested_variant=str(variant),
                 )
             )
-    expected_variants = [str(variant) for variant, _params in variants]
-    collected_counts = Counter(str(record["query_variant"]) for record in records)
+    expected_query_ids = [str(variant) for variant, _params in variants]
+    collected_counts = Counter(str(record["query_id"]) for record in records)
     coverage = {
         "task": str(task_id),
         "sampling_mode": "explicit_manifest",
-        "expected_variants": expected_variants,
-        "generated_variant_counts": dict(sorted(generated_counts.items())),
-        "collected_variant_counts": {variant: int(collected_counts.get(variant, 0)) for variant in expected_variants},
-        "incomplete_variants": [
+        "expected_query_ids": expected_query_ids,
+        "generated_query_id_counts": dict(sorted(generated_counts.items())),
+        "collected_query_id_counts": {variant: int(collected_counts.get(variant, 0)) for variant in expected_query_ids},
+        "incomplete_query_ids": [
             variant
-            for variant in expected_variants
+            for variant in expected_query_ids
             if int(collected_counts.get(variant, 0)) < int(samples_per_variant)
         ],
         "generation_error_counts": dict(sorted(errors.items())),
@@ -679,9 +679,9 @@ def _collect_task_records(
             max_attempts=int(max_attempts),
         )
 
-    collected = collect_variant_samples(
+    collected = collect_query_id_samples(
         task_id=str(task_id),
-        target_count_per_variant=int(samples_per_variant),
+        target_count_per_query_id=int(samples_per_variant),
         seed=int(seed),
         max_attempts_per_instance=int(max_attempts),
         max_total_samples_per_task=int(max_total_samples_per_task),
@@ -689,16 +689,16 @@ def _collect_task_records(
         collector=_collector_for_task(str(task_id)),
     )
     records: list[dict[str, Any]] = []
-    for variant_samples in collected.get("samples_by_variant", {}).values():
+    for variant_samples in collected.get("samples_by_query_id", {}).values():
         for sample in variant_samples:
             records.append(dict(sample))
     coverage = {
         "task": str(task_id),
         "sampling_mode": "variant_sampler",
-        "expected_variants": list(collected.get("expected_variants", [])),
-        "generated_variant_counts": dict(collected.get("generated_variant_counts", {})),
-        "collected_variant_counts": dict(collected.get("collected_variant_counts", {})),
-        "incomplete_variants": list(collected.get("incomplete_variants", [])),
+        "expected_query_ids": list(collected.get("expected_query_ids", [])),
+        "generated_query_id_counts": dict(collected.get("generated_query_id_counts", {})),
+        "collected_query_id_counts": dict(collected.get("collected_query_id_counts", {})),
+        "incomplete_query_ids": list(collected.get("incomplete_query_ids", [])),
         "generation_error_counts": dict(collected.get("generation_error_counts", {})),
         "total_generated": int(collected.get("total_generated", 0)),
     }
@@ -716,10 +716,10 @@ def _collect_task_records_worker(queue: Any, kwargs: Mapping[str, Any]) -> None:
                 "coverage": {
                     "task": str(kwargs.get("task_id", "")),
                     "sampling_mode": "failed_worker",
-                    "expected_variants": [],
-                    "generated_variant_counts": {},
-                    "collected_variant_counts": {},
-                    "incomplete_variants": [],
+                    "expected_query_ids": [],
+                    "generated_query_id_counts": {},
+                    "collected_query_id_counts": {},
+                    "incomplete_query_ids": [],
                     "generation_error_counts": {str(type(exc).__name__): 1},
                     "total_generated": 0,
                 },
@@ -772,10 +772,10 @@ def _collect_task_records_with_timeout(
             {
                 "task": str(task_id),
                 "sampling_mode": "timeout",
-                "expected_variants": [],
-                "generated_variant_counts": {},
-                "collected_variant_counts": {},
-                "incomplete_variants": [],
+                "expected_query_ids": [],
+                "generated_query_id_counts": {},
+                "collected_query_id_counts": {},
+                "incomplete_query_ids": [],
                 "generation_error_counts": {"TaskTimeout": 1},
                 "total_generated": 0,
                 "timeout_seconds": int(timeout_seconds),
@@ -788,10 +788,10 @@ def _collect_task_records_with_timeout(
             {
                 "task": str(task_id),
                 "sampling_mode": "failed_worker",
-                "expected_variants": [],
-                "generated_variant_counts": {},
-                "collected_variant_counts": {},
-                "incomplete_variants": [],
+                "expected_query_ids": [],
+                "generated_query_id_counts": {},
+                "collected_query_id_counts": {},
+                "incomplete_query_ids": [],
                 "generation_error_counts": {error_name: 1},
                 "total_generated": 0,
             },
@@ -816,7 +816,7 @@ def _issue_sort_key(issue: Mapping[str, Any]) -> tuple[int, str, str, str]:
         severity_rank.get(str(issue.get("severity", "")), 99),
         str(issue.get("category", "")),
         str(issue.get("task", "")),
-        str(issue.get("query_variant", "")),
+        str(issue.get("query_id", "")),
     )
 
 
@@ -824,7 +824,7 @@ def _coverage_issues(coverage_rows: Sequence[Mapping[str, Any]]) -> list[dict[st
     issues: list[dict[str, Any]] = []
     for row in coverage_rows:
         task_id = str(row.get("task", ""))
-        for variant in row.get("incomplete_variants", []):
+        for variant in row.get("incomplete_query_ids", []):
             issues.append(
                 {
                     **_issue(
@@ -834,7 +834,7 @@ def _coverage_issues(coverage_rows: Sequence[Mapping[str, Any]]) -> list[dict[st
                         message="Audit could not generate the requested sample count for this variant.",
                     ),
                     "task": task_id,
-                    "query_variant": str(variant),
+                    "query_id": str(variant),
                     "instance_seed": "",
                 }
             )
@@ -849,7 +849,7 @@ def _coverage_issues(coverage_rows: Sequence[Mapping[str, Any]]) -> list[dict[st
                         message=f"Generation errors while auditing task: {dict(error_counts)}.",
                     ),
                     "task": task_id,
-                    "query_variant": "",
+                    "query_id": "",
                     "instance_seed": "",
                 }
             )
@@ -892,7 +892,7 @@ def _markdown_issue_table(issues: Sequence[Mapping[str, Any]], *, limit: int = 2
             "| "
             + " | ".join(
                 str(issue.get(key, "")).replace("|", "\\|").replace("\n", " ")[:240]
-                for key in ("severity", "category", "code", "task", "query_variant", "mode", "message")
+                for key in ("severity", "category", "code", "task", "query_id", "mode", "message")
             )
             + " |"
         )
@@ -951,17 +951,17 @@ def _write_projection_report(
         if str(issue.get("category", "")) in {"evidence_format", "evidence_geometry", "evidence_projection"}
     ]
     evidence_types = Counter(str(record.get("evidence", {}).get("evidence_type", "")) for record in records)
-    query_variants = {(str(record.get("task", "")), str(record.get("query_variant", ""))) for record in records}
+    query_ids = {(str(record.get("task", "")), str(record.get("query_id", ""))) for record in records}
     incomplete = [
         row
         for row in coverage_rows
-        if row.get("incomplete_variants") or row.get("generation_error_counts")
+        if row.get("incomplete_query_ids") or row.get("generation_error_counts")
     ]
     lines = [
         "# Evidence Projection Validation",
         "",
         f"- sampled instances: `{len(records)}`",
-        f"- query variants covered: `{len(query_variants)}`",
+        f"- query ids covered: `{len(query_ids)}`",
         f"- evidence projection/geometry issues: `{len(projection_issues)}`",
         f"- evidence types: `{dict(sorted(evidence_types.items()))}`",
         f"- tasks with incomplete coverage or generation errors: `{len(incomplete)}`",
@@ -973,8 +973,8 @@ def _write_projection_report(
     ]
     for row in coverage_rows:
         row_issues: list[str] = []
-        if row.get("incomplete_variants"):
-            row_issues.append(f"incomplete={row.get('incomplete_variants')}")
+        if row.get("incomplete_query_ids"):
+            row_issues.append(f"incomplete={row.get('incomplete_query_ids')}")
         if row.get("generation_error_counts"):
             row_issues.append(f"errors={row.get('generation_error_counts')}")
         lines.append(
@@ -982,8 +982,8 @@ def _write_projection_report(
             + " | ".join(
                 [
                     str(row.get("task", "")),
-                    "`" + ", ".join(str(value) for value in row.get("expected_variants", [])) + "`",
-                    "`" + str(dict(row.get("collected_variant_counts", {}))) + "`",
+                    "`" + ", ".join(str(value) for value in row.get("expected_query_ids", [])) + "`",
+                    "`" + str(dict(row.get("collected_query_id_counts", {}))) + "`",
                     str(row.get("total_generated", 0)),
                     "`" + "; ".join(row_issues) + "`",
                 ]
@@ -1005,8 +1005,8 @@ def _write_summary_report(
     issue_counts: Mapping[str, int],
     output_dir: Path,
 ) -> None:
-    variant_pairs = {(str(record.get("task", "")), str(record.get("query_variant", ""))) for record in records}
-    expected_variant_count = sum(len(row.get("expected_variants", [])) for row in coverage_rows)
+    variant_pairs = {(str(record.get("task", "")), str(record.get("query_id", ""))) for record in records}
+    expected_variant_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
     domain_counts: dict[str, set[str]] = defaultdict(set)
     for task_id in task_ids:
         domain_counts[_task_domain(str(task_id))].add(str(task_id))
@@ -1015,7 +1015,7 @@ def _write_summary_report(
         "",
         f"- tasks: `{len(task_ids)}`",
         f"- expected public-facing variants: `{expected_variant_count}`",
-        f"- sampled query variants: `{len(variant_pairs)}`",
+        f"- sampled query ids: `{len(variant_pairs)}`",
         f"- sampled instances: `{len(records)}`",
         f"- issues: `{len(issues)}`",
         f"- issue categories: `{dict(issue_counts)}`",
@@ -1060,22 +1060,22 @@ def _write_overlay_samples(
             if any(str(issue.get("severity", "")) == "error" for issue in record.get("issues", []))
             else (1 if record.get("issues") else 2),
             str(record.get("task", "")),
-            str(record.get("query_variant", "")),
+            str(record.get("query_id", "")),
         ),
     )[: int(sample_limit)]
     for index, record in enumerate(selected):
         task_id = str(record.get("task", ""))
-        query_variant = str(record.get("query_variant", ""))
+        query_id = str(record.get("query_id", ""))
         seed = int(record.get("instance_seed", 0))
         task = create_task(task_id)
         params: dict[str, Any] = {}
         if task_id in _EXPLICIT_VARIANT_PARAMS:
             for variant, variant_params in _EXPLICIT_VARIANT_PARAMS[task_id]:
-                if str(variant) == query_variant:
+                if str(variant) == query_id:
                     params = dict(variant_params)
                     break
-        elif query_variant and query_variant != "default":
-            params["query_variant"] = query_variant
+        elif query_id and query_id != "default":
+            params["query_id"] = query_id
         output = task.generate(seed, params=params, max_attempts=int(max_attempts))
         sanitized = sanitize_trace_payload_for_public_evidence(output.trace_payload, evidence_gt=output.evidence_gt)
         overlay_type, overlay_value = resolve_overlay_evidence(
@@ -1088,7 +1088,7 @@ def _write_overlay_samples(
             evidence_type=str(overlay_type),
             evidence_value=overlay_value,
         )
-        safe_variant = re.sub(r"[^a-zA-Z0-9_.-]+", "_", query_variant or "default")
+        safe_variant = re.sub(r"[^a-zA-Z0-9_.-]+", "_", query_id or "default")
         overlay.save(overlay_root / f"{index:03d}_{task_id}_{safe_variant}.png")
 
 
@@ -1151,14 +1151,14 @@ def main() -> int:
         if bool(args.progress):
             print(
                 f"[{index}/{len(task_ids)}] done {task_id}: "
-                f"variants={len(coverage.get('expected_variants', []))}, "
+                f"variants={len(coverage.get('expected_query_ids', []))}, "
                 f"records={len(records)}, issues={sum(len(record.get('issues', [])) for record in records)}",
                 file=sys.stderr,
                 flush=True,
             )
 
     issues, issue_counts = _issue_summary(all_records, coverage_rows)
-    expected_variant_count = sum(len(row.get("expected_variants", [])) for row in coverage_rows)
+    expected_variant_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
     output_dir = Path(args.output_dir)
     payload = {
         "config": {
@@ -1175,7 +1175,7 @@ def main() -> int:
             "task_count": int(len(task_ids)),
             "expected_public_variant_count": int(expected_variant_count),
             "sampled_instance_count": int(len(all_records)),
-            "sampled_query_variant_count": int(len({(record["task"], record["query_variant"]) for record in all_records})),
+            "sampled_query_id_count": int(len({(record["task"], record["query_id"]) for record in all_records})),
             "issue_count": int(len(issues)),
             "issue_counts_by_category": dict(issue_counts),
             "issue_counts_by_severity": dict(Counter(str(issue.get("severity", "")) for issue in issues)),

@@ -22,7 +22,7 @@ TASK_ID = "task_illustrations__source_scene_edit__object_count_after_edit"
 SCENE_ID = "source_scene_edit"
 ADDED_VARIANT = "after_added_k_objects_count"
 REMOVED_VARIANT = "after_removed_k_objects_count"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (ADDED_VARIANT, REMOVED_VARIANT)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (ADDED_VARIANT, REMOVED_VARIANT)
 DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
     "mixed_car": {
         "source_task_id": "task_illustrations__object_field__object_type_count",
@@ -111,12 +111,12 @@ class _SourceQuery:
 
 @dataclass(frozen=True)
 class _SampleSpec:
-    query_variant: str
+    query_id: str
     source_query: _SourceQuery
     edit_count_k: int
     current_count: int
     result_count: int
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     source_query_probabilities: Dict[str, float]
     edit_count_probabilities: Dict[str, float]
     current_count_probabilities: Dict[str, float]
@@ -174,20 +174,20 @@ def _int_support(params: Mapping[str, Any], low_key: str, high_key: str, fallbac
 
 
 def _resolve_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    explicit = params.get("query_variant", params.get("query_id"))
+    explicit = params.get("query_id")
     if explicit is not None:
         selected = str(explicit)
-        if selected not in set(SUPPORTED_QUERY_VARIANTS):
-            raise ValueError(f"query_variant must be one of {SUPPORTED_QUERY_VARIANTS}")
+        if selected not in set(SUPPORTED_QUERY_IDS):
+            raise ValueError(f"query_id must be one of {SUPPORTED_QUERY_IDS}")
         return selected, {selected: 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query_variant")
-    selected = str(SUPPORTED_QUERY_VARIANTS[int(index) % len(SUPPORTED_QUERY_VARIANTS)])
-    return selected, {variant: 1.0 / float(len(SUPPORTED_QUERY_VARIANTS)) for variant in SUPPORTED_QUERY_VARIANTS}
+    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query_id")
+    selected = str(SUPPORTED_QUERY_IDS[int(index) % len(SUPPORTED_QUERY_IDS)])
+    return selected, {variant: 1.0 / float(len(SUPPORTED_QUERY_IDS)) for variant in SUPPORTED_QUERY_IDS}
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
     source_queries = _source_query_support(params)
-    query_variant, variant_probs = _resolve_variant(params, instance_seed=int(instance_seed))
+    query_id, variant_probs = _resolve_variant(params, instance_seed=int(instance_seed))
     k_support = _int_support(params, "edit_count_k_min", "edit_count_k_max", _DEFAULTS.edit_count_k_min, _DEFAULTS.edit_count_k_max)
 
     explicit_k = params.get("edit_count_k")
@@ -202,7 +202,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         k_probs = uniform_probability_map(k_support)
 
     current_support_base = _int_support(params, "current_count_min", "current_count_max", _DEFAULTS.current_count_min, _DEFAULTS.current_count_max)
-    if query_variant == REMOVED_VARIANT:
+    if query_id == REMOVED_VARIANT:
         current_support = tuple(value for value in current_support_base if int(value) > int(edit_count_k))
     else:
         current_support = current_support_base
@@ -232,14 +232,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         source_query = source_queries[int(source_index) % len(source_queries)]
         source_probs = _uniform_string_probabilities(tuple(query.key for query in source_queries))
 
-    result_count = int(current_count) + int(edit_count_k) if query_variant == ADDED_VARIANT else int(current_count) - int(edit_count_k)
+    result_count = int(current_count) + int(edit_count_k) if query_id == ADDED_VARIANT else int(current_count) - int(edit_count_k)
     return _SampleSpec(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         source_query=source_query,
         edit_count_k=int(edit_count_k),
         current_count=int(current_count),
         result_count=int(result_count),
-        query_variant_probabilities=dict(variant_probs),
+        query_id_probabilities=dict(variant_probs),
         source_query_probabilities=dict(source_probs),
         edit_count_probabilities={str(key): float(value) for key, value in k_probs.items()},
         current_count_probabilities={str(key): float(value) for key, value in current_probs.items()},
@@ -291,7 +291,7 @@ def _render_source_scene(sample: _SampleSpec, *, instance_seed: int, params: Map
         "source_task_id": str(sample.source_query.source_task_id),
         "source_scene_id": str(out.scene_id),
         "source_query_id": str(out.query_id),
-        "source_query_variant": str(out.query_variant),
+        "source_query_id": str(out.query_id),
         "source_trace_ref": dict(out.trace_payload).get("trace_ref"),
     }
     return out.image.convert("RGB"), evidence_boxes, source_info
@@ -366,14 +366,14 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(sample.query_variant),
+            query_key=str(sample.query_id),
             slots=slots,
             instance_seed=int(instance_seed),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             preferred_mode="answer_and_evidence",
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        edit_operation = "added" if sample.query_variant == ADDED_VARIANT else "removed"
+        edit_operation = "added" if sample.query_id == ADDED_VARIANT else "removed"
         trace_payload = {
             "scene_ir": {
                 "domain": self.domain,
@@ -387,16 +387,14 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
                     ],
                 },
                 "relations": {
-                    "query_variant": str(sample.query_variant),
-                    "query_id": str(sample.query_variant),
+                    "query_id": str(sample.query_id),
                     "edit_operation": str(edit_operation),
                     "edit_count_k": int(sample.edit_count_k),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_variant),
-                "query_id": str(sample.query_variant),
+                "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -410,7 +408,7 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
                     "edit_count_k": int(sample.edit_count_k),
                     "current_count": int(sample.current_count),
                     "result_count": int(sample.result_count),
-                    "query_variant_probabilities": dict(sample.query_variant_probabilities),
+                    "query_id_probabilities": dict(sample.query_id_probabilities),
                     "source_query_probabilities": dict(sample.source_query_probabilities),
                     "edit_count_probabilities": dict(sample.edit_count_probabilities),
                     "current_count_probabilities": dict(sample.current_count_probabilities),
@@ -428,8 +426,7 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
                 "source_info": dict(source_info),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_variant),
-                "query_id": str(sample.query_variant),
+                "query_id": str(sample.query_id),
                 "answer": int(sample.result_count),
                 "current_count": int(sample.current_count),
                 "edit_operation": str(edit_operation),
@@ -454,16 +451,15 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_variant),
             scene_id=SCENE_ID,
-            query_id=str(sample.query_variant),
+            query_id=str(sample.query_id),
         )
 
 
 __all__ = [
     "ADDED_VARIANT",
     "REMOVED_VARIANT",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
     "TASK_ID",
     "IllustrationsCounterfactualObjectCountAfterEditTask",
 ]

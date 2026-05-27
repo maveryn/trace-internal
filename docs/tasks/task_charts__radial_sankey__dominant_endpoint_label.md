@@ -5,7 +5,7 @@
 2. Scene id: `radial_sankey`
 3. Source implementation domain/group: `charts/flow`
 4. Query id: `largest_source_for_target`, `largest_target_for_source`, `second_largest_target_for_source`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.flow.radial_sankey.ChartsFlowRadialSankeyDominantEndpointLabelPublicTask`

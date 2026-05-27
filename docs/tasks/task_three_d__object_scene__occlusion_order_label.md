@@ -7,7 +7,7 @@
 - Query id: `in_front_of_reference`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: accepted
+- Status: pending_v0_review
 
 ## Contract
 The image shows the shared open synthetic perspective 3D object scene: a gridded floor or platform, perspective camera cues, one unlettered reference prop named in the question, and `6` lettered answer candidates. The reference prop is sampled from visually nameable occlusion targets such as an arch, bridge, table, shelf, or stand; open boxes are excluded here to avoid confusing "in front of" with the separate inside-container relation task.
@@ -26,4 +26,4 @@ The prompt bundle is `three_d_spatial_v0` under `prompts/three_d/spatial/`. The 
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D scene trace.
 
 ## Calibration
-Accepted with qwen25vl7b `100x24` calibration on seed `20260521`: hard `0.100`, easy `0.030`, band `0.870`, mean solve `0.310`, response cap `0.000`, prompt max `129`.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.

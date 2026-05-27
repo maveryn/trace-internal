@@ -271,7 +271,7 @@ class TileColorCountTask:
                 "relations": {},
             },
             "query_spec": {
-                "query_variant": "color_count",
+                "query_id": "color_count",
                 "template_id": "color_count_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -304,7 +304,7 @@ class TileColorCountTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "query_variant": "color_count",
+                "query_id": "color_count",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette": list(palette_trace),
@@ -369,6 +369,6 @@ class TileColorCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="color_count",
+            query_id="color_count",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

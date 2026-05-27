@@ -9,7 +9,7 @@
 6. Default dataset status: registered and default-enabled.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `color_gradient_violation_cell_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

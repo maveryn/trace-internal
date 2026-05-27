@@ -333,13 +333,11 @@ class IllustrationsVisualRotatedTileLabelTask:
                     "source_image_shown": True,
                 },
                 "relations": {
-                    "query_variant": "default",
                     "query_id": QUERY_ID,
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -374,7 +372,6 @@ class IllustrationsVisualRotatedTileLabelTask:
                 "grid_shape": [GRID_ROWS, GRID_COLS],
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": QUERY_ID,
                 "answer": str(sample.correct_label),
                 "correct_tile_index": int(sample.correct_index),
@@ -399,7 +396,6 @@ class IllustrationsVisualRotatedTileLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=QUERY_ID,
         )

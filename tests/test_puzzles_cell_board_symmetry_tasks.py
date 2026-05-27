@@ -32,7 +32,7 @@ def test_cell_board_symmetry_outputs_expected_contract() -> None:
     out = task.generate(
         8801,
         params={
-            "query_variant": "vertical",
+            "query_id": "vertical",
             "rows_min": 5,
             "rows_max": 5,
             "cols_min": 5,
@@ -52,7 +52,7 @@ def test_cell_board_symmetry_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "symmetry_violation_count"
+    assert str(out.query_id) == "symmetry_violation_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -143,7 +143,7 @@ def test_cell_board_symmetry_complexity_is_normalized_and_monotonic() -> None:
     easy = task.generate(
         8841,
         params={
-            "query_variant": "vertical",
+            "query_id": "vertical",
             "rows_min": 5,
             "rows_max": 5,
             "cols_min": 5,
@@ -156,7 +156,7 @@ def test_cell_board_symmetry_complexity_is_normalized_and_monotonic() -> None:
     hard = task.generate(
         8841,
         params={
-            "query_variant": "vertical",
+            "query_id": "vertical",
             "rows_min": 5,
             "rows_max": 5,
             "cols_min": 5,

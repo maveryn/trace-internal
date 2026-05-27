@@ -32,7 +32,7 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 TASK_ID = "task_physics__hydraulic__hydraulic_missing_value"
 SCENE_ID = "hydraulic"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("wide_bench", "compact_frame", "tall_columns")
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "missing_output_force",
     "missing_input_force",
     "missing_piston_area",
@@ -144,11 +144,11 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     accent_color_name: str
     target_answer: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
 
@@ -158,7 +158,7 @@ class _SceneSpec:
     """Symbolic hydraulic scene satisfying Pascal's law exactly."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     input_force_value: int
     middle_force_value: int
     output_force_value: int
@@ -200,22 +200,22 @@ def _support(params: Mapping[str, Any], key: str, fallback: Sequence[int]) -> Tu
     return resolve_integer_support(params, gen_defaults=_GEN_DEFAULTS, key=str(key), fallback=fallback)
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     """Return the target-answer support key for one query branch."""
 
-    if str(query_variant) == "missing_output_force":
+    if str(query_id) == "missing_output_force":
         return "output_force_support"
-    if str(query_variant) == "missing_input_force":
+    if str(query_id) == "missing_input_force":
         return "input_force_support"
     return "output_area_support"
 
 
-def _target_fallback_support(query_variant: str) -> Tuple[int, ...]:
+def _target_fallback_support(query_id: str) -> Tuple[int, ...]:
     """Return fallback target-answer support for one query branch."""
 
-    if str(query_variant) == "missing_output_force":
+    if str(query_id) == "missing_output_force":
         return _DEFAULTS.output_force_support
-    if str(query_variant) == "missing_input_force":
+    if str(query_id) == "missing_input_force":
         return _DEFAULTS.input_force_support
     return _DEFAULTS.output_area_support
 
@@ -225,25 +225,25 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
 
-    query_variant, query_probs = resolve_variant(
+    query_id, query_probs = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
-    query_variant = apply_balanced_variant_sampling(
+    query_id = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(query_variant),
+        selected_variant=str(query_id),
         variant_probabilities=query_probs,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
 
     scene_params: Mapping[str, Any] = params
@@ -294,20 +294,20 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=target_params,
         gen_defaults=_GEN_DEFAULTS,
-        support_key=_target_support_key(str(query_variant)),
+        support_key=_target_support_key(str(query_id)),
         explicit_key="target_answer",
-        fallback_support=_target_fallback_support(str(query_variant)),
-        namespace=f"{TASK_ID}.{str(query_variant)}.target_answer",
+        fallback_support=_target_fallback_support(str(query_id)),
+        namespace=f"{TASK_ID}.{str(query_id)}.target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         accent_color_name_probabilities={str(key): float(value) for key, value in sorted(accent_probs.items())},
         target_answer_probabilities={str(key): float(value) for key, value in sorted(target_probs.items())},
     )
@@ -369,9 +369,9 @@ def _sample_scene_spec(
     output_force_set = set(int(value) for value in output_force_support)
     output_area_set = set(int(value) for value in output_area_support)
 
-    query_variant = str(axes.query_variant)
+    query_id = str(axes.query_id)
     target = int(axes.target_answer)
-    if query_variant == "missing_output_force":
+    if query_id == "missing_output_force":
         compatible_ratios = [
             int(ratio)
             for ratio in ratio_support
@@ -395,7 +395,7 @@ def _sample_scene_spec(
         shown_input_force = int(input_force)
         shown_output_force = None
         shown_output_area = int(output_area)
-    elif query_variant == "missing_input_force":
+    elif query_id == "missing_input_force":
         compatible_ratios = [
             int(ratio)
             for ratio in ratio_support
@@ -460,7 +460,7 @@ def _sample_scene_spec(
 
     return _SceneSpec(
         scene_variant=str(axes.scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         input_force_value=int(input_force),
         middle_force_value=int(middle_force),
         output_force_value=int(output_force),
@@ -948,7 +948,7 @@ def _render_scene(
     )
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return stable prompt JSON examples for hydraulic queries."""
 
     evidence = [
@@ -1054,22 +1054,22 @@ class PhysicsFluidsHydraulicMissingValueTask:
             )
             evidence_hint = (
                 str(prompt_defaults["evidence_hint_area"])
-                if str(axes.query_variant) == "missing_piston_area"
+                if str(axes.query_id) == "missing_piston_area"
                 else str(prompt_defaults["evidence_hint_force"])
             )
             answer_hint = (
                 str(prompt_defaults["answer_hint_area"])
-                if str(axes.query_variant) == "missing_piston_area"
+                if str(axes.query_id) == "missing_piston_area"
                 else str(prompt_defaults["answer_hint_force"])
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -1090,7 +1090,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=self.task_id,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 mechanical_advantage=int(scene_spec.mechanical_advantage),
                 target_answer=int(axes.target_answer),
                 evidence_count=len(rendered_scene.evidence_bboxes),
@@ -1101,9 +1101,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_id": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": "default",
+                        "query_id": str(axes.query_id),
                         "accent_color_name": str(axes.accent_color_name),
                         "input_force_value": int(scene_spec.input_force_value),
                         "middle_force_value": int(scene_spec.middle_force_value),
@@ -1118,23 +1116,19 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     },
                 },
                 "query_spec": {
-                    "query_id": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": "default",
+                    "query_id": str(axes.query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_id": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": "default",
+                        "query_id": str(axes.query_id),
                         "accent_color_name": str(axes.accent_color_name),
                         "target_answer": int(axes.target_answer),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": {"default": 1.0},
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": {"default": 1.0},
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),
                     },
@@ -1151,9 +1145,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_id": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": "default",
+                    "query_id": str(axes.query_id),
                     "accent_color_name": str(axes.accent_color_name),
                     "input_force_value": int(scene_spec.input_force_value),
                     "middle_force_value": int(scene_spec.middle_force_value),
@@ -1174,7 +1166,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     else int(scene_spec.shown_output_area_value),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": list(
-                        _support(params, _target_support_key(str(axes.query_variant)), _target_fallback_support(str(axes.query_variant)))
+                        _support(params, _target_support_key(str(axes.query_id)), _target_fallback_support(str(axes.query_id)))
                     ),
                     "input_force_support": list(_support(params, "input_force_support", _DEFAULTS.input_force_support)),
                     "input_area_support": list(_support(params, "input_area_support", _DEFAULTS.input_area_support)),
@@ -1205,9 +1197,8 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant="default",
                 scene_id=SCENE_ID,
-                query_id=str(axes.query_variant),
+                query_id=str(axes.query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")

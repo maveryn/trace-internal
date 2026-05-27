@@ -433,7 +433,7 @@ def render_platformer_scene(
     platforms: Tuple[PlatformerPlatform, ...],
     hazards: Tuple[PlatformerHazard, ...],
     collectibles: Tuple[PlatformerCollectible, ...],
-    query_variant: str,
+    query_id: str,
     player_xy_norm: Tuple[float, float],
     path_points_norm: Tuple[Tuple[float, float], ...],
     visible_path_fraction: float,
@@ -506,7 +506,7 @@ def render_platformer_scene(
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "motion_paths_px": motion_paths_px,
         "layout_jitter": dict(layout_jitter),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
     }
     return RenderedPlatformerScene(image=image, scene_entities=tuple(scene_entities), render_map=render_map)
 

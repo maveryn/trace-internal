@@ -6,20 +6,20 @@ import pytest
 
 from trace.tasks import create_task
 from trace.tasks.geometry.coordinate.quadrilateral import (
-    COMPLETION_QUERY_VARIANTS,
+    COMPLETION_QUERY_IDS,
     COMPLETION_SCENE_ID,
     COMPLETION_TASK_ID,
     PANEL_SCENE_ID,
-    SHAPE_MATCH_QUERY_VARIANTS,
+    SHAPE_MATCH_QUERY_IDS,
     SHAPE_MATCH_TASK_ID,
     _is_ambiguous_for_prompt,
 )
 
 
-@pytest.mark.parametrize("query_id", COMPLETION_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", COMPLETION_QUERY_IDS)
 def test_quadrilateral_completion_has_unique_candidate_answer(query_id: str) -> None:
     task = create_task(COMPLETION_TASK_ID)
-    out = task.generate(77401, params={"query_variant": query_id, "winner_label": "C"}, max_attempts=50)
+    out = task.generate(77401, params={"query_id": query_id, "winner_label": "C"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -44,10 +44,10 @@ def test_quadrilateral_completion_has_unique_candidate_answer(query_id: str) -> 
     assert candidates["C"]["classification_with_known_points"] == target_kind
 
 
-@pytest.mark.parametrize("query_id", SHAPE_MATCH_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SHAPE_MATCH_QUERY_IDS)
 def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> None:
     task = create_task(SHAPE_MATCH_TASK_ID)
-    out = task.generate(77411, params={"query_variant": query_id, "winner_label": "D"}, max_attempts=50)
+    out = task.generate(77411, params={"query_id": query_id, "winner_label": "D"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     panels = execution["panels_by_label"]
@@ -75,8 +75,8 @@ def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> Non
 @pytest.mark.parametrize(
     ("task_id", "params"),
     (
-        (COMPLETION_TASK_ID, {"query_variant": "square_completion_label", "winner_label": "B"}),
-        (SHAPE_MATCH_TASK_ID, {"query_variant": "rectangle_shape_match_label", "winner_label": "E"}),
+        (COMPLETION_TASK_ID, {"query_id": "square_completion_label", "winner_label": "B"}),
+        (SHAPE_MATCH_TASK_ID, {"query_id": "rectangle_shape_match_label", "winner_label": "E"}),
     ),
 )
 def test_quadrilateral_coordinate_tasks_are_deterministic(task_id: str, params: dict[str, str]) -> None:

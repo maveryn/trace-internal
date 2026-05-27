@@ -6,7 +6,7 @@ Status: accepted active default Puzzle task.
 1. Domain: `puzzles`
 2. Task group: `topology`
 3. Scene id: `string_topology`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `open_rope_count|closed_loop_count|knotted_component_count`
 
 ## Contract
@@ -22,4 +22,4 @@ Status: accepted active default Puzzle task.
 ## Notes
 1. The renderer may use `string_strip`, `string_card`, or `string_outline` scene styling.
 2. The scene contains separate ropes, rings, and knotted loops.
-3. Internal trace metadata keeps the sampled branch in `query_id` and `internal_query_variant`.
+3. Internal trace metadata keeps the sampled branch in `query_id` and `internal_query_id`.

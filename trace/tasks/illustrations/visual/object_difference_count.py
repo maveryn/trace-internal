@@ -88,11 +88,11 @@ def _variant_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
 
 def _resolve_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     support = _variant_support(params)
-    explicit = params.get("query_id", params.get("query_variant"))
+    explicit = params.get("query_id")
     if explicit is not None:
         variant = str(explicit)
         if variant not in set(support):
-            raise ValueError(f"query_id/query_variant must be one of {support}")
+            raise ValueError(f"query_id/query_id must be one of {support}")
         return str(variant), {str(variant): 1.0}
     weights = normalized_variant_weights(group_default(_GEN_DEFAULTS, "query_id_weights", {variant: 1.0 for variant in support}), support)
     index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query_id")
@@ -469,13 +469,11 @@ class IllustrationsVisualObjectDifferenceCountTask:
                     "scene_b_objects": list(changed.serialized_objects),
                 },
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(sample.variant),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": "default",
                 "query_id": str(sample.variant),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -506,7 +504,6 @@ class IllustrationsVisualObjectDifferenceCountTask:
                 "changed_object_ids": list(changed_ids),
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(sample.variant),
                 "target_count": int(sample.target_count),
                 "changed_object_ids": list(changed_ids),
@@ -529,7 +526,6 @@ class IllustrationsVisualObjectDifferenceCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.variant),
         )

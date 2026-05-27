@@ -21,7 +21,7 @@ from .sectioned_document_common import (
 from .text_generation import format_currency_from_cents
 
 
-SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS: Tuple[str, ...] = (
     "sum_two_amounts_in_section",
     "difference_two_amounts_in_section",
     "sum_minus_amount_in_section",
@@ -71,26 +71,26 @@ def _sample_operand_specs(
     *,
     candidate_specs: Sequence[Mapping[str, Any]],
     amount_cents: Mapping[str, int],
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
     task_id: str,
     attempt: int,
 ) -> list[Dict[str, Any]]:
     """Sample expression operands from all amount candidates in the queried section."""
 
-    operand_count = int(_OPERAND_COUNT_BY_VARIANT[str(query_variant)])
+    operand_count = int(_OPERAND_COUNT_BY_VARIANT[str(query_id)])
     if len(candidate_specs) < operand_count:
         raise ValueError(
             f"scene_variant candidate pool has {len(candidate_specs)} amount fields; "
-            f"query_variant='{query_variant}' requires {operand_count}"
+            f"query_id='{query_id}' requires {operand_count}"
         )
     operand_rng = spawn_rng(
         int(instance_seed),
-        f"{task_id}.arithmetic_operands.{query_variant}",
+        f"{task_id}.arithmetic_operands.{query_id}",
         index=int(attempt),
     )
     sampled = [dict(spec) for spec in operand_rng.sample(list(candidate_specs), operand_count)]
-    if str(query_variant) == "difference_two_amounts_in_section":
+    if str(query_id) == "difference_two_amounts_in_section":
         sampled = sorted(
             sampled,
             key=lambda spec: int(amount_cents[str(spec["field_id"])]),
@@ -99,25 +99,25 @@ def _sample_operand_specs(
     return sampled
 
 
-def resolve_document_arithmetic_query_variant(
+def resolve_document_arithmetic_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic arithmetic query variant for one form-section page task."""
+    """Resolve the semantic arithmetic query id for one form-section page task."""
 
     return resolve_pages_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -145,7 +145,7 @@ def resolve_document_arithmetic_scene_variant(
 
 def build_document_section_expression_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     instance_seed: int,
     task_id: str,
@@ -154,7 +154,7 @@ def build_document_section_expression_dataset(
 
     templates = list(SECTIONED_DOCUMENT_FIELD_TEMPLATES_BY_SCENE[str(scene_variant)])
     target_section_id, target_section_label = SECTIONED_DOCUMENT_AMOUNT_SECTION_BY_SCENE[str(scene_variant)]
-    operators = tuple(str(operator) for operator in _OPERATORS_BY_VARIANT[str(query_variant)])
+    operators = tuple(str(operator) for operator in _OPERATORS_BY_VARIANT[str(query_id)])
 
     for attempt in range(96):
         value_rng = spawn_rng(int(instance_seed), f"{task_id}.arithmetic_values", index=int(attempt))
@@ -179,7 +179,7 @@ def build_document_section_expression_dataset(
         operand_specs = _sample_operand_specs(
             candidate_specs=candidate_specs,
             amount_cents=amount_cents,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
             task_id=str(task_id),
             attempt=int(attempt),
@@ -198,7 +198,7 @@ def build_document_section_expression_dataset(
 
         section_specs = build_document_section_specs(field_specs)
 
-        question_text = str(_QUESTION_TEXT_BY_VARIANT[str(query_variant)]).format(
+        question_text = str(_QUESTION_TEXT_BY_VARIANT[str(query_id)]).format(
             section_label=str(target_section_label),
             first_label=str(operand_specs[0]["field_label"]),
             second_label=str(operand_specs[1]["field_label"]),
@@ -206,7 +206,7 @@ def build_document_section_expression_dataset(
         )
         return {
             "scene_variant": str(scene_variant),
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
             "question_text": str(question_text),
             "question_format": "document_section_expression_value",
@@ -233,8 +233,8 @@ def build_document_section_expression_dataset(
 
 __all__ = [
     "SUPPORTED_DOCUMENT_ARITHMETIC_SCENE_VARIANTS",
-    "SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_VARIANTS",
+    "SUPPORTED_DOCUMENT_ARITHMETIC_QUERY_IDS",
     "build_document_section_expression_dataset",
     "resolve_document_arithmetic_scene_variant",
-    "resolve_document_arithmetic_query_variant",
+    "resolve_document_arithmetic_query_id",
 ]

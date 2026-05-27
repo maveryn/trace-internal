@@ -255,7 +255,7 @@ def _sample_style_variant(*, task_id: str, instance_seed: int, params: Mapping[s
     )
 
 
-def _sample_query_variant(
+def _sample_query_id(
     *,
     task_id: str,
     instance_seed: int,
@@ -267,10 +267,10 @@ def _sample_query_variant(
         task_id=str(task_id),
         instance_seed=int(instance_seed),
         params=params,
-        namespace="query_variant",
-        explicit_key="query_variant",
+        namespace="query_id",
+        explicit_key="query_id",
         weights_key=str(weights_key),
-        balance_flag_key="balanced_query_variant_sampling",
+        balance_flag_key="balanced_query_id_sampling",
         supported=tuple(str(item) for item in supported),
     )
 
@@ -1107,7 +1107,7 @@ class _Match3Task:
             instance_seed=int(instance_seed),
             params=params,
         )
-        query_id, query_probabilities = _sample_query_variant(
+        query_id, query_probabilities = _sample_query_id(
             task_id=str(self.task_id),
             instance_seed=int(instance_seed),
             params=params,
@@ -1184,8 +1184,6 @@ class _Match3Task:
                 "relations": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
                     "rows": int(len(sample.board)),
                     "cols": int(len(sample.board[0]) if sample.board else 0),
@@ -1193,9 +1191,7 @@ class _Match3Task:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
@@ -1203,12 +1199,10 @@ class _Match3Task:
                 "params": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
-                    "query_variant_probabilities": dict(query_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),
                 },
@@ -1226,8 +1220,6 @@ class _Match3Task:
             "execution_trace": {
                 "scene_variant": str(sample.scene_variant),
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
-                "query_variant": "default",
                 "style_variant": str(style_variant),
                 "board_before": [list(row) for row in sample.board],
                 "swap_options": option_trace,
@@ -1257,7 +1249,6 @@ class _Match3Task:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )
@@ -1269,7 +1260,7 @@ class GamesMatch3SwapEffectValueTask(_Match3Task):
 
     task_id = "task_games__match3__swap_effect_value"
     supported_queries = SUPPORTED_EFFECT_VALUE_QUERIES
-    query_weights_key = "effect_value_query_variant_weights"
+    query_weights_key = "effect_value_query_id_weights"
 
 
 @register_task
@@ -1278,7 +1269,7 @@ class GamesMatch3BestSwapLabelTask(_Match3Task):
 
     task_id = "task_games__match3__best_swap_label"
     supported_queries = SUPPORTED_BEST_SWAP_QUERIES
-    query_weights_key = "best_swap_query_variant_weights"
+    query_weights_key = "best_swap_query_id_weights"
 
 
 __all__ = [

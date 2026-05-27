@@ -17,35 +17,35 @@ def merge_mapping_overrides(base: Mapping[str, Any], override: Mapping[str, Any]
 def _variant_override_mapping(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     default_params: Mapping[str, Any] | None,
 ) -> Dict[str, Any]:
-    """Resolve default plus explicit overrides for one query variant."""
+    """Resolve default plus explicit overrides for one query id."""
 
     merged: Dict[str, Any] = {}
-    default_overrides = default_params.get("query_variant_overrides") if isinstance(default_params, Mapping) else None
+    default_overrides = default_params.get("query_id_overrides") if isinstance(default_params, Mapping) else None
     if isinstance(default_overrides, Mapping):
-        default_override = default_overrides.get(str(query_variant))
+        default_override = default_overrides.get(str(query_id))
         if isinstance(default_override, Mapping):
             merged.update({str(key): value for key, value in default_override.items()})
 
-    explicit_overrides = params.get("query_variant_overrides")
+    explicit_overrides = params.get("query_id_overrides")
     if isinstance(explicit_overrides, Mapping):
-        explicit_override = explicit_overrides.get(str(query_variant))
+        explicit_override = explicit_overrides.get(str(query_id))
         if isinstance(explicit_override, Mapping):
             merged.update({str(key): value for key, value in explicit_override.items()})
     return merged
 
 
-def apply_query_variant_overrides(
+def apply_query_id_overrides(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     default_params: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
-    """Apply optional query-variant-specific params overrides."""
+    """Apply optional query-id-specific params overrides."""
 
-    override = _variant_override_mapping(params, query_variant=str(query_variant), default_params=default_params)
+    override = _variant_override_mapping(params, query_id=str(query_id), default_params=default_params)
     if not override:
         return dict(params)
     filtered = {
@@ -59,20 +59,20 @@ def apply_query_variant_overrides(
 def apply_scene_variant_overrides(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     default_params: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
-    """Apply optional scene-specific overrides nested under one query variant."""
+    """Apply optional scene-specific overrides nested under one query id."""
 
-    query_variant_override = _variant_override_mapping(
+    query_id_override = _variant_override_mapping(
         params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         default_params=default_params,
     )
-    if not query_variant_override:
+    if not query_id_override:
         return dict(params)
-    scene_variant_overrides = query_variant_override.get("scene_variant_overrides")
+    scene_variant_overrides = query_id_override.get("scene_variant_overrides")
     if not isinstance(scene_variant_overrides, Mapping):
         return dict(params)
     override = scene_variant_overrides.get(str(scene_variant))

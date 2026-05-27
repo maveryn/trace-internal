@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.games.shared.space_shooter_common import (
-    SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS,
+    SUPPORTED_SPACE_SHOOTER_QUERY_IDS,
     SUPPORTED_SPACE_SHOOTER_SCENE_VARIANTS,
     SUPPORTED_SPACE_SHOOTER_STYLE_VARIANTS,
 )
@@ -19,13 +19,13 @@ def test_games_space_shooter_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_lane_count_sampling"]) is True
     assert bool(generation["balanced_enemy_count_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_SPACE_SHOOTER_SCENE_VARIANTS)
-    assert set(generation["query_variant_weights"].keys()) == set(SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS)
+    assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_SPACE_SHOOTER_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_SPACE_SHOOTER_STYLE_VARIANTS)
     assert list(generation["lane_count_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["enemy_count_support"]) == [10, 11, 12, 13, 14, 15, 16]

@@ -18,13 +18,13 @@ from .common import (
 
 
 SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS: Tuple[str, ...] = ("cycle_ring",)
-SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS: Tuple[str, ...] = ("offset_stage_label",)
+SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS: Tuple[str, ...] = ("offset_stage_label",)
 SUPPORTED_DIAGRAM_CYCLE_QUERY_RELATIONSHIPS: Tuple[str, ...] = ("after", "before")
 SUPPORTED_DIAGRAM_CYCLE_DIRECTIONS: Tuple[str, ...] = (
     "clockwise",
     "counterclockwise",
 )
-SOURCE_CYCLE_QUERY_VARIANT_QUERY_RELATIONSHIPS: Dict[str, str] = {
+SOURCE_CYCLE_QUERY_ID_QUERY_RELATIONSHIPS: Dict[str, str] = {
     "after_k_steps": "after",
     "before_k_steps": "before",
     "after_offset_stage_label": "after",
@@ -103,7 +103,7 @@ def resolve_cycle_scene_variant(
     )
 
 
-def resolve_cycle_query_variant(
+def resolve_cycle_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -116,33 +116,33 @@ def resolve_cycle_query_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
 def normalize_cycle_query_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Return params with source before/after query variants mapped to query relationship."""
+    """Return params with source before/after query ids mapped to query relationship."""
 
     normalized = dict(params)
-    explicit_query_variant = normalized.get("query_variant")
-    if explicit_query_variant is None:
+    explicit_query_id = normalized.get("query_id")
+    if explicit_query_id is None:
         return normalized
-    query_variant = str(explicit_query_variant)
-    if query_variant not in SOURCE_CYCLE_QUERY_VARIANT_QUERY_RELATIONSHIPS:
+    query_id = str(explicit_query_id)
+    if query_id not in SOURCE_CYCLE_QUERY_ID_QUERY_RELATIONSHIPS:
         return normalized
-    query_relationship = str(SOURCE_CYCLE_QUERY_VARIANT_QUERY_RELATIONSHIPS[query_variant])
+    query_relationship = str(SOURCE_CYCLE_QUERY_ID_QUERY_RELATIONSHIPS[query_id])
     explicit_relationship = normalized.get("query_relationship")
     if explicit_relationship is not None and str(explicit_relationship) != str(query_relationship):
         raise ValueError(
-            "source cycle query_variant conflicts with query_relationship: "
-            f"{query_variant} vs {explicit_relationship}"
+            "source cycle query_id conflicts with query_relationship: "
+            f"{query_id} vs {explicit_relationship}"
         )
-    normalized["query_variant"] = str(SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS[0])
+    normalized["query_id"] = str(SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS[0])
     normalized["query_relationship"] = str(query_relationship)
     return normalized
 
@@ -265,7 +265,7 @@ def _title(*, rng) -> str:
 
 def build_cycle_offset_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     query_relationship: str,
     scene_variant: str,
     cycle_direction: str,
@@ -334,8 +334,8 @@ def build_cycle_offset_dataset(
     if str(cycle_direction) not in SUPPORTED_DIAGRAM_CYCLE_DIRECTIONS:
         raise ValueError(f"unsupported cycle direction: {cycle_direction}")
     direction_delta = 1 if str(cycle_direction) == "clockwise" else -1
-    if str(query_variant) not in SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS:
-        raise ValueError(f"unsupported cycle query variant: {query_variant}")
+    if str(query_id) not in SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS:
+        raise ValueError(f"unsupported cycle query id: {query_id}")
 
     if str(query_relationship) == "after":
         answer_index = int((query_index + (direction_delta * step_count)) % int(stage_count))
@@ -379,7 +379,7 @@ def build_cycle_offset_dataset(
 
     return {
         "scene_title": _title(rng=rng),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": "cycle_ring",
         "question_text": str(question_text),
         "question_format": "cycle_offset_stage_label",
@@ -404,15 +404,15 @@ __all__ = [
     "CycleDefaults",
     "CycleRenderParams",
     "SUPPORTED_DIAGRAM_CYCLE_SCENE_VARIANTS",
-    "SUPPORTED_DIAGRAM_CYCLE_QUERY_VARIANTS",
+    "SUPPORTED_DIAGRAM_CYCLE_QUERY_IDS",
     "SUPPORTED_DIAGRAM_CYCLE_QUERY_RELATIONSHIPS",
     "SUPPORTED_DIAGRAM_CYCLE_DIRECTIONS",
-    "SOURCE_CYCLE_QUERY_VARIANT_QUERY_RELATIONSHIPS",
+    "SOURCE_CYCLE_QUERY_ID_QUERY_RELATIONSHIPS",
     "build_cycle_offset_dataset",
     "normalize_cycle_query_params",
     "resolve_cycle_direction",
     "resolve_cycle_query_relationship",
     "resolve_cycle_render_params",
     "resolve_cycle_scene_variant",
-    "resolve_cycle_query_variant",
+    "resolve_cycle_query_id",
 ]

@@ -24,9 +24,9 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ..shared.complexity import build_games_space_shooter_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.space_shooter_common import (
-    SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS,
+    SUPPORTED_SPACE_SHOOTER_QUERY_IDS,
     SUPPORTED_SPACE_SHOOTER_SCENE_VARIANTS,
     SUPPORTED_SPACE_SHOOTER_STYLE_VARIANTS,
     SpaceBlocker,
@@ -77,14 +77,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Space-shooter instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     lane_count: int
     enemy_count: int
     target_answer: int | None
     target_answer_support: Tuple[int, ...] | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     lane_count_probabilities: Dict[str, float]
@@ -102,25 +102,25 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="spac
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="space_shooter", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str | None:
+def _target_support_key(query_id: str) -> str | None:
     """Return the configured answer-support key for one query."""
 
     return {
         "clear_shot_count": "clear_shot_count_support",
         "projectile_intercept_count": "projectile_intercept_count_support",
         "safe_lane_count": "safe_lane_count_support",
-    }.get(str(query_variant))
+    }.get(str(query_id))
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Space-shooter query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Space-shooter query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_SPACE_SHOOTER_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_SPACE_SHOOTER_QUERY_IDS,
     )
 
 
@@ -152,7 +152,7 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Space-shooter instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -196,7 +196,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer: int | None = None
     target_answer_support: Tuple[int, ...] | None = None
     target_answer_probabilities: Dict[str, float] | None = None
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     if support_key is not None:
         target_answer, target_answer_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
@@ -205,7 +205,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             support_key=str(support_key),
             explicit_key="target_answer",
             fallback_support=getattr(_DEFAULTS, support_key),
-            namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+            namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
@@ -215,19 +215,19 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             key=str(support_key),
             fallback=getattr(_DEFAULTS, support_key),
         )
-        if str(query_variant) in {"clear_shot_count", "safe_lane_count"} and int(target_answer) > int(lane_count):
+        if str(query_id) in {"clear_shot_count", "safe_lane_count"} and int(target_answer) > int(lane_count):
             if "lane_count" in params and params.get("lane_count") is not None:
                 raise ValueError("target_answer cannot exceed lane_count for lane-count Space-shooter queries")
             lane_count = int(target_answer)
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         lane_count=int(lane_count),
         enemy_count=int(enemy_count),
         target_answer=None if target_answer is None else int(target_answer),
         target_answer_support=target_answer_support,
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         lane_count_probabilities=dict(lane_count_probabilities),
@@ -393,7 +393,7 @@ def _sample_clear_shot_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
 
     sample = SpaceShooterSample(
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=int(len(clear_enemy_ids)),
         player_lane=int(rng.randrange(lane_count)),
@@ -468,7 +468,7 @@ def _sample_projectile_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
     intercept_ids = tuple(str(projectile.projectile_id) for projectile in projectiles if int(projectile.lane) == int(player_lane))
     sample = SpaceShooterSample(
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=int(len(intercept_ids)),
         player_lane=int(player_lane),
@@ -540,7 +540,7 @@ def _sample_highest_threat_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSam
     target_enemy = enemies[target_index]
     sample = SpaceShooterSample(
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=str(target_enemy.label),
         player_lane=int(rng.randrange(lane_count)),
@@ -592,7 +592,7 @@ def _sample_safe_lane_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
     evidence_ids = tuple(lane_entity_id(lane) for lane in safe_lanes)
     sample = SpaceShooterSample(
         lane_count=lane_count,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         scene_variant=str(axes.scene_variant),
         answer=int(len(safe_lanes)),
         player_lane=int(rng.randrange(lane_count)),
@@ -615,7 +615,7 @@ def _sample_safe_lane_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
     """Construct one Space-shooter scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "clear_shot_count":
         return _sample_clear_shot_scene(rng=rng, axes=axes)
     if query == "projectile_intercept_count":
@@ -624,16 +624,16 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> SpaceShooterSample:
         return _sample_highest_threat_scene(rng=rng, axes=axes)
     if query == "safe_lane_count":
         return _sample_safe_lane_scene(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Space-shooter query_variant: {query}")
+    raise ValueError(f"unsupported Space-shooter query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Space-shooter JSON output."""
 
-    if str(query_variant) == "highest_threat_label":
+    if str(query_id) == "highest_threat_label":
         answer_value: int | str = "C"
         evidence_value = [[420, 260, 482, 308]]
-    elif str(query_variant) == "safe_lane_count":
+    elif str(query_id) == "safe_lane_count":
         answer_value = 3
         evidence_value = [[115, 695, 205, 733], [360, 695, 450, 733], [610, 695, 700, 733]]
     else:
@@ -683,7 +683,7 @@ class GamesSpaceShooterPlayfieldTask:
             background=background,
             style_variant=str(axes.style_variant),
             params=render_params,
-            highlight_player_lane=str(axes.query_variant) == "projectile_intercept_count",
+            highlight_player_lane=str(axes.query_id) == "projectile_intercept_count",
         )
         evidence_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
@@ -717,22 +717,22 @@ class GamesSpaceShooterPlayfieldTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "space_shooter_lane_rule_text": str(prompt_defaults["space_shooter_lane_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -741,7 +741,7 @@ class GamesSpaceShooterPlayfieldTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(
-            type="string" if str(axes.query_variant) == "highest_threat_label" else "integer",
+            type="string" if str(axes.query_id) == "highest_threat_label" else "integer",
             value=sampled_scene.answer,
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
@@ -749,7 +749,7 @@ class GamesSpaceShooterPlayfieldTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             lane_count=int(sampled_scene.lane_count),
             enemy_count=len(sampled_scene.enemies),
             projectile_count=len(sampled_scene.projectiles),
@@ -790,8 +790,7 @@ class GamesSpaceShooterPlayfieldTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "player_lane": int(sampled_scene.player_lane),
@@ -800,23 +799,22 @@ class GamesSpaceShooterPlayfieldTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "enemy_count": int(axes.enemy_count),
                     "projectile_count": len(sampled_scene.projectiles),
                     "blocker_count": len(sampled_scene.blockers),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "enemy_count_probabilities": dict(axes.enemy_count_probabilities),
@@ -837,8 +835,7 @@ class GamesSpaceShooterPlayfieldTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "lane_count": int(sampled_scene.lane_count),
                 "player_lane": int(sampled_scene.player_lane),
@@ -874,9 +871,8 @@ class GamesSpaceShooterPlayfieldTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="space_shooter",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -885,7 +881,7 @@ class GamesSpaceShooterClearShotCountTask(FixedQueryVariantTaskMixin, GamesSpace
     """Count enemy ships with clear vertical shot lanes from the bottom pads."""
 
     task_id = "task_games__space_shooter__clear_shot_count"
-    fixed_query_variant = "clear_shot_count"
+    fixed_query_id = "clear_shot_count"
 
 
 @register_task
@@ -893,7 +889,7 @@ class GamesSpaceShooterProjectileInterceptCountTask(FixedQueryVariantTaskMixin, 
     """Count enemy projectiles aligned with the player ship."""
 
     task_id = "task_games__space_shooter__projectile_intercept_count"
-    fixed_query_variant = "projectile_intercept_count"
+    fixed_query_id = "projectile_intercept_count"
 
 
 @register_task
@@ -901,7 +897,7 @@ class GamesSpaceShooterHighestThreatLabelTask(FixedQueryVariantTaskMixin, GamesS
     """Identify the labeled enemy closest to the bottom player baseline."""
 
     task_id = "task_games__space_shooter__highest_threat_label"
-    fixed_query_variant = "highest_threat_label"
+    fixed_query_id = "highest_threat_label"
 
 
 @register_task
@@ -909,7 +905,7 @@ class GamesSpaceShooterSafeLaneCountTask(FixedQueryVariantTaskMixin, GamesSpaceS
     """Count safe bottom lane pads."""
 
     task_id = "task_games__space_shooter__safe_lane_count"
-    fixed_query_variant = "safe_lane_count"
+    fixed_query_id = "safe_lane_count"
 
 
 __all__ = [

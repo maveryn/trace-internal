@@ -86,13 +86,13 @@ def test_puzzle_spatial_overlay_result_label_contract_matches_winning_option_cho
         render_map = trace["render_map"]
         evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == "overlay_result"
-        assert str(trace["query_spec"]["query_variant"]) == "default"
+        assert str(trace["query_spec"]["query_id"]) == "default"
         assert str(trace["query_spec"]["query_id"]) == "overlay_result"
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == "overlay_result"
-        assert str(execution["internal_query_variant"]) == "overlay_union_same_grid"
+        assert str(execution["internal_query_id"]) == "overlay_union_same_grid"
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
         assert len(evidence_bboxes) == 1
@@ -200,9 +200,9 @@ def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice
     fold_axes = ("vertical", "horizontal")
     scene_variants = ("fold_strip", "fold_card", "fold_outline")
 
-    for variant_index, fold_axis in enumerate(fold_axes):
+    for query_id_index, fold_axis in enumerate(fold_axes):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 26020 + (variant_index * 20) + scene_index
+            seed = 26020 + (query_id_index * 20) + scene_index
             out = task.generate(
                 seed,
                 params={"fold_axis": fold_axis, "scene_variant": scene_variant},
@@ -215,13 +215,13 @@ def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice
             solver = execution["solver_trace"]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == "paper_fold_result"
-            assert str(trace["query_spec"]["query_variant"]) == "default"
+            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "paper_fold_result"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "paper_fold_result"
-            assert str(execution["internal_query_variant"]) == f"{fold_axis}_fold_result"
+            assert str(execution["internal_query_id"]) == f"{fold_axis}_fold_result"
             assert out.answer_gt.type == "option_letter"
             assert out.evidence_gt.type == "bbox_set"
             assert len(evidence_bboxes) == 1
@@ -346,16 +346,16 @@ def test_puzzle_spatial_fold_result_balanced_sampling_covers_letters_per_variant
 
 def test_puzzle_spatial_fold_result_label_fold_cut_variants_match_winning_option_choice() -> None:
     task = PuzzlesSpatialPaperFoldCutResultLabelTask()
-    query_variants = (
+    query_ids = (
         ("paper_fold_cut_result", "vertical", 1),
         ("paper_fold_cut_result", "horizontal", 1),
         ("paper_fold_cut_result", None, 2),
     )
     scene_variants = ("fold_strip", "fold_card", "fold_outline")
 
-    for variant_index, (query_variant, fold_axis, fold_count) in enumerate(query_variants):
+    for query_id_index, (query_id, fold_axis, fold_count) in enumerate(query_ids):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 26420 + (variant_index * 20) + scene_index
+            seed = 26420 + (query_id_index * 20) + scene_index
             params = {"scene_variant": scene_variant}
             params["fold_count"] = fold_count
             if fold_axis is not None:
@@ -372,16 +372,16 @@ def test_puzzle_spatial_fold_result_label_fold_cut_variants_match_winning_option
             solver = execution["solver_trace"]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == "paper_fold_cut_result"
-            assert str(trace["query_spec"]["query_variant"]) == "default"
+            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "paper_fold_cut_result"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "paper_fold_cut_result"
             if fold_axis is not None:
-                assert str(execution["internal_query_variant"]) == f"single_{fold_axis}_fold_cut_result"
+                assert str(execution["internal_query_id"]) == f"single_{fold_axis}_fold_cut_result"
             else:
-                assert str(execution["internal_query_variant"]) == "double_fold_cut_result"
+                assert str(execution["internal_query_id"]) == "double_fold_cut_result"
             assert out.answer_gt.type == "option_letter"
             assert out.evidence_gt.type == "bbox_set"
             assert len(evidence_bboxes) == 1
@@ -498,17 +498,17 @@ def test_puzzle_spatial_polyomino_arrangement_variants_have_option_evidence() ->
             PuzzlesSpatialPolyominoMissingRegionPieceLabelTask(),
             "marked_region_piece_label",
             2,
-            {"query_variant": "marked_region_piece_label"},
+            {"query_id": "marked_region_piece_label"},
         ),
         (
             PuzzlesSpatialPolyominoMissingRegionPieceLabelTask(),
             "rectangle_complement_piece",
             2,
-            {"query_variant": "rectangle_complement_piece"},
+            {"query_id": "rectangle_complement_piece"},
         ),
     )
 
-    for index, (task, query_variant, evidence_count, extra_params) in enumerate(cases):
+    for index, (task, query_id, evidence_count, extra_params) in enumerate(cases):
         out = task.generate(
             27150 + index,
             params={"scene_variant": "polyomino_card", **extra_params},
@@ -517,11 +517,11 @@ def test_puzzle_spatial_polyomino_arrangement_variants_have_option_evidence() ->
         execution = out.trace_payload["execution_trace"]
         item_bboxes = out.trace_payload["render_map"]["item_bboxes_px"]
 
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
-        assert str(execution["internal_query_variant"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
+        assert str(execution["internal_query_id"]) == str(query_id)
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
         assert len(out.evidence_gt.value) == int(evidence_count)
@@ -544,7 +544,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
             out = task.generate(
                 seed,
                 params={
-                    "query_variant": "rectangle_complement_piece",
+                    "query_id": "rectangle_complement_piece",
                     "matching_policy": matching_policy,
                     "scene_variant": scene_variant,
                 },
@@ -557,13 +557,13 @@ def test_puzzle_spatial_polyomino_rectangle_complement_contract_matches_winning_
             render_map = trace["render_map"]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == "rectangle_complement_piece"
-            assert str(trace["query_spec"]["query_variant"]) == "default"
+            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "rectangle_complement_piece"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "rectangle_complement_piece"
-            assert str(execution["internal_query_variant"]) == "rectangle_complement_piece"
+            assert str(execution["internal_query_id"]) == "rectangle_complement_piece"
             assert out.answer_gt.type == "option_letter"
             assert out.evidence_gt.type == "bbox_set"
             assert len(evidence_bboxes) == 2
@@ -635,7 +635,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_prompt_examples_match_sel
     task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
     out = task.generate(
         27320,
-        params={"query_variant": "rectangle_complement_piece", "matching_policy": "rotation_reflection_allowed"},
+        params={"query_id": "rectangle_complement_piece", "matching_policy": "rotation_reflection_allowed"},
         max_attempts=10,
     )
     answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -654,7 +654,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_balanced_sampling_covers_
     for sampling_index in range(200):
         out = task.generate(
             27380 + sampling_index,
-            params={"query_variant": "rectangle_complement_piece"},
+            params={"query_id": "rectangle_complement_piece"},
             max_attempts=10,
         )
         policy = str(out.trace_payload["execution_trace"]["matching_policy"])
@@ -667,7 +667,7 @@ def test_puzzle_spatial_polyomino_rectangle_complement_balanced_sampling_covers_
 def test_puzzle_spatial_polyomino_rectangle_complement_task_is_deterministic() -> None:
     task = PuzzlesSpatialPolyominoMissingRegionPieceLabelTask()
     params = {
-        "query_variant": "rectangle_complement_piece",
+        "query_id": "rectangle_complement_piece",
         "matching_policy": "rotation_reflection_allowed",
         "scene_variant": "polyomino_card",
     }

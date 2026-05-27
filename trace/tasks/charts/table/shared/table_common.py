@@ -75,7 +75,7 @@ class TableDefaults:
     inner_rule_style: str = "solid"
     numeric_alignment: str = "center"
     shadow_offset_px: int = 5
-    balanced_query_variant_sampling: bool = True
+    balanced_query_id_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 
@@ -408,7 +408,7 @@ def _build_column_filter_query_values(
 
 def _resolve_counting_target_count(
     *,
-    query_variant: str,
+    query_id: str,
     row_count: int,
     params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
@@ -419,10 +419,10 @@ def _resolve_counting_target_count(
 
     target_min = 0
     target_max = int(row_count)
-    if str(query_variant) in {"above_threshold", "below_threshold"}:
+    if str(query_id) in {"above_threshold", "below_threshold"}:
         target_min = int(gen_defaults.get("threshold_count_target_count_min", 0))
         target_max = int(row_count) - int(gen_defaults.get("threshold_count_target_count_max_row_offset", 0))
-    elif str(query_variant) == "in_interval":
+    elif str(query_id) == "in_interval":
         target_min = int(gen_defaults.get("in_interval_target_count_min", 0))
         target_max = int(row_count) - int(gen_defaults.get("in_interval_target_count_max_row_offset", 0))
     if int(target_min) < 0:
@@ -431,7 +431,7 @@ def _resolve_counting_target_count(
         raise ValueError("target count maximum cannot exceed row_count")
     if int(target_min) > int(target_max):
         raise ValueError(
-            f"invalid target count support for {task_id}/{query_variant}: "
+            f"invalid target count support for {task_id}/{query_id}: "
             f"{int(target_min)}..{int(target_max)} with row_count={int(row_count)}"
         )
     support_size = int(target_max) - int(target_min) + 1
@@ -443,12 +443,12 @@ def _resolve_counting_target_count(
     return int(target_min + (selection_index % support_size))
 
 
-def _decouple_sampling_after_query_variant(
+def _decouple_sampling_after_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
 ) -> Mapping[str, Any]:
-    """No-op hook for query-variant axis call sites."""
+    """No-op hook for query-id axis call sites."""
 
     _ = gen_defaults
     return params
@@ -464,11 +464,11 @@ def _resolve_balanced_integer_support_value(
     support_min: int,
     support_max: int,
 ) -> int:
-    """Resolve one integer target while cycling review-time support by query variant."""
+    """Resolve one integer target while cycling review-time support by query id."""
 
     if int(support_min) > int(support_max):
         raise ValueError("integer support must be non-empty")
-    support_params = _decouple_sampling_after_query_variant(params, gen_defaults=gen_defaults)
+    support_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
     support_size = int(support_max) - int(support_min) + 1
     support_index = int(resolve_selection_index(
         params=support_params,
@@ -779,7 +779,7 @@ def table_render_style_spec(render_params: TableRenderParams) -> Dict[str, Any]:
 
 def build_ranking_label_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -788,8 +788,8 @@ def build_ranking_label_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for kth-order row-label ranking queries."""
 
-    if str(query_variant) not in {"kth_highest_in_column", "kth_lowest_in_column"}:
-        raise ValueError(f"unsupported table ranking-label variant: {query_variant}")
+    if str(query_id) not in {"kth_highest_in_column", "kth_lowest_in_column"}:
+        raise ValueError(f"unsupported table ranking-label variant: {query_id}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -853,7 +853,7 @@ def build_ranking_label_dataset_for_variant(
             for row_index, row_label in enumerate(row_labels)
         ),
         key=lambda item: int(item["value"]),
-        reverse=(str(query_variant) == "kth_highest_in_column"),
+        reverse=(str(query_id) == "kth_highest_in_column"),
     )
     answer_row = dict(sorted_rows[int(rank_k) - 1])
     return {
@@ -876,7 +876,7 @@ def build_ranking_label_dataset_for_variant(
 
 def build_summary_value_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -885,8 +885,8 @@ def build_summary_value_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for column-summary numeric queries."""
 
-    if str(query_variant) not in {"column_sum", "column_mean", "column_median"}:
-        raise ValueError(f"unsupported table summary-value variant: {query_variant}")
+    if str(query_id) not in {"column_sum", "column_mean", "column_median"}:
+        raise ValueError(f"unsupported table summary-value variant: {query_id}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -894,7 +894,7 @@ def build_summary_value_dataset_for_variant(
         gen_defaults=gen_defaults,
         defaults=defaults,
         task_id=task_id,
-        odd_row_count_required=(str(query_variant) == "column_median"),
+        odd_row_count_required=(str(query_id) == "column_median"),
     )
     rng = base["rng"]
     row_count = int(base["row_count"])
@@ -906,7 +906,7 @@ def build_summary_value_dataset_for_variant(
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
 
-    if str(query_variant) == "column_sum":
+    if str(query_id) == "column_sum":
         target_sum = int(rng.randint(int(row_count * value_min), int(row_count * value_max)))
         query_values = _sample_values_with_total(
             count=int(row_count),
@@ -916,7 +916,7 @@ def build_summary_value_dataset_for_variant(
             rng=rng,
         )
         answer_value = int(target_sum)
-    elif str(query_variant) == "column_mean":
+    elif str(query_id) == "column_mean":
         target_mean = _resolve_balanced_integer_support_value(
             params=params,
             gen_defaults=gen_defaults,
@@ -985,7 +985,7 @@ def build_summary_value_dataset_for_variant(
 
 def build_counting_value_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -995,8 +995,8 @@ def build_counting_value_dataset_for_variant(
     """Construct one deterministic table dataset for column-filter counting queries."""
 
     supported_variants = {"above_threshold", "below_threshold", "in_interval", "categorical_value_count"}
-    if str(query_variant) not in supported_variants:
-        raise ValueError(f"unsupported table counting variant: {query_variant}")
+    if str(query_id) not in supported_variants:
+        raise ValueError(f"unsupported table counting variant: {query_id}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -1014,9 +1014,9 @@ def build_counting_value_dataset_for_variant(
     query_column = str(base["query_column"])
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
-    support_params = _decouple_sampling_after_query_variant(params, gen_defaults=gen_defaults)
+    support_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
     target_count = _resolve_counting_target_count(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         row_count=int(row_count),
         params=support_params,
         gen_defaults=gen_defaults,
@@ -1024,7 +1024,7 @@ def build_counting_value_dataset_for_variant(
         task_id=task_id,
     )
 
-    if str(query_variant) == "categorical_value_count":
+    if str(query_id) == "categorical_value_count":
         category_column = sample_category_column_header(instance_seed=int(instance_seed))
         target_category_index = int(resolve_selection_index(
             params=params,
@@ -1083,7 +1083,7 @@ def build_counting_value_dataset_for_variant(
         }
 
     filter_query = _build_column_filter_query_values(
-        filter_variant=str(query_variant),
+        filter_variant=str(query_id),
         row_count=int(row_count),
         target_count=int(target_count),
         value_min=int(value_min),
@@ -1137,7 +1137,7 @@ def build_counting_value_dataset_for_variant(
 
 def build_statistics_filtered_subset_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1146,8 +1146,8 @@ def build_statistics_filtered_subset_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic table dataset for filtered column aggregation queries."""
 
-    if str(query_variant) not in {"filtered_column_sum", "filtered_column_mean"}:
-        raise ValueError(f"unsupported filtered table statistics variant: {query_variant}")
+    if str(query_id) not in {"filtered_column_sum", "filtered_column_mean"}:
+        raise ValueError(f"unsupported filtered table statistics variant: {query_id}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -1186,7 +1186,7 @@ def build_statistics_filtered_subset_dataset_for_variant(
     )
     if int(selected_count_min) > int(selected_count_max):
         raise ValueError("selected_row_count_min must be <= selected_row_count_max and row_count - 1")
-    selected_count_params = _decouple_sampling_after_query_variant(params, gen_defaults=gen_defaults)
+    selected_count_params = _decouple_sampling_after_query_id(params, gen_defaults=gen_defaults)
     target_count = int(
         resolve_selection_index(
             params=selected_count_params,
@@ -1235,7 +1235,7 @@ def build_statistics_filtered_subset_dataset_for_variant(
     selected_count = int(len(selected_row_indices))
     if int(selected_count) <= 0:
         raise ValueError("filtered subset tasks require at least one selected row")
-    if str(query_variant) == "filtered_column_sum":
+    if str(query_id) == "filtered_column_sum":
         target_total = int(rng.randint(int(selected_count * value_min), int(selected_count * value_max)))
         target_values = _sample_values_with_total(
             count=int(selected_count),
@@ -1318,7 +1318,7 @@ def render_table_filter_condition(dataset: Mapping[str, Any]) -> str:
 
 def build_temporal_value_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1331,8 +1331,8 @@ def build_temporal_value_dataset_for_variant(
         "absolute_difference_between_rows_over_year_interval",
         "sum_absolute_differences_between_rows_over_year_interval",
     }
-    if str(query_variant) not in supported_variants:
-        raise ValueError(f"unsupported table temporal variant: {query_variant}")
+    if str(query_id) not in supported_variants:
+        raise ValueError(f"unsupported table temporal variant: {query_id}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -1467,7 +1467,7 @@ def build_temporal_value_dataset_for_variant(
             sum_b -= 1
     row_interval_sums[str(query_row_label)] = int(sum_a)
     row_interval_sums[str(query_row_label_b)] = int(sum_b)
-    if str(query_variant) == "absolute_difference_between_rows_over_year_interval":
+    if str(query_id) == "absolute_difference_between_rows_over_year_interval":
         answer_value = int(abs(int(sum_a) - int(sum_b)))
     else:
         paired_absolute_differences = [

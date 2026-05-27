@@ -15,7 +15,7 @@ def test_reference_nearest_answer_and_evidence() -> None:
     output = task.generate(
         20260521,
         params={
-            "query_variant": "closest_to_reference",
+            "query_id": "closest_to_reference",
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "large_candidate_count": 2,
@@ -32,7 +32,7 @@ def test_reference_nearest_answer_and_evidence() -> None:
     expected_label = str(sorted_labels[0])
     reference_id = str(trace["reference_object_id"])
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == "closest_to_reference"
     assert output.answer_gt.type == "option_letter"

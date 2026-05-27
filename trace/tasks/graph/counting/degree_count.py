@@ -29,14 +29,14 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
-    SUPPORTED_DEGREE_QUERY_VARIANTS,
+    SUPPORTED_DEGREE_QUERY_IDS,
     SUPPORTED_DIRECTED_DEGREE_MODES,
     SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_degree_count,
-    graph_degree_mode_for_query_variant,
-    graph_directionality_for_query_variant,
+    graph_degree_mode_for_query_id,
+    graph_directionality_for_query_id,
     graph_label_sort_key,
     sample_degree_count_graph,
 )
@@ -108,7 +108,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved graph-query support for one degree-count instance."""
 
-    query_variant: str
+    query_id: str
     graph_directionality: str
     degree_mode: str
     node_count: int
@@ -121,7 +121,7 @@ class _ResolvedQuery:
     layout_transform_variant: str
     edge_routing_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     query_degree_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
@@ -160,10 +160,10 @@ def _query_support_selection_index(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
     degree_mode_probabilities: Mapping[str, float],
 ) -> int:
-    """Return a query-support index decorrelated from balanced query variants."""
+    """Return a query-support index decorrelated from balanced query ids."""
 
     selection_index = int(
         resolve_selection_index(
@@ -172,24 +172,24 @@ def _query_support_selection_index(
             namespace=f"{TASK_ID}:query_support",
         )
     )
-    balanced_query_variants = bool(
+    balanced_query_ids = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
-    query_variant_overridden = any(
+    query_id_overridden = any(
         has_non_null_param(params, key)
-        for key in ("query_variant", "query_variant_weights")
+        for key in ("query_id", "query_id_weights")
     )
     divisor = 1
     if (
-        bool(balanced_query_variants)
-        and not bool(query_variant_overridden)
-        and is_uniform_probability_map(query_variant_probabilities)
+        bool(balanced_query_ids)
+        and not bool(query_id_overridden)
+        and is_uniform_probability_map(query_id_probabilities)
     ):
         active_variant_count = sum(
-            1 for value in query_variant_probabilities.values() if float(value) > 0.0
+            1 for value in query_id_probabilities.values() if float(value) > 0.0
         )
         if int(active_variant_count) > 1:
             divisor *= int(active_variant_count)
@@ -223,9 +223,9 @@ def _degree_mode_params_for_sampling(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Mapping[str, Any]:
-    """Return params with degree-mode cycling decoupled from query-variant cycling."""
+    """Return params with degree-mode cycling decoupled from query-id cycling."""
 
     selection_index = int(
         resolve_selection_index(
@@ -234,17 +234,17 @@ def _degree_mode_params_for_sampling(
             namespace=f"{TASK_ID}:degree_mode",
         )
     )
-    balanced_query_variants = bool(
+    balanced_query_ids = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
-    query_variant_overridden = any(
+    query_id_overridden = any(
         has_non_null_param(params, key)
-        for key in ("query_variant", "query_variant_weights")
+        for key in ("query_id", "query_id_weights")
     )
-    _ = selection_index, balanced_query_variants, query_variant_overridden, query_variant_probabilities
+    _ = selection_index, balanced_query_ids, query_id_overridden, query_id_probabilities
     return params
 
 
@@ -252,7 +252,7 @@ def _node_count_selection_index(
     instance_seed: int,
     *,
     query_selection_index: int,
-    query_variant: str,
+    query_id: str,
     query_degree: int,
     target_count: int,
     topology_profile: str,
@@ -261,7 +261,7 @@ def _node_count_selection_index(
 
     namespace = (
         f"{TASK_ID}:node_count:"
-        f"{str(query_variant)}:{int(query_degree)}:{int(target_count)}:{str(topology_profile)}"
+        f"{str(query_id)}:{int(query_degree)}:{int(target_count)}:{str(topology_profile)}"
     )
     return int(hash64(int(instance_seed), namespace, int(query_selection_index)))
 
@@ -269,26 +269,26 @@ def _node_count_selection_index(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced node-count / degree-query support for one instance."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_id_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_DEGREE_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_DEGREE_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
-    graph_directionality = str(graph_directionality_for_query_variant(str(query_variant)))
+    graph_directionality = str(graph_directionality_for_query_id(str(query_id)))
     if str(graph_directionality) == "directed":
         degree_mode_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.degree_mode")
         degree_mode_params = _degree_mode_params_for_sampling(
             instance_seed=int(instance_seed),
             params=params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
         degree_mode, degree_mode_probabilities = resolve_graph_named_variant(
             degree_mode_rng,
@@ -303,7 +303,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             namespace="degree_mode",
         )
     else:
-        degree_mode = str(graph_degree_mode_for_query_variant(str(query_variant)))
+        degree_mode = str(graph_degree_mode_for_query_id(str(query_id)))
         explicit_degree_mode = params.get("degree_mode")
         if explicit_degree_mode is not None and str(explicit_degree_mode) != str(degree_mode):
             raise ValueError("degree_mode can only be set to degree for the undirected degree-count variant")
@@ -354,7 +354,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     selection_index = _query_support_selection_index(
         int(instance_seed),
         params=params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
         degree_mode_probabilities=degree_mode_probabilities,
     )
 
@@ -363,7 +363,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     for supported_degree in degree_support:
         for supported_target in target_support:
             feasible_nodes = feasible_node_counts_for_degree_count(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 degree_mode=str(degree_mode),
                 query_degree=int(supported_degree),
                 target_count=int(supported_target),
@@ -377,7 +377,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
                 feasible_pairs.append(pair)
                 feasible_node_support_by_pair[pair] = tuple(int(value) for value in feasible_nodes)
     if not feasible_pairs:
-        raise ValueError("no feasible graph degree-count support exists for the configured query variant")
+        raise ValueError("no feasible graph degree-count support exists for the configured query id")
 
     explicit_target = params.get("target_count")
     explicit_query_degree = params.get("query_degree")
@@ -420,7 +420,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_index = _node_count_selection_index(
             int(instance_seed),
             query_selection_index=int(selection_index),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             query_degree=int(query_degree),
             target_count=int(target_count),
             topology_profile=str(topology_profile),
@@ -509,7 +509,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         graph_directionality=str(graph_directionality),
         degree_mode=str(degree_mode),
         node_count=int(node_count),
@@ -522,7 +522,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         layout_transform_variant=str(layout_transform_variant),
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -626,7 +626,7 @@ class _GraphCountingDegreeCountBaseTask:
             try:
                 graph_sample = sample_degree_count_graph(
                     graph_rng,
-                    query_variant=str(query.query_variant),
+                    query_id=str(query.query_id),
                     degree_mode=str(query.degree_mode),
                     node_count=int(query.node_count),
                     query_degree=int(query.query_degree),
@@ -781,7 +781,7 @@ class _GraphCountingDegreeCountBaseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -790,7 +790,7 @@ class _GraphCountingDegreeCountBaseTask:
                     "graph_directionality": str(query.graph_directionality),
                     "degree_mode": str(query.degree_mode),
                     "degree_mode_probabilities": dict(query.degree_mode_probabilities),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "query_degree": int(query.query_degree),
@@ -851,7 +851,7 @@ class _GraphCountingDegreeCountBaseTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": f"count_nodes_with_{str(query.degree_mode)}",
                 "graph_directionality": str(query.graph_directionality),
@@ -902,7 +902,7 @@ class _GraphCountingDegreeCountBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -933,11 +933,11 @@ _MERGED_QUERY_ALIASES: Dict[str, str] = {
 
 
 def _normalize_merged_degree_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Translate source degree query-variant params into public query ids."""
+    """Translate source degree query-id params into public query ids."""
 
     normalized = dict(params)
-    query_variant = params.get("query_variant")
-    if str(query_variant or "").strip() == "directed_degree_count":
+    query_id = params.get("query_id")
+    if str(query_id or "").strip() == "directed_degree_count":
         degree_mode = str(params.get("degree_mode", "")).strip()
         if degree_mode == "out_degree":
             normalized["query_id"] = "directed_out_degree_count"
@@ -951,15 +951,15 @@ def _degree_branch_params(params: Mapping[str, Any], query_id: str) -> Dict[str,
 
     forced = dict(params)
     forced.pop("query_id", None)
-    forced.pop("query_variant", None)
+    forced.pop("query_id", None)
     if str(query_id) == "undirected_degree_count":
-        forced["query_variant"] = "degree_count"
+        forced["query_id"] = "degree_count"
         forced["degree_mode"] = "degree"
     elif str(query_id) == "directed_in_degree_count":
-        forced["query_variant"] = "directed_degree_count"
+        forced["query_id"] = "directed_degree_count"
         forced["degree_mode"] = "in_degree"
     elif str(query_id) == "directed_out_degree_count":
-        forced["query_variant"] = "directed_degree_count"
+        forced["query_id"] = "directed_degree_count"
         forced["degree_mode"] = "out_degree"
     else:
         raise ValueError(f"unsupported degree branch query id: {query_id}")
@@ -971,8 +971,8 @@ def _degree_filter_branch_params(params: Mapping[str, Any], query_id: str) -> Di
 
     forced = dict(params)
     forced.pop("query_id", None)
-    forced.pop("query_variant", None)
-    forced.pop("query_variant", None)
+    forced.pop("query_id", None)
+    forced.pop("query_id", None)
     if str(query_id) == "undirected_degree_one_filter_remaining_count":
         forced["graph_directionality"] = "undirected"
         forced["degree_mode"] = "degree"

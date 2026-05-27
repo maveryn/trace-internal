@@ -7,7 +7,7 @@
 4. Task id: `task_graph__binary_tree__traversal_kth_label`
 5. Objective: return the node label at a requested position in a binary-tree traversal.
 
-## Query Variants
+## Query IDs
 1. `preorder_kth_node_label`: root, left subtree, right subtree.
 2. `inorder_kth_node_label`: left subtree, root, right subtree.
 3. `postorder_kth_node_label`: left subtree, right subtree, root.

@@ -57,7 +57,7 @@ generation:
     balanced_node_color_name_sampling: true
   task_overrides:
     task_graph__adjacency__component_count:
-      query_variant_weights:
+      query_id_weights:
         undirected_component_count: 1.0
         directed_strong_component_count: 1.0
       scene_variant_weights:
@@ -74,11 +74,11 @@ generation:
         letters: 1.0
         numbers: 1.0
         named: 2.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_label_variant_sampling: true
     task_graph__binary_tree__node_property_count:
-      query_variant_weights:
+      query_id_weights:
         leaf_node_count: 1.0
         internal_node_count: 1.0
         single_child_node_count: 1.0
@@ -102,11 +102,11 @@ generation:
         letters: 1.0
         numbers: 1.0
         named: 2.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_label_variant_sampling: true
     task_graph__node_link__degree_predicate_count:
-      query_variant_weights:
+      query_id_weights:
         degree_count: 1.0
         directed_degree_count: 1.0
       degree_mode_weights:
@@ -119,7 +119,7 @@ generation:
       edge_routing_variant_weights:
         straight: 1.0
         mixed_arc: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_degree_mode_sampling: true
       balanced_label_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
@@ -329,7 +329,7 @@ generation:
       balanced_label_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
     task_graph__node_link__articulation_point_count:
-      query_variant_weights:
+      query_id_weights:
         articulation_point_count: 1.0
       label_variant_weights:
         letters: 1.0
@@ -345,7 +345,7 @@ generation:
       target_count_min: 0
       target_count_max: 5
     task_graph__node_link__bridge_count:
-      query_variant_weights:
+      query_id_weights:
         bridge_count: 1.0
       label_variant_weights:
         letters: 1.0
@@ -371,6 +371,15 @@ generation:
         4x4: 1.0
         4x5: 1.0
       balanced_grid_shape_variant_sampling: true
+    task_graph__metro__station_membership_count:
+      query_id_weights:
+        metro_transfer_station_count: 1.0
+        metro_single_route_station_count: 1.0
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
+        named: 2.0
+      balanced_label_variant_sampling: true
     graph_metro_transfer_station_count_internal:
       target_count_min: 1
       target_count_max: 6

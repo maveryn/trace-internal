@@ -5,7 +5,7 @@
 2. Scene id: `dashboard`
 3. Source implementation domain/group: `charts/dashboard`
 4. Query id: `panel_gap_extremum_category_label`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.dashboard.cross_panel_query.ChartsDashboardPanelGapExtremumCategoryLabelTask`

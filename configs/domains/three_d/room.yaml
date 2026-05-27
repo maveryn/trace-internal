@@ -1,7 +1,7 @@
 generation:
   task_overrides:
     task_three_d__room__wall_mounted_object_count:
-      query_variant_weights:
+      query_id_weights:
         tv_wall_mounted_count: 1.0
         clock_wall_mounted_count: 1.0
         picture_frame_wall_mounted_count: 1.0
@@ -17,10 +17,10 @@ generation:
         studio_room: 1.0
       target_count_min: 0
       target_count_max: 4
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__room__wall_object_camera_distance_label:
-      query_variant_weights:
+      query_id_weights:
         closest_to_camera: 1.0
       scene_variant_weights:
         living_room: 1.0
@@ -32,10 +32,10 @@ generation:
       context_wall_count_max: 4
       floor_context_count_min: 6
       floor_context_count_max: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__room__wall_object_same_wall_reference_label:
-      query_variant_weights:
+      query_id_weights:
         same_wall_as_reference: 1.0
       scene_variant_weights:
         living_room: 1.0
@@ -47,10 +47,10 @@ generation:
       context_wall_count_max: 4
       floor_context_count_min: 6
       floor_context_count_max: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__room__wall_object_side_relation_label:
-      query_variant_weights:
+      query_id_weights:
         left_of_reference_on_wall: 1.0
         right_of_reference_on_wall: 1.0
       scene_variant_weights:
@@ -63,7 +63,7 @@ generation:
       context_wall_count_max: 4
       floor_context_count_min: 6
       floor_context_count_max: 6
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
 
 rendering:

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `solid_formula`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `cylinder_cone_radius_from_volume_heights`, `cylinder_cone_height_from_volume_radius`, `prism_pyramid_height_from_volume`, `house_prism_length_from_volume`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`

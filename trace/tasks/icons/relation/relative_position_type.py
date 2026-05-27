@@ -50,7 +50,7 @@ from ..shared.icon_task_rendering import (
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
-_PUBLIC_QUERY_VARIANT = "relative_position_count"
+_PUBLIC_QUERY_ID = "relative_position_count"
 _RELATION_VARIANTS: Tuple[str, ...] = (
     "left_of_anchor",
     "right_of_anchor",
@@ -127,7 +127,7 @@ class _ScenePayload:
     same_type_nonspatial_distractor_count: int
     different_type_spatial_distractor_count: int
     different_type_nonspatial_distractor_count: int
-    query_variant: str
+    query_id: str
     reference_icon_id: str
     anchor_icon_id: str
     scene_icon_ids: Tuple[str, ...]
@@ -162,18 +162,18 @@ def _direction_to_variant(direction: str) -> str:
     raise ValueError(f"unsupported direction: {direction}")
 
 
-def _variant_to_direction(query_variant: str) -> str:
+def _variant_to_direction(query_id: str) -> str:
     """Map source construction variant to public direction."""
 
-    if str(query_variant) == "left_of_anchor":
+    if str(query_id) == "left_of_anchor":
         return "left"
-    if str(query_variant) == "right_of_anchor":
+    if str(query_id) == "right_of_anchor":
         return "right"
-    if str(query_variant) == "above_anchor":
+    if str(query_id) == "above_anchor":
         return "above"
-    if str(query_variant) == "below_anchor":
+    if str(query_id) == "below_anchor":
         return "below"
-    raise ValueError(f"unsupported relation variant: {query_variant}")
+    raise ValueError(f"unsupported relation variant: {query_id}")
 
 
 def _resolve_direction(scene_rng, *, params: Mapping[str, Any], instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -182,13 +182,13 @@ def _resolve_direction(scene_rng, *, params: Mapping[str, Any], instance_seed: i
     direction_params = dict(params)
     if direction_params.get("direction") is None and direction_params.get("spatial_direction") is not None:
         direction_params["direction"] = direction_params["spatial_direction"]
-    explicit_variant = direction_params.get("query_variant")
+    explicit_variant = direction_params.get("query_id")
     if direction_params.get("direction") is None and explicit_variant is not None:
         variant = str(explicit_variant).strip()
         if variant in set(_RELATION_VARIANTS):
             direction_params["direction"] = _variant_to_direction(variant)
-        elif variant == str(_PUBLIC_QUERY_VARIANT):
-            direction_params.pop("query_variant", None)
+        elif variant == str(_PUBLIC_QUERY_ID):
+            direction_params.pop("query_id", None)
     selected_direction, direction_probabilities = resolve_variant(
         scene_rng,
         params=direction_params,
@@ -397,7 +397,7 @@ def _sample_scene(
     rng,
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int,
     distractor_count: int,
@@ -565,7 +565,7 @@ def _sample_scene(
         rng,
         sprite_size=anchor_rgba.size,
         content_bbox=scene_content_bbox,
-        relation_id=str(query_variant),
+        relation_id=str(query_id),
         gap_px=int(render_params["anchor_gap_px_directional"]),
         target_area_ratio_min=float(render_params["anchor_target_area_ratio_min"]),
         target_area_ratio_max=float(render_params["anchor_target_area_ratio_max"]),
@@ -590,7 +590,7 @@ def _sample_scene(
     target_region = _direction_region_bbox(
         scene_content_bbox,
         anchor_bbox,
-        relation_id=str(query_variant),
+        relation_id=str(query_id),
         gap_px=int(render_params["anchor_gap_px_directional"]),
     )
     if target_region is None:
@@ -638,7 +638,7 @@ def _sample_scene(
                 spatial_match = _bbox_satisfies_relation(
                     candidate_bbox,
                     anchor_bbox,
-                    relation_id=str(query_variant),
+                    relation_id=str(query_id),
                     gap_px=int(render_params["anchor_gap_px_directional"]),
                 )
                 if bool(spatial_match) != bool(spec["spatial_match"]):
@@ -651,7 +651,7 @@ def _sample_scene(
                     if not _passes_relaxed_same_type_distractor_rule(
                         candidate_bbox,
                         anchor_bbox,
-                        relation_id=str(query_variant),
+                        relation_id=str(query_id),
                         gap_px=int(render_params["anchor_gap_px_directional"]),
                         opposite_fraction_min=float(render_params["same_type_distractor_opposite_fraction_min"]),
                     ):
@@ -716,7 +716,7 @@ def _sample_scene(
         same_type_nonspatial_distractor_count=int(same_type_nonspatial_distractor_count),
         different_type_spatial_distractor_count=int(different_type_spatial_distractor_count),
         different_type_nonspatial_distractor_count=int(different_type_nonspatial_distractor_count),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         reference_icon_id=str(reference_icon_id),
         anchor_icon_id=str(anchor_icon_id),
         scene_icon_ids=tuple(str(icon_id) for icon_id in scene_icon_ids),
@@ -747,8 +747,8 @@ class IconsRelationRelativePositionTypeTask:
             params=params,
             instance_seed=int(instance_seed),
         )
-        query_variant = _direction_to_variant(str(direction))
-        public_query_variant = str(_PUBLIC_QUERY_VARIANT)
+        query_id = _direction_to_variant(str(direction))
+        public_query_id = str(_PUBLIC_QUERY_ID)
         counting_params = dict(params)
         (
             object_count,
@@ -813,7 +813,7 @@ class IconsRelationRelativePositionTypeTask:
                 scene_payload, image = _sample_scene(
                     scene_rng,
                     instance_seed=int(instance_seed),
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     object_count=int(object_count),
                     target_count=int(target_count),
                     distractor_count=int(distractor_count),
@@ -885,11 +885,11 @@ class IconsRelationRelativePositionTypeTask:
                 "entities": scene_entities,
                 "relations": {
                     "counting_target": "same_icon_type_and_directional_relation_to_anchor",
-                    "query_variant": str(public_query_variant),
-                    "internal_query_variant": str(query_variant),
+                    "query_id": str(public_query_id),
+                    "internal_query_id": str(query_id),
                     "reference_icon_id": str(scene_payload.reference_icon_id),
                     "anchor_icon_id": str(scene_payload.anchor_icon_id),
-                    "spatial_relation": str(query_variant),
+                    "spatial_relation": str(query_id),
                     "direction": str(direction),
                     "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
                     "same_type_nonspatial_distractor_count": int(scene_payload.same_type_nonspatial_distractor_count),
@@ -902,7 +902,7 @@ class IconsRelationRelativePositionTypeTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(public_query_variant),
+                "query_id": str(public_query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -923,7 +923,7 @@ class IconsRelationRelativePositionTypeTask:
                     "pool_manifest": str(pool_manifest),
                     "direction": str(direction),
                     "direction_probabilities": dict(direction_probabilities),
-                    "internal_query_variant": str(query_variant),
+                    "internal_query_id": str(query_id),
                     "anchor_gap_px_directional": int(render_params["anchor_gap_px_directional"]),
                     "same_type_distractor_opposite_fraction_min": float(
                         render_params["same_type_distractor_opposite_fraction_min"]
@@ -963,8 +963,8 @@ class IconsRelationRelativePositionTypeTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_scene_anchor",
-                "query_variant": str(public_query_variant),
-                "internal_query_variant": str(query_variant),
+                "query_id": str(public_query_id),
+                "internal_query_id": str(query_id),
                 "direction": str(direction),
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -987,17 +987,17 @@ class IconsRelationRelativePositionTypeTask:
                 "anchor_icon_id": str(scene_payload.anchor_icon_id),
                 "scene_icon_ids": list(scene_payload.scene_icon_ids),
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
-                "spatial_relation": str(query_variant),
+                "spatial_relation": str(query_id),
                 "question_format": "count_matching_scene_icons_by_reference_and_anchor_relation",
                 "direction_probabilities": dict(direction_probabilities),
             },
             "witness_symbolic": {
                 "reference_icon_id": str(scene_payload.reference_icon_id),
                 "anchor_icon_id": str(scene_payload.anchor_icon_id),
-                "query_variant": str(public_query_variant),
-                "internal_query_variant": str(query_variant),
+                "query_id": str(public_query_id),
+                "internal_query_id": str(query_id),
                 "direction": str(direction),
-                "spatial_relation": str(query_variant),
+                "spatial_relation": str(query_id),
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
             },
             "projected_evidence": {
@@ -1009,7 +1009,7 @@ class IconsRelationRelativePositionTypeTask:
         relation_region_bbox = _direction_region_bbox(
             scene_content_bbox,
             anchor_bbox,
-            relation_id=str(query_variant),
+            relation_id=str(query_id),
             gap_px=int(render_params["anchor_gap_px_directional"]),
         )
         scene_area = _bbox_area(scene_content_bbox)
@@ -1029,7 +1029,7 @@ class IconsRelationRelativePositionTypeTask:
             target_fraction = _bbox_fraction_in_relation_region(
                 entity["bbox_xyxy"],
                 anchor_bbox,
-                relation_id=str(query_variant),
+                relation_id=str(query_id),
                 gap_px=int(render_params["anchor_gap_px_directional"]),
             )
             boundary_proximity_samples.append(min(1.0, float(target_fraction) / float(max_allowed_target_fraction)))
@@ -1065,11 +1065,11 @@ class IconsRelationRelativePositionTypeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(public_query_variant),
+            query_id=str(public_query_id),
         )
         return rewrite_icons_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="reference_canvas",
             query_probabilities={
                 _direction_to_variant(str(key)): float(value)

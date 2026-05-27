@@ -8,7 +8,7 @@
 5. Objective: count shared adjacent nodes for two queried labels in undirected or directed node-link graphs.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `undirected_common_neighbor_count`, `directed_common_successor_count`, or `directed_common_predecessor_count`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. Supported `common_neighbor_mode` values: `undirected_common_neighbor`, `directed_common_successor`, `directed_common_predecessor`

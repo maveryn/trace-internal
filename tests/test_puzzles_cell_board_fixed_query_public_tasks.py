@@ -30,7 +30,7 @@ _CELL_BOARD_PUBLIC_TASKS = [
 
 
 @pytest.mark.parametrize(("task_id", "query_ids", "evidence_types"), _CELL_BOARD_PUBLIC_TASKS)
-def test_cell_board_public_tasks_emit_default_query_variant(
+def test_cell_board_public_tasks_emit_default_query_id(
     task_id: str,
     query_ids: set[str],
     evidence_types: set[str],
@@ -39,24 +39,24 @@ def test_cell_board_public_tasks_emit_default_query_variant(
     output = task.generate(12345, params={}, max_attempts=400)
     query_id = str(output.query_id)
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert query_id in query_ids
     assert output.scene_id == "cell_board"
     assert output.evidence_gt.type in evidence_types
 
     for payload_key in ("query_spec", "execution_trace", "render_spec"):
         payload = output.trace_payload[payload_key]
-        assert payload["query_variant"] == "default"
+        assert payload["query_id"] == "default"
         assert payload["query_id"] == query_id
 
-    if "internal_query_variant" in output.trace_payload["query_spec"]:
-        assert output.trace_payload["query_spec"]["internal_query_variant"] == query_id
-    if "internal_query_variant" in output.trace_payload["execution_trace"]:
-        assert output.trace_payload["execution_trace"]["internal_query_variant"] == query_id
-    assert set(output.trace_payload["query_spec"]["query_variant_probabilities"]) == query_ids
+    if "internal_query_id" in output.trace_payload["query_spec"]:
+        assert output.trace_payload["query_spec"]["internal_query_id"] == query_id
+    if "internal_query_id" in output.trace_payload["execution_trace"]:
+        assert output.trace_payload["execution_trace"]["internal_query_id"] == query_id
+    assert set(output.trace_payload["query_spec"]["query_id_probabilities"]) == query_ids
 
     relations = output.trace_payload["scene_ir"]["relations"]
-    assert relations["query_variant"] == "default"
+    assert relations["query_id"] == "default"
     assert relations["query_id"] == query_id
 
 
@@ -70,10 +70,10 @@ def test_cell_board_public_tasks_accept_explicit_query_id(
     query_id = sorted(query_ids)[0]
     output = task.generate(12345, params={"query_id": query_id}, max_attempts=400)
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.query_id == query_id
     assert output.trace_payload["query_spec"]["query_id"] == query_id
-    assert output.trace_payload["query_spec"]["query_variant_probabilities"] == {query_id: 1.0}
+    assert output.trace_payload["query_spec"]["query_id_probabilities"] == {query_id: 1.0}
 
 
 @pytest.mark.parametrize(

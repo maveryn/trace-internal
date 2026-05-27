@@ -16,7 +16,7 @@ generation:
     physics_magnetism_force_field_family:
       scene_variant_weights:
         field_grid: 1.0
-      query_variant_weights:
+      query_id_weights:
         force_direction_choice: 1.0
       field_orientation_weights:
         out_of_page: 1.0
@@ -38,7 +38,7 @@ generation:
         G: 1.0
         H: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_field_orientation_sampling: true
       balanced_velocity_direction_sampling: true
       balanced_charge_sign_sampling: true

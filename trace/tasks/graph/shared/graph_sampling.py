@@ -27,7 +27,7 @@ SUPPORTED_LAYOUT_VARIANTS: Tuple[str, ...] = (
 SUPPORTED_TOPOLOGY_PROFILES: Tuple[str, ...] = ("balanced", "low_degree", "hub_heavy")
 SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = SUPPORTED_GRAPH_LABEL_VARIANTS
 SUPPORTED_NODE_LINK_LABEL_VARIANTS: Tuple[str, ...] = SUPPORTED_GRAPH_LABEL_VARIANTS
-SUPPORTED_DEGREE_QUERY_VARIANTS: Tuple[str, ...] = ("degree_count", "directed_degree_count")
+SUPPORTED_DEGREE_QUERY_IDS: Tuple[str, ...] = ("degree_count", "directed_degree_count")
 SUPPORTED_DIRECTED_DEGREE_MODES: Tuple[str, ...] = ("in_degree", "out_degree")
 SUPPORTED_SOURCE_SINK_MODES: Tuple[str, ...] = ("source", "sink")
 SUPPORTED_NODE_COLOR_COUNT_DIRECTIONS: Tuple[str, ...] = ("undirected", "directed")
@@ -58,17 +58,17 @@ SUPPORTED_EXTREME_DEGREE_DIRECTED_MODES: Tuple[str, ...] = (
     "out_degree",
     "total_degree",
 )
-SUPPORTED_ARTICULATION_QUERY_VARIANTS: Tuple[str, ...] = ("articulation_point_count",)
-SUPPORTED_BRIDGE_QUERY_VARIANTS: Tuple[str, ...] = ("bridge_count",)
-SUPPORTED_OPTIMIZATION_QUERY_VARIANTS: Tuple[str, ...] = ("minimum_spanning_tree_weight",)
-SUPPORTED_COMPONENT_QUERY_VARIANTS: Tuple[str, ...] = ("same_component_count",)
+SUPPORTED_ARTICULATION_QUERY_IDS: Tuple[str, ...] = ("articulation_point_count",)
+SUPPORTED_BRIDGE_QUERY_IDS: Tuple[str, ...] = ("bridge_count",)
+SUPPORTED_OPTIMIZATION_QUERY_IDS: Tuple[str, ...] = ("minimum_spanning_tree_weight",)
+SUPPORTED_COMPONENT_QUERY_IDS: Tuple[str, ...] = ("same_component_count",)
 SUPPORTED_COMPONENT_EDGE_EDIT_MODES: Tuple[str, ...] = ("edge_removal", "edge_addition")
-SUPPORTED_REACHABLE_QUERY_VARIANTS: Tuple[str, ...] = ("reachable_count",)
-SUPPORTED_CYCLE_QUERY_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
-SUPPORTED_COMPONENT_COMPARISON_QUERY_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
-SUPPORTED_PATH_QUERY_VARIANTS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
-SUPPORTED_LONGEST_PATH_QUERY_VARIANTS: Tuple[str, ...] = ("directed_longest_path_length",)
-SUPPORTED_ORDER_QUERY_VARIANTS: Tuple[str, ...] = ("topological_position",)
+SUPPORTED_REACHABLE_QUERY_IDS: Tuple[str, ...] = ("reachable_count",)
+SUPPORTED_CYCLE_QUERY_IDS: Tuple[str, ...] = ("unique_cycle_size",)
+SUPPORTED_COMPONENT_COMPARISON_QUERY_IDS: Tuple[str, ...] = ("largest_component_size",)
+SUPPORTED_PATH_QUERY_IDS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
+SUPPORTED_LONGEST_PATH_QUERY_IDS: Tuple[str, ...] = ("directed_longest_path_length",)
+SUPPORTED_ORDER_QUERY_IDS: Tuple[str, ...] = ("topological_position",)
 SUPPORTED_REACHABLE_EDGE_EDIT_MODES: Tuple[str, ...] = ("edge_removal", "edge_addition")
 
 @dataclass(frozen=True)
@@ -441,19 +441,19 @@ def sort_graph_edge_labels(
     )
 
 
-def graph_directionality_for_query_variant(query_variant: str) -> str:
-    """Return the graph directionality implied by one query variant."""
+def graph_directionality_for_query_id(query_id: str) -> str:
+    """Return the graph directionality implied by one query id."""
 
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant in {"directed_degree_count", "directed_shortest_path_length", "topological_position"}:
         return "directed"
     return "undirected"
 
 
-def graph_degree_mode_for_query_variant(query_variant: str, *, degree_mode: str | None = None) -> str:
-    """Return the query-degree mode implied by one query variant."""
+def graph_degree_mode_for_query_id(query_id: str, *, degree_mode: str | None = None) -> str:
+    """Return the query-degree mode implied by one query id."""
 
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "directed_degree_count":
         if degree_mode is None:
             return "in_degree"
@@ -876,7 +876,7 @@ def _find_directed_graph_with_degree_count(
 @lru_cache(maxsize=128)
 def feasible_node_counts_for_degree_count(
     *,
-    query_variant: str,
+    query_id: str,
     degree_mode: str | None = None,
     query_degree: int,
     target_count: int,
@@ -888,12 +888,12 @@ def feasible_node_counts_for_degree_count(
     """Return node counts that can realize the requested degree-count query."""
 
     support = []
-    degree_mode = graph_degree_mode_for_query_variant(str(query_variant), degree_mode=degree_mode)
+    degree_mode = graph_degree_mode_for_query_id(str(query_id), degree_mode=degree_mode)
     for node_count in range(int(node_count_min), int(node_count_max) + 1):
         feasibility_rng = random.Random(
-            f"graph-degree-feasibility:{str(query_variant)}:{int(node_count)}:{int(query_degree)}:{int(target_count)}:{int(max_degree)}"
+            f"graph-degree-feasibility:{str(query_id)}:{int(node_count)}:{int(query_degree)}:{int(target_count)}:{int(max_degree)}"
         )
-        if str(graph_directionality_for_query_variant(str(query_variant))) == "directed":
+        if str(graph_directionality_for_query_id(str(query_id))) == "directed":
             result = _find_directed_graph_with_degree_count(
                 feasibility_rng,
                 node_count=int(node_count),
@@ -922,7 +922,7 @@ def feasible_node_counts_for_degree_count(
 def sample_degree_count_graph(
     rng: random.Random,
     *,
-    query_variant: str,
+    query_id: str,
     degree_mode: str | None = None,
     node_count: int,
     query_degree: int,
@@ -934,9 +934,9 @@ def sample_degree_count_graph(
 ) -> GraphCountSample:
     """Construct one labeled graph with the requested degree-count support."""
 
-    query_variant_text = str(query_variant)
-    directionality = str(graph_directionality_for_query_variant(query_variant_text))
-    degree_mode = str(graph_degree_mode_for_query_variant(query_variant_text, degree_mode=degree_mode))
+    query_id_text = str(query_id)
+    directionality = str(graph_directionality_for_query_id(query_id_text))
+    degree_mode = str(graph_degree_mode_for_query_id(query_id_text, degree_mode=degree_mode))
     if directionality == "directed":
         result = _find_directed_graph_with_degree_count(
             rng,
@@ -2453,10 +2453,10 @@ def sample_edge_attribute_path_label_graph(
     if target_label not in set(edge_labels_supported):
         raise ValueError("target_edge_label is outside edge_label_support")
 
-    path_query_variant = "directed_shortest_path_length" if directionality == "directed" else "shortest_path_length"
+    path_query_id = "directed_shortest_path_length" if directionality == "directed" else "shortest_path_length"
     topology_sample = sample_shortest_path_length_graph(
         rng,
-        query_variant=str(path_query_variant),
+        query_id=str(path_query_id),
         node_count=int(node_count),
         target_shortest_path_length=int(target_shortest_path_length),
         topology_profile=str(topology_profile),
@@ -6005,7 +6005,7 @@ def sample_unique_cycle_graph(
 def sample_shortest_path_length_graph(
     rng: random.Random,
     *,
-    query_variant: str,
+    query_id: str,
     node_count: int,
     target_shortest_path_length: int,
     topology_profile: str,
@@ -6021,7 +6021,7 @@ def sample_shortest_path_length_graph(
     if int(node_count) not in feasible_node_support:
         raise ValueError("node_count is outside feasible support for the requested shortest-path query")
 
-    graph_directionality = str(graph_directionality_for_query_variant(str(query_variant)))
+    graph_directionality = str(graph_directionality_for_query_id(str(query_id)))
     if graph_directionality == "directed":
         graph, path_nodes, extra_edge_count = _sample_unique_shortest_path_digraph(
             rng,
@@ -6519,15 +6519,15 @@ __all__ = [
     "GraphUniqueCycleSample",
     "GraphUniqueNodeLabelRelationSample",
     "LABEL_POOL_1_20",
-    "SUPPORTED_ARTICULATION_QUERY_VARIANTS",
-    "SUPPORTED_BRIDGE_QUERY_VARIANTS",
+    "SUPPORTED_ARTICULATION_QUERY_IDS",
+    "SUPPORTED_BRIDGE_QUERY_IDS",
     "SUPPORTED_COMMON_NEIGHBOR_MODES",
     "SUPPORTED_COMPONENT_EDGE_EDIT_MODES",
-    "SUPPORTED_COMPONENT_QUERY_VARIANTS",
-    "SUPPORTED_COMPONENT_COMPARISON_QUERY_VARIANTS",
+    "SUPPORTED_COMPONENT_QUERY_IDS",
+    "SUPPORTED_COMPONENT_COMPARISON_QUERY_IDS",
     "SUPPORTED_CROSS_COLOR_EDGE_COUNT_DIRECTIONS",
-    "SUPPORTED_CYCLE_QUERY_VARIANTS",
-    "SUPPORTED_DEGREE_QUERY_VARIANTS",
+    "SUPPORTED_CYCLE_QUERY_IDS",
+    "SUPPORTED_DEGREE_QUERY_IDS",
     "SUPPORTED_DIRECTED_DEGREE_MODES",
     "SUPPORTED_EDGE_COLOR_COUNT_DIRECTIONS",
     "SUPPORTED_EXTREME_DEGREE_DIRECTIONS",
@@ -6540,13 +6540,13 @@ __all__ = [
     "SUPPORTED_NAMED_NODE_DIRECTED_DEGREE_MODES",
     "SUPPORTED_NODE_LINK_LABEL_VARIANTS",
     "SUPPORTED_NODE_COLOR_COUNT_DIRECTIONS",
-    "SUPPORTED_LONGEST_PATH_QUERY_VARIANTS",
+    "SUPPORTED_LONGEST_PATH_QUERY_IDS",
     "SUPPORTED_SOURCE_SINK_MODES",
-    "SUPPORTED_OPTIMIZATION_QUERY_VARIANTS",
-    "SUPPORTED_ORDER_QUERY_VARIANTS",
+    "SUPPORTED_OPTIMIZATION_QUERY_IDS",
+    "SUPPORTED_ORDER_QUERY_IDS",
     "SUPPORTED_REACHABLE_EDGE_EDIT_MODES",
-    "SUPPORTED_REACHABLE_QUERY_VARIANTS",
-    "SUPPORTED_PATH_QUERY_VARIANTS",
+    "SUPPORTED_REACHABLE_QUERY_IDS",
+    "SUPPORTED_PATH_QUERY_IDS",
     "SUPPORTED_TOPOLOGY_PROFILES",
     "SUPPORTED_UNIQUE_NODE_LABEL_RELATION_MODES",
     "canonicalize_graph_edge_label",
@@ -6568,8 +6568,8 @@ __all__ = [
     "feasible_node_counts_for_topological_position",
     "feasible_node_counts_for_unique_cycle_size",
     "feasible_node_counts_for_unique_largest_component",
-    "graph_degree_mode_for_query_variant",
-    "graph_directionality_for_query_variant",
+    "graph_degree_mode_for_query_id",
+    "graph_directionality_for_query_id",
     "graph_label_sort_key",
     "SUPPORTED_EDGE_ATTRIBUTE_LABEL_DIRECTIONS",
     "sample_edge_attribute_label_graph",

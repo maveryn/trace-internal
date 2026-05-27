@@ -31,9 +31,9 @@ def rewrite_icons_query_output(
         task_id=None if task_id is None else str(task_id),
         include_render_spec=True,
         include_scene_ir_root=True,
-        query_variant_probabilities=dict(query_probability_map),
+        query_id_probabilities=dict(query_probability_map),
         variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as=("source_query_variant", "internal_query_variant"),
+        preserve_internal_query_id_as=("source_query_id", "internal_query_id"),
         preserve_prior_task_id_as="source_task_id",
         update_existing_taxonomy=True,
     )

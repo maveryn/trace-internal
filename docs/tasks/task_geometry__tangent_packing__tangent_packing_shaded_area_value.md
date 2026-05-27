@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `tangent_packing`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `circle_in_square_gap_area`, `square_in_circle_gap_area`, `two_circles_in_rectangle_gap_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`
@@ -15,7 +15,7 @@
 
 ## Behavior
 Compute the shaded gap area in a circle/square/rectangle tangency diagram.
-Query variants cover a circle inscribed in a square, a square inscribed in a
+Query ids cover a circle inscribed in a square, a square inscribed in a
 circle, and two equal tangent circles packed inside a rectangle. Answers use
 the internal pi value and are rounded to one decimal place.
 

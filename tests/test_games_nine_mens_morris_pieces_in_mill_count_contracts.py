@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "all_pieces_in_mill_count",
+                "query_id": "all_pieces_in_mill_count",
                 "target_answer": 9,
             },
             9,
@@ -37,7 +37,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
@@ -60,9 +60,9 @@ def test_games_nine_mens_morris_pieces_in_mill_count_query_cycle_covers_answer_a
             max_attempts=192,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(out.query_id or out.query_variant)
-        answers_by_variant[query_variant].add(int(out.answer_gt.value))
-        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+        query_id = str(out.query_id or out.query_id)
+        answers_by_variant[query_id].add(int(out.answer_gt.value))
+        styles_by_variant[query_id].add(str(execution["style_variant"]))
 
     assert answers_by_variant == {
         "all_pieces_in_mill_count": {0, 3, 5, 6, 7, 8, 9},
@@ -76,7 +76,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evi
     out = GamesNineMensMorrisPiecesInMillCountTask().generate(
         29111,
         params={
-            "query_variant": "all_pieces_in_mill_count",
+            "query_id": "all_pieces_in_mill_count",
             "target_answer": 0,
         },
         max_attempts=64,
@@ -88,7 +88,7 @@ def test_games_nine_mens_morris_pieces_in_mill_count_zero_answer_emits_empty_evi
 
 def test_games_nine_mens_morris_pieces_in_mill_count_is_deterministic() -> None:
     params = {
-        "query_variant": "all_pieces_in_mill_count",
+        "query_id": "all_pieces_in_mill_count",
         "target_answer": 9,
     }
     task = GamesNineMensMorrisPiecesInMillCountTask()

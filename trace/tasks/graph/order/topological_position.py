@@ -31,7 +31,7 @@ from ..shared.complexity import (
 from ..shared.graph_sampling import (
     SUPPORTED_NODE_LINK_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
-    SUPPORTED_ORDER_QUERY_VARIANTS,
+    SUPPORTED_ORDER_QUERY_IDS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_topological_position,
     graph_label_sort_key,
@@ -94,7 +94,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved support and style axes for one topological-position instance."""
 
-    query_variant: str
+    query_id: str
     graph_directionality: str
     node_count: int
     target_position: int
@@ -105,7 +105,7 @@ class _ResolvedQuery:
     layout_transform_variant: str
     edge_routing_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_position_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -141,18 +141,18 @@ def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced support for one graph topological-position query."""
 
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_variant_probabilities = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_id_probabilities = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_ORDER_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_ORDER_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     graph_directionality = "directed"
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
@@ -306,7 +306,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         graph_directionality=str(graph_directionality),
         node_count=int(node_count),
         target_position=int(target_position),
@@ -317,7 +317,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         layout_transform_variant=str(layout_transform_variant),
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         node_count_probabilities=uniform_probability_map(
             feasible_node_support,
             selected=int(node_count) if explicit_node_count is not None else None,
@@ -532,14 +532,14 @@ class GraphOrderTopologicalPositionTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "graph_directionality": str(query.graph_directionality),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "target_position": int(query.target_position),
@@ -598,7 +598,7 @@ class GraphOrderTopologicalPositionTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": "query_topological_position_of_node",
                 "graph_directionality": str(query.graph_directionality),
@@ -643,7 +643,6 @@ class GraphOrderTopologicalPositionTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(query.query_variant),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
             ),
             query_id="topological_position",

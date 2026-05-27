@@ -14,9 +14,9 @@ def test_geometry_similarity_task_overrides_expose_scene_query_and_count_axes() 
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"triangle", "quadrilateral"}
-    assert set(generation["query_variant_weights"].keys()) == {"congruent_count", "similar_count"}
+    assert set(generation["query_id_weights"].keys()) == {"congruent_count", "similar_count"}
     assert len(generation["candidate_label_pool"]) == 5
     assert len(generation["candidate_slots"]) == 5
     assert list(generation["target_count_support"]) == [0, 1, 2, 3, 4, 5]

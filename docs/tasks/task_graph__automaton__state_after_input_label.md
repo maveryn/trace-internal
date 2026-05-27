@@ -8,7 +8,7 @@
 5. Objective: follow a short input string through a visible deterministic state-transition diagram and report the reached state label.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `final_state_label` or `transition_step_state_label`
 3. `answer_gt.type`: `string`
 4. `evidence_gt.type`: `point_sequence`

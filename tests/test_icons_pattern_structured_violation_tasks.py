@@ -94,15 +94,15 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "row_rotation_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_sequence_rotation_violation"
     assert trace["scene_ir"]["scene_id"] == "sequence_strip"
     assert trace["query_spec"]["query_id"] == "row_rotation_violation"
     assert "source_task_id" not in execution
-    assert "source_query_variant" not in execution
+    assert "source_query_id" not in execution
     assert execution["scene_variant"] == "sequence_row"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "row_rotation_violation"
     assert trace["query_spec"]["template_id"] == "icons_pattern_v0"
     assert int(out.answer_gt.value) == 4
@@ -128,15 +128,15 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "grid_size_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_size_violation"
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
     assert trace["query_spec"]["query_id"] == "grid_size_violation"
     assert "source_task_id" not in execution
-    assert "source_query_variant" not in execution
+    assert "source_query_id" not in execution
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "grid_size_violation"
     assert int(out.answer_gt.value) == 5
     exact_match, plausible_indices = _plausible_grid_size_indices(
@@ -164,13 +164,13 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "grid_color_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_color_violation"
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
     assert trace["query_spec"]["query_id"] == "grid_color_violation"
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "grid_color_violation"
     assert int(out.answer_gt.value) == 5
     exact_match, plausible_indices = _plausible_grid_color_indices(
@@ -211,7 +211,7 @@ def test_icons_pattern_violation_balances_answers_by_default(task_cls, expected_
             params={},
             max_attempts=200,
         )
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id
         counts[int(out.answer_gt.value)] += 1
     assert set(counts.keys()) == expected_answers

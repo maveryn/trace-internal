@@ -89,7 +89,7 @@ class _MixedShapeObject:
 @dataclass(frozen=True)
 class _ScenePayload:
     """Trace-ready scene payload for one mixed shape-type counting instance."""
-    query_variant: str
+    query_id: str
     object_count: int
     target_count: int
     objects: Tuple[_MixedShapeObject, ...]
@@ -230,7 +230,7 @@ def _sample_shape_prototype(
 def _sample_shape_for_match(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     positive: bool,
     min_extent_units: float,
     max_extent_units: float,
@@ -242,14 +242,14 @@ def _sample_shape_for_match(
     if bool(positive):
         return _sample_shape_prototype(
             rng,
-            shape_type=str(query_variant),
+            shape_type=str(query_id),
             min_extent_units=float(min_extent_units),
             max_extent_units=float(max_extent_units),
             ellipse_axis_ratio_min=float(ellipse_axis_ratio_min),
             min_side_gap_units=float(min_side_gap_units),
             min_slant_units=float(min_slant_units),
         )
-    negative_types = [shape_type for shape_type in _SUPPORTED_VARIANTS if str(shape_type) != str(query_variant)]
+    negative_types = [shape_type for shape_type in _SUPPORTED_VARIANTS if str(shape_type) != str(query_id)]
     chosen = str(rng.choice(negative_types))
     return _sample_shape_prototype(
         rng,
@@ -368,7 +368,7 @@ def _object_bounds(obj: _MixedShapeObject) -> Tuple[float, float, float, float]:
 def _sample_scene(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     object_count: int,
     context: GraphSceneContext,
@@ -401,7 +401,7 @@ def _sample_scene(
             for label, slot in zip(labels, slots):
                 prototype = _sample_shape_for_match(
                     rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     positive=str(label) in positives,
                     min_extent_units=float(min_extent_units),
                     max_extent_units=float(max_extent_units),
@@ -443,7 +443,7 @@ def _sample_scene(
         )
         matching_labels_sorted = tuple(sorted(str(label) for label in matching_labels))
         return _ScenePayload(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             object_count=int(object_count),
             target_count=int(target_count),
             objects=tuple(objects),
@@ -451,7 +451,7 @@ def _sample_scene(
             object_label_centers=label_centers,
             render_anchor={
                 "matching_labels": list(matching_labels_sorted),
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
             },
         )
     raise RuntimeError("failed to sample mixed shape-type counting scene") from last_error
@@ -469,10 +469,10 @@ class GeometryCountingShapeTypeTask:
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_variants=_SUPPORTED_VARIANTS,
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
-        query_variant = apply_balanced_variant_sampling(
+        query_id = apply_balanced_variant_sampling(
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -480,7 +480,7 @@ class GeometryCountingShapeTypeTask:
             variant_probabilities=variant_probabilities,
             supported_variants=_SUPPORTED_VARIANTS,
             balance_flag_key="balanced_variant_sampling",
-            explicit_key="query_variant",
+            explicit_key="query_id",
             weights_key="variant_weights",
         )
         object_count, object_count_probabilities, target_count, target_count_probabilities = resolve_counting_cardinality_pair(
@@ -586,7 +586,7 @@ class GeometryCountingShapeTypeTask:
             try:
                 scene_payload_attempt = _sample_scene(
                     scene_rng,
-                    query_variant=str(query_variant),
+                    query_id=str(query_id),
                     target_count=int(target_count),
                     object_count=int(object_count),
                     context=context_attempt,
@@ -655,7 +655,7 @@ class GeometryCountingShapeTypeTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        question_text = str(prompt_defaults[f"question_text_{str(query_variant)}"])
+        question_text = str(prompt_defaults[f"question_text_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -711,18 +711,18 @@ class GeometryCountingShapeTypeTask:
                 ],
                 "relations": {
                     "counting_target": "shape_type",
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "matching_labels": list(scene_payload.matching_labels),
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "variant_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -750,9 +750,9 @@ class GeometryCountingShapeTypeTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": str(query_variant),
-                "query_variant": str(query_variant),
-                "counting_class": str(query_variant),
+                "scene_variant": str(query_id),
+                "query_id": str(query_id),
+                "counting_class": str(query_id),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -763,7 +763,7 @@ class GeometryCountingShapeTypeTask:
                 "question_format": "count_matching_labeled_objects",
             },
             "witness_symbolic": {
-                "counting_class": str(query_variant),
+                "counting_class": str(query_id),
                 "matching_labels": list(scene_payload.matching_labels),
             },
             "projected_evidence": {
@@ -785,9 +785,8 @@ class GeometryCountingShapeTypeTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="shape_type",
-                query_variant=str(query_variant),
             ),
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

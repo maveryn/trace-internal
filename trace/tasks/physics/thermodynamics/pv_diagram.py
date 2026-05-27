@@ -25,7 +25,7 @@ from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     is_uniform_probability_map,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_pv_diagram_complexity
@@ -43,7 +43,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "paper_grid",
     "bold_grid",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "work_value",
     "process_sign_choice",
 )
@@ -54,9 +54,9 @@ SUPPORTED_WORK_MODES: Tuple[str, ...] = (
 SUPPORTED_TARGET_SIGNS: Tuple[str, ...] = ("positive", "negative", "zero")
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "clean_grid": SUPPORTED_QUERY_VARIANTS,
-    "paper_grid": SUPPORTED_QUERY_VARIANTS,
-    "bold_grid": SUPPORTED_QUERY_VARIANTS,
+    "clean_grid": SUPPORTED_QUERY_IDS,
+    "paper_grid": SUPPORTED_QUERY_IDS,
+    "bold_grid": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -174,14 +174,14 @@ class _ResolvedAxes:
     """Resolved scene/query/color/answer axes for one PV instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     work_mode: str | None
     target_sign: str | None
     correct_option_letter: str | None
     accent_color_name: str
     target_answer: int | str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     work_mode_probabilities: Dict[str, float]
     target_sign_probabilities: Dict[str, float]
     correct_option_letter_probabilities: Dict[str, float]
@@ -222,7 +222,7 @@ class _SceneSpec:
     """Resolved symbolic PV scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     work_mode: str | None
     target_sign: str | None
     correct_option_letter: str | None
@@ -422,15 +422,15 @@ def _resolve_work_mode(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the work-diagram construction mode for numeric work queries."""
 
-    if str(query_variant) != "work_value":
+    if str(query_id) != "work_value":
         return None, {}
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.work_mode"),
-        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("work_mode",)),
+        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("work_mode",)),
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_WORK_MODES,
         explicit_key="work_mode",
@@ -438,7 +438,7 @@ def _resolve_work_mode(
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
-        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("work_mode",)),
+        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("work_mode",)),
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
@@ -455,15 +455,15 @@ def _resolve_target_sign(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the target sign for a sign-choice query."""
 
-    if str(query_variant) != "process_sign_choice":
+    if str(query_id) != "process_sign_choice":
         return None, {}
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.target_sign"),
-        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("target_sign",)),
+        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("target_sign",)),
         gen_defaults=_GEN_DEFAULTS,
         supported_variants=SUPPORTED_TARGET_SIGNS,
         explicit_key="target_sign",
@@ -471,7 +471,7 @@ def _resolve_target_sign(
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
-        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("target_sign",)),
+        params=_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("target_sign",)),
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
@@ -488,16 +488,16 @@ def _resolve_correct_option_letter(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve which visible option letter carries the unique sign match."""
 
-    if str(query_variant) != "process_sign_choice":
+    if str(query_id) != "process_sign_choice":
         return None, {}
     option_params = dict(params)
     if option_params.get("correct_option_letter") is None and option_params.get("target_answer") is not None:
         option_params["correct_option_letter"] = str(option_params["target_answer"]).strip().upper()
-    option_params = dict(_with_sampling_divisor(option_params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("correct_option_letter",)))
+    option_params = dict(_with_sampling_divisor(option_params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("correct_option_letter",)))
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.correct_option_letter"),
         params=option_params,
@@ -552,7 +552,7 @@ def _resolve_work_target_answer(
 
     adjusted_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS) * len(SUPPORTED_WORK_MODES),
+        divisor=len(SUPPORTED_QUERY_IDS) * len(SUPPORTED_WORK_MODES),
         explicit_keys=("target_answer",),
     )
     balanced_enabled = bool(
@@ -578,16 +578,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve scene/query/color/answer axes for one instance."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
     accent_name, accent_probs = resolve_variant(
@@ -614,19 +614,19 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     work_mode, work_mode_probs = _resolve_work_mode(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     target_sign, target_sign_probs = _resolve_target_sign(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     correct_option_letter, option_probs = _resolve_correct_option_letter(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
-    if str(query_variant) == "work_value":
+    if str(query_id) == "work_value":
         if work_mode is None:
             raise ValueError("work_value query requires a work_mode")
         target_answer, target_probs = _resolve_work_target_answer(
@@ -642,14 +642,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         work_mode=work_mode,
         target_sign=target_sign,
         correct_option_letter=correct_option_letter,
         accent_color_name=str(accent_name),
         target_answer=target_answer,
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         work_mode_probabilities={str(key): float(value) for key, value in sorted(work_mode_probs.items())},
         target_sign_probabilities={str(key): float(value) for key, value in sorted(target_sign_probs.items())},
         correct_option_letter_probabilities={str(key): float(value) for key, value in sorted(option_probs.items())},
@@ -732,7 +732,7 @@ def _sample_scene_spec(
 ) -> _SceneSpec:
     """Sample one symbolic PV scene."""
 
-    if str(axes.query_variant) == "work_value":
+    if str(axes.query_id) == "work_value":
         if axes.work_mode is None:
             raise ValueError("work_value query requires work_mode")
         scenario = _sample_work_scenario(
@@ -743,7 +743,7 @@ def _sample_scene_spec(
         )
         return _SceneSpec(
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             work_mode=str(axes.work_mode),
             target_sign=None,
             correct_option_letter=None,
@@ -762,7 +762,7 @@ def _sample_scene_spec(
     )
     return _SceneSpec(
         scene_variant=str(axes.scene_variant),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         work_mode=None,
         target_sign=str(axes.target_sign),
         correct_option_letter=str(axes.correct_option_letter),
@@ -1500,10 +1500,10 @@ def _render_scene(
         "accent_color_name": str(accent_color_name),
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
         "scene_variant": str(scene_spec.scene_variant),
-        "query_variant": str(scene_spec.query_variant),
+        "query_id": str(scene_spec.query_id),
     }
 
-    if str(scene_spec.query_variant) == "work_value":
+    if str(scene_spec.query_id) == "work_value":
         plot = _plot_bbox(render_defaults)
         axes_meta = _draw_axes(
             draw,
@@ -1603,18 +1603,18 @@ def _render_scene(
     )
 
 
-def _answer_type(query_variant: str) -> str:
+def _answer_type(query_id: str) -> str:
     """Return answer type for the public query."""
 
-    if str(query_variant) == "process_sign_choice":
+    if str(query_id) == "process_sign_choice":
         return "option_letter"
     return "integer"
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for the active PV query."""
 
-    if str(query_variant) == "process_sign_choice":
+    if str(query_id) == "process_sign_choice":
         return build_prompt_json_examples(
             evidence_value=[[104, 88, 430, 284]],
             answer_type="option_letter",
@@ -1736,31 +1736,31 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
+                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                     "target_sign": _target_sign_description(axes.target_sign),
                 },
                 instance_seed=int(instance_seed),
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            answer_type = _answer_type(str(axes.query_variant))
-            if str(axes.query_variant) == "work_value":
+            answer_type = _answer_type(str(axes.query_id))
+            if str(axes.query_id) == "work_value":
                 if scene_spec.work_scenario is None:
                     raise RuntimeError("missing work scenario after PV scene render")
                 answer_value: int | str = int(scene_spec.work_scenario.work_value)
@@ -1772,11 +1772,11 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 work_mode=axes.work_mode,
                 target_sign=axes.target_sign,
                 work_magnitude=abs(int(answer_value)) if str(answer_type) == "integer" else 0,
-                option_count=len(OPTION_LETTERS) if str(axes.query_variant) == "process_sign_choice" else 0,
+                option_count=len(OPTION_LETTERS) if str(axes.query_id) == "process_sign_choice" else 0,
                 evidence_count=len(rendered_scene.evidence_bboxes),
             )
             scenario_payload: Dict[str, Any] = {}
@@ -1813,8 +1813,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "work_mode": axes.work_mode,
                         "target_sign": axes.target_sign,
                         "accent_color_name": str(axes.accent_color_name),
@@ -1826,7 +1825,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "work_mode": axes.work_mode,
                     "target_sign": axes.target_sign,
                     "template_id": str(prompt_defaults["bundle_id"]),
@@ -1835,15 +1834,14 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "work_mode": axes.work_mode,
                         "target_sign": axes.target_sign,
                         "accent_color_name": str(axes.accent_color_name),
                         "correct_option_letter": axes.correct_option_letter,
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "work_mode_probabilities": dict(axes.work_mode_probabilities),
                         "target_sign_probabilities": dict(axes.target_sign_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
@@ -1864,8 +1862,7 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "work_mode": axes.work_mode,
                     "target_sign": axes.target_sign,
                     "accent_color_name": str(axes.accent_color_name),
@@ -1900,9 +1897,8 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
                 scene_id=SCENE_ID,
-                query_id=str(axes.query_variant),
+                query_id=str(axes.query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
@@ -1916,7 +1912,7 @@ class PhysicsThermodynamicsPVWorkValueTask(
     """Return signed work from a highlighted PV process or cycle."""
 
     task_id = "task_physics__pv_diagram__pv_work_value"
-    fixed_query_variant = "work_value"
+    fixed_query_id = "work_value"
 
 
 @register_task
@@ -1927,4 +1923,4 @@ class PhysicsThermodynamicsPVProcessSignChoiceTask(
     """Choose the labeled PV process with the requested work sign."""
 
     task_id = "task_physics__pv_diagram__pv_process_sign_choice"
-    fixed_query_variant = "process_sign_choice"
+    fixed_query_id = "process_sign_choice"

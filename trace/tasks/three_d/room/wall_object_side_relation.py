@@ -66,7 +66,7 @@ from .wall_object_camera_distance import (
 )
 
 TASK_ID = "task_three_d__room__wall_object_side_relation_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "left_of_reference_on_wall",
     "right_of_reference_on_wall",
 )
@@ -157,13 +157,13 @@ def _candidate_slots(
     rng,
     candidate_count: int,
     reference_wall: str,
-    query_variant: str,
+    query_id: str,
 ) -> List[Tuple[str, float, float, bool]]:
     answer_slots = list(
-        ANSWER_SLOTS_BY_QUERY_AND_WALL[str(query_variant)][str(reference_wall)]
+        ANSWER_SLOTS_BY_QUERY_AND_WALL[str(query_id)][str(reference_wall)]
     )
     distractor_slots = list(
-        DISTRACTOR_SLOTS_BY_QUERY_AND_WALL[str(query_variant)][str(reference_wall)]
+        DISTRACTOR_SLOTS_BY_QUERY_AND_WALL[str(query_id)][str(reference_wall)]
     )
     rng.shuffle(answer_slots)
     rng.shuffle(distractor_slots)
@@ -274,13 +274,13 @@ def _is_selected_side_of_reference_on_wall(
     spec: Mapping[str, Any],
     reference_spec: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
 ) -> bool:
-    if str(query_variant) == "left_of_reference_on_wall":
+    if str(query_id) == "left_of_reference_on_wall":
         return _is_left_of_reference_on_wall(spec, reference_spec)
-    if str(query_variant) == "right_of_reference_on_wall":
+    if str(query_id) == "right_of_reference_on_wall":
         return _is_right_of_reference_on_wall(spec, reference_spec)
-    raise ValueError(f"unsupported side-relation query variant: {query_variant}")
+    raise ValueError(f"unsupported side-relation query id: {query_id}")
 
 
 def _side_relation_screen_separation_ok(
@@ -313,7 +313,7 @@ def _side_relation_screen_separation_ok(
 def _build_room_wall_side_relation_dataset(
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     candidate_count: int,
     context_wall_count: int,
@@ -356,7 +356,7 @@ def _build_room_wall_side_relation_dataset(
             rng=rng,
             candidate_count=int(candidate_count),
             reference_wall=str(reference_wall),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         candidate_wall_specs: List[Dict[str, Any]] = []
         for index, (wall, hpos, z, intended_answer) in enumerate(slots):
@@ -374,10 +374,10 @@ def _build_room_wall_side_relation_dataset(
             spec["is_answer_candidate"] = True
             spec["intended_side_relation"] = bool(intended_answer)
             spec["intended_left_of_reference"] = bool(
-                str(query_variant) == "left_of_reference_on_wall" and intended_answer
+                str(query_id) == "left_of_reference_on_wall" and intended_answer
             )
             spec["intended_right_of_reference"] = bool(
-                str(query_variant) == "right_of_reference_on_wall" and intended_answer
+                str(query_id) == "right_of_reference_on_wall" and intended_answer
             )
             candidate_wall_specs.append(spec)
 
@@ -440,7 +440,7 @@ def _build_room_wall_side_relation_dataset(
             if _is_selected_side_of_reference_on_wall(
                 spec,
                 finalized_reference,
-                query_variant=str(query_variant),
+                query_id=str(query_id),
             )
         ]
         if len(satisfying) != 1:
@@ -521,7 +521,7 @@ def _build_room_wall_side_relation_dataset(
         }
         selected_relation_flags = (
             left_relation_flags
-            if str(query_variant) == "left_of_reference_on_wall"
+            if str(query_id) == "left_of_reference_on_wall"
             else right_relation_flags
         )
         candidate_walls = {
@@ -557,7 +557,7 @@ def _build_room_wall_side_relation_dataset(
             for value in _room_object_bbox(finalized_reference, camera, frame)
         ]
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "candidate_count": int(candidate_count),
             "context_wall_count": int(context_wall_count),
@@ -653,7 +653,7 @@ def _build_room_wall_side_relation_dataset(
                     "lettered wall-mounted candidate with wall-left coordinate "
                     + (
                         "greater than"
-                        if str(query_variant) == "left_of_reference_on_wall"
+                        if str(query_id) == "left_of_reference_on_wall"
                         else "less than"
                     )
                     + " the unlettered TV reference on the same wall"
@@ -800,16 +800,16 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
     def _generate_once(
         self, instance_seed: int, *, params: Dict[str, Any]
     ) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -864,7 +864,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_room_wall_side_relation_dataset(
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             candidate_count=int(candidate_count),
             context_wall_count=int(context_wall_count),
@@ -913,7 +913,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -987,8 +987,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(
@@ -996,8 +995,8 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
                 ),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "candidate_count": int(candidate_count),
@@ -1073,8 +1072,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
                 ),
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "candidate_count": int(dataset["candidate_count"]),
@@ -1128,7 +1126,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
                 "floor_object_type_counts": dict(dataset["floor_object_type_counts"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_room",
                 "solver_trace": dict(solver_trace),
             },
@@ -1154,9 +1152,8 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

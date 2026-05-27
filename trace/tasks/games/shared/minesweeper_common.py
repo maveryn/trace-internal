@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Sequence, Tuple
 
 
-SUPPORTED_MINESWEEPER_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_MINESWEEPER_QUERY_IDS: Tuple[str, ...] = (
     "forced_mine_count",
     "forced_safe_count",
     "satisfied_clue_count",
@@ -23,7 +23,7 @@ class MinesweeperSample:
     """One generated Minesweeper board and query-specific witnesses."""
 
     size: int
-    query_variant: str
+    query_id: str
     answer: int | str
     mine_coords: Tuple[Coord, ...]
     revealed_coords: Tuple[Coord, ...]
@@ -252,7 +252,7 @@ def validate_board_contract(
 __all__ = [
     "Coord",
     "MinesweeperSample",
-    "SUPPORTED_MINESWEEPER_QUERY_VARIANTS",
+    "SUPPORTED_MINESWEEPER_QUERY_IDS",
     "SUPPORTED_MINESWEEPER_SCENE_VARIANTS",
     "adjacent_flag_count",
     "all_coords",

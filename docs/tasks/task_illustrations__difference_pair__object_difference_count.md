@@ -1,6 +1,6 @@
 # task_illustrations__difference_pair__object_difference_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -11,7 +11,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 
 ## Contract
 The task shows two panels, `Scene A` and `Scene B`, and asks for the count of
-object-level differences. Public query variants are `added_object_count`,
+object-level differences. Query ids are `added_object_count`,
 `removed_object_count`, `changed_color_object_count`, and `moved_object_count`.
 
 ## Answer And Evidence

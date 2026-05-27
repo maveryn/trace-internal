@@ -14,7 +14,7 @@ from tests.helpers import read_jsonl
 def test_pages_timeline_milestones_deterministic() -> None:
     task = PagesTimelineIntervalMembershipCountTask()
     params = {
-        "query_variant": "between_reference_events_count",
+        "query_id": "between_reference_events_count",
         "scene_variant": "roadmap",
         "style_variant": "accented",
         "accent_color_name": "purple",

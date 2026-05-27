@@ -52,9 +52,9 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
     scene_variants = ("classic", "outline")
     style_variants = ("studio", "marker")
     accent_colors = ("blue", "orange")
-    for variant_index, (task, query_variant) in enumerate(task_cases):
+    for query_id_index, (task, query_id) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 22050 + (variant_index * 10) + scene_index
+            seed = 22050 + (query_id_index * 10) + scene_index
             out = task.generate(
                 seed,
                 params={
@@ -78,15 +78,15 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
 
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
-            assert out.query_variant == "default"
-            assert out.query_id == str(query_variant)
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["source_query_variant"]) == str(query_variant)
+            assert out.query_id == "default"
+            assert out.query_id == str(query_id)
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["source_query_id"]) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["style_variant"]) == str(style_variants[scene_index])
             assert str(execution["accent_color_name"]) == str(accent_colors[scene_index])
             assert trace["scene_ir"]["scene_kind"] == "pages_day_schedule"
-            assert 7 <= int(execution["event_count"]) <= 10 or str(query_variant) == "maximum_non_overlapping_count"
+            assert 7 <= int(execution["event_count"]) <= 10 or str(query_id) == "maximum_non_overlapping_count"
             assert 1 <= int(execution["lane_count"]) <= 5
             assert set(out.complexity.complexity_components.keys()) == {
                 "interval_reasoning",
@@ -98,7 +98,7 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
             assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
             assert int(out.answer_gt.value) == len(execution["answer_event_ids"])
 
-            if str(query_variant) == "overlap_count":
+            if str(query_id) == "overlap_count":
                 reference_event_id = str(execution["reference_event_id"])
                 reference_interval = intervals[reference_event_id]
                 reference_bands = [
@@ -119,7 +119,7 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
                     if event_id == reference_event_id or event_id in expected_event_ids:
                         continue
                     assert int(interval[1]) <= int(reference_interval[0]) - min_gap or int(interval[0]) >= int(reference_interval[1]) + min_gap
-            elif str(query_variant) == "longer_than_reference_count":
+            elif str(query_id) == "longer_than_reference_count":
                 reference_event_id = str(execution["reference_event_id"])
                 reference_duration = int(durations[reference_event_id])
                 expected_event_ids = sorted(
@@ -182,14 +182,14 @@ def test_pages_schedule_day_planner_balanced_sampling_defaults_cover_axes() -> N
         PagesScheduleLongerThanReferenceCountTask(),
         PagesScheduleMaximumNonOverlappingCountTask(),
     )
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
     accent_color_names: Counter[str] = Counter()
     lane_counts: Counter[int] = Counter()
-    scenes_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
-    styles_by_query_variant: defaultdict[str, Counter[str]] = defaultdict(Counter)
-    answers_by_query_variant: defaultdict[str, Counter[int]] = defaultdict(Counter)
+    scenes_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    styles_by_query_id: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[int]] = defaultdict(Counter)
     for task in tasks:
         for index in range(90):
             out = task.generate(
@@ -198,19 +198,19 @@ def test_pages_schedule_day_planner_balanced_sampling_defaults_cover_axes() -> N
                 max_attempts=20,
             )
             execution = out.trace_payload["execution_trace"]
-            query_variant = str(execution["source_query_variant"])
+            query_id = str(execution["source_query_id"])
             scene_variant = str(execution["scene_variant"])
             style_variant = str(execution["style_variant"])
-            query_variants[query_variant] += 1
+            query_ids[query_id] += 1
             scene_variants[str(execution["scene_variant"])] += 1
             style_variants[style_variant] += 1
             accent_color_names[str(execution["accent_color_name"])] += 1
             lane_counts[int(execution["lane_count"])] += 1
-            scenes_by_query_variant[query_variant][scene_variant] += 1
-            styles_by_query_variant[query_variant][style_variant] += 1
-            answers_by_query_variant[query_variant][int(out.answer_gt.value)] += 1
+            scenes_by_query_id[query_id][scene_variant] += 1
+            styles_by_query_id[query_id][style_variant] += 1
+            answers_by_query_id[query_id][int(out.answer_gt.value)] += 1
 
-    assert set(query_variants.keys()) == {
+    assert set(query_ids.keys()) == {
         "overlap_count",
         "longer_than_reference_count",
         "maximum_non_overlapping_count",
@@ -219,7 +219,7 @@ def test_pages_schedule_day_planner_balanced_sampling_defaults_cover_axes() -> N
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
     assert set(accent_color_names.keys()) == set(SUPPORTED_TIME_ARTIFACT_COLOR_NAMES)
     assert set(lane_counts.keys()).issubset({1, 2, 3, 4, 5})
-    for query_variant in query_variants:
-        assert set(scenes_by_query_variant[query_variant].keys()) == {"classic", "minimal", "outline"}
-        assert set(styles_by_query_variant[query_variant].keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
-        assert len(answers_by_query_variant[query_variant]) >= 5
+    for query_id in query_ids:
+        assert set(scenes_by_query_id[query_id].keys()) == {"classic", "minimal", "outline"}
+        assert set(styles_by_query_id[query_id].keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
+        assert len(answers_by_query_id[query_id]) >= 5

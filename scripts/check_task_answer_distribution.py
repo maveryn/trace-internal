@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 
 from trace.core.answer_distribution import evaluate_answer_distribution
 from trace.core.json_io import write_json_file
-from trace.core.task_review_sampling import collect_variant_samples
+from trace.core.task_review_sampling import collect_query_id_samples
 from trace.tasks import TASK_REGISTRY, create_task
 
 
@@ -38,7 +38,7 @@ def _parse_cli() -> argparse.Namespace:
         "--count-per-variant",
         type=int,
         default=100,
-        help="Collected samples per query variant (default: 100)",
+        help="Collected samples per query id (default: 100)",
     )
     parser.add_argument(
         "--count",
@@ -119,8 +119,8 @@ def main() -> int:
     """Entry point for task answer-distribution checks."""
     args = _parse_cli()
     if args.count is not None:
-        args.count_per_variant = int(args.count)
-    if int(args.count_per_variant) <= 0:
+        args.count_per_query_id = int(args.count)
+    if int(args.count_per_query_id) <= 0:
         raise ValueError("--count-per-variant must be > 0")
     if int(args.max_attempts_per_instance) <= 0:
         raise ValueError("--max-attempts-per-instance must be > 0")
@@ -135,7 +135,7 @@ def main() -> int:
 
     report: Dict[str, Any] = {
         "config": {
-            "count_per_variant": int(args.count_per_variant),
+            "count_per_query_id": int(args.count_per_query_id),
             "seed": int(args.seed),
             "max_attempts_per_instance": int(args.max_attempts_per_instance),
             "max_total_samples_per_task": int(args.max_total_samples_per_task),
@@ -153,9 +153,9 @@ def main() -> int:
 
     for task_id in task_ids:
         task_instance = create_task(str(task_id))
-        collected = collect_variant_samples(
+        collected = collect_query_id_samples(
             task_id=str(task_id),
-            target_count_per_variant=int(args.count_per_variant),
+            target_count_per_query_id=int(args.count_per_query_id),
             seed=int(args.seed),
             max_attempts_per_instance=int(args.max_attempts_per_instance),
             max_total_samples_per_task=int(args.max_total_samples_per_task),
@@ -163,20 +163,20 @@ def main() -> int:
             collector=_collector,
         )
 
-        expected_variants = list(collected.get("expected_variants", []))
-        samples_by_variant = dict(collected.get("samples_by_variant", {}))
-        if not expected_variants:
-            expected_variants = sorted(samples_by_variant.keys())
+        expected_query_ids = list(collected.get("expected_query_ids", []))
+        samples_by_query_id = dict(collected.get("samples_by_query_id", {}))
+        if not expected_query_ids:
+            expected_query_ids = sorted(samples_by_query_id.keys())
 
         variant_reports = {
-            str(variant): evaluate_answer_distribution(list(samples_by_variant.get(str(variant), [])))
-            for variant in expected_variants
-            if samples_by_variant.get(str(variant))
+            str(variant): evaluate_answer_distribution(list(samples_by_query_id.get(str(variant), [])))
+            for variant in expected_query_ids
+            if samples_by_query_id.get(str(variant))
         }
 
         combined_rows: List[Dict[str, Any]] = []
-        for variant in expected_variants:
-            combined_rows.extend(list(samples_by_variant.get(str(variant), [])))
+        for variant in expected_query_ids:
+            combined_rows.extend(list(samples_by_query_id.get(str(variant), [])))
 
         overall_report = (
             evaluate_answer_distribution(combined_rows)
@@ -185,28 +185,28 @@ def main() -> int:
         )
 
         failing_variants = [
-            str(query_variant)
-            for query_variant, variant_report in variant_reports.items()
+            str(query_id)
+            for query_id, variant_report in variant_reports.items()
             if not bool(variant_report["pass"])
         ]
-        incomplete_variants = list(collected.get("incomplete_variants", []))
+        incomplete_query_ids = list(collected.get("incomplete_query_ids", []))
         no_samples_collected = not bool(combined_rows)
-        task_pass = bool((not failing_variants) and (not incomplete_variants) and (not no_samples_collected))
+        task_pass = bool((not failing_variants) and (not incomplete_query_ids) and (not no_samples_collected))
 
         task_report: Dict[str, Any] = dict(overall_report)
         task_report["task_id"] = str(task_id)
         task_report["domain"] = str(getattr(task_instance, "domain", ""))
         task_report["task_group"] = str(getattr(task_instance, "task_group", ""))
-        task_report["target_count_per_variant"] = int(args.count_per_variant)
+        task_report["target_count_per_query_id"] = int(args.count_per_query_id)
         task_report["total_generated"] = int(collected.get("total_generated", 0))
-        task_report["expected_variants"] = list(expected_variants)
-        task_report["generated_variant_counts"] = dict(collected.get("generated_variant_counts", {}))
-        task_report["collected_variant_counts"] = dict(collected.get("collected_variant_counts", {}))
+        task_report["expected_query_ids"] = list(expected_query_ids)
+        task_report["generated_query_id_counts"] = dict(collected.get("generated_query_id_counts", {}))
+        task_report["collected_query_id_counts"] = dict(collected.get("collected_query_id_counts", {}))
         task_report["generation_error_counts"] = dict(collected.get("generation_error_counts", {}))
         task_report["overall"] = overall_report
-        task_report["per_query_variant"] = variant_reports
+        task_report["per_query_id"] = variant_reports
         task_report["failed_variants"] = list(failing_variants)
-        task_report["incomplete_variants"] = list(incomplete_variants)
+        task_report["incomplete_query_ids"] = list(incomplete_query_ids)
         task_report["no_samples_collected"] = bool(no_samples_collected)
         task_report["pass"] = bool(task_pass)
         report["tasks"].append(task_report)
@@ -217,12 +217,12 @@ def main() -> int:
             f"[{status}] {task_id}: variants={variant_count}, generated={task_report['total_generated']}, "
             f"overall({_format_task_distribution_metrics(overall_report)})"
         )
-        for query_variant, variant_report in variant_reports.items():
-            label = str(query_variant) if str(query_variant).strip() else "<default>"
+        for query_id, variant_report in variant_reports.items():
+            label = str(query_id) if str(query_id).strip() else "<default>"
             variant_status = "PASS" if bool(variant_report["pass"]) else "FAIL"
             print(f"    - [{variant_status}] {label}: {_format_task_distribution_metrics(variant_report)}")
-        if incomplete_variants:
-            print(f"    - [FAIL] incomplete_variants: {', '.join(incomplete_variants)}")
+        if incomplete_query_ids:
+            print(f"    - [FAIL] incomplete_query_ids: {', '.join(incomplete_query_ids)}")
         if no_samples_collected:
             print("    - [FAIL] no_samples_collected")
 
@@ -236,15 +236,15 @@ def main() -> int:
         "passed_tasks": int(total - failed_count),
         "failed_tasks": int(failed_count),
         "failed_task_ids": sorted(failed),
-        "failed_query_variant_map": {
+        "failed_query_id_map": {
             str(task_report["task_id"]): list(task_report.get("failed_variants", []))
             for task_report in report["tasks"]
             if not bool(task_report.get("pass"))
         },
-        "incomplete_query_variant_map": {
-            str(task_report["task_id"]): list(task_report.get("incomplete_variants", []))
+        "incomplete_query_id_map": {
+            str(task_report["task_id"]): list(task_report.get("incomplete_query_ids", []))
             for task_report in report["tasks"]
-            if task_report.get("incomplete_variants")
+            if task_report.get("incomplete_query_ids")
         },
         "no_samples_task_ids": sorted(
             str(task_report["task_id"])

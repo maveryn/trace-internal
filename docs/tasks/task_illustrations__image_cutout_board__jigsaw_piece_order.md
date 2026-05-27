@@ -1,6 +1,6 @@
 # task_illustrations__image_cutout_board__jigsaw_piece_order
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -28,5 +28,5 @@ Default sampling uses equal weight across the two board shapes.
 - `evidence_gt.type = bbox_sequence`
 - evidence is the displayed piece-option bboxes in the same order as the answer
 
-Source illustrations are sampled from accepted illustration scene renderers,
+Source illustrations are sampled from current illustration scene renderers,
 excluding `object_field`.

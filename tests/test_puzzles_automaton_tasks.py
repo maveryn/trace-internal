@@ -49,11 +49,11 @@ def test_automaton_tasks_emit_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == scene_id
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id in queries
         assert out.answer_gt.type == answer_type
         assert out.evidence_gt.type == "bbox_set"
-        assert trace["query_spec"]["params"]["query_variant"] == "default"
+        assert trace["query_spec"]["params"]["query_id"] == "default"
         assert trace["query_spec"]["params"]["query_id"] == out.query_id
         assert trace["render_spec"]["scene_id"] == scene_id
         assert trace["render_map"]["evidence_source"] == "item_bboxes_px"
@@ -63,7 +63,7 @@ def test_automaton_tasks_emit_contracts() -> None:
             int(trace["render_spec"]["canvas_width"]),
             int(trace["render_spec"]["canvas_height"]),
         )
-        assert execution["query_variant"] == "default"
+        assert execution["query_id"] == "default"
         assert execution["query_id"] == out.query_id
         assert execution["scene_id"] == scene_id
         assert execution["supporting_item_ids"]
@@ -78,7 +78,7 @@ def test_automaton_generation_is_deterministic() -> None:
     task = PuzzlesAutomatonAgentCellFlipCountTask()
     params = {
         "scene_variant": "lab_panel",
-        "query_variant": "marked_region_flip_count",
+        "query_id": "marked_region_flip_count",
         "rule_variant": "three_state_rule",
     }
     out_a = task.generate(2026052299, params=params, max_attempts=30)

@@ -23,7 +23,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     out = task.generate(
         19101,
         params={
-            "query_variant": "degree_count",
+            "query_id": "degree_count",
             "node_count": 7,
             "query_degree": 2,
             "target_count": 2,
@@ -44,11 +44,11 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     assert len(out.evidence_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_degree_counting"
     assert execution["question_format"] == "count_nodes_with_degree"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "undirected_degree_count"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_degree_count"
-    assert execution["internal_query_variant"] == "degree_count"
+    assert execution["internal_query_id"] == "degree_count"
     assert execution["graph_directionality"] == "undirected"
     assert execution["degree_mode"] == "degree"
     assert int(execution["node_count"]) == 7
@@ -67,7 +67,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
         "mirror_up_down",
     }
     assert execution["node_color_name"]
-    assert trace["query_spec"]["params"]["query_variant_probabilities"]
+    assert trace["query_spec"]["params"]["query_id_probabilities"]
     assert len(node_entities) == 7
     assert len(edge_entities) == int(execution["edge_count"])
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -115,7 +115,7 @@ def test_graph_counting_degree_count_prompt_example_matches_contract() -> None:
     out = task.generate(
         19102,
         params={
-            "query_variant": "degree_count",
+            "query_id": "degree_count",
             "node_count": 8,
             "query_degree": 1,
             "target_count": 2,
@@ -136,7 +136,7 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     out = task.generate(
         19104,
         params={
-            "query_variant": "degree_count",
+            "query_id": "degree_count",
             "node_count": 10,
             "query_degree": 1,
             "target_count": 3,
@@ -168,7 +168,7 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
 def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> None:
     task = GraphCountingDegreeCountTask()
     common_params = {
-        "query_variant": "degree_count",
+        "query_id": "degree_count",
         "node_count": 10,
         "query_degree": 1,
         "target_count": 3,
@@ -190,7 +190,7 @@ def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semanti
         out = task.generate(
             19107 if degree_mode == "in_degree" else 19108,
             params={
-                "query_variant": "directed_degree_count",
+                "query_id": "directed_degree_count",
                 "degree_mode": degree_mode,
                 "node_count": 8,
                 "query_degree": 1,
@@ -200,11 +200,11 @@ def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semanti
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == f"directed_{degree_mode}_count"
-        assert execution["query_variant"] == "default"
+        assert execution["query_id"] == "default"
         assert execution["query_id"] == f"directed_{degree_mode}_count"
-        assert execution["internal_query_variant"] == "directed_degree_count"
+        assert execution["internal_query_id"] == "directed_degree_count"
         assert execution["graph_directionality"] == "directed"
         assert execution["degree_mode"] in {"in_degree", "out_degree"}
         assert trace["query_spec"]["params"]["graph_directionality"] == "directed"
@@ -232,7 +232,7 @@ def test_graph_counting_degree_count_directed_variants_use_full_node_range() -> 
             out = task.generate(
                 hash64(19109 if degree_mode == "in_degree" else 19110, degree_mode, index),
                 params={
-                    "query_variant": "directed_degree_count",
+                    "query_id": "directed_degree_count",
                     "degree_mode": degree_mode,
                 },
                 max_attempts=120,
@@ -245,7 +245,7 @@ def test_graph_counting_degree_count_directed_variants_use_full_node_range() -> 
 
 def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
     task = GraphCountingDegreeCountTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     query_ids: Counter[str] = Counter()
     degree_modes: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
@@ -264,7 +264,7 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
             max_attempts=80,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variants[str(execution["query_variant"])] += 1
+        query_ids[str(execution["query_id"])] += 1
         query_ids[str(execution["query_id"])] += 1
         degree_modes[str(execution["degree_mode"])] += 1
         target_counts[int(execution["target_count"])] += 1
@@ -281,7 +281,7 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         if "query_degree" in execution:
             assert 0 <= int(execution["query_degree"]) <= 4
         assert 0 <= int(execution["target_count"]) <= 6
-    assert set(query_variants.keys()) == {"default"}
+    assert set(query_ids.keys()) == {"default"}
     assert set(query_ids.keys()) == {
         "undirected_degree_count",
         "directed_in_degree_count",
@@ -331,7 +331,7 @@ def test_graph_counting_degree_count_node_support_is_not_locked_to_smallest_feas
     for index in range(120):
         out = task.generate(
             hash64(19111, "graph_counting_degree_count_node_balance", index),
-            params={"query_variant": "degree_count"},
+            params={"query_id": "degree_count"},
             max_attempts=120,
         )
         node_counts[int(out.trace_payload["execution_trace"]["node_count"])] += 1

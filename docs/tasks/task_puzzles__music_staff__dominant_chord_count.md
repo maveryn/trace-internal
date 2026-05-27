@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__dominant_chord_count`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `dominant_count_value`
 3. Prompts ask for the number of dominant chords in a visible key context.
 4. Internal variation includes major-key contexts, chord qualities, dominant-position placement, and `engraved_sheet|exam_scan|notebook_staff` scene variants.

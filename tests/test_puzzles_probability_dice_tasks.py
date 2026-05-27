@@ -55,11 +55,11 @@ def test_dice_probability_tasks_emit_contracts() -> None:
         event = execution["event"]
 
         assert out.scene_id == "dice_probability"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id in queries
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
-        assert trace["query_spec"]["params"]["query_variant"] == "default"
+        assert trace["query_spec"]["params"]["query_id"] == "default"
         assert trace["query_spec"]["params"]["query_id"] == out.query_id
         assert trace["render_spec"]["scene_id"] == "dice_probability"
         assert trace["render_map"]["evidence_source"] == "tray_bboxes_px"
@@ -97,7 +97,7 @@ def test_dice_probability_generation_is_deterministic() -> None:
     task = PuzzlesProbabilityDiceConditionalEventValueTask()
     params = {
         "scene_variant": "dice_tray_felt",
-        "query_variant": "conditional_color_given_value_property_probability",
+        "query_id": "conditional_color_given_value_property_probability",
     }
     out_a = task.generate(2026052699, params=params, max_attempts=30)
     out_b = task.generate(2026052699, params=params, max_attempts=30)

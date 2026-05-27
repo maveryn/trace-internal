@@ -6,7 +6,7 @@ Status: accepted active default cell-board puzzle task.
 1. Domain: `puzzles`
 2. Task group: `cell_board`
 3. Scene id: `cell_board`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `symmetry_violation_count`
 
 ## Contract
@@ -17,4 +17,4 @@ Status: accepted active default cell-board puzzle task.
 
 ## Notes
 1. Symmetry axes and paired cells are recorded in private trace metadata.
-2. Internal trace metadata keeps `internal_query_variant=symmetry_violation_count`.
+2. Internal trace metadata keeps `internal_query_id=symmetry_violation_count`.

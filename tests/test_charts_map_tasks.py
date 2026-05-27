@@ -9,17 +9,16 @@ import pytest
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.tasks.charts.map.choropleth_region_label import (
-    SUPPORTED_ADJACENT_QUERY_VARIANTS,
+    SUPPORTED_ADJACENT_QUERY_IDS,
     SUPPORTED_MARKER_RENDER_VARIANTS,
-    SUPPORTED_REGION_VALUE_QUERY_VARIANTS,
-    SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS,
+    SUPPORTED_REGION_VALUE_QUERY_IDS,
+    SUPPORTED_WORLD_FILTERED_QUERY_IDS,
     ChartsMapAdjacentConditionCountTask,
     ChartsMapBorderNeighborCountTask,
     ChartsMapContinentFilteredCountTask,
+    ChartsMapLegendPredicateRegionCountTask,
     ChartsMapMarkerRegionExtremumLabelTask,
     ChartsMapMarkerRegionThresholdCountTask,
-    ChartsMapRegionCategoryCountTask,
-    ChartsMapRegionValueCountTask,
     _world_country_shared_border_lengths,
 )
 
@@ -40,7 +39,6 @@ def _assert_common_output(out) -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == "default"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -63,13 +61,13 @@ def _expected_bin_count(execution: dict) -> int:
     return sum(1 for region in _regions_by_id(execution).values() if int(region["bin_index"]) in target_bins)
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_REGION_VALUE_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SUPPORTED_REGION_VALUE_QUERY_IDS)
 def test_chart_map_region_value_count_supports_synthetic_and_geographic_maps(query_id: str) -> None:
-    task = ChartsMapRegionValueCountTask()
+    task = ChartsMapLegendPredicateRegionCountTask()
     for scene_index, scene_variant in enumerate(("synthetic_region_map", "geographic_region_map")):
         out = task.generate(
-            67100 + scene_index + SUPPORTED_REGION_VALUE_QUERY_VARIANTS.index(query_id),
-            params={"query_variant": query_id, "scene_variant": scene_variant},
+            67100 + scene_index + SUPPORTED_REGION_VALUE_QUERY_IDS.index(query_id),
+            params={"query_id": query_id, "scene_variant": scene_variant},
             max_attempts=10,
         )
         _assert_common_output(out)
@@ -91,8 +89,12 @@ def test_chart_map_region_value_count_supports_synthetic_and_geographic_maps(que
 
 
 def test_chart_map_region_category_count_uses_shared_label_assets() -> None:
-    task = ChartsMapRegionCategoryCountTask()
-    out = task.generate(67200, params={"scene_variant": "geographic_region_map"}, max_attempts=10)
+    task = ChartsMapLegendPredicateRegionCountTask()
+    out = task.generate(
+        67200,
+        params={"query_id": "categorical_region_count", "scene_variant": "geographic_region_map"},
+        max_attempts=10,
+    )
     _assert_common_output(out)
     trace = out.trace_payload
     execution = trace["execution_trace"]
@@ -111,12 +113,12 @@ def test_chart_map_region_category_count_uses_shared_label_assets() -> None:
         assert str(_regions_by_id(execution)[str(region_id)]["category"]) == target_category
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SUPPORTED_WORLD_FILTERED_QUERY_IDS)
 def test_chart_map_continent_filtered_count_uses_world_map_filter(query_id: str) -> None:
     task = ChartsMapContinentFilteredCountTask()
     out = task.generate(
-        67250 + SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS.index(query_id),
-        params={"query_variant": query_id},
+        67250 + SUPPORTED_WORLD_FILTERED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id},
         max_attempts=10,
     )
     _assert_common_output(out)
@@ -179,12 +181,12 @@ def test_chart_map_border_neighbor_count_uses_visible_land_borders() -> None:
     )
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_ADJACENT_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SUPPORTED_ADJACENT_QUERY_IDS)
 def test_chart_map_adjacent_condition_count_uses_highlighted_reference(query_id: str) -> None:
     task = ChartsMapAdjacentConditionCountTask()
     out = task.generate(
-        67400 + SUPPORTED_ADJACENT_QUERY_VARIANTS.index(query_id),
-        params={"query_variant": query_id, "scene_variant": "synthetic_region_map"},
+        67400 + SUPPORTED_ADJACENT_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "scene_variant": "synthetic_region_map"},
         max_attempts=10,
     )
     _assert_common_output(out)
@@ -212,13 +214,13 @@ def test_chart_map_adjacent_condition_count_uses_highlighted_reference(query_id:
 
 
 def test_chart_map_tasks_prompt_examples_match_contract() -> None:
-    expected = {
-        ChartsMapRegionValueCountTask: ("numeric_interval_region_count", 4),
-        ChartsMapRegionCategoryCountTask: ("categorical_region_count", 3),
-        ChartsMapAdjacentConditionCountTask: ("adjacent_same_category_count", 2),
-    }
-    for index, (task_cls, (query_id, answer)) in enumerate(expected.items(), start=67500):
-        out = task_cls().generate(index, params={"query_variant": query_id}, max_attempts=10)
+    expected = [
+        (ChartsMapLegendPredicateRegionCountTask, "numeric_interval_region_count", 4),
+        (ChartsMapLegendPredicateRegionCountTask, "categorical_region_count", 3),
+        (ChartsMapAdjacentConditionCountTask, "adjacent_same_category_count", 2),
+    ]
+    for index, (task_cls, query_id, answer) in enumerate(expected, start=67500):
+        out = task_cls().generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence["answer"] == answer
@@ -227,7 +229,7 @@ def test_chart_map_tasks_prompt_examples_match_contract() -> None:
 
 
 def test_chart_map_task_sampling_covers_map_scene_types() -> None:
-    task = ChartsMapRegionValueCountTask()
+    task = ChartsMapLegendPredicateRegionCountTask()
     scenes: Counter[str] = Counter()
     map_variants: Counter[str] = Counter()
     query_ids: Counter[str] = Counter()
@@ -239,7 +241,7 @@ def test_chart_map_task_sampling_covers_map_scene_types() -> None:
         if str(execution["scene_variant"]) == "geographic_region_map":
             map_variants[str(execution["geographic_map_variant"])] += 1
     assert set(scenes.keys()) == {"synthetic_region_map", "geographic_region_map"}
-    assert set(query_ids.keys()) == set(SUPPORTED_REGION_VALUE_QUERY_VARIANTS)
+    assert set(query_ids.keys()) == set(SUPPORTED_REGION_VALUE_QUERY_IDS).union({"categorical_region_count"})
     assert set(map_variants.keys()).issubset({"world_countries", "usa_states", "eu_countries", "china_provinces"})
 
 
@@ -264,12 +266,12 @@ def test_chart_map_marker_tasks_use_marker_bubble_evidence(task_cls, expected_qu
         projected = trace["projected_evidence"]
 
         assert out.query_id == expected_query_id
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.scene_id == "marker_map"
         assert out.answer_gt.type == expected_answer_type
         assert out.evidence_gt.type == "bbox_set"
         assert str(execution["question_format"]) == "map_marker_query"
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(trace["query_spec"]["params"]["marker_render_variant"]) == render_variant
         assert str(render["marker_render"]["marker_render_variant"]) == render_variant
         assert projected["bbox_set"] == out.evidence_gt.value

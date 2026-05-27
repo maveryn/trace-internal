@@ -15,7 +15,7 @@ def test_geometry_graphing_task_overrides_expose_scene_query_and_count_axes() ->
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {
         "quadratic",
         "absolute_value",
@@ -23,7 +23,7 @@ def test_geometry_graphing_task_overrides_expose_scene_query_and_count_axes() ->
         "sinusoid",
         "piecewise_linear",
     }
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "reference_line_crossing_count",
         "turning_point_count",
         "local_extremum_count",

@@ -54,18 +54,18 @@ def test_puzzles_spatial_visible_cube_count_split_wrapper_rewrites_public_contra
         max_attempts=60,
     )
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) == "visible_cube_count"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
     assert out.evidence_gt.type == "bbox_set"
-    assert str(out.trace_payload["query_spec"]["query_variant"]) == "default"
+    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
     assert str(out.trace_payload["query_spec"]["query_id"]) == "visible_cube_count"
-    assert str(out.trace_payload["execution_trace"]["query_variant"]) == "default"
+    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "visible_cube_count"
     assert str(out.trace_payload["execution_trace"]["view_direction"]) == "front"
-    assert str(out.trace_payload["execution_trace"]["internal_query_variant"]) == "front_view_visible_count"
+    assert str(out.trace_payload["execution_trace"]["internal_query_id"]) == "front_view_visible_count"
     assert 50 <= int(out.trace_payload["render_map"]["stack_voxel_scale_percent"]) <= 100
 
 
@@ -76,19 +76,19 @@ def test_puzzles_spatial_projection_match_split_wrapper_rewrites_public_contract
         max_attempts=80,
     )
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) == "projection_match_label"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) in set("ABCDE")
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
-    assert str(out.trace_payload["query_spec"]["query_variant"]) == "default"
+    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
     assert str(out.trace_payload["query_spec"]["query_id"]) == "projection_match_label"
-    assert str(out.trace_payload["execution_trace"]["query_variant"]) == "default"
+    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "projection_match_label"
     assert str(out.trace_payload["execution_trace"]["view_direction"]) == "right"
-    assert str(out.trace_payload["execution_trace"]["internal_query_variant"]) == "right_view_visible_count"
+    assert str(out.trace_payload["execution_trace"]["internal_query_id"]) == "right_view_visible_count"
     assert str(out.trace_payload["execution_trace"]["answer_label"]) == str(out.answer_gt.value)
     option_cells = out.trace_payload["execution_trace"]["option_cells"]
     correct_cells = out.trace_payload["execution_trace"]["correct_projection_cells"]
@@ -111,16 +111,16 @@ def test_puzzles_spatial_projection_consistency_split_wrapper_rewrites_public_co
         max_attempts=100,
     )
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) == "projection_consistency_label"
     assert str(out.scene_id) == "voxel_cube"
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) in set("ABCDE")
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
-    assert str(out.trace_payload["query_spec"]["query_variant"]) == "default"
+    assert str(out.trace_payload["query_spec"]["query_id"]) == "default"
     assert str(out.trace_payload["query_spec"]["query_id"]) == "projection_consistency_label"
-    assert str(out.trace_payload["execution_trace"]["query_variant"]) == "default"
+    assert str(out.trace_payload["execution_trace"]["query_id"]) == "default"
     assert str(out.trace_payload["execution_trace"]["query_id"]) == "projection_consistency_label"
     assert str(out.trace_payload["execution_trace"]["consistency_query"]) == consistency_query
     assert str(out.trace_payload["execution_trace"]["answer_label"]) == str(out.answer_gt.value)
@@ -140,9 +140,9 @@ def test_puzzles_spatial_projection_consistency_split_wrapper_rewrites_public_co
             depth=int(execution["stack_depth"]),
             heights=heights,
         )
-        query_variant = str(render_map["panel_query_by_label"][answer_label])
+        query_id = str(render_map["panel_query_by_label"][answer_label])
         shown_cells = sorted(tuple(int(value) for value in cell) for cell in render_map["option_cells"][answer_label])
-        expected_cells = sorted(projected_view_cells(stack, query_variant=query_variant))
+        expected_cells = sorted(projected_view_cells(stack, query_id=query_id))
         assert shown_cells != expected_cells
     else:
         assert render_map["option_stack_heights"][answer_label] == render_map["reference_stack_heights"]
@@ -154,9 +154,9 @@ def test_puzzles_spatial_projection_consistency_split_wrapper_rewrites_public_co
 @pytest.mark.parametrize(
     ("params", "expected_answer"),
     (
-        ({"scene_variant": "cube_stack", "query_variant": "top_view_visible_count", "target_count": 3}, 3),
-        ({"scene_variant": "cube_stack", "query_variant": "front_view_visible_count", "target_count": 4}, 4),
-        ({"scene_variant": "cube_stack", "query_variant": "right_view_visible_count", "target_count": 5}, 5),
+        ({"scene_variant": "cube_stack", "query_id": "top_view_visible_count", "target_count": 3}, 3),
+        ({"scene_variant": "cube_stack", "query_id": "front_view_visible_count", "target_count": 4}, 4),
+        ({"scene_variant": "cube_stack", "query_id": "right_view_visible_count", "target_count": 5}, 5),
     ),
 )
 def test_puzzles_spatial_solid_view_count_emits_expected_contract(
@@ -168,7 +168,7 @@ def test_puzzles_spatial_solid_view_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_answer)
-    assert out.trace_payload["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
     assert out.trace_payload["execution_trace"]["target_count"] == int(expected_answer)
     query_grid_dims = out.trace_payload["projected_evidence"]["query_grid_dimensions"]
     assert int(out.answer_gt.value) < int(query_grid_dims[0]) * int(query_grid_dims[1])
@@ -183,7 +183,7 @@ def test_puzzles_spatial_solid_view_count_emits_expected_contract(
 
 
 def test_puzzles_spatial_solid_view_count_is_deterministic() -> None:
-    params = {"scene_variant": "cube_stack", "query_variant": "front_view_visible_count", "target_count": 4}
+    params = {"scene_variant": "cube_stack", "query_id": "front_view_visible_count", "target_count": 4}
     task = SolidViewCountGenerator()
     out_a = task.generate(23311, params=params, max_attempts=60)
     out_b = task.generate(23311, params=params, max_attempts=60)
@@ -198,16 +198,16 @@ def test_puzzles_spatial_solid_view_count_rejects_unsupported_scene_variant() ->
     with pytest.raises(ValueError):
         SolidViewCountGenerator().generate(
             23321,
-            params={"scene_variant": "cylinder_stack", "query_variant": "top_view_visible_count"},
+            params={"scene_variant": "cylinder_stack", "query_id": "top_view_visible_count"},
             max_attempts=20,
         )
 
 
-def test_puzzles_spatial_solid_view_count_rejects_unsupported_query_variant() -> None:
+def test_puzzles_spatial_solid_view_count_rejects_unsupported_query_id() -> None:
     with pytest.raises(ValueError):
         SolidViewCountGenerator().generate(
             23322,
-            params={"scene_variant": "cube_stack", "query_variant": "volume"},
+            params={"scene_variant": "cube_stack", "query_id": "volume"},
             max_attempts=20,
         )
 
@@ -224,24 +224,24 @@ def test_front_view_grid_crops_to_occupied_projection_support() -> None:
         },
     )
 
-    assert projected_view_cells(stack, query_variant="front_view_visible_count") == ((0, 0), (0, 1))
-    assert view_grid_dimensions(stack, query_variant="front_view_visible_count") == (1, 2)
+    assert projected_view_cells(stack, query_id="front_view_visible_count") == ((0, 0), (0, 1))
+    assert view_grid_dimensions(stack, query_id="front_view_visible_count") == (1, 2)
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "expected_snippet"),
+    ("query_id", "expected_snippet"),
     (
         ("front_view_visible_count", "left vertical face"),
         ("right_view_visible_count", "right vertical face"),
     ),
 )
 def test_solid_view_prompts_clarify_front_and_right_conventions(
-    query_variant: str,
+    query_id: str,
     expected_snippet: str,
 ) -> None:
     out = SolidViewCountGenerator().generate(
         23331,
-        params={"scene_variant": "cube_stack", "query_variant": query_variant, "target_count": 4},
+        params={"scene_variant": "cube_stack", "query_id": query_id, "target_count": 4},
         max_attempts=60,
     )
 
@@ -261,7 +261,7 @@ def test_puzzles_spatial_solid_view_count_balances_target_counts_across_review_s
 
 
 def test_puzzles_spatial_solid_view_count_decouplesseeded_sampler_axes() -> None:
-    per_variant_counts: dict[str, Counter[int]] = {
+    per_query_id_counts: dict[str, Counter[int]] = {
         "top_view_visible_count": Counter(),
         "front_view_visible_count": Counter(),
         "right_view_visible_count": Counter(),
@@ -270,9 +270,9 @@ def test_puzzles_spatial_solid_view_count_decouplesseeded_sampler_axes() -> None
     for index in range(100):
         instance_seed = hash64(0, INTERNAL_TASK_KEY, index)
         resolved = _resolve_axes(int(instance_seed), params={})
-        per_variant_counts[str(resolved.query_variant)][int(resolved.target_count)] += 1
+        per_query_id_counts[str(resolved.query_id)][int(resolved.target_count)] += 1
 
-    assert sum(sum(counter.values()) for counter in per_variant_counts.values()) == 100
-    for query_variant, counts in per_variant_counts.items():
+    assert sum(sum(counter.values()) for counter in per_query_id_counts.values()) == 100
+    for query_id, counts in per_query_id_counts.items():
         assert set(counts.keys()) == {3, 4, 5, 6, 7}
-        assert max(counts.values()) <= 7, query_variant
+        assert max(counts.values()) <= 7, query_id

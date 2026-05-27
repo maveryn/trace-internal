@@ -6,7 +6,7 @@ generation:
     value_max: 88
     dual_condition_target_count_min: 1
     dual_condition_target_count_max: 5
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       bar_line_shared_axis: 1.0
@@ -29,7 +29,7 @@ generation:
       label_count_max: 8
       interval_span_min: 3
       interval_span_max: 5
-      query_variant_weights:
+      query_id_weights:
         line_change_minus_primary_change: 0.0
         primary_change_minus_line_change: 0.0
         absolute_change_gap: 1.0

@@ -8,7 +8,7 @@
 5. Goal: apply a cellular-life neighbor rule and count alive cells in the future grid.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `total_live_count|marked_region_live_count`
 3. Answer type: `integer`
 4. Evidence type: `bbox_set`

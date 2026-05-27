@@ -8,7 +8,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` icon on the left and `1..16` randomly placed scene icons on the right.
-2. Supported `query_variant` values: `size_relation_count`.
+2. Supported `query_id` values: `size_smaller|size_larger`.
 3. Supported semantic parameter axis: `size_relation=smaller|larger`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
@@ -43,7 +43,7 @@
 7. Balanced defaults: `resolve_counting_target_and_distractor_triplet(...)` balances both target and distractor counts across feasible support, and parameter sampling cycles evenly across `smaller` / `larger` under the normal seeded sampler.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query variant.
+1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_counting_size_relation_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_counting_size_relation_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

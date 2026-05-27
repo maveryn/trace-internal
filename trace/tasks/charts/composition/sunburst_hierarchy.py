@@ -333,14 +333,14 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
 
 def _sample_query_id(params: Mapping[str, Any], *, allowed_query_ids: Sequence[str], instance_seed: int) -> str:
     allowed = tuple(str(item) for item in allowed_query_ids)
-    explicit = params.get("query_id", params.get("query_variant", params.get("query_variant")))
+    explicit = params.get("query_id")
     if explicit is not None and str(explicit) != "default":
         query_id = str(explicit)
         if query_id not in set(allowed):
             raise ValueError(f"unsupported sunburst query_id for this public task: {query_id}")
         return query_id
     rng = spawn_rng(int(instance_seed), "charts.composition.sunburst.query_id")
-    raw_weights = params.get("query_variant_weights", params.get("query_variant_weights"))
+    raw_weights = params.get("query_id_weights", params.get("query_id_weights"))
     if isinstance(raw_weights, Mapping):
         weights = [max(0.0, float(raw_weights.get(query_id, 0.0))) for query_id in allowed]
         if sum(weights) > 0.0:
@@ -1172,9 +1172,7 @@ class ChartsCompositionSunburstHierarchyTask:
             for node in dataset.nodes
         ]
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
             "public_task_id": str(self.task_id),
             "parent_count": int(len(dataset.parent_ids)),
             "subgroup_count": int(len(dataset.subgroup_ids)),
@@ -1192,9 +1190,7 @@ class ChartsCompositionSunburstHierarchyTask:
                 "relations": dict(query_params),
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_variant),
                 "prompt_variant_active_key": str(active_prompt_key),
@@ -1221,9 +1217,7 @@ class ChartsCompositionSunburstHierarchyTask:
                 },
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "answer_value": dataset.query.answer,
                 "question_format": "label_open" if dataset.query.answer_type == "string" else "numeric_open",
                 "hierarchy": list(hierarchy_rows),
@@ -1265,7 +1259,6 @@ class ChartsCompositionSunburstHierarchyTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

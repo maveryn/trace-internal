@@ -57,7 +57,7 @@ from ..shared.single_object_scene import (
 
 TASK_ID = "task_geometry__function_graph__average_rate_value"
 AVERAGE_RATE_BETWEEN_MARKED_POINTS = "average_rate_between_marked_points"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (AVERAGE_RATE_BETWEEN_MARKED_POINTS,)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (AVERAGE_RATE_BETWEEN_MARKED_POINTS,)
 DEFAULT_RATE_SUPPORT: Tuple[float, ...] = (-2.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5, 2.0)
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="graphing")
@@ -86,9 +86,9 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved query and balanced average-rate target."""
 
-    query_variant: str
+    query_id: str
     target_rate: float
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     target_rate_probabilities: Dict[str, float]
 
 
@@ -165,10 +165,10 @@ def _target_rate_support() -> Tuple[float, ...]:
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve the fixed query plus balanced target average rate."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant", AVERAGE_RATE_BETWEEN_MARKED_POINTS))
-    query_variant = str(explicit_query).strip().lower()
-    if query_variant not in set(SUPPORTED_QUERY_VARIANTS):
-        raise ValueError(f"unsupported query_variant for {TASK_ID}: {explicit_query}")
+    explicit_query = params.get("query_id", AVERAGE_RATE_BETWEEN_MARKED_POINTS)
+    query_id = str(explicit_query).strip().lower()
+    if query_id not in set(SUPPORTED_QUERY_IDS):
+        raise ValueError(f"unsupported query_id for {TASK_ID}: {explicit_query}")
 
     support = _target_rate_support()
     explicit_rate = params.get("target_rate", params.get("average_rate"))
@@ -191,9 +191,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         probabilities = {_rate_key(rate): float(probability) for rate in support}
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_rate=float(target_rate),
-        query_variant_probabilities={AVERAGE_RATE_BETWEEN_MARKED_POINTS: 1.0},
+        query_id_probabilities={AVERAGE_RATE_BETWEEN_MARKED_POINTS: 1.0},
         target_rate_probabilities=dict(sorted(probabilities.items())),
     )
 
@@ -601,7 +601,7 @@ class GeometryGraphingAverageRateValueBaseTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_average_rate"]),
@@ -621,18 +621,16 @@ class GeometryGraphingAverageRateValueBaseTask:
         answer_gt = TypedValue(type="number", value=float(round(rendered_scene.answer_value, 1)))
         evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=list(rendered_scene.evidence_value))
         query_params = {
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_rate": float(query.target_rate),
             "target_rate_probabilities": dict(query.target_rate_probabilities),
         }
         execution_trace = {
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "query_id_probabilities": dict(query.query_id_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "target_rate": float(query.target_rate),
             "target_rate_probabilities": dict(query.target_rate_probabilities),
             "answer_type": "number",
@@ -645,13 +643,12 @@ class GeometryGraphingAverageRateValueBaseTask:
                 "scene_kind": "geometry_graphing_average_rate",
                 "entities": list(rendered_scene.scene_entities),
                 "relations": {
-                    "query_variant": str(query.query_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "target_rate": float(query.target_rate),
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -686,7 +683,7 @@ class GeometryGraphingAverageRateValueBaseTask:
                 evidence_count=len(rendered_scene.evidence_value),
             ),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -696,5 +693,5 @@ class GeometryGraphingAverageRateValueTask(FixedGeometryQueryTaskMixin, Geometry
     """Public average-rate task over the function-graph scene."""
 
     task_id = TASK_ID
-    fixed_query_variant = AVERAGE_RATE_BETWEEN_MARKED_POINTS
+    fixed_query_id = AVERAGE_RATE_BETWEEN_MARKED_POINTS
     public_scene_id = "function_graph"

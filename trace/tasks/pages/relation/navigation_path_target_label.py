@@ -44,7 +44,7 @@ from .gui_relation_common import (
 
 
 TASK_ID = "task_pages__navigation_flow__navigation_path_target_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "menu_path_target_label",
     "sidebar_tree_target_label",
     "ribbon_group_command_label",
@@ -115,7 +115,7 @@ class _ControlSpec:
 
 @dataclass(frozen=True)
 class _ResolvedQuery:
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     controls: Tuple[_ControlSpec, ...]
@@ -133,7 +133,7 @@ class _ResolvedQuery:
     ribbon_command_count: int
     ribbon_command_count_range: Tuple[int, int]
     candidate_label_pool: Tuple[str, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
 
@@ -325,7 +325,7 @@ def _resolve_named_axis(
 
 def _base_control_specs(
     *,
-    query_variant: str,
+    query_id: str,
     menus: Sequence[str],
     submenus: Sequence[str],
     menu_groups: Sequence[str],
@@ -339,7 +339,7 @@ def _base_control_specs(
 ) -> Tuple[_ControlSpec, ...]:
     controls: List[_ControlSpec] = []
     order = 0
-    if str(query_variant) == "menu_path_target_label":
+    if str(query_id) == "menu_path_target_label":
         for menu_index, menu in enumerate(menus):
             for submenu_index, submenu in enumerate(submenus):
                 for group_index, group in enumerate(menu_groups):
@@ -357,7 +357,7 @@ def _base_control_specs(
                         )
                         order += 1
         return tuple(controls)
-    if str(query_variant) == "sidebar_tree_target_label":
+    if str(query_id) == "sidebar_tree_target_label":
         for section_index, section in enumerate(sidebar_sections):
             for group_index, group in enumerate(sidebar_groups):
                 for item_index, item in enumerate(sidebar_items):
@@ -427,20 +427,20 @@ def _with_candidate_labels(
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query")
-    query_variant, query_variant_probabilities = _resolve_named_axis(
+    query_id, query_id_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        supported=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        namespace="query_variant",
+        supported=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        namespace="query_id",
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="scene_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="scene_variant"),
         supported=SUPPORTED_SCENE_VARIANTS,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -450,7 +450,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     style_variant, style_variant_probabilities = _resolve_named_axis(
         rng,
         instance_seed=int(instance_seed),
-        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_VARIANTS), namespace="style_variant"),
+        params=_decoupled_params(params, divisor=len(SUPPORTED_QUERY_IDS), namespace="style_variant"),
         supported=SUPPORTED_STYLE_VARIANTS,
         explicit_key="style_variant",
         weights_key="style_variant_weights",
@@ -499,7 +499,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     ):
         raise ValueError("GUI navigation pools are too small for the active scene")
     controls_without_labels = _base_control_specs(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         menus=menus,
         submenus=submenus,
         menu_groups=menu_groups,
@@ -511,13 +511,13 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         ribbon_groups=ribbon_groups,
         ribbon_commands=ribbon_commands,
     )
-    target_index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target.{query_variant}") % len(controls_without_labels)
+    target_index = _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"target.{query_id}") % len(controls_without_labels)
     target = controls_without_labels[int(target_index)]
     target_label = str(
         params.get(
             "target_label",
             candidate_label_pool[
-                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_label.{query_variant}")
+                _support_selection_index(params, instance_seed=int(instance_seed), namespace=f"answer_label.{query_id}")
                 % len(candidate_label_pool)
             ],
         )
@@ -531,7 +531,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
     path_labels = tuple(str(value) for value in target.path_keys)
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         controls=tuple(controls),
@@ -549,7 +549,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         ribbon_command_count=int(ribbon_command_count),
         ribbon_command_count_range=tuple(int(value) for value in ribbon_command_count_range),
         candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
     )
@@ -876,9 +876,9 @@ def _render_navigation_scene(
         "support_bboxes": support_bboxes,
         "support_records": support_records,
     }
-    if str(query.query_variant) == "menu_path_target_label":
+    if str(query.query_id) == "menu_path_target_label":
         _draw_menu_path_scene(draw, **render_kwargs)
-    elif str(query.query_variant) == "sidebar_tree_target_label":
+    elif str(query.query_id) == "sidebar_tree_target_label":
         _draw_sidebar_tree_scene(draw, **render_kwargs)
     else:
         _draw_ribbon_group_scene(draw, **render_kwargs)
@@ -915,7 +915,7 @@ def _render_navigation_scene(
 
 def _support_ids_for_path(query: _ResolvedQuery) -> Tuple[str, ...]:
     path = tuple(str(value) for value in query.path_labels)
-    if str(query.query_variant) == "menu_path_target_label":
+    if str(query.query_id) == "menu_path_target_label":
         menu_values = sorted({str(control.path_keys[0]) for control in query.controls}, key=lambda value: next(control.order_index for control in query.controls if str(control.path_keys[0]) == value))
         menu_index = menu_values.index(path[0])
         submenu_values = sorted({str(control.path_keys[1]) for control in query.controls if str(control.path_keys[0]) == path[0]}, key=lambda value: next(control.order_index for control in query.controls if str(control.path_keys[0]) == path[0] and str(control.path_keys[1]) == value))
@@ -923,7 +923,7 @@ def _support_ids_for_path(query: _ResolvedQuery) -> Tuple[str, ...]:
         group_values = sorted({str(control.path_keys[2]) for control in query.controls if str(control.path_keys[0]) == path[0] and str(control.path_keys[1]) == path[1]}, key=lambda value: next(control.order_index for control in query.controls if str(control.path_keys[0]) == path[0] and str(control.path_keys[1]) == path[1] and str(control.path_keys[2]) == value))
         group_index = group_values.index(path[2])
         return (f"support_menu_{menu_index}", f"support_menu_{menu_index}_submenu_{submenu_index}_group_{group_index}")
-    if str(query.query_variant) == "sidebar_tree_target_label":
+    if str(query.query_id) == "sidebar_tree_target_label":
         section_values = sorted({str(control.path_keys[0]) for control in query.controls}, key=lambda value: next(control.order_index for control in query.controls if str(control.path_keys[0]) == value))
         section_index = section_values.index(path[0])
         group_values = sorted({str(control.path_keys[1]) for control in query.controls if str(control.path_keys[0]) == path[0]}, key=lambda value: next(control.order_index for control in query.controls if str(control.path_keys[0]) == path[0] and str(control.path_keys[1]) == value))
@@ -1027,7 +1027,7 @@ class PagesRelationNavigationPathTargetLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -1072,7 +1072,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                     for record in control_records
                 ],
                 "relations": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -1091,13 +1091,13 @@ class PagesRelationNavigationPathTargetLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "scene_variant": str(query.scene_variant),
                     "style_variant": str(query.style_variant),
                     "target_control_id": str(query.target_control_id),
@@ -1113,7 +1113,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                     "ribbon_command_count": int(query.ribbon_command_count),
                     "ribbon_command_count_range": [int(value) for value in query.ribbon_command_count_range],
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
                 },
@@ -1148,7 +1148,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
             },
             "execution_trace": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "style_variant": str(query.style_variant),
                 "target_control_id": str(query.target_control_id),
@@ -1170,7 +1170,7 @@ class PagesRelationNavigationPathTargetLabelTask:
                 "ribbon_command_count": int(query.ribbon_command_count),
                 "ribbon_command_count_range": [int(value) for value in query.ribbon_command_count_range],
                 "total_control_count": int(len(query.controls)),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                 "style_variant_probabilities": dict(query.style_variant_probabilities),
                 "question_format": "gui_navigation_path_target_label",
@@ -1195,15 +1195,15 @@ class PagesRelationNavigationPathTargetLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(query),
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             scene_id="navigation_flow",
-            query_probabilities=query.query_variant_probabilities,
+            query_probabilities=query.query_id_probabilities,
         )
 
 
-__all__ = ["PagesRelationNavigationPathTargetLabelTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["PagesRelationNavigationPathTargetLabelTask", "SUPPORTED_QUERY_IDS"]

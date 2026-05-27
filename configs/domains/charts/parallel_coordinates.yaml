@@ -18,7 +18,7 @@ generation:
     crossing_answer_count_max: 6
     profile_crossing_answer_count_min: 1
     profile_crossing_answer_count_max: 4
-    query_variant_weights:
+    query_id_weights:
       above_on_both_axes: 1.0
       below_on_both_axes: 1.0
       above_on_one_below_on_other: 1.0
@@ -29,7 +29,7 @@ generation:
       crossings_involving_profile_between_axes: 1.0
     scene_variant_weights:
       vertical_parallel_coordinates: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:

@@ -131,7 +131,7 @@ def render_optics_ray_scene(
     source_point_px: Tuple[float, float],
     exit_point_px: Tuple[float, float],
     evidence_entity_ids: Sequence[str],
-    query_variant: str,
+    query_id: str,
     diagram_style: Any | None = None,
 ) -> RenderedOpticsScene:
     """Render one graph-paper optics scene with hidden full path semantics."""
@@ -367,7 +367,7 @@ def render_optics_ray_scene(
             }
         )
 
-    if str(query_variant) == "target_hit_count":
+    if str(query_id) == "target_hit_count":
         for item in targets:
             col = int(item["col"])
             row = int(item["row"])
@@ -414,7 +414,7 @@ def render_optics_ray_scene(
     render_map = {
         "accent_color_name": str(accent_color_name),
         "scene_variant": str(scene_variant),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "board_bbox_px": list(board_bbox),
         "graph_origin_px": [round(float(graph_origin_px[0]), 3), round(float(graph_origin_px[1]), 3)],
         "graph_spacing_px": int(round(cell_size)),

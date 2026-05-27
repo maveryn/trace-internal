@@ -48,18 +48,18 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 TASK_ID = "charts_scatter_series_readout_base"
 SCENE_ID = "scatter_readout"
-_EXTREMUM_QUERY_VARIANTS: Tuple[str, ...] = (
+_EXTREMUM_QUERY_IDS: Tuple[str, ...] = (
     "series_highest_x_label",
     "series_lowest_x_label",
 )
-_LOOKUP_QUERY_VARIANTS: Tuple[str, ...] = (
+_LOOKUP_QUERY_IDS: Tuple[str, ...] = (
     "series_pair_value_gap_at_x",
     "series_y_anchor_other_series_value",
 )
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = _EXTREMUM_QUERY_VARIANTS + _LOOKUP_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = _EXTREMUM_QUERY_IDS + _LOOKUP_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("marker_scatter",)
 
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "scatter")
@@ -270,17 +270,17 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -389,14 +389,12 @@ def _build_dataset(
     target_point: _Point
     trace: Dict[str, Any] = {
         "query_id": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant": str(query_id),
-        "query_variant_probabilities": dict(query_probabilities),
-        "query_variant_probabilities": dict(query_probabilities),
+        "query_id_probabilities": dict(query_probabilities),
+        "query_id_probabilities": dict(query_probabilities),
         "target_series_label": str(target_series.label),
     }
 
-    if str(query_id) in _EXTREMUM_QUERY_VARIANTS and should_use_unanswerable_branch(
+    if str(query_id) in _EXTREMUM_QUERY_IDS and should_use_unanswerable_branch(
         params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.{query_id}",
@@ -814,7 +812,7 @@ class ChartsScatterSeriesReadoutTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_id, query_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         dataset_params = {**dict(params), "_enable_unanswerable": bool(getattr(self, "supports_unanswerable", False))}
         dataset = _build_dataset(
             params=dataset_params,
@@ -917,9 +915,7 @@ class ChartsScatterSeriesReadoutTask:
                 "scene_kind": "chart_scatter_series_readout",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_id),
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
                     "target_point_id": "" if target_point is None else str(target_point.point_id),
@@ -928,20 +924,16 @@ class ChartsScatterSeriesReadoutTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_id),
                     "query_id": str(query_id),
-                    "query_variant": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant_probabilities": {"marker_scatter": 1.0},
                     "series_count": len(dataset.series),
                     "x_count": len(dataset.x_labels),
@@ -968,9 +960,7 @@ class ChartsScatterSeriesReadoutTask:
                 "legend_bboxes_px": dict(rendered.legend_bboxes),
             },
             "execution_trace": {
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "question_format": "scatter_series_readout_query",
                 "answer": answer_value,
@@ -987,8 +977,8 @@ class ChartsScatterSeriesReadoutTask:
                 "target_series_label": str(dataset.query.target_series_label),
                 "target_x_label": "" if target_point is None else str(target_point.x_label),
                 "target_y_value": None if target_point is None else int(target_point.y_value),
-                "query_variant_probabilities": dict(query_probabilities),
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 **dict(dataset.query.trace),
             },
             "witness_symbolic": {
@@ -1015,7 +1005,6 @@ class ChartsScatterSeriesReadoutTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_id),
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1027,7 +1016,7 @@ class ChartsScatterSeriesExtremumXLabelTask(MergedChartQueryVariantTaskMixin, Ch
     """Return the x-axis label where a named series reaches its high or low point."""
 
     task_id = "task_charts__scatter_readout__series_x_extremum_label"
-    allowed_query_variants = _EXTREMUM_QUERY_VARIANTS
+    allowed_query_ids = _EXTREMUM_QUERY_IDS
     supports_unanswerable = True
 
 
@@ -1036,7 +1025,7 @@ class ChartsScatterSeriesPointLookupTask(MergedChartQueryVariantTaskMixin, Chart
     """Read a point by combining a series legend with one axis/value cue."""
 
     task_id = "task_charts__scatter_readout__series_point_lookup_value"
-    allowed_query_variants = _LOOKUP_QUERY_VARIANTS
+    allowed_query_ids = _LOOKUP_QUERY_IDS
 
 
 __all__ = [
@@ -1044,5 +1033,5 @@ __all__ = [
     "ChartsScatterSeriesPointLookupTask",
     "ChartsScatterSeriesReadoutTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

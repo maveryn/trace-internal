@@ -52,7 +52,7 @@ generation:
     balanced_node_color_name_sampling: true
   task_overrides:
     task_graph__node_link__shortest_path_length:
-      query_variant_weights:
+      query_id_weights:
         shortest_path_length: 1.0
         directed_shortest_path_length: 1.0
       layout_variant_weights:
@@ -71,7 +71,7 @@ generation:
       edge_routing_variant_weights:
         straight: 1.0
         mixed_arc: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_label_variant_sampling: true
       balanced_edge_routing_variant_sampling: true
     task_graph__node_link__longest_path_length:

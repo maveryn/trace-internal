@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
 
-SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS: Tuple[str, ...] = (
     "pop_count",
     "drop_count",
     "pop_color_label",
@@ -62,7 +62,7 @@ class BubbleShooterSample:
 
     row_count: int
     col_count: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board: Board
@@ -321,7 +321,7 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
     if outcome != sample.outcome:
         raise ValueError("bubble shooter stored outcome does not match board computation")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     if query == "pop_count":
         if sample.shooter_color_key != sample.outcome.color_key:
             raise ValueError("pop_count shooter color must match outcome color")
@@ -359,7 +359,7 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
             | {bubble_entity_id(coord) for coord in sample.outcome.popped_coords}
         )
     else:
-        raise ValueError(f"unsupported bubble shooter query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported bubble shooter query_id: {sample.query_id}")
 
     if set(sample.evidence_entity_ids) != expected:
         raise ValueError("bubble shooter evidence ids do not match active query")
@@ -368,7 +368,7 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
 __all__ = [
     "BUBBLE_COLOR_KEYS",
     "BUBBLE_OPTION_LABELS",
-    "SUPPORTED_BUBBLE_SHOOTER_QUERY_VARIANTS",
+    "SUPPORTED_BUBBLE_SHOOTER_QUERY_IDS",
     "SUPPORTED_BUBBLE_SHOOTER_SCENE_VARIANTS",
     "SUPPORTED_BUBBLE_SHOOTER_STYLE_VARIANTS",
     "Board",

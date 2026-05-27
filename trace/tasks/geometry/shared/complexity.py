@@ -240,12 +240,12 @@ def geometry_analytical_output_burden(
 
 
 def geometry_counting_classification_reasoning_score(
-    *, task_kind: str, query_variant: str
+    *, task_kind: str, query_id: str
 ) -> float:
     """Return normalized reasoning load for one geometry counting class."""
 
     normalized_kind = str(task_kind).strip().lower()
-    normalized_variant = str(query_variant).strip().lower()
+    normalized_variant = str(query_id).strip().lower()
     score_by_kind = {
         "angle": {
             "acute_angle": 0.30,
@@ -282,18 +282,18 @@ def geometry_counting_classification_reasoning_score(
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
         raise ValueError(
-            f"unsupported geometry counting task/variant: {task_kind} / {query_variant}"
+            f"unsupported geometry counting task/variant: {task_kind} / {query_id}"
         )
     return float(kind_scores[normalized_variant])
 
 
 def geometry_counting_variant_ambiguity_score(
-    *, task_kind: str, query_variant: str
+    *, task_kind: str, query_id: str
 ) -> float:
     """Return normalized per-variant ambiguity for one counting predicate."""
 
     normalized_kind = str(task_kind).strip().lower()
-    normalized_variant = str(query_variant).strip().lower()
+    normalized_variant = str(query_id).strip().lower()
     score_by_kind = {
         "angle": {
             "acute_angle": 0.30,
@@ -330,7 +330,7 @@ def geometry_counting_variant_ambiguity_score(
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
         raise ValueError(
-            f"unsupported geometry counting task/variant: {task_kind} / {query_variant}"
+            f"unsupported geometry counting task/variant: {task_kind} / {query_id}"
         )
     return float(kind_scores[normalized_variant])
 
@@ -381,7 +381,7 @@ def build_geometry_counting_complexity(
     object_count_max: int,
     target_count: int,
     task_kind: str,
-    query_variant: str,
+    query_id: str,
 ) -> TaskComplexity:
     """Build one normalized counting-family complexity payload."""
 
@@ -392,7 +392,7 @@ def build_geometry_counting_complexity(
     )
     variant_ambiguity = geometry_counting_variant_ambiguity_score(
         task_kind=str(task_kind),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     return build_geometry_task_complexity(
         weights=weights,
@@ -404,7 +404,7 @@ def build_geometry_counting_complexity(
             ),
             "classification_reasoning": geometry_counting_classification_reasoning_score(
                 task_kind=str(task_kind),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
             ),
             "ambiguity": clamp_unit_interval(
                 (0.55 * density_balance) + (0.45 * variant_ambiguity)
@@ -441,7 +441,7 @@ def build_geometry_measurement_complexity(
 
 
 def geometry_transformation_reasoning_score(
-    *, query_variant: str, scene_variant: str
+    *, query_id: str, scene_variant: str
 ) -> float:
     """Return normalized reasoning load for one transformation-matching query."""
 
@@ -450,11 +450,11 @@ def geometry_transformation_reasoning_score(
         "reflection_match": 0.58,
         "rotation_match": 0.80,
     }
-    query_key = str(query_variant).strip().lower()
+    query_key = str(query_id).strip().lower()
     scene_key = str(scene_variant).strip().lower()
     if query_key not in base_by_query:
         raise ValueError(
-            f"unsupported geometry transformation query_variant: {query_variant}"
+            f"unsupported geometry transformation query_id: {query_id}"
         )
     scene_bonus = {
         "triangle": 0.00,
@@ -472,7 +472,7 @@ def build_geometry_transformation_complexity(
     task_group_defaults: Mapping[str, Any],
     task_id: str,
     visual_scan: float,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     ambiguity: float,
     evidence_point_count: int,
@@ -485,7 +485,7 @@ def build_geometry_transformation_complexity(
         components={
             "visual_scan": clamp_unit_interval(float(visual_scan)),
             "transformation_reasoning": geometry_transformation_reasoning_score(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 scene_variant=str(scene_variant),
             ),
             "ambiguity": clamp_unit_interval(float(ambiguity)),
@@ -497,7 +497,7 @@ def build_geometry_transformation_complexity(
 
 
 def geometry_similarity_reasoning_score(
-    *, query_variant: str, scene_variant: str
+    *, query_id: str, scene_variant: str
 ) -> float:
     """Return normalized reasoning load for one similarity-counting query."""
 
@@ -505,11 +505,11 @@ def geometry_similarity_reasoning_score(
         "congruent_count": 0.44,
         "similar_count": 0.72,
     }
-    query_key = str(query_variant).strip().lower()
+    query_key = str(query_id).strip().lower()
     scene_key = str(scene_variant).strip().lower()
     if query_key not in base_by_query:
         raise ValueError(
-            f"unsupported geometry similarity query_variant: {query_variant}"
+            f"unsupported geometry similarity query_id: {query_id}"
         )
     scene_bonus = {
         "triangle": 0.00,
@@ -527,7 +527,7 @@ def build_geometry_similarity_complexity(
     task_group_defaults: Mapping[str, Any],
     task_id: str,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int,
 ) -> TaskComplexity:
@@ -544,12 +544,12 @@ def build_geometry_similarity_complexity(
         components={
             "visual_scan": clamp_unit_interval(float(visual_scan)),
             "similarity_reasoning": geometry_similarity_reasoning_score(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 scene_variant=str(scene_variant),
             ),
             "ambiguity": clamp_unit_interval(
                 (0.55 * float(density_balance))
-                + (0.20 if str(query_variant) == "similar_count" else 0.10)
+                + (0.20 if str(query_id) == "similar_count" else 0.10)
             ),
             "output_burden": geometry_label_set_output_burden(
                 target_count=int(target_count),
@@ -560,11 +560,11 @@ def build_geometry_similarity_complexity(
 
 
 def geometry_coordinate_relation_reasoning_score(
-    *, query_variant: str, scene_variant: str
+    *, query_id: str, scene_variant: str
 ) -> float:
     """Return normalized reasoning load for one coordinate-relation query."""
 
-    query_key = str(query_variant).strip().lower()
+    query_key = str(query_id).strip().lower()
     scene_key = str(scene_variant).strip().lower()
     score_by_query = {
         "parallel_count": 0.46,
@@ -575,7 +575,7 @@ def geometry_coordinate_relation_reasoning_score(
     }
     if query_key not in score_by_query:
         raise ValueError(
-            f"unsupported geometry coordinate query_variant: {query_variant}"
+            f"unsupported geometry coordinate query_id: {query_id}"
         )
     scene_bonus = {
         "segment_set": 0.00,
@@ -595,7 +595,7 @@ def build_geometry_coordinate_relation_complexity(
     task_group_defaults: Mapping[str, Any],
     task_id: str,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     object_count: int,
     target_count: int | None,
     evidence_type: str,
@@ -605,7 +605,7 @@ def build_geometry_coordinate_relation_complexity(
 
     weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
     normalized_scene = str(scene_variant).strip().lower()
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     if normalized_scene == "polygon_lattice":
         visual_scan = normalize_linear(
             float(object_count),
@@ -666,7 +666,7 @@ def build_geometry_coordinate_relation_complexity(
         components={
             "visual_scan": float(visual_scan),
             "coordinate_reasoning": geometry_coordinate_relation_reasoning_score(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 scene_variant=str(scene_variant),
             ),
             "ambiguity": float(ambiguity),
@@ -678,13 +678,13 @@ def build_geometry_coordinate_relation_complexity(
 def geometry_graphing_reasoning_score(
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None = None,
     extremum_kind: str | None = None,
 ) -> float:
     """Return normalized reasoning load for one plotted-function query."""
 
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     if normalized_query == "reference_line_crossing_count":
         normalized_reference = str(reference_line_kind or "").strip().lower()
         if normalized_reference == "horizontal_line":
@@ -705,7 +705,7 @@ def geometry_graphing_reasoning_score(
             base_score = 0.50
     else:
         raise ValueError(
-            f"unsupported geometry graphing query_variant: {query_variant}"
+            f"unsupported geometry graphing query_id: {query_id}"
         )
     scene_bonus = {
         "quadratic": 0.00,
@@ -726,7 +726,7 @@ def build_geometry_graphing_complexity(
     task_group_defaults: Mapping[str, Any],
     task_id: str,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     reference_line_kind: str | None = None,
     extremum_kind: str | None = None,
     object_count: int,
@@ -745,7 +745,7 @@ def build_geometry_graphing_complexity(
         (0.70 * normalize_linear(float(target_count), min_value=0.0, max_value=6.0))
         + (
             0.15
-            if str(query_variant).strip().lower() == "reference_line_crossing_count"
+            if str(query_id).strip().lower() == "reference_line_crossing_count"
             and str(reference_line_kind or "").strip().lower() == "horizontal_line"
             else 0.0
         )
@@ -762,7 +762,7 @@ def build_geometry_graphing_complexity(
             "visual_scan": float(visual_scan),
             "graphing_reasoning": geometry_graphing_reasoning_score(
                 scene_variant=str(scene_variant),
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 reference_line_kind=reference_line_kind,
                 extremum_kind=extremum_kind,
             ),
@@ -772,10 +772,10 @@ def build_geometry_graphing_complexity(
     )
 
 
-def geometry_circle_theorem_reasoning_score(*, query_variant: str) -> float:
+def geometry_circle_theorem_reasoning_score(*, query_id: str) -> float:
     """Return normalized reasoning load for one circle-theorem query."""
 
-    normalized_variant = str(query_variant).strip().lower()
+    normalized_variant = str(query_id).strip().lower()
     score_by_variant = {
         "diameter_perpendicular_chord_length": 0.56,
         "secant_secant_variable_segment_length": 0.92,
@@ -791,7 +791,7 @@ def geometry_circle_theorem_reasoning_score(*, query_variant: str) -> float:
     }
     if normalized_variant not in score_by_variant:
         raise ValueError(
-            f"unsupported geometry circle-theorem query_variant: {query_variant}"
+            f"unsupported geometry circle-theorem query_id: {query_id}"
         )
     return float(score_by_variant[normalized_variant])
 
@@ -800,7 +800,7 @@ def build_geometry_circle_theorem_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
     task_id: str,
-    query_variant: str,
+    query_id: str,
     annotation_count: int,
     answer_value: int,
 ) -> TaskComplexity:
@@ -816,7 +816,7 @@ def build_geometry_circle_theorem_complexity(
         (0.55 * normalize_linear(float(answer_value), min_value=3.0, max_value=30.0))
         + (
             0.25
-            if str(query_variant).strip().lower() == "tangent_secant_length"
+            if str(query_id).strip().lower() == "tangent_secant_length"
             else 0.12
         )
     )
@@ -831,7 +831,7 @@ def build_geometry_circle_theorem_complexity(
         components={
             "visual_scan": float(visual_scan),
             "theorem_reasoning": geometry_circle_theorem_reasoning_score(
-                query_variant=str(query_variant)
+                query_id=str(query_id)
             ),
             "ambiguity": float(ambiguity),
             "output_burden": float(output_burden),
@@ -839,11 +839,11 @@ def build_geometry_circle_theorem_complexity(
     )
 
 
-def geometry_analytical_reasoning_score(*, task_kind: str, query_variant: str) -> float:
+def geometry_analytical_reasoning_score(*, task_kind: str, query_id: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 
     normalized_kind = str(task_kind).strip().lower()
-    normalized_variant = str(query_variant).strip().lower()
+    normalized_variant = str(query_id).strip().lower()
     score_by_kind = {
         "volume": {
             "rectangular_prism_given_lwh": 0.30,
@@ -896,18 +896,18 @@ def geometry_analytical_reasoning_score(*, task_kind: str, query_variant: str) -
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
         raise ValueError(
-            f"unsupported geometry analytical task/variant: {task_kind} / {query_variant}"
+            f"unsupported geometry analytical task/variant: {task_kind} / {query_id}"
         )
     return float(kind_scores[normalized_variant])
 
 
 def geometry_analytical_variant_ambiguity_score(
-    *, task_kind: str, query_variant: str
+    *, task_kind: str, query_id: str
 ) -> float:
     """Return normalized ambiguity for one analytical geometry variant."""
 
     normalized_kind = str(task_kind).strip().lower()
-    normalized_variant = str(query_variant).strip().lower()
+    normalized_variant = str(query_id).strip().lower()
     score_by_kind = {
         "volume": {
             "rectangular_prism_given_lwh": 0.28,
@@ -960,7 +960,7 @@ def geometry_analytical_variant_ambiguity_score(
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
         raise ValueError(
-            f"unsupported geometry analytical task/variant: {task_kind} / {query_variant}"
+            f"unsupported geometry analytical task/variant: {task_kind} / {query_id}"
         )
     return float(kind_scores[normalized_variant])
 
@@ -970,7 +970,7 @@ def build_geometry_analytical_complexity(
     task_group_defaults: Mapping[str, Any],
     task_id: str,
     task_kind: str,
-    query_variant: str,
+    query_id: str,
     annotation_count: int,
     answer_format: str,
     reasoning_mode: str | None = None,
@@ -1018,7 +1018,6 @@ def build_geometry_analytical_complexity(
             "analytical_reasoning": clamp_unit_interval(
                 geometry_analytical_reasoning_score(
                     task_kind=str(task_kind),
-                    query_variant=str(query_variant),
                 )
                 + float(mode_reasoning)
             ),
@@ -1027,7 +1026,7 @@ def build_geometry_analytical_complexity(
                     0.65
                     * geometry_analytical_variant_ambiguity_score(
                         task_kind=str(task_kind),
-                        query_variant=str(query_variant),
+                        query_id=str(query_id),
                     )
                 )
                 + (0.15 * float(visual_scan))

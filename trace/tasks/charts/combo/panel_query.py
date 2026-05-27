@@ -845,14 +845,14 @@ class ChartsComboPanelQueryTask:
             params=params,
             instance_seed=int(instance_seed),
             supported=self.query_ids,
-            explicit_keys=("query_id", "query_variant", "query_variant"),
-            weights_key="query_variant_weights",
-            balance_key="balanced_query_variant_sampling",
+            explicit_keys=("query_id", "query_id", "query_id"),
+            weights_key="query_id_weights",
+            balance_key="balanced_query_id_sampling",
             namespace=f"{self.task_id}.query",
         )
         query_axis_explicit = _explicit_axis_selected(
             params,
-            ("query_id", "query_variant", "query_variant"),
+            ("query_id", "query_id", "query_id"),
             self.query_ids,
         )
         scene_variant, scene_probabilities = _axis_choice(
@@ -951,10 +951,8 @@ class ChartsComboPanelQueryTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
-            "query_variant_probabilities": dict(query_probabilities),
+            "query_id_probabilities": dict(query_probabilities),
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(scene_probabilities),
             "labels": list(labels),
@@ -973,9 +971,7 @@ class ChartsComboPanelQueryTask:
                 "relations": dict(query_params),
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1000,8 +996,6 @@ class ChartsComboPanelQueryTask:
             },
             "execution_trace": {
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
-                "query_variant": "default",
                 "question_format": str(task_key),
                 "answer": answer_gt.value,
                 "answer_type": str(answer_gt.type),
@@ -1043,7 +1037,6 @@ class ChartsComboPanelQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

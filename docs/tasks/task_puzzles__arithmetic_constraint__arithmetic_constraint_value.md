@@ -5,7 +5,7 @@
 2. Scene id: `arithmetic_constraint`
 3. Source implementation domain/group: `puzzles/logic`
 4. Query id: sampled from `equal_sum_line_constraint_value`, `paired_cluster_sum_relation_value`, `consecutive_window_sum_value`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.puzzles.logic.arithmetic_constraint.PuzzlesLogicArithmeticConstraintValueTask`

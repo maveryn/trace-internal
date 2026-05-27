@@ -41,7 +41,7 @@ def test_icons_paired_canvas_exact_match_contract() -> None:
     execution = trace["execution_trace"]
     right = _panel_entities(out, "right")
     assert out.scene_id == "paired_canvas"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "right_exact_match_count"
     assert execution["question_format"] == "count_right_icons_with_exact_left_match"
     assert int(out.answer_gt.value) == 2
@@ -151,6 +151,6 @@ def test_icons_paired_canvas_prompt_examples_and_balanced_queries() -> None:
             )
             counts[str(out.query_id)] += 1
             assert out.scene_id == "paired_canvas"
-            assert out.query_variant == "default"
+            assert out.query_id == "default"
         assert set(counts) == expected
         assert sum(counts.values()) == 24

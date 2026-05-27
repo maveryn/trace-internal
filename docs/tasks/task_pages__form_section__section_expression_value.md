@@ -7,7 +7,7 @@
 4. Objective: locate the named section in a structured document, read the referenced amount fields, compute the requested expression, and return the exact derived amount.
 
 ## 2) Scene + task contract
-1. Supported `query_variant` values:
+1. Supported `query_id` values:
    - `sum_two_amounts_in_section`
    - `difference_two_amounts_in_section`
    - `sum_minus_amount_in_section`
@@ -67,7 +67,7 @@
    - `field_value_bboxes_px`
    - `field_box_bboxes_px`
 4. `execution_trace` records:
-   - `query_variant`
+   - `query_id`
    - `scene_variant`
    - `question_format`
    - `view_family`
@@ -108,7 +108,7 @@
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. `query_variant` and `scene_variant` are sampled independently at the policy level; balanced review sampling decouples their seeded sampling cycles so equal-cardinality axes cover the cross-product.
+2. `query_id` and `scene_variant` are sampled independently at the policy level; balanced review sampling decouples their seeded sampling cycles so equal-cardinality axes cover the cross-product.
 3. Answers and evidence come from the same exact rendered operand values and computed trace payload.
 4. No semantic auto-relaxation.
 5. If a sampled scene creates duplicate visible values, a non-positive result, or a computed result that already appears elsewhere on the page, reject and resample instead of silently changing the query.

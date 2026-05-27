@@ -19,11 +19,11 @@ def test_games_marble_chain_defaults_expose_axes_and_prompt_bundle() -> None:
     )
 
     assert set(generation["scene_variant_weights"].keys()) == {"semicircle_track", "spiral_track", "double_arc_track"}
-    assert set(generation["direction_label_query_variant_weights"].keys()) == {
+    assert set(generation["direction_label_query_id_weights"].keys()) == {
         "max_pop_direction_label",
         "target_pop_direction_label",
     }
-    assert set(generation["effect_value_query_variant_weights"].keys()) == {
+    assert set(generation["effect_value_query_id_weights"].keys()) == {
         "pop_count_after_marked_shot",
     }
     assert list(generation["option_count_support"]) == [5, 6, 7]
@@ -48,7 +48,7 @@ def test_games_marble_chain_prompt_bundle_has_four_queries() -> None:
 def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
     out = create_task("task_games__marble_chain__shot_direction_label").generate(
         91231,
-        params={"query_variant": "max_pop_direction_label", "option_count": 6},
+        params={"query_id": "max_pop_direction_label", "option_count": 6},
         max_attempts=300,
     )
     execution = out.trace_payload["execution_trace"]
@@ -58,7 +58,7 @@ def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
 
     assert out.answer_gt.type == "string"
     assert answers == [str(out.answer_gt.value)]
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == "marble_chain"
     assert out.query_id == "max_pop_direction_label"
     assert len(out.evidence_gt.value) >= 1
@@ -67,7 +67,7 @@ def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
 def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
     out = create_task("task_games__marble_chain__shot_direction_label").generate(
         91241,
-        params={"query_variant": "target_pop_direction_label", "target_pop_count": 3},
+        params={"query_id": "target_pop_direction_label", "target_pop_count": 3},
         max_attempts=300,
     )
     execution = out.trace_payload["execution_trace"]
@@ -83,7 +83,7 @@ def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
 def test_games_marble_chain_pop_count_matches_marked_outcome() -> None:
     out = create_task("task_games__marble_chain__shot_effect_value").generate(
         91251,
-        params={"query_variant": "pop_count_after_marked_shot", "target_answer": 4},
+        params={"query_id": "pop_count_after_marked_shot", "target_answer": 4},
         max_attempts=300,
     )
     marked = out.trace_payload["execution_trace"]["marked_outcome"]
@@ -92,5 +92,5 @@ def test_games_marble_chain_pop_count_matches_marked_outcome() -> None:
     assert int(out.answer_gt.value) == 4
     assert int(marked["pop_count"]) == 4
     assert out.query_id == "pop_count_after_marked_shot"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value

@@ -17,7 +17,7 @@ from trace.tasks.illustrations.counterfactual.visible_part_count import (
     QUADRUPED_VARIANT,
     SNOWFLAKE_VARIANT,
     STAR_VARIANT,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
     TRAFFIC_LIGHT_VARIANT,
 )
@@ -47,10 +47,10 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
     ]
     task = create_task(TASK_ID)
     for index, (variant, answer, canonical, part_kind) in enumerate(cases):
-        out = task.generate(2026052600 + index, params={"query_variant": variant, "target_answer": answer}, max_attempts=20)
+        out = task.generate(2026052600 + index, params={"query_id": variant, "target_answer": answer}, max_attempts=20)
         trace = out.trace_payload
         assert out.scene_id == "single_object_figure"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(answer)
@@ -82,7 +82,7 @@ def test_illustrations_counterfactual_visible_part_count_sampling_balances_varia
         out = task.generate(2026052700 + index, params={}, max_attempts=20)
         variants[str(out.query_id)] += 1
         answers[int(out.answer_gt.value)] += 1
-    assert set(variants) == set(SUPPORTED_QUERY_VARIANTS)
+    assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert min(variants.values()) >= 8
     assert max(variants.values()) <= 32
     assert set(answers) == {1, 2, 3, 4, 5, 6, 7, 8}

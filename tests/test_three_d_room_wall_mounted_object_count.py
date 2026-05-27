@@ -12,18 +12,18 @@ from trace.tasks.three_d.room.wall_mounted_object_count import (
     QUERY_OBJECT_TYPE_BY_VARIANT,
     ROOM_FRONT_Y,
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_wall_mounted_object_count_answer_and_evidence(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_wall_mounted_object_count_answer_and_evidence(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": "living_room",
             "target_count": 2,
             "post_image_noise_apply_prob": 0.0,
@@ -33,7 +33,7 @@ def test_wall_mounted_object_count_answer_and_evidence(query_variant: str) -> No
 
     trace = output.trace_payload["execution_trace"]
     render_map = output.trace_payload["render_map"]
-    target_type = QUERY_OBJECT_TYPE_BY_VARIANT[query_variant]
+    target_type = QUERY_OBJECT_TYPE_BY_VARIANT[query_id]
     target_specs = [
         spec
         for spec in trace["wall_object_specs"]
@@ -55,9 +55,9 @@ def test_wall_mounted_object_count_answer_and_evidence(query_variant: str) -> No
         key=lambda spec: (str(spec.get("wall", "")), float(spec["base_xyz"][2]), float(spec["world_xyz"][0]), float(spec["world_xyz"][1])),
     )]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
-    assert output.query_id == query_variant
+    assert output.query_id == query_id
     assert output.answer_gt.type == "integer"
     assert output.answer_gt.value == len(target_specs) == 2
     assert output.evidence_gt.type == "bbox_set"
@@ -92,7 +92,7 @@ def test_wall_mounted_object_count_allows_zero_targets() -> None:
     output = task.generate(
         20260522,
         params={
-            "query_variant": "tv_wall_mounted_count",
+            "query_id": "tv_wall_mounted_count",
             "scene_variant": "studio_room",
             "target_count": 0,
             "post_image_noise_apply_prob": 0.0,

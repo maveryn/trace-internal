@@ -5,7 +5,7 @@
 2. Scene id: `sankey`
 3. Source implementation domain/group: `charts/flow`
 4. Query id: `path_bottleneck_value`, `path_flow_difference`, `source_to_target_total_flow`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.flow.sankey_path_value.ChartsFlowSankeyPathValuePublicTask`

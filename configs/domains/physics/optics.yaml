@@ -20,11 +20,11 @@ generation:
         triple_mirror: 1.0
         quad_mirror: 0.0
         five_mirror: 1.0
-      query_variant_weights:
+      query_id_weights:
         bounce_count: 1.0
         target_hit_count: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_target_answer_sampling: true
       bounce_count_support_single_mirror: [0, 1]
       bounce_count_support_double_mirror: [0, 1, 2]

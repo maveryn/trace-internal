@@ -175,15 +175,15 @@ def _variant_mapping(defaults: Mapping[str, Any], key: str, *, variant: str) -> 
 
 
 def _normalize_variant(variant: str, *, supported_variants: Tuple[str, ...], aliases: Mapping[str, str]) -> str:
-    """Normalize explicit query-variant aliases to the public task vocabulary."""
+    """Normalize explicit query-id aliases to the public task vocabulary."""
 
     normalized = aliases.get(str(variant), str(variant))
     if normalized not in supported_variants:
-        raise ValueError(f"unsupported query_variant: {variant}")
+        raise ValueError(f"unsupported query_id: {variant}")
     return str(normalized)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     task_id: str,
     gen_defaults: Mapping[str, Any],
@@ -195,21 +195,21 @@ def _resolve_query_variant(
     """Resolve the active counting predicate for one reference-match task."""
 
     normalized_params = dict(params)
-    explicit_variant = normalized_params.get("query_variant")
+    explicit_variant = normalized_params.get("query_id")
     if explicit_variant is not None:
-        normalized_params["query_variant"] = _normalize_variant(
+        normalized_params["query_id"] = _normalize_variant(
             str(explicit_variant),
             supported_variants=supported_variants,
             aliases=aliases,
         )
-    rng = spawn_rng(int(instance_seed), f"{task_id}.query_variant")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.query_id")
     selected_variant, variant_probabilities = resolve_variant(
         rng,
         params=normalized_params,
         gen_defaults=gen_defaults,
         supported_variants=supported_variants,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected_variant = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -219,9 +219,9 @@ def _resolve_query_variant(
         variant_probabilities=variant_probabilities,
         supported_variants=supported_variants,
         balance_flag_key="balanced_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{task_id}.query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{task_id}.query_id",
     )
     return str(selected_variant), {str(key): float(value) for key, value in sorted(variant_probabilities.items())}
 
@@ -610,7 +610,6 @@ def _relations_for(scene_payload: _ScenePayload, *, query_id: str) -> Dict[str, 
 
     relations: Dict[str, Any] = {
         "query_id": str(query_id),
-        "query_variant": "default",
         "reference_icon_id": str(scene_payload.reference_icon_id),
         "reference_tint_rgb": list(scene_payload.reference_tint_rgb),
         "reference_rotation_degrees": int(scene_payload.reference_rotation_degrees),
@@ -707,7 +706,7 @@ class _ReferenceAttributeMatchCountTaskBase:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         gen_defaults, render_defaults, prompt_defaults = _task_defaults(str(self.task_id))
-        query_id, query_probabilities = _resolve_query_variant(
+        query_id, query_probabilities = _resolve_query_id(
             task_id=str(self.task_id),
             gen_defaults=gen_defaults,
             supported_variants=tuple(self.supported_variants),
@@ -786,7 +785,6 @@ class _ReferenceAttributeMatchCountTaskBase:
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
             "task_id": str(self.task_id),
-            "query_variant": "default",
             "query_id": str(query_id),
         }
         trace_payload = {
@@ -814,14 +812,13 @@ class _ReferenceAttributeMatchCountTaskBase:
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 "variant_probabilities": dict(query_probabilities),
                 "params": {
                     "scene_id": taxonomy.scene_id,
                     "scene_variant": "reference_scene",
                     "query_id": str(query_id),
-                    "query_variant": "default",
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": dict(query_probabilities),
                     "variant_probabilities": dict(query_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
@@ -853,7 +850,7 @@ class _ReferenceAttributeMatchCountTaskBase:
             "execution_trace": {
                 **common_ids,
                 "scene_variant": "reference_scene",
-                "query_variant_probabilities": dict(query_probabilities),
+                "query_id_probabilities": dict(query_probabilities),
                 "variant_probabilities": dict(query_probabilities),
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
@@ -900,7 +897,6 @@ class _ReferenceAttributeMatchCountTaskBase:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=taxonomy.scene_id,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

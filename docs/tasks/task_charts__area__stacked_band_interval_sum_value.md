@@ -5,7 +5,7 @@
 2. Scene id: `area`
 3. Source implementation domain/group: `charts/area`
 4. Query id: `stacked_band_interval_sum_value`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.area.panel_query.ChartsAreaStackedBandIntervalSumValueTask`

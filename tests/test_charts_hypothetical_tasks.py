@@ -8,7 +8,7 @@ import pytest
 
 from trace.tasks.charts.hypothetical.counterfactual_value import (
     ChartsHypotheticalCounterfactualValueTask,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
 )
 
 
@@ -26,7 +26,7 @@ def _mean(values: list[int]) -> int:
 
 def _expected_answer(trace: dict) -> int:
     values_by_label = {str(label): int(value) for label, value in trace["values_by_label"].items()}
-    variant = str(trace["query_variant"])
+    variant = str(trace["query_id"])
     if variant == "remaining_mean_after_removal":
         retained = [values_by_label[str(label)] for label in trace["retained_labels"]]
         return _mean(retained)
@@ -55,25 +55,25 @@ def _assert_normalized_complexity(out: object) -> None:
 
 
 @pytest.mark.parametrize(
-    ("query_variant", "scene_variant"),
+    ("query_id", "scene_variant"),
     [
         ("remaining_mean_after_removal", "bar"),
         ("target_share_after_removal", "dot_plot"),
         ("baseline_from_aggregate_percent_change", "lollipop"),
     ],
 )
-def test_chart_hypothetical_variants_match_contract(query_variant: str, scene_variant: str) -> None:
+def test_chart_hypothetical_variants_match_contract(query_id: str, scene_variant: str) -> None:
     task = ChartsHypotheticalCounterfactualValueTask()
     out = task.generate(
-        12100 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant, "scene_variant": scene_variant},
+        12100 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "scene_variant": scene_variant},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -95,7 +95,7 @@ def test_chart_hypothetical_variants_match_contract(query_variant: str, scene_va
         assert 0 <= float(y_coord) <= int(render["canvas_height"])
     assert int(out.answer_gt.value) == int(execution["answer_value"])
     assert int(out.answer_gt.value) == _expected_answer(execution)
-    assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+    assert str(trace["query_spec"]["query_id"]) == str(query_id)
     assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
     assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
     assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
@@ -109,7 +109,7 @@ def test_chart_hypothetical_balances_variants_and_scenes() -> None:
     scenes = []
     for index in range(30):
         out = task.generate(12200 + index, params={}, max_attempts=10)
-        variants.append(str(out.query_variant))
+        variants.append(str(out.query_id))
         scenes.append(str(out.trace_payload["execution_trace"]["scene_variant"]))
     assert {variant: variants.count(variant) for variant in set(variants)} == {
         "remaining_mean_after_removal": 10,
@@ -133,12 +133,12 @@ def test_chart_hypothetical_prompt_examples_match_selected_variant() -> None:
             "answer": 40,
         },
     }
-    for index, query_variant in enumerate(expected, start=12300):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=12300):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_hypothetical_rejects_non_initial_scene_variants() -> None:
@@ -147,14 +147,14 @@ def test_chart_hypothetical_rejects_non_initial_scene_variants() -> None:
         with pytest.raises(ValueError):
             task.generate(
                 12400,
-                params={"query_variant": "remaining_mean_after_removal", "scene_variant": scene_variant},
+                params={"query_id": "remaining_mean_after_removal", "scene_variant": scene_variant},
                 max_attempts=10,
             )
 
 
 def test_chart_hypothetical_task_is_deterministic() -> None:
     task = ChartsHypotheticalCounterfactualValueTask()
-    params = {"query_variant": "target_share_after_removal", "scene_variant": "lollipop"}
+    params = {"query_id": "target_share_after_removal", "scene_variant": "lollipop"}
     out_a = task.generate(12500, params=params, max_attempts=10)
     out_b = task.generate(12500, params=params, max_attempts=10)
 

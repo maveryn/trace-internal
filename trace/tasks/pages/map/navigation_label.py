@@ -28,11 +28,11 @@ from ..shared.diagram.complexity import (
 from ..shared.diagram.map_common import (
     MapDefaults,
     SUPPORTED_DOCUMENT_MAP_SCENE_VARIANTS,
-    SUPPORTED_DOCUMENT_MAP_QUERY_VARIANTS,
+    SUPPORTED_DOCUMENT_MAP_QUERY_IDS,
     build_map_navigation_dataset,
     resolve_map_render_params,
     resolve_map_scene_variant,
-    resolve_map_query_variant,
+    resolve_map_query_id,
 )
 from ..shared.diagram.map_scene import render_map_scene
 from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, load_diagrams_noise_defaults
@@ -40,7 +40,7 @@ from ..shared.public_query_task import rewrite_pages_query_output
 
 
 TASK_ID = "task_pages__map__navigation_label"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = SUPPORTED_DOCUMENT_MAP_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DOCUMENT_MAP_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DOCUMENT_MAP_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_VARIANT = {
     "destination_after_directions": 0.64,
@@ -59,8 +59,8 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="m
 POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="map", apply_prob=0.0)
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
-    """Return prompt JSON examples that match the active map-query variant."""
+def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
+    """Return prompt JSON examples that match the active map-query id."""
 
     examples = {
         "destination_after_directions": (
@@ -72,7 +72,7 @@ def _build_prompt_json_examples(*, query_variant: str) -> tuple[str, str]:
             "Gallery",
         ),
     }
-    evidence_bbox, answer_value = examples[str(query_variant)]
+    evidence_bbox, answer_value = examples[str(query_id)]
     answer_and_evidence = {"evidence": evidence_bbox, "answer": str(answer_value)}
     answer_only = {"answer": str(answer_value)}
     return (
@@ -91,7 +91,7 @@ class PagesMapNavigationLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = resolve_map_query_variant(
+        query_id, query_id_probabilities = resolve_map_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
@@ -104,7 +104,7 @@ class PagesMapNavigationLabelTask:
             task_id=self.task_id,
         )
         dataset = build_map_navigation_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=params,
             instance_seed=int(instance_seed),
@@ -153,21 +153,21 @@ class PagesMapNavigationLabelTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description_campus_map"]),
                 "question_text": str(dataset["question_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_variant)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -191,7 +191,7 @@ class PagesMapNavigationLabelTask:
         route_scan = normalize_int_with_bounds(len(dataset["route_landmark_ids"]), [1, 6])
         evidence_scan = normalize_int_with_bounds(len(evidence_bbox_ids), [1, 6])
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(query_id)])
             + (0.10 * float(route_scan))
             + (0.10 * float(evidence_scan))
         )
@@ -209,7 +209,7 @@ class PagesMapNavigationLabelTask:
                 "scene_kind": f"document_map_{str(scene_variant)}",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_label": str(answer_value),
                     "route_landmark_ids": [str(item) for item in dataset["route_landmark_ids"]],
@@ -217,15 +217,15 @@ class PagesMapNavigationLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "landmark_count": int(dataset["landmark_count"]),
                     "route_landmark_count": int(len(dataset["route_landmark_ids"])),
@@ -256,7 +256,7 @@ class PagesMapNavigationLabelTask:
                 "highlighted_route_bboxes_px": dict(rendered_scene.highlighted_route_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": str(dataset["question_format"]),
                 "view_family": str(dataset["view_family"]),
@@ -296,13 +296,13 @@ class PagesMapNavigationLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
         return rewrite_pages_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="map",
-            query_probabilities=query_variant_probabilities,
+            query_probabilities=query_id_probabilities,
         )
 
 

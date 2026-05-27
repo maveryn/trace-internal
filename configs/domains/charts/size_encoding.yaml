@@ -18,10 +18,10 @@ generation:
     filtered_item_outside_extreme_min: 2
     neighbor_gap_min: 14
     category_total_gap_min: 42
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_extremum_direction_sampling: true
-    query_variant_weights:
+    query_id_weights:
       filtered_item_extremum_label: 1.0
       reference_size_neighbor_label: 1.0
       category_total_extremum_label: 1.0

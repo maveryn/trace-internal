@@ -88,10 +88,10 @@ def test_chart_trend_variants_match_contract() -> None:
         ("longest_monotone_streak", "bar", {"streak_direction": "increasing"}),
         ("longest_monotone_streak", "dot_plot", {"streak_direction": "decreasing"}),
     )
-    for seed, (query_variant, scene_variant, extra_params) in enumerate(cases, start=16010):
+    for seed, (query_id, scene_variant, extra_params) in enumerate(cases, start=16010):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, **extra_params},
+            params={"query_id": query_id, "scene_variant": scene_variant, **extra_params},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -103,7 +103,7 @@ def test_chart_trend_variants_match_contract() -> None:
         evidence_labels = [str(label) for label in execution["evidence_labels"]]
         evidence_points = [list(point) for point in out.evidence_gt.value]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -118,7 +118,7 @@ def test_chart_trend_variants_match_contract() -> None:
         for x_coord, y_coord in evidence_points:
             assert 0 <= float(x_coord) <= int(render["canvas_width"])
             assert 0 <= float(y_coord) <= int(render["canvas_height"])
-        assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+        assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
@@ -126,14 +126,14 @@ def test_chart_trend_variants_match_contract() -> None:
         _assert_value_axis_covers_values(render, values)
         assert all(int(left) != int(right) for left, right in zip(values[:-1], values[1:]))
 
-        if str(query_variant) == "turning_point_count" and str(execution["turning_point_type"]) == "peak":
+        if str(query_id) == "turning_point_count" and str(execution["turning_point_type"]) == "peak":
             expected = _peak_labels(labels, values)
-        elif str(query_variant) == "turning_point_count" and str(execution["turning_point_type"]) == "trough":
+        elif str(query_id) == "turning_point_count" and str(execution["turning_point_type"]) == "trough":
             expected = _trough_labels(labels, values)
-        elif str(query_variant) == "longest_monotone_streak" and str(execution["streak_direction"]) == "increasing":
+        elif str(query_id) == "longest_monotone_streak" and str(execution["streak_direction"]) == "increasing":
             expected = _longest_run_labels(labels, values, increasing=True)
         else:
-            assert str(query_variant) == "longest_monotone_streak"
+            assert str(query_id) == "longest_monotone_streak"
             assert str(execution["streak_direction"]) == "decreasing"
             expected = _longest_run_labels(labels, values, increasing=False)
         assert evidence_labels == expected
@@ -143,7 +143,7 @@ def test_chart_trend_variants_match_contract() -> None:
 
 def test_chart_trend_prompts_describe_chart_order() -> None:
     task = ChartsTrendValueTask()
-    params = {"query_variant": "turning_point_count", "turning_point_type": "peak"}
+    params = {"query_id": "turning_point_count", "turning_point_type": "peak"}
     line = task.generate(16021, params={**params, "scene_variant": "line"}, max_attempts=10)
     horizontal = task.generate(16022, params={**params, "scene_variant": "horizontal_bar"}, max_attempts=10)
     dot_plot = task.generate(16023, params={**params, "scene_variant": "dot_plot"}, max_attempts=10)
@@ -160,7 +160,7 @@ def test_chart_trend_supports_all_ordered_scene_variants() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "turning_point_count",
+                "query_id": "turning_point_count",
                 "turning_point_type": "peak",
                 "scene_variant": scene_variant,
             },
@@ -178,19 +178,19 @@ def test_chart_trend_supports_all_ordered_scene_variants() -> None:
     with pytest.raises(ValueError):
         task.generate(
             16040,
-            params={"query_variant": "turning_point_count", "turning_point_type": "peak", "scene_variant": "scatter"},
+            params={"query_id": "turning_point_count", "turning_point_type": "peak", "scene_variant": "scatter"},
             max_attempts=10,
         )
     with pytest.raises(ValueError):
         task.generate(
             16041,
-            params={"query_variant": "turning_point_count", "turning_point_type": "peak", "scene_variant": "pie"},
+            params={"query_id": "turning_point_count", "turning_point_type": "peak", "scene_variant": "pie"},
             max_attempts=10,
         )
     with pytest.raises(ValueError):
         task.generate(
             16042,
-            params={"query_variant": "turning_point_count", "turning_point_type": "peak", "scene_variant": "radar"},
+            params={"query_id": "turning_point_count", "turning_point_type": "peak", "scene_variant": "radar"},
             max_attempts=10,
         )
 
@@ -208,17 +208,17 @@ def test_chart_trend_prompt_examples_match_selected_variant() -> None:
         "turning_point_count": {"turning_point_type": "peak"},
         "longest_monotone_streak": {"streak_direction": "increasing"},
     }
-    for index, query_variant in enumerate(expected, start=16050):
-        out = task.generate(index, params={"query_variant": query_variant, **params_by_variant[query_variant]}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=16050):
+        out = task.generate(index, params={"query_id": query_id, **params_by_variant[query_id]}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_trend_task_is_deterministic() -> None:
     task = ChartsTrendValueTask()
-    params = {"query_variant": "longest_monotone_streak", "streak_direction": "increasing", "scene_variant": "line"}
+    params = {"query_id": "longest_monotone_streak", "streak_direction": "increasing", "scene_variant": "line"}
     out_a = task.generate(16061, params=params, max_attempts=10)
     out_b = task.generate(16061, params=params, max_attempts=10)
 
@@ -234,12 +234,12 @@ def test_chart_trend_complexity_is_normalized_and_monotonic() -> None:
     task = ChartsTrendValueTask()
     easy = task.generate(
         16062,
-        params={"query_variant": "turning_point_count", "turning_point_type": "peak", "scene_variant": "bar", "mark_count": 6},
+        params={"query_id": "turning_point_count", "turning_point_type": "peak", "scene_variant": "bar", "mark_count": 6},
         max_attempts=10,
     )
     hard = task.generate(
         16062,
-        params={"query_variant": "longest_monotone_streak", "streak_direction": "increasing", "scene_variant": "area", "mark_count": 10},
+        params={"query_id": "longest_monotone_streak", "streak_direction": "increasing", "scene_variant": "area", "mark_count": 10},
         max_attempts=10,
     )
     _assert_normalized_complexity(easy)
@@ -253,7 +253,7 @@ def test_chart_trend_supports_zero_turning_point_answers() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "turning_point_count",
+                "query_id": "turning_point_count",
                 "turning_point_type": turning_point_type,
                 "target_answer_min": 0,
                 "target_answer_max": 0,
@@ -267,10 +267,10 @@ def test_chart_trend_supports_zero_turning_point_answers() -> None:
 def test_chart_trend_supports_explicit_mark_count_10() -> None:
     task = ChartsTrendValueTask()
     cases = (
-        {"query_variant": "turning_point_count", "turning_point_type": "peak"},
-        {"query_variant": "turning_point_count", "turning_point_type": "trough"},
-        {"query_variant": "longest_monotone_streak", "streak_direction": "increasing"},
-        {"query_variant": "longest_monotone_streak", "streak_direction": "decreasing"},
+        {"query_id": "turning_point_count", "turning_point_type": "peak"},
+        {"query_id": "turning_point_count", "turning_point_type": "trough"},
+        {"query_id": "longest_monotone_streak", "streak_direction": "increasing"},
+        {"query_id": "longest_monotone_streak", "streak_direction": "decreasing"},
     )
     for seed, params in enumerate(cases, start=16080):
         out = task.generate(
@@ -303,7 +303,7 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "threshold_crossing",
+                "query_id": "threshold_crossing",
                 "crossing_mode": crossing_mode,
                 "crossing_direction": crossing_direction,
                 "scene_variant": scene_variant,
@@ -322,7 +322,7 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
         ordered_evidence_labels = [str(label) for label in execution["ordered_evidence_labels"]]
         evidence_points = [list(point) for point in out.evidence_gt.value]
 
-        assert str(out.query_variant) == "threshold_crossing"
+        assert str(out.query_id) == "threshold_crossing"
         assert str(execution["crossing_mode"]) == str(crossing_mode)
         assert str(execution["crossing_direction"]) == str(crossing_direction)
         assert out.answer_gt.type == "option_letter"
@@ -350,7 +350,7 @@ def test_chart_trend_threshold_crossing_variants_match_contract() -> None:
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
 
-        if str(execution["internal_query_variant"]).startswith("linear_projection_"):
+        if str(execution["internal_query_id"]).startswith("linear_projection_"):
             projected_labels = [str(label) for label in execution["projected_labels"]]
             assert projected_labels
             first_projected_index = labels.index(projected_labels[0])
@@ -407,7 +407,7 @@ def test_chart_trend_threshold_crossing_supports_scene_variants_and_rejects_inco
         out = task.generate(
             seed,
             params={
-                "query_variant": "threshold_crossing",
+                "query_id": "threshold_crossing",
                 "crossing_mode": "observed",
                 "crossing_direction": "above",
                 "scene_variant": scene_variant,
@@ -420,7 +420,7 @@ def test_chart_trend_threshold_crossing_supports_scene_variants_and_rejects_inco
             task.generate(
                 16140,
                 params={
-                    "query_variant": "threshold_crossing",
+                    "query_id": "threshold_crossing",
                     "crossing_mode": "observed",
                     "crossing_direction": "above",
                     "scene_variant": scene_variant,
@@ -441,7 +441,7 @@ def test_chart_trend_threshold_crossing_prompt_examples_match_selected_variant()
         out = task.generate(
             index,
             params={
-                "query_variant": "threshold_crossing",
+                "query_id": "threshold_crossing",
                 "crossing_mode": crossing_mode,
                 "crossing_direction": crossing_direction,
             },
@@ -458,7 +458,7 @@ def test_chart_trend_threshold_crossing_projection_supports_two_observed_marks()
     out = task.generate(
         16160,
         params={
-            "query_variant": "threshold_crossing",
+            "query_id": "threshold_crossing",
             "crossing_mode": "linear_projection",
             "crossing_direction": "above",
             "scene_variant": "line",
@@ -478,7 +478,7 @@ def test_chart_trend_threshold_crossing_projection_supports_two_observed_marks()
     assert len(out.evidence_gt.value) == len(execution["ordered_evidence_labels"])
 
 
-def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_variant_sampling() -> None:
+def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_id_sampling() -> None:
     task = ChartsTrendValueTask()
     observed_by_variant = {
         "linear_projection_crosses_above": set(),
@@ -488,7 +488,7 @@ def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_va
         out = task.generate(
             16161 + int(sampling_index),
             params={
-                "query_variant": "threshold_crossing",
+                "query_id": "threshold_crossing",
                 "crossing_mode": "linear_projection",
                 "scene_variant": "line",
                 "observed_count_min": 2,
@@ -498,9 +498,9 @@ def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_va
             },
             max_attempts=10,
         )
-        internal_query_variant = str(out.trace_payload["execution_trace"]["internal_query_variant"])
-        if internal_query_variant in observed_by_variant:
-            observed_by_variant[internal_query_variant].add(int(out.trace_payload["execution_trace"]["observed_count"]))
+        internal_query_id = str(out.trace_payload["execution_trace"]["internal_query_id"])
+        if internal_query_id in observed_by_variant:
+            observed_by_variant[internal_query_id].add(int(out.trace_payload["execution_trace"]["observed_count"]))
 
     assert observed_by_variant["linear_projection_crosses_above"] == {2, 3, 4, 5}
     assert observed_by_variant["linear_projection_crosses_below"] == {2, 3, 4, 5}
@@ -509,7 +509,7 @@ def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_va
 def test_chart_trend_threshold_crossing_task_is_deterministic() -> None:
     task = ChartsTrendValueTask()
     params = {
-        "query_variant": "threshold_crossing",
+        "query_id": "threshold_crossing",
         "crossing_mode": "linear_projection",
         "crossing_direction": "above",
         "scene_variant": "line",
@@ -530,7 +530,7 @@ def test_chart_trend_threshold_crossing_complexity_is_normalized_and_monotonic()
     easy = task.generate(
         16180,
         params={
-            "query_variant": "threshold_crossing",
+            "query_id": "threshold_crossing",
             "crossing_mode": "observed",
             "crossing_direction": "above",
             "scene_variant": "bar",
@@ -540,7 +540,7 @@ def test_chart_trend_threshold_crossing_complexity_is_normalized_and_monotonic()
     hard = task.generate(
         16181,
         params={
-            "query_variant": "threshold_crossing",
+            "query_id": "threshold_crossing",
             "crossing_mode": "linear_projection",
             "crossing_direction": "below",
             "scene_variant": "area",
@@ -557,7 +557,7 @@ def test_chart_trend_threshold_crossing_uses_bounded_value_axis() -> None:
     out = task.generate(
         16190,
         params={
-            "query_variant": "threshold_crossing",
+            "query_id": "threshold_crossing",
             "crossing_mode": "observed",
             "crossing_direction": "below",
             "scene_variant": "bar",
@@ -579,10 +579,10 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         ("endpoint_change_value", "dot_plot", {"endpoint_change_kind": "percent"}),
         ("interval_rate_value", "horizontal_bar", {}),
     )
-    for seed, (query_variant, scene_variant, extra_params) in enumerate(cases, start=16200):
+    for seed, (query_id, scene_variant, extra_params) in enumerate(cases, start=16200):
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "scene_variant": scene_variant, **extra_params},
+            params={"query_id": query_id, "scene_variant": scene_variant, **extra_params},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -596,11 +596,11 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         end_value = int(execution["end_value"])
         delta = int(execution["delta"])
         gap = int(execution["interval_gap"])
-        internal_query_variant = str(execution["internal_query_variant"])
+        internal_query_id = str(execution["internal_query_id"])
         evidence_labels = [str(label) for label in execution["ordered_evidence_labels"]]
         evidence_points = [list(point) for point in out.evidence_gt.value]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
         assert str(execution["scene_variant"]) == str(scene_variant)
@@ -631,15 +631,15 @@ def test_chart_trend_interval_change_variants_match_contract() -> None:
         assert render["guide_line_style"] in {"dashed", "dotted", "solid"}
         assert len(render["guide_lines"]) == int(execution["mark_count"])
 
-        if str(internal_query_variant) == "absolute_change_between_labels":
+        if str(internal_query_id) == "absolute_change_between_labels":
             expected_answer = abs(int(delta))
-        elif str(internal_query_variant) == "signed_change_between_labels":
+        elif str(internal_query_id) == "signed_change_between_labels":
             expected_answer = int(delta)
-        elif str(internal_query_variant) == "percent_change_between_labels":
+        elif str(internal_query_id) == "percent_change_between_labels":
             assert int(delta) * 100 % int(start_value) == 0
             expected_answer = int(delta) * 100 // int(start_value)
         else:
-            assert str(internal_query_variant) == "average_rate_over_interval"
+            assert str(internal_query_id) == "average_rate_over_interval"
             assert int(delta) % int(gap) == 0
             expected_answer = int(delta) // int(gap)
         assert int(out.answer_gt.value) == int(expected_answer)
@@ -651,7 +651,7 @@ def test_chart_trend_interval_change_supports_scene_variants_and_rejects_incompa
     for seed, scene_variant in enumerate(("area", "bar", "horizontal_bar", "line", "dot_plot", "lollipop"), start=16220):
         out = task.generate(
             seed,
-            params={"query_variant": "endpoint_change_value", "endpoint_change_kind": "absolute", "scene_variant": scene_variant},
+            params={"query_id": "endpoint_change_value", "endpoint_change_kind": "absolute", "scene_variant": scene_variant},
             max_attempts=10,
         )
         assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
@@ -659,7 +659,7 @@ def test_chart_trend_interval_change_supports_scene_variants_and_rejects_incompa
         with pytest.raises(ValueError):
             task.generate(
                 16240,
-                params={"query_variant": "endpoint_change_value", "endpoint_change_kind": "absolute", "scene_variant": scene_variant},
+                params={"query_id": "endpoint_change_value", "endpoint_change_kind": "absolute", "scene_variant": scene_variant},
                 max_attempts=10,
             )
 
@@ -670,20 +670,20 @@ def test_chart_trend_interval_change_prompt_examples_match_selected_variant() ->
         "endpoint_change_value": {"evidence": [[160, 420], [260, 360], [360, 300], [460, 220]], "answer": 20},
         "interval_rate_value": {"evidence": [[200, 420], [300, 360], [400, 300], [500, 240]], "answer": 6},
     }
-    for index, query_variant in enumerate(expected, start=16250):
-        params = {"query_variant": query_variant}
-        if str(query_variant) == "endpoint_change_value":
+    for index, query_id in enumerate(expected, start=16250):
+        params = {"query_id": query_id}
+        if str(query_id) == "endpoint_change_value":
             params["endpoint_change_kind"] = "absolute"
         out = task.generate(index, params=params, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_trend_interval_change_task_is_deterministic() -> None:
     task = ChartsTrendValueTask()
-    params = {"query_variant": "endpoint_change_value", "endpoint_change_kind": "percent", "scene_variant": "line"}
+    params = {"query_id": "endpoint_change_value", "endpoint_change_kind": "percent", "scene_variant": "line"}
     out_a = task.generate(16260, params=params, max_attempts=10)
     out_b = task.generate(16260, params=params, max_attempts=10)
 
@@ -700,7 +700,7 @@ def test_chart_trend_interval_change_complexity_is_normalized_and_monotonic() ->
     easy = task.generate(
         16270,
         params={
-            "query_variant": "endpoint_change_value",
+            "query_id": "endpoint_change_value",
             "endpoint_change_kind": "absolute",
             "scene_variant": "bar",
             "mark_count": 8,
@@ -711,7 +711,7 @@ def test_chart_trend_interval_change_complexity_is_normalized_and_monotonic() ->
     hard = task.generate(
         16271,
         params={
-            "query_variant": "endpoint_change_value",
+            "query_id": "endpoint_change_value",
             "endpoint_change_kind": "percent",
             "scene_variant": "area",
             "mark_count": 14,

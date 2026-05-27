@@ -1244,7 +1244,7 @@ class _CompositeMeasurementBaseTask:
         for case in self.cases:
             by_query.setdefault(str(case.query_id), []).append(case)
         supported_queries = tuple(sorted(by_query.keys()))
-        explicit_query = params.get("query_id", params.get("query_variant"))
+        explicit_query = params.get("query_id")
         if explicit_query is not None:
             query_id = str(explicit_query)
             if query_id not in by_query:
@@ -1442,7 +1442,6 @@ class _CompositeMeasurementBaseTask:
                 "scene_id": scene_id,
                 "entities": rendered_entities,
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(rendered.query_id),
                     "answer_value": int(rendered.answer),
                     "evidence_roles": list(rendered.evidence_roles),
@@ -1450,7 +1449,6 @@ class _CompositeMeasurementBaseTask:
             },
             "query_spec": {
                 "scene_id": scene_id,
-                "query_variant": "default",
                 "query_id": str(rendered.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1458,9 +1456,8 @@ class _CompositeMeasurementBaseTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_id": scene_id,
-                    "query_variant": "default",
                     "query_id": str(rendered.query_id),
-                    "query_variant_probabilities": dict(query_probs),
+                    "query_id_probabilities": dict(query_probs),
                     "variant_probabilities": {"default": 1.0},
                     "case_answer": int(rendered.answer),
                 },
@@ -1477,9 +1474,8 @@ class _CompositeMeasurementBaseTask:
             },
             "execution_trace": {
                 "scene_id": scene_id,
-                "query_variant": "default",
                 "query_id": str(rendered.query_id),
-                "query_variant_probabilities": dict(query_probs),
+                "query_id_probabilities": dict(query_probs),
                 "answer_type": "integer",
                 "answer_value": int(rendered.answer),
                 "evidence_roles": list(rendered.evidence_roles),
@@ -1489,7 +1485,6 @@ class _CompositeMeasurementBaseTask:
             "witness_symbolic": {
                 "type": str(self.witness_type),
                 "scene_id": scene_id,
-                "query_variant": "default",
                 "query_id": str(rendered.query_id),
                 "answer_value": int(rendered.answer),
                 "evidence_roles": list(rendered.evidence_roles),
@@ -1515,7 +1510,6 @@ class _CompositeMeasurementBaseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=scene_id,
             query_id=str(rendered.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

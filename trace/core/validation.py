@@ -363,7 +363,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
     expected_task_count = len(task_templates)
     expected_query_count = (len(query_templates) if query_key else None)
     mode_key = str(prompt_variant.get("answer_or_evidence_key", "")).strip() if mode_templates else ""
-    mode_variant_index = _to_int(prompt_variant.get("answer_or_evidence_variant_index")) if mode_templates else None
+    mode_query_id_index = _to_int(prompt_variant.get("answer_or_evidence_query_id_index")) if mode_templates else None
     expected_mode_count = len(mode_templates[mode_key]) if mode_key in mode_templates else None
 
     if observed_scene_count is None:
@@ -392,7 +392,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_METADATA_MISSING,
-                "missing query variant count in prompt metadata",
+                "missing query id count in prompt metadata",
                 instance_id=iid,
                 field_path=f"query_spec.prompt_variant.variant_count_by_key.{task_count_key}",
             )
@@ -401,7 +401,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                "query variant count mismatch between metadata and bundle",
+                "query id count mismatch between metadata and bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
@@ -414,7 +414,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             errors.append(
                 _err(
                     error_codes.PROMPT_METADATA_MISSING,
-                    "missing query variant count in prompt metadata",
+                    "missing query id count in prompt metadata",
                     instance_id=iid,
                     field_path=f"query_spec.prompt_variant.variant_count_by_key.{query_count_key}",
                 )
@@ -423,7 +423,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             errors.append(
                 _err(
                     error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                    "query variant count mismatch between metadata and bundle",
+                    "query id count mismatch between metadata and bundle",
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
                     query_key=query_key,
@@ -496,7 +496,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 scene_key=scene_key,
-                variant_index=prompt_variant.get("scene_template_index"),
+                query_id_index=prompt_variant.get("scene_template_index"),
                 variant_count=expected_scene_count,
             )
         )
@@ -504,11 +504,11 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
-                "query variant index out of range",
+                "query id index out of range",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
-                variant_index=prompt_variant.get("task_template_index"),
+                query_id_index=prompt_variant.get("task_template_index"),
                 variant_count=expected_task_count,
             )
         )
@@ -525,12 +525,12 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
                     query_key=query_key,
-                    variant_index=prompt_variant.get("query_template_index"),
+                    query_id_index=prompt_variant.get("query_template_index"),
                     variant_count=expected_query_count,
                 )
             )
     if mode_templates and mode_key in mode_templates and expected_mode_count is not None:
-        if mode_variant_index is None or mode_variant_index < 0 or mode_variant_index >= expected_mode_count:
+        if mode_query_id_index is None or mode_query_id_index < 0 or mode_query_id_index >= expected_mode_count:
             errors.append(
                 _err(
                     error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
@@ -538,7 +538,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                     instance_id=iid,
                     prompt_bundle_id=bundle_id,
                     answer_or_evidence_key=mode_key,
-                    variant_index=prompt_variant.get("answer_or_evidence_variant_index"),
+                    query_id_index=prompt_variant.get("answer_or_evidence_query_id_index"),
                     variant_count=expected_mode_count,
                 )
             )

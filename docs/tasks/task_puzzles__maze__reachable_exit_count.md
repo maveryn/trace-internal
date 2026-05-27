@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__maze__reachable_exit_count`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `reachable_exit_count`
 3. Prompts ask for the number of labeled boundary exits reachable from `START`.
 4. Supported `scene_variant` values are `classic_wall_maze|paper_labyrinth_maze|block_wall_maze`.

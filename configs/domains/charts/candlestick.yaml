@@ -10,8 +10,8 @@ generation:
     wick_size_max: 10
     counterfactual_change_min: 2
     counterfactual_change_max: 6
-    balanced_query_variant_sampling: true
-    query_variant_weights:
+    balanced_query_id_sampling: true
+    query_id_weights:
       wick_range_extremum_label: 1.0
       body_range_extremum_label: 1.0
       close_after_body_change_value: 1.0

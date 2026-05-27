@@ -35,7 +35,7 @@ def test_person_at_boarding_area_count_contract() -> None:
 
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "boarding_area_b_person_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
     assert trace["query_spec"]["branch_id"] == "terminal_boarding_area_person"
     assert out.answer_gt.type == "integer"
@@ -96,7 +96,7 @@ def test_luggage_in_boarding_area_count_contract() -> None:
 
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "backpack_in_boarding_area_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
     assert trace["query_spec"]["branch_id"] == "terminal_boarding_area_luggage"
     assert out.answer_gt.type == "integer"
@@ -154,7 +154,7 @@ def test_queue_person_count_contract() -> None:
 
     assert out.scene_id == "transit_terminal"
     assert out.query_id == "ticket_counter_queue_person_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert trace["query_spec"]["task_id"] == "task_illustrations__transit_terminal__entity_location_count"
     assert trace["query_spec"]["branch_id"] == "terminal_queue_person"
     assert out.answer_gt.type == "integer"

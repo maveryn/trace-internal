@@ -13,9 +13,8 @@ from .config import BuildConfig, BuildTaskConfig
 from .seed import hash64
 
 
-_QUERY_VARIANT_PROBABILITY_KEYS = (
-    "query_variant_probabilities",
-    "variant_probabilities",
+_QUERY_ID_PROBABILITY_KEYS = (
+    "query_id_probabilities",
 )
 
 
@@ -102,7 +101,7 @@ def _variant_probability_count_from_output(output: TaskOutput) -> int | None:
     for source in (execution_trace, query_params):
         if not isinstance(source, Mapping):
             continue
-        for key in _QUERY_VARIANT_PROBABILITY_KEYS:
+        for key in _QUERY_ID_PROBABILITY_KEYS:
             count = _positive_probability_count(source.get(key))
             if count is not None:
                 return int(count)
@@ -117,9 +116,9 @@ def resolve_task_active_variant_count(
 ) -> int:
     """Resolve one task's active query branch count.
 
-    Most tasks report `query_variant_probabilities` in the generated trace,
+    Most tasks report `query_id_probabilities` in the generated trace,
     which gives the full active support from a single probe. Tasks without such
-    a map fall back to observed non-default `query_variant` labels over a small,
+    a map fall back to observed non-default `query_id` labels over a small,
     deterministic probe prefix.
     """
 
@@ -143,14 +142,14 @@ def resolve_task_active_variant_count(
         if probability_count is not None:
             return max(1, int(probability_count))
 
-        variant_label = str(getattr(output, "query_variant", "") or "").strip()
+        variant_label = str(getattr(output, "query_id", "") or "").strip()
         if variant_label and variant_label != "default":
             observed_variants.add(variant_label)
 
     if observed_variants:
         return len(observed_variants)
     if last_error is not None:
-        raise ValueError(f"failed to probe query variants for {task_id}: {last_error}") from last_error
+        raise ValueError(f"failed to probe query ids for {task_id}: {last_error}") from last_error
     return 1
 
 

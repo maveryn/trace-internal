@@ -14,12 +14,12 @@ def test_games_dominoes_chain_count_defaults_expose_scene_query_and_candidate_ax
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert bool(generation["balanced_candidate_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"single_row", "two_row"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "matching_end_count",
         "higher_sum_than_reference_count",
         "sum_to_target_count",

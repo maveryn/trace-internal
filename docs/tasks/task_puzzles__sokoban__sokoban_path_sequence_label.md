@@ -8,7 +8,7 @@
 5. Goal: choose the labeled move-sequence option that satisfies the requested path property on a Sokoban grid.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `shortest_path_sequence_label|valid_path_sequence_label|blocked_path_sequence_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

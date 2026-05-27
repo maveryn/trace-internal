@@ -59,7 +59,7 @@ from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzl
 TASK_ID = "puzzles_clock_readout_base"
 CLOCK_OFFSET_TASK_ID = "task_puzzles__analog_clock__offset_readout"
 PUBLIC_SCENE_ID = "analog_clock"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "offset_time",
 )
 _SOURCE_OFFSET_BY_VARIANT = {
@@ -136,7 +136,7 @@ class _TaskDefaults:
 class _ResolvedQuery:
   """Resolved semantic and visual support for one clock-readout instance."""
 
-  query_variant: str
+  query_id: str
   offset_unit: str
   offset_direction: str
   scene_variant: str
@@ -156,7 +156,7 @@ class _ResolvedQuery:
   delta_minutes_support: Tuple[int, ...]
   delta_seconds_support: Tuple[int, ...]
   min_hand_angle_gap_deg: float
-  query_variant_probabilities: Dict[str, float]
+  query_id_probabilities: Dict[str, float]
   offset_unit_probabilities: Dict[str, float]
   offset_direction_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
@@ -261,7 +261,7 @@ def _resolve_decoupled_selection_index(
 
 def _build_prompt_json_examples(
   *,
-  query_variant: str,
+  query_id: str,
   offset_unit: str,
   offset_direction: str,
   delta_minutes: int | None,
@@ -271,8 +271,8 @@ def _build_prompt_json_examples(
 
   shown_total_minutes = clock_total_minutes(3, 25)
   shown_total_seconds = clock_total_seconds(3, 25, 40)
-  if str(query_variant) != "offset_time":
-    raise ValueError(f"unsupported puzzle clock-readout variant: {query_variant}")
+  if str(query_id) != "offset_time":
+    raise ValueError(f"unsupported puzzle clock-readout variant: {query_id}")
   if str(offset_unit) == "minutes" and str(offset_direction) == "after":
     answer_text = str(format_clock_hhmm(add_clock_minutes(int(shown_total_minutes), int(delta_minutes))))
   elif str(offset_unit) == "minutes" and str(offset_direction) == "before":
@@ -322,24 +322,24 @@ def _resolve_named_variant(
   )
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
   *,
   instance_seed: int,
   params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
   """Resolve the public clock-readout variant and supported offset aliases."""
 
-  explicit_variant = params.get("query_variant")
+  explicit_variant = params.get("query_id")
   if explicit_variant is not None and str(explicit_variant) in _SOURCE_OFFSET_BY_VARIANT:
     return "offset_time", {"offset_time": 1.0}
   return _resolve_named_variant(
     instance_seed=int(instance_seed),
     params=params,
-    explicit_key="query_variant",
-    weights_key="query_variant_weights",
-    balance_flag_key="balanced_query_variant_sampling",
-    supported=SUPPORTED_QUERY_VARIANTS,
-    namespace="query_variant",
+    explicit_key="query_id",
+    weights_key="query_id_weights",
+    balance_flag_key="balanced_query_id_sampling",
+    supported=SUPPORTED_QUERY_IDS,
+    namespace="query_id",
   )
 
 
@@ -366,7 +366,7 @@ def _normalize_offset_direction(value: Any) -> str:
 def _source_offset_from_params(params: Mapping[str, Any]) -> Tuple[str, str] | None:
   """Return an implied `(unit, direction)` pair from source query aliases."""
 
-  source_variant = params.get("query_variant")
+  source_variant = params.get("query_id")
   if source_variant is not None and str(source_variant) in _SOURCE_OFFSET_BY_VARIANT:
     unit, direction = _SOURCE_OFFSET_BY_VARIANT[str(source_variant)]
     return str(unit), str(direction)
@@ -460,7 +460,7 @@ def _resolve_offset_direction(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
   """Resolve one concrete clock-readout query from balanced supports."""
 
-  query_variant, query_variant_probabilities = _resolve_query_variant(
+  query_id, query_id_probabilities = _resolve_query_id(
     instance_seed=int(instance_seed),
     params=params,
   )
@@ -647,7 +647,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
   shown_hour, shown_minute, shown_second = split_clock_total_seconds(int(shown_total_seconds))
   return _ResolvedQuery(
-    query_variant=str(query_variant),
+    query_id=str(query_id),
     offset_unit=str(offset_unit),
     offset_direction=str(offset_direction),
     scene_variant=str(scene_variant),
@@ -667,7 +667,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     delta_minutes_support=tuple(int(value) for value in delta_support),
     delta_seconds_support=tuple(int(value) for value in delta_seconds_support),
     min_hand_angle_gap_deg=float(min_hand_angle_gap_deg),
-    query_variant_probabilities=dict(query_variant_probabilities),
+    query_id_probabilities=dict(query_id_probabilities),
     offset_unit_probabilities=dict(offset_unit_probabilities),
     offset_direction_probabilities=dict(offset_direction_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
@@ -749,7 +749,7 @@ class _PuzzlesClockReadoutBase:
     evidence_hint = str(prompt_defaults["evidence_hint_seconds" if is_seconds_offset else "evidence_hint"])
     answer_hint = str(prompt_defaults["answer_hint_seconds" if is_seconds_offset else "answer_hint"])
     json_example, json_example_answer_only = _build_prompt_json_examples(
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       offset_unit=str(query.offset_unit),
       offset_direction=str(query.offset_direction),
       delta_minutes=(int(query.delta_minutes) if query.delta_minutes is not None else None),
@@ -761,7 +761,7 @@ class _PuzzlesClockReadoutBase:
       bundle_id=str(prompt_defaults["bundle_id"]),
       scene_key=str(prompt_defaults["scene_key"]),
       task_key=str(prompt_defaults["task_key"]),
-      query_key=str(query.query_variant),
+      query_key=str(query.query_id),
       answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
       slots={
         "object_description": str(object_description),
@@ -824,7 +824,7 @@ class _PuzzlesClockReadoutBase:
         "scene_kind": "puzzles_clock_single",
         "entities": [dict(entity) for entity in rendered_scene.entities],
         "relations": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "offset_unit": str(query.offset_unit),
           "offset_direction": str(query.offset_direction),
           "scene_variant": str(query.scene_variant),
@@ -837,19 +837,19 @@ class _PuzzlesClockReadoutBase:
         },
       },
       "query_spec": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "template_id": str(prompt_defaults["bundle_id"]),
         "prompt_variant": dict(prompt_artifacts.prompt_variant),
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
         "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
         "params": {
-          "query_variant": str(query.query_variant),
+          "query_id": str(query.query_id),
           "offset_unit": str(query.offset_unit),
           "offset_direction": str(query.offset_direction),
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
           "accent_color_name": str(query.accent_color_name),
-          "query_variant_probabilities": dict(query.query_variant_probabilities),
+          "query_id_probabilities": dict(query.query_id_probabilities),
           "offset_unit_probabilities": dict(query.offset_unit_probabilities),
           "offset_direction_probabilities": dict(query.offset_direction_probabilities),
           "scene_variant_probabilities": dict(query.scene_variant_probabilities),
@@ -911,7 +911,7 @@ class _PuzzlesClockReadoutBase:
         "hand_tips_px": dict(hand_tips_px),
       },
       "execution_trace": {
-        "query_variant": str(query.query_variant),
+        "query_id": str(query.query_id),
         "offset_unit": str(query.offset_unit),
         "offset_direction": str(query.offset_direction),
         "scene_variant": str(query.scene_variant),
@@ -932,13 +932,13 @@ class _PuzzlesClockReadoutBase:
         "delta_minutes_support": [int(value) for value in query.delta_minutes_support],
         "delta_seconds_support": [int(value) for value in query.delta_seconds_support],
         "min_hand_angle_gap_deg": float(query.min_hand_angle_gap_deg),
-        "query_variant_probabilities": dict(query.query_variant_probabilities),
+        "query_id_probabilities": dict(query.query_id_probabilities),
         "offset_unit_probabilities": dict(query.offset_unit_probabilities),
         "offset_direction_probabilities": dict(query.offset_direction_probabilities),
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
-        "question_format": str(query.query_variant),
+        "question_format": str(query.query_id),
         "supporting_parts": list(supporting_parts),
       },
       "witness_symbolic": {
@@ -1005,7 +1005,7 @@ class _PuzzlesClockReadoutBase:
       trace_payload=trace_payload,
       complexity=complexity,
       task_versions=default_task_versions(),
-      query_variant=str(query.query_variant),
+      query_id=str(query.query_id),
       prompt_variants=dict(prompt_artifacts.prompt_variants),
     )
 
@@ -1026,13 +1026,13 @@ def _fixed_offset_params(params: Mapping[str, Any], *, offset_unit: str) -> tupl
 
   generation_params = dict(params)
   fixed_params: Dict[str, Any] = {"offset_unit": str(offset_unit)}
-  explicit_variant = generation_params.get("query_variant")
+  explicit_variant = generation_params.get("query_id")
   if explicit_variant is not None and str(explicit_variant) in _SOURCE_OFFSET_BY_VARIANT:
     alias_unit, alias_direction = _SOURCE_OFFSET_BY_VARIANT[str(explicit_variant)]
     if str(alias_unit) != str(offset_unit):
-      raise ValueError(f"query_variant={explicit_variant!r} is not valid for {offset_unit} readout")
+      raise ValueError(f"query_id={explicit_variant!r} is not valid for {offset_unit} readout")
     fixed_params["offset_direction"] = str(alias_direction)
-    generation_params.pop("query_variant", None)
+    generation_params.pop("query_id", None)
   return generation_params, fixed_params
 
 
@@ -1041,22 +1041,22 @@ class PuzzlesClockOffsetReadoutTask(_PuzzlesClockReadoutBase):
   """Apply a minute or second offset to a single analog clock."""
 
   task_id = CLOCK_OFFSET_TASK_ID
-  fixed_query_variant = "offset_time"
+  fixed_query_id = "offset_time"
 
   def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
     generation_params = dict(params)
     fixed_params: Dict[str, Any] = {}
-    explicit_variant = generation_params.get("query_variant")
+    explicit_variant = generation_params.get("query_id")
     if explicit_variant is not None and str(explicit_variant) in _SOURCE_OFFSET_BY_VARIANT:
       alias_unit, alias_direction = _SOURCE_OFFSET_BY_VARIANT[str(explicit_variant)]
       fixed_params["offset_unit"] = str(alias_unit)
       fixed_params["offset_direction"] = str(alias_direction)
-      generation_params.pop("query_variant", None)
+      generation_params.pop("query_id", None)
     output = super().generate(
       int(instance_seed),
       params=force_time_artifact_query_params(
         generation_params,
-        query_variant="offset_time",
+        query_id="offset_time",
         fixed_params=fixed_params,
       ),
       max_attempts=int(max_attempts),

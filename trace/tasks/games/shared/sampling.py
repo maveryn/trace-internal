@@ -8,7 +8,7 @@ from ....core.seed import spawn_rng
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 
-def resolve_games_query_variant(
+def resolve_games_query_id(
     *,
     task_id: str,
     instance_seed: int,
@@ -16,19 +16,19 @@ def resolve_games_query_variant(
     gen_defaults: Mapping[str, Any],
     supported_variants: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced semantic query axis, honoring `query_variant` as an alias."""
+    """Resolve one balanced semantic query axis, honoring `query_id` as an alias."""
 
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    rng = spawn_rng(int(instance_seed), f"{str(task_id)}.query_variant")
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    rng = spawn_rng(int(instance_seed), f"{str(task_id)}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=alias_params,
         gen_defaults=gen_defaults,
         supported_variants=[str(item) for item in supported_variants],
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -37,10 +37,10 @@ def resolve_games_query_variant(
         selected_variant=str(selected),
         variant_probabilities=probabilities,
         supported_variants=[str(item) for item in supported_variants],
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{str(task_id)}.query_variant",
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{str(task_id)}.query_id",
     )
     return str(selected), dict(probabilities)
 
@@ -85,5 +85,5 @@ def resolve_games_named_axis(
 
 __all__ = [
     "resolve_games_named_axis",
-    "resolve_games_query_variant",
+    "resolve_games_query_id",
 ]

@@ -38,13 +38,13 @@ def _coords(values: list[list[int]]) -> tuple[tuple[int, int], ...]:
     (
         (
             GamesMinesweeperForcedCellCountTask,
-            {"query_variant": "forced_mine_count", "target_answer": 3, "scene_variant": "mixed_grid", "board_size": 5},
+            {"query_id": "forced_mine_count", "target_answer": 3, "scene_variant": "mixed_grid", "board_size": 5},
             "forced_mine_count",
             "integer",
         ),
         (
             GamesMinesweeperForcedCellCountTask,
-            {"query_variant": "forced_safe_count", "target_answer": 4, "scene_variant": "open_grid", "board_size": 5},
+            {"query_id": "forced_safe_count", "target_answer": 4, "scene_variant": "open_grid", "board_size": 5},
             "forced_safe_count",
             "integer",
         ),
@@ -68,14 +68,14 @@ def test_games_minesweeper_grid_emits_expected_contract(
 
     assert out.answer_gt.type == str(expected_answer_type)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
     assert trace["query_spec"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -83,7 +83,7 @@ def test_games_minesweeper_grid_emits_expected_contract(
 def test_games_minesweeper_forced_mine_count_matches_basic_rule_supports() -> None:
     out = GamesMinesweeperForcedCellCountTask().generate(
         51211,
-        params={"query_variant": "forced_mine_count", "target_answer": 4, "scene_variant": "mixed_grid", "board_size": 5},
+        params={"query_id": "forced_mine_count", "target_answer": 4, "scene_variant": "mixed_grid", "board_size": 5},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -118,7 +118,7 @@ def test_games_minesweeper_forced_mine_count_matches_basic_rule_supports() -> No
 def test_games_minesweeper_forced_safe_count_matches_basic_rule_supports() -> None:
     out = GamesMinesweeperForcedCellCountTask().generate(
         51221,
-        params={"query_variant": "forced_safe_count", "target_answer": 5, "scene_variant": "mixed_grid", "board_size": 5},
+        params={"query_id": "forced_safe_count", "target_answer": 5, "scene_variant": "mixed_grid", "board_size": 5},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -240,7 +240,7 @@ def test_games_minesweeper_forced_cell_task_uses_eased_board_support() -> None:
 
 def test_games_minesweeper_grid_is_deterministic() -> None:
     params = {
-        "query_variant": "forced_safe_count",
+        "query_id": "forced_safe_count",
         "target_answer": 3,
         "scene_variant": "mixed_grid",
         "board_size": 7,

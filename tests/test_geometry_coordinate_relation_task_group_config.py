@@ -14,14 +14,14 @@ def test_geometry_coordinate_relation_task_overrides_expose_scene_query_axes() -
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {
         "segment_set",
         "line_points",
         "quadrant_points",
         "polygon_lattice",
     }
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "parallel_count",
         "perpendicular_count",
         "collinear_count",

@@ -83,17 +83,17 @@ def test_chart_statistics_summary_query_value_variants_match_contract() -> None:
         ("nth_lowest", "scatter"),
     )
     for seed, (statistic_kind, scene_variant) in enumerate(cases, start=9100):
-        query_variant = "order_statistic_value"
+        query_id = "order_statistic_value"
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "statistic_kind": statistic_kind, "scene_variant": scene_variant},
+            params={"query_id": query_id, "statistic_kind": statistic_kind, "scene_variant": scene_variant},
             max_attempts=10,
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert str(execution["statistic_kind"]) == str(statistic_kind)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "point_set"
@@ -117,7 +117,7 @@ def test_chart_statistics_summary_query_value_variants_match_contract() -> None:
             rank_n=int(execution["rank_n"]) if "rank_n" in execution else None,
         )
         assert int(out.answer_gt.value) == int(execution["answer_value"])
-        assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+        assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
@@ -137,7 +137,7 @@ def test_chart_statistics_summary_query_value_variants_match_contract() -> None:
 
 def test_chart_statistics_line_and_scatter_prompts_mention_y_values() -> None:
     task = ChartsStatisticsSummaryQueryTask()
-    params = {"query_variant": "order_statistic_value", "statistic_kind": "median"}
+    params = {"query_id": "order_statistic_value", "statistic_kind": "median"}
     line = task.generate(9201, params={**params, "scene_variant": "line"}, max_attempts=10)
     scatter = task.generate(9202, params={**params, "scene_variant": "scatter"}, max_attempts=10)
     area = task.generate(9203, params={**params, "scene_variant": "area"}, max_attempts=10)
@@ -153,7 +153,7 @@ def test_chart_statistics_supports_additional_scene_variants() -> None:
     for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop"), start=9205):
         out = task.generate(
             seed,
-            params={"query_variant": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": scene_variant},
+            params={"query_id": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": scene_variant},
             max_attempts=10,
         )
         prompts[str(scene_variant)] = str(out.prompt)
@@ -168,11 +168,11 @@ def test_chart_statistics_supports_additional_scene_variants() -> None:
     assert "y-values" in prompts["dot_plot"]
     assert "y-values" in prompts["lollipop"]
     with pytest.raises(ValueError):
-        task.generate(9215, params={"query_variant": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
+        task.generate(9215, params={"query_id": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9216, params={"query_variant": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "donut"}, max_attempts=10)
+        task.generate(9216, params={"query_id": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "donut"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9217, params={"query_variant": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
+        task.generate(9217, params={"query_id": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
 
 
 def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
@@ -185,7 +185,7 @@ def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
     for index, statistic_kind in enumerate(expected, start=9300):
         out = task.generate(
             index,
-            params={"query_variant": "order_statistic_value", "statistic_kind": statistic_kind},
+            params={"query_id": "order_statistic_value", "statistic_kind": statistic_kind},
             max_attempts=10,
         )
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -196,7 +196,7 @@ def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
 
 def test_chart_statistics_task_is_deterministic() -> None:
     task = ChartsStatisticsSummaryQueryTask()
-    params = {"query_variant": "order_statistic_value", "statistic_kind": "nth_lowest", "scene_variant": "scatter"}
+    params = {"query_id": "order_statistic_value", "statistic_kind": "nth_lowest", "scene_variant": "scatter"}
     out_a = task.generate(9401, params=params, max_attempts=10)
     out_b = task.generate(9401, params=params, max_attempts=10)
 
@@ -212,12 +212,12 @@ def test_chart_statistics_complexity_is_normalized_and_monotonic() -> None:
     value_task = ChartsStatisticsSummaryQueryTask()
     easy_value = value_task.generate(
         9440,
-        params={"query_variant": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
+        params={"query_id": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
         max_attempts=10,
     )
     hard_value = value_task.generate(
         9440,
-        params={"query_variant": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "scatter"},
+        params={"query_id": "order_statistic_value", "statistic_kind": "nth_highest", "scene_variant": "scatter"},
         max_attempts=10,
     )
     _assert_normalized_complexity(easy_value)
@@ -227,12 +227,12 @@ def test_chart_statistics_complexity_is_normalized_and_monotonic() -> None:
     label_task = ChartsStatisticsSummaryQueryTask()
     easy_label = label_task.generate(
         9441,
-        params={"query_variant": "order_statistic_label", "statistic_kind": "median", "scene_variant": "bar"},
+        params={"query_id": "order_statistic_label", "statistic_kind": "median", "scene_variant": "bar"},
         max_attempts=10,
     )
     hard_label = label_task.generate(
         9441,
-        params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "scatter"},
+        params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "scatter"},
         max_attempts=10,
     )
     _assert_normalized_complexity(easy_label)
@@ -248,10 +248,10 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
         ("median", "scatter"),
     )
     for seed, (statistic_kind, scene_variant) in enumerate(cases, start=9450):
-        query_variant = "order_statistic_label"
+        query_id = "order_statistic_label"
         out = task.generate(
             seed,
-            params={"query_variant": query_variant, "statistic_kind": statistic_kind, "scene_variant": scene_variant},
+            params={"query_id": query_id, "statistic_kind": statistic_kind, "scene_variant": scene_variant},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -260,7 +260,7 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
 
         labels = [str(label) for label in execution["labels"]]
         values = [int(value) for value in execution["values"]]
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "point_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -278,7 +278,7 @@ def test_chart_statistics_summary_query_label_variants_match_contract() -> None:
         assert trace["projected_evidence"]["point_set"] == evidence_points
         assert trace["projected_evidence"]["pixel_point_set"] == evidence_points
         assert len(trace["projected_evidence"]["bbox_set"]) == 1
-        assert str(trace["query_spec"]["query_variant"]) == str(query_variant)
+        assert str(trace["query_spec"]["query_id"]) == str(query_id)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
@@ -310,7 +310,7 @@ def test_chart_statistics_summary_query_label_prompt_examples_match_selected_var
     for index, statistic_kind in enumerate(expected, start=9550):
         out = task.generate(
             index,
-            params={"query_variant": "order_statistic_label", "statistic_kind": statistic_kind},
+            params={"query_id": "order_statistic_label", "statistic_kind": statistic_kind},
             max_attempts=10,
         )
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -321,7 +321,7 @@ def test_chart_statistics_summary_query_label_prompt_examples_match_selected_var
 
 def test_chart_statistics_summary_query_label_task_is_deterministic() -> None:
     task = ChartsStatisticsSummaryQueryTask()
-    params = {"query_variant": "order_statistic_label", "statistic_kind": "median", "scene_variant": "scatter"}
+    params = {"query_id": "order_statistic_label", "statistic_kind": "median", "scene_variant": "scatter"}
     out_a = task.generate(9651, params=params, max_attempts=10)
     out_b = task.generate(9651, params=params, max_attempts=10)
 
@@ -339,7 +339,7 @@ def test_chart_statistics_summary_query_label_supports_additional_scene_variants
     for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop"), start=9660):
         out = task.generate(
             seed,
-            params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": scene_variant},
+            params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": scene_variant},
             max_attempts=10,
         )
         prompts[str(scene_variant)] = str(out.prompt)
@@ -350,16 +350,16 @@ def test_chart_statistics_summary_query_label_supports_additional_scene_variants
     assert "y-values" in prompts["dot_plot"]
     assert "y-values" in prompts["lollipop"]
     with pytest.raises(ValueError):
-        task.generate(9672, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
+        task.generate(9672, params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9673, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "donut"}, max_attempts=10)
+        task.generate(9673, params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "donut"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9674, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
+        task.generate(9674, params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
 
 
 def test_chart_statistics_summary_query_label_default_mark_count_range_is_15_to_25() -> None:
     task = ChartsStatisticsSummaryQueryTask()
-    out = task.generate(9675, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_lowest", "scene_variant": "bar"}, max_attempts=10)
+    out = task.generate(9675, params={"query_id": "order_statistic_label", "statistic_kind": "nth_lowest", "scene_variant": "bar"}, max_attempts=10)
     assert 15 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 25
 
 
@@ -367,7 +367,7 @@ def test_chart_statistics_summary_query_label_supports_explicit_mark_count_25() 
     task = ChartsStatisticsSummaryQueryTask()
     out = task.generate(
         9676,
-        params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "bar", "mark_count": 25},
+        params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "bar", "mark_count": 25},
         max_attempts=10,
     )
     assert int(out.trace_payload["execution_trace"]["mark_count"]) == 25
@@ -377,23 +377,23 @@ def test_chart_statistics_summary_query_label_supports_explicit_mark_count_25() 
 def test_chart_statistics_summary_query_label_rejects_pie_and_donut() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     with pytest.raises(ValueError):
-        task.generate(9685, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
+        task.generate(9685, params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "pie"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9686, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_lowest", "scene_variant": "donut"}, max_attempts=10)
+        task.generate(9686, params={"query_id": "order_statistic_label", "statistic_kind": "nth_lowest", "scene_variant": "donut"}, max_attempts=10)
 
 
 def test_chart_statistics_summary_query_label_rejects_radar() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     with pytest.raises(ValueError):
-        task.generate(9688, params={"query_variant": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
+        task.generate(9688, params={"query_id": "order_statistic_label", "statistic_kind": "nth_highest", "scene_variant": "radar"}, max_attempts=10)
 
 
 def test_chart_statistics_summary_query_label_rejects_removed_extremum_variants() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     with pytest.raises(ValueError):
-        task.generate(9690, params={"query_variant": "argmax", "scene_variant": "bar"}, max_attempts=10)
+        task.generate(9690, params={"query_id": "argmax", "scene_variant": "bar"}, max_attempts=10)
     with pytest.raises(ValueError):
-        task.generate(9691, params={"query_variant": "argmin", "scene_variant": "bar"}, max_attempts=10)
+        task.generate(9691, params={"query_id": "argmin", "scene_variant": "bar"}, max_attempts=10)
 
 
 def test_point_set_evidence_type_is_registered_for_chart_label_tasks() -> None:
@@ -405,7 +405,7 @@ def test_chart_statistics_labels_use_random_uppercase_subset() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     out = task.generate(
         9100,
-        params={"query_variant": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
+        params={"query_id": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
         max_attempts=10,
     )
 
@@ -422,7 +422,7 @@ def test_chart_statistics_rank_supports_explicit_mark_count_15() -> None:
     for seed, statistic_kind in enumerate(("nth_highest", "nth_lowest"), start=9500):
         out = task.generate(
             seed,
-            params={"query_variant": "order_statistic_value", "statistic_kind": statistic_kind, "scene_variant": "bar", "mark_count": 15},
+            params={"query_id": "order_statistic_value", "statistic_kind": statistic_kind, "scene_variant": "bar", "mark_count": 15},
             max_attempts=10,
         )
         assert int(out.trace_payload["execution_trace"]["mark_count"]) == 15
@@ -432,7 +432,7 @@ def test_chart_statistics_median_supports_mark_count_25() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     out = task.generate(
         9601,
-        params={"query_variant": "order_statistic_value", "statistic_kind": "median", "scene_variant": "line", "mark_count": 25},
+        params={"query_id": "order_statistic_value", "statistic_kind": "median", "scene_variant": "line", "mark_count": 25},
         max_attempts=10,
     )
 
@@ -446,7 +446,7 @@ def test_chart_statistics_mark_color_is_randomized_and_traced() -> None:
     for seed in range(9700, 9708):
         out = task.generate(
             seed,
-            params={"query_variant": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
+            params={"query_id": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
             max_attempts=10,
         )
         render_spec = out.trace_payload["render_spec"]
@@ -472,7 +472,7 @@ def test_chart_statistics_render_uses_traced_mark_fill_color() -> None:
     task = ChartsStatisticsSummaryQueryTask()
     out = task.generate(
         9801,
-        params={"query_variant": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
+        params={"query_id": "order_statistic_value", "statistic_kind": "median", "scene_variant": "bar"},
         max_attempts=10,
     )
 

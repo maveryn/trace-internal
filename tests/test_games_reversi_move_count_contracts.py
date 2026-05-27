@@ -21,7 +21,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "compact_board",
-                "query_variant": "legal_move_count",
+                "query_id": "legal_move_count",
                 "target_answer": 4,
             },
             4,
@@ -30,7 +30,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "classic_board",
-                "query_variant": "corner_move_count",
+                "query_id": "corner_move_count",
                 "target_answer": 0,
             },
             0,
@@ -39,7 +39,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "classic_board",
-                "query_variant": "flip_count_for_marked_move",
+                "query_id": "flip_count_for_marked_move",
                 "target_answer": 5,
             },
             5,
@@ -60,7 +60,7 @@ def test_games_reversi_move_count_emits_expected_contract(
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
@@ -72,7 +72,7 @@ def test_games_reversi_move_count_corner_evidence_stays_on_corner_squares() -> N
         28011,
         params={
             "scene_variant": "classic_board",
-            "query_variant": "corner_move_count",
+            "query_id": "corner_move_count",
             "target_answer": 2,
         },
         max_attempts=32,
@@ -90,7 +90,7 @@ def test_games_reversi_move_count_flip_query_marks_move_and_keeps_evidence_on_fl
         28021,
         params={
             "scene_variant": "classic_board",
-            "query_variant": "flip_count_for_marked_move",
+            "query_id": "flip_count_for_marked_move",
             "target_answer": 4,
         },
         max_attempts=32,
@@ -129,11 +129,11 @@ def test_games_reversi_move_count_query_cycle_covers_answer_scene_and_style_supp
             params={},
             max_attempts=192,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         execution = out.trace_payload["execution_trace"]
-        answers_by_variant[query_variant].add(int(out.answer_gt.value))
-        scenes_by_variant[query_variant].add(str(execution["scene_variant"]))
-        styles_by_variant[query_variant].add(str(execution["style_variant"]))
+        answers_by_variant[query_id].add(int(out.answer_gt.value))
+        scenes_by_variant[query_id].add(str(execution["scene_variant"]))
+        styles_by_variant[query_id].add(str(execution["style_variant"]))
 
     assert answers_by_variant == {
         "legal_move_count": {0, 1, 2, 3, 4, 5, 6},
@@ -155,7 +155,7 @@ def test_games_reversi_move_count_query_cycle_covers_answer_scene_and_style_supp
 def test_games_reversi_move_count_is_deterministic() -> None:
     params = {
         "scene_variant": "compact_board",
-        "query_variant": "legal_move_count",
+        "query_id": "legal_move_count",
         "target_answer": 6,
     }
     task = GamesReversiMoveCountTask()

@@ -3,7 +3,7 @@ generation:
     scene_variant_weights:
       single_row: 1.0
       two_row: 1.0
-    query_variant_weights:
+    query_id_weights:
       matching_end_count: 1.0
       higher_sum_than_reference_count: 1.0
       sum_to_target_count: 1.0
@@ -16,7 +16,7 @@ generation:
       charcoal_tile: 1.0
       wood_tile: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_candidate_count_sampling: true

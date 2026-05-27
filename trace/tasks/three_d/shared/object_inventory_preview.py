@@ -146,7 +146,7 @@ def _render_object_scene_profile(
     )
     dummy = _finalise_object_scene_spec(dummy, camera=camera, frame=frame)
     dataset = {
-        "query_variant": "closest_to_camera",
+        "query_id": "closest_to_camera",
         "scene_variant": "studio_platform",
         "point_count": 1,
         "candidate_count": 1,

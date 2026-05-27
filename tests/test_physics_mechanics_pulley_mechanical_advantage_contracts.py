@@ -20,7 +20,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "compact_block",
-                "query_variant": "effort_force_for_load",
+                "query_id": "effort_force_for_load",
                 "target_answer": 12,
                 "support_segment_count": 5,
                 "disconnected_segment_count": 4,
@@ -31,7 +31,7 @@ from tests.helpers import read_jsonl
         (
             {
                 "scene_variant": "tall_block",
-                "query_variant": "load_force_from_effort",
+                "query_id": "load_force_from_effort",
                 "target_answer": 60,
                 "support_segment_count": 5,
                 "disconnected_segment_count": 4,
@@ -57,25 +57,25 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert out.evidence_gt.type == "bbox_set"
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == "force_relation"
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
     assert trace["query_spec"]["query_id"] == "force_relation"
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == "force_relation"
-    assert trace["query_spec"]["params"]["internal_query_variant"] in {
+    assert trace["query_spec"]["params"]["internal_query_id"] in {
         "effort_force_for_load",
         "load_force_from_effort",
     }
 
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == "force_relation"
-    assert execution["internal_query_variant"] in {
+    assert execution["internal_query_id"] in {
         "effort_force_for_load",
         "load_force_from_effort",
     }
@@ -117,7 +117,7 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 def test_physics_mechanics_pulley_is_deterministic() -> None:
     params = {
         "scene_variant": "tall_block",
-        "query_variant": "load_force_from_effort",
+        "query_id": "load_force_from_effort",
         "target_answer": 84,
         "support_segment_count": 6,
         "disconnected_segment_count": 4,
@@ -143,7 +143,7 @@ def test_physics_mechanics_pulley_accepts_explicit_accent_color() -> None:
         39031,
         params={
             "scene_variant": "open_block",
-            "query_variant": "effort_force_for_load",
+            "query_id": "effort_force_for_load",
             "target_answer": 10,
             "support_segment_count": 6,
             "disconnected_segment_count": 0,
@@ -165,7 +165,7 @@ def test_physics_mechanics_pulley_rejects_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
         PhysicsMechanicsPulleyMechanicalAdvantageTask().generate(
             39041,
-            params={"scene_variant": "sideways_block", "query_variant": "effort_force_for_load"},
+            params={"scene_variant": "sideways_block", "query_id": "effort_force_for_load"},
             max_attempts=20,
         )
 
@@ -187,7 +187,7 @@ def test_physics_mechanics_pulleyseeded_sampler_decouples_variant_and_answer_sup
             max_attempts=60,
         )
 
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
 
         assert str(out.query_id) == "force_relation"
         execution = out.trace_payload["execution_trace"]

@@ -73,7 +73,7 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
 
             assert out.scene_id == "venn_field"
             assert out.query_id == query_id
-            assert out.query_variant == "default"
+            assert out.query_id == "default"
             assert out.answer_gt.type == "integer"
             assert out.answer_gt.value == 2
             assert out.evidence_gt.type == "bbox_set"

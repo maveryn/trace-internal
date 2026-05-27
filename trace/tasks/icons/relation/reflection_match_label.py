@@ -60,7 +60,7 @@ _AXIS_BY_QUERY_ID: Dict[str, str] = {
     "diagonal_main_reflection_match": "mirror_diagonal_main",
     "diagonal_anti_reflection_match": "mirror_diagonal_anti",
 }
-_PUBLIC_QUERY_VARIANT = "reflection_match_label"
+_PUBLIC_QUERY_ID = "reflection_match_label"
 
 
 @dataclass(frozen=True)
@@ -164,11 +164,11 @@ def _resolve_reflection_query(scene_rng, *, params: Mapping[str, Any], instance_
     """Resolve the sampled reflection query id."""
 
     query_params = dict(params)
-    explicit_variant = str(query_params.get("query_variant", "") or "").strip()
+    explicit_variant = str(query_params.get("query_id", "") or "").strip()
     if query_params.get("reflection_query") is None and explicit_variant in set(_REFLECTION_QUERY_IDS):
         query_params["reflection_query"] = explicit_variant
-    if explicit_variant == str(_PUBLIC_QUERY_VARIANT):
-        query_params.pop("query_variant", None)
+    if explicit_variant == str(_PUBLIC_QUERY_ID):
+        query_params.pop("query_id", None)
     selected_query, query_probabilities = resolve_variant(
         scene_rng,
         params=query_params,
@@ -783,7 +783,6 @@ class IconsRelationReflectionMatchLabelTask:
                 "entities": [dict(scene_payload.reference_cell), *[dict(item) for item in scene_payload.scene_cells]],
                 "relations": {
                     "target": "scene_cell_is_requested_reflection_of_reference",
-                    "query_variant": str(_PUBLIC_QUERY_VARIANT),
                     "query_id": str(scene_payload.query_id),
                     "reflection_axis": str(scene_payload.reflection_axis),
                     "answer_label": str(scene_payload.answer_label),
@@ -795,7 +794,7 @@ class IconsRelationReflectionMatchLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(_PUBLIC_QUERY_VARIANT),
+                "query_id": str(_PUBLIC_QUERY_ID),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -828,7 +827,6 @@ class IconsRelationReflectionMatchLabelTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_grid",
-                "query_variant": str(_PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "reflection_query": str(scene_payload.query_id),
                 "reflection_query_probabilities": dict(query_probabilities),
@@ -841,7 +839,6 @@ class IconsRelationReflectionMatchLabelTask:
                 "question_format": "select_scene_cell_matching_requested_reference_reflection",
             },
             "witness_symbolic": {
-                "query_variant": str(_PUBLIC_QUERY_VARIANT),
                 "query_id": str(scene_payload.query_id),
                 "reflection_axis": str(scene_payload.reflection_axis),
                 "answer_label": str(scene_payload.answer_label),
@@ -852,7 +849,7 @@ class IconsRelationReflectionMatchLabelTask:
         complexity = build_icons_relation_mirror_symmetry_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
-            query_variant=str(scene_payload.reflection_axis),
+            query_id=str(scene_payload.reflection_axis),
             object_count=int(scene_payload.object_count),
             target_count=1,
             scene_cells=scene_payload.scene_cells,
@@ -867,7 +864,7 @@ class IconsRelationReflectionMatchLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(_PUBLIC_QUERY_VARIANT),
+            query_id=str(_PUBLIC_QUERY_ID),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

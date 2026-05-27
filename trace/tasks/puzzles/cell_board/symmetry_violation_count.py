@@ -44,7 +44,7 @@ from .shared.tile_scene import build_tile_cell_entities
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
 
-_PUBLIC_QUERY_VARIANT = "symmetry_violation_count"
+_PUBLIC_QUERY_ID = "symmetry_violation_count"
 _MIRROR_AXIS_ORDER = ("vertical", "horizontal")
 
 
@@ -72,21 +72,21 @@ _COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
 )
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     params: Mapping[str, Any],
     task_id: str,
 ) -> str:
     """Resolve the public symmetry-violation variant."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_variant is not None:
         variant = str(explicit_variant).strip().lower()
         if variant in set(_MIRROR_AXIS_ORDER):
-            return str(_PUBLIC_QUERY_VARIANT)
-        if variant != str(_PUBLIC_QUERY_VARIANT):
-            raise ValueError(f"unsupported query_variant for {task_id}: {explicit_variant}")
-    return str(_PUBLIC_QUERY_VARIANT)
+            return str(_PUBLIC_QUERY_ID)
+        if variant != str(_PUBLIC_QUERY_ID):
+            raise ValueError(f"unsupported query_id for {task_id}: {explicit_variant}")
+    return str(_PUBLIC_QUERY_ID)
 
 
 def _resolve_mirror_axis(
@@ -99,7 +99,7 @@ def _resolve_mirror_axis(
     """Resolve vertical-vs-horizontal mirror axis deterministically."""
 
     explicit_axis = params.get("mirror_axis", params.get("axis"))
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_axis is None and explicit_variant is not None and str(explicit_variant).strip().lower() in set(_MIRROR_AXIS_ORDER):
         explicit_axis = str(explicit_variant)
     if explicit_axis is not None:
@@ -116,13 +116,13 @@ def _resolve_mirror_axis(
     return str(_MIRROR_AXIS_ORDER[int(variant_index) % len(_MIRROR_AXIS_ORDER)])
 
 
-def _variant_capacity(query_variant: str, *, rows: int, cols: int) -> int:
+def _variant_capacity(query_id: str, *, rows: int, cols: int) -> int:
     """Return the maximum possible counted-side violation count for one board shape."""
-    if str(query_variant) == "vertical":
+    if str(query_id) == "vertical":
         return int(rows) * int(cols // 2)
-    if str(query_variant) == "horizontal":
+    if str(query_id) == "horizontal":
         return int(rows // 2) * int(cols)
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _eligible_board_shapes(
@@ -131,7 +131,7 @@ def _eligible_board_shapes(
     rows_max: int,
     cols_min: int,
     cols_max: int,
-    query_variant: str,
+    query_id: str,
     target_violation_count: int,
 ) -> List[Tuple[int, int]]:
     """Return board shapes that can support the requested target count."""
@@ -139,18 +139,18 @@ def _eligible_board_shapes(
         (int(rows), int(cols))
         for rows in range(int(rows_min), int(rows_max) + 1)
         for cols in range(int(cols_min), int(cols_max) + 1)
-        if _variant_capacity(str(query_variant), rows=int(rows), cols=int(cols)) >= int(target_violation_count)
+        if _variant_capacity(str(query_id), rows=int(rows), cols=int(cols)) >= int(target_violation_count)
     ]
 
 
 def _mirror_pairs_and_centers(
-    query_variant: str,
+    query_id: str,
     *,
     rows: int,
     cols: int,
 ) -> Tuple[List[Tuple[Coord, Coord]], List[Coord], str, str]:
     """Return mirror pairs as `(reference, counted_side)` plus center-line coords."""
-    if str(query_variant) == "vertical":
+    if str(query_id) == "vertical":
         counted_col_start = int(cols) - int(cols // 2)
         pairs = [
             ((int(row), int(cols - 1 - counted_col)), (int(row), int(counted_col)))
@@ -159,7 +159,7 @@ def _mirror_pairs_and_centers(
         ]
         centers = [(int(row), int(cols // 2)) for row in range(int(rows))] if int(cols) % 2 == 1 else []
         return pairs, centers, "vertical", "right side"
-    if str(query_variant) == "horizontal":
+    if str(query_id) == "horizontal":
         counted_row_start = int(rows) - int(rows // 2)
         pairs = [
             ((int(rows - 1 - counted_row), int(col)), (int(counted_row), int(col)))
@@ -168,7 +168,7 @@ def _mirror_pairs_and_centers(
         ]
         centers = [(int(rows // 2), int(col)) for col in range(int(cols))] if int(rows) % 2 == 1 else []
         return pairs, centers, "horizontal", "bottom side"
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _build_board_with_exact_violations(
@@ -176,13 +176,13 @@ def _build_board_with_exact_violations(
     *,
     rows: int,
     cols: int,
-    query_variant: str,
+    query_id: str,
     palette: Sequence[NamedColor],
     target_violation_count: int,
 ) -> Tuple[Dict[Coord, NamedColor], List[Coord], Dict[Coord, Coord], List[Coord]]:
     """Construct one board with exactly the requested counted-side symmetry violations."""
     pairs, center_coords, _mirror_axis, _counted_side = _mirror_pairs_and_centers(
-        str(query_variant),
+        str(query_id),
         rows=int(rows),
         cols=int(cols),
     )
@@ -293,7 +293,7 @@ class TileSymmetryViolationCountTask:
             raise ValueError("target_violation_count_min must be <= target_violation_count_max")
 
         target_range_size = max(1, int(target_violation_count_max) - int(target_violation_count_min) + 1)
-        query_variant = _resolve_query_variant(
+        query_id = _resolve_query_id(
             params=params,
             task_id=self.task_id,
         )
@@ -315,7 +315,7 @@ class TileSymmetryViolationCountTask:
             rows_max=int(rows_max),
             cols_min=int(cols_min),
             cols_max=int(cols_max),
-            query_variant=str(mirror_axis_variant),
+            query_id=str(mirror_axis_variant),
             target_violation_count=int(target_violation_count),
         )
         if not eligible_shapes:
@@ -336,7 +336,7 @@ class TileSymmetryViolationCountTask:
             task_rng,
             rows=int(rows),
             cols=int(cols),
-            query_variant=str(mirror_axis_variant),
+            query_id=str(mirror_axis_variant),
             palette=palette,
             target_violation_count=int(target_violation_count),
         )
@@ -448,7 +448,7 @@ class TileSymmetryViolationCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": "symmetry_violation_count_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -485,7 +485,7 @@ class TileSymmetryViolationCountTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "mirror_axis_variant": str(mirror_axis_variant),
                 "mirror_axis": str(mirror_axis),
                 "counted_side": str(counted_side),
@@ -560,6 +560,6 @@ class TileSymmetryViolationCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

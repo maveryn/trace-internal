@@ -40,14 +40,14 @@ def test_graph_counting_named_node_degree_value_undirected_contract_matches_trac
 
     assert "task_graph__node_link__named_node_degree_value" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "undirected_named_node_degree_value"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 2
     assert out.evidence_gt.type == "point_pair_set"
     assert len(out.evidence_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_named_node_degree_value"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_named_node_degree_value"
     assert execution["graph_directionality"] == "undirected"
     assert execution["degree_mode"] == "degree"

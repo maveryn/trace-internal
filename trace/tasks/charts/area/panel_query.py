@@ -903,9 +903,7 @@ class ChartsAreaPanelQueryTask:
             for series, values in series_values.items()
         }
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
             "point_count": int(point_count),
             "point_count_range": list(point_count_range),
             "x_labels": [str(label) for label in x_labels],
@@ -926,9 +924,7 @@ class ChartsAreaPanelQueryTask:
                 "relations": dict(query_params),
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_variant),
                 "prompt_variant_active_key": str(active_prompt_key),
@@ -954,9 +950,7 @@ class ChartsAreaPanelQueryTask:
                 "legend_traces": [dict(trace) for trace in rendered.legend_traces],
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "answer_value": answer_value,
                 "question_format": str(question_format),
                 "values_by_series": dict(values_by_series),
@@ -997,7 +991,6 @@ class ChartsAreaPanelQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

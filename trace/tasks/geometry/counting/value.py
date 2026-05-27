@@ -1,4 +1,4 @@
-"""Consolidated geometry counting task with scene/query variant axes."""
+"""Consolidated geometry counting task with scene/query id axes."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from ..shared.consolidated_source import (
     strip_consolidated_params,
     unregister_source_tasks,
 )
-from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.consolidated_sampling import resolve_compatible_scene_query_ids
 from ..shared.fixed_query_task import FixedGeometryQueryTaskMixin
 from .angle import GeometryCountingAngleTask
 from .convexity import GeometryCountingConvexityTask
@@ -48,7 +48,7 @@ _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "mixed_shape",
     "polygon",
 )
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     ANGLE_TYPE_COUNT,
     TRIANGLE_TYPE_COUNT,
     QUADRILATERAL_TYPE_COUNT,
@@ -111,30 +111,30 @@ _SOURCE_QUERY_BY_CLASS_VALUE: Dict[str, Dict[str, str]] = {
 }
 _COUNTING_CLASS_PARAM_KEYS = frozenset(_CLASS_PARAM_BY_QUERY.values())
 _SOURCE_BUILDERS: Dict[Tuple[str, str], Tuple[object, Dict[str, Any]]] = {
-    ("angle", "acute_angle"): (GeometryCountingAngleTask, {"query_variant": "acute_angle"}),
-    ("angle", "right_angle"): (GeometryCountingAngleTask, {"query_variant": "right_angle"}),
-    ("angle", "obtuse_angle"): (GeometryCountingAngleTask, {"query_variant": "obtuse_angle"}),
-    ("triangle", "equilateral_triangle"): (GeometryCountingTriangleTask, {"query_variant": "equilateral_triangle"}),
-    ("triangle", "isosceles_triangle"): (GeometryCountingTriangleTask, {"query_variant": "isosceles_triangle"}),
-    ("triangle", "scalene_triangle"): (GeometryCountingTriangleTask, {"query_variant": "scalene_triangle"}),
-    ("triangle", "right_triangle"): (GeometryCountingTriangleTask, {"query_variant": "right_triangle"}),
-    ("triangle", "acute_triangle"): (GeometryCountingTriangleTask, {"query_variant": "acute_triangle"}),
-    ("triangle", "obtuse_triangle"): (GeometryCountingTriangleTask, {"query_variant": "obtuse_triangle"}),
-    ("quadrilateral", "square"): (GeometryCountingQuadrilateralTask, {"query_variant": "square"}),
+    ("angle", "acute_angle"): (GeometryCountingAngleTask, {"query_id": "acute_angle"}),
+    ("angle", "right_angle"): (GeometryCountingAngleTask, {"query_id": "right_angle"}),
+    ("angle", "obtuse_angle"): (GeometryCountingAngleTask, {"query_id": "obtuse_angle"}),
+    ("triangle", "equilateral_triangle"): (GeometryCountingTriangleTask, {"query_id": "equilateral_triangle"}),
+    ("triangle", "isosceles_triangle"): (GeometryCountingTriangleTask, {"query_id": "isosceles_triangle"}),
+    ("triangle", "scalene_triangle"): (GeometryCountingTriangleTask, {"query_id": "scalene_triangle"}),
+    ("triangle", "right_triangle"): (GeometryCountingTriangleTask, {"query_id": "right_triangle"}),
+    ("triangle", "acute_triangle"): (GeometryCountingTriangleTask, {"query_id": "acute_triangle"}),
+    ("triangle", "obtuse_triangle"): (GeometryCountingTriangleTask, {"query_id": "obtuse_triangle"}),
+    ("quadrilateral", "square"): (GeometryCountingQuadrilateralTask, {"query_id": "square"}),
     ("quadrilateral", "rectangle_non_square"): (
         GeometryCountingQuadrilateralTask,
-        {"query_variant": "rectangle_non_square"},
+        {"query_id": "rectangle_non_square"},
     ),
-    ("quadrilateral", "rhombus_non_square"): (GeometryCountingQuadrilateralTask, {"query_variant": "rhombus_non_square"}),
-    ("quadrilateral", "parallelogram_only"): (GeometryCountingQuadrilateralTask, {"query_variant": "parallelogram_only"}),
-    ("mixed_shape", "triangle"): (GeometryCountingShapeTypeTask, {"query_variant": "triangle"}),
-    ("mixed_shape", "quadrilateral"): (GeometryCountingShapeTypeTask, {"query_variant": "quadrilateral"}),
-    ("mixed_shape", "pentagon"): (GeometryCountingShapeTypeTask, {"query_variant": "pentagon"}),
-    ("mixed_shape", "hexagon"): (GeometryCountingShapeTypeTask, {"query_variant": "hexagon"}),
-    ("mixed_shape", "circle"): (GeometryCountingShapeTypeTask, {"query_variant": "circle"}),
-    ("mixed_shape", "ellipse"): (GeometryCountingShapeTypeTask, {"query_variant": "ellipse"}),
-    ("polygon", "convex_polygon"): (GeometryCountingConvexityTask, {"query_variant": "convex_polygon"}),
-    ("polygon", "concave_polygon"): (GeometryCountingConvexityTask, {"query_variant": "concave_polygon"}),
+    ("quadrilateral", "rhombus_non_square"): (GeometryCountingQuadrilateralTask, {"query_id": "rhombus_non_square"}),
+    ("quadrilateral", "parallelogram_only"): (GeometryCountingQuadrilateralTask, {"query_id": "parallelogram_only"}),
+    ("mixed_shape", "triangle"): (GeometryCountingShapeTypeTask, {"query_id": "triangle"}),
+    ("mixed_shape", "quadrilateral"): (GeometryCountingShapeTypeTask, {"query_id": "quadrilateral"}),
+    ("mixed_shape", "pentagon"): (GeometryCountingShapeTypeTask, {"query_id": "pentagon"}),
+    ("mixed_shape", "hexagon"): (GeometryCountingShapeTypeTask, {"query_id": "hexagon"}),
+    ("mixed_shape", "circle"): (GeometryCountingShapeTypeTask, {"query_id": "circle"}),
+    ("mixed_shape", "ellipse"): (GeometryCountingShapeTypeTask, {"query_id": "ellipse"}),
+    ("polygon", "convex_polygon"): (GeometryCountingConvexityTask, {"query_id": "convex_polygon"}),
+    ("polygon", "concave_polygon"): (GeometryCountingConvexityTask, {"query_id": "concave_polygon"}),
 }
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "counting")
@@ -160,12 +160,12 @@ _DELEGATED_RENDERING_KEYS: Tuple[str, ...] = (
 def _delegated_count_seed(
     *,
     instance_seed: int,
-    query_variant: str,
+    query_id: str,
     class_value: str,
 ) -> int:
     """Return a count-specific deterministic seed."""
 
-    return abs(int(hash64(int(instance_seed), f"{TASK_ID}.{query_variant}.{class_value}.counts", 0)))
+    return abs(int(hash64(int(instance_seed), f"{TASK_ID}.{query_id}.{class_value}.counts", 0)))
 
 
 def _resolve_counting_class_parameter(
@@ -173,13 +173,13 @@ def _resolve_counting_class_parameter(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str, str, Dict[str, float], str]:
-    """Resolve the counted class parameter for one family-level query variant."""
+    """Resolve the counted class parameter for one family-level query id."""
 
-    normalized_query = str(query_variant)
+    normalized_query = str(query_id)
     if normalized_query not in _CLASS_PARAM_BY_QUERY:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
     class_param_key = str(_CLASS_PARAM_BY_QUERY[normalized_query])
     unsupported = [
         str(key)
@@ -210,12 +210,12 @@ def _resolve_counting_class_parameter(
         weights_key=f"{class_param_key}_weights",
         sampling_namespace=f"{TASK_ID}.{class_param_key}",
     )
-    source_query_variant = _SOURCE_QUERY_BY_CLASS_VALUE[normalized_query][str(selected_class)]
+    source_query_id = _SOURCE_QUERY_BY_CLASS_VALUE[normalized_query][str(selected_class)]
     return (
         class_param_key,
         str(selected_class),
         {str(key): float(value) for key, value in sorted(class_probabilities.items())},
-        str(source_query_variant),
+        str(source_query_id),
     )
 
 
@@ -384,24 +384,24 @@ class GeometryCountingValueTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rng = spawn_rng(instance_seed, f"{self.task_id}.axes")
-        scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+        scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
             rng,
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=_GEN_DEFAULTS,
             supported_scene_variants=_SUPPORTED_SCENE_VARIANTS,
-            supported_query_variants=_SUPPORTED_QUERY_VARIANTS,
+            supported_query_ids=_SUPPORTED_QUERY_IDS,
             compatibility=_COMPATIBILITY,
             scene_sampling_namespace=f"{self.task_id}.scene_variant",
-            query_sampling_namespace=f"{self.task_id}.query_variant",
+            query_sampling_namespace=f"{self.task_id}.query_id",
         )
-        class_param_key, class_value, class_probabilities, source_query_variant = _resolve_counting_class_parameter(
+        class_param_key, class_value, class_probabilities, source_query_id = _resolve_counting_class_parameter(
             rng,
             instance_seed=int(instance_seed),
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
-        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(source_query_variant))]
+        source_task_cls, source_overrides = _SOURCE_BUILDERS[(str(scene_variant), str(source_query_id))]
         source_task = source_task_cls()
         source_params = strip_consolidated_params(params)
         for key in _COUNTING_CLASS_PARAM_KEYS:
@@ -422,12 +422,12 @@ class GeometryCountingValueTask:
         normalized_output = normalize_source_geometry_output(
             output,
             scene_variant=str(scene_variant),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             source_task_id=str(source_task.task_id),
             scene_variant_probabilities=scene_probs,
-            query_variant_probabilities=query_probs,
+            query_id_probabilities=query_probs,
             source_scene_variant=str(source_trace.get("scene_variant", scene_variant)),
-            source_query_variant=str(output.query_variant),
+            source_query_id=str(output.query_id),
             extra_query_params=extra_query_params,
         )
         return _convert_counting_label_evidence_to_bboxes(normalized_output)
@@ -438,7 +438,7 @@ class GeometryCountingAngleTypeCountTask(FixedGeometryQueryTaskMixin, GeometryCo
     """Public angle-type counting task."""
 
     task_id = "task_geometry__graph_paper__angle_type_count"
-    fixed_query_variant = ANGLE_TYPE_COUNT
+    fixed_query_id = ANGLE_TYPE_COUNT
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("angle",)
 
@@ -448,7 +448,7 @@ class GeometryCountingTriangleTypeCountTask(FixedGeometryQueryTaskMixin, Geometr
     """Public triangle-type counting task."""
 
     task_id = "task_geometry__graph_paper__triangle_type_count"
-    fixed_query_variant = TRIANGLE_TYPE_COUNT
+    fixed_query_id = TRIANGLE_TYPE_COUNT
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("triangle",)
 
@@ -458,7 +458,7 @@ class GeometryCountingQuadrilateralTypeCountTask(FixedGeometryQueryTaskMixin, Ge
     """Public quadrilateral-type counting task."""
 
     task_id = "task_geometry__graph_paper__quadrilateral_type_count"
-    fixed_query_variant = QUADRILATERAL_TYPE_COUNT
+    fixed_query_id = QUADRILATERAL_TYPE_COUNT
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("quadrilateral",)
 
@@ -468,7 +468,7 @@ class GeometryCountingShapeTypeCountTask(FixedGeometryQueryTaskMixin, GeometryCo
     """Public mixed-shape type counting task."""
 
     task_id = "task_geometry__graph_paper__shape_type_count"
-    fixed_query_variant = SHAPE_TYPE_COUNT
+    fixed_query_id = SHAPE_TYPE_COUNT
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("mixed_shape",)
 
@@ -478,6 +478,6 @@ class GeometryCountingPolygonConvexityCountTask(FixedGeometryQueryTaskMixin, Geo
     """Public polygon-convexity counting task."""
 
     task_id = "task_geometry__graph_paper__polygon_convexity_count"
-    fixed_query_variant = POLYGON_CONVEXITY_COUNT
+    fixed_query_id = POLYGON_CONVEXITY_COUNT
     public_scene_id = "graph_paper"
     allowed_scene_variants = ("polygon",)

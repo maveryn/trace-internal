@@ -57,7 +57,7 @@ def _pockets_from_execution(execution: dict) -> tuple[PoolPocket, ...]:
         (
             GamesPoolQualifyingPottableCountTask,
             {
-                "query_variant": "pottable_ball_count",
+                "query_id": "pottable_ball_count",
                 "target_answer": 4,
                 "object_ball_count": 9,
                 "style_variant": "classic",
@@ -68,7 +68,7 @@ def _pockets_from_execution(execution: dict) -> tuple[PoolPocket, ...]:
         (
             GamesPoolQualifyingPottableCountTask,
             {
-                "query_variant": "legal_group_pottable_count",
+                "query_id": "legal_group_pottable_count",
                 "target_answer": 3,
                 "object_ball_count": 9,
                 "style_variant": "tournament_blue",
@@ -97,15 +97,15 @@ def test_games_pool_table_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
     assert out.scene_id == "pool"
     assert trace["query_spec"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
@@ -114,7 +114,7 @@ def test_games_pool_pottable_ball_count_matches_direct_shot_rules() -> None:
     out = GamesPoolQualifyingPottableCountTask().generate(
         61100,
         params={
-            "query_variant": "pottable_ball_count",
+            "query_id": "pottable_ball_count",
             "target_answer": 5,
             "object_ball_count": 10,
         },
@@ -142,7 +142,7 @@ def test_games_pool_legal_group_pottable_count_matches_current_group_rules() -> 
     out = GamesPoolQualifyingPottableCountTask().generate(
         61100,
         params={
-            "query_variant": "legal_group_pottable_count",
+            "query_id": "legal_group_pottable_count",
             "target_answer": 4,
             "object_ball_count": 10,
         },
@@ -214,15 +214,15 @@ def test_games_pool_table_supports_requested_answer_ranges() -> None:
     )
     for case_index, case in enumerate(cases):
         if len(case) == 3:
-            task_cls, query_variant, support = case
+            task_cls, query_id, support = case
         else:
             task_cls, support = case
-            query_variant = None
+            query_id = None
         task = task_cls()
         for target_answer in support:
             params: dict[str, int | str] = {"target_answer": int(target_answer)}
-            if query_variant is not None:
-                params["query_variant"] = str(query_variant)
+            if query_id is not None:
+                params["query_id"] = str(query_id)
             out = task.generate(
                 61200 + (case_index * 100) + int(target_answer),
                 params=params,
@@ -233,7 +233,7 @@ def test_games_pool_table_supports_requested_answer_ranges() -> None:
 
 def test_games_pool_table_is_deterministic() -> None:
     params = {
-        "query_variant": "blocking_ball_count",
+        "query_id": "blocking_ball_count",
         "target_answer": 2,
         "style_variant": "light_rail",
     }

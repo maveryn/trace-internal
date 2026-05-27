@@ -7,7 +7,7 @@
 4. Objective: count how many labeled graph nodes are articulation points.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `articulation_point_count`
 3. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 3. `answer_gt.type`: `integer`
@@ -73,7 +73,7 @@
    - `pixel_bbox_set`
 7. `execution_trace` records:
    - `query_id`
-   - `query_variant` (always `default`)
+   - `query_id` (always `default`)
    - `scene_variant`
    - `target_count`
    - feasible support distributions for node count / target count

@@ -6,7 +6,7 @@ Status: active default cell-board puzzle task.
 1. Domain: `puzzles`
 2. Task group: `cell_board`
 3. Scene id: `cell_board`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `color_cell_count`, `row_color_cell_count`, `column_color_cell_count`, `edge_color_cell_count`
 
 ## Contract

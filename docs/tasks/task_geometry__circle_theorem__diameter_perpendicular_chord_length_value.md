@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `circle`
 3. Scene id: `circle_theorem`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `diameter_perpendicular_chord_length`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

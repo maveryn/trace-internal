@@ -4,15 +4,15 @@ generation:
       semicircle_track: 1.0
       spiral_track: 1.0
       double_arc_track: 1.0
-    direction_label_query_variant_weights:
+    direction_label_query_id_weights:
       max_pop_direction_label: 1.0
       target_pop_direction_label: 1.0
-    effect_value_query_variant_weights:
+    effect_value_query_id_weights:
       pop_count_after_marked_shot: 1.0
     style_variant_weights:
       panel_scene: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_chain_length_sampling: true
     balanced_color_count_sampling: true

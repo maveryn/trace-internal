@@ -25,7 +25,7 @@ NODE_LINK_TASKS = (
     ("task_graph__node_link__component_membership_count", GraphComparisonLargestComponentSizeTask, {}),
     ("task_graph__node_link__articulation_point_count", GraphCountingArticulationPointCountTask, {}),
     ("task_graph__node_link__bridge_count", GraphCountingBridgeCountTask, {}),
-    ("task_graph__node_link__degree_predicate_count", GraphCountingDegreeCountTask, {"query_variant": "degree_count"}),
+    ("task_graph__node_link__degree_predicate_count", GraphCountingDegreeCountTask, {"query_id": "degree_count"}),
     ("task_graph__node_link__named_node_degree_value", GraphCountingNamedNodeDegreeValueTask, {}),
     ("task_graph__node_link__topological_position_value", GraphOrderTopologicalPositionTask, {}),
     ("task_graph__node_link__shortest_path_length", GraphPathShortestPathLengthTask, {}),
@@ -154,7 +154,7 @@ def test_node_link_named_and_mixed_arcs_are_trace_recorded() -> None:
         }
         params.update(dict(extra_params))
         if task_id == "task_graph__node_link__shortest_path_length":
-            params.update({"query_variant": "directed_shortest_path_length"})
+            params.update({"query_id": "directed_shortest_path_length"})
 
         out = task_cls().generate(
             930000 + index,
@@ -236,7 +236,7 @@ def test_path_spine_layout_fans_off_path_edges_regression() -> None:
     out = GraphPathShortestPathLengthTask().generate(
         6553976889450827,
         params={
-            "query_variant": "shortest_path_length",
+            "query_id": "shortest_path_length",
             "node_count": 9,
             "target_shortest_path_length": 3,
             "topology_profile": "low_degree",

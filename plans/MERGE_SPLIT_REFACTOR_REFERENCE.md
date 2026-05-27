@@ -28,7 +28,7 @@ domain-local migration.
 
 | Domain | Current Tasks | Merge Delta | Split Delta | Projected Tasks |
 | --- | ---: | ---: | ---: | ---: |
-| charts | 100 | -7 | 0 | 93 |
+| charts | 93 | 0 | 0 | 93 |
 | games | 80 | 0 | 0 | 80 |
 | geometry | 75 | -1 | 0 | 74 |
 | graph | 39 | 0 | +1 | 40 |
@@ -38,20 +38,14 @@ domain-local migration.
 | physics | 20 | -2 | 0 | 18 |
 | puzzles | 77 | 0 | 0 | 77 |
 | three_d | 15 | -1 | 0 | 14 |
-| **Total** | **487** | **-22** | **+2** | **467** |
+| **Total** | **480** | **-15** | **+2** | **467** |
 
 ## Merge Candidates
 
 ### charts
 
-| Scene | Source Task Ids | Suggested Target Id | Delta | Refactor Note |
-| --- | --- | --- | ---: | --- |
-| `bar_3d` | `task_charts__bar_3d__axis_total_value`; `task_charts__bar_3d__axis_gap_value` | `task_charts__bar_3d__axis_aggregate_value` | -1 | Keep total/gap as `query_id`s over the same axis/category/series support. |
-| `dashboard` | `task_charts__dashboard__source_rank_target_value`; `task_charts__dashboard__source_rank_difference_value` | `task_charts__dashboard__source_rank_metric_value` | -1 | Keep target lookup and difference as query branches over source-ranked cards. |
-| `part_whole` | `task_charts__part_whole__order_share_sum_value`; `task_charts__part_whole__order_count_conversion_value`; `task_charts__part_whole__order_sector_angle_value` | `task_charts__part_whole__ordered_segment_value` | -2 | Preserve share-sum, share-to-count, and share-to-angle as query ids. |
-| `region_map` | `task_charts__region_map__region_category_count`; `task_charts__region_map__region_value_count` | `task_charts__region_map__legend_predicate_region_count` | -1 | Categorical and numeric legend predicates become query-local predicate forms. |
-| `pictogram` | `task_charts__pictogram__category_total_value`; `task_charts__pictogram__group_difference_value` | `task_charts__pictogram__group_arithmetic_value` | -1 | Keep group total and group difference as arithmetic query ids. |
-| `violin` | `task_charts__violin__feature_extremum_label`; `task_charts__violin__shape_feature_label` | `task_charts__violin__distribution_feature_label` | -1 | Keep mode/support/bimodal distribution-shape branches as query ids. |
+No pending high-confidence chart merge candidates remain in this reference.
+The approved chart merge pass is reflected in the current active inventory.
 
 ### geometry
 

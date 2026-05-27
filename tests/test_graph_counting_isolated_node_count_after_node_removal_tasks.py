@@ -48,7 +48,7 @@ def test_graph_counting_isolated_node_count_after_node_removal_directed_contract
 
     assert "task_graph__node_link__isolated_after_removal_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "isolated_node_count_after_node_removal"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"

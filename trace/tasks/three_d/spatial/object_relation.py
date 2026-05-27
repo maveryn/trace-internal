@@ -61,7 +61,7 @@ from .camera_distance import (
 
 
 TASK_ID = "task_three_d__object_scene__object_relation_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("on_top_of_prop", "under_prop", "inside_prop")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("on_top_of_prop", "under_prop", "inside_prop")
 ON_TOP_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES
 UNDER_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES
 INSIDE_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES
@@ -113,23 +113,23 @@ def _make_sampled_object(
     return spec
 
 
-def _query_reference_shapes(query_variant: str) -> Tuple[str, ...]:
-    if str(query_variant) == "on_top_of_prop":
+def _query_reference_shapes(query_id: str) -> Tuple[str, ...]:
+    if str(query_id) == "on_top_of_prop":
         return ON_TOP_PROP_TYPES
-    if str(query_variant) == "under_prop":
+    if str(query_id) == "under_prop":
         return UNDER_PROP_TYPES
     return INSIDE_PROP_TYPES
 
 
-def _answer_base_z(query_variant: str, reference_spec: Mapping[str, Any]) -> float:
-    if str(query_variant) == "on_top_of_prop":
+def _answer_base_z(query_id: str, reference_spec: Mapping[str, Any]) -> float:
+    if str(query_id) == "on_top_of_prop":
         return round(float(reference_spec["base_xyz"][2]) + float(reference_spec["dimensions_xyz"][2]) + 0.03, 4)
-    if str(query_variant) == "inside_prop":
+    if str(query_id) == "inside_prop":
         return round(float(reference_spec["base_xyz"][2]) + float(reference_spec["dimensions_xyz"][2]) * 0.18 + 0.02, 4)
     return 0.0
 
 
-def _relation_truth(query_variant: str, candidate_spec: Mapping[str, Any], reference_spec: Mapping[str, Any]) -> bool:
+def _relation_truth(query_id: str, candidate_spec: Mapping[str, Any], reference_spec: Mapping[str, Any]) -> bool:
     cx, cy, _cz = (float(value) for value in candidate_spec["world_xyz"])
     rx, ry, _rz = (float(value) for value in reference_spec["world_xyz"])
     c_base = float(candidate_spec["base_xyz"][2])
@@ -138,22 +138,22 @@ def _relation_truth(query_variant: str, candidate_spec: Mapping[str, Any], refer
     dx = abs(float(cx - rx))
     dy = abs(float(cy - ry))
     inside_footprint = dx <= r_width * 0.33 and dy <= r_depth * 0.33
-    if str(query_variant) == "on_top_of_prop":
+    if str(query_id) == "on_top_of_prop":
         return bool(inside_footprint and c_base >= r_base + r_height * 0.92)
-    if str(query_variant) == "under_prop":
+    if str(query_id) == "under_prop":
         return bool(inside_footprint and c_base < r_base + r_height * 0.18)
     return bool(dx <= r_width * 0.24 and dy <= r_depth * 0.24 and c_base < r_base + r_height * 0.35)
 
 
-def _candidate_slots(query_variant: str) -> List[Tuple[float, float]]:
-    if str(query_variant) == "inside_prop":
+def _candidate_slots(query_id: str) -> List[Tuple[float, float]]:
+    if str(query_id) == "inside_prop":
         return [(-2.35, -1.85), (-1.4, 2.18), (1.42, -2.18), (2.35, 1.76), (-2.38, 1.42)]
     return [(-2.35, -1.95), (-1.42, 2.16), (1.42, -2.16), (2.35, 1.82), (0.0, -2.42)]
 
 
 def _build_relation_scene_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     context_object_count: int,
@@ -162,7 +162,7 @@ def _build_relation_scene_dataset(
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
-    relation_index = SUPPORTED_QUERY_VARIANTS.index(str(query_variant))
+    relation_index = SUPPORTED_QUERY_IDS.index(str(query_id))
     selected_camera_yaw_band = (
         tuple(float(value) for value in camera_yaw_band)
         if camera_yaw_band is not None
@@ -174,7 +174,7 @@ def _build_relation_scene_dataset(
         remaining_labels = [str(label) for label in POINT_LABELS[: int(point_count)] if str(label) != answer_label]
         rng.shuffle(remaining_labels)
 
-        reference_shape = str(rng.choice(_query_reference_shapes(str(query_variant))))
+        reference_shape = str(rng.choice(_query_reference_shapes(str(query_id))))
         reference_spec = _make_sampled_object(
             rng=rng,
             object_id=f"context_reference_{reference_shape}",
@@ -183,10 +183,10 @@ def _build_relation_scene_dataset(
             xy=(0.0, 0.18),
         )
         answer_shape_pool = list(
-            ELEVATED_COMPATIBLE_SHAPES if str(query_variant) in {"on_top_of_prop", "inside_prop"} else NAMEABLE_SMALL_OBJECT_SHAPE_TYPES
+            ELEVATED_COMPATIBLE_SHAPES if str(query_id) in {"on_top_of_prop", "inside_prop"} else NAMEABLE_SMALL_OBJECT_SHAPE_TYPES
         )
         answer_shape = str(rng.choice(answer_shape_pool))
-        answer_base_z = _answer_base_z(str(query_variant), reference_spec)
+        answer_base_z = _answer_base_z(str(query_id), reference_spec)
         answer_xy = (
             float(reference_spec["world_xyz"][0] + rng.uniform(-0.08, 0.08)),
             float(reference_spec["world_xyz"][1] + rng.uniform(-0.08, 0.08)),
@@ -200,7 +200,7 @@ def _build_relation_scene_dataset(
             label=answer_label,
             base_z=float(answer_base_z),
         )
-        if str(query_variant) == "inside_prop":
+        if str(query_id) == "inside_prop":
             answer_spec.update(
                 {
                     "contained_by_object_id": str(reference_spec["object_id"]),
@@ -211,7 +211,7 @@ def _build_relation_scene_dataset(
 
         shape_pool = [str(shape) for shape in NAMEABLE_SMALL_OBJECT_SHAPE_TYPES if str(shape) != answer_shape]
         rng.shuffle(shape_pool)
-        distractor_slots = list(_candidate_slots(str(query_variant)))
+        distractor_slots = list(_candidate_slots(str(query_id)))
         rng.shuffle(distractor_slots)
         candidate_specs = [answer_spec]
         for index, label in enumerate(remaining_labels):
@@ -245,10 +245,10 @@ def _build_relation_scene_dataset(
                 )
             )
 
-        if not _relation_truth(str(query_variant), answer_spec, reference_spec):
+        if not _relation_truth(str(query_id), answer_spec, reference_spec):
             continue
         relation_status_by_label = {
-            str(spec["point_label"]): bool(_relation_truth(str(query_variant), spec, reference_spec)) for spec in candidate_specs
+            str(spec["point_label"]): bool(_relation_truth(str(query_id), spec, reference_spec)) for spec in candidate_specs
         }
         if sum(1 for value in relation_status_by_label.values() if bool(value)) != 1:
             continue
@@ -315,7 +315,7 @@ def _build_relation_scene_dataset(
         sorted_context = sorted(finalized_context_specs, key=lambda spec: str(spec["object_id"]))
         relation_true_labels = [str(label) for label, value in sorted(relation_status_by_label.items()) if bool(value)]
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
@@ -348,7 +348,7 @@ def _build_relation_scene_dataset(
                 "normalized_center_v": round(float(frame.normalized_center_v), 6),
             },
             "solver_trace": {
-                "relation_kind": str(query_variant),
+                "relation_kind": str(query_id),
                 "candidate_only": True,
                 "reference_object_id": str(reference_spec["object_id"]),
                 "reference_object_name": str(reference_spec["prompt_name"]),
@@ -366,7 +366,7 @@ def _build_relation_scene_dataset(
 
 def _build_complexity(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     complexity_defaults: Mapping[str, Any],
@@ -387,12 +387,12 @@ def _build_complexity(
             "on_top_of_prop": 0.50,
             "under_prop": 0.58,
             "inside_prop": 0.64,
-        }.get(str(query_variant), 0.56),
+        }.get(str(query_id), 0.56),
         "occlusion_load": {
             "on_top_of_prop": 0.38,
             "under_prop": 0.56,
             "inside_prop": 0.62,
-        }.get(str(query_variant), 0.50),
+        }.get(str(query_id), 0.50),
         "scene_variant_load": {
             "floor_grid_room": 0.28,
             "tabletop_room": 0.32,
@@ -453,16 +453,16 @@ class ThreeDSpatialObjectRelationLabelTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -499,7 +499,7 @@ class ThreeDSpatialObjectRelationLabelTask:
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_relation_scene_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             context_object_count=int(context_object_count),
@@ -544,7 +544,7 @@ class ThreeDSpatialObjectRelationLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -566,7 +566,7 @@ class ThreeDSpatialObjectRelationLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             complexity_defaults=_COMPLEXITY_DEFAULTS,
@@ -587,7 +587,7 @@ class ThreeDSpatialObjectRelationLabelTask:
                     "candidate_object_names": [str(spec["object_name"]) for spec in dataset["point_specs"]],
                     "context_object_names": [str(spec["object_name"]) for spec in dataset["context_object_specs"]],
                     "view_family": "synthetic_perspective_3d_scene",
-                    "relation_kind": str(query_variant),
+                    "relation_kind": str(query_id),
                     "reference_object_id": str(dataset["reference_object_id"]),
                     "reference_object_name": str(dataset["reference_object_name"]),
                     "relation_status_by_label": dict(dataset["relation_status_by_label"]),
@@ -596,15 +596,14 @@ class ThreeDSpatialObjectRelationLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "point_count": int(point_count),
@@ -640,8 +639,7 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "point_count": int(point_count),
                 "candidate_count": int(point_count),
@@ -657,7 +655,7 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "relation_status_by_label": dict(dataset["relation_status_by_label"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_scene",
                 "solver_trace": dict(solver_trace),
             },
@@ -682,9 +680,8 @@ class ThreeDSpatialObjectRelationLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

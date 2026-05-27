@@ -16,7 +16,7 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_field_orientation_sampling"]) is True
 
@@ -28,7 +28,7 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert set(generation["scene_variant_weights"].keys()) == {"field_grid"}
 
-    assert set(generation["query_variant_weights"].keys()) == {"force_direction_choice"}
+    assert set(generation["query_id_weights"].keys()) == {"force_direction_choice"}
 
     assert set(generation["field_orientation_weights"].keys()) == {"out_of_page", "into_page"}
 

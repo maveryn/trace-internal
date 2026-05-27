@@ -48,12 +48,12 @@ def test_games_snakes_ladders_move_outcome_matches_trace() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(move.final_square) == 31
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "move_outcome_value"
     assert out.scene_id == "snakes_ladders"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["board_side"] in {5, 6, 7}
-    assert trace_value(out, "query_spec", "params", "query_variant") == "default"
+    assert trace_value(out, "query_spec", "params", "query_id") == "default"
     assert trace_value(out, "query_spec", "params", "query_id") == "move_outcome_value"
     assert trace_value(out, "projected_evidence", "bbox_set") == out.evidence_gt.value
     assert "die" in execution["evidence_entity_ids"]
@@ -74,7 +74,7 @@ def test_games_snakes_ladders_best_roll_returns_best_final_square() -> None:
 
     assert int(out.answer_gt.value) == int(answer) == 49
     assert out.query_id == "best_roll_value"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert execution["board_side"] == 7
     assert len(execution["optimal_route"]) == 2
     assert execution["best_final_square"] == 49

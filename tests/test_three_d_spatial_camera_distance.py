@@ -24,13 +24,13 @@ from trace.tasks.registry import list_default_task_ids
 TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
 
 
-@pytest.mark.parametrize("query_variant", ["closest_to_camera", "farthest_from_camera"])
-def test_camera_distance_extremum_answer_and_evidence(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", ["closest_to_camera", "farthest_from_camera"])
+def test_camera_distance_extremum_answer_and_evidence(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "post_image_noise_apply_prob": 0.0,
@@ -43,12 +43,12 @@ def test_camera_distance_extremum_answer_and_evidence(query_variant: str) -> Non
     object_specs = list(output.trace_payload["execution_trace"]["object_specs"])
     entities = list(output.trace_payload["scene_ir"]["entities"])
     sorted_specs = sorted(point_specs, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
-    expected = sorted_specs[0] if query_variant == "closest_to_camera" else sorted_specs[-1]
+    expected = sorted_specs[0] if query_id == "closest_to_camera" else sorted_specs[-1]
     expected_label = str(expected["point_label"])
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
-    assert output.query_id == query_variant
+    assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 6

@@ -307,7 +307,7 @@ visual:
 generation:
   task_overrides:
     task_pages__map__navigation_label:
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       landmark_count_min: 10
       landmark_count_max: 14
@@ -315,7 +315,7 @@ generation:
       direction_step_count_max: 4
       highlighted_route_step_min: 2
       highlighted_route_step_max: 5
-      query_variant_weights:
+      query_id_weights:
         destination_after_directions: 1.0
         landmark_after_route_step: 1.0
       scene_variant_weights:

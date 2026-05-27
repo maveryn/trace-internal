@@ -84,7 +84,7 @@ from ..spatial.camera_distance import (
 
 TASK_ID = "task_three_d__room__wall_mounted_object_count"
 SCENE_ID = "room"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "tv_wall_mounted_count",
     "clock_wall_mounted_count",
     "picture_frame_wall_mounted_count",
@@ -550,14 +550,14 @@ def _wall_dimensions_for_type(object_type: str, rng) -> Tuple[float, float]:
 
 def _build_room_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     target_count: int,
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
-    target_type = str(QUERY_OBJECT_TYPE_BY_VARIANT[str(query_variant)])
+    target_type = str(QUERY_OBJECT_TYPE_BY_VARIANT[str(query_id)])
     camera = _sample_room_camera(rng, scene_variant=str(scene_variant))
     wall_slots = [
         ("back", -2.35, 1.25),
@@ -750,7 +750,7 @@ def _build_room_dataset(
         key=lambda spec: (str(spec.get("wall", "")), float(spec["base_xyz"][2]), float(spec["world_xyz"][0]), float(spec["world_xyz"][1])),
     )
     return {
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": str(scene_variant),
         "target_object_type": str(target_type),
         "target_object_name": _object_name(str(target_type)),
@@ -2097,16 +2097,16 @@ class ThreeDRoomWallMountedObjectCountTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -2126,7 +2126,7 @@ class ThreeDRoomWallMountedObjectCountTask:
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_room_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             target_count=int(target_count),
             render_params=render_params,
@@ -2170,7 +2170,7 @@ class ThreeDRoomWallMountedObjectCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -2219,15 +2219,14 @@ class ThreeDRoomWallMountedObjectCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "target_object_type": str(dataset["target_object_type"]),
@@ -2266,8 +2265,7 @@ class ThreeDRoomWallMountedObjectCountTask:
                 "target_object_bboxes_px": {str(key): list(rendered_scene.object_bboxes_px[str(key)]) for key in dataset["target_object_ids"]},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "target_object_type": str(dataset["target_object_type"]),
@@ -2289,7 +2287,7 @@ class ThreeDRoomWallMountedObjectCountTask:
                 "floor_object_type_counts": dict(dataset["floor_object_type_counts"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_room",
                 "solver_trace": dict(solver_trace),
             },
@@ -2315,9 +2313,8 @@ class ThreeDRoomWallMountedObjectCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

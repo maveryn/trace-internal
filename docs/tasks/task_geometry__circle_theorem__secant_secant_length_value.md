@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `circle`
 3. Scene id: `circle_theorem`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `secant_secant_length` or `secant_secant_variable_segment_length`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

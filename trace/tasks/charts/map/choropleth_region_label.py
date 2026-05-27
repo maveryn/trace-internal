@@ -48,25 +48,25 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_map_choropleth_region_count_base"
-_SUPPORTED_REGION_VALUE_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_REGION_VALUE_QUERY_IDS: Tuple[str, ...] = (
     "numeric_threshold_region_count",
     "numeric_interval_region_count",
 )
-_SUPPORTED_REGION_CATEGORY_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_REGION_CATEGORY_QUERY_IDS: Tuple[str, ...] = (
     "categorical_region_count",
 )
-_SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_WORLD_FILTERED_QUERY_IDS: Tuple[str, ...] = (
     "continent_region_count",
     "continent_category_region_count",
     "continent_threshold_region_count",
 )
-_SUPPORTED_WORLD_BORDER_QUERY_VARIANTS: Tuple[str, ...] = ("border_neighbor_count",)
-_SUPPORTED_ADJACENT_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_WORLD_BORDER_QUERY_IDS: Tuple[str, ...] = ("border_neighbor_count",)
+_SUPPORTED_ADJACENT_QUERY_IDS: Tuple[str, ...] = (
     "adjacent_same_category_count",
     "adjacent_category_count",
     "adjacent_numeric_threshold_count",
 )
-_SUPPORTED_MARKER_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_MARKER_QUERY_IDS: Tuple[str, ...] = (
     "marker_region_threshold_count",
     "marker_region_extremum_label",
 )
@@ -75,13 +75,13 @@ _SUPPORTED_MARKER_RENDER_VARIANTS: Tuple[str, ...] = (
     "unit_bubble_count",
 )
 _SUPPORTED_MARKER_EXTREMUM_DIRECTIONS: Tuple[str, ...] = ("largest", "smallest")
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = _SUPPORTED_REGION_VALUE_QUERY_VARIANTS + _SUPPORTED_REGION_CATEGORY_QUERY_VARIANTS
-_SUPPORTED_ALL_QUERY_VARIANTS: Tuple[str, ...] = (
-    _SUPPORTED_QUERY_VARIANTS
-    + _SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS
-    + _SUPPORTED_WORLD_BORDER_QUERY_VARIANTS
-    + _SUPPORTED_ADJACENT_QUERY_VARIANTS
-    + _SUPPORTED_MARKER_QUERY_VARIANTS
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = _SUPPORTED_REGION_VALUE_QUERY_IDS + _SUPPORTED_REGION_CATEGORY_QUERY_IDS
+_SUPPORTED_ALL_QUERY_IDS: Tuple[str, ...] = (
+    _SUPPORTED_QUERY_IDS
+    + _SUPPORTED_WORLD_FILTERED_QUERY_IDS
+    + _SUPPORTED_WORLD_BORDER_QUERY_IDS
+    + _SUPPORTED_ADJACENT_QUERY_IDS
+    + _SUPPORTED_MARKER_QUERY_IDS
 )
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("synthetic_region_map", "geographic_region_map")
 _SUPPORTED_THRESHOLD_DIRECTIONS: Tuple[str, ...] = ("greater_than", "less_than")
@@ -99,13 +99,13 @@ _SUPPORTED_WORLD_MAP_STYLES: Tuple[str, ...] = (
     "muted_gray",
     "clean_minimal",
 )
-SUPPORTED_REGION_VALUE_QUERY_VARIANTS = _SUPPORTED_REGION_VALUE_QUERY_VARIANTS
-SUPPORTED_REGION_CATEGORY_QUERY_VARIANTS = _SUPPORTED_REGION_CATEGORY_QUERY_VARIANTS
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
-SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS = _SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS
-SUPPORTED_WORLD_BORDER_QUERY_VARIANTS = _SUPPORTED_WORLD_BORDER_QUERY_VARIANTS
-SUPPORTED_ADJACENT_QUERY_VARIANTS = _SUPPORTED_ADJACENT_QUERY_VARIANTS
-SUPPORTED_MARKER_QUERY_VARIANTS = _SUPPORTED_MARKER_QUERY_VARIANTS
+SUPPORTED_REGION_VALUE_QUERY_IDS = _SUPPORTED_REGION_VALUE_QUERY_IDS
+SUPPORTED_REGION_CATEGORY_QUERY_IDS = _SUPPORTED_REGION_CATEGORY_QUERY_IDS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
+SUPPORTED_WORLD_FILTERED_QUERY_IDS = _SUPPORTED_WORLD_FILTERED_QUERY_IDS
+SUPPORTED_WORLD_BORDER_QUERY_IDS = _SUPPORTED_WORLD_BORDER_QUERY_IDS
+SUPPORTED_ADJACENT_QUERY_IDS = _SUPPORTED_ADJACENT_QUERY_IDS
+SUPPORTED_MARKER_QUERY_IDS = _SUPPORTED_MARKER_QUERY_IDS
 SUPPORTED_MARKER_RENDER_VARIANTS = _SUPPORTED_MARKER_RENDER_VARIANTS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 _WORLD_FILTERED_CONTINENTS: Tuple[str, ...] = (
@@ -673,24 +673,24 @@ def _resolve_world_map_style(params: Mapping[str, Any], *, instance_seed: int) -
     )
 
 
-def _query_variant_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
-    explicit = str(params.get("query_variant") or "")
+def _query_id_support(params: Mapping[str, Any]) -> Tuple[str, ...]:
+    explicit = str(params.get("query_id") or "")
     extended_variants = (
-        set(_SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS)
-        | set(_SUPPORTED_WORLD_BORDER_QUERY_VARIANTS)
-        | set(_SUPPORTED_ADJACENT_QUERY_VARIANTS)
-        | set(_SUPPORTED_MARKER_QUERY_VARIANTS)
+        set(_SUPPORTED_WORLD_FILTERED_QUERY_IDS)
+        | set(_SUPPORTED_WORLD_BORDER_QUERY_IDS)
+        | set(_SUPPORTED_ADJACENT_QUERY_IDS)
+        | set(_SUPPORTED_MARKER_QUERY_IDS)
     )
     if explicit in extended_variants:
-        return _SUPPORTED_ALL_QUERY_VARIANTS
-    weights = params.get("query_variant_weights")
+        return _SUPPORTED_ALL_QUERY_IDS
+    weights = params.get("query_id_weights")
     if isinstance(weights, Mapping) and any(str(key) in extended_variants for key in weights):
-        return _SUPPORTED_ALL_QUERY_VARIANTS
-    return _SUPPORTED_QUERY_VARIANTS
+        return _SUPPORTED_ALL_QUERY_IDS
+    return _SUPPORTED_QUERY_IDS
 
 
-def _is_categorical_query_variant(query_variant: str) -> bool:
-    return str(query_variant) in {
+def _is_categorical_query_id(query_id: str) -> bool:
+    return str(query_id) in {
         "categorical_region_count",
         "continent_category_region_count",
         "adjacent_same_category_count",
@@ -698,26 +698,26 @@ def _is_categorical_query_variant(query_variant: str) -> bool:
     }
 
 
-def _is_world_filtered_query_variant(query_variant: str) -> bool:
-    return str(query_variant) in set(_SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS)
+def _is_world_filtered_query_id(query_id: str) -> bool:
+    return str(query_id) in set(_SUPPORTED_WORLD_FILTERED_QUERY_IDS)
 
 
-def _is_world_border_query_variant(query_variant: str) -> bool:
-    return str(query_variant) in set(_SUPPORTED_WORLD_BORDER_QUERY_VARIANTS)
+def _is_world_border_query_id(query_id: str) -> bool:
+    return str(query_id) in set(_SUPPORTED_WORLD_BORDER_QUERY_IDS)
 
 
-def _is_adjacent_query_variant(query_variant: str) -> bool:
-    return str(query_variant) in set(_SUPPORTED_ADJACENT_QUERY_VARIANTS)
+def _is_adjacent_query_id(query_id: str) -> bool:
+    return str(query_id) in set(_SUPPORTED_ADJACENT_QUERY_IDS)
 
 
-def _is_marker_query_variant(query_variant: str) -> bool:
-    return str(query_variant) in set(_SUPPORTED_MARKER_QUERY_VARIANTS)
+def _is_marker_query_id(query_id: str) -> bool:
+    return str(query_id) in set(_SUPPORTED_MARKER_QUERY_IDS)
 
 
 def _resolve_render_params(
     params: Mapping[str, Any],
     *,
-    query_variant: str,
+    query_id: str,
     legend_count: int,
 ) -> _MapRenderParams:
     outer = _int_param(params, "outer_margin_px", 42)
@@ -731,7 +731,7 @@ def _resolve_render_params(
         instance_seed=_render_style_seed(params),
         namespace=f"{TASK_ID}.layout",
     )
-    categorical = _is_categorical_query_variant(str(query_variant))
+    categorical = _is_categorical_query_id(str(query_id))
     palette_variant, palette_probabilities, palette = _resolve_palette(
         params,
         required_palette_count=int(legend_count),
@@ -964,18 +964,18 @@ def _sample_connected_cells(
     return sorted(active, key=lambda item: (int(item[0]), int(item[1])))
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    supported_variants = _query_variant_support(params)
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    supported_variants = _query_id_support(params)
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         supported_variants=supported_variants,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -1054,18 +1054,18 @@ def _resolve_marker_extremum_direction(params: Mapping[str, Any], *, instance_se
     )
 
 
-def _uses_uniform_query_variant_cycle(
+def _uses_uniform_query_id_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> bool:
-    if params.get("query_variant") is not None or params.get("query_variant_weights") is not None:
+    if params.get("query_id") is not None or params.get("query_id_weights") is not None:
         return False
-    enabled = bool(params.get("balanced_query_variant_sampling", _GEN_DEFAULTS.get("balanced_query_variant_sampling", True)))
+    enabled = bool(params.get("balanced_query_id_sampling", _GEN_DEFAULTS.get("balanced_query_id_sampling", True)))
     if not bool(enabled):
         return False
-    positives = [float(value) for value in query_variant_probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(_SUPPORTED_QUERY_VARIANTS):
+    positives = [float(value) for value in query_id_probabilities.values() if float(value) > 0.0]
+    if len(positives) != len(_SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -1073,15 +1073,15 @@ def _uses_uniform_query_variant_cycle(
 def _support_sampling_params(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     support_params = dict(params)
     sampling_index = support_params.get("_sample_cursor")
     if sampling_index is None:
         return support_params
-    if not _uses_uniform_query_variant_cycle(params, query_variant_probabilities=query_variant_probabilities):
+    if not _uses_uniform_query_id_cycle(params, query_id_probabilities=query_id_probabilities):
         return support_params
-    positive_count = len([float(value) for value in query_variant_probabilities.values() if float(value) > 0.0])
+    positive_count = len([float(value) for value in query_id_probabilities.values() if float(value) > 0.0])
     support_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, int(positive_count))
     return support_params
 
@@ -1136,7 +1136,7 @@ def _make_category_bins(bin_count: int, *, rng) -> List[Dict[str, Any]]:
 
 def _build_regions(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     rng,
@@ -1189,7 +1189,7 @@ def _build_regions(
         region_support,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{query_variant}.region_count",
+        namespace=f"{TASK_ID}.{query_id}.region_count",
     )
     active_cells = _sample_connected_cells(rows=int(rows), cols=int(cols), target_count=int(region_count), rng=rng)
 
@@ -1209,11 +1209,11 @@ def _build_regions(
         list(range(int(bin_min), int(bin_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{query_variant}.legend_bin_count",
+        namespace=f"{TASK_ID}.{query_id}.legend_bin_count",
     )
     legend_bins = (
         _make_category_bins(int(bin_count), rng=rng)
-        if _is_categorical_query_variant(str(query_variant))
+        if _is_categorical_query_id(str(query_id))
         else _make_numeric_bins(int(bin_count))
     )
 
@@ -1259,7 +1259,7 @@ def _sample_target_count(
     params: Mapping[str, Any],
     *,
     region_count: int,
-    query_variant: str,
+    query_id: str,
     instance_seed: int,
 ) -> Tuple[int, List[int]]:
     support = _target_count_support(params, region_count=int(region_count))
@@ -1268,7 +1268,7 @@ def _sample_target_count(
             support,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.target_count",
+            namespace=f"{TASK_ID}.{query_id}.target_count",
         ),
         list(support),
     )
@@ -1497,26 +1497,26 @@ def _selected_geographic_region_adjacency(
 
 def _build_world_regions(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     rng,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str], List[int], Dict[str, Any]]:
-    world_filtered = _is_world_filtered_query_variant(str(query_variant))
-    world_border = _is_world_border_query_variant(str(query_variant))
-    geographic_adjacent = _is_adjacent_query_variant(str(query_variant))
+    world_filtered = _is_world_filtered_query_id(str(query_id))
+    world_border = _is_world_border_query_id(str(query_id))
+    geographic_adjacent = _is_adjacent_query_id(str(query_id))
     supported_world_variants = {
         "numeric_threshold_region_count",
         "numeric_interval_region_count",
         "categorical_region_count",
-        *_SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS,
-        *_SUPPORTED_WORLD_BORDER_QUERY_VARIANTS,
-        *_SUPPORTED_ADJACENT_QUERY_VARIANTS,
-        *_SUPPORTED_MARKER_QUERY_VARIANTS,
+        *_SUPPORTED_WORLD_FILTERED_QUERY_IDS,
+        *_SUPPORTED_WORLD_BORDER_QUERY_IDS,
+        *_SUPPORTED_ADJACENT_QUERY_IDS,
+        *_SUPPORTED_MARKER_QUERY_IDS,
     }
-    if str(query_variant) not in supported_world_variants:
+    if str(query_id) not in supported_world_variants:
         raise ValueError(
-            "geographic_region_map does not support this query variant"
+            "geographic_region_map does not support this query id"
         )
     geographic_map_variant, geographic_map_variant_probabilities = _resolve_geographic_map_variant(
         params,
@@ -1543,7 +1543,7 @@ def _build_world_regions(
         selected_count_support,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{query_variant}.world_selected_region_count",
+        namespace=f"{TASK_ID}.{query_id}.world_selected_region_count",
     )
     forced_target_asset_ids: List[str] = []
     forced_target_count = 0
@@ -1560,7 +1560,7 @@ def _build_world_regions(
         forced_target_count, forced_target_support = _sample_target_count(
             params,
             region_count=int(selected_count),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         regions_by_continent: Dict[str, List[Dict[str, Any]]] = {
@@ -1583,7 +1583,7 @@ def _build_world_regions(
             list(range(len(feasible_continents))),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.target_continent",
+            namespace=f"{TASK_ID}.{query_id}.target_continent",
         )
         target_continent = str(feasible_continents[int(continent_index)])
         target_pool = sorted(regions_by_continent[str(target_continent)], key=lambda item: str(item["region_id"]))
@@ -1606,7 +1606,7 @@ def _build_world_regions(
             forced_target_support,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.reference_degree",
+            namespace=f"{TASK_ID}.{query_id}.reference_degree",
         )
         border_min_shared_length_deg = float(
             params.get(
@@ -1654,7 +1654,7 @@ def _build_world_regions(
             list(range(len(feasible_reference_ids))),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.reference_country",
+            namespace=f"{TASK_ID}.{query_id}.reference_country",
         )
         reference_asset_region_id = str(feasible_reference_ids[int(reference_index)])
         reference_country = dict(eligible_by_id[str(reference_asset_region_id)])
@@ -1723,7 +1723,7 @@ def _build_world_regions(
             list(range(len(feasible_reference_ids))),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.adjacent_reference_region",
+            namespace=f"{TASK_ID}.{query_id}.adjacent_reference_region",
         )
         reference_asset_region_id = str(feasible_reference_ids[int(reference_index)])
         reference_region = dict(eligible_by_id[str(reference_asset_region_id)])
@@ -1739,7 +1739,7 @@ def _build_world_regions(
             neighbor_count_support,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.adjacent_neighbor_count",
+            namespace=f"{TASK_ID}.{query_id}.adjacent_neighbor_count",
         )
         adjacent_neighbor_asset_ids = sorted(rng.sample(neighbor_pool, int(neighbor_count)))
         distractor_pool = [
@@ -1779,11 +1779,11 @@ def _build_world_regions(
         list(range(int(bin_min), int(bin_max) + 1)),
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{query_variant}.world_legend_bin_count",
+        namespace=f"{TASK_ID}.{query_id}.world_legend_bin_count",
     )
     legend_bins = (
         _make_category_bins(int(bin_count), rng=rng)
-        if _is_categorical_query_variant(str(query_variant))
+        if _is_categorical_query_id(str(query_id))
         else _make_numeric_bins(int(bin_count))
     )
 
@@ -1875,7 +1875,7 @@ def _marker_value_bounds(params: Mapping[str, Any]) -> Tuple[int, int]:
 
 def _construct_marker_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -1913,11 +1913,11 @@ def _construct_marker_dataset(
     target_support: List[int] = []
     threshold_direction = ""
 
-    if str(query_variant) == "marker_region_threshold_count":
+    if str(query_id) == "marker_region_threshold_count":
         target_count, target_support = _sample_target_count(
             params,
             region_count=len(region_ids),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         target_ids = set(rng.sample(list(region_ids), int(target_count)))
@@ -1931,7 +1931,7 @@ def _construct_marker_dataset(
                 list(range(int(value_min), int(value_max))),
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.{query_variant}.marker_threshold.greater_than",
+                namespace=f"{TASK_ID}.{query_id}.marker_threshold.greater_than",
             )
             matching_values = list(range(int(threshold_value) + 1, int(value_max) + 1))
             nonmatching_values = list(range(int(value_min), int(threshold_value) + 1))
@@ -1941,7 +1941,7 @@ def _construct_marker_dataset(
                 list(range(int(value_min) + 1, int(value_max) + 1)),
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.{query_variant}.marker_threshold.less_than",
+                namespace=f"{TASK_ID}.{query_id}.marker_threshold.less_than",
             )
             matching_values = list(range(int(value_min), int(threshold_value)))
             nonmatching_values = list(range(int(threshold_value), int(value_max) + 1))
@@ -1960,7 +1960,7 @@ def _construct_marker_dataset(
             "marker_value_min": int(value_min),
             "marker_value_max": int(value_max),
         }
-    elif str(query_variant) == "marker_region_extremum_label":
+    elif str(query_id) == "marker_region_extremum_label":
         extremum_direction, extremum_direction_probabilities = _resolve_marker_extremum_direction(
             params,
             instance_seed=int(instance_seed),
@@ -1969,7 +1969,7 @@ def _construct_marker_dataset(
             list(range(len(region_ids))),
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.answer_region_index",
+            namespace=f"{TASK_ID}.{query_id}.answer_region_index",
         )
         answer_region_id = str(region_ids[int(answer_index)])
         if str(extremum_direction) == "largest":
@@ -2003,7 +2003,7 @@ def _construct_marker_dataset(
             "marker_value_max": int(value_max),
         }
     else:
-        raise ValueError(f"unsupported marker query_variant: {query_variant}")
+        raise ValueError(f"unsupported marker query_id: {query_id}")
 
     final_regions = [dict(regions_by_id[str(region_id)]) for region_id in region_ids]
     world_scene = str(scene_variant) == "geographic_region_map"
@@ -2016,7 +2016,7 @@ def _construct_marker_dataset(
     )
     return {
         "scene_title": str(_choose_random(_MARKER_MAP_TITLE_OPTIONS, rng=rng)),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": str(scene_variant),
         "map_asset_id": str(map_asset_meta.get("asset_id") or (_WORLD_MAP_ASSET_ID if world_scene else "")),
         "geographic_map_variant": str(map_asset_meta.get("map_variant") or ""),
@@ -2055,7 +2055,7 @@ def _construct_marker_dataset(
 
 def _construct_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -2068,7 +2068,7 @@ def _construct_dataset(
         cols = 0
         active_cells: List[Tuple[int, int]] = []
         regions, legend_bins, _selected_region_ids, _selected_count_support, map_asset_meta = _build_world_regions(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=params,
             instance_seed=int(instance_seed),
             rng=rng,
@@ -2076,16 +2076,16 @@ def _construct_dataset(
     else:
         map_asset_meta = {}
         rows, cols, active_cells, regions, legend_bins = _build_regions(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             params=params,
             instance_seed=int(instance_seed),
             rng=rng,
         )
     regions_by_id: Dict[str, Dict[str, Any]] = {str(region["region_id"]): dict(region) for region in regions}
     region_ids = [str(region["region_id"]) for region in regions]
-    if _is_marker_query_variant(str(query_variant)):
+    if _is_marker_query_id(str(query_id)):
         return _construct_marker_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=params,
             instance_seed=int(instance_seed),
@@ -2097,9 +2097,9 @@ def _construct_dataset(
             legend_bins=list(legend_bins),
             map_asset_meta=dict(map_asset_meta),
         )
-    world_filtered = str(scene_variant) == "geographic_region_map" and _is_world_filtered_query_variant(str(query_variant))
-    world_border = str(scene_variant) == "geographic_region_map" and _is_world_border_query_variant(str(query_variant))
-    adjacent = _is_adjacent_query_variant(str(query_variant))
+    world_filtered = str(scene_variant) == "geographic_region_map" and _is_world_filtered_query_id(str(query_id))
+    world_border = str(scene_variant) == "geographic_region_map" and _is_world_border_query_id(str(query_id))
+    adjacent = _is_adjacent_query_id(str(query_id))
     if bool(world_filtered) or bool(world_border):
         target_count = int(map_asset_meta.get("forced_target_count") or 0)
         target_support = [int(value) for value in map_asset_meta.get("forced_target_support", [])]
@@ -2140,7 +2140,7 @@ def _construct_dataset(
             feasible_counts,
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{query_variant}.adjacent_target_count",
+            namespace=f"{TASK_ID}.{query_id}.adjacent_target_count",
         )
         target_support = list(feasible_counts)
         reference_candidates = [
@@ -2156,7 +2156,7 @@ def _construct_dataset(
                 list(range(len(reference_candidates))),
                 params=params,
                 instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.{query_variant}.adjacent_reference_candidate",
+                namespace=f"{TASK_ID}.{query_id}.adjacent_reference_candidate",
             )
             reference_region_id = str(reference_candidates[int(reference_index)])
         regions_by_id[str(reference_region_id)]["is_reference_region"] = True
@@ -2168,7 +2168,7 @@ def _construct_dataset(
         target_count, target_support = _sample_target_count(
             params,
             region_count=len(region_ids),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
         selected_ids = set(rng.sample(list(region_ids), int(target_count)))
@@ -2181,7 +2181,7 @@ def _construct_dataset(
     nonmatching_bin_indices: List[int] = []
     bin_count = int(len(legend_bins))
 
-    if str(query_variant) == "numeric_threshold_region_count":
+    if str(query_id) == "numeric_threshold_region_count":
         threshold_direction, threshold_direction_probabilities = _resolve_threshold_direction(
             params,
             instance_seed=int(instance_seed),
@@ -2223,7 +2223,7 @@ def _construct_dataset(
             "threshold_phrase": str(threshold_phrase),
             "target_bin_indices": [int(value) for value in target_bin_indices],
         }
-    elif str(query_variant) == "numeric_interval_region_count":
+    elif str(query_id) == "numeric_interval_region_count":
         max_span = min(4, max(2, bin_count - 1))
         span = _balanced_int(
             list(range(2, max_span + 1)),
@@ -2259,7 +2259,7 @@ def _construct_dataset(
             "interval_bin_span": int(span),
             "target_bin_indices": [int(value) for value in target_bin_indices],
         }
-    elif str(query_variant) == "categorical_region_count":
+    elif str(query_id) == "categorical_region_count":
         category_index = _balanced_int(
             list(range(bin_count)),
             params=params,
@@ -2281,7 +2281,7 @@ def _construct_dataset(
             "category_label": str(legend_bins[int(category_index)]["bin_label"]),
             "target_bin_indices": [int(category_index)],
         }
-    elif str(query_variant) == "adjacent_same_category_count":
+    elif str(query_id) == "adjacent_same_category_count":
         reference_region_id = str(map_asset_meta.get("reference_region_id") or "")
         if not reference_region_id:
             raise ValueError("adjacent same-category task did not construct a reference region")
@@ -2308,7 +2308,7 @@ def _construct_dataset(
             "category_label": str(legend_bins[int(category_index)]["bin_label"]),
             "target_bin_indices": [int(category_index)],
         }
-    elif str(query_variant) == "adjacent_category_count":
+    elif str(query_id) == "adjacent_category_count":
         reference_region_id = str(map_asset_meta.get("reference_region_id") or "")
         if not reference_region_id:
             raise ValueError("adjacent category task did not construct a reference region")
@@ -2335,7 +2335,7 @@ def _construct_dataset(
             "category_label": str(legend_bins[int(category_index)]["bin_label"]),
             "target_bin_indices": [int(category_index)],
         }
-    elif str(query_variant) == "adjacent_numeric_threshold_count":
+    elif str(query_id) == "adjacent_numeric_threshold_count":
         reference_region_id = str(map_asset_meta.get("reference_region_id") or "")
         if not reference_region_id:
             raise ValueError("adjacent threshold task did not construct a reference region")
@@ -2382,7 +2382,7 @@ def _construct_dataset(
             "threshold_phrase": str(threshold_phrase),
             "target_bin_indices": [int(value) for value in target_bin_indices],
         }
-    elif str(query_variant) == "continent_region_count":
+    elif str(query_id) == "continent_region_count":
         for region_id in region_ids:
             _apply_bin(
                 regions_by_id,
@@ -2397,7 +2397,7 @@ def _construct_dataset(
             "target_continent": str(map_asset_meta.get("target_continent") or ""),
             "target_bin_indices": [],
         }
-    elif str(query_variant) == "continent_category_region_count":
+    elif str(query_id) == "continent_category_region_count":
         category_index = _balanced_int(
             list(range(bin_count)),
             params=params,
@@ -2434,7 +2434,7 @@ def _construct_dataset(
             "category_label": str(legend_bins[int(category_index)]["bin_label"]),
             "target_bin_indices": [int(category_index)],
         }
-    elif str(query_variant) == "continent_threshold_region_count":
+    elif str(query_id) == "continent_threshold_region_count":
         threshold_direction, threshold_direction_probabilities = _resolve_threshold_direction(
             params,
             instance_seed=int(instance_seed),
@@ -2491,7 +2491,7 @@ def _construct_dataset(
             "threshold_phrase": str(threshold_phrase),
             "target_bin_indices": [int(value) for value in target_bin_indices],
         }
-    elif str(query_variant) == "border_neighbor_count":
+    elif str(query_id) == "border_neighbor_count":
         for region_id in region_ids:
             _apply_bin(
                 regions_by_id,
@@ -2515,26 +2515,26 @@ def _construct_dataset(
             "target_bin_indices": [],
         }
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     final_regions = [dict(regions_by_id[str(region_id)]) for region_id in region_ids]
     regions_by_id = {str(region["region_id"]): dict(region) for region in final_regions}
     world_scene = str(scene_variant) == "geographic_region_map"
-    if world_scene and _is_world_border_query_variant(str(query_variant)):
+    if world_scene and _is_world_border_query_id(str(query_id)):
         title_options = list(_WORLD_BORDER_TITLE_OPTIONS)
-    elif world_scene and _is_categorical_query_variant(str(query_variant)):
+    elif world_scene and _is_categorical_query_id(str(query_id)):
         title_options = list(map_asset_meta.get("category_title_options", []))
     else:
         title_options = list(map_asset_meta.get("title_options", [])) if world_scene else []
     if not title_options:
         title_options = list(
             _WORLD_CATEGORY_TITLE_OPTIONS
-            if world_scene and _is_categorical_query_variant(str(query_variant))
+            if world_scene and _is_categorical_query_id(str(query_id))
             else (_WORLD_TITLE_OPTIONS if world_scene else _TITLE_OPTIONS)
         )
     return {
         "scene_title": str(_choose_random(title_options, rng=rng)),
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "scene_variant": str(scene_variant),
         "map_asset_id": str(map_asset_meta.get("asset_id") or (_WORLD_MAP_ASSET_ID if world_scene else "")),
         "geographic_map_variant": str(map_asset_meta.get("map_variant") or ""),
@@ -3440,7 +3440,7 @@ def _render_marker_layer(
     draw = ImageDraw.Draw(image)
     style_id, style_probabilities, style = _resolve_marker_style(params, instance_seed=int(instance_seed))
     marker_render_variant = str(dataset.get("marker_render_variant") or "proportional_bubble")
-    show_marker_labels = str(dataset.get("query_variant")) == "marker_region_extremum_label"
+    show_marker_labels = str(dataset.get("query_id")) == "marker_region_extremum_label"
     value_min = int(dataset.get("marker_value_min", 1))
     value_max = int(dataset.get("marker_value_max", 5))
     marker_bboxes_by_region: Dict[str, List[List[float]]] = {}
@@ -3574,10 +3574,10 @@ def _render_marker_layer(
     )
 
 
-def _json_examples(query_variant: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
+def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
     return (
-        str(prompt_defaults[f"json_example_{str(query_variant)}"]),
-        str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"]),
+        str(prompt_defaults[f"json_example_{str(query_id)}"]),
+        str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"]),
     )
 
 
@@ -3599,14 +3599,14 @@ class ChartsMapChoroplethRegionCountTask:
             merged_params = dict(public_overrides)
             merged_params.update(dict(params))
             params = merged_params
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         support_params = _support_sampling_params(
             params,
-            query_variant_probabilities=query_variant_probabilities,
+            query_id_probabilities=query_id_probabilities,
         )
         dataset = _construct_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             params=support_params,
             instance_seed=int(instance_seed),
@@ -3614,7 +3614,7 @@ class ChartsMapChoroplethRegionCountTask:
         render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
         render_params = _resolve_render_params(
             render_style_params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             legend_count=len(dataset["legend_bins"]),
         )
         background, background_meta = make_background_canvas(
@@ -3624,8 +3624,8 @@ class ChartsMapChoroplethRegionCountTask:
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
-        categorical = _is_categorical_query_variant(str(query_variant))
-        marker_task = _is_marker_query_variant(str(query_variant))
+        categorical = _is_categorical_query_id(str(query_id))
+        marker_task = _is_marker_query_id(str(query_id))
         if str(scene_variant) == "geographic_region_map":
             rendered_scene = _render_world_choropleth_map(
                 background,
@@ -3715,14 +3715,14 @@ class ChartsMapChoroplethRegionCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _json_examples(str(query_variant), prompt_defaults=prompt_defaults)
+        json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
         qparams = dict(dataset["question_params"])
         if bool(marker_task):
             object_description = str(
                 dataset.get("map_object_description")
                 or prompt_defaults["object_description_marker_map"]
             )
-        elif str(scene_variant) == "geographic_region_map" and _is_world_border_query_variant(str(query_variant)):
+        elif str(scene_variant) == "geographic_region_map" and _is_world_border_query_id(str(query_id)):
             object_description = str(prompt_defaults["object_description_geographic_border_map"])
         elif str(scene_variant) == "geographic_region_map" and bool(categorical):
             asset_description = str(dataset.get("map_object_description") or "")
@@ -3746,7 +3746,7 @@ class ChartsMapChoroplethRegionCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str("marker_map" if bool(marker_task) else prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -3805,7 +3805,7 @@ class ChartsMapChoroplethRegionCountTask:
         region_scan = normalize_int_with_bounds(int(dataset["region_count"]), [14, 28])
         legend_scan = normalize_int_with_bounds(len(dataset["legend_bins"]), [3, 6])
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BY_VARIANT[str(query_variant)])
+            float(_REASONING_LOAD_BY_VARIANT[str(query_id)])
             + (0.10 * float(evidence_scan))
             + (0.06 * float(legend_scan))
         )
@@ -3818,9 +3818,9 @@ class ChartsMapChoroplethRegionCountTask:
             },
         )
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
             "geographic_map_variant": str(dataset.get("geographic_map_variant") or ""),
             "geographic_map_variant_probabilities": dict(dataset.get("geographic_map_variant_probabilities", {})),
@@ -3836,7 +3836,7 @@ class ChartsMapChoroplethRegionCountTask:
                 "scene_kind": "chart_marker_map" if bool(marker_task) else "chart_region_map",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": str(dataset["answer_value"]) if str(dataset["answer_type"]) == "string" else int(dataset["answer_value"]),
                     "evidence_region_ids": list(evidence_region_ids),
@@ -3844,7 +3844,7 @@ class ChartsMapChoroplethRegionCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -3893,7 +3893,7 @@ class ChartsMapChoroplethRegionCountTask:
                 ),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "question_format": "map_marker_query" if bool(marker_task) else "map_region_count",
                 "scene_title": str(dataset["scene_title"]),
@@ -3914,7 +3914,7 @@ class ChartsMapChoroplethRegionCountTask:
                 "target_bin_indices": [int(value) for value in dataset["target_bin_indices"]],
                 "nonmatching_bin_indices": [int(value) for value in dataset["nonmatching_bin_indices"]],
                 "threshold_direction": str(dataset["threshold_direction"]),
-                "evidence_semantics": str(query_variant),
+                "evidence_semantics": str(query_id),
             },
             "witness_symbolic": {
                 "type": "map_marker_witness" if bool(marker_task) else "map_region_count_witness",
@@ -3936,32 +3936,20 @@ class ChartsMapChoroplethRegionCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
             scene_id=str("marker_map" if bool(marker_task) else "region_map"),
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 
 @register_task
-class ChartsMapRegionValueCountTask(
+class ChartsMapLegendPredicateRegionCountTask(
     MergedChartQueryVariantTaskMixin,
     ChartsMapChoroplethRegionCountTask,
 ):
-    """Count map regions satisfying a numeric value condition."""
+    """Count map regions satisfying a numeric or categorical legend predicate."""
 
-    task_id = "task_charts__region_map__region_value_count"
-    allowed_query_variants = _SUPPORTED_REGION_VALUE_QUERY_VARIANTS
-
-
-@register_task
-class ChartsMapRegionCategoryCountTask(
-    FixedChartQueryVariantTaskMixin,
-    ChartsMapChoroplethRegionCountTask,
-):
-    """Count map regions matching a qualitative category."""
-
-    task_id = "task_charts__region_map__region_category_count"
-    fixed_query_variant = "categorical_region_count"
+    task_id = "task_charts__region_map__legend_predicate_region_count"
+    allowed_query_ids = _SUPPORTED_REGION_VALUE_QUERY_IDS + _SUPPORTED_REGION_CATEGORY_QUERY_IDS
 
 
 @register_task
@@ -3972,7 +3960,7 @@ class ChartsMapContinentFilteredCountTask(
     """Count world-map regions after applying a continent filter."""
 
     task_id = "task_charts__region_map__continent_filtered_count"
-    allowed_query_variants = _SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS
+    allowed_query_ids = _SUPPORTED_WORLD_FILTERED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         fixed_params = dict(params)
@@ -3989,7 +3977,7 @@ class ChartsMapBorderNeighborCountTask(
     """Count countries sharing a visible land border with one highlighted country."""
 
     task_id = "task_charts__region_map__border_neighbor_count"
-    fixed_query_variant = "border_neighbor_count"
+    fixed_query_id = "border_neighbor_count"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         fixed_params = dict(params)
@@ -4006,7 +3994,7 @@ class ChartsMapAdjacentConditionCountTask(
     """Count highlighted-region neighbors satisfying a legend condition."""
 
     task_id = "task_charts__region_map__adjacent_condition_count"
-    allowed_query_variants = _SUPPORTED_ADJACENT_QUERY_VARIANTS
+    allowed_query_ids = _SUPPORTED_ADJACENT_QUERY_IDS
 
 
 @register_task
@@ -4017,7 +4005,7 @@ class ChartsMapMarkerRegionThresholdCountTask(
     """Count map regions whose marker-encoded value satisfies a threshold."""
 
     task_id = "task_charts__marker_map__marker_region_threshold_count"
-    fixed_query_variant = "marker_region_threshold_count"
+    fixed_query_id = "marker_region_threshold_count"
 
 
 @register_task
@@ -4028,7 +4016,7 @@ class ChartsMapMarkerRegionExtremumLabelTask(
     """Identify the labeled map region with the largest or smallest marker value."""
 
     task_id = "task_charts__marker_map__marker_region_extremum_label"
-    fixed_query_variant = "marker_region_extremum_label"
+    fixed_query_id = "marker_region_extremum_label"
 
 
 __all__ = [
@@ -4036,17 +4024,16 @@ __all__ = [
     "ChartsMapAdjacentConditionCountTask",
     "ChartsMapBorderNeighborCountTask",
     "ChartsMapContinentFilteredCountTask",
+    "ChartsMapLegendPredicateRegionCountTask",
     "ChartsMapMarkerRegionExtremumLabelTask",
     "ChartsMapMarkerRegionThresholdCountTask",
-    "ChartsMapRegionCategoryCountTask",
-    "ChartsMapRegionValueCountTask",
-    "SUPPORTED_ADJACENT_QUERY_VARIANTS",
+    "SUPPORTED_ADJACENT_QUERY_IDS",
     "SUPPORTED_MARKER_RENDER_VARIANTS",
-    "SUPPORTED_MARKER_QUERY_VARIANTS",
-    "SUPPORTED_REGION_CATEGORY_QUERY_VARIANTS",
-    "SUPPORTED_REGION_VALUE_QUERY_VARIANTS",
+    "SUPPORTED_MARKER_QUERY_IDS",
+    "SUPPORTED_REGION_CATEGORY_QUERY_IDS",
+    "SUPPORTED_REGION_VALUE_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
-    "SUPPORTED_WORLD_BORDER_QUERY_VARIANTS",
-    "SUPPORTED_WORLD_FILTERED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
+    "SUPPORTED_WORLD_BORDER_QUERY_IDS",
+    "SUPPORTED_WORLD_FILTERED_QUERY_IDS",
 ]

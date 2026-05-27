@@ -8,7 +8,7 @@
 5. Goal: choose the option letter drawn on the board object or same-letter object pair matching a box-target Manhattan-distance relation.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `nearest_target_for_marked_box_label|box_closest_to_marked_target_label|box_target_manhattan_rank_label`
 3. Answer type: `option_letter`
 4. Evidence type: `bbox_set`

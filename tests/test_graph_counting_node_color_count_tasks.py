@@ -50,13 +50,13 @@ def test_graph_counting_node_color_count_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__node_color_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "node_color_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_node_color_counting"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "node_color_count"
     assert execution["graph_directionality"] == "directed"
     assert execution["target_color_name"] == "green"

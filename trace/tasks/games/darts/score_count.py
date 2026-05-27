@@ -34,14 +34,14 @@ from ..shared.darts_scene import (
 )
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
 TASK_ID = "games_darts_score_count_base"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "total_score",
     "ring_count",
     "threshold_score_count",
@@ -82,7 +82,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one darts scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     dart_count: int
@@ -91,7 +91,7 @@ class _ResolvedAxes:
     target_ring: str | None
     target_threshold: int | None
     score_option_answer_label: str | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     dart_count_probabilities: Dict[str, float]
@@ -128,15 +128,15 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="dart
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="darts", apply_prob=0.0)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced darts query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced darts query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
     )
 
 
@@ -168,18 +168,18 @@ def _resolve_named_axis(
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -187,7 +187,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced lower axes."""
 
@@ -195,16 +195,16 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_QUERY_IDS))
     return cycle_params
 
 
-def _dart_count_support_key(query_variant: str) -> str:
-    """Return the configured dart-count support key for one query variant."""
+def _dart_count_support_key(query_id: str) -> str:
+    """Return the configured dart-count support key for one query id."""
 
-    return "total_score_dart_count_support" if str(query_variant) == "total_score" else "count_query_dart_count_support"
+    return "total_score_dart_count_support" if str(query_id) == "total_score" else "count_query_dart_count_support"
 
 
 def _feasible_count_support(*, dart_count: int, raw_support: Sequence[int]) -> Tuple[int, ...]:
@@ -216,10 +216,10 @@ def _feasible_count_support(*, dart_count: int, raw_support: Sequence[int]) -> T
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one darts scene."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -240,7 +240,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         supported=SUPPORTED_GAMES_STYLE_VARIANTS,
     )
 
-    dart_count_support_key = _dart_count_support_key(str(query_variant))
+    dart_count_support_key = _dart_count_support_key(str(query_id))
     dart_count, dart_count_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=cycle_params,
@@ -248,7 +248,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(dart_count_support_key),
         explicit_key="dart_count",
         fallback_support=getattr(_DEFAULTS, dart_count_support_key),
-        namespace=f"{TASK_ID}.dart_count.{str(query_variant)}",
+        namespace=f"{TASK_ID}.dart_count.{str(query_id)}",
         balanced_flag_key="balanced_dart_count_sampling",
         namespace_support_permutation=True,
     )
@@ -256,7 +256,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer: int | None = None
     target_answer_support: Tuple[int, ...] | None = None
     target_answer_probabilities: Dict[str, float] | None = None
-    if str(query_variant) != "total_score":
+    if str(query_id) != "total_score":
         raw_support = resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -273,14 +273,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             support_key="count_target_answer_support",
             explicit_key="target_answer",
             fallback_support=target_answer_support,
-            namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+            namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
             balanced_flag_key="balanced_target_answer_sampling",
             namespace_support_permutation=True,
         )
 
     target_ring: str | None = None
     target_threshold: int | None = None
-    if str(query_variant) == "ring_count":
+    if str(query_id) == "ring_count":
         target_ring, _ = _resolve_named_axis(
             instance_seed=int(instance_seed),
             params=cycle_params,
@@ -290,7 +290,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balance_flag_key="balanced_target_ring_sampling",
             supported=SUPPORTED_TARGET_RINGS,
         )
-    elif str(query_variant) == "threshold_score_count":
+    elif str(query_id) == "threshold_score_count":
         support = resolve_integer_support(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -310,7 +310,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         )
 
     score_option_answer_label: str | None = None
-    if str(query_variant) == "total_score":
+    if str(query_id) == "total_score":
         labels = ("A", "B", "C", "D", "E")
         sampling_index = params.get("_sample_cursor")
         if sampling_index is None:
@@ -320,7 +320,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             score_option_answer_label = str(labels[abs(int(sampling_index)) % len(labels)])
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         dart_count=int(dart_count),
@@ -329,7 +329,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_ring=None if target_ring is None else str(target_ring),
         target_threshold=None if target_threshold is None else int(target_threshold),
         score_option_answer_label=None if score_option_answer_label is None else str(score_option_answer_label),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         dart_count_probabilities=dict(dart_count_probabilities),
@@ -368,13 +368,13 @@ def _slot_public_ring(slot: _ScoreSlot) -> str:
 def _qualifies(slot: _ScoreSlot, *, axes: _ResolvedAxes) -> bool:
     """Return whether one score slot qualifies for the active count query."""
 
-    if str(axes.query_variant) == "total_score":
+    if str(axes.query_id) == "total_score":
         return True
-    if str(axes.query_variant) == "ring_count":
+    if str(axes.query_id) == "ring_count":
         return str(_slot_public_ring(slot)) == str(axes.target_ring)
-    if str(axes.query_variant) == "threshold_score_count":
+    if str(axes.query_id) == "threshold_score_count":
         return int(slot.score) >= int(axes.target_threshold)
-    raise ValueError(f"unsupported darts query variant: {axes.query_variant}")
+    raise ValueError(f"unsupported darts query id: {axes.query_id}")
 
 
 def _sample_slot(rng, slots: Sequence[_ScoreSlot]) -> _ScoreSlot:
@@ -469,7 +469,7 @@ def _sample_scene(
 ) -> _SampledDartScene:
     """Sample one dartboard scene with exact query support where needed."""
 
-    if str(axes.query_variant) == "total_score":
+    if str(axes.query_id) == "total_score":
         selected_slots = [_sample_slot(rng, _SCORE_SLOTS) for _ in range(int(axes.dart_count))]
         evidence_flags = [True for _ in selected_slots]
     else:
@@ -513,7 +513,7 @@ def _sample_scene(
     total_score = int(sum(int(slot.score) for slot in selected_slots))
     score_options: Tuple[DartScoreOption, ...] = ()
     answer_label: str | None = None
-    if str(axes.query_variant) == "total_score":
+    if str(axes.query_id) == "total_score":
         score_options, answer_label = _build_score_options(
             rng,
             correct_score=int(total_score),
@@ -529,10 +529,10 @@ def _sample_scene(
     )
 
 
-def _build_prompt_json_examples(*, query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active darts query semantics."""
 
-    if str(query_variant) == "total_score":
+    if str(query_id) == "total_score":
         answer_and_evidence = {"evidence": [[402, 210, 420, 228]], "answer": "C"}
         answer_only = {"answer": "C"}
     else:
@@ -638,7 +638,7 @@ class GamesDartsScoreCountTask:
                 background=background,
                 style_variant=str(axes.style_variant),
                 params=render_params,
-                target_ring=str(axes.target_ring) if str(axes.query_variant) == "ring_count" else None,
+                target_ring=str(axes.target_ring) if str(axes.query_id) == "ring_count" else None,
                 dart_fill_color=dart_fill_color,
                 dart_fill_min_lab_distance=float(dart_fill_min_lab_distance),
                 score_options=tuple(sampled_scene.score_options),
@@ -647,7 +647,7 @@ class GamesDartsScoreCountTask:
         if sampled_scene is None or rendered_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        is_total_score = str(axes.query_variant) == "total_score"
+        is_total_score = str(axes.query_id) == "total_score"
         answer_value: int | str = str(sampled_scene.answer_label) if is_total_score else int(axes.target_answer or 0)
         numeric_target_answer = int(sampled_scene.total_score) if is_total_score else int(axes.target_answer or 0)
         evidence_entity_ids = [str(dart_id) for dart_id in sampled_scene.evidence_dart_ids]
@@ -684,13 +684,13 @@ class GamesDartsScoreCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(query_variant=str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(query_id=str(axes.query_id))
         prompt_slots = {
             "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+            "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+            "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "scoring_rule_text": str(prompt_defaults["scoring_rule_text"]),
@@ -704,7 +704,7 @@ class GamesDartsScoreCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
@@ -720,7 +720,7 @@ class GamesDartsScoreCountTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             dart_count=int(axes.dart_count),
             target_answer=int(numeric_target_answer),
             evidence_count=len(evidence_entity_ids),
@@ -746,8 +746,7 @@ class GamesDartsScoreCountTask:
         ]
         execution_trace = {
             "scene_variant": str(axes.scene_variant),
-            "query_variant": str(axes.query_variant),
-            "query_variant": str(axes.query_variant),
+            "query_id": str(axes.query_id),
             "style_variant": str(axes.style_variant),
             "dart_count": int(axes.dart_count),
             "target_answer": int(numeric_target_answer),
@@ -768,8 +767,7 @@ class GamesDartsScoreCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "dart_count": int(axes.dart_count),
                     "target_answer": int(numeric_target_answer),
@@ -778,19 +776,18 @@ class GamesDartsScoreCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "dart_count": int(axes.dart_count),
                     "dart_count_probabilities": dict(axes.dart_count_probabilities),
@@ -836,7 +833,7 @@ class GamesDartsScoreCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_id="darts",
         )
 
@@ -846,7 +843,7 @@ class GamesDartsTotalScoreTask(FixedQueryVariantTaskMixin, GamesDartsScoreCountT
     """Return the score of the shown dart throw."""
 
     task_id = "task_games__darts__total_score_option_label"
-    fixed_query_variant = "total_score"
+    fixed_query_id = "total_score"
 
 
 @register_task
@@ -854,7 +851,7 @@ class GamesDartsConditionCountTask(QuerySubsetTaskMixin, GamesDartsScoreCountTas
     """Count darts matching one sampled scoring condition."""
 
     task_id = "task_games__darts__condition_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "ring_count",
         "threshold_score_count",
     )

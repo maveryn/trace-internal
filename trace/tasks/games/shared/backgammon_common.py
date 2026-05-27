@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Mapping, Tuple
 
 
-BACKGAMMON_QUERY_VARIANTS: Tuple[str, ...] = (
+BACKGAMMON_QUERY_IDS: Tuple[str, ...] = (
     "legal_move_count",
     "hit_move_count",
     "blocked_destination_count",
@@ -46,7 +46,7 @@ class BackgammonSample:
 
     points: Mapping[int, BackgammonPoint]
     dice: Tuple[int, int]
-    query_variant: str
+    query_id: str
     answer: int
     target_destinations: Tuple[int, ...]
     outcome: BackgammonOutcome
@@ -128,17 +128,17 @@ def compute_black_single_die_destinations(
     )
 
 
-def target_destinations_for_query(outcome: BackgammonOutcome, *, query_variant: str) -> Tuple[int, ...]:
+def target_destinations_for_query(outcome: BackgammonOutcome, *, query_id: str) -> Tuple[int, ...]:
     """Return the query-specific destination set."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query == "legal_move_count":
         return tuple(outcome.legal_destinations)
     if query == "hit_move_count":
         return tuple(outcome.hit_destinations)
     if query == "blocked_destination_count":
         return tuple(outcome.blocked_destinations)
-    raise ValueError(f"unsupported Backgammon query_variant: {query}")
+    raise ValueError(f"unsupported Backgammon query_id: {query}")
 
 
 def validate_backgammon_sample(sample: BackgammonSample) -> None:
@@ -161,7 +161,7 @@ def validate_backgammon_sample(sample: BackgammonSample) -> None:
         if int(stack.count) < 1:
             raise ValueError("occupied points must have positive checker count")
     outcome = compute_black_single_die_destinations(sample.points, dice=sample.dice)
-    expected = target_destinations_for_query(outcome, query_variant=str(sample.query_variant))
+    expected = target_destinations_for_query(outcome, query_id=str(sample.query_id))
     if tuple(expected) != tuple(sample.target_destinations):
         raise ValueError("target destinations do not match recomputed outcome")
     if int(sample.answer) != len(expected):
@@ -169,7 +169,7 @@ def validate_backgammon_sample(sample: BackgammonSample) -> None:
 
 
 __all__ = [
-    "BACKGAMMON_QUERY_VARIANTS",
+    "BACKGAMMON_QUERY_IDS",
     "BACKGAMMON_STYLE_VARIANTS",
     "PLAYER_BLACK",
     "PLAYER_WHITE",

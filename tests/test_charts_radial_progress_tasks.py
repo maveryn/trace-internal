@@ -9,7 +9,7 @@ import pytest
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.tasks.charts.radial_progress.progress_chart import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     SUPPORTED_SCENE_VARIANTS,
     ChartsRadialProgressConditionCountTask,
 )
@@ -41,10 +41,10 @@ def _expected_answer(execution: dict, query_id: str) -> int:
     raise AssertionError(f"unsupported query_id: {query_id}")
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
 def test_charts_radial_progress_task_matches_contract(query_id: str) -> None:
     task = ChartsRadialProgressConditionCountTask()
-    out = task.generate(126000 + len(query_id), params={"query_variant": query_id}, max_attempts=60)
+    out = task.generate(126000 + len(query_id), params={"query_id": query_id}, max_attempts=60)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
@@ -52,7 +52,7 @@ def test_charts_radial_progress_task_matches_contract(query_id: str) -> None:
 
     assert task.task_id in list_default_task_ids()
     assert out.scene_id == "radial_progress"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
     assert str(execution["query_id"]) == query_id
     assert out.answer_gt.type == "integer"
@@ -112,11 +112,11 @@ def test_charts_radial_progress_balanced_sampling_covers_axes() -> None:
         queries[str(out.query_id)] += 1
 
     assert set(scenes) == set(SUPPORTED_SCENE_VARIANTS)
-    assert set(queries) == set(SUPPORTED_QUERY_VARIANTS)
+    assert set(queries) == set(SUPPORTED_QUERY_IDS)
 
 
 def test_charts_radial_progress_is_deterministic() -> None:
-    params = {"scene_variant": "semicircle_gauges", "query_variant": "within_range_count"}
+    params = {"scene_variant": "semicircle_gauges", "query_id": "within_range_count"}
     out_a = ChartsRadialProgressConditionCountTask().generate(129000, params=params, max_attempts=60)
     out_b = ChartsRadialProgressConditionCountTask().generate(129000, params=params, max_attempts=60)
 

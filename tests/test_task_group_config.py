@@ -183,7 +183,7 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert int(generation_shared["mark_count_max"]) == 10
     assert int(generation_shared["value_min"]) >= 0
     assert int(generation_shared["value_max"]) == 20
-    assert sorted(generation_shared["query_variant_weights"].keys()) == [
+    assert sorted(generation_shared["query_id_weights"].keys()) == [
         "order_statistic_label",
         "order_statistic_value",
     ]
@@ -223,7 +223,7 @@ def test_charts_statistics_defaults_loaded() -> None:
     )
     positive_task_weights = {
         str(key): float(value)
-        for key, value in generation_defaults["query_variant_weights"].items()
+        for key, value in generation_defaults["query_id_weights"].items()
         if float(value) > 0.0
     }
     assert {
@@ -290,7 +290,7 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert int(generation_shared["outside_interval_bin_count_max"]) == 12
     assert int(generation_shared["category_count_min"]) == 6
     assert int(generation_shared["category_count_max"]) == 15
-    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_histogram_count_base"]["query_variant_weights"].keys()) == [
+    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_histogram_count_base"]["query_id_weights"].keys()) == [
         "bin_count_between_values",
         "interval_mass",
         "rank_item_bin_label",
@@ -299,7 +299,7 @@ def test_charts_distribution_defaults_loaded() -> None:
         "inside",
         "outside",
     ]
-    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_boxplot_label_base"]["query_variant_weights"].keys()) == [
+    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_boxplot_label_base"]["query_id_weights"].keys()) == [
         "iqr_extremum_label",
         "median_reference_label",
     ]
@@ -311,7 +311,7 @@ def test_charts_distribution_defaults_loaded() -> None:
         "largest",
         "smallest",
     ]
-    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_violin_label_base"]["query_variant_weights"].keys()) == [
+    assert sorted(cfg["generation"]["task_overrides"]["charts_distribution_violin_label_base"]["query_id_weights"].keys()) == [
         "bimodal_label",
         "highest_mode",
         "lowest_mode",
@@ -340,7 +340,7 @@ def test_charts_distribution_defaults_loaded() -> None:
         "bin_count_between_values",
         "interval_mass",
         "rank_item_bin_label",
-    } == set(histogram_generation["query_variant_weights"].keys())
+    } == set(histogram_generation["query_id_weights"].keys())
     assert {"inside", "outside"} == set(histogram_generation["interval_relation_weights"].keys())
     assert int(histogram_rendering["canvas_width"]) > 0
     assert str(histogram_prompt["bundle_id"]).strip() == "charts_distribution_v0"
@@ -355,9 +355,9 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert {
         "median_reference_label",
         "iqr_extremum_label",
-    }.issubset(set(boxplot_generation["query_variant_weights"].keys()))
-    assert int(boxplot_generation["query_variant_overrides"]["iqr_extremum_label"]["iqr_winner_gap_min"]) == 1
-    assert int(boxplot_generation["query_variant_overrides"]["iqr_extremum_label"]["iqr_winner_gap_max"]) == 1
+    }.issubset(set(boxplot_generation["query_id_weights"].keys()))
+    assert int(boxplot_generation["query_id_overrides"]["iqr_extremum_label"]["iqr_winner_gap_min"]) == 1
+    assert int(boxplot_generation["query_id_overrides"]["iqr_extremum_label"]["iqr_winner_gap_max"]) == 1
     assert str(boxplot_prompt["task_key"]).strip() == "boxplot_label_query"
     assert str(boxplot_prompt["answer_hint"]).strip()
     assert str(boxplot_prompt["evidence_hint_iqr_extremum_label"]).strip()
@@ -374,7 +374,7 @@ def test_charts_distribution_defaults_loaded() -> None:
         "bimodal_label",
         "widest_support",
         "narrowest_support",
-    } == set(violin_generation["query_variant_weights"].keys())
+    } == set(violin_generation["query_id_weights"].keys())
     assert int(violin_rendering["canvas_width"]) > 0
     assert str(violin_prompt["task_key"]).strip() == "violin_label_query"
     assert str(violin_prompt["object_description_violin"]).strip()
@@ -412,7 +412,7 @@ def test_charts_trend_defaults_loaded() -> None:
     assert int(generation_shared["mark_count_max"]) == 10
     assert int(generation_shared["value_min"]) >= 1
     assert int(generation_shared["value_max"]) == 20
-    assert "query_variant_weights" not in generation_shared
+    assert "query_id_weights" not in generation_shared
     assert "scene_variant_weights" not in generation_shared
 
     render_shared = cfg["rendering"]["shared"]
@@ -438,7 +438,7 @@ def test_charts_trend_defaults_loaded() -> None:
     assert int(generation_defaults["structure_mark_count_max"]) == 10
     assert int(generation_defaults["interval_mark_count_min"]) == 8
     assert int(generation_defaults["interval_mark_count_max"]) == 14
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "endpoint_change_value",
         "interval_rate_value",
         "longest_monotone_streak",
@@ -523,7 +523,7 @@ def test_tables_statistics_defaults_loaded() -> None:
         cfg,
         task_id="charts_table_column_summary_base",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "column_mean",
         "column_median",
         "column_sum",
@@ -541,7 +541,7 @@ def test_tables_statistics_defaults_loaded() -> None:
         cfg,
         task_id="charts_table_filtered_column_summary_base",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "filtered_column_mean",
     ]
     assert int(generation_defaults["row_count_min"]) == 10
@@ -578,7 +578,7 @@ def test_tables_counting_defaults_loaded() -> None:
         cfg,
         task_id="task_charts__table__value_predicate_count",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "categorical_value_count",
         "in_interval",
         "threshold_count",
@@ -611,7 +611,7 @@ def test_tables_ranking_defaults_loaded() -> None:
         cfg,
         task_id="task_charts__table__column_rank_label",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["kth_rank_in_column"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["kth_rank_in_column"]
     assert sorted(generation_defaults["rank_direction_weights"].keys()) == ["highest", "lowest"]
     assert int(generation_defaults["row_count_min"]) == 10
     assert int(generation_defaults["row_count_max"]) == 20
@@ -635,7 +635,7 @@ def test_tables_temporal_defaults_loaded() -> None:
         cfg,
         task_id="task_charts__table__temporal_row_interval_difference_value",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "absolute_difference_between_rows_over_year_interval",
         "sum_absolute_differences_between_rows_over_year_interval",
     ]
@@ -676,7 +676,7 @@ def test_puzzles_logic_defaults_loaded() -> None:
     assert str(prompt_defaults["scene_key"]).strip() == "logic_option_completion_puzzle"
     assert str(prompt_defaults["task_key"]).strip() == "grid_completion_query"
     assert str(prompt_defaults["object_description_logic_strip"]).strip()
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "axis_uniqueness",
         "king_non_touch",
         "row_and_column_uniqueness",
@@ -718,7 +718,7 @@ def test_puzzles_logic_defaults_loaded() -> None:
     assert str(raven_prompt_defaults["scene_key"]).strip() == "raven_matrix_puzzle"
     assert str(raven_prompt_defaults["task_key"]).strip() == "raven_matrix_query"
     assert str(raven_prompt_defaults["object_description_raven_strip"]).strip()
-    assert sorted(raven_generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(raven_generation_defaults["query_id_weights"].keys()) == [
         "analogical_transform_matrix",
         "count_progression_matrix",
         "position_progression_matrix",
@@ -767,7 +767,7 @@ def test_puzzles_spatial_defaults_loaded() -> None:
     assert str(prompt_defaults["task_key"]).strip() == "transform_result_query"
     assert str(prompt_defaults["object_description_fold_strip"]).strip()
     assert str(prompt_defaults["object_description_overlay_strip"]).strip()
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "overlay_result",
         "paper_fold_cut_result",
         "paper_fold_result",
@@ -838,7 +838,7 @@ def test_puzzles_spatial_cube_structure_defaults_loaded() -> None:
     assert str(prompt_defaults["object_description_stack_strip"]).strip()
     assert str(prompt_defaults["object_description_single_stack_stack_strip"]).strip()
     assert str(prompt_defaults["object_description_change_pair_stack_strip"]).strip()
-    assert generation_defaults["query_variant_weights"] == {
+    assert generation_defaults["query_id_weights"] == {
         "visible_cube_count": 1.0,
     }
     assert generation_defaults["change_type_weights"] == {
@@ -921,7 +921,7 @@ def test_puzzles_topology_cyclic_order_match_internal_defaults_loaded() -> None:
     assert str(prompt_defaults["scene_key"]).strip() == "topology_cyclic_order_puzzle"
     assert str(prompt_defaults["task_key"]).strip() == "cyclic_order_match_query"
     assert str(prompt_defaults["object_description_necklace_board"]).strip()
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "cyclic_order_equivalent_label",
     ]
     assert sorted(generation_defaults["token_render_style_weights"].keys()) == [
@@ -950,7 +950,7 @@ def test_puzzles_topology_cyclic_order_match_internal_defaults_loaded() -> None:
     assert int(generation_defaults["valid_option_count_max"]) == 5
     assert int(generation_defaults["bead_count_min"]) == 4
     assert int(generation_defaults["bead_count_max"]) == 6
-    label_overrides = generation_defaults["query_variant_overrides"]["cyclic_order_equivalent_label"]
+    label_overrides = generation_defaults["query_id_overrides"]["cyclic_order_equivalent_label"]
     assert int(label_overrides["option_count_min"]) == 6
     assert int(label_overrides["option_count_max"]) == 6
     assert int(label_overrides["bead_count_min"]) == 4
@@ -984,7 +984,7 @@ def test_puzzles_topology_maze_exit_internal_defaults_loaded() -> None:
     assert str(prompt_defaults["scene_key"]).strip() == "topology_maze_exit_puzzle"
     assert str(prompt_defaults["task_key"]).strip() == "maze_exit_label_query"
     assert str(prompt_defaults["object_description_classic_wall_maze"]).strip()
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "exit_reachability_label",
         "reachable_exit_count",
     ]
@@ -1073,7 +1073,7 @@ def test_charts_multiseries_defaults_loaded() -> None:
     assert int(comparison_generation["target_gap_min"]) == 2
     assert int(comparison_generation["target_gap_max"]) == 18
     assert sorted(
-        key for key, weight in comparison_generation["query_variant_weights"].items() if float(weight) > 0.0
+        key for key, weight in comparison_generation["query_id_weights"].items() if float(weight) > 0.0
     ) == [
         "category_total_extremum_label",
         "conditional_gap_aggregate_value",
@@ -1172,7 +1172,7 @@ def test_charts_counting_defaults_loaded() -> None:
     assert int(generation_shared["value_max"]) == 99
     assert int(generation_shared["target_answer_min"]) == 0
     assert int(generation_shared["target_answer_max"]) == 20
-    assert sorted(generation_shared["query_variant_weights"].keys()) == [
+    assert sorted(generation_shared["query_id_weights"].keys()) == [
         "in_interval",
         "threshold_count",
     ]
@@ -1536,7 +1536,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert "task_icons__named_field__shape_pair_difference_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__named_field__closer_to_reference_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__venn_field__venn_region_shape_count" in cfg["generation"]["task_overrides"]
-    assert set(cfg["generation"]["task_overrides"]["task_icons__reference_canvas__attribute_match_count"]["query_variant_weights"].keys()) == {
+    assert set(cfg["generation"]["task_overrides"]["task_icons__reference_canvas__attribute_match_count"]["query_id_weights"].keys()) == {
         "match_type",
         "match_color",
         "match_rotation",
@@ -1630,7 +1630,7 @@ def test_icons_counting_defaults_loaded() -> None:
         task_id="task_icons__icon_field__type_frequency_count",
     )
     assert str(singleton_generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert sorted(singleton_generation["query_variant_weights"].keys()) == ["most_frequent_type_count", "singleton_type_count"]
+    assert sorted(singleton_generation["query_id_weights"].keys()) == ["most_frequent_type_count", "singleton_type_count"]
     singleton_params = singleton_generation["variant_generation_params"]["singleton_type_count"]
     assert int(singleton_params["object_count_min"]) == 5
     assert int(singleton_params["object_count_max"]) == 10
@@ -1844,7 +1844,7 @@ def test_graph_counting_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__degree_predicate_count",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "degree_count",
         "directed_degree_count",
     ]
@@ -2017,7 +2017,7 @@ def test_graph_counting_defaults_loaded() -> None:
             task_id="task_graph__node_link__articulation_point_count",
         )
     )
-    assert sorted(articulation_generation_defaults["query_variant_weights"].keys()) == ["articulation_point_count"]
+    assert sorted(articulation_generation_defaults["query_id_weights"].keys()) == ["articulation_point_count"]
     assert set(articulation_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(articulation_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(articulation_generation_defaults["node_count_min"]) == 5
@@ -2037,7 +2037,7 @@ def test_graph_counting_defaults_loaded() -> None:
             task_id="task_graph__node_link__bridge_count",
         )
     )
-    assert sorted(bridge_generation_defaults["query_variant_weights"].keys()) == ["bridge_count"]
+    assert sorted(bridge_generation_defaults["query_id_weights"].keys()) == ["bridge_count"]
     assert set(bridge_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(bridge_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(bridge_generation_defaults["node_count_min"]) == 5
@@ -2125,7 +2125,7 @@ def test_graph_relation_defaults_loaded() -> None:
         cfg,
         task_id="graph_node_link_same_component_count_internal",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["same_component_count"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["same_component_count"]
     assert set(generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(generation_defaults["node_count_min"]) == 6
@@ -2145,7 +2145,7 @@ def test_graph_relation_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__reachable_node_count",
     )
-    assert sorted(reachable_generation_defaults["query_variant_weights"].keys()) == ["reachable_count"]
+    assert sorted(reachable_generation_defaults["query_id_weights"].keys()) == ["reachable_count"]
     assert set(reachable_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(reachable_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(reachable_generation_defaults["node_count_min"]) == 5
@@ -2163,7 +2163,7 @@ def test_graph_relation_defaults_loaded() -> None:
 
     reachable_edge_edit_generation_defaults, reachable_edge_edit_rendering_defaults, reachable_edge_edit_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_graph__node_link__reachable_node_count_after_edge_edit",
+        task_id="graph_node_link_reachable_count_after_edge_edit_internal",
     )
     assert sorted(reachable_edge_edit_generation_defaults["edge_edit_operation_weights"].keys()) == [
         "edge_addition",
@@ -2218,14 +2218,14 @@ def test_graph_relation_defaults_loaded() -> None:
     )
     assert sorted(edge_attribute_generation_defaults["graph_directionality_weights"].keys()) == ["directed", "undirected"]
     assert int(edge_attribute_generation_defaults["edge_label_support_size"]) == 6
-    assert set(edge_attribute_generation_defaults["query_variant_weights"].keys()) == {
+    assert set(edge_attribute_generation_defaults["query_id_weights"].keys()) == {
         "edge_between_nodes_label",
         "directed_edge_between_nodes_label",
         "shortest_path_first_edge_label",
     }
     assert set(edge_attribute_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(edge_attribute_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
-    assert bool(edge_attribute_generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(edge_attribute_generation_defaults["balanced_query_id_sampling"]) is True
     assert bool(edge_attribute_generation_defaults["balanced_target_edge_label_sampling"]) is True
     assert int(edge_attribute_generation_defaults["node_count_min"]) == 5
     assert int(edge_attribute_generation_defaults["node_count_max"]) == 8
@@ -2269,7 +2269,7 @@ def test_graph_relation_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__unique_cycle_size",
     )
-    assert sorted(cycle_generation_defaults["query_variant_weights"].keys()) == ["unique_cycle_size"]
+    assert sorted(cycle_generation_defaults["query_id_weights"].keys()) == ["unique_cycle_size"]
     assert set(cycle_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(cycle_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(cycle_generation_defaults["node_count_min"]) == 5
@@ -2344,7 +2344,7 @@ def test_graph_comparison_defaults_loaded() -> None:
         cfg,
         task_id="graph_node_link_largest_component_size_internal",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["largest_component_size"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["largest_component_size"]
     assert set(generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(generation_defaults["node_count_min"]) == 6
@@ -2459,7 +2459,7 @@ def test_graph_path_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__shortest_path_length",
     )
-    assert generation_defaults["query_variant_weights"] == {
+    assert generation_defaults["query_id_weights"] == {
         "shortest_path_length": 1.0,
         "directed_shortest_path_length": 1.0,
     }
@@ -2560,7 +2560,7 @@ def test_graph_order_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__topological_position_value",
     )
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["topological_position"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["topological_position"]
     assert set(generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(generation_defaults["node_count_min"]) == 3
@@ -3667,12 +3667,12 @@ def test_puzzles_clock_defaults_loaded() -> None:
     assert int(generation_defaults["second_step"]) == 5
     assert dict(generation_defaults["delta_minutes_support"]) == {"min": 5, "max": 600, "step": 5}
     assert dict(generation_defaults["delta_seconds_support"]) == {"min": 5, "max": 36000, "step": 5}
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "offset_time",
     ]
     assert sorted(generation_defaults["offset_unit_weights"].keys()) == ["minutes", "seconds"]
     assert sorted(generation_defaults["offset_direction_weights"].keys()) == ["after", "before"]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert int(rendering_defaults["canvas_width"]) == 640
     assert str(prompt_defaults["bundle_id"]).strip() == "puzzles_clock_v0"
     assert str(prompt_defaults["scene_key"]).strip() == "analog_clock"
@@ -3689,9 +3689,9 @@ def test_puzzles_clock_compare_defaults_loaded() -> None:
         task_id="task_puzzles__clock_collection__compare",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["time_extremum_label"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["time_extremum_label"]
     assert sorted(generation_defaults["extremum_direction_weights"].keys()) == ["earliest", "latest"]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert list(generation_defaults["clock_label_support"]) == ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
     assert list(generation_defaults["clock_count_support"]) == [6, 7, 8, 9, 10, 11, 12]
     assert int(generation_defaults["min_compare_gap_minutes"]) == 15
@@ -3716,12 +3716,12 @@ def test_pages_calendar_defaults_loaded() -> None:
         task_id="pages_calendar_month_view_base",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "count_marked_day_class",
         "date_of_weekday_occurrence",
     ]
     assert sorted(generation_defaults["marked_day_class_weights"].keys()) == ["weekday", "weekend"]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert list(generation_defaults["weekend_weekday_indices"]) == [5, 6]
     assert list(generation_defaults["date_occurrence_support"]) == [1, 2, 3, 4, 5]
     assert list(generation_defaults["marked_weekend_count_support"]) == [0, 1, 2, 3, 4]
@@ -3746,12 +3746,12 @@ def test_pages_schedule_defaults_loaded() -> None:
         task_id="pages_schedule_day_planner_base",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "longer_than_reference_count",
         "maximum_non_overlapping_count",
         "overlap_count",
     ]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert list(generation_defaults["event_count_support"]) == [7, 8, 9, 10]
     assert list(generation_defaults["overlap_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation_defaults["maximum_non_overlapping_support"]) == [2, 3, 4, 5, 6, 7]
@@ -3775,11 +3775,11 @@ def test_pages_timeline_defaults_loaded() -> None:
         task_id="pages_timeline_milestones_base",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "interval_membership_count",
     ]
     assert sorted(generation_defaults["interval_relation_weights"].keys()) == ["between", "outside"]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert list(generation_defaults["event_count_support"]) == [6, 7, 8, 9, 10, 11, 12]
     assert list(generation_defaults["between_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation_defaults["outside_count_support"]) == [2, 3, 4, 5, 6, 7, 8]
@@ -3801,7 +3801,7 @@ def test_pages_cycle_defaults_loaded() -> None:
         task_id="task_pages__cycle__offset_stage_label",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == ["offset_stage_label"]
+    assert sorted(generation_defaults["query_id_weights"].keys()) == ["offset_stage_label"]
     assert sorted(generation_defaults["query_relationship_weights"].keys()) == ["after", "before"]
     assert bool(generation_defaults["balanced_query_relationship_sampling"]) is True
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
@@ -3828,12 +3828,12 @@ def test_pages_arithmetic_defaults_loaded() -> None:
         task_id="task_pages__form_section__section_expression_value",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "difference_two_amounts_in_section",
         "sum_minus_amount_in_section",
         "sum_two_amounts_in_section",
     ]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
         "form_sheet",
         "invoice_sheet",
@@ -3862,12 +3862,12 @@ def test_pages_cross_form_defaults_loaded() -> None:
         task_id="task_pages__paired_forms__reconciliation_value",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "shortfall_minus_overage_value",
         "sum_absolute_quantity_differences",
         "total_amount_delta",
     ]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == ["purchase_receipt_pair"]
     assert int(generation_defaults["item_count_min"]) == 6
@@ -3901,7 +3901,7 @@ def test_pages_hierarchy_defaults_loaded() -> None:
         task_id="task_pages__hierarchy__tree_count",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "path_length_between_two_nodes",
         "subtree_descendant_count",
         "subtree_leaf_count",
@@ -3929,11 +3929,11 @@ def test_pages_map_defaults_loaded() -> None:
         task_id="task_pages__map__navigation_label",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "destination_after_directions",
         "landmark_after_route_step",
     ]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == ["campus_map"]
     assert int(generation_defaults["landmark_count_min"]) == 10
@@ -3960,14 +3960,14 @@ def test_gui_counting_defaults_loaded() -> None:
         task_id="task_pages__control_board__filter_count",
     )
 
-    assert sorted(generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
         "disabled_controls_in_group_count",
         "enabled_action_for_type_count",
         "selected_enabled_controls_in_group_count",
         "selected_rows_with_status_count",
         "value_threshold_in_group_count",
     ]
-    assert bool(generation_defaults["balanced_query_variant_sampling"]) is True
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
     assert bool(generation_defaults["balanced_style_variant_sampling"]) is True
     assert list(generation_defaults["row_count_support"]) == [9, 10, 11, 12, 13, 14, 15]
@@ -4000,7 +4000,7 @@ def test_gui_relation_defaults_loaded() -> None:
         task_id="task_pages__navigation_flow__navigation_path_target_label",
     )
 
-    assert sorted(nav_generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(nav_generation_defaults["query_id_weights"].keys()) == [
         "menu_path_target_label",
         "ribbon_group_command_label",
     ]
@@ -4037,7 +4037,7 @@ def test_gui_relation_defaults_loaded() -> None:
         )
     )
 
-    assert sorted(intent_generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(intent_generation_defaults["query_id_weights"].keys()) == [
         "command_intent_target_label",
         "dual_guide_command_label",
     ]
@@ -4071,7 +4071,7 @@ def test_gui_relation_defaults_loaded() -> None:
         )
     )
 
-    assert sorted(professional_generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(professional_generation_defaults["query_id_weights"].keys()) == [
         "canvas_workspace_control_label",
         "code_workspace_control_label",
         "file_dialog_control_label",
@@ -4096,7 +4096,7 @@ def test_gui_relation_defaults_loaded() -> None:
         )
     )
 
-    assert sorted(web_generation_defaults["query_variant_weights"].keys()) == [
+    assert sorted(web_generation_defaults["query_id_weights"].keys()) == [
         "click_target_label",
         "select_option_label",
         "type_field_label",

@@ -51,7 +51,7 @@ def _assert_acceptance_contract(out) -> None:
 
     assert "task_graph__automaton__accepted_string_label" in TASK_REGISTRY
     assert out.scene_id == "automaton"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value in set(candidates)
     assert out.answer_gt.value == answer_option

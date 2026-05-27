@@ -340,14 +340,12 @@ class TerminalQueuePersonBranch:
                 "scene_id": SCENE_ID,
                 "entities": transit_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(sample.query_id),
                     "query_id": str(sample.query_id),
                     "target_service_point_id": str(sample.service_point_id),
                 },
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -381,7 +379,6 @@ class TerminalQueuePersonBranch:
                 "counted_person_ids": list(counted_person_ids),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
                 "target_service_point_id": str(sample.service_point_id),
@@ -417,7 +414,6 @@ class TerminalQueuePersonBranch:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

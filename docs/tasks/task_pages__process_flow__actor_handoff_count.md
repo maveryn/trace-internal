@@ -8,7 +8,7 @@
 5. Objective: count arrows that transfer work between process lanes.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `all_cross_lane_handoff_count|lane_outgoing_handoff_count|lane_involved_handoff_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `bbox_set`

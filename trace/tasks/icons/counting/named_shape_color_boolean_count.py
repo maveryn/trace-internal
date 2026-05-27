@@ -904,7 +904,6 @@ class IconsCountingNamedShapeColorBooleanCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -977,7 +976,6 @@ class IconsCountingNamedShapeColorBooleanCountTask:
             "execution_trace": {
                 "scene_variant": "single_panel_named_shape_color_field",
                 "arrangement_mode": str(sample.arrangement_mode),
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
                 "question_format": "count_named_shape_color_boolean_icons",
                 "target_shape_id": str(sample.target_shape_id),
@@ -1030,7 +1028,6 @@ class IconsCountingNamedShapeColorBooleanCountTask:
             trace_payload=trace_payload,
             complexity=_complexity(sample, render_params=render_params),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},

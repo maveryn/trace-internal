@@ -30,7 +30,7 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
     out = GamesChessVariantMarkedPieceDestinationCountTask().generate(
         26052401,
         params={
-            "query_variant": "marked_piece_move_count",
+            "query_id": "marked_piece_move_count",
             "rule_family": "straight_range",
             "range_k": 3,
             "target_answer": 4,
@@ -49,24 +49,24 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
             rule_family=str(execution["rule_family"]),
             range_k=int(execution["range_k"]),
         ),
-        query_variant="marked_piece_move_count",
+        query_id="marked_piece_move_count",
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "marked_piece_move_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 4
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "marked_piece_move_count"
 
 
 def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
     out = GamesChessVariantMarkedPieceDestinationCountTask().generate(
         26052411,
-        params={"query_variant": "marked_piece_capture_count", "rule_family": "leaper_2_1", "target_answer": 3},
+        params={"query_id": "marked_piece_capture_count", "rule_family": "leaper_2_1", "target_answer": 3},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -80,11 +80,11 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
             rule_family=str(execution["rule_family"]),
             range_k=int(execution["range_k"]),
         ),
-        query_variant="marked_piece_capture_count",
+        query_id="marked_piece_capture_count",
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "marked_piece_capture_count"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 3
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)

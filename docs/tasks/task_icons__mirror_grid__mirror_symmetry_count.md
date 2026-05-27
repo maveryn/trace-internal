@@ -9,7 +9,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of icon-arrangement cells on the right.
-2. Supported public `query_variant` value: `mirror_symmetry_count`.
+2. Query id: `mirror_symmetry_count`.
 3. Supported `mirror_signature` values: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` (pixel-space boxes around the matching Scene cells, sorted top-to-bottom then left-to-right).
@@ -43,7 +43,7 @@
 7. Balanced defaults: seeded sampling first balances the five `mirror_signature` values, then the task passes a decoupled index to the fixed-grid count resolver so each signature cycles through the full feasible `0..4` answer support.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: object count + target count + query variant.
+1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_mirror_symmetry_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_mirror_symmetry_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

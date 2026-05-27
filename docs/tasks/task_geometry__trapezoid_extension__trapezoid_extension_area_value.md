@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `trapezoid_extension`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `trapezoid_area_from_bases_and_height`, `trapezoid_area_from_extension_and_height`, `trapezoid_area_from_parallelogram_area`
 6. Answer type: `number`
 7. Evidence type: `bbox_set`
@@ -15,7 +15,7 @@
 
 ## Behavior
 Infer the area of the original trapezoid in a dashed
-parallelogram-completion diagram. Query variants either use the visible top
+parallelogram-completion diagram. Query ids either use the visible top
 base, bottom base, and height directly, derive the bottom base from the dashed
 extension, or derive the bottom base from the completed parallelogram area.
 Answers are numeric integers.

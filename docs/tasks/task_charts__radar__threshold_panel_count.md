@@ -5,7 +5,7 @@
 2. Scene id: `radar`
 3. Source implementation domain/group: `charts/radar`
 4. Query id: `highlighted_metric_threshold_panel_count`, `matching_condition_panel_count`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.radar.profile_query.ChartsRadarThresholdPanelCountTask`

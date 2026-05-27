@@ -41,7 +41,7 @@ from ..shared.chess_common import (
 from ..shared.complexity import build_games_chess_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import apply_games_layout_jitter_to_bbox, attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import build_games_chess_theme
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -50,7 +50,7 @@ TASK_ID = "games_chess_variant_board_base"
 TASK_GROUP = "chess_variant"
 SCENE_ID = "chess_variant"
 
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "marked_piece_move_count",
     "marked_piece_capture_count",
 )
@@ -96,14 +96,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved query, rule, rendering, and answer axes."""
 
-    query_variant: str
+    query_id: str
     rule_family: str
     scene_variant: str
     style_variant: str
     range_k: int
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     rule_family_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -165,11 +165,11 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group=TASK_
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group=TASK_GROUP, apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     return {
         "marked_piece_move_count": "marked_piece_move_count_support",
         "marked_piece_capture_count": "marked_piece_capture_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _resolve_named_axis(
@@ -195,16 +195,16 @@ def _resolve_named_axis(
     )
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
     alias_params = dict(params)
-    if alias_params.get("query_variant") is None and alias_params.get("query_variant") is not None:
-        alias_params["query_variant"] = alias_params["query_variant"]
-    return resolve_games_query_variant(
+    if alias_params.get("query_id") is None and alias_params.get("query_id") is not None:
+        alias_params["query_id"] = alias_params["query_id"]
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
     )
 
 
@@ -217,7 +217,7 @@ def _range_support_for_rule(rule_family: str) -> Tuple[int, ...]:
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     rule_family, rule_family_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -261,7 +261,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             balanced_flag_key="balanced_range_k_sampling",
             namespace_support_permutation=True,
         )
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     fallback_support = tuple(int(v) for v in getattr(_DEFAULTS, support_key))
     configured_support = resolve_integer_support(
         params,
@@ -270,7 +270,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=fallback_support,
     )
     possible_max = _max_possible_answer_for_rule(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         rule_family=str(rule_family),
         range_k=int(range_k),
     )
@@ -279,7 +279,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         target_support = tuple(int(v) for v in fallback_support if int(v) <= int(possible_max))
     if not target_support:
         raise ValueError(
-            f"no feasible target answers for query={query_variant} rule={rule_family} range_k={range_k}"
+            f"no feasible target answers for query={query_id} rule={rule_family} range_k={range_k}"
         )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -288,19 +288,19 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(support_key),
         explicit_key="target_answer",
         fallback_support=target_support,
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         rule_family=str(rule_family),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         range_k=int(range_k),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(v) for v in target_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         rule_family_probabilities=dict(rule_family_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -395,10 +395,10 @@ def _all_empty_board_destinations(rule_family: str, range_k: int, origin: Coord)
     return tuple(sorted(out))
 
 
-def _max_possible_answer_for_rule(*, query_variant: str, rule_family: str, range_k: int) -> int:
+def _max_possible_answer_for_rule(*, query_id: str, rule_family: str, range_k: int) -> int:
     """Return the largest feasible answer for one visible movement rule."""
 
-    if str(query_variant) == "marked_piece_capture_count" and str(rule_family).endswith("_range"):
+    if str(query_id) == "marked_piece_capture_count" and str(rule_family).endswith("_range"):
         max_count = 0
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
@@ -458,8 +458,8 @@ def _evaluate_board(board: Board, *, marked_coord: Coord, rule_family: str, rang
     )
 
 
-def _with_query_evidence(board: Board, evaluation: _Evaluation, *, query_variant: str) -> _Evaluation:
-    if str(query_variant) == "marked_piece_move_count":
+def _with_query_evidence(board: Board, evaluation: _Evaluation, *, query_id: str) -> _Evaluation:
+    if str(query_id) == "marked_piece_move_count":
         evidence_coords = tuple(evaluation.legal_destinations)
         return _Evaluation(
             answer=len(evidence_coords),
@@ -471,7 +471,7 @@ def _with_query_evidence(board: Board, evaluation: _Evaluation, *, query_variant
             marked_coord=evaluation.marked_coord,
             marked_piece=evaluation.marked_piece,
         )
-    if str(query_variant) == "marked_piece_capture_count":
+    if str(query_id) == "marked_piece_capture_count":
         evidence_coords = tuple(evaluation.capture_coords)
         return _Evaluation(
             answer=len(evidence_coords),
@@ -483,7 +483,7 @@ def _with_query_evidence(board: Board, evaluation: _Evaluation, *, query_variant
             marked_coord=evaluation.marked_coord,
             marked_piece=evaluation.marked_piece,
         )
-    raise ValueError(f"unsupported query variant: {query_variant}")
+    raise ValueError(f"unsupported query id: {query_id}")
 
 
 def _random_marked_coord(rng, *, rule_family: str, range_k: int, minimum_destinations: int) -> Coord:
@@ -614,7 +614,7 @@ def _add_fillers_preserving(*, rng, board: Board, marked: Coord, axes: _Resolved
         candidate = _with_query_evidence(
             frozen,
             _evaluate_board(frozen, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
-            query_variant=axes.query_variant,
+            query_id=axes.query_id,
         )
         if int(candidate.answer) != int(target_answer):
             mutable[int(coord[0])][int(coord[1])] = None
@@ -624,7 +624,7 @@ def _add_fillers_preserving(*, rng, board: Board, marked: Coord, axes: _Resolved
 def _sample_scene(*, rng, axes: _ResolvedAxes) -> _Sample:
     for _ in range(240):
         try:
-            if str(axes.query_variant) == "marked_piece_move_count":
+            if str(axes.query_id) == "marked_piece_move_count":
                 board, marked = _construct_move_board(rng=rng, axes=axes)
             else:
                 board, marked = _construct_capture_board(rng=rng, axes=axes)
@@ -633,7 +633,7 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> _Sample:
             evaluation = _with_query_evidence(
                 board,
                 _evaluate_board(board, marked_coord=marked, rule_family=axes.rule_family, range_k=axes.range_k),
-                query_variant=axes.query_variant,
+                query_id=axes.query_id,
             )
             if int(evaluation.answer) != int(axes.target_answer):
                 continue
@@ -845,8 +845,8 @@ def _draw_marked_outline(image: Image.Image, render_map: Mapping[str, Any], mark
     )
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
-    answer_value = 4 if str(query_variant) == "marked_piece_move_count" else 2
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    answer_value = 4 if str(query_id) == "marked_piece_move_count" else 2
     evidence_value = [[140, 220, 210, 290], [210, 220, 280, 290]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -936,16 +936,16 @@ class GamesChessVariantBoardTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
-        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"])
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
+        answer_hint = str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -967,7 +967,7 @@ class GamesChessVariantBoardTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             occupied_count=int(sample.occupied_count),
             target_answer=int(sample.evaluation.answer),
             evidence_count=len(sample.evaluation.evidence_entity_ids),
@@ -981,8 +981,7 @@ class GamesChessVariantBoardTask:
                 "entities": [dict(entity) for entity in scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "rule_family": str(axes.rule_family),
                     "range_k": int(axes.range_k),
                     "style_variant": str(axes.style_variant),
@@ -993,22 +992,20 @@ class GamesChessVariantBoardTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
-                "query_id": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "rule_family": str(axes.rule_family),
                     "range_k": int(axes.range_k),
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "rule_family_probabilities": dict(axes.rule_family_probabilities),
                     "range_k_probabilities": dict(axes.range_k_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
@@ -1027,8 +1024,7 @@ class GamesChessVariantBoardTask:
             "render_map": dict(render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "rule_family": str(axes.rule_family),
                 "range_k": int(axes.range_k),
                 "style_variant": str(axes.style_variant),
@@ -1061,9 +1057,8 @@ class GamesChessVariantBoardTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id=SCENE_ID,
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -1072,7 +1067,7 @@ class GamesChessVariantMarkedPieceDestinationCountTask(QuerySubsetTaskMixin, Gam
     """Count marked-token destination squares matching a sampled visible-rule condition."""
 
     task_id = "task_games__chess_variant__marked_piece_destination_count"
-    supported_query_variants = (
+    supported_query_ids = (
         "marked_piece_move_count",
         "marked_piece_capture_count",
     )

@@ -30,7 +30,7 @@ def test_color_gradient_violation_contract() -> None:
         max_attempts=20,
     )
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID
     assert out.answer_gt.type == "option_letter"
@@ -90,7 +90,7 @@ def test_color_gradient_completion_contract() -> None:
         max_attempts=20,
     )
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == SCENE_ID
     assert out.query_id == COMPLETION_QUERY_ID
     assert out.answer_gt.type == "option_letter"

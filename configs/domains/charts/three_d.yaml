@@ -12,7 +12,7 @@ generation:
     time_count_max: 7
     panel_count_min: 4
     panel_count_max: 6
-    query_variant_weights:
+    query_id_weights:
       reference_nearest_label: 1.0
       surface_extremum_label: 1.0
       series_trend_label: 1.0
@@ -23,7 +23,7 @@ generation:
     trend_direction_weights:
       increase: 1.0
       decrease: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_extremum_direction_sampling: true
     balanced_trend_direction_sampling: true
 

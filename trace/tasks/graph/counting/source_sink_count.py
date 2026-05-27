@@ -117,7 +117,7 @@ class _ResolvedQuery:
     edge_routing_variant: str
     node_color_name: str
     source_sink_mode_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     topology_profile_probabilities: Dict[str, float]
@@ -160,7 +160,7 @@ def _forced_source_sink_mode(params: Mapping[str, Any]) -> str | None:
         if mode is None:
             raise ValueError(f"unsupported source_sink_mode: {explicit}")
         return str(mode)
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         mode = _mode_from_query_alias(params.get(str(key)))
         if mode is not None:
             return str(mode)
@@ -269,7 +269,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         gen_defaults=_GEN_DEFAULTS,
         probabilities=source_sink_probabilities,
         balance_flag_key="balanced_source_sink_mode_sampling",
-        explicit_keys=("source_sink_mode", "query_id", "query_variant", "query_variant"),
+        explicit_keys=("source_sink_mode", "query_id", "query_id", "query_id"),
         weights_key="source_sink_mode_weights",
     )
 
@@ -400,7 +400,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
         source_sink_mode_probabilities=dict(source_sink_probabilities),
-        query_variant_probabilities=dict(query_probabilities),
+        query_id_probabilities=dict(query_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -618,7 +618,6 @@ class GraphCountingSourceSinkCountTask:
                 "scene_kind": "graph_source_sink_counting",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
                     "counting_rule": "nodes_with_zero_in_degree" if str(query.source_sink_mode) == "source" else "nodes_with_zero_out_degree",
                     "graph_directionality": "directed",
@@ -626,7 +625,7 @@ class GraphCountingSourceSinkCountTask:
                     "degree_mode": str(query.degree_mode),
                     "query_degree": 0,
                     "matching_labels": list(evidence_labels),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "source_sink_mode_probabilities": dict(query.source_sink_mode_probabilities),
                     "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
                     "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
@@ -642,17 +641,15 @@ class GraphCountingSourceSinkCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "source_sink_mode": str(query.source_sink_mode),
                     "source_sink_mode_probabilities": dict(query.source_sink_mode_probabilities),
                     "graph_directionality": "directed",
@@ -677,7 +674,7 @@ class GraphCountingSourceSinkCountTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {"default": 1.0},
                     "directed_degree_sequence_max_degree": int(max_degree),
                 },
             },
@@ -717,10 +714,9 @@ class GraphCountingSourceSinkCountTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(prompt_query_key),
                 "graph_directionality": "directed",
@@ -775,7 +771,6 @@ class GraphCountingSourceSinkCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

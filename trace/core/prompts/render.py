@@ -215,7 +215,7 @@ def render_prompt(
         metadata["variant_count_by_key"][f"query:{resolved_query_key}"] = int(query_count)
     if resolved_mode_key is not None and mode_idx is not None and mode_count is not None:
         metadata["answer_or_evidence_key"] = str(resolved_mode_key)
-        metadata["answer_or_evidence_variant_index"] = int(mode_idx)
+        metadata["answer_or_evidence_query_id_index"] = int(mode_idx)
         metadata["variant_count_by_key"][f"answer_or_evidence:{resolved_mode_key}"] = int(mode_count)
     return PromptRenderResult(prompt=prompt, metadata=metadata)
 

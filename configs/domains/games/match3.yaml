@@ -4,16 +4,16 @@ generation:
       square_board: 1.0
       wide_board: 1.0
       tall_board: 1.0
-    effect_value_query_variant_weights:
+    effect_value_query_id_weights:
       cleared_count_after_marked_swap: 1.0
       created_run_count_after_marked_swap: 1.0
-    best_swap_query_variant_weights:
+    best_swap_query_id_weights:
       max_clear_swap_label: 1.0
       target_clear_swap_label: 1.0
     style_variant_weights:
       panel_scene: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_row_count_sampling: true
     balanced_col_count_sampling: true

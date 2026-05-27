@@ -11,12 +11,12 @@ from tests.helpers import extract_prompt_json_example
 
 def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
     task = PagesHierarchyTreeCountTask()
-    query_variants = ("subtree_descendant_count", "subtree_leaf_count", "path_length_between_two_nodes")
+    query_ids = ("subtree_descendant_count", "subtree_leaf_count", "path_length_between_two_nodes")
 
-    for variant_index, query_variant in enumerate(query_variants):
+    for query_id_index, query_id in enumerate(query_ids):
         out = task.generate(
-            61400 + variant_index,
-            params={"query_variant": query_variant, "scene_variant": "rooted_tree"},
+            61400 + query_id_index,
+            params={"query_id": query_id, "scene_variant": "rooted_tree"},
             max_attempts=10,
         )
         trace = out.trace_payload
@@ -29,10 +29,10 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == "rooted_tree"
         assert str(execution["question_format"]) == "hierarchy_tree_count"
         assert str(execution["view_family"]) == "rooted_tree_diagram"
@@ -54,11 +54,11 @@ def test_pages_hierarchy_tree_count_contract_matches_counted_evidence() -> None:
         assert len(render_map["node_bboxes_px"]) == int(execution["tree_node_count"])
         assert len(render_map["edge_bboxes_px"]) == len(execution["edge_specs"])
 
-        if str(query_variant) == "subtree_descendant_count":
+        if str(query_id) == "subtree_descendant_count":
             assert int(execution["answer_count"]) == int(execution["descendant_count"])
             assert len(execution["evidence_node_ids"]) == int(execution["answer_count"])
             assert str(execution["evidence_semantics"]) == "descendant_nodes_unordered"
-        elif str(query_variant) == "subtree_leaf_count":
+        elif str(query_id) == "subtree_leaf_count":
             assert int(execution["answer_count"]) == int(execution["leaf_descendant_count"])
             assert len(execution["evidence_node_ids"]) == int(execution["answer_count"])
             assert str(execution["evidence_semantics"]) == "leaf_descendant_nodes_unordered"
@@ -80,8 +80,8 @@ def test_pages_hierarchy_tree_count_prompt_examples_match_integer_contract() -> 
         "path_length_between_two_nodes": 4,
     }
 
-    for index, (query_variant, expected_answer) in enumerate(expected.items(), start=61460):
-        out = task.generate(index, params={"query_variant": query_variant, "scene_variant": "rooted_tree"}, max_attempts=10)
+    for index, (query_id, expected_answer) in enumerate(expected.items(), start=61460):
+        out = task.generate(index, params={"query_id": query_id, "scene_variant": "rooted_tree"}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert int(answer_and_evidence["answer"]) == int(expected_answer)
@@ -91,7 +91,7 @@ def test_pages_hierarchy_tree_count_prompt_examples_match_integer_contract() -> 
 
 def test_pages_hierarchy_tree_count_is_deterministic() -> None:
     task = PagesHierarchyTreeCountTask()
-    params = {"query_variant": "subtree_leaf_count", "scene_variant": "rooted_tree"}
+    params = {"query_id": "subtree_leaf_count", "scene_variant": "rooted_tree"}
     out_a = task.generate(61510, params=params, max_attempts=10)
     out_b = task.generate(61510, params=params, max_attempts=10)
 
@@ -105,7 +105,7 @@ def test_pages_hierarchy_tree_count_is_deterministic() -> None:
 
 def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answers() -> None:
     task = PagesHierarchyTreeCountTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     answers_by_variant: dict[str, set[int]] = defaultdict(set)
 
     for index in range(15):
@@ -115,17 +115,17 @@ def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answer
             max_attempts=10,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
-        answers_by_variant[query_variant].add(int(execution["answer_count"]))
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
+        answers_by_variant[query_id].add(int(execution["answer_count"]))
 
-    assert set(query_variants.keys()) == {
+    assert set(query_ids.keys()) == {
         "subtree_descendant_count",
         "subtree_leaf_count",
         "path_length_between_two_nodes",
     }
-    assert all(count >= 4 for count in query_variants.values())
-    assert max(query_variants.values()) - min(query_variants.values()) <= 3
+    assert all(count >= 4 for count in query_ids.values())
+    assert max(query_ids.values()) - min(query_ids.values()) <= 3
     assert all(len(values) >= 3 for values in answers_by_variant.values())
 
 

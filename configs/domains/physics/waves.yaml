@@ -18,7 +18,7 @@ generation:
         clean_tank: 1.0
         grid_tank: 1.0
         lab_sheet: 1.0
-      query_variant_weights:
+      query_id_weights:
         interference_point_choice: 1.0
         path_difference_value: 1.0
       phase_relation_weights:
@@ -34,7 +34,7 @@ generation:
         D: 1.0
         E: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_phase_relation_sampling: true
       balanced_target_condition_sampling: true
       balanced_option_letter_sampling: true

@@ -99,7 +99,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     colors = color_support(params, _GEN_DEFAULTS)
     tools = tool_support(params, _GEN_DEFAULTS)
 
-    explicit_query = params.get("query_id", params.get("query_variant"))
+    explicit_query = params.get("query_id")
     if explicit_query is not None:
         query_id = str(explicit_query)
         if query_id not in set(query_values):
@@ -344,11 +344,10 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
                 "entities": construction_scene_entities(scene),
-                "relations": {"query_variant": str(sample.query_id), "query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
+                "relations": {"query_id": str(sample.query_id), "query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -358,7 +357,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                     "match_phrase": str(sample.match_phrase),
                     "target_count": int(sample.target_count),
                     "worker_count": int(sample.worker_count),
-                    "query_variant_probabilities": dict(sample.query_probabilities),
+                    "query_id_probabilities": dict(sample.query_probabilities),
                     "query_probabilities": dict(sample.query_probabilities),
                     "color_probabilities": dict(sample.color_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
@@ -382,10 +381,9 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "counted_worker_ids": list(counted_worker_ids),
             },
             "execution_trace": {
-                "query_variant": str(sample.query_id),
                 "query_id": str(sample.query_id),
                 "scene_id": SCENE_ID,
-                "query_variant_probabilities": dict(sample.query_probabilities),
+                "query_id_probabilities": dict(sample.query_probabilities),
                 "target_count": int(sample.target_count),
                 "worker_count": int(sample.worker_count),
                 "worker_color_counts": {
@@ -409,7 +407,6 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
-            query_variant=str(sample.query_id),
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )

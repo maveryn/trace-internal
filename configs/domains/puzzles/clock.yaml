@@ -19,7 +19,7 @@ generation:
       cyan: 1.0
       magenta: 1.0
       maroon: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
@@ -34,7 +34,7 @@ generation:
     min_hand_angle_gap_deg: 10.0
   task_overrides:
     puzzles_clock_readout_base:
-      query_variant_weights:
+      query_id_weights:
         offset_time: 1.0
       offset_unit_weights:
         minutes: 1.0
@@ -42,7 +42,7 @@ generation:
       offset_direction_weights:
         after: 1.0
         before: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_offset_unit_sampling: true
       balanced_offset_direction_sampling: true
       delta_minutes_support:
@@ -54,12 +54,12 @@ generation:
         max: 36000
         step: 5
     task_puzzles__clock_collection__compare:
-      query_variant_weights:
+      query_id_weights:
         time_extremum_label: 1.0
       extremum_direction_weights:
         earliest: 1.0
         latest: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_extremum_direction_sampling: true
       clock_label_support: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
       clock_count_support: [6, 7, 8, 9, 10, 11, 12]

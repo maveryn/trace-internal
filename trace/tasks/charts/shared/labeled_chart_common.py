@@ -63,7 +63,7 @@ class LabeledChartDefaults:
     pie_like_mark_color_channel_max: int = 200
     pie_like_mark_color_min_distance: float = 58.0
     mark_color_distance_space: str = "lab"
-    balanced_query_variant_sampling: bool = True
+    balanced_query_id_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
 
 
@@ -1812,17 +1812,17 @@ def _projection_count_bounds(
     return int(observed_min), int(observed_max), int(projection_min), int(projection_max)
 
 
-def _decouple_sample_cursor_after_query_variant(
+def _decouple_sample_cursor_after_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
 ) -> Mapping[str, Any]:
-    """Return params whose sampling index advances within each selected query variant."""
+    """Return params whose sampling index advances within each selected query id."""
 
     explicit_index = params.get("_sample_cursor")
     if explicit_index is None:
         return params
-    weights = gen_defaults.get("query_variant_weights", {})
+    weights = gen_defaults.get("query_id_weights", {})
     if not isinstance(weights, Mapping):
         return params
     variant_count = 0
@@ -2010,7 +2010,7 @@ def build_trend_threshold_crossing_dataset_for_variant(
         params,
         gen_defaults=gen_defaults,
     )
-    support_params = _decouple_sample_cursor_after_query_variant(params, gen_defaults=gen_defaults)
+    support_params = _decouple_sample_cursor_after_query_id(params, gen_defaults=gen_defaults)
     observed_count = balanced_choice_from_values(
         [int(value) for value in range(int(observed_min), int(observed_max) + 1)],
         params=support_params,

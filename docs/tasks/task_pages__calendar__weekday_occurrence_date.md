@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: find the date number of an nth weekday in one Gregorian month-view calendar.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `date_of_weekday_occurrence`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` containing the target date-cell bbox.

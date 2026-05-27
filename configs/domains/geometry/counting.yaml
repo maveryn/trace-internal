@@ -17,7 +17,7 @@ generation:
         "12": 1.0
       target_count_min: 1
       target_count_max: 11
-      query_variant_weights:
+      query_id_weights:
         angle_type_count: 1.0
         triangle_type_count: 1.0
         quadrilateral_type_count: 1.0
@@ -55,7 +55,7 @@ generation:
         quadrilateral: 1.0
         mixed_shape: 1.0
         polygon: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_angle_type_sampling: true
       balanced_triangle_type_sampling: true

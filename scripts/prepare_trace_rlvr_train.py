@@ -51,7 +51,7 @@ def main() -> int:
         "--task-sampling-policy",
         choices=("equal", "variant_aware"),
         default="equal",
-        help="Task-level sampling policy: equal per-task counts or counts scaled by active query-variant support",
+        help="Task-level sampling policy: equal per-task counts or counts scaled by active query-id support",
     )
     parser.add_argument(
         "--variant-weight-alpha",

@@ -15,19 +15,19 @@ def test_games_minesweeper_grid_defaults_expose_scene_query_target_and_board_axe
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_board_size_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"open_grid", "mixed_grid"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "forced_mine_count",
         "forced_safe_count",
         "satisfied_clue_count",
     }
-    assert float(generation["query_variant_weights"]["forced_mine_count"]) == 1.0
-    assert float(generation["query_variant_weights"]["forced_safe_count"]) == 1.0
-    assert float(generation["query_variant_weights"]["satisfied_clue_count"]) == 1.0
+    assert float(generation["query_id_weights"]["forced_mine_count"]) == 1.0
+    assert float(generation["query_id_weights"]["forced_safe_count"]) == 1.0
+    assert float(generation["query_id_weights"]["satisfied_clue_count"]) == 1.0
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_MINESWEEPER_STYLE_VARIANTS)
     assert list(generation["board_size_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["forced_cell_board_size_support"]) == [4, 5]

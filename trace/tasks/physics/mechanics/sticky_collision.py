@@ -25,7 +25,7 @@ from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     is_uniform_probability_map,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_sticky_collision_complexity
@@ -42,16 +42,16 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "compact_table",
     "gridded_table",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "direction_choice",
     "velocity_component",
 )
 SUPPORTED_COMPONENT_AXES: Tuple[str, ...] = ("x", "y")
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "wide_table": SUPPORTED_QUERY_VARIANTS,
-    "compact_table": SUPPORTED_QUERY_VARIANTS,
-    "gridded_table": SUPPORTED_QUERY_VARIANTS,
+    "wide_table": SUPPORTED_QUERY_IDS,
+    "compact_table": SUPPORTED_QUERY_IDS,
+    "gridded_table": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -101,13 +101,13 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     component_axis: str | None
     accent_color_name: str
     target_answer: int | str
     correct_option_letter: str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     component_axis_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -134,7 +134,7 @@ class _SceneSpec:
     """Resolved symbolic sticky-collision scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     component_axis: str | None
     scenario: _CollisionScenario
     correct_option_letter: str
@@ -299,7 +299,7 @@ def _resolve_component_target_answer(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve a signed integer target answer for a component query."""
 
@@ -307,7 +307,7 @@ def _resolve_component_target_answer(
     explicit_key = "target_answer"
     adjusted_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS) * len(SUPPORTED_COMPONENT_AXES),
+        divisor=len(SUPPORTED_QUERY_IDS) * len(SUPPORTED_COMPONENT_AXES),
         explicit_keys=(explicit_key,),
     )
     selected, probabilities = resolve_integer_choice(
@@ -317,7 +317,7 @@ def _resolve_component_target_answer(
         support_key="component_answer_support",
         explicit_key=explicit_key,
         fallback_support=support,
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -328,15 +328,15 @@ def _resolve_component_axis(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve which velocity component a component query asks for."""
 
-    if str(query_variant) != "velocity_component":
+    if str(query_id) != "velocity_component":
         return None, {}
     adjusted_params = _with_sampling_divisor(
         params,
-        divisor=len(SUPPORTED_QUERY_VARIANTS),
+        divisor=len(SUPPORTED_QUERY_IDS),
         explicit_keys=("component_axis",),
     )
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.component_axis")
@@ -367,19 +367,19 @@ def _resolve_correct_option_letter(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve which visible option letter carries the correct resultant arrow."""
 
     option_params = dict(params)
-    if str(query_variant) == "direction_choice" and option_params.get("correct_option_letter") is None:
+    if str(query_id) == "direction_choice" and option_params.get("correct_option_letter") is None:
         raw_target = option_params.get("target_answer")
         if raw_target is not None:
             option_params["correct_option_letter"] = str(raw_target).strip().upper()
     option_params = dict(
         _with_sampling_divisor(
             option_params,
-            divisor=len(SUPPORTED_QUERY_VARIANTS),
+            divisor=len(SUPPORTED_QUERY_IDS),
             explicit_keys=("correct_option_letter",),
         )
     )
@@ -418,7 +418,7 @@ def _resolve_correct_option_letter(
             balance_flag_key="balanced_correct_option_letter_sampling",
             explicit_key="correct_option_letter",
             weights_key="correct_option_letter_weights",
-            sampling_namespace=f"{TASK_ID}.correct_option_letter.{str(query_variant)}",
+            sampling_namespace=f"{TASK_ID}.correct_option_letter.{str(query_id)}",
         )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -427,16 +427,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve scene/query/color/answer axes for one instance."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
     accent_name, accent_probs = resolve_variant(
@@ -462,31 +462,31 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     correct_option_letter, option_probs = _resolve_correct_option_letter(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     component_axis, component_axis_probs = _resolve_component_axis(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
-    if str(query_variant) == "direction_choice":
+    if str(query_id) == "direction_choice":
         target_answer: int | str = str(correct_option_letter)
         target_probs = dict(option_probs)
     else:
         target_answer, target_probs = _resolve_component_target_answer(
             instance_seed=int(instance_seed),
             params=params,
-            query_variant=str(query_variant),
+            query_id=str(query_id),
         )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         component_axis=component_axis,
         accent_color_name=str(accent_name),
         target_answer=target_answer,
         correct_option_letter=str(correct_option_letter),
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         component_axis_probabilities={str(key): float(value) for key, value in sorted(component_axis_probs.items())},
         accent_color_name_probabilities={str(key): float(value) for key, value in sorted(accent_probs.items())},
         target_answer_probabilities={str(key): float(value) for key, value in sorted(target_probs.items())},
@@ -573,7 +573,7 @@ def _sample_scene_spec(
     rng,
     *,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     component_axis: str | None,
     target_answer: int | str,
     correct_option_letter: str,
@@ -582,13 +582,13 @@ def _sample_scene_spec(
     """Sample one symbolic sticky-collision scene that realizes the target answer."""
 
     scenarios = list(_feasible_collision_scenarios(params))
-    if str(query_variant) == "velocity_component" and str(component_axis) == "x":
+    if str(query_id) == "velocity_component" and str(component_axis) == "x":
         scenarios = [scenario for scenario in scenarios if int(scenario.final_vx) == int(target_answer)]
-    elif str(query_variant) == "velocity_component" and str(component_axis) == "y":
+    elif str(query_id) == "velocity_component" and str(component_axis) == "y":
         scenarios = [scenario for scenario in scenarios if int(scenario.final_vy) == int(target_answer)]
     if not scenarios:
         raise ValueError(
-            f"no feasible sticky-collision scenario for {query_variant} axis {component_axis} target {target_answer}"
+            f"no feasible sticky-collision scenario for {query_id} axis {component_axis} target {target_answer}"
         )
 
     scenario = scenarios[int(rng.randrange(len(scenarios)))]
@@ -602,14 +602,14 @@ def _sample_scene_spec(
         else:
             option_angles[str(letter)] = round(float(distractors.pop()), 3)
 
-    if str(query_variant) == "direction_choice":
+    if str(query_id) == "direction_choice":
         evidence_entity_ids = (f"option_{str(correct_option_letter)}",)
     else:
         evidence_entity_ids = (f"{_component_axis_label(component_axis)}_component_witness",)
 
     return _SceneSpec(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         component_axis=component_axis,
         scenario=scenario,
         correct_option_letter=str(correct_option_letter),
@@ -1243,18 +1243,18 @@ def _render_scene(
     )
 
 
-def _answer_type(query_variant: str) -> str:
+def _answer_type(query_id: str) -> str:
     """Return answer type for the public query."""
 
-    if str(query_variant) == "direction_choice":
+    if str(query_id) == "direction_choice":
         return "option_letter"
     return "integer"
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for the active collision query."""
 
-    if str(query_variant) == "direction_choice":
+    if str(query_id) == "direction_choice":
         return build_prompt_json_examples(
             evidence_value=[[830, 596, 934, 690]],
             answer_type="option_letter",
@@ -1283,7 +1283,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 scene_spec = _sample_scene_spec(
                     attempt_rng,
                     scene_variant=str(axes.scene_variant),
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     component_axis=axes.component_axis,
                     target_answer=axes.target_answer,
                     correct_option_letter=str(axes.correct_option_letter),
@@ -1373,10 +1373,10 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             answer_hint_key = (
                 "answer_hint_direction_choice"
-                if str(axes.query_variant) == "direction_choice"
+                if str(axes.query_id) == "direction_choice"
                 else "answer_hint_component"
             )
             component_axis_label = _component_axis_label(axes.component_axis)
@@ -1388,7 +1388,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -1397,7 +1397,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "answer_hint": str(prompt_defaults[answer_hint_key]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                     "component_axis": str(component_axis_label),
                     "positive_direction": str(positive_direction),
                     "negative_direction": str(negative_direction),
@@ -1406,9 +1406,9 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            answer_type = _answer_type(str(axes.query_variant))
+            answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str
-            if str(axes.query_variant) == "direction_choice":
+            if str(axes.query_id) == "direction_choice":
                 answer_value = str(scene_spec.correct_option_letter)
             elif str(axes.component_axis) == "x":
                 answer_value = int(scene_spec.scenario.final_vx)
@@ -1420,7 +1420,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 component_abs_sum=int(abs(scene_spec.scenario.final_vx) + abs(scene_spec.scenario.final_vy)),
                 total_mass=int(scene_spec.scenario.total_mass),
                 option_count=len(OPTION_LETTERS),
@@ -1443,7 +1443,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 "correct_option_letter": str(scene_spec.correct_option_letter),
                 "option_angles_degrees": dict(scene_spec.option_angles_degrees),
                 "component_axis": axes.component_axis,
-                "component_axis_label": str(component_axis_label) if str(axes.query_variant) == "velocity_component" else None,
+                "component_axis_label": str(component_axis_label) if str(axes.query_id) == "velocity_component" else None,
             }
             trace_payload = {
                 "scene_ir": {
@@ -1451,8 +1451,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "component_axis": axes.component_axis,
                         "accent_color_name": str(axes.accent_color_name),
                         "target_answer": answer_value,
@@ -1462,7 +1461,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "component_axis": axes.component_axis,
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1470,14 +1469,13 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "component_axis": axes.component_axis,
                         "accent_color_name": str(axes.accent_color_name),
                         "correct_option_letter": str(axes.correct_option_letter),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "component_axis_probabilities": dict(axes.component_axis_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": answer_value,
@@ -1497,8 +1495,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "component_axis": axes.component_axis,
                     "component_axis_probabilities": dict(axes.component_axis_probabilities),
                     "accent_color_name": str(axes.accent_color_name),
@@ -1540,7 +1537,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 scene_id="collision",
             )
 
@@ -1555,7 +1552,7 @@ class PhysicsMechanicsStickyCollisionDirectionChoiceTask(
     """Choose the candidate arrow showing the post-collision direction."""
 
     task_id = "task_physics__collision__sticky_collision_direction_choice"
-    fixed_query_variant = "direction_choice"
+    fixed_query_id = "direction_choice"
 
 
 @register_task
@@ -1566,7 +1563,7 @@ class PhysicsMechanicsStickyCollisionVelocityComponentValueTask(
     """Return one signed final velocity component after sticking."""
 
     task_id = "task_physics__collision__sticky_collision_velocity_component_value"
-    fixed_query_variant = "velocity_component"
+    fixed_query_id = "velocity_component"
 
 
 __all__ = [

@@ -46,7 +46,7 @@ from ..shared.complexity import (
     normalize_int_with_bounds,
     resolve_chart_complexity_weights,
 )
-from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin
+from ..shared.fixed_query_task import FixedChartQueryVariantTaskMixin, MergedChartQueryVariantTaskMixin
 from ..shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
@@ -58,7 +58,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 TASK_ID = "charts_dashboard_cross_panel_query_base"
 
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "source_rank_target_value",
     "source_rank_difference_value",
     "dual_source_target_sum_value",
@@ -69,7 +69,7 @@ _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("mixed_dashboard",)
 _SUPPORTED_RANK_DIRECTIONS: Tuple[str, ...] = ("largest", "smallest")
 _SUPPORTED_CONDITION_COMPARISONS: Tuple[str, ...] = ("greater_than", "less_than")
 
-SUPPORTED_QUERY_VARIANTS = _SUPPORTED_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS = _SUPPORTED_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS = _SUPPORTED_SCENE_VARIANTS
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "dashboard")
@@ -156,7 +156,7 @@ class _Panel:
 
 @dataclass(frozen=True)
 class _Query:
-    query_variant: str
+    query_id: str
     answer: int | str
     answer_type: str
     evidence_refs: Tuple[Tuple[str, str], ...]
@@ -352,15 +352,15 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
     )
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=_SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -368,11 +368,11 @@ def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=_SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -705,15 +705,15 @@ def _build_query(
     params: Mapping[str, Any],
     *,
     instance_seed: int,
-    query_variant: str,
-    query_variant_probabilities: Mapping[str, float],
+    query_id: str,
+    query_id_probabilities: Mapping[str, float],
     categories: Sequence[_Category],
     panels: Sequence[_Panel],
 ) -> _Query:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query.{query_variant}")
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query.{query_id}")
     panel_ids = [str(panel.panel_id) for panel in panels]
 
-    if str(query_variant) == "source_rank_target_value":
+    if str(query_id) == "source_rank_target_value":
         source_id, target_id = rng.sample(panel_ids, 2)
         source_panel = _panel_by_id(panels, source_id)
         target_panel = _panel_by_id(panels, target_id)
@@ -721,9 +721,9 @@ def _build_query(
         category_id = _ranked_category_id(categories=categories, panel=source_panel, direction=direction, rank_n=rank_n)
         answer = int(target_panel.values_by_category_id[str(category_id)])
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": "mixed_dashboard",
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "source_panel_id": str(source_id),
             "source_panel_name": str(source_panel.name),
             "target_panel_id": str(target_id),
@@ -737,14 +737,14 @@ def _build_query(
             "target_value": int(answer),
         }
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
             evidence_refs=((str(source_id), str(category_id)), (str(target_id), str(category_id))),
             params=query_params,
         )
 
-    if str(query_variant) == "source_rank_difference_value":
+    if str(query_id) == "source_rank_difference_value":
         source_id, target_id = rng.sample(panel_ids, 2)
         source_panel = _panel_by_id(panels, source_id)
         target_panel = _panel_by_id(panels, target_id)
@@ -756,9 +756,9 @@ def _build_query(
         if int(answer) == 0:
             raise ValueError("source-rank difference must be non-zero")
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": "mixed_dashboard",
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "source_panel_id": str(source_id),
             "source_panel_name": str(source_panel.name),
             "target_panel_id": str(target_id),
@@ -773,14 +773,14 @@ def _build_query(
             "absolute_difference": int(answer),
         }
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
             evidence_refs=((str(source_id), str(category_id)), (str(target_id), str(category_id))),
             params=query_params,
         )
 
-    if str(query_variant) == "dual_source_target_sum_value":
+    if str(query_id) == "dual_source_target_sum_value":
         first_source_id, second_source_id, target_id = rng.sample(panel_ids, 3)
         first_source = _panel_by_id(panels, first_source_id)
         second_source = _panel_by_id(panels, second_source_id)
@@ -805,9 +805,9 @@ def _build_query(
         second_target_value = int(target_panel.values_by_category_id[str(second_category_id)])
         answer = int(first_target_value) + int(second_target_value)
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": "mixed_dashboard",
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "first_source_panel_id": str(first_source_id),
             "first_source_panel_name": str(first_source.name),
             "second_source_panel_id": str(second_source_id),
@@ -829,7 +829,7 @@ def _build_query(
             "sum_value": int(answer),
         }
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=int(answer),
             answer_type="integer",
             evidence_refs=(
@@ -841,7 +841,7 @@ def _build_query(
             params=query_params,
         )
 
-    if str(query_variant) == "dual_condition_count":
+    if str(query_id) == "dual_condition_count":
         first_panel_id, second_panel_id = rng.sample(panel_ids, 2)
         first_panel = _panel_by_id(panels, first_panel_id)
         second_panel = _panel_by_id(panels, second_panel_id)
@@ -885,9 +885,9 @@ def _build_query(
             evidence_refs.append((str(first_panel_id), str(category_id)))
             evidence_refs.append((str(second_panel_id), str(category_id)))
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": "mixed_dashboard",
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "first_condition_panel_id": str(first_panel_id),
             "first_condition_panel_name": str(first_panel.name),
             "second_condition_panel_id": str(second_panel_id),
@@ -904,14 +904,14 @@ def _build_query(
             "count_value": int(len(matches)),
         }
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=int(len(matches)),
             answer_type="integer",
             evidence_refs=tuple(evidence_refs),
             params=query_params,
         )
 
-    if str(query_variant) == "panel_gap_extremum_category_label":
+    if str(query_id) == "panel_gap_extremum_category_label":
         first_panel_id, second_panel_id = rng.sample(panel_ids, 2)
         first_panel = _panel_by_id(panels, first_panel_id)
         second_panel = _panel_by_id(panels, second_panel_id)
@@ -938,9 +938,9 @@ def _build_query(
             )
             missing_first = bool(int(rng.randrange(2)) == 0)
             query_params = {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": "mixed_dashboard",
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "first_gap_panel_id": "" if missing_first else str(first_panel_id),
                 "first_gap_panel_name": str(missing_panel_name if missing_first else first_panel.name),
                 "second_gap_panel_id": "" if not missing_first else str(second_panel_id),
@@ -958,7 +958,7 @@ def _build_query(
                 ),
             }
             return _Query(
-                query_variant=str(query_variant),
+                query_id=str(query_id),
                 answer=UNANSWERABLE_ANSWER,
                 answer_type="string",
                 evidence_refs=(),
@@ -983,9 +983,9 @@ def _build_query(
         second_value = int(second_panel.values_by_category_id[str(answer_category.category_id)])
         answer_gap = int(gaps_by_category[str(answer_category.category_id)])
         query_params = {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": "mixed_dashboard",
-            "query_variant_probabilities": dict(query_variant_probabilities),
+            "query_id_probabilities": dict(query_id_probabilities),
             "first_gap_panel_id": str(first_panel_id),
             "first_gap_panel_name": str(first_panel.name),
             "second_gap_panel_id": str(second_panel_id),
@@ -1001,27 +1001,27 @@ def _build_query(
             "answerability": "answerable",
         }
         return _Query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             answer=str(answer_category.label),
             answer_type="string",
             evidence_refs=((str(first_panel_id), str(answer_category.category_id)), (str(second_panel_id), str(answer_category.category_id))),
             params=query_params,
         )
 
-    raise ValueError(f"unsupported query_variant: {query_variant}")
+    raise ValueError(f"unsupported query_id: {query_id}")
 
 
 def _build_dataset(params: Mapping[str, Any], *, instance_seed: int) -> _Dataset:
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
     render_params = _resolve_render_params(render_style_params)
-    query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+    query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
     categories = _sample_categories(params, instance_seed=int(instance_seed), render_params=render_params)
     panels = _sample_panels(params, instance_seed=int(instance_seed), categories=categories)
     query = _build_query(
         params,
         instance_seed=int(instance_seed),
-        query_variant=str(query_variant),
-        query_variant_probabilities=query_variant_probabilities,
+        query_id=str(query_id),
+        query_id_probabilities=query_id_probabilities,
         categories=categories,
         panels=panels,
     )
@@ -1032,7 +1032,7 @@ def _build_dataset(params: Mapping[str, Any], *, instance_seed: int) -> _Dataset
         "panel_kind_list": _join_labels([str(panel.kind) for panel in panels]),
     }
     query = _Query(
-        query_variant=str(query.query_variant),
+        query_id=str(query.query_id),
         answer=query.answer,
         answer_type=str(query.answer_type),
         evidence_refs=tuple(query.evidence_refs),
@@ -1624,13 +1624,13 @@ def _render_dashboard(
 
 def _build_prompt_slots(dataset: _Dataset, prompt_defaults: Mapping[str, Any]) -> Dict[str, str]:
     answer_type = str(dataset.query.answer_type)
-    query_variant = str(dataset.query.query_variant)
+    query_id = str(dataset.query.query_id)
     if answer_type == "string":
         answer_hint = str(prompt_defaults["answer_hint_label"])
         evidence_hint = str(prompt_defaults["evidence_hint_label"])
         json_example = str(prompt_defaults["json_example_label"])
         json_example_answer_only = str(prompt_defaults["json_example_answer_only_label"])
-    elif query_variant == "dual_condition_count":
+    elif query_id == "dual_condition_count":
         answer_hint = str(prompt_defaults["answer_hint_count"])
         evidence_hint = str(prompt_defaults["evidence_hint_count"])
         json_example = str(prompt_defaults["json_example_count"])
@@ -1752,7 +1752,7 @@ class ChartsDashboardCrossPanelQueryTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(dataset.query.query_variant),
+            query_key=str(dataset.query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=_build_prompt_slots(dataset, prompt_defaults),
             instance_seed=int(instance_seed),
@@ -1818,7 +1818,7 @@ class ChartsDashboardCrossPanelQueryTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(len(dataset.categories) * len(dataset.panels), [15, 64]),
-                "reasoning_load": clamp_unit_interval(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_variant)]),
+                "reasoning_load": clamp_unit_interval(_REASONING_LOAD_BY_VARIANT[str(dataset.query.query_id)]),
                 "scene_variant_load": clamp_unit_interval(_SCENE_LOAD_BY_VARIANT[str(dataset.scene_variant)]),
             },
         )
@@ -1827,7 +1827,7 @@ class ChartsDashboardCrossPanelQueryTask:
                 "scene_kind": "chart_mixed_dashboard",
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(dataset.query.query_variant),
+                    "query_id": str(dataset.query.query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "answer": answer_value,
                     "evidence_refs": [list(ref) for ref in evidence_refs],
@@ -1840,7 +1840,7 @@ class ChartsDashboardCrossPanelQueryTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1882,7 +1882,7 @@ class ChartsDashboardCrossPanelQueryTask:
                 },
             },
             "execution_trace": {
-                "query_variant": str(dataset.query.query_variant),
+                "query_id": str(dataset.query.query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "question_format": "dashboard_cross_panel_query",
                 "answer": answer_value,
@@ -1921,31 +1921,23 @@ class ChartsDashboardCrossPanelQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(dataset.query.query_variant),
+            query_id=str(dataset.query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
 @register_task
-class ChartsDashboardSourceRankTargetValueTask(
-    FixedChartQueryVariantTaskMixin,
+class ChartsDashboardSourceRankMetricValueTask(
+    MergedChartQueryVariantTaskMixin,
     ChartsDashboardCrossPanelQueryTask,
 ):
-    """Lookup a target-panel value after ranking categories in a source panel."""
+    """Use source-panel ranks to select target-panel values or differences."""
 
-    task_id = "task_charts__dashboard__source_rank_target_value"
-    fixed_query_variant = "source_rank_target_value"
-
-
-@register_task
-class ChartsDashboardSourceRankDifferenceValueTask(
-    FixedChartQueryVariantTaskMixin,
-    ChartsDashboardCrossPanelQueryTask,
-):
-    """Compute the difference after ranking categories in a source panel."""
-
-    task_id = "task_charts__dashboard__source_rank_difference_value"
-    fixed_query_variant = "source_rank_difference_value"
+    task_id = "task_charts__dashboard__source_rank_metric_value"
+    allowed_query_ids = (
+        "source_rank_target_value",
+        "source_rank_difference_value",
+    )
 
 
 @register_task
@@ -1956,7 +1948,7 @@ class ChartsDashboardDualSourceTargetSumValueTask(
     """Sum target values selected from two source-panel rankings."""
 
     task_id = "task_charts__dashboard__dual_source_target_sum_value"
-    fixed_query_variant = "dual_source_target_sum_value"
+    fixed_query_id = "dual_source_target_sum_value"
 
 
 @register_task
@@ -1967,7 +1959,7 @@ class ChartsDashboardDualConditionCountTask(
     """Count categories satisfying two dashboard panel conditions."""
 
     task_id = "task_charts__dashboard__dual_condition_count"
-    fixed_query_variant = "dual_condition_count"
+    fixed_query_id = "dual_condition_count"
 
 
 @register_task
@@ -1978,7 +1970,7 @@ class ChartsDashboardPanelGapExtremumCategoryLabelTask(
     """Return the category with an extremal gap between two panels."""
 
     task_id = "task_charts__dashboard__panel_gap_extremum_category_label"
-    fixed_query_variant = "panel_gap_extremum_category_label"
+    fixed_query_id = "panel_gap_extremum_category_label"
     supports_unanswerable = True
 
 
@@ -1987,9 +1979,8 @@ __all__ = [
     "ChartsDashboardDualConditionCountTask",
     "ChartsDashboardDualSourceTargetSumValueTask",
     "ChartsDashboardPanelGapExtremumCategoryLabelTask",
-    "ChartsDashboardSourceRankDifferenceValueTask",
-    "ChartsDashboardSourceRankTargetValueTask",
+    "ChartsDashboardSourceRankMetricValueTask",
     "SUPPORTED_SCENE_VARIANTS",
     "SUPPORTED_PANEL_KINDS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

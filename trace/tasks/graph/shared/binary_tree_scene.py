@@ -14,14 +14,14 @@ from .graph_scene import GraphRenderParams, SUPPORTED_NODE_SHAPE_VARIANTS
 from .label_assets import default_graph_label_bucket_weights, resolve_graph_node_labels
 
 
-SUPPORTED_BINARY_TREE_COUNT_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "leaf_node_count",
     "internal_node_count",
     "single_child_node_count",
     "two_child_node_count",
     "depth_level_node_count",
 )
-SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS: Tuple[str, ...] = (
     "preorder_kth_node_label",
     "inorder_kth_node_label",
     "postorder_kth_node_label",
@@ -381,7 +381,7 @@ def _node_type_counts(sample: BinaryTreeSample) -> Dict[str, int]:
 def sample_binary_tree_for_count_query(
     instance_seed: int,
     *,
-    query_variant: str,
+    query_id: str,
     target_count: int,
     target_depth: int | None,
     node_count_min: int,
@@ -393,9 +393,9 @@ def sample_binary_tree_for_count_query(
 ) -> BinaryTreeSample:
     """Sample a binary tree whose selected count query has the requested answer."""
 
-    query = str(query_variant)
-    if query not in set(SUPPORTED_BINARY_TREE_COUNT_QUERY_VARIANTS):
-        raise ValueError(f"unsupported binary-tree count query_variant: {query_variant}")
+    query = str(query_id)
+    if query not in set(SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS):
+        raise ValueError(f"unsupported binary-tree count query_id: {query_id}")
     target = int(target_count)
     if target < 0:
         raise ValueError("target_count must be non-negative")
@@ -525,10 +525,10 @@ def sample_binary_tree_for_traversal_query(
     raise ValueError("could not sample binary tree for traversal query")
 
 
-def traversal_labels_for_query(sample: BinaryTreeSample, query_variant: str) -> Tuple[str, ...]:
-    """Return the ordered labels for one traversal query variant."""
+def traversal_labels_for_query(sample: BinaryTreeSample, query_id: str) -> Tuple[str, ...]:
+    """Return the ordered labels for one traversal query id."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query == "preorder_kth_node_label":
         return tuple(sample.preorder_labels)
     if query == "inorder_kth_node_label":
@@ -537,18 +537,18 @@ def traversal_labels_for_query(sample: BinaryTreeSample, query_variant: str) -> 
         return tuple(sample.postorder_labels)
     if query == "level_order_kth_node_label":
         return tuple(sample.level_order_labels)
-    raise ValueError(f"unsupported traversal query_variant: {query_variant}")
+    raise ValueError(f"unsupported traversal query_id: {query_id}")
 
 
 def target_labels_for_count_query(
     sample: BinaryTreeSample,
     *,
-    query_variant: str,
+    query_id: str,
     target_depth: int | None = None,
 ) -> Tuple[str, ...]:
     """Return labels counted by one binary-tree count query."""
 
-    query = str(query_variant)
+    query = str(query_id)
     labels: List[str] = []
     for node in sample.nodes:
         child_count = int(node.left_id is not None) + int(node.right_id is not None)
@@ -870,9 +870,9 @@ def render_binary_tree_scene(
 __all__ = [
     "BinaryTreeSample",
     "RenderedBinaryTreeScene",
-    "SUPPORTED_BINARY_TREE_COUNT_QUERY_VARIANTS",
+    "SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS",
     "SUPPORTED_BINARY_TREE_SCENE_VARIANTS",
-    "SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_VARIANTS",
+    "SUPPORTED_BINARY_TREE_TRAVERSAL_QUERY_IDS",
     "projected_binary_tree_bbox_evidence",
     "render_binary_tree_scene",
     "sample_binary_tree_for_count_query",

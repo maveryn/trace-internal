@@ -51,7 +51,7 @@ from ..shared.object_resources import (
 
 TASK_ID = "task_three_d__object_scene__camera_distance_extremum_label"
 SCENE_ID = "object_scene"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("closest_to_camera", "farthest_from_camera")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_camera", "farthest_from_camera")
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("floor_grid_room", "tabletop_room", "studio_platform")
 POINT_LABELS: Tuple[str, ...] = tuple("ABCDEFGH")
 SMALL_OBJECT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES
@@ -672,7 +672,7 @@ def _sample_scene_object_specs(
 
 def _build_scene_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     context_object_count: int,
@@ -747,11 +747,11 @@ def _build_scene_dataset(
             )
             finalized_context_specs.append(finalized)
         pre_label_sorted_by_distance = sorted(finalized_specs, key=lambda spec: (float(spec["camera_distance"]), str(spec["object_id"])))
-        if str(query_variant) == "closest_to_camera":
+        if str(query_id) == "closest_to_camera":
             answer_object_id = str(pre_label_sorted_by_distance[0]["object_id"])
         else:
             answer_object_id = str(pre_label_sorted_by_distance[-1]["object_id"])
-        query_offset = 0 if str(query_variant) == "closest_to_camera" else 3
+        query_offset = 0 if str(query_id) == "closest_to_camera" else 3
         answer_label_index = abs(int(instance_seed) + int(query_offset)) % int(point_count)
         answer_label = str(POINT_LABELS[answer_label_index])
         remaining_labels = [str(label) for label in POINT_LABELS[: int(point_count)] if str(label) != answer_label]
@@ -773,7 +773,7 @@ def _build_scene_dataset(
         sorted_by_distance = sorted(finalized_specs, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
         answer_spec = next(spec for spec in finalized_specs if str(spec["point_label"]) == str(answer_label))
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
@@ -4680,7 +4680,7 @@ def render_object_scene_3d(
 
 def _build_complexity(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     distance_margin: float,
@@ -4698,7 +4698,7 @@ def _build_complexity(
     total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
     components = {
         "visual_scan": _normalize_unit(int(point_count), 4, 8),
-        "depth_reasoning": 0.52 if str(query_variant) == "closest_to_camera" else 0.58,
+        "depth_reasoning": 0.52 if str(query_id) == "closest_to_camera" else 0.58,
         "ambiguity": 1.0 - _normalize_unit(float(distance_margin), 0.42, 1.4),
         "scene_variant_load": {
             "floor_grid_room": 0.28,
@@ -4760,16 +4760,16 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
         params: Dict[str, Any],
         camera_yaw_band: Tuple[float, float] | None = None,
     ) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -4794,7 +4794,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_scene_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             context_object_count=int(context_object_count),
@@ -4839,7 +4839,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -4860,7 +4860,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             distance_margin=float(solver_trace.get("unique_camera_distance_margin", 0.42)),
@@ -4894,15 +4894,14 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "point_count": int(point_count),
@@ -4936,8 +4935,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "point_count": int(point_count),
                 "candidate_count": int(point_count),
@@ -4950,7 +4948,7 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
                 "answer_point_id": str(dataset["answer_point_id"]),
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_scene",
                 "solver_trace": dict(solver_trace),
             },
@@ -4975,9 +4973,8 @@ class ThreeDSpatialCameraDistanceExtremumLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

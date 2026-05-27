@@ -9,7 +9,7 @@ generation:
     safe_board_size_variant_weights:
       square_5x5: 1.0
       square_6x6: 1.0
-    query_variant_weights:
+    query_id_weights:
       winning_move_count: 1.0
       safe_move_count: 1.0
     style_variant_weights:
@@ -22,7 +22,7 @@ generation:
     balanced_scene_variant_sampling: true
     balanced_board_size_variant_sampling: true
     balanced_safe_board_size_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     winning_move_count_support:

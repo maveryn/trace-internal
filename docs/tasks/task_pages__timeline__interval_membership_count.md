@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: count timeline events inside or outside the interval defined by two highlighted reference events.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `between_reference_events_count` or `outside_reference_interval_count`
 4. Answer type: `integer`
 5. Evidence type: `bbox_set` over the event cards that satisfy the interval relation.

@@ -32,7 +32,7 @@ def test_feature_side_object_count_contracts() -> None:
         execution = trace["execution_trace"]
         render_map = trace["render_map"]
         assert out.scene_id == "environment"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == "feature_side_object_count"
         assert execution["theme_id"] == theme_id
         assert execution["feature_type"] == feature_type

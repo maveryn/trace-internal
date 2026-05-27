@@ -3,18 +3,18 @@
     "charts": {
       "blocking_counts": {},
       "gap_counts": {
-        "plans_task_review_workbook_missing": 100,
-        "solve_rate_artifact_missing": 100
+        "plans_task_review_workbook_missing": 93,
+        "solve_rate_artifact_missing": 93
       },
       "scene_count": 33,
       "scenes": {
         "area": 3,
-        "bar_3d": 3,
+        "bar_3d": 2,
         "boxplot": 3,
         "candlestick": 2,
         "combo_mark": 5,
         "curve_panels": 5,
-        "dashboard": 5,
+        "dashboard": 4,
         "dumbbell": 2,
         "error_interval": 2,
         "heatmap": 3,
@@ -23,12 +23,12 @@
         "matrix": 2,
         "multiseries": 3,
         "parallel_coords": 3,
-        "part_whole": 4,
-        "pictogram": 3,
+        "part_whole": 2,
+        "pictogram": 2,
         "radar": 3,
         "radial_progress": 1,
         "radial_sankey": 2,
-        "region_map": 5,
+        "region_map": 4,
         "sankey": 2,
         "scatter_cluster": 2,
         "scatter_readout": 2,
@@ -39,13 +39,13 @@
         "surface_3d": 4,
         "table": 4,
         "treemap": 2,
-        "violin": 2,
+        "violin": 1,
         "waterfall": 3
       },
       "status_counts": {
-        "audit_gap": 100
+        "audit_gap": 93
       },
-      "task_count": 100
+      "task_count": 93
     },
     "games": {
       "blocking_counts": {},
@@ -358,26 +358,26 @@
       "missing_default_rows": [],
       "missing_default_rows_count": 0,
       "path": "plans/task-reviews/REVIEW_STATUS.md",
-      "row_count": 487,
+      "row_count": 480,
       "rows_not_default": [],
       "rows_not_default_count": 0
     }
   },
   "summary": {
     "blocking_counts": {},
-    "default_task_count": 487,
+    "default_task_count": 480,
     "domain_count": 10,
     "gap_counts": {
-      "plans_task_review_workbook_missing": 487,
-      "solve_rate_artifact_missing": 487
+      "plans_task_review_workbook_missing": 480,
+      "solve_rate_artifact_missing": 480
     },
     "invalid_default_ids": [],
     "invalid_default_ids_count": 0,
     "missing_taxonomy": [],
     "missing_taxonomy_count": 0,
-    "registered_task_count": 487,
+    "registered_task_count": 480,
     "status_counts": {
-      "audit_gap": 487
+      "audit_gap": 480
     }
   },
   "tasks": [
@@ -588,7 +588,9 @@
           "configs/domains/charts/three_d_bar.yaml"
         ],
         "has_group_or_base_config": true,
-        "task_id_mentions": []
+        "task_id_mentions": [
+          "configs/domains/charts/three_d_bar.yaml"
+        ]
       },
       "default_enabled": true,
       "docs": {
@@ -597,7 +599,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__bar_3d__axis_gap_value.md"
+        "task_doc_path": "docs/tasks/task_charts__bar_3d__axis_aggregate_value.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -631,73 +633,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "three_d_bar",
-      "task_id": "task_charts__bar_3d__axis_gap_value",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": [
-          "tests/test_charts_three_d_bar_tasks.py"
-        ]
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/three_d_bar.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": [
-          "configs/domains/charts/three_d_bar.yaml"
-        ]
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__bar_3d__axis_total_value.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "bar_3d",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "three_d_bar",
-      "task_id": "task_charts__bar_3d__axis_total_value",
+      "task_id": "task_charts__bar_3d__axis_aggregate_value",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": [
@@ -1937,7 +1873,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__dashboard__source_rank_difference_value.md"
+        "task_doc_path": "docs/tasks/task_charts__dashboard__source_rank_metric_value.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -1971,69 +1907,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "dashboard",
-      "task_id": "task_charts__dashboard__source_rank_difference_value",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": []
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/dashboard.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": []
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__dashboard__source_rank_target_value.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "dashboard",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "dashboard",
-      "task_id": "task_charts__dashboard__source_rank_target_value",
+      "task_id": "task_charts__dashboard__source_rank_metric_value",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": [
@@ -3317,7 +3191,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__part_whole__order_count_conversion_value.md"
+        "task_doc_path": "docs/tasks/task_charts__part_whole__ordered_segment_value.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -3351,139 +3225,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "composition",
-      "task_id": "task_charts__part_whole__order_count_conversion_value",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": [
-          "tests/test_charts_composition_tasks.py"
-        ]
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/composition.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": [
-          "configs/domains/charts/composition.yaml"
-        ]
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__part_whole__order_sector_angle_value.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "part_whole",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "composition",
-      "task_id": "task_charts__part_whole__order_sector_angle_value",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": [
-          "tests/test_charts_composition_tasks.py"
-        ]
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/composition.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": [
-          "configs/domains/charts/composition.yaml"
-        ]
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__part_whole__order_share_sum_value.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "part_whole",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "composition",
-      "task_id": "task_charts__part_whole__order_share_sum_value",
+      "task_id": "task_charts__part_whole__ordered_segment_value",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": [
@@ -3513,7 +3255,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__pictogram__category_total_value.md"
+        "task_doc_path": "docs/tasks/task_charts__pictogram__group_arithmetic_value.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -3547,69 +3289,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "pictogram",
-      "task_id": "task_charts__pictogram__category_total_value",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": []
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/pictogram.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": []
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__pictogram__group_difference_value.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "pictogram",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "pictogram",
-      "task_id": "task_charts__pictogram__group_difference_value",
+      "task_id": "task_charts__pictogram__group_arithmetic_value",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": []
@@ -4265,7 +3945,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__region_map__region_category_count.md"
+        "task_doc_path": "docs/tasks/task_charts__region_map__legend_predicate_region_count.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -4299,71 +3979,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "map",
-      "task_id": "task_charts__region_map__region_category_count",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": []
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/map.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": [
-          "configs/domains/charts/map.yaml"
-        ]
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__region_map__region_value_count.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "region_map",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "map",
-      "task_id": "task_charts__region_map__region_value_count",
+      "task_id": "task_charts__region_map__legend_predicate_region_count",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": []
@@ -6428,7 +6044,7 @@
         "domain_skill_exists": true,
         "task_doc_exists": true,
         "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__violin__feature_extremum_label.md"
+        "task_doc_path": "docs/tasks/task_charts__violin__distribution_feature_label.md"
       },
       "domain": "charts",
       "domain_active": true,
@@ -6462,69 +6078,7 @@
       },
       "source_domain": "charts",
       "source_task_group": "distribution",
-      "task_id": "task_charts__violin__feature_extremum_label",
-      "taxonomy_present": true,
-      "tests": {
-        "task_id_mentions": []
-      }
-    },
-    {
-      "audit_gaps": [
-        "plans_task_review_workbook_missing",
-        "solve_rate_artifact_missing"
-      ],
-      "audit_status": "audit_gap",
-      "blocking_issues": [],
-      "configs": {
-        "config_paths": [
-          "configs/domains/charts/base.yaml",
-          "configs/domains/charts/distribution.yaml"
-        ],
-        "has_group_or_base_config": true,
-        "task_id_mentions": []
-      },
-      "default_enabled": true,
-      "docs": {
-        "domain_doc_exists": true,
-        "domain_doc_path": "docs/domains/CHART_TASK_SETUP.md",
-        "domain_skill_exists": true,
-        "task_doc_exists": true,
-        "task_doc_indexed": true,
-        "task_doc_path": "docs/tasks/task_charts__violin__shape_feature_label.md"
-      },
-      "domain": "charts",
-      "domain_active": true,
-      "global_contract_test": {
-        "exists": true,
-        "path": "tests/test_active_default_task_contracts.py"
-      },
-      "progress_summary": {
-        "artifacts": "",
-        "band": "n/a",
-        "easy": "n/a",
-        "hard": "n/a",
-        "notes": "fresh v0 task review, distribution check, and solve-rate calibration pending",
-        "section": "Charts",
-        "status": "pending_v0_review"
-      },
-      "prompts": {
-        "missing_template_paths_from_smoke": [],
-        "task_id_mentions": [],
-        "template_paths_from_smoke": []
-      },
-      "registered": true,
-      "review_artifacts": {
-        "plans_review_workbooks": [],
-        "plans_solve_workbooks": []
-      },
-      "scene_id": "violin",
-      "smoke": {
-        "ok": null,
-        "skipped": true
-      },
-      "source_domain": "charts",
-      "source_task_group": "distribution",
-      "task_id": "task_charts__violin__shape_feature_label",
+      "task_id": "task_charts__violin__distribution_feature_label",
       "taxonomy_present": true,
       "tests": {
         "task_id_mentions": []
@@ -17679,7 +17233,9 @@
           "configs/domains/graph/counting.yaml"
         ],
         "has_group_or_base_config": true,
-        "task_id_mentions": []
+        "task_id_mentions": [
+          "configs/domains/graph/counting.yaml"
+        ]
       },
       "default_enabled": true,
       "docs": {
@@ -18014,7 +17570,9 @@
           "configs/domains/graph/relation.yaml"
         ],
         "has_group_or_base_config": true,
-        "task_id_mentions": []
+        "task_id_mentions": [
+          "configs/domains/graph/relation.yaml"
+        ]
       },
       "default_enabled": true,
       "docs": {
@@ -18624,7 +18182,9 @@
           "configs/domains/graph/optimization.yaml"
         ],
         "has_group_or_base_config": true,
-        "task_id_mentions": []
+        "task_id_mentions": [
+          "configs/domains/graph/optimization.yaml"
+        ]
       },
       "default_enabled": true,
       "docs": {

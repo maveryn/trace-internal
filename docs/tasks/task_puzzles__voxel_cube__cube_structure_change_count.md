@@ -7,7 +7,7 @@
 4. Objective: count the cube delta between two related isometric cube structures.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `cube_structure_change_count`
 3. Supported query parameter: `change_type=missing_to_complete|removed`
 4. Supported `scene_variant` values: `stack_strip`, `stack_card`, `stack_outline`
@@ -29,6 +29,6 @@
 
 ## 4) Evidence + Trace Contract
 1. Evidence is exactly two bboxes for the left and right structures.
-2. `execution_trace.internal_query_variant` records the selected change query.
+2. `execution_trace.internal_query_id` records the selected change query.
 3. Height grids, cube coordinate records, missing/removed cube coordinates, cube color, answer support, and supporting structure ids are recorded.
 4. Prompt-facing evidence is projected from structure ids, not inferred from pixels.

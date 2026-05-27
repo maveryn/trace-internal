@@ -172,12 +172,12 @@ def occupied_cells_from_stack(stack: CubeStack) -> Tuple[CubeCell, ...]:
     return tuple(cells)
 
 
-def projected_view_cells(stack: CubeStack, *, query_variant: str) -> Tuple[ViewCell, ...]:
+def projected_view_cells(stack: CubeStack, *, query_id: str) -> Tuple[ViewCell, ...]:
     """Return normalized orthographic occupied cells for one requested query view."""
 
     occupied = set(occupied_cells_from_stack(stack))
     raw_cells: set[ViewCell] = set()
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     if normalized_query == TOP_VIEW_QUERY:
         for (x_value, y_value), _height in stack.heights.items():
             row = int(stack.depth - 1 - int(y_value))
@@ -201,7 +201,7 @@ def projected_view_cells(stack: CubeStack, *, query_variant: str) -> Tuple[ViewC
                 row = int(stack.max_height - 1 - int(z_value))
                 raw_cells.add((int(y_value), int(row)))
     else:
-        raise ValueError(f"unsupported solid-view query_variant: {query_variant}")
+        raise ValueError(f"unsupported solid-view query_id: {query_id}")
     if not raw_cells:
         return tuple()
     min_col = min(int(cell[0]) for cell in raw_cells)
@@ -213,10 +213,10 @@ def projected_view_cells(stack: CubeStack, *, query_variant: str) -> Tuple[ViewC
     return tuple(sorted(normalized_cells, key=lambda item: (int(item[1]), int(item[0]))))
 
 
-def view_grid_dimensions(stack: CubeStack, *, query_variant: str) -> Tuple[int, int]:
+def view_grid_dimensions(stack: CubeStack, *, query_id: str) -> Tuple[int, int]:
     """Return orthographic grid width/height for one query view."""
 
-    cells = projected_view_cells(stack, query_variant=str(query_variant))
+    cells = projected_view_cells(stack, query_id=str(query_id))
     if not cells:
         raise ValueError("solid-view grid dimensions require at least one occupied projected cell")
     max_col = max(int(cell[0]) for cell in cells)
@@ -224,7 +224,7 @@ def view_grid_dimensions(stack: CubeStack, *, query_variant: str) -> Tuple[int, 
     return (int(max_col + 1), int(max_row + 1))
 
 
-def view_title_for_query(query_variant: str) -> str:
+def view_title_for_query(query_id: str) -> str:
     """Return the human-readable panel title for one query view."""
 
     title_map = {
@@ -232,9 +232,9 @@ def view_title_for_query(query_variant: str) -> str:
         FRONT_VIEW_QUERY: "Front view",
         RIGHT_VIEW_QUERY: "Right view",
     }
-    normalized_query = str(query_variant).strip().lower()
+    normalized_query = str(query_id).strip().lower()
     if normalized_query not in title_map:
-        raise ValueError(f"unsupported solid-view query_variant: {query_variant}")
+        raise ValueError(f"unsupported solid-view query_id: {query_id}")
     return str(title_map[normalized_query])
 
 

@@ -6,9 +6,9 @@ generation:
     reference_value_max: 62
     reference_answer_count_min: 1
     reference_answer_count_max: 5
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
-    query_variant_weights:
+    query_id_weights:
       contains_reference_count: 1.0
       entirely_above_reference_count: 1.0
       entirely_below_reference_count: 1.0

@@ -470,14 +470,14 @@ def _sample_query_id(
 ) -> str:
     allowed = tuple(str(value) for value in allowed_query_ids)
     allowed_set = set(allowed)
-    explicit = params.get("query_id", params.get("query_variant", params.get("query_variant")))
+    explicit = params.get("query_id")
     if explicit is not None and str(explicit) != "default":
         query_id = str(explicit)
         if query_id not in allowed_set:
             raise ValueError(f"unsupported 3D bar query_id for this public task: {query_id}")
         return query_id
     rng = spawn_rng(int(instance_seed), "charts.three_d_bar.query_id")
-    raw_weights = params.get("query_variant_weights", params.get("query_variant_weights"))
+    raw_weights = params.get("query_id_weights", params.get("query_id_weights"))
     if isinstance(raw_weights, Mapping):
         weights = [max(0.0, float(raw_weights.get(query_id, 0.0))) for query_id in allowed]
         if sum(weights) > 0.0:
@@ -1303,9 +1303,7 @@ class ChartsThreeDBarGridQueryTask:
             for x_label in dataset.x_labels
         }
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
             "public_task_id": str(self.task_id),
             "category_count": int(len(dataset.x_labels)),
             "series_count": int(len(dataset.series_labels)),
@@ -1323,9 +1321,7 @@ class ChartsThreeDBarGridQueryTask:
                 "relations": dict(query_params),
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_variant),
                 "prompt_variant_active_key": str(active_prompt_key),
@@ -1352,9 +1348,7 @@ class ChartsThreeDBarGridQueryTask:
                 "legend_traces": [dict(trace) for trace in rendered.legend_traces],
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "answer_value": int(dataset.query.answer),
                 "question_format": "numeric_open",
                 "values_by_category": dict(values_by_category),
@@ -1394,7 +1388,6 @@ class ChartsThreeDBarGridQueryTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),
@@ -1422,20 +1415,11 @@ class ChartsThreeDBarGridQueryTask:
 
 
 @register_task
-class ChartsThreeDBarAxisTotalValueTask(ChartsThreeDBarGridQueryTask):
-    """Compute a total over one category or series slice in a 3D bar chart."""
+class ChartsThreeDBarAxisAggregateValueTask(ChartsThreeDBarGridQueryTask):
+    """Compute totals or gaps over comparable slices in a 3D bar chart."""
 
-    task_id = "task_charts__bar_3d__axis_total_value"
-    allowed_query_ids = AXIS_TOTAL_QUERY_IDS
-    default_dataset_enabled = True
-
-
-@register_task
-class ChartsThreeDBarAxisGapValueTask(ChartsThreeDBarGridQueryTask):
-    """Compute a gap between comparable slices in a 3D bar chart."""
-
-    task_id = "task_charts__bar_3d__axis_gap_value"
-    allowed_query_ids = AXIS_GAP_QUERY_IDS
+    task_id = "task_charts__bar_3d__axis_aggregate_value"
+    allowed_query_ids = AXIS_TOTAL_QUERY_IDS + AXIS_GAP_QUERY_IDS
     default_dataset_enabled = True
 
 
@@ -1449,8 +1433,7 @@ class ChartsThreeDBarConditionCountTask(ChartsThreeDBarGridQueryTask):
 
 
 __all__ = [
-    "ChartsThreeDBarAxisGapValueTask",
-    "ChartsThreeDBarAxisTotalValueTask",
+    "ChartsThreeDBarAxisAggregateValueTask",
     "ChartsThreeDBarConditionCountTask",
     "ChartsThreeDBarGridQueryTask",
 ]

@@ -114,7 +114,7 @@ def test_book_orientation_count_contract() -> None:
 
     assert out.scene_id == "library"
     assert out.query_id == "horizontal_book_in_section_count"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert int(out.answer_gt.value) == 3
     assert len(counted_book_ids) == 3
     assert execution["target_section_key"] == "art"

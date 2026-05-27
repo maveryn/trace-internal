@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       single_board: 1.0
-    query_variant_weights:
+    query_id_weights:
       total_score: 1.0
       ring_count: 1.0
       threshold_score_count: 1.0
@@ -16,7 +16,7 @@ generation:
       triple: 1.0
       bull: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
     balanced_dart_count_sampling: true

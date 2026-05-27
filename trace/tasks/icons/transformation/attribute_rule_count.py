@@ -52,7 +52,7 @@ _RULE_ATTRIBUTES: Dict[str, Tuple[str, ...]] = {
     "size_only_change": ("size",),
     "color_and_size_change": ("color", "size"),
 }
-_PUBLIC_QUERY_VARIANT = "default"
+_PUBLIC_QUERY_ID = "default"
 
 
 @dataclass(frozen=True)
@@ -188,9 +188,9 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
     """Resolve one color/size attribute-rule query."""
 
     supported = tuple(str(rule) for rule in _ATTRIBUTE_RULES)
-    explicit = params.get("attribute_rule", params.get("query_variant"))
-    if explicit is None and params.get("query_variant") is not None and str(params.get("query_variant")) != _PUBLIC_QUERY_VARIANT:
-        explicit = params.get("query_variant")
+    explicit = params.get("attribute_rule", params.get("query_id"))
+    if explicit is None and params.get("query_id") is not None and str(params.get("query_id")) != _PUBLIC_QUERY_ID:
+        explicit = params.get("query_id")
     if explicit is not None:
         selected = str(explicit).strip()
         if selected not in set(supported):
@@ -199,7 +199,7 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
 
     raw_weights = params.get(
         "attribute_rule_weights",
-        params.get("query_variant_weights", group_default(_GEN_DEFAULTS, "attribute_rule_weights", _DEFAULTS.attribute_rule_weights)),
+        params.get("query_id_weights", group_default(_GEN_DEFAULTS, "attribute_rule_weights", _DEFAULTS.attribute_rule_weights)),
     )
     if not isinstance(raw_weights, Mapping):
         raise ValueError("attribute_rule_weights must be a mapping when provided")
@@ -216,7 +216,7 @@ def _resolve_attribute_rule(rng, *, params: Mapping[str, Any], instance_seed: in
     )
     overridden = any(
         key in params and params.get(key) is not None
-        for key in ("attribute_rule", "query_variant", "query_variant", "attribute_rule_weights", "query_variant_weights")
+        for key in ("attribute_rule", "query_id", "query_id", "attribute_rule_weights", "query_id_weights")
     )
     if bool(enabled) and (not overridden):
         positives = [rule for rule in supported if float(probabilities.get(rule, 0.0)) > 0.0]
@@ -712,7 +712,7 @@ class IconsTransformationPairAttributeRuleCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(scene_payload.attribute_rule),
+                "query_id": str(scene_payload.attribute_rule),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -752,7 +752,7 @@ class IconsTransformationPairAttributeRuleCountTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_pair_grid",
-                "query_variant": str(scene_payload.attribute_rule),
+                "query_id": str(scene_payload.attribute_rule),
                 "attribute_rule": str(scene_payload.attribute_rule),
                 "changed_attributes": list(_RULE_ATTRIBUTES[str(scene_payload.attribute_rule)]),
                 "attribute_rule_probabilities": dict(attribute_rule_probabilities),
@@ -796,7 +796,7 @@ class IconsTransformationPairAttributeRuleCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(scene_payload.attribute_rule),
+            query_id=str(scene_payload.attribute_rule),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

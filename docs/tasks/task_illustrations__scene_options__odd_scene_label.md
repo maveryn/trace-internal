@@ -1,6 +1,6 @@
 # task_illustrations__scene_options__odd_scene_label
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -15,14 +15,14 @@ the same illustration source query. Five panels contain the same number of the
 named target, and one panel contains a different number. The query asks for the
 label of the odd panel.
 
-The public query id is `odd_scene_label`.
+The task records `query_id=odd_scene_label`.
 
 ## Answer And Evidence
 - `answer_gt.type = option_letter`
 - `evidence_gt.type = bbox_set`
 - evidence contains one final-image pixel bbox around the selected odd panel
 
-Source panels are sampled from accepted illustration scene renderers using
+Source panels are sampled from current illustration scene renderers using
 controlled target-count overrides. The verifier source of truth is the sampled
 odd option and its target count, not pixel analysis. Default source queries use
 environment, park/playground, and construction-site canvases.

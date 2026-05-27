@@ -18,11 +18,11 @@ def test_games_match3_defaults_expose_axes_and_prompt_bundle() -> None:
     )
 
     assert set(generation["scene_variant_weights"].keys()) == {"square_board", "wide_board", "tall_board"}
-    assert set(generation["effect_value_query_variant_weights"].keys()) == {
+    assert set(generation["effect_value_query_id_weights"].keys()) == {
         "cleared_count_after_marked_swap",
         "created_run_count_after_marked_swap",
     }
-    assert set(generation["best_swap_query_variant_weights"].keys()) == {
+    assert set(generation["best_swap_query_id_weights"].keys()) == {
         "max_clear_swap_label",
         "target_clear_swap_label",
     }
@@ -78,7 +78,7 @@ def test_games_match3_best_swap_uses_easier_task_override() -> None:
 def test_games_match3_max_clear_label_has_unique_answer() -> None:
     out = create_task("task_games__match3__best_swap_label").generate(
         71231,
-        params={"query_variant": "max_clear_swap_label", "option_count": 5},
+        params={"query_id": "max_clear_swap_label", "option_count": 5},
         max_attempts=300,
     )
     options = out.trace_payload["execution_trace"]["swap_options"]
@@ -87,7 +87,7 @@ def test_games_match3_max_clear_label_has_unique_answer() -> None:
 
     assert out.answer_gt.type == "string"
     assert answers == [str(out.answer_gt.value)]
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == "match3"
     assert out.query_id == "max_clear_swap_label"
     assert len(out.evidence_gt.value) >= 1
@@ -96,7 +96,7 @@ def test_games_match3_max_clear_label_has_unique_answer() -> None:
 def test_games_match3_target_clear_label_has_unique_answer() -> None:
     out = create_task("task_games__match3__best_swap_label").generate(
         71241,
-        params={"query_variant": "target_clear_swap_label", "target_answer": 3},
+        params={"query_id": "target_clear_swap_label", "target_answer": 3},
         max_attempts=300,
     )
     options = out.trace_payload["execution_trace"]["swap_options"]
@@ -111,7 +111,7 @@ def test_games_match3_target_clear_label_has_unique_answer() -> None:
 def test_games_match3_marked_clear_count_matches_trace() -> None:
     out = create_task("task_games__match3__swap_effect_value").generate(
         71251,
-        params={"query_variant": "cleared_count_after_marked_swap", "target_answer": 4},
+        params={"query_id": "cleared_count_after_marked_swap", "target_answer": 4},
         max_attempts=300,
     )
     marked = out.trace_payload["execution_trace"]["marked_outcome"]
@@ -120,14 +120,14 @@ def test_games_match3_marked_clear_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == 4
     assert int(marked["clear_count"]) == 4
     assert out.query_id == "cleared_count_after_marked_swap"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
 
 def test_games_match3_marked_run_count_matches_trace() -> None:
     out = create_task("task_games__match3__swap_effect_value").generate(
         71261,
-        params={"query_variant": "created_run_count_after_marked_swap", "target_answer": 2},
+        params={"query_id": "created_run_count_after_marked_swap", "target_answer": 2},
         max_attempts=300,
     )
     marked = out.trace_payload["execution_trace"]["marked_outcome"]

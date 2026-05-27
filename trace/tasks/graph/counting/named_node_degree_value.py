@@ -656,13 +656,13 @@ class GraphCountingNamedNodeDegreeValueTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
+                "query_id": "default",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
+                    "query_id": "default",
                     "graph_directionality": str(query.graph_directionality),
                     "graph_directionality_probabilities": dict(query.graph_directionality_probabilities),
                     "degree_mode": str(query.degree_mode),
@@ -725,7 +725,7 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "anchors": {},
             },
             "execution_trace": {
-                "query_variant": "default",
+                "query_id": "default",
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": f"named_node_{str(query.degree_mode)}_value",
                 "graph_directionality": str(query.graph_directionality),
@@ -779,7 +779,6 @@ class GraphCountingNamedNodeDegreeValueTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant="default",
                 scene_id="node_link",
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
             ),

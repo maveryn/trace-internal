@@ -27,12 +27,12 @@ from ...shared.text_rendering import load_font
 from ..shared.complexity import build_games_snake_grid_complexity
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.snake_common import (
     DIRECTION_NAMES,
     PLANNED_MOVE_OUTCOMES,
-    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS,
-    SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_VARIANTS,
+    SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS,
+    SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS,
     SUPPORTED_SNAKE_SCENE_VARIANTS,
     SUPPORTED_SNAKE_STYLE_VARIANTS,
     Coord,
@@ -82,7 +82,7 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Snake instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board_size: int
@@ -91,7 +91,7 @@ class _ResolvedAxes:
     obstacle_count: int
     target_safe_direction_count: int | None
     target_planned_outcome: str | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     board_size_probabilities: Dict[str, float]
@@ -112,29 +112,29 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="snak
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="snake", apply_prob=0.5)
 
 
-def _public_answer_for_query(query_variant: str, raw_answer: str | int) -> str | int:
+def _public_answer_for_query(query_id: str, raw_answer: str | int) -> str | int:
     """Return the public answer value for one Snake query."""
 
-    query = str(query_variant)
+    query = str(query_id)
     if query == "path_result_option_label":
         return str(raw_answer)
     return int(raw_answer)
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Snake query variant."""
+    """Resolve one balanced Snake query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=tuple(str(value) for value in supported_query_variants),
+        supported_variants=tuple(str(value) for value in supported_query_ids),
     )
 
 
@@ -244,16 +244,16 @@ def _uses_uniform_query_cycle(
     params: Mapping[str, Any],
     probabilities: Mapping[str, float],
     *,
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
-    if not bool(params.get("balanced_query_variant_sampling", group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True))):
+    if not bool(params.get("balanced_query_id_sampling", group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True))):
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(tuple(supported_query_variants)):
+    if len(positives) != len(tuple(supported_query_ids)):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -261,8 +261,8 @@ def _uses_uniform_query_cycle(
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
-    supported_query_variants: Sequence[str],
+    query_id_probabilities: Mapping[str, float],
+    supported_query_ids: Sequence[str],
 ) -> Dict[str, Any]:
     """Cycle answer targets within each query rather than across all queries."""
 
@@ -272,11 +272,11 @@ def _params_for_query_occurrence_cycle(
         return cycle_params
     if not _uses_uniform_query_cycle(
         params,
-        query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     ):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_variants)))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(tuple(supported_query_ids)))
     return cycle_params
 
 
@@ -284,19 +284,19 @@ def _resolve_axes(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    supported_query_variants: Sequence[str],
+    supported_query_ids: Sequence[str],
 ) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Snake instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        supported_query_variants=supported_query_variants,
+        supported_query_ids=supported_query_ids,
     )
     cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
-        supported_query_variants=supported_query_variants,
+        query_id_probabilities=query_id_probabilities,
+        supported_query_ids=supported_query_ids,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -366,7 +366,7 @@ def _resolve_axes(
     target_planned_outcome: str | None = None
     target_planned_outcome_probabilities: Dict[str, float] = {}
 
-    if str(query_variant) == "safe_direction_count":
+    if str(query_id) == "safe_direction_count":
         target_safe_direction_count, target_safe_direction_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=cycle_params,
@@ -378,14 +378,14 @@ def _resolve_axes(
             balanced_flag_key="balanced_safe_direction_count_sampling",
             namespace_support_permutation=True,
         )
-    elif str(query_variant) == "path_result_option_label":
+    elif str(query_id) == "path_result_option_label":
         target_planned_outcome, target_planned_outcome_probabilities = _resolve_path_result_choice(
             instance_seed=int(instance_seed),
             params=cycle_params,
         )
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         board_size=int(board_size),
@@ -394,7 +394,7 @@ def _resolve_axes(
         obstacle_count=int(obstacle_count),
         target_safe_direction_count=None if target_safe_direction_count is None else int(target_safe_direction_count),
         target_planned_outcome=None if target_planned_outcome is None else str(target_planned_outcome),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         board_size_probabilities=dict(board_size_probabilities),
@@ -570,7 +570,7 @@ def _sample_safe_direction_count(*, rng: Any, axes: _ResolvedAxes) -> SnakeSampl
         if len(safe_directions) != target:
             continue
         sample = SnakeSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=int(len(safe_directions)),
@@ -834,7 +834,7 @@ def _sample_path_result_option(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
         except ValueError:
             continue
         sample = SnakeSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(answer_label),
@@ -856,21 +856,21 @@ def _sample_path_result_option(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
 def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> SnakeSample:
     """Construct one Snake sample for the active query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "safe_direction_count":
         return _sample_safe_direction_count(rng=rng, axes=axes)
     if query == "path_result_option_label":
         return _sample_path_result_option(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Snake query_variant: {query}")
+    raise ValueError(f"unsupported Snake query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Snake JSON output."""
 
-    if str(query_variant) == "safe_direction_count":
+    if str(query_id) == "safe_direction_count":
         answer: str | int = 2
         evidence = [[338, 332, 410, 404], [482, 332, 554, 404]]
-    elif str(query_variant) == "path_result_option_label":
+    elif str(query_id) == "path_result_option_label":
         answer = "B"
         evidence = [[410, 332, 482, 404], [482, 332, 554, 404], [554, 332, 626, 404]]
     else:
@@ -888,10 +888,10 @@ class GamesSnakeGridTask:
     task_id = TASK_ID
     domain = "games"
     task_group = "snake"
-    supported_query_variants: Tuple[str, ...] = SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS
+    supported_query_ids: Tuple[str, ...] = SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        axes = _resolve_axes(int(instance_seed), params=params, supported_query_variants=self.supported_query_variants)
+        axes = _resolve_axes(int(instance_seed), params=params, supported_query_ids=self.supported_query_ids)
         render_params = _render_params(params, instance_seed=int(instance_seed))
 
         sampled_scene: SnakeSample | None = None
@@ -920,7 +920,7 @@ class GamesSnakeGridTask:
         )
         render_map = dict(rendered_scene.render_map)
         base_image = rendered_scene.image
-        if str(axes.query_variant) == "path_result_option_label":
+        if str(axes.query_id) == "path_result_option_label":
             base_image, option_bboxes = _draw_path_result_options(
                 image=base_image,
                 render_map=render_map,
@@ -956,7 +956,7 @@ class GamesSnakeGridTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         planned_moves_text = move_sequence_text(sampled_scene.planned_moves)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -964,7 +964,7 @@ class GamesSnakeGridTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -973,8 +973,8 @@ class GamesSnakeGridTask:
                 "planned_moves": str(planned_moves_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -982,8 +982,8 @@ class GamesSnakeGridTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        public_answer = _public_answer_for_query(str(axes.query_variant), sampled_scene.answer)
-        if str(axes.query_variant) == "path_result_option_label":
+        public_answer = _public_answer_for_query(str(axes.query_id), sampled_scene.answer)
+        if str(axes.query_id) == "path_result_option_label":
             answer_gt = TypedValue(type="option_letter", value=str(public_answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(public_answer))
@@ -992,7 +992,7 @@ class GamesSnakeGridTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             board_size=int(sampled_scene.state.board_size),
             body_length=len(sampled_scene.state.body),
             planned_move_count=len(sampled_scene.planned_moves),
@@ -1016,8 +1016,7 @@ class GamesSnakeGridTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.state.board_size),
                     "obstacle_count": len(tuple(sampled_scene.state.obstacles)),
@@ -1026,15 +1025,14 @@ class GamesSnakeGridTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "board_size": int(sampled_scene.state.board_size),
                     "body_length": len(sampled_scene.state.body),
@@ -1051,8 +1049,8 @@ class GamesSnakeGridTask:
                     "target_outcome": sampled_scene.target_outcome,
                     "observed_event_step": sampled_scene.observed_event_step,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size_probabilities": dict(axes.board_size_probabilities),
                     "body_length_probabilities": dict(axes.body_length_probabilities),
@@ -1072,8 +1070,7 @@ class GamesSnakeGridTask:
             "render_map": dict(render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "state": dict(visible_snake_trace(sampled_scene.state)),
                 "single_move": sampled_scene.single_move,
@@ -1109,9 +1106,8 @@ class GamesSnakeGridTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="snake",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -1125,10 +1121,10 @@ def _rewrite_generated_output(output: TaskOutput) -> TaskOutput:
     if isinstance(query_spec, Mapping):
         spec_params = query_spec.get("params")
         if isinstance(spec_params, Mapping):
-            raw_probabilities = spec_params.get("query_variant_probabilities")
+            raw_probabilities = spec_params.get("query_id_probabilities")
             if isinstance(raw_probabilities, Mapping):
                 probabilities = {str(key): float(value) for key, value in raw_probabilities.items()}
-    return rewrite_public_query_output(output, query_id=query_id, query_variant_probabilities=probabilities)
+    return rewrite_public_query_output(output, query_id=query_id, query_id_probabilities=probabilities)
 
 
 @register_task
@@ -1136,7 +1132,7 @@ class GamesSnakeMoveSafetyTask(GamesSnakeGridTask):
     """Evaluate immediate Snake move safety from the visible head position."""
 
     task_id = "task_games__snake__safe_direction_count"
-    supported_query_variants = SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_VARIANTS
+    supported_query_ids = SUPPORTED_SNAKE_MOVE_SAFETY_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))
@@ -1147,7 +1143,7 @@ class GamesSnakePathOutcomeTask(GamesSnakeGridTask):
     """Evaluate a listed Snake movement sequence."""
 
     task_id = "task_games__snake__path_outcome_option_label"
-    supported_query_variants = SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_VARIANTS
+    supported_query_ids = SUPPORTED_SNAKE_PATH_OUTCOME_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         return _rewrite_generated_output(super().generate(int(instance_seed), params=params, max_attempts=int(max_attempts)))

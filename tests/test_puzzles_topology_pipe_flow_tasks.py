@@ -29,7 +29,7 @@ def test_pipe_flow_repair_tile_contract() -> None:
         max_attempts=80,
     )
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID
     assert out.answer_gt.type == "option_letter"

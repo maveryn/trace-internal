@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__color_gradient__color_gradient_completion_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `linear_gradient_completion_label`
 3. Prompt asks for the labeled option that completes a one-dimensional color gradient with one blank swatch.
 4. Internal variation:

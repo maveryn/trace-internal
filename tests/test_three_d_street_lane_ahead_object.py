@@ -12,7 +12,7 @@ from trace.tasks.three_d.street.lane_ahead_object import (
     MIN_FORWARD_DISTANCE,
     REFERENCE_OBJECT_TYPE,
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     SUPPORTED_TRAVEL_MODES,
     TASK_ID,
 )
@@ -35,7 +35,7 @@ def test_street_lane_ahead_answer_evidence_and_geometry(
     output = task.generate(
         20260522,
         params={
-            "query_variant": "ahead_along_lane",
+            "query_id": "ahead_along_lane",
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
             "travel_mode": travel_mode,
@@ -62,7 +62,7 @@ def test_street_lane_ahead_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "ahead_along_lane"
     assert output.answer_gt.type == "option_letter"
@@ -109,5 +109,5 @@ def test_street_lane_ahead_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "street"
-    assert SUPPORTED_QUERY_VARIANTS == ("ahead_along_lane",)
+    assert SUPPORTED_QUERY_IDS == ("ahead_along_lane",)
     assert SUPPORTED_TRAVEL_MODES == ("toward_intersection", "away_from_intersection")

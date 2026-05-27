@@ -7,7 +7,7 @@ from typing import Dict, FrozenSet, List, Mapping, Sequence, Tuple
 
 
 SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
-SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS: Tuple[str, ...] = (
     "all_pieces_in_mill_count",
 )
 
@@ -194,28 +194,28 @@ def _choose_one_union_set(rng, *, size: int, forbidden_nodes: FrozenSet[int]) ->
     return frozenset(eligible[int(rng.randrange(len(eligible)))])
 
 
-def _normalize_query_variant_and_color(query_variant: str, player_color: str | None = None) -> Tuple[str, str | None]:
-    """Return canonical query variant plus optional color."""
+def _normalize_query_id_and_color(query_id: str, player_color: str | None = None) -> Tuple[str, str | None]:
+    """Return canonical query id plus optional color."""
 
-    variant = str(query_variant)
+    variant = str(query_id)
     if variant == "all_pieces_in_mill_count":
         color = None
     else:
-        raise ValueError(f"unsupported nine-men's-morris query variant: {query_variant}")
+        raise ValueError(f"unsupported nine-men's-morris query id: {query_id}")
     return str(variant), color
 
 
 def _sample_mill_sets(
     rng,
     *,
-    query_variant: str,
+    query_id: str,
     player_color: str | None = None,
     target_answer: int,
 ) -> Tuple[FrozenSet[int], FrozenSet[int]]:
-    """Sample disjoint white/black mill unions for one query variant and target answer."""
+    """Sample disjoint white/black mill unions for one query id and target answer."""
 
     target = int(target_answer)
-    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
+    variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
 
     feasible_pairs: List[Tuple[int, int]] = []
     for white_size in _WHITE_SUPPORT:
@@ -270,21 +270,21 @@ def _try_add_fillers(
 def build_nine_mens_morris_board_state(
     *,
     rng,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     player_color: str | None = None,
 ) -> NineMensMorrisBoardState:
     """Build one visible nine-men's-morris board for the requested query/answer."""
 
     target = int(target_answer)
-    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
+    variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
     if variant == "all_pieces_in_mill_count" and target not in _ALL_SUPPORT:
         raise ValueError(f"unsupported all-color target_answer: {target}")
 
     for _ in range(512):
         white_mill_nodes, black_mill_nodes = _sample_mill_sets(
             rng,
-            query_variant=variant,
+            query_id=variant,
             player_color=color,
             target_answer=int(target),
         )
@@ -342,19 +342,19 @@ def build_nine_mens_morris_board_state(
 def evidence_piece_ids(
     board_state: NineMensMorrisBoardState,
     *,
-    query_variant: str,
+    query_id: str,
     player_color: str | None = None,
 ) -> Tuple[str, ...]:
-    """Return prompt-facing evidence piece ids for one query variant."""
+    """Return prompt-facing evidence piece ids for one query id."""
 
-    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
+    variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
     return tuple(str(piece_id) for piece_id in board_state.all_piece_ids_in_mill)
 
 
-def supported_targets_for_query(query_variant: str, *, player_color: str | None = None) -> Tuple[int, ...]:
-    """Return the feasible answer support for one query variant."""
+def supported_targets_for_query(query_id: str, *, player_color: str | None = None) -> Tuple[int, ...]:
+    """Return the feasible answer support for one query id."""
 
-    variant, color = _normalize_query_variant_and_color(str(query_variant), player_color=player_color)
+    variant, color = _normalize_query_id_and_color(str(query_id), player_color=player_color)
     return _ALL_SUPPORT
 
 
@@ -367,7 +367,7 @@ __all__ = [
     "POSITION_LAYOUT",
     "NineMensMorrisBoardState",
     "NineMensMorrisPieceInstance",
-    "SUPPORTED_NINE_MENS_MORRIS_QUERY_VARIANTS",
+    "SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS",
     "SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS",
     "build_nine_mens_morris_board_state",
     "evidence_piece_ids",

@@ -13,7 +13,7 @@ from trace.tasks.three_d.room.wall_object_camera_distance import (
 )
 from trace.tasks.three_d.room.wall_object_same_wall_reference import (
     SCENE_ID,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
 
@@ -26,7 +26,7 @@ def test_room_wall_object_same_wall_reference_answer_evidence_and_unique_referen
     output = task.generate(
         20260522,
         params={
-            "query_variant": "same_wall_as_reference",
+            "query_id": "same_wall_as_reference",
             "scene_variant": "studio_room",
             "candidate_count": 6,
             "context_wall_count": 4,
@@ -53,7 +53,7 @@ def test_room_wall_object_same_wall_reference_answer_evidence_and_unique_referen
         if bool(is_same_wall)
     ]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "same_wall_as_reference"
     assert output.answer_gt.type == "option_letter"
@@ -94,4 +94,4 @@ def test_room_wall_object_same_wall_reference_registered() -> None:
     assert taxonomy.domain == "three_d"
     assert taxonomy.scene_id == SCENE_ID
     assert taxonomy.source_task_group == "room"
-    assert SUPPORTED_QUERY_VARIANTS == ("same_wall_as_reference",)
+    assert SUPPORTED_QUERY_IDS == ("same_wall_as_reference",)

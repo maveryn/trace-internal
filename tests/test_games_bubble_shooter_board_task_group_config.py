@@ -24,7 +24,7 @@ def test_games_bubble_shooter_defaults_expose_scene_query_answer_and_style_axes(
         task_id="task_games__bubble_shooter__shot_effect_count",
     )
 
-    assert set(generation["query_variant_weights"].keys()) == {"pop_count", "drop_count", "pop_color_label"}
+    assert set(generation["query_id_weights"].keys()) == {"pop_count", "drop_count", "pop_color_label"}
     assert set(generation["scene_variant_weights"].keys()) == {"open_pack", "dense_pack"}
     assert set(generation["style_variant_weights"].keys()) == {"classic", "pastel", "neon", "paper", "arcade"}
     assert generation["row_count_support"] == [7, 8, 9]

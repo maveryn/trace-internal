@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       traffic_crossing: 1.0
-    query_variant_weights:
+    query_id_weights:
       safe_start_label: 1.0
       collision_time_value: 1.0
       moving_object_count: 1.0
@@ -14,7 +14,7 @@ generation:
       paper: 1.0
       construction: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_lane_count_sampling: true
     balanced_row_count_sampling: true

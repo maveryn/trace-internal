@@ -8,7 +8,7 @@
 5. Objective: count pipe junctions satisfying an open-pipe path relation.
 
 ## 2) Scene + Task Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `pipe_reachable_junction_count` or `pipe_exact_distance_count`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_set`

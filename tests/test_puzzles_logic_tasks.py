@@ -71,13 +71,13 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         board_values = [[str(value) for value in row] for row in execution["board_values"]]
         symbol_pool = [str(value) for value in execution["symbol_pool"]]
 
-        assert str(out.query_variant) == "default"
+        assert str(out.query_id) == "default"
         assert str(out.query_id) == "king_non_touch"
-        assert str(trace["query_spec"]["query_variant"]) == "default"
+        assert str(trace["query_spec"]["query_id"]) == "default"
         assert str(trace["query_spec"]["query_id"]) == "king_non_touch"
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == "king_non_touch"
-        assert str(execution["internal_query_variant"]) == "king_non_touch"
+        assert str(execution["internal_query_id"]) == "king_non_touch"
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
         assert len(evidence_bboxes) == 1
@@ -179,9 +179,9 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
         "logic_outline",
     )
 
-    for variant_index, (query_variant, base_params) in enumerate(task_cases):
+    for query_id_index, (query_id, base_params) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 24510 + (variant_index * 20) + scene_index
+            seed = 24510 + (query_id_index * 20) + scene_index
             params = dict(base_params)
             params["scene_variant"] = scene_variant
             out = task.generate(
@@ -197,13 +197,13 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
             board_values = [[str(value) for value in row] for row in execution["board_values"]]
             symbol_pool = [str(value) for value in execution["symbol_pool"]]
-            assert str(out.query_variant) == "default"
+            assert str(out.query_id) == "default"
             assert str(out.query_id) == "grid_uniqueness_completion"
-            assert str(trace["query_spec"]["query_variant"]) == "default"
+            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "grid_uniqueness_completion"
-            assert str(execution["query_variant"]) == "default"
+            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "grid_uniqueness_completion"
-            assert str(execution["internal_query_variant"]) == str(query_variant)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"
             assert out.evidence_gt.type == "bbox_set"
             assert len(evidence_bboxes) == 1
@@ -258,14 +258,14 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             assert str(winning_option["option_panel_id"]) == str(execution["correct_option_panel_id"])
             assert str(winning_option["object_type"]) == str(execution["answer_object_type"])
 
-            if str(query_variant) in {"row_uniqueness", "row_and_column_uniqueness"}:
+            if str(query_id) in {"row_uniqueness", "row_and_column_uniqueness"}:
                 for row in board_values:
                     assert sorted(row) == sorted(symbol_pool)
-            if str(query_variant) in {"column_uniqueness", "row_and_column_uniqueness"}:
+            if str(query_id) in {"column_uniqueness", "row_and_column_uniqueness"}:
                 for col_index in range(int(execution["board_size"])):
                     assert sorted(_column_values(board_values, col_index)) == sorted(symbol_pool)
 
-            assert str(solver["rule_type"]) == str(query_variant)
+            assert str(solver["rule_type"]) == str(query_id)
             assert str(solver["correct_option_label"]) == str(out.answer_gt.value)
             assert int(solver["correct_option_index"]) == int(execution["correct_option_index"])
             assert len(solver["option_object_types"]) == 6
@@ -331,7 +331,7 @@ def test_puzzle_logic_grid_sampler_index_covers_answer_letters_per_variant() -> 
         {"uniqueness_query": "row_and_column_uniqueness"},
     )
 
-    for variant_index, base_params in enumerate(task_cases):
+    for query_id_index, base_params in enumerate(task_cases):
         observed_letters = []
         observed_board_sizes = []
         for local_index in range(54):
@@ -412,9 +412,9 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
         "raven_outline",
     )
 
-    for variant_index, (task, query_variant) in enumerate(task_cases):
+    for query_id_index, (task, query_id) in enumerate(task_cases):
         for scene_index, scene_variant in enumerate(scene_variants):
-            seed = 25100 + (variant_index * 20) + scene_index
+            seed = 25100 + (query_id_index * 20) + scene_index
             out = task.generate(
                 seed,
                 params={"scene_variant": scene_variant},
@@ -427,13 +427,13 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
             solver = execution["solver_trace"]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_variant) == "default"
-            assert str(out.query_id) == str(query_variant)
-            assert str(trace["query_spec"]["query_variant"]) == "default"
-            assert str(trace["query_spec"]["query_id"]) == str(query_variant)
-            assert str(execution["query_variant"]) == "default"
-            assert str(execution["query_id"]) == str(query_variant)
-            assert str(execution["internal_query_variant"]) == str(query_variant)
+            assert str(out.query_id) == "default"
+            assert str(out.query_id) == str(query_id)
+            assert str(trace["query_spec"]["query_id"]) == "default"
+            assert str(trace["query_spec"]["query_id"]) == str(query_id)
+            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"
             assert out.evidence_gt.type == "bbox_set"
             assert len(evidence_bboxes) == 1
@@ -489,24 +489,24 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
             assert dict(winning_option["panel_spec"]) == dict(execution["answer_panel_spec"])
             assert str(winning_option["panel_spec"]["panel_kind"]) in {"attribute", "count", "pattern"}
 
-            assert str(solver["rule_type"]) == str(query_variant)
+            assert str(solver["rule_type"]) == str(query_id)
             assert str(solver["correct_option_label"]) == str(out.answer_gt.value)
             assert int(solver["correct_option_index"]) == int(execution["correct_option_index"])
-            if str(query_variant) == "count_progression_matrix":
+            if str(query_id) == "count_progression_matrix":
                 assert str(execution["answer_panel_spec"]["panel_kind"]) == "count"
                 assert int(execution["answer_panel_spec"]["count"]) == int(solver["count_table"][2][2])
                 assert int(execution["answer_panel_spec"]["count"]) == int(solver["answer_count"])
-            elif str(query_variant) == "spatial_transform_matrix":
+            elif str(query_id) == "spatial_transform_matrix":
                 assert str(execution["answer_panel_spec"]["panel_kind"]) == "pattern"
                 assert execution["answer_panel_spec"]["cells"] == solver["answer_cells"]
                 allowed_transforms = {"identity", "rot90", "rot180", "flip_h", "flip_v"}
                 assert set(str(value) for value in solver["row_transforms"]) <= allowed_transforms
                 assert set(str(value) for value in solver["column_transforms"]) <= allowed_transforms
-            elif str(query_variant) == "set_operation_matrix":
+            elif str(query_id) == "set_operation_matrix":
                 assert str(execution["answer_panel_spec"]["panel_kind"]) == "pattern"
                 assert str(solver["operation"]) in {"union", "intersection", "xor"}
                 assert execution["answer_panel_spec"]["cells"] == solver["answer_cells"]
-            elif str(query_variant) == "analogical_transform_matrix":
+            elif str(query_id) == "analogical_transform_matrix":
                 assert str(execution["answer_panel_spec"]["panel_kind"]) == "attribute"
                 assert str(solver["transform_kind"]) in {"shape_cycle", "color_cycle", "size_cycle"}
             else:
@@ -579,7 +579,7 @@ def test_puzzle_logic_raven_sampler_index_covers_answer_letters_per_variant() ->
         PuzzlesLogicRavenPositionProgressionLabelTask(),
     )
 
-    for variant_index, task in enumerate(task_cases):
+    for query_id_index, task in enumerate(task_cases):
         observed_letters = []
         for local_index in range(18):
             sampling_index = local_index

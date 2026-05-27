@@ -8,7 +8,7 @@
 5. Goal: count the rectangular blocks currently occupying the red target block's straight path to the exit arrow.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `blocker_count`
 3. Board size: `6..8` rows by `6..8` columns
 4. Target blocker count support: `1..6`

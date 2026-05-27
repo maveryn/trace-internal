@@ -16,7 +16,7 @@ def test_physics_circuits_resistance_defaults_expose_scene_task_and_answer_suppo
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -31,14 +31,14 @@ def test_physics_circuits_resistance_defaults_expose_scene_task_and_answer_suppo
 
     assert float(generation["scene_variant_weights"]["simple_series_parallel"]) == 1.0
 
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "total_resistance",
         "missing_resistor_value",
     }
 
-    assert float(generation["query_variant_weights"]["total_resistance"]) == 1.0
+    assert float(generation["query_id_weights"]["total_resistance"]) == 1.0
 
-    assert float(generation["query_variant_weights"]["missing_resistor_value"]) == 1.0
+    assert float(generation["query_id_weights"]["missing_resistor_value"]) == 1.0
 
     assert set(generation["accent_color_name_weights"].keys()) == {
         "red",

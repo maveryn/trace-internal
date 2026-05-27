@@ -4,7 +4,7 @@
 - Scene id: `wave_interference`
 - Task group: `waves`
 - Query id: `path_difference_value`
-- Public query variant: `default`
+- Public query id: `default`
 - Answer type: `integer`
 - Evidence type: `bbox_set`
 
@@ -16,7 +16,7 @@ Shows the same two-source ripple-tank scene with a highlighted point `P` and lab
 
 Prompt bundle: `physics_waves_v0`; scene key: `wave_interference_tank`; task key: `wave_interference_tank_query`; query key: `path_difference_value`.
 
-Public outputs use `query_variant="default"` and `query_id="path_difference_value"`. The trace records source phase relation, point `P` coordinates, exact source-to-point distances in `lambda/2` steps, path-difference answer, and evidence entity ids.
+Outputs `query_id="path_difference_value"`. The trace records source phase relation, point `P` coordinates, exact source-to-point distances in `lambda/2` steps, path-difference answer, and evidence entity ids.
 
 ## Evidence Contract
 

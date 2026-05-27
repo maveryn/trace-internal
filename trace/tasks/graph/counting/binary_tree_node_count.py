@@ -18,7 +18,7 @@ from ...shared.deterministic_sampling import resolve_selection_index, uniform_pr
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.binary_tree_scene import (
-    SUPPORTED_BINARY_TREE_COUNT_QUERY_VARIANTS,
+    SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS,
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
     projected_binary_tree_bbox_evidence,
     render_binary_tree_scene,
@@ -87,14 +87,14 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved query and style axes for one binary-tree count instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     target_count: int
     target_depth: int | None
     label_variant: str
     node_shape_variant: str
     node_color_name: str
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     target_depth_probabilities: Dict[str, float]
@@ -114,14 +114,14 @@ POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="counting", app
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
-def _support_for_query(query_variant: str) -> Tuple[int, ...]:
+def _support_for_query(query_id: str) -> Tuple[int, ...]:
     lower = int(group_default(_GEN_DEFAULTS, "target_count_min", _DEFAULTS.target_count_min))
     upper = int(group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max))
-    if str(query_variant) == "leaf_node_count":
+    if str(query_id) == "leaf_node_count":
         return tuple(range(max(2, lower), int(upper) + 1))
-    if str(query_variant) == "two_child_node_count":
+    if str(query_id) == "two_child_node_count":
         return tuple(range(max(1, lower), int(upper) + 1))
-    if str(query_variant) == "internal_node_count":
+    if str(query_id) == "internal_node_count":
         internal_min = int(group_default(_GEN_DEFAULTS, "internal_count_min", _DEFAULTS.internal_count_min))
         internal_max = int(group_default(_GEN_DEFAULTS, "internal_count_max", _DEFAULTS.internal_count_max))
         return tuple(range(int(internal_min), int(internal_max) + 1))
@@ -135,18 +135,18 @@ def _depth_support_for_target(target_count: int) -> Tuple[int, ...]:
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    query_variant, query_probs = resolve_graph_named_variant(
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+    query_id, query_probs = resolve_graph_named_variant(
         variant_rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        supported=SUPPORTED_BINARY_TREE_COUNT_QUERY_VARIANTS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        supported=SUPPORTED_BINARY_TREE_COUNT_QUERY_IDS,
         instance_seed=int(instance_seed),
         task_id=TASK_ID,
-        namespace="query_variant",
+        namespace="query_id",
     )
     scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
@@ -201,7 +201,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         namespace="node_color_name",
     )
 
-    target_support = _support_for_query(str(query_variant))
+    target_support = _support_for_query(str(query_id))
     explicit_target = params.get("target_count")
     if explicit_target is not None:
         target_count = int(explicit_target)
@@ -217,7 +217,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
 
     target_depth = None
     depth_probs: Dict[str, float] = {}
-    if str(query_variant) == "depth_level_node_count":
+    if str(query_id) == "depth_level_node_count":
         depth_support = _depth_support_for_target(int(target_count))
         explicit_depth = params.get("target_depth")
         if explicit_depth is not None:
@@ -234,14 +234,14 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         depth_probs = uniform_probability_map(depth_support, selected=int(target_depth) if explicit_depth is not None else None)
 
     return _ResolvedQuery(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         target_count=int(target_count),
         target_depth=int(target_depth) if target_depth is not None else None,
         label_variant=str(label_variant),
         node_shape_variant=str(node_shape_variant),
         node_color_name=str(node_color_name),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         scene_variant_probabilities=dict(scene_probs),
         target_count_probabilities=uniform_probability_map(target_support, selected=int(target_count) if explicit_target is not None else None),
         target_depth_probabilities=dict(depth_probs),
@@ -267,7 +267,7 @@ def _build_complexity(*, sample, query: _ResolvedQuery) -> Any:
         components={
             "topology_reasoning": (0.45 * answer_norm) + (0.35 * depth_norm) + (0.20 * node_norm),
             "visual_scan": (0.70 * node_norm) + (0.30 * depth_norm),
-            "ambiguity": 0.45 if str(query.query_variant) == "depth_level_node_count" else 0.32,
+            "ambiguity": 0.45 if str(query.query_id) == "depth_level_node_count" else 0.32,
             "clutter": (0.65 * node_norm) + (0.35 * depth_norm),
         },
     )
@@ -302,7 +302,7 @@ class GraphCountingBinaryTreeNodeCountTask:
         )
         sample = sample_binary_tree_for_count_query(
             int(instance_seed),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             target_count=int(query.target_count),
             target_depth=query.target_depth,
             node_count_min=int(group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)),
@@ -327,7 +327,7 @@ class GraphCountingBinaryTreeNodeCountTask:
         )
         target_labels = target_labels_for_count_query(
             sample,
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             target_depth=query.target_depth,
         )
         if len(target_labels) != int(query.target_count):
@@ -346,7 +346,7 @@ class GraphCountingBinaryTreeNodeCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -401,7 +401,7 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
                     "root_label": str(rendered_node_by_label[sample.nodes[0].label].label),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "target_labels": list(target_labels),
                     "target_depth": int(query.target_depth) if query.target_depth is not None else None,
                     "preorder_labels": list(sample.preorder_labels),
@@ -416,15 +416,14 @@ class GraphCountingBinaryTreeNodeCountTask:
             },
             "query_spec": {
                 "task_id": TASK_ID,
-                "query_id": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant_probabilities": dict(query.query_variant_probabilities),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "target_count": int(query.target_count),
                     "target_count_probabilities": dict(query.target_count_probabilities),
@@ -478,8 +477,7 @@ class GraphCountingBinaryTreeNodeCountTask:
             "execution_trace": {
                 "task_id": TASK_ID,
                 "scene_id": SCENE_ID,
-                "query_variant": str(query.query_variant),
-                "query_id": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant": str(query.scene_variant),
                 "answer": int(len(target_labels)),
                 "target_labels": list(target_labels),
@@ -491,7 +489,7 @@ class GraphCountingBinaryTreeNodeCountTask:
             "witness_symbolic": {
                 "type": "node_label_set",
                 "labels": list(target_labels),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
             },
             "projected_evidence": {
                 "type": "bbox_set",
@@ -509,9 +507,8 @@ class GraphCountingBinaryTreeNodeCountTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(sample=sample, query=query),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 

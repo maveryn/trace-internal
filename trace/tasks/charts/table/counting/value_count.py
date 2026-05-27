@@ -33,7 +33,7 @@ from trace.tasks.charts.table.shared.visual_defaults import load_table_backgroun
 
 
 TASK_ID = "task_charts__table__value_predicate_count"
-_SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+_SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "threshold_count",
     "in_interval",
     "categorical_value_count",
@@ -51,32 +51,32 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_table_background_defaults(task_group="coun
 POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="counting", apply_prob=0.0)
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     """Resolve the semantic table-counting variant."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     if explicit_variant is not None and str(explicit_variant).strip().lower() in set(_SOURCE_THRESHOLD_VARIANTS):
         return "threshold_count", {
             str(value): (1.0 if str(value) == "threshold_count" else 0.0)
-            for value in _SUPPORTED_QUERY_VARIANTS
+            for value in _SUPPORTED_QUERY_IDS
         }
     return resolve_table_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=_SUPPORTED_QUERY_VARIANTS,
+        supported_variants=_SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
 def _resolve_comparison(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str | None, Dict[str, float]]:
     """Resolve threshold comparator for the merged threshold-count variant."""
 
-    explicit_variant = params.get("query_variant")
+    explicit_variant = params.get("query_id")
     source_comparison = None
     if explicit_variant is not None:
         normalized_variant = str(explicit_variant).strip().lower()
@@ -90,7 +90,7 @@ def _resolve_comparison(params: Mapping[str, Any], *, instance_seed: int) -> Tup
         if comparison not in set(_SUPPORTED_COMPARISONS):
             raise ValueError(f"unsupported table counting comparison: {explicit_comparison}")
         if source_comparison is not None and str(source_comparison) != str(comparison):
-            raise ValueError("query_variant threshold alias conflicts with explicit comparison")
+            raise ValueError("query_id threshold alias conflicts with explicit comparison")
         return str(comparison), {
             str(value): (1.0 if str(value) == str(comparison) else 0.0)
             for value in _SUPPORTED_COMPARISONS
@@ -169,19 +169,19 @@ class TablesCountingValueCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         comparison = None
         comparison_probabilities: Dict[str, float] = {}
-        if str(query_variant) == "threshold_count":
+        if str(query_id) == "threshold_count":
             comparison, comparison_probabilities = _resolve_comparison(params, instance_seed=int(instance_seed))
-        internal_query_variant = (
+        internal_query_id = (
             _internal_threshold_variant(str(comparison))
-            if str(query_variant) == "threshold_count"
-            else str(query_variant)
+            if str(query_id) == "threshold_count"
+            else str(query_id)
         )
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = build_counting_value_dataset_for_variant(
-            query_variant=str(internal_query_variant),
+            query_id=str(internal_query_id),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -243,14 +243,14 @@ class TablesCountingValueCountTask:
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         variant_slots = {"query_column": str(dataset["query_column"])}
-        if str(query_variant) == "threshold_count":
+        if str(query_id) == "threshold_count":
             variant_slots["threshold_value"] = int(dataset["threshold_value"])
             variant_slots["comparison_phrase"] = _comparison_phrase(comparison)
-        elif str(query_variant) == "in_interval":
+        elif str(query_id) == "in_interval":
             variant_slots["interval_min"] = int(dataset["interval_min"])
             variant_slots["interval_max"] = int(dataset["interval_max"])
         else:
@@ -262,7 +262,7 @@ class TablesCountingValueCountTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -302,12 +302,12 @@ class TablesCountingValueCountTask:
             for row_label, row_values in dataset["values_by_row"].items()
         }
         variant_relation_fields: Dict[str, Any]
-        if str(query_variant) == "threshold_count":
+        if str(query_id) == "threshold_count":
             variant_relation_fields = {
                 "threshold_value": int(dataset["threshold_value"]),
                 "comparison": str(comparison),
             }
-        elif str(query_variant) == "in_interval":
+        elif str(query_id) == "in_interval":
             variant_relation_fields = {
                 "interval_min": int(dataset["interval_min"]),
                 "interval_max": int(dataset["interval_max"]),
@@ -326,8 +326,8 @@ class TablesCountingValueCountTask:
                 "scene_kind": f"table_{str(scene_variant)}_counting",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "answer_value": int(answer_value),
                     "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
@@ -336,20 +336,20 @@ class TablesCountingValueCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "internal_query_variant": str(internal_query_variant),
+                    "query_id": str(query_id),
+                    "internal_query_id": str(internal_query_id),
                     "scene_variant": str(scene_variant),
                     "query_column": str(dataset["query_column"]),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     **(
                         {"comparison": str(comparison), "comparison_probabilities": dict(comparison_probabilities)}
-                        if str(query_variant) == "threshold_count"
+                        if str(query_id) == "threshold_count"
                         else {}
                     ),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -387,8 +387,8 @@ class TablesCountingValueCountTask:
                 "cell_bboxes_px": dict(cell_bbox_map),
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
-                "internal_query_variant": str(internal_query_variant),
+                "query_id": str(query_id),
+                "internal_query_id": str(internal_query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
@@ -402,10 +402,10 @@ class TablesCountingValueCountTask:
                 "value_range": list(dataset["value_range"]),
                 "matching_row_indices": [int(row_index) for row_index in dataset["matching_row_indices"]],
                 "matching_row_labels": [str(label) for label in dataset["matching_row_labels"]],
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 **(
                     {"comparison": str(comparison), "comparison_probabilities": dict(comparison_probabilities)}
-                    if str(query_variant) == "threshold_count"
+                    if str(query_id) == "threshold_count"
                     else {}
                 ),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
@@ -413,7 +413,7 @@ class TablesCountingValueCountTask:
                 "query_column": str(dataset["query_column"]),
                 "query_column_index": int(dataset["query_column_index"]),
                 "question_format": "categorical_filter_count"
-                if str(query_variant) == "categorical_value_count"
+                if str(query_id) == "categorical_value_count"
                 else "column_filter_count",
                 **dict(variant_relation_fields),
             },
@@ -428,9 +428,9 @@ class TablesCountingValueCountTask:
 
         variant_bonus = (
             0.05
-            if str(query_variant) == "categorical_value_count"
+            if str(query_id) == "categorical_value_count"
             else 0.04
-            if str(query_variant) == "in_interval"
+            if str(query_id) == "in_interval"
             else 0.01
         )
         complexity = TaskComplexity(
@@ -441,7 +441,7 @@ class TablesCountingValueCountTask:
                 + float(variant_bonus)
             ),
             complexity_components={
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
                 "numeric_column_count": int(dataset["numeric_column_count"]),
@@ -456,7 +456,7 @@ class TablesCountingValueCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -470,7 +470,7 @@ class ChartsTableValuePredicateCountTask(MergedChartQueryVariantTaskMixin, Table
     task_group = "table_counting"
     prompt_domain = "charts"
     prompt_task_group = "table_counting"
-    allowed_query_variants = ("threshold_count", "in_interval", "categorical_value_count")
+    allowed_query_ids = ("threshold_count", "in_interval", "categorical_value_count")
 
 
 __all__ = [

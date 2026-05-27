@@ -9,7 +9,7 @@
 
 ## 2) Scene + Task Contract
 1. Entities/relations: one horizontal row of 10 numbered boxes, each containing one icon.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `row_rotation_violation`.
 4. Answer type: `answer_gt.type = integer` (the 1-based violating box index).
 5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the violating numbered box).
@@ -28,7 +28,7 @@
 1. The public task directly samples and renders the sequence-rotation violation scene.
 2. Unique-answer policy: the violating index is sampled first and accepted only when the observed row has one plausible violating box.
 3. No-auto-relaxation guarantee: unsupported rule configs, missing assets, ambiguous explanations, and placement failures cause rejection instead of weakening constraints.
-4. Trace metadata records `scene_variant=sequence_row`, public `query_variant=default`, and `query_id=row_rotation_violation`.
+4. Trace metadata records `scene_variant=sequence_row` and `query_id=row_rotation_violation`.
 
 ## 5) Complexity + Tests
 1. Complexity definition/components: row-rotation complexity based on the calibrated 10-cell sequence length, rotation step, answer position, and visual clutter.

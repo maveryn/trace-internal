@@ -8,7 +8,7 @@
 5. Objective: compare several labeled analog clocks and identify the one showing the earliest or latest time.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `earliest_time_label` or `latest_time_label`
 3. Supported semantic parameter axes:
    - `extremum_direction`: `earliest|latest`
@@ -41,7 +41,7 @@
 2. `scene_key`: `multi_analog_clock`
 3. `task_key`: `clock_compare_query`
 4. Internal `query_key`: `time_extremum_label`
-5. Required query-variant slot: `extremum_direction`
+5. Required query-id slot: `extremum_direction`
 6. Required slots:
    - scene: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
@@ -68,7 +68,7 @@
    - `winning_label`
    - `winning_clock_bbox_px`
 5. `execution_trace` records:
-   - `query_variant`
+   - `query_id`
    - `extremum_direction`
    - `scene_variant`
    - `style_variant`

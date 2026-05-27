@@ -14,7 +14,7 @@ generation:
       cool: 1.0
       warm: 1.0
       sage: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     group_name_pool: ["Layout", "Editing", "Review", "Output"]
@@ -60,7 +60,7 @@ generation:
       selected_enabled_controls_in_group_count_state_count_support: [3, 4, 5, 6, 7]
       enabled_action_for_type_count_row_count_support: [9, 10, 11, 12]
       enabled_action_for_type_count_answer_count_support: [2, 3, 4, 5, 6]
-      query_variant_weights:
+      query_id_weights:
         disabled_controls_in_group_count: 1.0
         selected_enabled_controls_in_group_count: 1.0
         selected_rows_with_status_count: 1.0

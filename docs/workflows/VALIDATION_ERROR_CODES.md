@@ -58,7 +58,7 @@ Use lowercase snake case with category prefixes:
 - `prompt_bundle_invalid`
 - `prompt_key_missing`
 - `prompt_variant_count_mismatch`
-- `prompt_variant_index_out_of_range`
+- `prompt_query_id_index_out_of_range`
 - `prompt_required_slot_missing`
 - `prompt_unresolved_placeholder`
 

@@ -1,6 +1,6 @@
 generation:
   shared:
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
   task_overrides:
     task_illustrations__single_object_figure__visible_part_count:
       bird_leg_count_min: 1

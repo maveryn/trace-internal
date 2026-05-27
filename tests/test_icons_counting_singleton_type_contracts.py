@@ -39,7 +39,7 @@ def test_icons_counting_most_frequent_type_deterministic() -> None:
     assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
     assert out_a.scene_id == "icon_field"
     assert out_a.query_id == "most_frequent_type_count"
-    assert out_a.query_variant == "default"
+    assert out_a.query_id == "default"
     assert out_a.answer_gt.type == "integer"
     assert out_a.evidence_gt.type == "bbox_set"
 

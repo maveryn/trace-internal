@@ -20,7 +20,7 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15110,
-        params={"query_variant": "mirror_diagonal_main", "target_count": 2, "distractor_count": 4},
+        params={"query_id": "mirror_diagonal_main", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -38,11 +38,11 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_mirror_symmetry_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_mirror_symmetry"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "mirror_diagonal_main"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "mirror_diagonal_main"
-    assert execution["internal_query_variant"] == "mirror_diagonal_main"
+    assert execution["internal_query_id"] == "mirror_diagonal_main"
     assert execution["mirror_signature"] == "mirror_diagonal_main"
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
@@ -127,7 +127,7 @@ def test_icons_relation_mirror_symmetry_supports_zero_matches() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15111,
-        params={"query_variant": "mirror_horizontal", "target_count": 0, "distractor_count": 6},
+        params={"query_id": "mirror_horizontal", "target_count": 0, "distractor_count": 6},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -138,7 +138,7 @@ def test_icons_relation_mirror_symmetry_prompt_example_matches_contract() -> Non
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15112,
-        params={"query_variant": "mirror_horizontal", "target_count": 2, "distractor_count": 4},
+        params={"query_id": "mirror_horizontal", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
@@ -153,7 +153,7 @@ def test_icons_relation_mirror_symmetry_supports_both_axes_reference() -> None:
     task = IconsRelationMirrorSymmetryTask()
     out = task.generate(
         15114,
-        params={"query_variant": "mirror_both_axes", "target_count": 1, "distractor_count": 5},
+        params={"query_id": "mirror_both_axes", "target_count": 1, "distractor_count": 5},
         max_attempts=200,
     )
     reference_cell = next(
@@ -193,8 +193,8 @@ def test_icons_relation_mirror_symmetry_balanced_sampling_defaults() -> None:
         object_counts[object_count] += 1
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        assert str(out.query_variant) == "default"
-        assert str(execution["query_variant"]) == "default"
+        assert str(out.query_id) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(out.query_id) == str(execution["mirror_signature"])
         mirror_signature = str(execution["mirror_signature"])
         signature_counts[mirror_signature] += 1

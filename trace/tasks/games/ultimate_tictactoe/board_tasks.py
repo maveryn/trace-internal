@@ -203,7 +203,7 @@ def _query_params_for_inner_cycle(
 ) -> Dict[str, Any]:
     resolved = dict(params)
     sampling_index = params.get("_sample_cursor")
-    if sampling_index is None or params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if sampling_index is None or params.get("query_id") is not None or params.get("query_id") is not None:
         return resolved
     resolved["_sample_cursor"] = abs(int(sampling_index)) // max(1, int(query_count))
     return resolved
@@ -819,10 +819,10 @@ class _UltimateTicTacToeTask:
             task_id=str(self.task_id),
             instance_seed=int(instance_seed),
             params=params,
-            namespace="query_variant",
-            explicit_key="query_variant",
+            namespace="query_id",
+            explicit_key="query_id",
             weights_key=str(self.query_weights_key),
-            balance_flag_key="balanced_query_variant_sampling",
+            balance_flag_key="balanced_query_id_sampling",
             supported=tuple(self.supported_queries),
         )
         sample: _Sample | None = None
@@ -882,27 +882,21 @@ class _UltimateTicTacToeTask:
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
                     "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
                 "template_id": str(prompt_meta["bundle_id"]),
                 "prompt_variant": dict(prompt_meta["prompt_variant"]),
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
                 "prompt_variants": dict(prompt_meta["prompt_variants_for_trace"]),
                 "params": {
                     "query_id": str(sample.query_id),
-                    "query_variant": str(sample.query_id),
-                    "query_variant": "default",
                     "style_variant": str(style_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
-                    "query_variant_probabilities": {"default": 1.0},
+                    "query_id_probabilities": dict(query_probabilities),
+                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),
                 },
@@ -918,8 +912,6 @@ class _UltimateTicTacToeTask:
             "render_map": dict(rendered.render_map),
             "execution_trace": {
                 "query_id": str(sample.query_id),
-                "query_variant": str(sample.query_id),
-                "query_variant": "default",
                 "style_variant": str(style_variant),
                 "small_boards": board_trace,
                 "target_answer": sample.target_answer,
@@ -952,7 +944,6 @@ class _UltimateTicTacToeTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(sample.query_id),
         )
@@ -964,7 +955,7 @@ class GamesUltimateTicTacToeSmallBoardStatusCountTask(_UltimateTicTacToeTask):
 
     task_id = "task_games__ultimate_tictactoe__small_board_status_count"
     supported_queries = STATUS_QUERIES
-    query_weights_key = "status_count_query_variant_weights"
+    query_weights_key = "status_count_query_id_weights"
 
 
 @register_task
@@ -973,4 +964,4 @@ class GamesUltimateTicTacToeLocalTacticLabelTask(_UltimateTicTacToeTask):
 
     task_id = "task_games__ultimate_tictactoe__local_tactic_label"
     supported_queries = TACTIC_QUERIES
-    query_weights_key = "local_tactic_query_variant_weights"
+    query_weights_key = "local_tactic_query_id_weights"

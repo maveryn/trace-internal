@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Scene id: `composite_shape`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: one of `house_outline_perimeter` or `tabbed_rectilinear_perimeter`
 6. Answer type: `integer`
 7. Evidence type: `bbox_set`

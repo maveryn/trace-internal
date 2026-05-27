@@ -8,7 +8,7 @@
 5. Objective: count how many remaining nodes would be isolated after one named node is removed.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `isolated_node_count_after_node_removal`
 3. Supported `graph_directionality` values: `undirected|directed`
 4. `answer_gt.type`: `integer`

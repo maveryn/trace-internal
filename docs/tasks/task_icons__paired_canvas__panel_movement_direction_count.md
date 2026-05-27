@@ -9,7 +9,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: two large icon panels labeled `Left` and `Right`; the same icon identities appear in both panels with changed positions.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Query id: `moved_left_count|moved_right_count|moved_up_count|moved_down_count`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` over every counted Right-panel destination icon.

@@ -14,12 +14,12 @@ def test_games_darts_score_count_defaults_expose_scene_query_and_score_axes() ->
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert bool(generation["balanced_dart_count_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"single_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "total_score",
         "ring_count",
         "threshold_score_count",

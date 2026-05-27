@@ -5,7 +5,7 @@
 2. Scene id: `curve_panels`
 3. Source implementation domain/group: `charts/scientific`
 4. Query id: `curve_intersection_count`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.scientific.multipanel_subplot_query.ChartsScientificCurveIntersectionCountTask`

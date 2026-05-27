@@ -9,4 +9,4 @@ tasks:
   - task_id: task_icons__reference_canvas__attribute_match_count
     count: 8
     params:
-      query_variant: match_type
+      query_id: match_type

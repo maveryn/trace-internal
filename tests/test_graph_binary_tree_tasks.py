@@ -36,9 +36,9 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
     )
 
     assert "task_graph__binary_tree__node_property_count" in TASK_REGISTRY
-    for offset, (query_variant, target_count, target_depth) in enumerate(cases):
+    for offset, (query_id, target_count, target_depth) in enumerate(cases):
         params = {
-            "query_variant": query_variant,
+            "query_id": query_id,
             "target_count": target_count,
             "label_variant": "letters",
             "scene_variant": "classic_tree",
@@ -51,15 +51,15 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
         edges = _binary_tree_edges(trace)
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert int(out.answer_gt.value) == target_count
         assert len(out.evidence_gt.value) == target_count
         assert trace["scene_ir"]["scene_kind"] == "binary_tree"
-        assert trace["execution_trace"]["query_variant"] == "default"
-        assert trace["execution_trace"]["query_id"] == query_variant
-        assert trace["execution_trace"]["internal_query_variant"] == query_variant
+        assert trace["execution_trace"]["query_id"] == "default"
+        assert trace["execution_trace"]["query_id"] == query_id
+        assert trace["execution_trace"]["internal_query_id"] == query_id
         assert len(nodes) == int(trace["execution_trace"]["node_count"])
         assert len(edges) == len(nodes) - 1
         assert any(node["left_label"] is not None or node["right_label"] is not None for node in nodes)
@@ -79,11 +79,11 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
     }
 
     assert "task_graph__binary_tree__traversal_kth_label" in TASK_REGISTRY
-    for offset, (query_variant, traversal_key) in enumerate(traversal_keys.items()):
+    for offset, (query_id, traversal_key) in enumerate(traversal_keys.items()):
         out = task.generate(
             23100 + offset,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "traversal_position": 4,
                 "label_variant": "letters",
                 "scene_variant": "paper_tree",
@@ -96,7 +96,7 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
         traversal_labels = trace["scene_ir"]["relations"][traversal_key]
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_sequence"
         assert str(out.answer_gt.value) == str(traversal_labels[3])
@@ -111,7 +111,7 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
 
 def test_graph_relation_binary_tree_node_label_contracts() -> None:
     task = GraphRelationBinaryTreeNodeLabelTask()
-    query_variants = (
+    query_ids = (
         "parent_label",
         "left_child_label",
         "right_child_label",
@@ -120,11 +120,11 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
     )
 
     assert "task_graph__binary_tree__node_relation_label" in TASK_REGISTRY
-    for offset, query_variant in enumerate(query_variants):
+    for offset, query_id in enumerate(query_ids):
         out = task.generate(
             23200 + offset,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "label_variant": "letters",
                 "scene_variant": "boxed_tree",
             },
@@ -136,11 +136,11 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_set"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
-        assert len(out.evidence_gt.value) == (3 if query_variant == "lowest_common_ancestor_label" else 2)
+        assert len(out.evidence_gt.value) == (3 if query_id == "lowest_common_ancestor_label" else 2)
         assert len(nodes) == int(execution["node_count"])
         assert len(edges) == len(nodes) - 1
         assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -152,18 +152,18 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
 
 def test_graph_relation_search_tree_operation_label_contracts() -> None:
     task = GraphRelationSearchTreeOperationLabelTask()
-    query_variants = (
+    query_ids = (
         "bst_search_terminal_label",
         "bst_insert_parent_label",
         "heap_property_violation_label",
     )
 
     assert "task_graph__binary_tree__tree_operation_label" in TASK_REGISTRY
-    for offset, query_variant in enumerate(query_variants):
+    for offset, query_id in enumerate(query_ids):
         out = task.generate(
             23300 + offset,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "node_count": 9,
                 "scene_variant": "classic_tree",
             },
@@ -175,7 +175,7 @@ def test_graph_relation_search_tree_operation_label_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "binary_tree"
-        assert out.query_id == query_variant
+        assert out.query_id == query_id
         assert out.answer_gt.type == "string"
         assert out.evidence_gt.type == "bbox_sequence"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
@@ -186,7 +186,7 @@ def test_graph_relation_search_tree_operation_label_contracts() -> None:
         assert trace["projected_evidence"]["type"] == "bbox_sequence"
         assert trace["projected_evidence"]["bbox_sequence"] == out.evidence_gt.value
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
-        if query_variant.startswith("bst_"):
+        if query_id.startswith("bst_"):
             assert execution["target_key"] is not None
         else:
             assert execution["target_key"] is None

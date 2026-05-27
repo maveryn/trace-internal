@@ -58,7 +58,7 @@ from .camera_distance import (
 
 
 TASK_ID = "task_three_d__object_scene__height_extremum_label"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("highest_above_floor", "lowest_above_floor")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("highest_above_floor", "lowest_above_floor")
 SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = SPATIAL_HEIGHT_SUPPORT_PLACEMENTS
 FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES
 ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES
@@ -169,7 +169,7 @@ def _height_value(spec: Mapping[str, Any]) -> float:
 
 def _build_height_scene_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     context_object_count: int,
@@ -229,10 +229,10 @@ def _build_height_scene_dataset(
         heights = [float(record["base_z"]) for record in placement_records]
 
         sorted_placements = sorted(placement_records, key=lambda item: (float(item["base_z"]), str(item["placement_id"])))
-        answer_placement = sorted_placements[-1] if str(query_variant) == "highest_above_floor" else sorted_placements[0]
+        answer_placement = sorted_placements[-1] if str(query_id) == "highest_above_floor" else sorted_placements[0]
         answer_height_margin = (
             float(sorted_placements[-1]["base_z"]) - float(sorted_placements[-2]["base_z"])
-            if str(query_variant) == "highest_above_floor"
+            if str(query_id) == "highest_above_floor"
             else float(sorted_placements[1]["base_z"]) - float(sorted_placements[0]["base_z"])
         )
         if float(answer_height_margin) < 0.20:
@@ -334,14 +334,14 @@ def _build_height_scene_dataset(
             for spec in finalized_candidates
         }
         sorted_by_height = sorted(finalized_candidates, key=lambda spec: (float(_height_value(spec)), str(spec["point_label"])))
-        expected_label = str(sorted_by_height[-1]["point_label"] if str(query_variant) == "highest_above_floor" else sorted_by_height[0]["point_label"])
+        expected_label = str(sorted_by_height[-1]["point_label"] if str(query_id) == "highest_above_floor" else sorted_by_height[0]["point_label"])
         if expected_label != str(answer_label):
             continue
 
         sorted_candidates = sorted(finalized_candidates, key=lambda spec: str(spec["point_label"]))
         sorted_context = sorted(finalized_context, key=lambda spec: str(spec["object_id"]))
         return {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
@@ -393,7 +393,7 @@ def _build_height_scene_dataset(
 
 def _build_complexity(
     *,
-    query_variant: str,
+    query_id: str,
     scene_variant: str,
     point_count: int,
     height_margin: float,
@@ -411,7 +411,7 @@ def _build_complexity(
     total = sum(max(0.0, float(value)) for value in weights.values()) or 1.0
     components = {
         "visual_scan": _normalize_unit(int(point_count), 4, 8),
-        "vertical_reasoning": 0.62 if str(query_variant) == "highest_above_floor" else 0.58,
+        "vertical_reasoning": 0.62 if str(query_id) == "highest_above_floor" else 0.58,
         "support_load": 0.70,
         "scene_variant_load": {
             "floor_grid_room": 0.28,
@@ -481,16 +481,16 @@ class ThreeDSpatialHeightExtremumLabelTask:
         camera_yaw_band: Tuple[float, float] | None = None,
         answer_seed: int | None = None,
     ) -> TaskOutput:
-        query_variant, query_probabilities = _shared_resolve_axis_variant(
+        query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
-            supported_variants=SUPPORTED_QUERY_VARIANTS,
-            explicit_key="query_variant",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
-            axis_namespace="query_variant",
+            supported_variants=SUPPORTED_QUERY_IDS,
+            explicit_key="query_id",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
+            axis_namespace="query_id",
         )
         scene_variant, scene_probabilities = _shared_resolve_axis_variant(
             params,
@@ -532,7 +532,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_height_scene_dataset(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             context_object_count=int(context_object_count),
@@ -578,7 +578,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults["object_description"]),
@@ -599,7 +599,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         solver_trace = dict(dataset["solver_trace"])
         complexity = _build_complexity(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
             height_margin=float(solver_trace.get("height_margin", 0.18)),
@@ -628,15 +628,14 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
-                    "query_variant_probabilities": dict(query_probabilities),
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_probabilities),
                     "point_count": int(point_count),
@@ -670,8 +669,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
             },
             "execution_trace": {
-                "query_variant": "default",
-                "query_id": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "point_count": int(point_count),
                 "candidate_count": int(point_count),
@@ -687,7 +685,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "support_pair_ids": [list(pair) for pair in dataset["support_pair_ids"]],
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
-                "question_format": str(query_variant),
+                "question_format": str(query_id),
                 "view_family": "synthetic_perspective_3d_scene",
                 "solver_trace": dict(solver_trace),
             },
@@ -712,9 +710,8 @@ class ThreeDSpatialHeightExtremumLabelTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
-            query_id=str(query_variant),
+            query_id=str(query_id),
         )
 
 

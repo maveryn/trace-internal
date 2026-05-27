@@ -15,9 +15,9 @@ generation:
       - [35, 65]
       - [40, 70]
       - [45, 75]
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
-    query_variant_weights:
+    query_id_weights:
       at_least_threshold_count: 1.0
       below_threshold_count: 1.0
       within_range_count: 1.0

@@ -244,7 +244,7 @@ def _resolve_range(
 
 def _sample_query_id(params: Mapping[str, Any], *, allowed_query_ids: Sequence[str], instance_seed: int) -> str:
     allowed = tuple(str(item) for item in allowed_query_ids)
-    explicit = params.get("query_id", params.get("query_variant", params.get("query_variant")))
+    explicit = params.get("query_id")
     if explicit is not None and str(explicit) != "default":
         query_id = str(explicit)
         if query_id not in set(allowed):
@@ -823,9 +823,7 @@ class ChartsCompositionTreemapTask:
             for leaf in dataset.leaves
         ]
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "query_variant": str(query_id),
             "public_task_id": str(self.task_id),
             "parent_count": int(len(dataset.parents)),
             "leaf_count_per_parent": int(len(dataset.parents[0].leaf_ids)) if dataset.parents else 0,
@@ -843,9 +841,7 @@ class ChartsCompositionTreemapTask:
                 "relations": dict(query_params),
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_variant),
                 "prompt_variant_active_key": str(active_prompt_key),
@@ -873,9 +869,7 @@ class ChartsCompositionTreemapTask:
                 },
             },
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "query_variant": str(query_id),
                 "answer_value": int(dataset.query.answer),
                 "question_format": "numeric_open",
                 "parents": list(parent_rows),
@@ -913,7 +907,6 @@ class ChartsCompositionTreemapTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_variants),

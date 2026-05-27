@@ -8,7 +8,7 @@
 5. Objective: ask for the degree, in-degree, out-degree, or total degree of one specific labeled node.
 
 ## 2) Scene + task contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `undirected_named_node_degree_value`, `directed_named_node_in_degree_value`, `directed_named_node_out_degree_value`, or `directed_named_node_total_degree_value`
 3. Supported `graph_directionality` values: `undirected`, `directed`
 4. Supported directed `degree_mode` values: `in_degree`, `out_degree`, `total_degree`

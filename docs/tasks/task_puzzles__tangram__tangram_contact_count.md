@@ -8,7 +8,7 @@
 5. Goal: count the marked tangram-style piece or pieces plus every unmarked piece touching them by sharing an edge.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `contact_count`
 3. Answer type: `integer`
 4. Evidence type: `bbox_set`

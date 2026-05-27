@@ -5,7 +5,7 @@
 2. Scene id: `candlestick`
 3. Source implementation domain/group: `charts/candlestick`
 4. Query id: `body_range_extremum_label`, `wick_range_extremum_label`
-5. Public `query_variant` is `default`; semantic query details are recorded in `query_id` and trace params.
+5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.candlestick.ohlc_query.ChartsCandlestickRangeExtremumLabelTask`

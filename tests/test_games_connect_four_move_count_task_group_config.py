@@ -16,13 +16,13 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     assert bool(generation["balanced_scene_variant_sampling"]) is True
     assert bool(generation["balanced_board_size_variant_sampling"]) is True
     assert bool(generation["balanced_safe_board_size_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"midgame_board", "crowded_board"}
     assert set(generation["board_size_variant_weights"].keys()) == {"standard_7x6", "small_6x5"}
     assert set(generation["safe_board_size_variant_weights"].keys()) == {"square_5x5", "square_6x6"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "winning_move_count",
         "safe_move_count",
     }

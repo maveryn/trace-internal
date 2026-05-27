@@ -14,7 +14,7 @@ def test_between_references_answer_and_evidence() -> None:
     output = task.generate(
         20260521,
         params={
-            "query_variant": "between_references",
+            "query_id": "between_references",
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 2,
@@ -31,7 +31,7 @@ def test_between_references_answer_and_evidence() -> None:
     reference_ids = {str(item) for item in trace["reference_object_ids"]}
     reference_names = [str(item) for item in trace["reference_object_names"]]
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == "between_references"
     assert output.answer_gt.type == "option_letter"

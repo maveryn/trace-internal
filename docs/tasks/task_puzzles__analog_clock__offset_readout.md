@@ -8,7 +8,7 @@
 
 ## Contract
 1. Objective: apply a minute offset to the time shown on one analog clock.
-2. Public `query_variant`: `default`
+2. Branch metadata: `query_id`
 3. `query_id`: `minutes_after` or `minutes_before`
 4. Answer type: `string` in strict `HH:MM` format.
 5. Evidence type: `bbox_set` with hour-hand and minute-hand bboxes.

@@ -8,7 +8,7 @@ import pytest
 
 from trace.core.seed import hash64
 from trace.tasks.geometry.analytical.intersection_property_label import (
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     TASK_ID,
     GeometryAnalyticalIntersectionPropertyLabelTask,
 )
@@ -36,16 +36,16 @@ def _matching_labels(variant: str, panels_by_label: dict[str, dict], target_quad
     raise AssertionError(f"unsupported variant in test: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_geometry_analytical_intersection_property_label_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_geometry_analytical_intersection_property_label_contract(query_id: str) -> None:
     task = GeometryAnalyticalIntersectionPropertyLabelTask()
     out = task.generate(
         hash64(94210, TASK_ID, 3),
-        params={"query_variant": query_variant, "winner_label": "C"},
+        params={"query_id": query_id, "winner_label": "C"},
         max_attempts=10,
     )
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
     assert out.evidence_gt.type == "bbox_set"
@@ -57,7 +57,7 @@ def test_geometry_analytical_intersection_property_label_contract(query_variant:
     panels = out.trace_payload["execution_trace"]["panels_by_label"]
     assert set(panels.keys()) == {"A", "B", "C", "D", "E", "F", "G", "H", "I"}
     target_quadrant = out.trace_payload["execution_trace"]["target_quadrant"]
-    assert _matching_labels(query_variant, panels, str(target_quadrant)) == ["C"]
+    assert _matching_labels(query_id, panels, str(target_quadrant)) == ["C"]
 
     c_panel_bbox = out.trace_payload["projected_evidence"]["panel_bbox_by_label"]["C"]
     c_point_bboxes = out.trace_payload["projected_evidence"]["intersection_point_bboxes_by_label"]["C"]
@@ -66,7 +66,7 @@ def test_geometry_analytical_intersection_property_label_contract(query_variant:
 
 def test_geometry_analytical_intersection_property_label_balances_variants_and_answers() -> None:
     task = GeometryAnalyticalIntersectionPropertyLabelTask()
-    per_variant_labels = {variant: Counter() for variant in SUPPORTED_QUERY_VARIANTS}
+    per_query_id_labels = {variant: Counter() for variant in SUPPORTED_QUERY_IDS}
 
     for index in range(99):
         out = task.generate(
@@ -74,12 +74,12 @@ def test_geometry_analytical_intersection_property_label_balances_variants_and_a
             params={},
             max_attempts=10,
         )
-        per_variant_labels[str(out.query_variant)][str(out.answer_gt.value)] += 1
+        per_query_id_labels[str(out.query_id)][str(out.answer_gt.value)] += 1
 
-    variant_counts = {variant: sum(counter.values()) for variant, counter in per_variant_labels.items()}
-    assert set(variant_counts) == set(SUPPORTED_QUERY_VARIANTS)
+    variant_counts = {variant: sum(counter.values()) for variant, counter in per_query_id_labels.items()}
+    assert set(variant_counts) == set(SUPPORTED_QUERY_IDS)
     assert all(30 <= count <= 36 for count in variant_counts.values())
-    for counts in per_variant_labels.values():
+    for counts in per_query_id_labels.values():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F", "G", "H", "I"}
         assert max(counts.values()) <= 8
 

@@ -8,7 +8,7 @@
 5. Goal: apply a short ordered sequence of sliding-block moves and select the final board option.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `move_result_label`
 3. Board size: `6..8` rows by `6..8` columns
 4. Move count: `1..2`

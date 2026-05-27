@@ -29,9 +29,9 @@ def rewrite_pages_query_output(
         scene_id=scene_id_text,
         include_render_spec=True,
         include_scene_ir_root=True,
-        query_variant_probabilities=dict(query_probability_map),
+        query_id_probabilities=dict(query_probability_map),
         variant_probabilities={"default": 1.0},
-        preserve_internal_query_variant_as=("source_query_variant", "internal_query_variant"),
+        preserve_internal_query_id_as=("source_query_id", "internal_query_id"),
     )
 
 

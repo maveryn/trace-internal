@@ -37,5 +37,5 @@
 
 ## Determinism
 1. Generation is deterministic for `instance_seed` plus params.
-2. seeded sampling balances query variants, scene variants, style variants, and answer-label support.
+2. seeded sampling balances query ids, scene variants, style variants, and answer-label support.
 3. The answer and evidence come from the same symbolic control/support trace.

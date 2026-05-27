@@ -6,7 +6,7 @@ generation:
     min_normalized_gap: 0.2
   task_overrides:
     geometry_comparison_value_base:
-      query_variant_weights:
+      query_id_weights:
         angle_extremum: 1.0
         length_extremum: 1.0
         area_extremum: 1.0
@@ -19,7 +19,7 @@ generation:
         segment: 1.0
         rectangle: 1.0
         triangle: 1.0
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_extremum_direction_sampling: true
       balanced_scene_variant_sampling: true
     source_geometry_comparison_angle:

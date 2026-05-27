@@ -10,7 +10,7 @@
 ## 2) Scene + Task Contract
 1. Entities/relations: one two-panel image with a `Reference` before/after pair on the left and a labeled `Scene` grid of before/after icon pairs on the right.
 2. Supported `query_id` values: `color_only_change`, `size_only_change`, and `color_and_size_change`.
-3. Public outputs use `query_variant="default"` and record the sampled branch in `query_id`.
+3. Outputs record the sampled branch in `query_id`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` over full matching Scene cells, sorted top-to-bottom then left-to-right.
 6. Rule policy: matching means the same changed attribute set as the Reference pair, not the same exact color values. Geometric rotations/flips are excluded and remain covered by `task_icons__pair_grid__pair_geometric_transform_count`.

@@ -9,8 +9,8 @@ import pytest
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.tasks.charts.error_interval.interval_chart import (
-    REFERENCE_COUNT_QUERY_VARIANTS,
-    RELATION_LABEL_QUERY_VARIANTS,
+    REFERENCE_COUNT_QUERY_IDS,
+    RELATION_LABEL_QUERY_IDS,
     SUPPORTED_SCENE_VARIANTS,
     ChartsErrorIntervalReferenceCountTask,
     ChartsErrorIntervalRelationLabelTask,
@@ -19,8 +19,8 @@ from trace.tasks.registry import list_default_task_ids
 
 
 TASK_CASES = (
-    (ChartsErrorIntervalReferenceCountTask, REFERENCE_COUNT_QUERY_VARIANTS, "integer"),
-    (ChartsErrorIntervalRelationLabelTask, RELATION_LABEL_QUERY_VARIANTS, "string"),
+    (ChartsErrorIntervalReferenceCountTask, REFERENCE_COUNT_QUERY_IDS, "integer"),
+    (ChartsErrorIntervalRelationLabelTask, RELATION_LABEL_QUERY_IDS, "string"),
 )
 
 
@@ -57,7 +57,7 @@ def _expected_answer(execution: dict, query_id: str) -> int | str:
 def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: tuple[str, ...], answer_type: str) -> None:
     task = task_cls()
     for query_id in query_ids:
-        out = task.generate(117000 + len(query_id), params={"query_variant": query_id}, max_attempts=60)
+        out = task.generate(117000 + len(query_id), params={"query_id": query_id}, max_attempts=60)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
@@ -65,7 +65,7 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
 
         assert task_cls.task_id in list_default_task_ids()
         assert out.scene_id == "error_interval"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert str(execution["query_id"]) == query_id
         assert out.answer_gt.type == answer_type
@@ -91,7 +91,7 @@ def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: t
                 height=int(render["canvas_height"]),
             )
 
-        if query_id in REFERENCE_COUNT_QUERY_VARIANTS:
+        if query_id in REFERENCE_COUNT_QUERY_IDS:
             assert int(out.answer_gt.value) == len(out.evidence_gt.value)
             assert 1 <= int(out.answer_gt.value) <= 5
         else:
@@ -134,11 +134,11 @@ def test_charts_error_interval_balanced_sampling_covers_scene_axis() -> None:
         queries[str(out.query_id)] += 1
 
     assert set(scenes) == set(SUPPORTED_SCENE_VARIANTS)
-    assert set(queries) == set(REFERENCE_COUNT_QUERY_VARIANTS)
+    assert set(queries) == set(REFERENCE_COUNT_QUERY_IDS)
 
 
 def test_charts_error_interval_is_deterministic() -> None:
-    params = {"scene_variant": "bar_with_error", "query_variant": "widest_interval_label"}
+    params = {"scene_variant": "bar_with_error", "query_id": "widest_interval_label"}
     out_a = ChartsErrorIntervalRelationLabelTask().generate(120000, params=params, max_attempts=60)
     out_b = ChartsErrorIntervalRelationLabelTask().generate(120000, params=params, max_attempts=60)
 

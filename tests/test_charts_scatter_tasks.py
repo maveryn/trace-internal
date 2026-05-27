@@ -12,7 +12,7 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks import create_task
 from trace.tasks.charts.scatter.cluster_query import (
     SUPPORTED_SCENE_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS,
     ChartsScatterClusterQueryTask,
 )
 
@@ -25,7 +25,7 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def _expected_answer(execution: dict) -> str:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     labels = [str(label) for label in execution["cluster_labels"]]
 
     if variant == "cluster_trend_direction_label":
@@ -53,12 +53,12 @@ def _expected_answer(execution: dict) -> str:
     raise AssertionError(f"unsupported variant: {variant}")
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_chart_scatter_cluster_variants_match_contract(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_chart_scatter_cluster_variants_match_contract(query_id: str) -> None:
     task = ChartsScatterClusterQueryTask()
     out = task.generate(
-        91300 + SUPPORTED_QUERY_VARIANTS.index(query_variant),
-        params={"query_variant": query_variant},
+        91300 + SUPPORTED_QUERY_IDS.index(query_id),
+        params={"query_id": query_id},
         max_attempts=80,
     )
     trace = out.trace_payload
@@ -66,7 +66,7 @@ def test_chart_scatter_cluster_variants_match_contract(query_variant: str) -> No
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == query_variant
+    assert out.query_id == query_id
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "bbox_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -96,7 +96,7 @@ def test_chart_scatter_cluster_variants_match_contract(query_variant: str) -> No
     expected_cluster_boxes = [render_map["cluster_bboxes_px"][label] for label in evidence_clusters]
     assert out.evidence_gt.value == expected_cluster_boxes
 
-    if query_variant == "cluster_separation_extremum_label":
+    if query_id == "cluster_separation_extremum_label":
         assert len(evidence_clusters) == 2
         assert len(out.evidence_gt.value) == 2
         assert evidence_clusters[0] == execution["reference_cluster_label"]
@@ -117,8 +117,8 @@ def test_chart_scatter_cluster_variants_match_contract(query_variant: str) -> No
 
 def test_chart_scatter_prompt_examples_match_contract() -> None:
     task = ChartsScatterClusterQueryTask()
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS, start=91400):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=80)
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS, start=91400):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["answer"], str)
@@ -141,7 +141,7 @@ def test_chart_scatter_balanced_sampling_covers_axes() -> None:
     for index in range(90):
         out = task.generate(hash64(91500, "charts_scatter", index), params={}, max_attempts=300)
         execution = out.trace_payload["execution_trace"]
-        variants[str(execution["query_variant"])] += 1
+        variants[str(execution["query_id"])] += 1
         labels[str(execution["answer"])] += 1
         cluster_counts[int(execution["cluster_count"])] += 1
         if "trend_direction" in execution:
@@ -153,7 +153,7 @@ def test_chart_scatter_balanced_sampling_covers_axes() -> None:
         if "spread_extremum" in execution:
             spread_extrema[str(execution["spread_extremum"])] += 1
 
-    assert set(variants) == set(SUPPORTED_QUERY_VARIANTS)
+    assert set(variants) == set(SUPPORTED_QUERY_IDS)
     assert min(cluster_counts) >= 4
     assert max(cluster_counts) <= 7
     assert len(cluster_counts) >= 3
@@ -167,7 +167,7 @@ def test_chart_scatter_balanced_sampling_covers_axes() -> None:
 
 def test_chart_scatter_is_deterministic() -> None:
     task = ChartsScatterClusterQueryTask()
-    params = {"query_variant": "cluster_spread_extremum_label", "spread_axis": "overall", "spread_extremum": "largest"}
+    params = {"query_id": "cluster_spread_extremum_label", "spread_axis": "overall", "spread_extremum": "largest"}
     out_a = task.generate(91600, params=params, max_attempts=80)
     out_b = task.generate(91600, params=params, max_attempts=80)
 
@@ -189,7 +189,7 @@ def test_chart_scatter_registered_and_group_config_loaded() -> None:
     generation = cfg["generation"]["shared"]
     assert int(generation["cluster_count_min"]) == 4
     assert int(generation["cluster_count_max"]) == 7
-    assert sorted(generation["query_variant_weights"].keys()) == sorted(SUPPORTED_QUERY_VARIANTS)
+    assert sorted(generation["query_id_weights"].keys()) == sorted(SUPPORTED_QUERY_IDS)
 
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_scatter_v0"

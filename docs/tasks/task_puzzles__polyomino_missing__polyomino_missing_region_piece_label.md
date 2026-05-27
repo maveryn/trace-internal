@@ -8,7 +8,7 @@
 5. Goal: choose the piece that fills a missing region in a polyomino target or rectangular board.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `marked_region_piece_label` or `rectangle_complement_piece`
 3. Rectangle-complement parameter: `matching_policy=exact_orientation|rotation_reflection_allowed`
 4. Answer type: `option_letter`

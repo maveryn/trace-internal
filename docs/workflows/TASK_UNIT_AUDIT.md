@@ -4,7 +4,7 @@ Use this workflow when auditing whether a proposed or active TRACE task is the r
 
 Read `docs/core/TASK_UNIT_POLICY.md` first for the underlying definition of what should count as one TRACE task.
 
-Naming rule: use **query variant** as the human-facing term for task-internal
+Naming rule: use **query id** as the human-facing term for task-internal
 semantic branches and `query_id` as the canonical metadata field. Do not call
 these branches `task variants`; `task_id` is the public sampling unit.
 
@@ -34,7 +34,7 @@ these branches `task variants`; `task_id` is the public sampling unit.
 Audit each task against the following questions.
 
 ### A. Uniform grounding family
-1. Do the scene/query variants feel like the same kind of visual-grounding job?
+1. Do the scene/query ids feel like the same kind of visual-grounding job?
 2. Or is the task actually mixing multiple distinct grounding families under one task id?
 
 ### B. Within-task scene variety
@@ -42,7 +42,7 @@ Audit each task against the following questions.
 2. Is it more than one nearly fixed scaffold with superficial cosmetic change?
 
 ### C. Within-task query variety
-1. Does the task have multiple query variants, or equivalent combinatorial diversity, within the same grounding family?
+1. Does the task have multiple query ids, or equivalent combinatorial diversity, within the same grounding family?
 2. Would repeated samples from this task still expose the model to meaningfully different grounded questions?
 3. If rationale targets are enabled, does every distinct rationale-template
    family correspond to a distinct `query_id`?
@@ -142,7 +142,7 @@ Consider splitting a task when one or more of the following are true:
 
 ## 9) Recommended audit process
 1. Read the task doc, task module, prompt bundle, config, and recent review artifacts.
-2. Summarize the task's actual scene variants, query variants, and evidence contract.
+2. Summarize the task's actual scene variants, query ids, and evidence contract.
 3. Judge the task against the rubric above.
 4. Assign one outcome:
    - `Keep`

@@ -12,17 +12,17 @@ from ...shared.config_defaults import required_group_defaults, split_generation_
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.public_query_task import rewrite_pages_query_output
 from .control_filter_count import (
-    SUPPORTED_QUERY_VARIANTS as CONTROL_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS as CONTROL_QUERY_IDS,
     GuiCountingControlFilterCountTask,
 )
 from .table_row_filter_count import (
-    SUPPORTED_QUERY_VARIANTS as TABLE_QUERY_VARIANTS,
+    SUPPORTED_QUERY_IDS as TABLE_QUERY_IDS,
     GuiCountingTableRowFilterCountTask,
 )
 
 
 TASK_ID = "task_pages__control_board__filter_count"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = tuple(CONTROL_QUERY_VARIANTS) + tuple(TABLE_QUERY_VARIANTS)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = tuple(CONTROL_QUERY_IDS) + tuple(TABLE_QUERY_IDS)
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "counting")
 _GEN_DEFAULTS, _, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -30,15 +30,15 @@ _GEN_DEFAULTS, _, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
 )
 
 
-def _resolve_query_variant(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
+def _resolve_query_id(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     balanced = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -46,11 +46,11 @@ def _resolve_query_variant(instance_seed: int, *, params: Mapping[str, Any]) -> 
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}:query_variant",
+        supported_variants=SUPPORTED_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}:query_id",
     )
     return str(balanced), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -90,12 +90,12 @@ def _rewrite_variant_probabilities(payload: Dict[str, Any], probabilities: Mappi
     for section_key in ("execution_trace",):
         section = payload.get(section_key)
         if isinstance(section, dict):
-            section["query_variant_probabilities"] = dict(probabilities)
+            section["query_id_probabilities"] = dict(probabilities)
     query_spec = payload.get("query_spec")
     if isinstance(query_spec, dict):
         params = query_spec.get("params")
         if isinstance(params, dict):
-            params["query_variant_probabilities"] = dict(probabilities)
+            params["query_id_probabilities"] = dict(probabilities)
 
 
 @register_task
@@ -107,33 +107,33 @@ class PagesCountingFilterCountTask:
     task_group = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_variant, probabilities = _resolve_query_variant(int(instance_seed), params=params)
+        query_id, probabilities = _resolve_query_id(int(instance_seed), params=params)
         delegated_params = dict(_GEN_DEFAULTS)
         delegated_params.update(dict(params))
-        delegated_params["query_variant"] = str(query_variant)
+        delegated_params["query_id"] = str(query_id)
 
-        if str(query_variant) in set(CONTROL_QUERY_VARIANTS):
+        if str(query_id) in set(CONTROL_QUERY_IDS):
             source_task = GuiCountingControlFilterCountTask()
             delegated_params["_prompt_defaults_override"] = dict(_CONTROL_PROMPT_DEFAULTS)
-        elif str(query_variant) in set(TABLE_QUERY_VARIANTS):
+        elif str(query_id) in set(TABLE_QUERY_IDS):
             source_task = GuiCountingTableRowFilterCountTask()
             delegated_params["_prompt_defaults_override"] = dict(_TABLE_PROMPT_DEFAULTS)
         else:
-            raise ValueError(f"unsupported query_variant for {TASK_ID}: {query_variant}")
+            raise ValueError(f"unsupported query_id for {TASK_ID}: {query_id}")
 
         output = source_task.generate(
             int(instance_seed),
             params=delegated_params,
             max_attempts=int(max_attempts),
         )
-        output.query_variant = str(query_variant)
+        output.query_id = str(query_id)
         _rewrite_variant_probabilities(output.trace_payload, probabilities)
         return rewrite_pages_query_output(
             output,
-            query_id=str(query_variant),
+            query_id=str(query_id),
             scene_id="control_board",
             query_probabilities=probabilities,
         )
 
 
-__all__ = ["PagesCountingFilterCountTask", "SUPPORTED_QUERY_VARIANTS"]
+__all__ = ["PagesCountingFilterCountTask", "SUPPORTED_QUERY_IDS"]

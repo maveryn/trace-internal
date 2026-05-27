@@ -15,8 +15,8 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         ("categorical_value_count", None, "spreadsheet"),
         ("threshold_count", "greater_than", "card_table"),
     )
-    for seed, (query_variant, comparison, scene_variant) in enumerate(cases, start=18210):
-        params = {"query_variant": query_variant, "scene_variant": scene_variant}
+    for seed, (query_id, comparison, scene_variant) in enumerate(cases, start=18210):
+        params = {"query_id": query_id, "scene_variant": scene_variant}
         if comparison is not None:
             params["comparison"] = str(comparison)
         out = task.generate(seed, params=params, max_attempts=10)
@@ -38,7 +38,7 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         matching_row_indices = [int(value) for value in execution["matching_row_indices"]]
         expected_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -50,7 +50,7 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         assert len(row_labels) == int(execution["row_count"])
         expected_column_count = (
             int(execution["numeric_column_count"]) + 1
-            if str(query_variant) == "categorical_value_count"
+            if str(query_id) == "categorical_value_count"
             else int(execution["numeric_column_count"])
         )
         assert len(column_headers) == expected_column_count
@@ -58,7 +58,7 @@ def test_table_counting_value_count_variants_match_contract() -> None:
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
         assert len(evidence_bboxes) == int(out.answer_gt.value) == len(expected_cell_ids)
 
-        if str(query_variant) == "categorical_value_count":
+        if str(query_id) == "categorical_value_count":
             target_category = str(execution["target_category"])
             query_values = [str(raw_values_by_row[str(row_label)][str(query_column)]) for row_label in row_labels]
             expected_row_indices = [
@@ -66,13 +66,13 @@ def test_table_counting_value_count_variants_match_contract() -> None:
                 for index, value in enumerate(query_values)
                 if str(value) == str(target_category)
             ]
-        elif str(query_variant) == "threshold_count" and str(comparison) == "greater_than":
+        elif str(query_id) == "threshold_count" and str(comparison) == "greater_than":
             query_values = [int(raw_values_by_row[str(row_label)][str(query_column)]) for row_label in row_labels]
             threshold_value = int(execution["threshold_value"])
             expected_row_indices = [
                 int(index) for index, value in enumerate(query_values) if int(value) > int(threshold_value)
             ]
-        elif str(query_variant) == "threshold_count" and str(comparison) == "less_than":
+        elif str(query_id) == "threshold_count" and str(comparison) == "less_than":
             query_values = [int(raw_values_by_row[str(row_label)][str(query_column)]) for row_label in row_labels]
             threshold_value = int(execution["threshold_value"])
             expected_row_indices = [
@@ -104,17 +104,17 @@ def test_table_counting_prompt_examples_match_selected_variant() -> None:
         "in_interval": {"evidence": [[260, 180, 372, 236], [260, 236, 372, 292], [260, 292, 372, 348]], "answer": 3},
         "categorical_value_count": {"evidence": [[260, 180, 372, 236], [260, 292, 372, 348]], "answer": 2},
     }
-    for index, query_variant in enumerate(expected, start=18230):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=18230):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_table_counting_value_count_task_is_deterministic() -> None:
     task = TablesCountingValueCountTask()
-    params = {"query_variant": "in_interval", "scene_variant": "spreadsheet"}
+    params = {"query_id": "in_interval", "scene_variant": "spreadsheet"}
     out_a = task.generate(18260, params=params, max_attempts=10)
     out_b = task.generate(18260, params=params, max_attempts=10)
 
@@ -129,7 +129,7 @@ def test_table_counting_value_count_task_is_deterministic() -> None:
 def test_table_counting_visual_style_axes_preserve_projected_bboxes() -> None:
     task = TablesCountingValueCountTask()
     params = {
-        "query_variant": "in_interval",
+        "query_id": "in_interval",
         "scene_variant": "spreadsheet",
         "header_style": "dark",
         "frame_style": "shadow",
@@ -159,7 +159,7 @@ def test_table_counting_visual_style_axes_preserve_projected_bboxes() -> None:
     assert out.evidence_gt.value == expected_bboxes
 
 
-def test_table_counting_target_count_sampling_decouples_from_query_variant_sampling() -> None:
+def test_table_counting_target_count_sampling_decouples_from_query_id_sampling() -> None:
     task = TablesCountingValueCountTask()
     answers_by_variant: dict[str, set[int]] = {}
     for sampling_index in range(30):
@@ -171,7 +171,7 @@ def test_table_counting_target_count_sampling_decouples_from_query_variant_sampl
             },
             max_attempts=10,
         )
-        answers_by_variant.setdefault(str(out.query_variant), set()).add(int(out.answer_gt.value))
+        answers_by_variant.setdefault(str(out.query_id), set()).add(int(out.answer_gt.value))
 
     assert set(answers_by_variant) == {"threshold_count", "in_interval", "categorical_value_count"}
     assert answers_by_variant["threshold_count"].issubset(set(range(4, 9)))
@@ -186,7 +186,7 @@ def test_table_counting_interval_uses_bounded_answer_and_boundary_distractors() 
         out = task.generate(
             seed,
             params={
-                "query_variant": "in_interval",
+                "query_id": "in_interval",
                 "row_count_min": 10,
                 "row_count_max": 10,
             },
@@ -219,7 +219,7 @@ def test_table_counting_threshold_uses_bounded_answer_and_boundary_values() -> N
             out = task.generate(
                 seed,
                 params={
-                    "query_variant": "threshold_count",
+                    "query_id": "threshold_count",
                     "comparison": str(comparison),
                     "row_count_min": 10,
                     "row_count_max": 10,

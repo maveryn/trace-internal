@@ -24,12 +24,12 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ..shared.complexity import build_games_sudoku_grid_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.style import SUPPORTED_SUDOKU_STYLE_VARIANTS
 from ..shared.sudoku_common import (
     DIGITS,
     SIZE,
-    SUPPORTED_SUDOKU_QUERY_VARIANTS,
+    SUPPORTED_SUDOKU_QUERY_IDS,
     SUPPORTED_SUDOKU_SCENE_VARIANTS,
     SUPPORTED_SUDOKU_UNIT_TYPES,
     Board,
@@ -83,13 +83,13 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Sudoku-grid scene."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     unit_type: str
     style_variant: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     unit_type_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -106,7 +106,7 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="sudo
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="sudoku", apply_prob=0.0)
 
 
-def _target_support_key(query_variant: str) -> str:
+def _target_support_key(query_id: str) -> str:
     """Return the configured answer-support key for one Sudoku query."""
 
     return {
@@ -114,24 +114,24 @@ def _target_support_key(query_variant: str) -> str:
         "marked_cell_candidate_count": "marked_cell_candidate_count_support",
         "unit_missing_digits_count": "unit_missing_digits_count_support",
         "repeated_digit_count": "repeated_digit_count_support",
-    }[str(query_variant)]
+    }[str(query_id)]
 
 
 def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[str, float]) -> bool:
     """Return true when the query axis is using the default balanced cycle."""
 
-    if params.get("query_variant") is not None or params.get("query_variant") is not None:
+    if params.get("query_id") is not None or params.get("query_id") is not None:
         return False
     enabled = bool(
         params.get(
-            "balanced_query_variant_sampling",
-            group_default(_GEN_DEFAULTS, "balanced_query_variant_sampling", True),
+            "balanced_query_id_sampling",
+            group_default(_GEN_DEFAULTS, "balanced_query_id_sampling", True),
         )
     )
     if not enabled:
         return False
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if len(positives) != len(SUPPORTED_SUDOKU_QUERY_VARIANTS):
+    if len(positives) != len(SUPPORTED_SUDOKU_QUERY_IDS):
         return False
     return max(positives) - min(positives) <= 1e-9
 
@@ -139,7 +139,7 @@ def _uses_uniform_query_cycle(params: Mapping[str, Any], probabilities: Mapping[
 def _params_for_query_occurrence_cycle(
     params: Mapping[str, Any],
     *,
-    query_variant_probabilities: Mapping[str, float],
+    query_id_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
     """Use a per-query occurrence index for balanced inner axes."""
 
@@ -147,25 +147,25 @@ def _params_for_query_occurrence_cycle(
     sampling_index = params.get("_sample_cursor")
     if sampling_index is None:
         return cycle_params
-    if not _uses_uniform_query_cycle(params, query_variant_probabilities):
+    if not _uses_uniform_query_cycle(params, query_id_probabilities):
         return cycle_params
-    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_SUDOKU_QUERY_VARIANTS))
+    cycle_params["_sample_cursor"] = abs(int(sampling_index)) // max(1, len(SUPPORTED_SUDOKU_QUERY_IDS))
     return cycle_params
 
 
-def _resolve_query_variant(
+def _resolve_query_id(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Sudoku query variant."""
+    """Resolve one balanced Sudoku query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_SUDOKU_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_SUDOKU_QUERY_IDS,
     )
 
 
@@ -197,13 +197,13 @@ def _resolve_named_axis(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Sudoku instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(
+    query_id, query_id_probabilities = _resolve_query_id(
         instance_seed=int(instance_seed),
         params=params,
     )
     cycle_params = _params_for_query_occurrence_cycle(
         params,
-        query_variant_probabilities=query_variant_probabilities,
+        query_id_probabilities=query_id_probabilities,
     )
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -232,7 +232,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balance_flag_key="balanced_style_variant_sampling",
         supported=SUPPORTED_SUDOKU_STYLE_VARIANTS,
     )
-    support_key = _target_support_key(str(query_variant))
+    support_key = _target_support_key(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=cycle_params,
@@ -240,7 +240,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         support_key=str(support_key),
         explicit_key="target_answer",
         fallback_support=getattr(_DEFAULTS, support_key),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -251,13 +251,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         fallback=getattr(_DEFAULTS, support_key),
     )
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         unit_type=str(unit_type),
         style_variant=str(style_variant),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         unit_type_probabilities=dict(unit_type_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -359,7 +359,7 @@ def _sample_marked_cell_value(*, rng, solution: Board, axes: _ResolvedAxes) -> S
     return SudokuSample(
         board=frozen,
         solution=solution,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         answer=int(target_digit),
         evidence_coords=evidence_coords,
         marked_cell=marked_cell,
@@ -416,7 +416,7 @@ def _sample_marked_cell_candidate_count(*, rng, solution: Board, axes: _Resolved
     return SudokuSample(
         board=frozen,
         solution=solution,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         answer=int(target_count),
         evidence_coords=evidence_coords,
         marked_cell=marked_cell,
@@ -466,7 +466,7 @@ def _sample_unit_missing_digits(*, rng, solution: Board, axes: _ResolvedAxes) ->
     return SudokuSample(
         board=frozen,
         solution=solution,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         answer=int(len(missing_digits)),
         evidence_coords=tuple(evidence_coords),
         marked_cell=None,
@@ -527,7 +527,7 @@ def _sample_repeated_digit_count(*, rng, solution: Board, axes: _ResolvedAxes) -
     return SudokuSample(
         board=frozen,
         solution=solution,
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         answer=int(len(repeated_digits)),
         evidence_coords=tuple(evidence_coords),
         marked_cell=None,
@@ -544,15 +544,15 @@ def _sample_scene(*, rng, axes: _ResolvedAxes) -> SudokuSample:
     """Construct one Sudoku scene for the requested axes."""
 
     solution = build_sudoku_solution(rng)
-    if str(axes.query_variant) == "marked_cell_value":
+    if str(axes.query_id) == "marked_cell_value":
         return _sample_marked_cell_value(rng=rng, solution=solution, axes=axes)
-    if str(axes.query_variant) == "marked_cell_candidate_count":
+    if str(axes.query_id) == "marked_cell_candidate_count":
         return _sample_marked_cell_candidate_count(rng=rng, solution=solution, axes=axes)
-    if str(axes.query_variant) == "unit_missing_digits_count":
+    if str(axes.query_id) == "unit_missing_digits_count":
         return _sample_unit_missing_digits(rng=rng, solution=solution, axes=axes)
-    if str(axes.query_variant) == "repeated_digit_count":
+    if str(axes.query_id) == "repeated_digit_count":
         return _sample_repeated_digit_count(rng=rng, solution=solution, axes=axes)
-    raise ValueError(f"unsupported Sudoku query_variant: {axes.query_variant}")
+    raise ValueError(f"unsupported Sudoku query_id: {axes.query_id}")
 
 
 def _unit_scope_text(prompt_defaults: Mapping[str, Any], unit_type: str | None) -> str:
@@ -563,10 +563,10 @@ def _unit_scope_text(prompt_defaults: Mapping[str, Any], unit_type: str | None) 
     return str(prompt_defaults[f"unit_scope_text_{str(unit_type)}"])
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Sudoku JSON output."""
 
-    answer_value = 7 if str(query_variant) == "marked_cell_value" else 3
+    answer_value = 7 if str(query_id) == "marked_cell_value" else 3
     evidence_value = [[140, 220, 210, 290], [210, 220, 280, 290], [280, 220, 350, 290]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -611,7 +611,7 @@ class GamesSudokuGridTask:
             highlighted_unit_type=sampled_scene.highlighted_unit_type,
             highlighted_unit_index=sampled_scene.highlighted_unit_index,
             marked_cell=sampled_scene.marked_cell,
-            conflict_coords=sampled_scene.evidence_coords if str(axes.query_variant) == "repeated_digit_count" else (),
+            conflict_coords=sampled_scene.evidence_coords if str(axes.query_id) == "repeated_digit_count" else (),
         )
         evidence_entity_ids = [coord_to_cell_id(coord) for coord in sampled_scene.evidence_coords]
         evidence_bboxes = [
@@ -652,21 +652,21 @@ class GamesSudokuGridTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
                 "sudoku_rule_text": str(prompt_defaults["sudoku_rule_text"]),
@@ -684,7 +684,7 @@ class GamesSudokuGridTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             visible_count=int(sampled_scene.visible_count),
             target_answer=int(sampled_scene.answer),
             evidence_count=len(evidence_entity_ids),
@@ -696,8 +696,7 @@ class GamesSudokuGridTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "unit_type": sampled_scene.highlighted_unit_type,
                     "unit_index": sampled_scene.highlighted_unit_index,
                     "style_variant": str(axes.style_variant),
@@ -707,21 +706,20 @@ class GamesSudokuGridTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "unit_type": sampled_scene.highlighted_unit_type,
                     "unit_index": sampled_scene.highlighted_unit_index,
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "unit_type_probabilities": dict(axes.unit_type_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(sampled_scene.answer),
@@ -740,8 +738,7 @@ class GamesSudokuGridTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "target_answer": int(sampled_scene.answer),
                 "target_answer_support": [int(value) for value in axes.target_answer_support],
@@ -793,9 +790,8 @@ class GamesSudokuGridTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="sudoku",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -804,7 +800,7 @@ class GamesSudokuMarkedCellValueTask(FixedQueryVariantTaskMixin, GamesSudokuGrid
     """Find the unique digit for a marked empty Sudoku cell."""
 
     task_id = "task_games__sudoku__marked_cell_value"
-    fixed_query_variant = "marked_cell_value"
+    fixed_query_id = "marked_cell_value"
 
 
 @register_task
@@ -812,7 +808,7 @@ class GamesSudokuMarkedCellCandidateCountTask(FixedQueryVariantTaskMixin, GamesS
     """Count legal candidate digits for a marked empty Sudoku cell."""
 
     task_id = "task_games__sudoku__marked_cell_candidate_count"
-    fixed_query_variant = "marked_cell_candidate_count"
+    fixed_query_id = "marked_cell_candidate_count"
 
 
 @register_task
@@ -820,7 +816,7 @@ class GamesSudokuUnitMissingDigitsCountTask(FixedQueryVariantTaskMixin, GamesSud
     """Count missing digit values in a highlighted Sudoku unit."""
 
     task_id = "task_games__sudoku__unit_missing_digits_count"
-    fixed_query_variant = "unit_missing_digits_count"
+    fixed_query_id = "unit_missing_digits_count"
 
 
 @register_task
@@ -828,7 +824,7 @@ class GamesSudokuRepeatedDigitCountTask(FixedQueryVariantTaskMixin, GamesSudokuG
     """Count repeated digit values in a highlighted Sudoku unit."""
 
     task_id = "task_games__sudoku__repeated_digit_count"
-    fixed_query_variant = "repeated_digit_count"
+    fixed_query_id = "repeated_digit_count"
 
 
 __all__ = [

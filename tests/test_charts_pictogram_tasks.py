@@ -60,7 +60,7 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
 
     assert task_cls.task_id in list_default_task_ids()
     assert out.scene_id == "pictogram"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
     assert str(execution["query_id"]) == query_id
     assert str(query_params["query_id"]) == query_id

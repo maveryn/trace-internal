@@ -21,7 +21,7 @@ generation:
         cubic: 1.0
         sinusoid: 1.0
         piecewise_linear: 1.0
-      query_variant_weights:
+      query_id_weights:
         reference_line_crossing_count: 1.0
         turning_point_count: 1.0
         local_extremum_count: 1.0
@@ -32,7 +32,7 @@ generation:
         minimum: 1.0
         maximum: 1.0
       balanced_scene_variant_sampling: true
-      balanced_query_variant_sampling: true
+      balanced_query_id_sampling: true
       balanced_reference_line_kind_sampling: true
       balanced_extremum_kind_sampling: true
     task_geometry__function_graph__average_rate_value:

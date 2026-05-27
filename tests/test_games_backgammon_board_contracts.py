@@ -35,9 +35,9 @@ def _points_from_trace(execution: dict) -> dict[int, BackgammonPoint]:
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_query"),
     (
-        (GamesBackgammonDestinationCountTask, {"target_answer": 4, "query_variant": "legal_move_count"}, "legal_move_count"),
-        (GamesBackgammonDestinationCountTask, {"target_answer": 3, "query_variant": "hit_move_count"}, "hit_move_count"),
-        (GamesBackgammonDestinationCountTask, {"target_answer": 4, "query_variant": "blocked_destination_count"}, "blocked_destination_count"),
+        (GamesBackgammonDestinationCountTask, {"target_answer": 4, "query_id": "legal_move_count"}, "legal_move_count"),
+        (GamesBackgammonDestinationCountTask, {"target_answer": 3, "query_id": "hit_move_count"}, "hit_move_count"),
+        (GamesBackgammonDestinationCountTask, {"target_answer": 4, "query_id": "blocked_destination_count"}, "blocked_destination_count"),
     ),
 )
 def test_games_backgammon_public_tasks_emit_expected_contract(
@@ -51,15 +51,15 @@ def test_games_backgammon_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "backgammon"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)
 
@@ -79,14 +79,14 @@ def test_games_backgammon_answers_match_recomputed_destination_sets(
 ) -> None:
     out = task_cls().generate(
         820100 + target_answer,
-        params={"target_answer": int(target_answer), "query_variant": str(expected_query)},
+        params={"target_answer": int(target_answer), "query_id": str(expected_query)},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     points = _points_from_trace(execution)
     dice = tuple(int(value) for value in execution["dice"])
     outcome = compute_black_single_die_destinations(points, dice=(dice[0], dice[1]))
-    expected_destinations = target_destinations_for_query(outcome, query_variant=expected_query)
+    expected_destinations = target_destinations_for_query(outcome, query_id=expected_query)
     expected_entity_ids = {point_entity_id(point) for point in expected_destinations}
 
     assert int(out.answer_gt.value) == len(expected_destinations) == int(target_answer)

@@ -8,7 +8,7 @@
 5. Goal: choose the row-strip option that satisfies the marked nonogram row clue and the visible partial cells.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `line_completion_label`
 3. Grid size: `6x6..9x9`
 4. Option count: `4..6`

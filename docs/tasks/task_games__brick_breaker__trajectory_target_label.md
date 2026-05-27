@@ -10,7 +10,7 @@
 ## Answer and Evidence
 1. Answer type: `string`
 2. Evidence type: bbox_set over the selected brick or bottom catch lane pad.
-3. Public `query_variant` is `default`; the concrete trajectory target branch is retained as `query_id` and `query_spec.params.query_variant` for diagnostics.
+3. The concrete trajectory target branch is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
 
 ## Implementation
 1. This task uses the shared games Brick-breaker playfield renderer.

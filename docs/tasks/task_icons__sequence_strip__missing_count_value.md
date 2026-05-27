@@ -8,7 +8,7 @@
 
 ## 2) Scene + task contract
 1. Entities/relations: one single-panel image with a horizontal row of `4..6` boxes; one box is missing and marked with `?`.
-2. Public `query_variant`: `default`.
+2. Branch metadata: `query_id`
 3. Diagnostic `query_id`: `arithmetic_progression`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the missing box in final image pixel coordinates).

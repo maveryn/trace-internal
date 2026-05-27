@@ -56,25 +56,25 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert out.evidence_gt.type == "bbox_set"
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
     expected_internal_query = (
         f"{params['torque_side']}_torque" if expected_query_id == "side_torque" else expected_query_id
     )
-    assert trace["query_spec"]["params"]["internal_query_variant"] == expected_internal_query
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
 
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_variant"] == expected_internal_query
+    assert execution["internal_query_id"] == expected_internal_query
 
     assert str(trace["query_spec"]["params"]["accent_color_name"]) == str(trace["execution_trace"]["accent_color_name"])
 
@@ -92,7 +92,7 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
         assert execution["placeholder_side"] in {"left", "right"}
     else:
 
-        assert str(execution["internal_query_variant"]) in {"left_torque", "right_torque"}
+        assert str(execution["internal_query_id"]) in {"left_torque", "right_torque"}
 
         assert len(out.evidence_gt.value) == len(execution["relevant_weight_ids"])
 

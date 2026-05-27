@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__word_search__search_location_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `word_location_label`
 3. Prompt asks for the option that gives the start row, start column, and compact direction code of one target word.
 4. Internal variation:

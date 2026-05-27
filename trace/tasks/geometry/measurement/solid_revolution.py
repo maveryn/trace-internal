@@ -461,7 +461,7 @@ def _resolve_problem(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _ResolvedProblem:
-    explicit_query_raw = params.get("query_id", params.get("query_variant"))
+    explicit_query_raw = params.get("query_id")
     if explicit_query_raw is not None:
         query_id = str(explicit_query_raw)
         if query_id not in set(supported_queries):
@@ -1047,9 +1047,8 @@ class _SolidRevolutionBaseTask:
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": str(problem.solid_kind),
-            "query_variant": "default",
             "query_id": str(problem.query_id),
-            "query_variant_probabilities": dict(problem.query_probabilities),
+            "query_id_probabilities": dict(problem.query_probabilities),
             "variant_probabilities": {"default": 1.0},
             "target_support_probabilities": dict(problem.support_probabilities),
             **dict(rendered.witness),
@@ -1060,7 +1059,6 @@ class _SolidRevolutionBaseTask:
                 "scene_id": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered.scene_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(problem.query_id),
                     "scene_variant": str(problem.solid_kind),
                     "answer_value": float(rendered.answer),
@@ -1069,7 +1067,6 @@ class _SolidRevolutionBaseTask:
             },
             "query_spec": {
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(problem.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1089,9 +1086,8 @@ class _SolidRevolutionBaseTask:
             "execution_trace": {
                 "scene_id": SCENE_ID,
                 "scene_variant": str(problem.solid_kind),
-                "query_variant": "default",
                 "query_id": str(problem.query_id),
-                "query_variant_probabilities": dict(problem.query_probabilities),
+                "query_id_probabilities": dict(problem.query_probabilities),
                 "answer_type": "number",
                 "answer_value": float(rendered.answer),
                 "answer_rounding": "nearest_tenth",
@@ -1102,7 +1098,6 @@ class _SolidRevolutionBaseTask:
             "witness_symbolic": {
                 "type": "solid_revolution_formula",
                 "scene_id": SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
                 "source_witness_type": "bbox_set",
@@ -1126,7 +1121,6 @@ class _SolidRevolutionBaseTask:
             trace_payload=trace_payload,
             complexity=self._build_complexity(rendered),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(problem.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

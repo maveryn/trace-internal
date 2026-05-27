@@ -614,7 +614,7 @@ class IconsRelationOcclusionOrderTask:
                 },
             },
             "query_spec": {
-                "query_variant": _ORDER_MATCH_VARIANT,
+                "query_id": _ORDER_MATCH_VARIANT,
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -648,7 +648,7 @@ class IconsRelationOcclusionOrderTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_overlap_grid",
-                "query_variant": _ORDER_MATCH_VARIANT,
+                "query_id": _ORDER_MATCH_VARIANT,
                 "object_count": int(scene_payload.object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(scene_payload.target_count),
@@ -691,7 +691,7 @@ class IconsRelationOcclusionOrderTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=_ORDER_MATCH_VARIANT,
+            query_id=_ORDER_MATCH_VARIANT,
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
         return rewrite_icons_query_output(

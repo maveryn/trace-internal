@@ -6,18 +6,18 @@ import pytest
 
 from trace.tasks import create_task
 from trace.tasks.geometry.coordinate.locus_region import (
-    PANEL_QUERY_VARIANTS,
+    PANEL_QUERY_IDS,
     PANEL_TASK_ID,
-    POINT_QUERY_VARIANTS,
+    POINT_QUERY_IDS,
     POINT_TASK_ID,
     SCENE_ID,
 )
 
 
-@pytest.mark.parametrize("query_id", POINT_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", POINT_QUERY_IDS)
 def test_locus_point_task_has_unique_region_member(query_id: str) -> None:
     task = create_task(POINT_TASK_ID)
-    out = task.generate(78101, params={"query_variant": query_id, "winner_label": "C"}, max_attempts=50)
+    out = task.generate(78101, params={"query_id": query_id, "winner_label": "C"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     candidates = execution["candidate_points_by_label"]
@@ -34,10 +34,10 @@ def test_locus_point_task_has_unique_region_member(query_id: str) -> None:
     assert sum(1 for payload in candidates.values() if payload["inside_region"]) == 1
 
 
-@pytest.mark.parametrize("query_id", PANEL_QUERY_VARIANTS)
+@pytest.mark.parametrize("query_id", PANEL_QUERY_IDS)
 def test_locus_panel_task_has_unique_matching_panel(query_id: str) -> None:
     task = create_task(PANEL_TASK_ID)
-    out = task.generate(78111, params={"query_variant": query_id, "winner_label": "D"}, max_attempts=50)
+    out = task.generate(78111, params={"query_id": query_id, "winner_label": "D"}, max_attempts=50)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     panels = execution["panels_by_label"]
@@ -64,7 +64,7 @@ def test_locus_panel_task_has_unique_matching_panel(query_id: str) -> None:
 )
 def test_coordinate_locus_tasks_are_deterministic(task_id: str, query_id: str) -> None:
     task = create_task(task_id)
-    params = {"query_variant": query_id, "winner_label": "B"}
+    params = {"query_id": query_id, "winner_label": "B"}
     out_a = task.generate(78121, params=dict(params), max_attempts=50)
     out_b = task.generate(78121, params=dict(params), max_attempts=50)
 

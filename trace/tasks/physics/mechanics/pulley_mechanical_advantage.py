@@ -23,7 +23,7 @@ from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_pulley_mechanical_advantage_complexity
@@ -40,24 +40,24 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "compact_block",
     "tall_block",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "effort_force_for_load",
     "load_force_from_effort",
 )
-SUPPORTED_PUBLIC_QUERY_VARIANTS: Tuple[str, ...] = ("force_relation",)
-_SOLVE_FOR_BY_QUERY_VARIANT = {
+SUPPORTED_PUBLIC_QUERY_IDS: Tuple[str, ...] = ("force_relation",)
+_SOLVE_FOR_BY_QUERY_ID = {
     "effort_force_for_load": "effort_force",
     "load_force_from_effort": "load_force",
 }
-_QUERY_VARIANT_BY_SOLVE_FOR = {
+_QUERY_ID_BY_SOLVE_FOR = {
     "effort_force": "effort_force_for_load",
     "load_force": "load_force_from_effort",
 }
 _SUPPORTED_SOLVE_FOR_TARGETS: Tuple[str, ...] = ("effort_force", "load_force")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "open_block": SUPPORTED_QUERY_VARIANTS,
-    "compact_block": SUPPORTED_QUERY_VARIANTS,
-    "tall_block": SUPPORTED_QUERY_VARIANTS,
+    "open_block": SUPPORTED_QUERY_IDS,
+    "compact_block": SUPPORTED_QUERY_IDS,
+    "tall_block": SUPPORTED_QUERY_IDS,
 }
 _LOAD_FORCE_SUPPORT: Tuple[int, ...] = (
     8,
@@ -155,13 +155,13 @@ class _ResolvedAxes:
     """Resolved scene/query axes and answer support for one instance."""
 
     scene_variant: str
-    query_variant: str
-    public_query_variant: str
+    query_id: str
+    public_query_id: str
     solve_for: str
     accent_color_name: str
     target_answer: int
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     solve_for_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
@@ -182,7 +182,7 @@ class _SceneSpec:
     """Symbolic pulley system that realizes one query answer."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     support_segment_count: int
     disconnected_segment_count: int
     connected_slot_indices: Tuple[int, ...]
@@ -219,18 +219,18 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
 
 
-def _answer_support_key(query_variant: str) -> str:
+def _answer_support_key(query_id: str) -> str:
     """Return the configured answer-support key for one pulley query."""
 
-    if str(query_variant) == "effort_force_for_load":
+    if str(query_id) == "effort_force_for_load":
         return "effort_force_support"
     return "load_force_support"
 
 
-def _fallback_support(query_variant: str) -> Tuple[int, ...]:
+def _fallback_support(query_id: str) -> Tuple[int, ...]:
     """Return fallback answer support for one pulley query."""
 
-    if str(query_variant) == "effort_force_for_load":
+    if str(query_id) == "effort_force_for_load":
         return _DEFAULTS.effort_force_support
     return _DEFAULTS.load_force_support
 
@@ -242,7 +242,7 @@ def _with_sampling_divisor(params: Mapping[str, Any], *, divisor: int, explicit_
     return params
 
 
-def _resolve_public_query_variant(
+def _resolve_public_query_id(
     rng,
     *,
     instance_seed: int,
@@ -250,19 +250,19 @@ def _resolve_public_query_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the public pulley query family, accepting old inverse names as aliases."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_VARIANT:
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_ID:
         return "force_relation", {"force_relation": 1.0}
-    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_VARIANTS:
+    if explicit_query is not None and str(explicit_query) in SUPPORTED_PUBLIC_QUERY_IDS:
         return str(explicit_query), {str(explicit_query): 1.0}
 
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        explicit_key="query_id",
+        weights_key="query_id_weights",
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -270,11 +270,11 @@ def _resolve_public_query_variant(
         gen_defaults=_GEN_DEFAULTS,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_PUBLIC_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
+        supported_variants=SUPPORTED_PUBLIC_QUERY_IDS,
+        balance_flag_key="balanced_query_id_sampling",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        sampling_namespace=f"{TASK_ID}.query_id",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
@@ -296,9 +296,9 @@ def _resolve_solve_for(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve whether the unknown pulley force is effort or load."""
 
-    explicit_query = params.get("query_variant", params.get("query_variant"))
-    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_VARIANT:
-        selected = str(_SOLVE_FOR_BY_QUERY_VARIANT[str(explicit_query)])
+    explicit_query = params.get("query_id")
+    if explicit_query is not None and str(explicit_query) in _SOLVE_FOR_BY_QUERY_ID:
+        selected = str(_SOLVE_FOR_BY_QUERY_ID[str(explicit_query)])
         return selected, {key: (1.0 if key == selected else 0.0) for key in _SUPPORTED_SOLVE_FOR_TARGETS}
 
     explicit_solve_for = params.get("solve_for")
@@ -333,7 +333,7 @@ def _resolve_target_answer(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve one balanced answer target for the active pulley query."""
 
@@ -342,10 +342,10 @@ def _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=target_params,
         gen_defaults=_GEN_DEFAULTS,
-        support_key=_answer_support_key(str(query_variant)),
+        support_key=_answer_support_key(str(query_id)),
         explicit_key="target_answer",
-        fallback_support=_fallback_support(str(query_variant)),
-        namespace=f"{TASK_ID}.target_answer.{str(query_variant)}",
+        fallback_support=_fallback_support(str(query_id)),
+        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
         balanced_flag_key="balanced_target_answer_sampling",
         namespace_support_permutation=True,
     )
@@ -355,7 +355,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve one compatible scene/query pair, color, and answer target."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    public_query_variant, query_probs = _resolve_public_query_variant(
+    public_query_id, query_probs = _resolve_public_query_id(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
@@ -365,7 +365,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         instance_seed=int(instance_seed),
         params=params,
     )
-    query_variant = str(_QUERY_VARIANT_BY_SOLVE_FOR[str(solve_for)])
+    query_id = str(_QUERY_ID_BY_SOLVE_FOR[str(solve_for)])
     scene_params = _with_sampling_divisor(
         params,
         divisor=len(_SUPPORTED_SOLVE_FOR_TARGETS),
@@ -394,7 +394,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_answer, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
     )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_probs = resolve_variant(
@@ -419,13 +419,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
-        public_query_variant=str(public_query_variant),
+        query_id=str(query_id),
+        public_query_id=str(public_query_id),
         solve_for=str(solve_for),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         solve_for_probabilities=dict(solve_for_probabilities),
         accent_color_name_probabilities=dict(accent_probs),
         target_answer_probabilities=dict(target_answer_probabilities),
@@ -527,7 +527,7 @@ def _resolve_support_count_for_query(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     effort_min: int,
     effort_max: int,
@@ -535,7 +535,7 @@ def _resolve_support_count_for_query(
     """Resolve a connected strand count that can realize the queried force."""
 
     support = _connected_support_count_support(params)
-    if str(query_variant) == "load_force_from_effort":
+    if str(query_id) == "load_force_from_effort":
         feasible = tuple(
             int(count)
             for count in support
@@ -551,7 +551,7 @@ def _resolve_support_count_for_query(
         params=params,
         support=support,
         explicit_keys=("connected_support_count", "support_segment_count"),
-        namespace=f"{TASK_ID}.connected_support_count.{str(query_variant)}",
+        namespace=f"{TASK_ID}.connected_support_count.{str(query_id)}",
         balanced_flag_key="balanced_connected_support_count_sampling",
         feasible_values=feasible,
     )
@@ -580,27 +580,27 @@ def _sample_scene_spec(
     *,
     instance_seed: int,
     scene_variant: str,
-    query_variant: str,
+    query_id: str,
     target_answer: int,
     params: Mapping[str, Any],
 ) -> _SceneSpec:
     """Sample one symbolic pulley system that realizes the target answer."""
 
-    query_variant = str(query_variant)
+    query_id = str(query_id)
     target_answer = int(target_answer)
     effort_min, effort_max = _effort_force_bounds(params)
     support_count = _resolve_support_count_for_query(
         rng,
         instance_seed=int(instance_seed),
         params=params,
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         target_answer=int(target_answer),
         effort_min=int(effort_min),
         effort_max=int(effort_max),
     )
     disconnected_count = _resolve_disconnected_segment_count(instance_seed=int(instance_seed), params=params)
 
-    if query_variant == "effort_force_for_load":
+    if query_id == "effort_force_for_load":
         effort_value = int(target_answer)
         load_value = int(effort_value) * int(support_count)
         shown_effort = None
@@ -628,14 +628,14 @@ def _sample_scene_spec(
     evidence_entity_ids: List[str] = [
         f"support_segment_{index}" for index in range(1, int(support_count) + 1)
     ]
-    if query_variant == "effort_force_for_load":
+    if query_id == "effort_force_for_load":
         evidence_entity_ids.extend(["load_force_label", "effort_force_label"])
     else:
         evidence_entity_ids.extend(["effort_force_label", "load_force_label"])
 
     return _SceneSpec(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         support_segment_count=int(support_count),
         disconnected_segment_count=int(disconnected_count),
         connected_slot_indices=tuple(int(slot_index) for slot_index in connected_slot_indices),
@@ -1153,7 +1153,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     attempt_rng,
                     instance_seed=int(instance_seed),
                     scene_variant=str(axes.scene_variant),
-                    query_variant=str(axes.query_variant),
+                    query_id=str(axes.query_id),
                     target_answer=int(axes.target_answer),
                     params=params,
                 )
@@ -1234,14 +1234,14 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.public_query_variant),
+                query_key=str(axes.public_query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -1253,7 +1253,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "json_example_answer_only": str(json_example_answer_only),
                     "evidence_hint": str(
                         prompt_defaults["evidence_hint_effort_force"]
-                        if str(axes.query_variant) == "effort_force_for_load"
+                        if str(axes.query_id) == "effort_force_for_load"
                         else prompt_defaults["evidence_hint_load_force"]
                     ),
                 },
@@ -1263,12 +1263,12 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
             evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
-            target_support_key = _answer_support_key(str(axes.query_variant))
+            target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_pulley_mechanical_advantage_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=self.task_id,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 support_segment_count=int(scene_spec.support_segment_count),
                 disconnected_segment_count=int(scene_spec.disconnected_segment_count),
                 target_answer=int(axes.target_answer),
@@ -1290,9 +1290,8 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "solve_for": str(axes.solve_for),
                         "accent_color_name": str(axes.accent_color_name),
                         "support_segment_count": int(scene_spec.support_segment_count),
@@ -1313,21 +1312,20 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.public_query_variant),
+                    "query_id": str(axes.public_query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "query_variant": str(axes.public_query_variant),
-                        "internal_query_variant": str(axes.query_variant),
+                        "query_id": str(axes.public_query_id),
+                        "internal_query_id": str(axes.query_id),
                         "solve_for": str(axes.solve_for),
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "solve_for_probabilities": dict(axes.solve_for_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
@@ -1346,9 +1344,8 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "query_variant": str(axes.public_query_variant),
-                    "internal_query_variant": str(axes.query_variant),
+                    "query_id": str(axes.public_query_id),
+                    "internal_query_id": str(axes.query_id),
                     "solve_for": str(axes.solve_for),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
@@ -1357,7 +1354,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                             params,
                             gen_defaults=_GEN_DEFAULTS,
                             key=str(target_support_key),
-                            fallback=_fallback_support(str(axes.query_variant)),
+                            fallback=_fallback_support(str(axes.query_id)),
                         )
                     ),
                     "connected_support_count_support": list(_connected_support_count_support(params)),
@@ -1400,10 +1397,9 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     trace_payload=trace_payload,
                     complexity=complexity,
                     task_versions=default_task_versions(),
-                    query_variant=str(axes.public_query_variant),
                     scene_id="pulley",
                 ),
-                query_id=str(axes.public_query_variant),
+                query_id=str(axes.public_query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")

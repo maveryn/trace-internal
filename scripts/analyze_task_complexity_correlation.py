@@ -151,7 +151,7 @@ def _chart_extremum_components(execution: Mapping[str, Any]) -> Dict[str, float]
         "ranked_largest_gap": 0.69,
         "ranked_largest_decrease": 1.00,
         "ranked_smallest_gap": 1.00,
-    }[str(execution["query_variant"])]
+    }[str(execution["query_id"])]
     rank_range = [1, 3]
     category_norm = normalize(int(execution["category_count"]), 5, 15)
     series_norm = normalize(int(execution["series_count"]), 3, 4)
@@ -195,7 +195,7 @@ def _puzzle_logic_components(execution: Mapping[str, Any]) -> Dict[str, float]:
         "row_uniqueness": 0.00,
         "row_and_column_uniqueness": 0.50,
         "column_uniqueness": 1.00,
-    }[str(execution["query_variant"])]
+    }[str(execution["query_id"])]
     board_size_norm = normalize(int(execution["board_size"]), *list(execution["board_size_range"]))
     return {
         "visual_scan": normalize(int(execution["cell_count"]), *list(execution["cell_count_range"])),
@@ -205,7 +205,7 @@ def _puzzle_logic_components(execution: Mapping[str, Any]) -> Dict[str, float]:
 
 
 def _clock_components(execution: Mapping[str, Any]) -> Dict[str, float]:
-    variant = str(execution["query_variant"])
+    variant = str(execution["query_id"])
     time_base = {
         "minutes_before": 0.00,
         "minutes_after": 0.05,
@@ -253,7 +253,7 @@ def _paired_forms_components(execution: Mapping[str, Any]) -> Dict[str, float]:
         "sum_absolute_quantity_differences": 0.00,
         "total_amount_delta": 0.50,
         "shortfall_minus_overage_value": 1.00,
-    }[str(execution["query_variant"])]
+    }[str(execution["query_id"])]
     item_count = int(execution["item_count"])
     evidence_count = len(execution["evidence_bbox_ids"])
     mismatch_count = len(execution["mismatch_item_ids"])

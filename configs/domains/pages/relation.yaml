@@ -14,7 +14,7 @@ generation:
       cool: 1.0
       warm: 1.0
       sage: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     candidate_label_pool:
@@ -71,11 +71,11 @@ generation:
       ribbon_group_count_max: 3
       ribbon_command_count_min: 3
       ribbon_command_count_max: 4
-      query_variant_weights:
+      query_id_weights:
         menu_path_target_label: 1.0
         ribbon_group_command_label: 1.0
     task_pages__command_matrix__command_intent_target_label:
-      query_variant_weights:
+      query_id_weights:
         command_intent_target_label: 1.0
         dual_guide_command_label: 1.0
       intent_category_weights:
@@ -88,14 +88,14 @@ generation:
     task_pages__workspace__professional_target_label:
       context_count_min: 3
       context_count_max: 5
-      query_variant_weights:
+      query_id_weights:
         toolbar_palette_control_label: 1.0
         property_panel_control_label: 1.0
         canvas_workspace_control_label: 1.0
         code_workspace_control_label: 1.0
         file_dialog_control_label: 1.0
     task_pages__web_action__web_action_target_label:
-      query_variant_weights:
+      query_id_weights:
         click_target_label: 1.0
         type_field_label: 1.0
         select_option_label: 1.0

@@ -4,7 +4,7 @@
 1. Domain: `geometry`
 2. Task group: `coordinate`
 3. Scene id: `coordinate_plane`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query id: `parallelogram_completion_label`, `rectangle_completion_label`, `square_completion_label`, or `rhombus_completion_label`
 6. Answer type: `option_letter`
 7. Evidence type: `bbox_set`

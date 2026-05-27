@@ -19,7 +19,7 @@ from tests.helpers import read_jsonl
     (
         (
             {
-                "query_variant": "marked_group_liberty_count",
+                "query_id": "marked_group_liberty_count",
                 "player_color": "black",
                 "target_answer": 2,
             },
@@ -28,7 +28,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "marked_white_group_liberty_count",
+                "query_id": "marked_white_group_liberty_count",
                 "target_answer": 6,
             },
             6,
@@ -36,7 +36,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "marked_group_adjacent_enemy_count",
+                "query_id": "marked_group_adjacent_enemy_count",
                 "player_color": "white",
                 "target_answer": 2,
             },
@@ -45,7 +45,7 @@ from tests.helpers import read_jsonl
         ),
         (
             {
-                "query_variant": "marked_group_shared_liberty_count",
+                "query_id": "marked_group_shared_liberty_count",
                 "player_color": "black",
                 "target_answer": 4,
             },
@@ -66,7 +66,7 @@ def test_games_go_group_property_count_emits_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert trace["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
@@ -96,7 +96,7 @@ def test_games_go_group_property_count_query_cycle_covers_answer_and_scene_suppo
             max_attempts=192,
         )
         execution = out.trace_payload["execution_trace"]
-        variant = str(out.query_id or out.query_variant)
+        variant = str(out.query_id or out.query_id)
         answers_by_variant[variant].add(int(out.answer_gt.value))
         scenes_by_variant[variant].add(str(execution["scene_variant"]))
         colors_by_variant[variant].add(str(execution["player_color"]))
@@ -114,7 +114,7 @@ def test_games_go_group_property_count_query_cycle_covers_answer_and_scene_suppo
 
 def test_games_go_group_property_count_is_deterministic() -> None:
     params = {
-        "query_variant": "marked_group_adjacent_enemy_count",
+        "query_id": "marked_group_adjacent_enemy_count",
         "player_color": "white",
         "target_answer": 6,
     }
@@ -195,15 +195,15 @@ def test_games_go_group_property_count_build_smoke(tmp_path: Path) -> None:
 def test_games_go_liberty_condition_public_task_records_query_id(query_id: str, target_answer: int) -> None:
     out = GamesGoGroupLibertyConditionCountTask().generate(
         34151,
-        params={"query_variant": query_id, "player_color": "black", "target_answer": target_answer},
+        params={"query_id": query_id, "player_color": "black", "target_answer": target_answer},
         max_attempts=96,
     )
     trace = out.trace_payload
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_variant"] == "default"
+    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
     assert int(out.answer_gt.value) == int(target_answer)

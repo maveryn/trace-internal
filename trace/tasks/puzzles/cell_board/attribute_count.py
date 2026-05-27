@@ -75,11 +75,11 @@ _QUERY_TEMPLATE_KEYS: Mapping[str, str] = {
 
 
 def _explicit_query_id(params: Mapping[str, Any]) -> str | None:
-    for key in ("query_id", "query_variant"):
+    for key in ("query_id", "query_id"):
         candidate = params.get(key)
         if candidate is None:
             continue
-        if key == "query_variant" and str(candidate) == "default":
+        if key == "query_id" and str(candidate) == "default":
             continue
         return str(candidate)
     return None
@@ -364,10 +364,9 @@ class CellBoardAttributeCountTask:
         }
 
         query_params = {
-            "query_variant": "default",
             "query_id": str(query_id),
-            "internal_query_variant": str(query_id),
-            "query_variant_probabilities": dict(query_probabilities),
+            "internal_query_id": str(query_id),
+            "query_id_probabilities": dict(query_probabilities),
             "scene_id": PUBLIC_SCENE_ID,
             "target_answer": int(target_answer),
             "target_answer_range": [int(target_answer_support[0]), int(target_answer_support[-1])],
@@ -378,7 +377,6 @@ class CellBoardAttributeCountTask:
                 "scene_kind": "rectangular_tile_board",
                 "entities": scene_entities,
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query_id),
                     "scene_id": PUBLIC_SCENE_ID,
                     "query_color_name": str(query_color_name),
@@ -388,10 +386,9 @@ class CellBoardAttributeCountTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "internal_query_variant": str(query_id),
-                "query_variant_probabilities": dict(query_probabilities),
+                "internal_query_id": str(query_id),
+                "query_id_probabilities": dict(query_probabilities),
                 "template_id": f"{query_id}_v0",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -421,9 +418,8 @@ class CellBoardAttributeCountTask:
             "render_spec": {
                 **build_rectangular_color_board_render_spec(scene),
                 "scene_id": PUBLIC_SCENE_ID,
-                "query_variant": "default",
                 "query_id": str(query_id),
-                "internal_query_variant": str(query_id),
+                "internal_query_id": str(query_id),
             },
             "render_map": {
                 "image_id": "img0",
@@ -490,7 +486,6 @@ class CellBoardAttributeCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=versions,
-            query_variant="default",
             scene_id=PUBLIC_SCENE_ID,
             query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),

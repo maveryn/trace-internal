@@ -37,14 +37,14 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.scene_id == "magnetic_force"
 
     assert out.query_id == "force_direction_choice"
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
-    assert trace["query_spec"]["params"]["internal_query_variant"] == "force_direction_choice"
+    assert trace["query_spec"]["params"]["internal_query_id"] == "force_direction_choice"
 
     assert execution["field_orientation"] == "out_of_page"
 

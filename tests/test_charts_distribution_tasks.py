@@ -48,11 +48,11 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         ("bin_count_between_values", {}),
         ("rank_item_bin_label", {}),
     )
-    for seed, (query_variant, extra_params) in enumerate(
+    for seed, (query_id, extra_params) in enumerate(
         cases,
         start=11010,
     ):
-        out = task.generate(seed, params={"query_variant": query_variant, **extra_params}, max_attempts=10)
+        out = task.generate(seed, params={"query_id": query_id, **extra_params}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
@@ -71,7 +71,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         evidence_labels = [str(label) for label in execution["evidence_labels"]]
         axis_values = [int(label) for label in labels]
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert str(execution["scene_variant"]) == "histogram"
@@ -93,7 +93,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         assert render["guide_line_style"] in {"dashed", "dotted", "solid"}
         assert len(render["guide_lines"]) == int(execution["bin_count"])
 
-        if str(query_variant) in {"interval_mass", "bin_count_between_values"}:
+        if str(query_id) in {"interval_mass", "bin_count_between_values"}:
             query_start = int(execution["query_interval_start_value"])
             query_end = int(execution["query_interval_end_value"])
             assert str(execution["query_interval_label"]) == f"{query_start}-{query_end}"
@@ -105,15 +105,15 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             ]
             outside_interval_labels = [str(label) for label in labels if str(label) not in set(inside_interval_labels)]
 
-        if str(query_variant) == "interval_mass" and str(execution["interval_relation"]) == "inside":
+        if str(query_id) == "interval_mass" and str(execution["interval_relation"]) == "inside":
             assert 5 <= len(evidence_labels) <= 15
             assert evidence_labels == inside_interval_labels
             assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in evidence_labels)
-        elif str(query_variant) == "bin_count_between_values":
+        elif str(query_id) == "bin_count_between_values":
             assert 2 <= len(evidence_labels) <= 15
             assert evidence_labels == inside_interval_labels
             assert int(out.answer_gt.value) == len(evidence_labels)
-        elif str(query_variant) == "rank_item_bin_label":
+        elif str(query_id) == "rank_item_bin_label":
             answer_index = int(execution["answer_bin_index"])
             target_rank = int(execution["target_rank"])
             assert evidence_labels == [labels[answer_index]]
@@ -122,7 +122,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             assert int(execution["cumulative_count_before_answer_bin"]) < target_rank
             assert target_rank <= int(execution["cumulative_count_through_answer_bin"])
         else:
-            assert str(query_variant) == "interval_mass"
+            assert str(query_id) == "interval_mass"
             assert str(execution["interval_relation"]) == "outside"
             assert 2 <= len(evidence_labels) <= 10
             assert evidence_labels == outside_interval_labels
@@ -137,7 +137,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
 
 def test_histogram_bins_are_contiguous_numeric_intervals() -> None:
     task = ChartsDistributionHistogramCountTask()
-    out = task.generate(11030, params={"query_variant": "interval_mass"}, max_attempts=10)
+    out = task.generate(11030, params={"query_id": "interval_mass"}, max_attempts=10)
     entities = out.trace_payload["scene_ir"]["entities"]
     intervals = [
         (
@@ -159,17 +159,17 @@ def test_chart_distribution_histogram_prompt_examples_match_selected_variant() -
         "bin_count_between_values": {"evidence": [[160, 260, 204, 520], [212, 300, 256, 520], [264, 240, 308, 520]], "answer": 3},
         "rank_item_bin_label": {"evidence": [[264, 240, 308, 520]], "answer": 18},
     }
-    for index, query_variant in enumerate(expected, start=11040):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=11040):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_distribution_histogram_task_is_deterministic() -> None:
     task = ChartsDistributionHistogramCountTask()
-    params = {"query_variant": "bin_count_between_values"}
+    params = {"query_id": "bin_count_between_values"}
     out_a = task.generate(11060, params=params, max_attempts=10)
     out_b = task.generate(11060, params=params, max_attempts=10)
 
@@ -190,7 +190,7 @@ def test_chart_distribution_histogramseeded_sampler_decouples_variant_and_answer
             params={},
             max_attempts=10,
         )
-        if str(out.query_variant) == "bin_count_between_values":
+        if str(out.query_id) == "bin_count_between_values":
             bin_count_answers.append(int(out.answer_gt.value))
 
     assert bin_count_answers == list(range(2, 16))
@@ -202,11 +202,11 @@ def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> 
     execution = out.trace_payload["execution_trace"]
     query_spec = out.trace_payload["query_spec"]
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) == "rank_item_bin_label"
-    assert str(execution["query_variant"]) == "default"
+    assert str(execution["query_id"]) == "default"
     assert str(execution["query_id"]) == "rank_item_bin_label"
-    assert str(query_spec["params"]["query_variant"]) == "default"
+    assert str(query_spec["params"]["query_id"]) == "default"
     assert str(query_spec["params"]["query_id"]) == "rank_item_bin_label"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
@@ -216,12 +216,12 @@ def test_chart_distribution_histogram_complexity_is_normalized_and_monotonic() -
     task = ChartsDistributionHistogramCountTask()
     easy = task.generate(
         11061,
-        params={"query_variant": "interval_mass", "bin_count_min": 8, "bin_count_max": 8},
+        params={"query_id": "interval_mass", "bin_count_min": 8, "bin_count_max": 8},
         max_attempts=10,
     )
     hard = task.generate(
         11061,
-        params={"query_variant": "bin_count_between_values", "bin_count_min": 20, "bin_count_max": 20},
+        params={"query_id": "bin_count_between_values", "bin_count_min": 20, "bin_count_max": 20},
         max_attempts=10,
     )
     _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
@@ -237,17 +237,17 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         ("iqr_extremum_label", {"extremum_direction": "largest"}),
         ("iqr_extremum_label", {"extremum_direction": "smallest"}),
     )
-    for seed, (query_variant, extra_params) in enumerate(
+    for seed, (query_id, extra_params) in enumerate(
         cases,
         start=11110,
     ):
-        out = task.generate(seed, params={"query_variant": query_variant, **extra_params}, max_attempts=10)
+        out = task.generate(seed, params={"query_id": query_id, **extra_params}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         quartiles_by_label = {str(label): dict(values) for label, values in execution["quartiles_by_label"].items()}
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "point_set"
         assert str(execution["scene_variant"]) == "boxplot"
@@ -273,7 +273,7 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         for stats in quartiles_by_label.values():
             assert int(stats["whisker_min"]) <= int(stats["q1"]) < int(stats["median"]) < int(stats["q3"]) <= int(stats["whisker_max"])
 
-        if str(query_variant) == "median_reference_label" and str(execution["median_reference_direction"]) == "above_reference_q3":
+        if str(query_id) == "median_reference_label" and str(execution["median_reference_direction"]) == "above_reference_q3":
             reference_label = str(execution["reference_label"])
             reference_q3 = int(execution["reference_q3"])
             target_label = max(
@@ -282,7 +282,7 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
             )
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution["evidence_value"]) == int(quartiles_by_label[target_label]["median"]) - int(reference_q3)
-        elif str(query_variant) == "median_reference_label" and str(execution["median_reference_direction"]) == "below_reference_q1":
+        elif str(query_id) == "median_reference_label" and str(execution["median_reference_direction"]) == "below_reference_q1":
             reference_label = str(execution["reference_label"])
             reference_q1 = int(execution["reference_q1"])
             target_label = max(
@@ -291,12 +291,12 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
             )
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution["evidence_value"]) == int(reference_q1) - int(quartiles_by_label[target_label]["median"])
-        elif str(query_variant) == "iqr_extremum_label" and str(execution["extremum_direction"]) == "largest":
+        elif str(query_id) == "iqr_extremum_label" and str(execution["extremum_direction"]) == "largest":
             target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["iqr"]))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution["evidence_value"]) == int(quartiles_by_label[target_label]["iqr"])
         else:
-            assert str(query_variant) == "iqr_extremum_label"
+            assert str(query_id) == "iqr_extremum_label"
             assert str(execution["extremum_direction"]) == "smallest"
             target_label = min(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["iqr"]))
             assert str(out.answer_gt.value) == str(target_label)
@@ -309,17 +309,17 @@ def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> 
         "median_reference_label": {"evidence": [[240, 300], [430, 250]], "answer": "M"},
         "iqr_extremum_label": {"evidence": [[430, 250]], "answer": "Q"},
     }
-    for index, query_variant in enumerate(expected, start=11140):
-        out = task.generate(index, params={"query_variant": query_variant}, max_attempts=10)
+    for index, query_id in enumerate(expected, start=11140):
+        out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert answer_and_evidence == expected[query_variant]
-        assert answer_only == {"answer": expected[query_variant]["answer"]}
+        assert answer_and_evidence == expected[query_id]
+        assert answer_only == {"answer": expected[query_id]["answer"]}
 
 
 def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     task = ChartsDistributionBoxplotLabelTask()
-    params = {"query_variant": "iqr_extremum_label", "extremum_direction": "largest"}
+    params = {"query_id": "iqr_extremum_label", "extremum_direction": "largest"}
     out_a = task.generate(11160, params=params, max_attempts=10)
     out_b = task.generate(11160, params=params, max_attempts=10)
 
@@ -336,7 +336,7 @@ def test_chart_distribution_boxplot_can_tighten_reference_q3_winner_gap() -> Non
     out = task.generate(
         11162,
         params={
-            "query_variant": "median_reference_label",
+            "query_id": "median_reference_label",
             "median_reference_direction": "above_reference_q3",
             "category_count_min": 7,
             "category_count_max": 7,
@@ -356,16 +356,16 @@ def test_chart_distribution_boxplot_can_tighten_reference_q3_winner_gap() -> Non
     assert margins[-1] - margins[-2] == 1
 
 
-def test_chart_distribution_boxplot_supports_query_variant_overrides() -> None:
+def test_chart_distribution_boxplot_supports_query_id_overrides() -> None:
     task = ChartsDistributionBoxplotLabelTask()
     out = task.generate(
         11164,
         params={
-            "query_variant": "median_reference_label",
+            "query_id": "median_reference_label",
             "median_reference_direction": "above_reference_q3",
             "category_count_min": 4,
             "category_count_max": 7,
-            "query_variant_overrides": {
+            "query_id_overrides": {
                 "median_reference_label": {
                     "category_count_min": 8,
                     "category_count_max": 8,
@@ -393,7 +393,7 @@ def test_chart_distribution_boxplot_can_tighten_iqr_winner_gap() -> None:
         out = task.generate(
             seed,
             params={
-                "query_variant": "iqr_extremum_label",
+                "query_id": "iqr_extremum_label",
                 "extremum_direction": extremum_direction,
                 "category_count_min": 7,
                 "category_count_max": 7,
@@ -415,7 +415,7 @@ def test_chart_distribution_boxplot_uses_configured_iqr_winner_gap() -> None:
     for seed, extremum_direction in enumerate(("largest", "smallest"), start=11167):
         out = task.generate(
             seed,
-            params={"query_variant": "iqr_extremum_label", "extremum_direction": extremum_direction, "category_count_min": 7, "category_count_max": 7},
+            params={"query_id": "iqr_extremum_label", "extremum_direction": extremum_direction, "category_count_min": 7, "category_count_max": 7},
             max_attempts=10,
         )
         quartiles_by_label = out.trace_payload["execution_trace"]["quartiles_by_label"]
@@ -430,12 +430,12 @@ def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> 
     task = ChartsDistributionBoxplotLabelTask()
     low_scan = task.generate(
         11002,
-        params={"query_variant": "iqr_extremum_label", "extremum_direction": "largest", "category_count_min": 6, "category_count_max": 15, "mark_count": 6},
+        params={"query_id": "iqr_extremum_label", "extremum_direction": "largest", "category_count_min": 6, "category_count_max": 15, "mark_count": 6},
         max_attempts=10,
     )
     high_scan = task.generate(
         11007,
-        params={"query_variant": "iqr_extremum_label", "extremum_direction": "largest", "category_count_min": 6, "category_count_max": 15, "mark_count": 15},
+        params={"query_id": "iqr_extremum_label", "extremum_direction": "largest", "category_count_min": 6, "category_count_max": 15, "mark_count": 15},
         max_attempts=10,
     )
     _assert_normalized_complexity(low_scan, expected_keys={"visual_scan", "reasoning_load"})
@@ -447,17 +447,17 @@ def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> 
 
 def test_chart_distribution_violin_variants_match_contract() -> None:
     task = ChartsDistributionViolinLabelTask()
-    for seed, query_variant in enumerate(
+    for seed, query_id in enumerate(
         ("highest_mode", "lowest_mode", "bimodal_label", "widest_support", "narrowest_support"),
         start=11210,
     ):
-        out = task.generate(seed, params={"query_variant": query_variant}, max_attempts=10)
+        out = task.generate(seed, params={"query_id": query_id}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         support_by_label = {str(label): dict(values) for label, values in execution["support_by_label"].items()}
 
-        assert str(out.query_variant) == str(query_variant)
+        assert str(out.query_id) == str(query_id)
         assert out.answer_gt.type == "option_letter"
         assert out.evidence_gt.type == "bbox_set"
         assert str(execution["scene_variant"]) == "violin"
@@ -472,14 +472,14 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
         assert len(trace["scene_ir"]["entities"]) == int(execution["category_count"])
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(execution["labels"])
 
-        if str(query_variant) == "highest_mode":
+        if str(query_id) == "highest_mode":
             expected = max(support_by_label, key=lambda label: int(support_by_label[label]["mode_values"][0]))
-        elif str(query_variant) == "lowest_mode":
+        elif str(query_id) == "lowest_mode":
             expected = min(support_by_label, key=lambda label: int(support_by_label[label]["mode_values"][0]))
-        elif str(query_variant) == "bimodal_label":
+        elif str(query_id) == "bimodal_label":
             expected = next(label for label, values in support_by_label.items() if bool(values["bimodal"]))
             assert len(execution["evidence_values"]) == 2
-        elif str(query_variant) == "widest_support":
+        elif str(query_id) == "widest_support":
             expected = max(support_by_label, key=lambda label: int(support_by_label[label]["support_span"]))
         else:
             expected = min(support_by_label, key=lambda label: int(support_by_label[label]["support_span"]))
@@ -492,11 +492,11 @@ def test_chart_distribution_violin_public_task_contract() -> None:
     execution = out.trace_payload["execution_trace"]
     query_spec = out.trace_payload["query_spec"]
 
-    assert str(out.query_variant) == "default"
+    assert str(out.query_id) == "default"
     assert str(out.query_id) in {"highest_mode", "lowest_mode"}
-    assert str(execution["query_variant"]) == "default"
+    assert str(execution["query_id"]) == "default"
     assert str(execution["query_id"]) == str(out.query_id)
-    assert str(query_spec["params"]["query_variant"]) == "default"
+    assert str(query_spec["params"]["query_id"]) == "default"
     assert str(query_spec["params"]["query_id"]) == str(out.query_id)
     assert out.answer_gt.type == "option_letter"
     assert out.evidence_gt.type == "bbox_set"

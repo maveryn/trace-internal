@@ -14,7 +14,7 @@ generation:
     condition_series_count_max: 6
     condition_count_answer_support: [1, 2, 3, 4, 5]
   task_overrides:
-    task_charts__bar_3d__axis_total_value:
+    task_charts__bar_3d__axis_aggregate_value:
       category_count_min: 4
       category_count_max: 4
       series_count_min: 4

@@ -563,7 +563,6 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 "scene_id": SCENE_ID,
                 "entities": environment_scene_entities(scene),
                 "relations": {
-                    "query_variant": str(choice.query_id),
                     "query_id": str(choice.query_id),
                     "feature_type": choice.feature_type,
                     "feature_id": feature_id,
@@ -573,7 +572,6 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             },
             "query_spec": {
                 "task_id": self.task_id,
-                "query_variant": str(choice.query_id),
                 "query_id": str(choice.query_id),
                 "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -621,7 +619,6 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
                 "target_feature_id": feature_id,
             },
             "execution_trace": {
-                "query_variant": str(choice.query_id),
                 "query_id": str(choice.query_id),
                 "scene_id": SCENE_ID,
                 "theme_id": str(choice.theme_id),
@@ -657,13 +654,11 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             image_id="img0",
             trace_payload=trace_payload,
             complexity=_build_complexity(
-                query_id=str(choice.query_id),
                 object_count=int(len(scene.placements)),
                 target_count=int(answer),
                 theme_id=str(choice.theme_id),
             ),
             task_versions=default_task_versions(),
-            query_variant=str(choice.query_id),
             scene_id=SCENE_ID,
             query_id=str(choice.query_id),
         )

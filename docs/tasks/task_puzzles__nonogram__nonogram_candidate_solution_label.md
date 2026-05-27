@@ -8,7 +8,7 @@
 5. Goal: choose the filled-grid candidate that satisfies all visible row and column nonogram clues.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `candidate_solution_label`
 3. Grid size: `6x6..9x9`
 4. Option count: `4..6`

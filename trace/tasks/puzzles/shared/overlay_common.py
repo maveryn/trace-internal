@@ -21,7 +21,7 @@ SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS: Tuple[str, ...] = (
     "overlay_card",
     "overlay_outline",
 )
-SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS: Tuple[str, ...] = ("overlay_union_same_grid",)
+SUPPORTED_PUZZLE_OVERLAY_QUERY_IDS: Tuple[str, ...] = ("overlay_union_same_grid",)
 SUPPORTED_PUZZLE_OVERLAY_MARK_SHAPES: Tuple[str, ...] = (
     "circle",
     "square",
@@ -120,7 +120,7 @@ def resolve_overlay_scene_variant(
     )
 
 
-def resolve_overlay_query_variant(
+def resolve_overlay_query_id(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -133,12 +133,12 @@ def resolve_overlay_query_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_PUZZLE_OVERLAY_QUERY_IDS,
         task_id=str(task_id),
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -433,7 +433,7 @@ def _build_overlay_options(
 
 def build_overlay_dataset_for_variant(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -442,8 +442,8 @@ def build_overlay_dataset_for_variant(
 ) -> Dict[str, Any]:
     """Construct one deterministic overlay puzzle dataset."""
 
-    if str(query_variant) not in set(SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS):
-        raise ValueError(f"unsupported overlay variant: {query_variant}")
+    if str(query_id) not in set(SUPPORTED_PUZZLE_OVERLAY_QUERY_IDS):
+        raise ValueError(f"unsupported overlay variant: {query_id}")
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
 
     option_count, option_count_range = _resolve_choice(
@@ -514,7 +514,7 @@ def build_overlay_dataset_for_variant(
     answer_option_label = str(option_label_for_index(int(correct_option_index)))
 
     return {
-        "query_variant": str(query_variant),
+        "query_id": str(query_id),
         "question_format": "overlay_union_mcq",
         "view_family": "transparent_sheet_overlay_mcq",
         "grid_size": int(grid_size),
@@ -539,7 +539,7 @@ def build_overlay_dataset_for_variant(
         "correct_option_choice_id": str(correct_option_choice_id),
         "valid_option_choice_ids": [str(correct_option_choice_id)],
         "solver_trace": {
-            "query_variant": str(query_variant),
+            "query_id": str(query_id),
             "grid_size": int(grid_size),
             "left_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in left_cells],
             "right_cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in right_cells],
@@ -560,9 +560,9 @@ __all__ = [
     "PuzzleOverlayDefaults",
     "PuzzleOverlayRenderParams",
     "SUPPORTED_PUZZLE_OVERLAY_SCENE_VARIANTS",
-    "SUPPORTED_PUZZLE_OVERLAY_QUERY_VARIANTS",
+    "SUPPORTED_PUZZLE_OVERLAY_QUERY_IDS",
     "build_overlay_dataset_for_variant",
     "resolve_overlay_render_params",
     "resolve_overlay_scene_variant",
-    "resolve_overlay_query_variant",
+    "resolve_overlay_query_id",
 ]

@@ -25,7 +25,7 @@ from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     is_uniform_probability_map,
-    resolve_compatible_scene_query_variants,
+    resolve_compatible_scene_query_ids,
     resolve_variant,
 )
 from ..shared.complexity import build_physics_magnetism_force_field_complexity
@@ -42,7 +42,7 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "field_grid",
     "lab_card",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "force_direction_choice",
 )
 SUPPORTED_FIELD_ORIENTATIONS: Tuple[str, ...] = ("out_of_page", "into_page")
@@ -68,9 +68,9 @@ DIRECTION_VECTORS: Dict[str, Tuple[int, int]] = {
 }
 OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "clean_panel": SUPPORTED_QUERY_VARIANTS,
-    "field_grid": SUPPORTED_QUERY_VARIANTS,
-    "lab_card": SUPPORTED_QUERY_VARIANTS,
+    "clean_panel": SUPPORTED_QUERY_IDS,
+    "field_grid": SUPPORTED_QUERY_IDS,
+    "lab_card": SUPPORTED_QUERY_IDS,
 }
 
 
@@ -111,14 +111,14 @@ class _ResolvedAxes:
     """Resolved scene/query axes for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     field_orientation: str
     velocity_direction: str | None
     charge_sign: int
     correct_option_letter: str | None
     accent_color_name: str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     field_orientation_probabilities: Dict[str, float]
     velocity_direction_probabilities: Dict[str, float]
     charge_sign_probabilities: Dict[str, float]
@@ -142,7 +142,7 @@ class _SceneSpec:
     """Resolved symbolic magnetism scene."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     field_orientation: str
     direction_scenario: _DirectionScenario | None
     correct_option_letter: str | None
@@ -189,16 +189,16 @@ def _resolve_scene_query(instance_seed: int, *, params: Mapping[str, Any]) -> Tu
     """Resolve the public scene/query axes."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_query")
-    return resolve_compatible_scene_query_variants(
+    return resolve_compatible_scene_query_ids(
         rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
         decouple_scene_sampling=True,
     )
 
@@ -233,13 +233,13 @@ def _resolve_velocity_direction(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the velocity direction for force-direction scenes."""
 
-    if str(query_variant) != "force_direction_choice":
+    if str(query_id) != "force_direction_choice":
         return None, {}
-    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("velocity_direction",))
+    adjusted_params = _with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("velocity_direction",))
     selected, probabilities = resolve_variant(
         spawn_rng(int(instance_seed), f"{TASK_ID}.velocity_direction"),
         params=adjusted_params,
@@ -284,13 +284,13 @@ def _resolve_correct_option_letter(
     instance_seed: int,
     *,
     params: Mapping[str, Any],
-    query_variant: str,
+    query_id: str,
 ) -> Tuple[str | None, Dict[str, float]]:
     """Resolve the correct option letter for force-direction scenes."""
 
-    if str(query_variant) != "force_direction_choice":
+    if str(query_id) != "force_direction_choice":
         return None, {}
-    adjusted_params = dict(_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_VARIANTS), explicit_keys=("correct_option_letter",)))
+    adjusted_params = dict(_with_sampling_divisor(params, divisor=len(SUPPORTED_QUERY_IDS), explicit_keys=("correct_option_letter",)))
     if adjusted_params.get("correct_option_letter") is None and adjusted_params.get("target_answer") is not None:
         adjusted_params["correct_option_letter"] = str(adjusted_params["target_answer"]).strip().upper()
     selected, probabilities = resolve_variant(
@@ -324,11 +324,11 @@ def _resolve_correct_option_letter(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve scene, query, and internal sampling axes."""
 
-    scene_variant, scene_probs, query_variant, query_probs = _resolve_scene_query(int(instance_seed), params=params)
+    scene_variant, scene_probs, query_id, query_probs = _resolve_scene_query(int(instance_seed), params=params)
     field_orientation, field_probs = _resolve_field_orientation(int(instance_seed), params=params)
-    velocity_direction, velocity_probs = _resolve_velocity_direction(int(instance_seed), params=params, query_variant=str(query_variant))
+    velocity_direction, velocity_probs = _resolve_velocity_direction(int(instance_seed), params=params, query_id=str(query_id))
     charge_sign, charge_probs = _resolve_charge_sign(int(instance_seed), params=params)
-    correct_option_letter, option_probs = _resolve_correct_option_letter(int(instance_seed), params=params, query_variant=str(query_variant))
+    correct_option_letter, option_probs = _resolve_correct_option_letter(int(instance_seed), params=params, query_id=str(query_id))
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent")
     accent_name, accent_probs = resolve_variant(
@@ -353,14 +353,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     )
     return _ResolvedAxes(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         field_orientation=str(field_orientation),
         velocity_direction=velocity_direction,
         charge_sign=int(charge_sign),
         correct_option_letter=correct_option_letter,
         accent_color_name=str(accent_name),
         scene_variant_probabilities={str(key): float(value) for key, value in sorted(scene_probs.items())},
-        query_variant_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
+        query_id_probabilities={str(key): float(value) for key, value in sorted(query_probs.items())},
         field_orientation_probabilities=dict(field_probs),
         velocity_direction_probabilities=dict(velocity_probs),
         charge_sign_probabilities=dict(charge_probs),
@@ -407,8 +407,8 @@ def _direction_options(rng, *, force_direction: str, correct_option_letter: str)
 def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any], instance_seed: int) -> _SceneSpec:
     """Sample one symbolic magnetism scene."""
 
-    if str(axes.query_variant) != "force_direction_choice":
-        raise ValueError(f"unsupported magnetism query variant: {axes.query_variant}")
+    if str(axes.query_id) != "force_direction_choice":
+        raise ValueError(f"unsupported magnetism query id: {axes.query_id}")
     if axes.velocity_direction is None or axes.correct_option_letter is None:
         raise ValueError("force_direction_choice requires velocity direction and correct option")
     force_direction = _force_direction(
@@ -429,7 +429,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any], i
     )
     return _SceneSpec(
         scene_variant=str(axes.scene_variant),
-        query_variant=str(axes.query_variant),
+        query_id=str(axes.query_id),
         field_orientation=str(axes.field_orientation),
         direction_scenario=scenario,
         correct_option_letter=str(axes.correct_option_letter),
@@ -795,19 +795,19 @@ def _render_scene(
     )
 
 
-def _answer_type(query_variant: str) -> str:
+def _answer_type(query_id: str) -> str:
     """Return answer type for one query."""
 
-    if str(query_variant) != "force_direction_choice":
-        raise ValueError(f"unsupported magnetism query variant: {query_variant}")
+    if str(query_id) != "force_direction_choice":
+        raise ValueError(f"unsupported magnetism query id: {query_id}")
     return "option_letter"
 
 
-def _build_prompt_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Build deterministic JSON examples for one query."""
 
-    if str(query_variant) != "force_direction_choice":
-        raise ValueError(f"unsupported magnetism query variant: {query_variant}")
+    if str(query_id) != "force_direction_choice":
+        raise ValueError(f"unsupported magnetism query id: {query_id}")
     return build_prompt_json_examples(evidence_value=[[872, 104, 990, 202]], answer_type="option_letter")
 
 
@@ -905,29 +905,29 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_variant))
+            json_example, json_example_answer_only = _build_prompt_examples(str(axes.query_id))
             prompt_selection = render_task_prompt_variants(
                 domain=self.domain,
                 task_group=self.task_group,
                 bundle_id=str(prompt_defaults["bundle_id"]),
                 scene_key=str(prompt_defaults["scene_key"]),
                 task_key=str(prompt_defaults["task_key"]),
-                query_key=str(axes.query_variant),
+                query_key=str(axes.query_id),
                 answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
                 slots={
                     "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
+                    "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
-                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                    "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 },
                 instance_seed=int(instance_seed),
             )
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-            answer_type = _answer_type(str(axes.query_variant))
+            answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str = scene_spec.target_answer
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
             evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
@@ -935,7 +935,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
                 scene_variant=str(axes.scene_variant),
-                query_variant=str(axes.query_variant),
+                query_id=str(axes.query_id),
                 charge_sign=int(axes.charge_sign),
                 option_count=len(OPTION_LETTERS),
                 target_answer_magnitude=0,
@@ -959,8 +959,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                     "relations": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "field_orientation": str(axes.field_orientation),
                         "charge_sign": int(axes.charge_sign),
                         "velocity_direction": axes.velocity_direction,
@@ -972,23 +971,22 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     },
                 },
                 "query_spec": {
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "template_id": str(prompt_defaults["bundle_id"]),
                     "prompt_variant": dict(prompt_artifacts.prompt_variant),
                     "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                     "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                     "params": {
                         "scene_variant": str(axes.scene_variant),
-                        "query_variant": str(axes.query_variant),
-                        "query_variant": str(axes.query_variant),
+                        "query_id": str(axes.query_id),
                         "field_orientation": str(axes.field_orientation),
                         "velocity_direction": axes.velocity_direction,
                         "charge_sign": int(axes.charge_sign),
                         "correct_option_letter": axes.correct_option_letter,
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                        "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
+                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "field_orientation_probabilities": dict(axes.field_orientation_probabilities),
                         "velocity_direction_probabilities": dict(axes.velocity_direction_probabilities),
                         "charge_sign_probabilities": dict(axes.charge_sign_probabilities),
@@ -1009,8 +1007,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 "render_map": dict(rendered_scene.render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "field_orientation": str(axes.field_orientation),
                     "velocity_direction": axes.velocity_direction,
                     "charge_sign": int(axes.charge_sign),
@@ -1042,9 +1039,8 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 trace_payload=trace_payload,
                 complexity=complexity,
                 task_versions=default_task_versions(),
-                query_variant=str(axes.query_variant),
                 scene_id=SCENE_ID,
-                query_id=str(axes.query_variant),
+                query_id=str(axes.query_id),
             )
 
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
@@ -1058,4 +1054,4 @@ class PhysicsMagnetismForceDirectionChoiceTask(
     """Choose the magnetic force direction for a moving charged particle."""
 
     task_id = "task_physics__magnetic_force__force_direction_choice"
-    fixed_query_variant = "force_direction_choice"
+    fixed_query_id = "force_direction_choice"

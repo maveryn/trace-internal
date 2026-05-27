@@ -8,19 +8,19 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.spatial.object_relation import SUPPORTED_QUERY_VARIANTS
+from trace.tasks.three_d.spatial.object_relation import SUPPORTED_QUERY_IDS
 
 
 TASK_ID = "task_three_d__object_scene__object_relation_label"
 
 
-@pytest.mark.parametrize("query_variant", SUPPORTED_QUERY_VARIANTS)
-def test_object_relation_answer_and_evidence(query_variant: str) -> None:
+@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+def test_object_relation_answer_and_evidence(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
-            "query_variant": query_variant,
+            "query_id": query_id,
             "scene_variant": "floor_grid_room",
             "point_count": 6,
             "context_object_count": 2,
@@ -37,9 +37,9 @@ def test_object_relation_answer_and_evidence(query_variant: str) -> None:
     reference_id = str(trace["reference_object_id"])
     reference_spec = next(spec for spec in context_specs if str(spec["object_id"]) == reference_id)
 
-    assert output.query_variant == "default"
+    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
-    assert output.query_id == query_variant
+    assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_labels[0]
     assert len(expected_labels) == 1
@@ -57,9 +57,9 @@ def test_object_relation_answer_and_evidence(query_variant: str) -> None:
     assert not any(entity["entity_id"] == "room_shell" for entity in output.trace_payload["scene_ir"]["entities"])
 
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
-    if query_variant == "on_top_of_prop":
+    if query_id == "on_top_of_prop":
         assert float(answer_spec["base_xyz"][2]) > float(reference_spec["base_xyz"][2]) + 0.85 * float(reference_spec["dimensions_xyz"][2])
-    elif query_variant == "under_prop":
+    elif query_id == "under_prop":
         assert abs(float(answer_spec["world_xyz"][0]) - float(reference_spec["world_xyz"][0])) < float(reference_spec["dimensions_xyz"][0]) * 0.4
         assert abs(float(answer_spec["world_xyz"][1]) - float(reference_spec["world_xyz"][1])) < float(reference_spec["dimensions_xyz"][1]) * 0.4
     else:

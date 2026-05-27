@@ -20,11 +20,11 @@ Use this whenever the task lives under `domain=physics`.
 - Prefer visible, diagram-grounded arithmetic or formulas over hidden assumptions.
 - Keep prompt-facing evidence local to the visible witness objects (force arrows, weights, resistors, target points, bounce points, etc.).
 - For early mechanics tasks, keep vectors axis-aligned unless the task is explicitly about decomposition.
-- When a task varies scene scaffold and semantic branch independently, record the visual scaffold in `scene_variant` and the semantic branch in `query_id`; keep public `query_variant="default"` for narrowed public tasks.
+- When a task varies scene scaffold and semantic branch independently, record the visual scaffold in `scene_variant` and the semantic branch in `query_id`; `query_id` is internal replay metadata for narrowed public tasks.
 
 ## Practical review checklist
 - Keep all required quantities visible or explicitly implied by the diagram; do not add hidden formula knowledge to tasks.
 - Keep prompt-facing evidence on force arrows, weights, resistors, target points, bounce points, or other decisive witnesses, not decorative chrome.
 - Prefer shared physics helpers under `trace/tasks/physics/shared/` and cross-domain sampling/support helpers before adding task-local utilities.
-- Add new query variants inside an existing task when the scene scaffold and witness semantics stay the same.
+- Add new query ids inside an existing task when the scene scaffold and witness semantics stay the same.
 - Split only when the scene grammar or answer/evidence contract changes enough to be a healthy standalone task.

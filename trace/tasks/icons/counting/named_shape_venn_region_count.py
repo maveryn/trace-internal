@@ -1062,7 +1062,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
             "task_id": str(self.task_id),
-            "query_variant": "default",
             "query_id": str(scene.query_id),
         }
         trace_payload = {
@@ -1106,7 +1105,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
                 "params": {
                     "scene_id": taxonomy.scene_id,
                     "query_id": str(scene.query_id),
-                    "query_variant": "default",
                     "target_attribute_mode": str(scene.target_attribute_mode),
                     "target_description": str(scene.target_description),
                     "target_shape_id": str(scene.target_shape_id),
@@ -1198,7 +1196,6 @@ class IconsCountingNamedShapeVennRegionCountTask:
             trace_payload=trace_payload,
             complexity=_complexity(scene, render_params=render_params),
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=taxonomy.scene_id,
             query_id=str(scene.query_id),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},

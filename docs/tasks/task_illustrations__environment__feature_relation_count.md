@@ -1,18 +1,18 @@
 # task_illustrations__environment__feature_relation_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Overview
 
 - domain: `illustrations`
-- scene: `environment`
-- task group: `counting`
+- scene_id: `environment`
+- task_group: `counting`
 - task: `feature_relation_object_count`
 - module: `trace/tasks/illustrations/counting/feature_relation_object_count.py`
 - default enabled: yes
 
-This merged task renders an outdoor environment with roads and/or rivers, then
-asks for a count relative to the environmental feature. Public query variants are:
+The task renders an outdoor environment with roads and/or rivers, then asks for
+a count relative to the environmental feature. Query ids are:
 
 - `feature_side_object_count`: count foreground objects above or below a road/river.
 - `on_feature_object_count`: count foreground objects on the road or in/on the river.
@@ -31,7 +31,7 @@ asks for a count relative to the environmental feature. Public query variants ar
 - `bundle_id = illustrations_counting_v0`
 - `scene_key = environment_object_canvas`
 - `task_key = feature_relation_object_count_task`
-- `query_key` is one of the public variants listed above.
+- `query_id` is one of the branches listed above.
 
 ## Calibration Notes
 

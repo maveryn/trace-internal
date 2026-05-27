@@ -1,6 +1,6 @@
 # task_illustrations__park_playground__playground_equipment_count
 
-Status: accepted after qwen25vl7b solve-rate calibration.
+Status: pending fresh v0 task review and solve-rate calibration.
 
 ## Identity
 - domain: `illustrations`
@@ -14,7 +14,7 @@ Status: accepted after qwen25vl7b solve-rate calibration.
 The task renders a synthetic park/playground with people, paths, zones, and
 semantic playground equipment.
 
-Public query variants:
+Query ids:
 
 - `slide_count`
 - `swing_set_count`
@@ -43,6 +43,6 @@ Each variant asks for the count of one equipment type.
 ## Prompt Contract
 - `scene_key = park_playground_canvas`
 - `task_key = playground_equipment_count_task`
-- `query_key` is one of the four equipment-count variants above
+- `query_id` is one of the four equipment-count branches above
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

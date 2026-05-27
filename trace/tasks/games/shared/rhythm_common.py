@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
-SUPPORTED_RHYTHM_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_RHYTHM_QUERY_IDS: Tuple[str, ...] = (
     "lane_hit_count",
     "lane_color_hit_count",
     "most_hits_lane_label",
@@ -46,7 +46,7 @@ class RhythmSample:
     lane_count: int
     row_count: int
     beat_window: int
-    query_variant: str
+    query_id: str
     scene_variant: str
     selected_lane_index: int | None
     selected_lane_label: str | None
@@ -122,7 +122,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
     if not set(sample.evidence_entity_ids) <= known_entities:
         raise ValueError("rhythm evidence references unknown entities")
 
-    query = str(sample.query_variant)
+    query = str(sample.query_id)
     by_id = {str(note.note_id): note for note in sample.notes}
     evidence_ids = tuple(str(entity_id) for entity_id in sample.evidence_entity_ids)
 
@@ -196,7 +196,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
             raise ValueError("earliest_hit_lane_label requires one evidence note")
         expected_evidence = (str(earliest_notes[0].note_id),)
     else:
-        raise ValueError(f"unsupported rhythm query_variant: {sample.query_variant}")
+        raise ValueError(f"unsupported rhythm query_id: {sample.query_id}")
 
     if int(sample.answer) != int(expected_answer):
         raise ValueError("rhythm answer does not match active query")
@@ -208,7 +208,7 @@ def validate_rhythm_sample(sample: RhythmSample) -> None:
 
 __all__ = [
     "SUPPORTED_RHYTHM_COLOR_KEYS",
-    "SUPPORTED_RHYTHM_QUERY_VARIANTS",
+    "SUPPORTED_RHYTHM_QUERY_IDS",
     "SUPPORTED_RHYTHM_SCENE_VARIANTS",
     "SUPPORTED_RHYTHM_STYLE_VARIANTS",
     "RhythmNote",

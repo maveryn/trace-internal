@@ -43,7 +43,7 @@ from ..shared.graph_scene import (
     projected_edge_pair_evidence,
     render_graph_scene,
 )
-from ..shared.fixed_query_task import forced_query_variant_params, rewrite_graph_public_task_output
+from ..shared.fixed_query_task import forced_query_id_params, rewrite_graph_public_task_output
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
@@ -179,7 +179,7 @@ def _query_id_from_alias(value: Any) -> str | None:
 def _forced_query_id(params: Mapping[str, Any]) -> str | None:
     """Resolve an explicitly requested query id, if present."""
 
-    for key in ("query_id", "query_variant", "query_variant"):
+    for key in ("query_id", "query_id", "query_id"):
         raw_value = params.get(str(key))
         if raw_value is None:
             continue
@@ -256,10 +256,10 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             int(instance_seed),
             params=params,
             explicit_key="query_id",
-            weights_key="query_variant_weights",
-            balance_flag_key="balanced_query_variant_sampling",
+            weights_key="query_id_weights",
+            balance_flag_key="balanced_query_id_sampling",
             supported=SUPPORTED_MAX_FLOW_QUERY_IDS,
-            namespace="query_variant",
+            namespace="query_id",
         )
     else:
         query_id = str(forced_query_id)
@@ -957,7 +957,6 @@ class _GraphOptimizationFlowNetworkTask:
                 "scene_kind": "graph_capacity_flow_network",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
                     "graph_directionality": "directed",
                     "source_label": "S",
@@ -972,17 +971,15 @@ class _GraphOptimizationFlowNetworkTask:
                 },
             },
             "query_spec": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": "default",
                     "query_id": str(query.query_id),
-                    "internal_query_variant": str(query.query_id),
-                    "query_variant_probabilities": dict(query.query_id_probabilities),
+                    "internal_query_id": str(query.query_id),
+                    "query_id_probabilities": dict(query.query_id_probabilities),
                     "node_count": int(query.node_count),
                     "node_count_probabilities": dict(query.node_count_probabilities),
                     "target_answer": int(query.target_answer),
@@ -1039,10 +1036,9 @@ class _GraphOptimizationFlowNetworkTask:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "query_variant": "default",
                 "query_id": str(query.query_id),
-                "internal_query_variant": str(query.query_id),
-                "query_variant_probabilities": dict(query.query_id_probabilities),
+                "internal_query_id": str(query.query_id),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "scene_variant": str(rendered_scene.layout_variant),
                 "question_format": str(query.query_id),
                 "graph_directionality": "directed",
@@ -1084,7 +1080,6 @@ class _GraphOptimizationFlowNetworkTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant="default",
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
@@ -1098,7 +1093,7 @@ class GraphOptimizationMaxFlowValueTask(_GraphOptimizationFlowNetworkTask):
     task_id = TASK_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        forced_params = forced_query_variant_params(params, query_variant=MAX_FLOW_QUERY_ID)
+        forced_params = forced_query_id_params(params, query_id=MAX_FLOW_QUERY_ID)
         output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
         return rewrite_graph_public_task_output(output, task_id=self.task_id, query_id=MAX_FLOW_QUERY_ID)
 
@@ -1110,7 +1105,7 @@ class GraphOptimizationMinCutEdgeCountTask(_GraphOptimizationFlowNetworkTask):
     task_id = MIN_CUT_TASK_ID
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        forced_params = forced_query_variant_params(params, query_variant=MIN_CUT_EDGE_COUNT_QUERY_ID)
+        forced_params = forced_query_id_params(params, query_id=MIN_CUT_EDGE_COUNT_QUERY_ID)
         output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
         return rewrite_graph_public_task_output(output, task_id=self.task_id, query_id=MIN_CUT_EDGE_COUNT_QUERY_ID)
 

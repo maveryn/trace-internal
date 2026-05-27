@@ -47,22 +47,22 @@ def test_physics_optics_ray_tasks_emit_expected_contract(
 
     assert out.evidence_gt.type == "point_set"
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
 
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
 
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_variant"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["internal_query_variant"] == expected_query_id
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_query_id
 
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_variant"] == expected_query_id
+    assert execution["internal_query_id"] == expected_query_id
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
@@ -148,10 +148,10 @@ def test_physics_optics_ray_tasksseeded_sampler_decouples_scene_and_answer_suppo
             params={},
             max_attempts=60,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
-        scenes_by_query[query_variant][scene_variant] += 1
-        answers_by_scene_query[(scene_variant, query_variant)].add(int(out.answer_gt.value))
+        scenes_by_query[query_id][scene_variant] += 1
+        answers_by_scene_query[(scene_variant, query_id)].add(int(out.answer_gt.value))
 
     target_task = PhysicsOpticsRayTargetHitCountTask()
     for index in range(96):
@@ -160,10 +160,10 @@ def test_physics_optics_ray_tasksseeded_sampler_decouples_scene_and_answer_suppo
             params={},
             max_attempts=60,
         )
-        query_variant = str(out.query_id)
+        query_id = str(out.query_id)
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
-        scenes_by_query[query_variant][scene_variant] += 1
-        answers_by_scene_query[(scene_variant, query_variant)].add(int(out.answer_gt.value))
+        scenes_by_query[query_id][scene_variant] += 1
+        answers_by_scene_query[(scene_variant, query_id)].add(int(out.answer_gt.value))
 
 
     assert set(scenes_by_query["bounce_count"].keys()) == {"five_mirror"}

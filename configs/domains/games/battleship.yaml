@@ -2,7 +2,7 @@ generation:
   shared:
     scene_variant_weights:
       standard_fleet: 1.0
-    query_variant_weights:
+    query_id_weights:
       sunk_ship_count: 1.0
       partial_ship_count: 1.0
     style_variant_weights:
@@ -13,7 +13,7 @@ generation:
       radar: 1.0
       paper: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_board_size_sampling: true
     balanced_target_answer_sampling: true

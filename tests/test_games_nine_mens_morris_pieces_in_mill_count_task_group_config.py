@@ -15,11 +15,11 @@ def test_games_nine_mens_morris_pieces_in_mill_count_defaults_present() -> None:
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_variant_sampling"]) is True
+    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_style_variant_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {"single_board"}
-    assert set(generation["query_variant_weights"].keys()) == {
+    assert set(generation["query_id_weights"].keys()) == {
         "all_pieces_in_mill_count",
     }
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS)

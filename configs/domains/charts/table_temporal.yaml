@@ -11,7 +11,7 @@ generation:
       zebra: 1.0
       ledger: 1.0
       card_table: 1.0
-    balanced_query_variant_sampling: true
+    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
   task_overrides:
     task_charts__table__temporal_row_interval_difference_value:
@@ -23,7 +23,7 @@ generation:
       interval_length_max: 5
       value_min: 1
       value_max: 99
-      query_variant_weights:
+      query_id_weights:
         absolute_difference_between_rows_over_year_interval: 1.0
         sum_absolute_differences_between_rows_over_year_interval: 1.0
 rendering:

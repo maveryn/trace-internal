@@ -10,9 +10,9 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.seed import hash64
 from trace.tasks.pages.counting.filter_count import (
-    CONTROL_QUERY_VARIANTS,
-    SUPPORTED_QUERY_VARIANTS,
-    TABLE_QUERY_VARIANTS,
+    CONTROL_QUERY_IDS,
+    SUPPORTED_QUERY_IDS,
+    TABLE_QUERY_IDS,
     PagesCountingFilterCountTask,
 )
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -23,11 +23,11 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
     scene_variants = ("office_document", "creative_workspace", "developer_ide", "cad_workspace", "scientific_plotter")
     style_variants = ("standard", "compact", "contrast", "standard", "compact")
 
-    for index, query_variant in enumerate(SUPPORTED_QUERY_VARIANTS):
+    for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
         out = task.generate(
             55100 + index,
             params={
-                "query_variant": query_variant,
+                "query_id": query_id,
                 "scene_variant": scene_variants[index],
                 "style_variant": style_variants[index],
             },
@@ -38,17 +38,17 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
 
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_variant) == "default"
-        assert str(out.query_id) == str(query_variant)
-        assert str(execution["query_variant"]) == "default"
-        assert str(execution["query_id"]) == str(query_variant)
+        assert str(out.query_id) == "default"
+        assert str(out.query_id) == str(query_id)
+        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
         assert str(execution["style_variant"]) == str(style_variants[index])
         assert int(out.answer_gt.value) == len(out.evidence_gt.value)
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert set(execution["query_variant_probabilities"].keys()) == set(SUPPORTED_QUERY_VARIANTS)
+        assert set(execution["query_id_probabilities"].keys()) == set(SUPPORTED_QUERY_IDS)
 
-        if query_variant in CONTROL_QUERY_VARIANTS:
+        if query_id in CONTROL_QUERY_IDS:
             controls = [dict(record) for record in execution["controls"]]
             matching_ids = [str(value) for value in execution["matching_control_ids"]]
             matching_records = [record for record in controls if str(record["control_id"]) in set(matching_ids)]
@@ -56,7 +56,7 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
             assert out.evidence_gt.value == [record["bbox_px"] for record in matching_records]
             target_group = str(execution["target_group_name"])
             assert all(str(record["group_name"]) == target_group for record in matching_records)
-            if query_variant == "disabled_controls_in_group_count":
+            if query_id == "disabled_controls_in_group_count":
                 assert all(bool(record["enabled"]) is False for record in matching_records)
             else:
                 assert all(bool(record["selected"]) is True and bool(record["enabled"]) is True for record in matching_records)
@@ -66,10 +66,10 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
             matching_records = [record for record in rows if str(record["row_id"]) in set(matching_ids)]
             assert trace["scene_ir"]["scene_kind"] == "gui_table_row_filter"
             assert out.evidence_gt.value == [record["bbox_px"] for record in matching_records]
-            if query_variant == "selected_rows_with_status_count":
+            if query_id == "selected_rows_with_status_count":
                 target_status = str(execution["target_status"])
                 assert all(bool(record["selected"]) and str(record["status_label"]) == target_status for record in matching_records)
-            elif query_variant == "enabled_action_for_type_count":
+            elif query_id == "enabled_action_for_type_count":
                 target_type = str(execution["target_type"])
                 target_action = str(execution["target_action_label"])
                 assert all(str(record["type_label"]) == target_type for record in matching_records)
@@ -93,7 +93,7 @@ def test_gui_counting_filter_count_contract_matches_trace() -> None:
 
 def test_gui_counting_filter_count_prompt_examples_match_integer_contract() -> None:
     task = PagesCountingFilterCountTask()
-    out = task.generate(55200, params={"query_variant": "disabled_controls_in_group_count"}, max_attempts=20)
+    out = task.generate(55200, params={"query_id": "disabled_controls_in_group_count"}, max_attempts=20)
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
         "evidence": [[96, 218, 221, 300], [233, 218, 358, 300], [370, 310, 495, 392]],
         "answer": 3,
@@ -103,10 +103,10 @@ def test_gui_counting_filter_count_prompt_examples_match_integer_contract() -> N
 
 def test_gui_counting_filter_count_balanced_sampling_defaults_cover_axes_and_answers() -> None:
     task = PagesCountingFilterCountTask()
-    query_variants: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
-    answers_by_query_variant: defaultdict[str, Counter[int]] = defaultdict(Counter)
+    answers_by_query_id: defaultdict[str, Counter[int]] = defaultdict(Counter)
 
     for index in range(125):
         out = task.generate(
@@ -115,15 +115,15 @@ def test_gui_counting_filter_count_balanced_sampling_defaults_cover_axes_and_ans
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        query_variant = str(execution["query_id"])
-        query_variants[query_variant] += 1
+        query_id = str(execution["query_id"])
+        query_ids[query_id] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
-        answers_by_query_variant[query_variant][int(execution["answer_value"])] += 1
+        answers_by_query_id[query_id][int(execution["answer_value"])] += 1
 
-    assert set(query_variants.keys()) == set(SUPPORTED_QUERY_VARIANTS)
-    assert all(count >= 20 for count in query_variants.values())
-    assert max(query_variants.values()) - min(query_variants.values()) <= 8
+    assert set(query_ids.keys()) == set(SUPPORTED_QUERY_IDS)
+    assert all(count >= 20 for count in query_ids.values())
+    assert max(query_ids.values()) - min(query_ids.values()) <= 8
     assert set(scene_variants.keys()) == {
         "office_document",
         "creative_workspace",
@@ -133,17 +133,17 @@ def test_gui_counting_filter_count_balanced_sampling_defaults_cover_axes_and_ans
         "os_file_manager",
     }
     assert set(style_variants.keys()) == {"standard", "compact", "contrast", "cool", "warm", "sage"}
-    assert set(answers_by_query_variant["disabled_controls_in_group_count"].keys()) == {2, 3, 4, 5, 6}
-    assert set(answers_by_query_variant["selected_enabled_controls_in_group_count"].keys()) == {3, 4, 5, 6, 7}
-    assert set(answers_by_query_variant["enabled_action_for_type_count"].keys()) == {2, 3, 4, 5, 6}
-    assert set(answers_by_query_variant["selected_rows_with_status_count"].keys()) == {2, 3, 4, 5, 6, 7}
-    assert set(answers_by_query_variant["value_threshold_in_group_count"].keys()) == {2, 3, 4, 5, 6, 7}
+    assert set(answers_by_query_id["disabled_controls_in_group_count"].keys()) == {2, 3, 4, 5, 6}
+    assert set(answers_by_query_id["selected_enabled_controls_in_group_count"].keys()) == {3, 4, 5, 6, 7}
+    assert set(answers_by_query_id["enabled_action_for_type_count"].keys()) == {2, 3, 4, 5, 6}
+    assert set(answers_by_query_id["selected_rows_with_status_count"].keys()) == {2, 3, 4, 5, 6, 7}
+    assert set(answers_by_query_id["value_threshold_in_group_count"].keys()) == {2, 3, 4, 5, 6, 7}
 
 
 def test_gui_counting_filter_count_deterministic() -> None:
     task = PagesCountingFilterCountTask()
     params = {
-        "query_variant": "value_threshold_in_group_count",
+        "query_id": "value_threshold_in_group_count",
         "scene_variant": "cad_workspace",
         "style_variant": "contrast",
         "answer_value": 5,

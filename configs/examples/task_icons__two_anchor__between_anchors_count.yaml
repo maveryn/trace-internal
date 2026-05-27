@@ -1,5 +1,5 @@
 task_id: task_icons__two_anchor__between_anchors_count
 params:
-  query_variant: inside_vertical_strip
+  query_id: inside_vertical_strip
   target_count: 2
   distractor_count: 4

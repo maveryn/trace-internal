@@ -67,13 +67,13 @@ def _expected_answer(execution: dict, query_id: str) -> int | str:
 @pytest.mark.parametrize(("task_cls", "query_id", "answer_type"), CASES)
 def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id: str, answer_type: str) -> None:
     task = task_cls()
-    out = task.generate(93100 + CASES.index((task_cls, query_id, answer_type)), params={"query_variant": query_id}, max_attempts=80)
+    out = task.generate(93100 + CASES.index((task_cls, query_id, answer_type)), params={"query_id": query_id}, max_attempts=80)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
     render_map = trace["render_map"]
 
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == query_id
     assert out.scene_id == "scatter_readout"
     assert out.answer_gt.type == answer_type
@@ -122,7 +122,7 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
 
 def test_chart_scatter_series_readout_prompt_examples_match_contract() -> None:
     for index, (task_cls, query_id, answer_type) in enumerate(CASES, start=93200):
-        out = task_cls().generate(index, params={"query_variant": query_id}, max_attempts=80)
+        out = task_cls().generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         if answer_type == "integer":

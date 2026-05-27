@@ -3,7 +3,7 @@
 1. Domain: `games`
 2. Scene id: `ultimate_tictactoe`
 3. Source task group: `ultimate_tictactoe`
-4. Public query variant: `default`
+4. Public query id: `default`
 5. Query ids: `x_winning_move_label`, `o_winning_move_label`, `x_blocking_move_label`, `o_blocking_move_label`
 
 ## Contract

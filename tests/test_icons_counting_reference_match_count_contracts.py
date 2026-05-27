@@ -14,7 +14,7 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "query_variant"),
+    ("task_cls", "query_id"),
     (
         (IconsReferenceCanvasAttributeMatchCountTask, "match_type"),
         (IconsReferenceCanvasAttributeMatchCountTask, "match_color"),
@@ -22,9 +22,9 @@ from tests.helpers import read_jsonl
         (IconsReferenceCanvasAttributeMatchCountTask, "match_type_color_rotation"),
     ),
 )
-def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_variant: str) -> None:
+def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_id: str) -> None:
     task = task_cls()
-    params = {"query_variant": query_variant, "object_count": 8, "target_count": 3}
+    params = {"query_id": query_id, "object_count": 8, "target_count": 3}
     out_a = task.generate(24020, params=params, max_attempts=200)
     out_b = task.generate(24020, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -32,8 +32,8 @@ def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_v
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.query_variant == "default"
-    assert out_a.query_id == query_variant
+    assert out_a.query_id == "default"
+    assert out_a.query_id == query_id
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
 
 

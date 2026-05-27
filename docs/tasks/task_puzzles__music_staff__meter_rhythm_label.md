@@ -7,7 +7,7 @@
 4. Task id: `task_puzzles__music_staff__meter_rhythm_label`
 
 ## Query Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `time_signature_label|meter_type_label|articulation_symbol_label`
 3. Prompts ask for time signatures, simple/compound meter labels, or articulation-symbol names.
 4. Internal variation includes simple and compound time signatures, staccato/tenuto/accent/fermata marks, and `engraved_sheet|exam_scan|notebook_staff` scene variants.

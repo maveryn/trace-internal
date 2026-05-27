@@ -49,16 +49,16 @@ from ..shared.single_object_scene import (
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
-from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
+from ..shared.consolidated_sampling import resolve_compatible_scene_query_ids
 
 
 TASK_ID = "geometry_transformation_match_base"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("triangle", "quadrilateral")
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = ("translation_match", "reflection_match", "rotation_match")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("translation_match", "reflection_match", "rotation_match")
 COMPATIBILITY: Dict[str, Sequence[str]] = {
-    "triangle": SUPPORTED_QUERY_VARIANTS,
-    "quadrilateral": SUPPORTED_QUERY_VARIANTS,
+    "triangle": SUPPORTED_QUERY_IDS,
+    "quadrilateral": SUPPORTED_QUERY_IDS,
 }
 
 POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="transformation")
@@ -160,10 +160,10 @@ class _ResolvedQuery:
     """Resolved scene/query axes and answer-label support for one instance."""
 
     scene_variant: str
-    query_variant: str
+    query_id: str
     winner_label: str
     scene_variant_probabilities: Dict[str, float]
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     winner_label_probabilities: Dict[str, float]
     candidate_label_pool: Tuple[str, ...]
 
@@ -209,10 +209,10 @@ def _apply_local_transform(template: Polygon, *, recipe: str) -> Polygon:
     return apply_rigid_transform_recipe(template, recipe=str(recipe))
 
 
-def _winner_recipe_for_query(*, query_variant: str, rotation_mode: _RotationMode | None) -> str:
+def _winner_recipe_for_query(*, query_id: str, rotation_mode: _RotationMode | None) -> str:
     """Return the correct local transform recipe for the requested query."""
 
-    normalized_query = str(query_variant)
+    normalized_query = str(query_id)
     if normalized_query == "translation_match":
         return _TRANSFORM_RECIPE_IDENTITY
     if normalized_query == "reflection_match":
@@ -227,7 +227,7 @@ def _winner_recipe_for_query(*, query_variant: str, rotation_mode: _RotationMode
             return _TRANSFORM_RECIPE_ROTATE_180
         if quarter_turns == 3:
             return _TRANSFORM_RECIPE_ROTATE_90_CCW
-    raise ValueError(f"unsupported transformation query_variant: {query_variant}")
+    raise ValueError(f"unsupported transformation query_id: {query_id}")
 
 
 def _local_distractor_recipes(*, winner_recipe: str) -> Tuple[str, ...]:
@@ -514,16 +514,16 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve scene/query axes plus balanced answer-label support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    scene_variant, scene_probs, query_id, query_probs = resolve_compatible_scene_query_ids(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_query_ids=SUPPORTED_QUERY_IDS,
         compatibility=COMPATIBILITY,
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
+        query_sampling_namespace=f"{TASK_ID}.query_id",
     )
     label_pool = tuple(
         str(label).upper()
@@ -542,15 +542,15 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         gen_defaults=_GEN_DEFAULTS,
         label_pool=label_pool,
         selection_namespace=(
-            f"{TASK_ID}.winner_label.{str(scene_variant)}.{str(query_variant)}"
+            f"{TASK_ID}.winner_label.{str(scene_variant)}.{str(query_id)}"
         ),
     )
     return _ResolvedQuery(
         scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         winner_label=str(winner_label),
         scene_variant_probabilities=dict(scene_probs),
-        query_variant_probabilities=dict(query_probs),
+        query_id_probabilities=dict(query_probs),
         winner_label_probabilities=dict(winner_probs),
         candidate_label_pool=tuple(label_pool),
     )
@@ -592,7 +592,7 @@ def _sample_transformation_scene(
 
     slot_indices = list(range(len(slots)))
     rng.shuffle(slot_indices)
-    if str(query.query_variant) == "translation_match":
+    if str(query.query_id) == "translation_match":
         candidate_pairs: List[Tuple[int, Tuple[int, int], Point, Tuple[int, int]]] = []
         for slot_index in slot_indices:
             slot_center = slots[int(slot_index)]
@@ -632,7 +632,7 @@ def _sample_transformation_scene(
         if not candidate_pairs:
             raise ValueError("no feasible translation slot/vector pair for current scene context")
         winner_slot_index, translation_vector, reference_center_graph, translation_vector_anchor = rng.choice(candidate_pairs)
-    elif str(query.query_variant) == "reflection_match":
+    elif str(query.query_id) == "reflection_match":
         axis_x = int(params.get("reflection_axis_x", group_default(_GEN_DEFAULTS, "reflection_axis_x", _DEFAULTS.reflection_axis_x)))
         for slot_index in slot_indices:
             slot_center = slots[int(slot_index)]
@@ -686,7 +686,7 @@ def _sample_transformation_scene(
     )
     reference_vertices_px = pixel_polygon_from_graph_units(reference_vertices_graph, context=context)
 
-    winner_recipe = _winner_recipe_for_query(query_variant=str(query.query_variant), rotation_mode=rotation_mode)
+    winner_recipe = _winner_recipe_for_query(query_id=str(query.query_id), rotation_mode=rotation_mode)
     distractor_recipes = list(_local_distractor_recipes(winner_recipe=str(winner_recipe)))
     rng.shuffle(distractor_recipes)
 
@@ -788,7 +788,7 @@ def _sample_transformation_scene(
         label_stroke_color=shape_style.label_stroke_color,
     )
 
-    if str(query.query_variant) == "translation_match":
+    if str(query.query_id) == "translation_match":
         if translation_vector_anchor is None:
             raise ValueError("translation_match requires one resolved cue anchor")
         cue_trace = _draw_translation_cue(
@@ -801,7 +801,7 @@ def _sample_transformation_scene(
             translation_vector=translation_vector if translation_vector is not None else (0, 0),
             color=shape_style.line_color,
         )
-    elif str(query.query_variant) == "reflection_match":
+    elif str(query.query_id) == "reflection_match":
         cue_trace = _draw_reflection_cue(
             draw,
             context=context,
@@ -1086,7 +1086,7 @@ class GeometryTransformationMatchTask:
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         }
-        if str(query.query_variant) == "rotation_match":
+        if str(query.query_id) == "rotation_match":
             prompt_slots["rotation_instruction"] = str(rendered_scene.rotation_prompt_label or "180° rotation")
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -1094,7 +1094,7 @@ class GeometryTransformationMatchTask:
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query.query_variant),
+            query_key=str(query.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots=prompt_slots,
             instance_seed=int(instance_seed),
@@ -1109,11 +1109,10 @@ class GeometryTransformationMatchTask:
 
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
-            "query_variant": str(query.query_variant),
-            "query_variant": str(query.query_variant),
-            "variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id": str(query.query_id),
+            "variant_probabilities": dict(query.query_id_probabilities),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_variant_probabilities": dict(query.query_variant_probabilities),
+            "query_id_probabilities": dict(query.query_id_probabilities),
             "winner_label_probabilities": dict(query.winner_label_probabilities),
             "candidate_label_pool": list(query.candidate_label_pool),
         }
@@ -1129,14 +1128,14 @@ class GeometryTransformationMatchTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                     "winner_label": str(rendered_scene.winner_label),
                     "cue_kind": str(rendered_scene.cue_kind),
-                    "query_variant": str(query.query_variant),
+                    "query_id": str(query.query_id),
                 },
             },
             "query_spec": {
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1165,11 +1164,10 @@ class GeometryTransformationMatchTask:
             },
             "execution_trace": {
                 "scene_variant": str(query.scene_variant),
-                "query_variant": str(query.query_variant),
-                "query_variant": str(query.query_variant),
+                "query_id": str(query.query_id),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
-                "query_variant_probabilities": dict(query.query_variant_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label": str(rendered_scene.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "cue_kind": str(rendered_scene.cue_kind),
@@ -1196,14 +1194,14 @@ class GeometryTransformationMatchTask:
             "translation_match": 0.32,
             "reflection_match": 0.45,
             "rotation_match": 0.62,
-        }[str(query.query_variant)]
+        }[str(query.query_id)]
         if str(query.scene_variant) == "quadrilateral":
             ambiguity = min(1.0, float(ambiguity + 0.05))
         complexity = build_geometry_transformation_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=self.task_id,
             visual_scan=float(visual_scan),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             scene_variant=str(query.scene_variant),
             ambiguity=float(ambiguity),
             evidence_point_count=len(rendered_scene.required_evidence_labels),
@@ -1218,7 +1216,7 @@ class GeometryTransformationMatchTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query.query_variant),
+            query_id=str(query.query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
@@ -1228,6 +1226,6 @@ class GeometryTransformationCandidateMatchTask(MultiFixedGeometryQueryTaskMixin,
     """Choose the candidate polygon matching the requested transformation."""
 
     task_id = "task_geometry__shape_gallery__transformation_match_label"
-    fixed_query_variants = ("translation_match", "reflection_match", "rotation_match")
+    fixed_query_ids = ("translation_match", "reflection_match", "rotation_match")
     public_scene_id = "shape_gallery"
     allowed_scene_variants = SUPPORTED_SCENE_VARIANTS

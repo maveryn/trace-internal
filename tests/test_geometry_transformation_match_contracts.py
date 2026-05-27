@@ -13,9 +13,9 @@ from trace.tasks.geometry.transformation.match import GeometryTransformationMatc
 @pytest.mark.parametrize(
     ("params", "expected_point_count"),
     (
-        ({"scene_variant": "triangle", "query_variant": "translation_match"}, 3),
-        ({"scene_variant": "quadrilateral", "query_variant": "reflection_match"}, 4),
-        ({"scene_variant": "triangle", "query_variant": "rotation_match"}, 3),
+        ({"scene_variant": "triangle", "query_id": "translation_match"}, 3),
+        ({"scene_variant": "quadrilateral", "query_id": "reflection_match"}, 4),
+        ({"scene_variant": "triangle", "query_id": "rotation_match"}, 3),
     ),
 )
 def test_geometry_transformation_match_emits_expected_contract(
@@ -29,7 +29,7 @@ def test_geometry_transformation_match_emits_expected_contract(
     assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == expected_point_count
     assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
-    assert out.trace_payload["query_spec"]["params"]["query_variant"] == out.query_variant
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == out.query_id
     assert out.trace_payload["execution_trace"]["required_evidence_labels"] == [
         f"vertex_{index}" for index in range(1, expected_point_count + 1)
     ]
@@ -39,16 +39,16 @@ def test_geometry_transformation_match_rejects_unsupported_scene_variant() -> No
     with pytest.raises(ValueError):
         GeometryTransformationMatchTask().generate(
             23111,
-            params={"scene_variant": "circle", "query_variant": "translation_match"},
+            params={"scene_variant": "circle", "query_id": "translation_match"},
             max_attempts=20,
         )
 
 
-def test_geometry_transformation_match_rejects_unsupported_query_variant() -> None:
+def test_geometry_transformation_match_rejects_unsupported_query_id() -> None:
     with pytest.raises(ValueError):
         GeometryTransformationMatchTask().generate(
             23112,
-            params={"scene_variant": "triangle", "query_variant": "largest_area"},
+            params={"scene_variant": "triangle", "query_id": "largest_area"},
             max_attempts=20,
         )
 
@@ -89,7 +89,7 @@ def test_geometry_transformation_match_translation_cue_is_above_reference_and_le
     for index in range(30):
         out = task.generate(
             int(hash64(0, "geometry_transformation_match_base.translation", index)),
-            params={"query_variant": "translation_match"},
+            params={"query_id": "translation_match"},
             max_attempts=100,
         )
         cue = out.trace_payload["render_map"]["cue"]

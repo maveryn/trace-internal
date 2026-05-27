@@ -44,18 +44,18 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 TASK_ID = "charts_error_interval_base"
 SCENE_ID = "error_interval"
 
-REFERENCE_COUNT_QUERY_VARIANTS: Tuple[str, ...] = (
+REFERENCE_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "contains_reference_count",
     "entirely_above_reference_count",
     "entirely_below_reference_count",
 )
-RELATION_LABEL_QUERY_VARIANTS: Tuple[str, ...] = (
+RELATION_LABEL_QUERY_IDS: Tuple[str, ...] = (
     "widest_interval_label",
     "narrowest_interval_label",
     "second_widest_interval_label",
     "second_narrowest_interval_label",
 )
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = REFERENCE_COUNT_QUERY_VARIANTS + RELATION_LABEL_QUERY_VARIANTS
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = REFERENCE_COUNT_QUERY_IDS + RELATION_LABEL_QUERY_IDS
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "horizontal_forest",
     "vertical_dot_whisker",
@@ -217,17 +217,17 @@ def _public_task_param_overrides(task_id: str) -> Dict[str, Any]:
     return overrides
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -496,7 +496,7 @@ def _construct_dataset(
     title_options = [str(value) for value in params.get("title_options", group_default(_RENDER_DEFAULTS, "title_options", ["Estimate Intervals"]))] or ["Estimate Intervals"]
     title_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.error_interval.title")) % len(title_options)
 
-    if str(query_id) in REFERENCE_COUNT_QUERY_VARIANTS:
+    if str(query_id) in REFERENCE_COUNT_QUERY_IDS:
         answer_count, answer_count_probs = _sample_int_range(
             params,
             min_key="reference_answer_count_min",
@@ -979,7 +979,7 @@ def _render_chart(
 
 
 def _json_examples(query_id: str, *, prompt_defaults: Mapping[str, Any]) -> Tuple[str, str]:
-    if str(query_id) in REFERENCE_COUNT_QUERY_VARIANTS:
+    if str(query_id) in REFERENCE_COUNT_QUERY_IDS:
         return (
             str(prompt_defaults["json_example_reference_count"]),
             str(prompt_defaults["json_example_answer_only_reference_count"]),
@@ -1018,7 +1018,7 @@ class ChartsErrorIntervalChartTask:
             merged_params.update(dict(params))
             params = merged_params
 
-        query_id, query_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = _construct_dataset(
             query_id=str(query_id),
@@ -1070,7 +1070,7 @@ class ChartsErrorIntervalChartTask:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = _json_examples(str(query_id), prompt_defaults=prompt_defaults)
-        answer_hint = str(prompt_defaults["answer_hint_count" if str(query_id) in REFERENCE_COUNT_QUERY_VARIANTS else "answer_hint_label"])
+        answer_hint = str(prompt_defaults["answer_hint_count" if str(query_id) in REFERENCE_COUNT_QUERY_IDS else "answer_hint_label"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1121,11 +1121,9 @@ class ChartsErrorIntervalChartTask:
         )
 
         query_params = {
-            "query_variant": str(query_id),
-            "query_variant": str(query_id),
             "query_id": str(query_id),
-            "query_variant_probabilities": dict(dataset.query_probabilities),
-            "query_variant_probabilities": dict(dataset.query_probabilities),
+            "query_id_probabilities": dict(dataset.query_probabilities),
+            "query_id_probabilities": dict(dataset.query_probabilities),
             "scene_variant": str(dataset.scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "category_count": int(len(dataset.items)),
@@ -1139,8 +1137,6 @@ class ChartsErrorIntervalChartTask:
                 "scene_kind": SCENE_ID,
                 "entities": [dict(entity) for entity in rendered.entities],
                 "relations": {
-                    "query_variant": str(query_id),
-                    "query_variant": str(query_id),
                     "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "reference_value": dataset.reference_value,
@@ -1149,8 +1145,6 @@ class ChartsErrorIntervalChartTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(query_id),
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -1172,8 +1166,6 @@ class ChartsErrorIntervalChartTask:
                 "interval_bboxes_px": dict(rendered.interval_bboxes_px),
             },
             "execution_trace": {
-                "query_variant": str(query_id),
-                "query_variant": str(query_id),
                 "query_id": str(query_id),
                 "question_format": "error_interval",
                 "scene_variant": str(dataset.scene_variant),
@@ -1211,7 +1203,6 @@ class ChartsErrorIntervalChartTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_id),
             scene_id=SCENE_ID,
             query_id=str(query_id),
         )
@@ -1223,7 +1214,7 @@ class ChartsErrorIntervalReferenceCountTask(MergedChartQueryVariantTaskMixin, Ch
 
     task_id = "task_charts__error_interval__reference_relation_count"
     default_dataset_enabled = True
-    allowed_query_variants = REFERENCE_COUNT_QUERY_VARIANTS
+    allowed_query_ids = REFERENCE_COUNT_QUERY_IDS
 
 
 @register_task
@@ -1232,15 +1223,15 @@ class ChartsErrorIntervalRelationLabelTask(MergedChartQueryVariantTaskMixin, Cha
 
     task_id = "task_charts__error_interval__interval_width_rank_label"
     default_dataset_enabled = True
-    allowed_query_variants = RELATION_LABEL_QUERY_VARIANTS
+    allowed_query_ids = RELATION_LABEL_QUERY_IDS
 
 
 __all__ = [
     "ChartsErrorIntervalChartTask",
     "ChartsErrorIntervalReferenceCountTask",
     "ChartsErrorIntervalRelationLabelTask",
-    "REFERENCE_COUNT_QUERY_VARIANTS",
-    "RELATION_LABEL_QUERY_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "REFERENCE_COUNT_QUERY_IDS",
+    "RELATION_LABEL_QUERY_IDS",
+    "SUPPORTED_QUERY_IDS",
     "SUPPORTED_SCENE_VARIANTS",
 ]

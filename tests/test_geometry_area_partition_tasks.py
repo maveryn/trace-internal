@@ -55,7 +55,7 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     scene_id = SCENE_ID_BY_TASK[task_cls]
 
     assert out.scene_id == scene_id
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "total_area_from_shaded_partition"
     assert out.answer_gt.type == "number"
     assert out.evidence_gt.type == "bbox_set"
@@ -67,7 +67,7 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == scene_id
     assert trace["scene_ir"]["scene_id"] == scene_id
     assert trace["witness_symbolic"]["scene_id"] == scene_id
-    assert trace["query_spec"]["query_variant"] == "default"
+    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["projected_evidence"]["type"] == "bbox_set"
@@ -111,7 +111,7 @@ def test_area_partition_tasks_support_every_explicit_query(task_cls) -> None:
         assert out.query_id == query_id
         assert out.answer_gt.type == "number"
         assert out.trace_payload["query_spec"]["params"][
-            "query_variant_probabilities"
+            "query_id_probabilities"
         ] == {query_id: 1.0}
 
 

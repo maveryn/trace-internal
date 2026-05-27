@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build a retained TRACE RLVR train subset from a staged curriculum probe.
 
-The source RLVR parquet currently does not store query_variant directly. This
-script recovers query_variant/scene_variant from sidecar traces through trace_ref,
+The source RLVR parquet currently does not store query_id directly. This
+script recovers query_id/scene_variant from sidecar traces through trace_ref,
 then samples retained rows with capped proportional allocation against the
 original source distribution.
 """
@@ -43,8 +43,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=20260504)
     parser.add_argument(
         "--strata",
-        default="task,query_variant,bucket_id_str",
-        help="Comma-separated strata columns. Supported: domain, task_group, task, query_variant, scene_variant, difficulty_bin, bucket_id_str.",
+        default="task,query_id,bucket_id_str",
+        help="Comma-separated strata columns. Supported: domain, task_group, task, query_id, scene_variant, difficulty_bin, bucket_id_str.",
     )
     parser.add_argument("--batch-size", type=int, default=2048)
     parser.add_argument(
@@ -104,7 +104,7 @@ def _recover_trace_variants(trace_root: Path, refs: list[RowTraceRef]) -> tuple[
     for row_idx, ref in enumerate(refs):
         rows_by_shard_line[ref.shard_id][ref.line_index].append(row_idx)
 
-    query_variants: list[str | None] = [None] * len(refs)
+    query_ids: list[str | None] = [None] * len(refs)
     scene_variants: list[str | None] = [None] * len(refs)
     query_execution_mismatch = 0
     matched = 0
@@ -122,29 +122,29 @@ def _recover_trace_variants(trace_root: Path, refs: list[RowTraceRef]) -> tuple[
                 query_spec = record.get("query_spec") or {}
                 execution_trace = record.get("execution_trace") or {}
                 render_spec = record.get("render_spec") or {}
-                query_variant = query_spec.get("query_variant")
-                execution_variant = execution_trace.get("query_variant")
-                if query_variant != execution_variant:
+                query_id = query_spec.get("query_id")
+                execution_variant = execution_trace.get("query_id")
+                if query_id != execution_variant:
                     query_execution_mismatch += len(row_indices)
-                query_variant = query_variant if query_variant is not None else execution_variant
+                query_id = query_id if query_id is not None else execution_variant
                 scene_variant = render_spec.get("scene_variant", execution_trace.get("scene_variant", ""))
-                if query_variant is None:
-                    raise SystemExit(f"Missing query_variant in sidecar trace shard={shard_id} line={line_index}")
+                if query_id is None:
+                    raise SystemExit(f"Missing query_id in sidecar trace shard={shard_id} line={line_index}")
                 for row_idx in row_indices:
-                    query_variants[row_idx] = str(query_variant)
+                    query_ids[row_idx] = str(query_id)
                     scene_variants[row_idx] = "" if scene_variant is None else str(scene_variant)
                     matched += 1
 
-    missing = sum(1 for value in query_variants if value is None)
+    missing = sum(1 for value in query_ids if value is None)
     if missing:
-        raise SystemExit(f"Failed to recover query_variant for {missing} source rows.")
+        raise SystemExit(f"Failed to recover query_id for {missing} source rows.")
 
     return (
-        [str(value) for value in query_variants],
+        [str(value) for value in query_ids],
         ["" if value is None else str(value) for value in scene_variants],
         {
             "trace_rows_matched": int(matched),
-            "query_execution_query_variant_mismatch": int(query_execution_mismatch),
+            "query_execution_query_id_mismatch": int(query_execution_mismatch),
         },
     )
 
@@ -186,13 +186,13 @@ def _stratum_for_row(
     *,
     strata: list[str],
     metadata: dict[str, list[Any]],
-    query_variants: list[str],
+    query_ids: list[str],
     scene_variants: list[str],
 ) -> tuple[str, ...]:
     values: list[str] = []
     for column in strata:
-        if column == "query_variant":
-            values.append(query_variants[row_idx])
+        if column == "query_id":
+            values.append(query_ids[row_idx])
         elif column == "scene_variant":
             values.append(scene_variants[row_idx])
         elif column in metadata:
@@ -286,7 +286,7 @@ def _write_subset_parquet(
     parquet_file: pq.ParquetFile,
     output: Path,
     selected_rows: list[int],
-    query_variants: list[str],
+    query_ids: list[str],
     scene_variants: list[str],
     probe_rows: dict[int, dict[str, Any]],
     batch_size: int,
@@ -314,8 +314,8 @@ def _write_subset_parquet(
                 )
                 subset = _append_column(
                     subset,
-                    "query_variant",
-                    [query_variants[index] for index in selected_global],
+                    "query_id",
+                    [query_ids[index] for index in selected_global],
                     pa.string(),
                 )
                 subset = _append_column(
@@ -365,7 +365,7 @@ def main() -> None:
         raise SystemExit("At least one stratum column is required.")
 
     parquet_file, metadata, refs = _read_source_metadata(source)
-    query_variants, scene_variants, trace_report = _recover_trace_variants(trace_root, refs)
+    query_ids, scene_variants, trace_report = _recover_trace_variants(trace_root, refs)
     retained, probe_rows, probe_status_counts = _read_retained_indices(probe_jsonl)
     probe_retained_rows = len(retained)
     excluded_source_indices = _read_excluded_source_indices(list(args.exclude_source_index_parquet))
@@ -387,7 +387,7 @@ def main() -> None:
             row_idx,
             strata=strata,
             metadata=metadata,
-            query_variants=query_variants,
+            query_ids=query_ids,
             scene_variants=scene_variants,
         )
         original_counts[stratum] += 1
@@ -405,7 +405,7 @@ def main() -> None:
         parquet_file=parquet_file,
         output=output,
         selected_rows=selected_rows,
-        query_variants=query_variants,
+        query_ids=query_ids,
         scene_variants=scene_variants,
         probe_rows=probe_rows,
         batch_size=int(args.batch_size),
@@ -444,12 +444,12 @@ def main() -> None:
         "capped_strata_count": int(len(capped_strata)),
         "probe_status_counts": {key: int(value) for key, value in sorted(probe_status_counts.items())},
         **trace_report,
-        "selected_query_variant_units": int(
+        "selected_query_id_units": int(
             len(
                 {
                     (
                         metadata["task"][row_idx],
-                        query_variants[row_idx],
+                        query_ids[row_idx],
                     )
                     for row_idx in selected_rows
                 }

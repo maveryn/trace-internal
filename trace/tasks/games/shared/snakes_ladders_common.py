@@ -11,7 +11,7 @@ BOARD_ROWS = 10
 BOARD_COLS = 10
 LAST_SQUARE = BOARD_ROWS * BOARD_COLS
 SUPPORTED_BOARD_SIDES: Tuple[int, ...] = (5, 6, 7)
-SUPPORTED_SNAKES_LADDERS_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_SNAKES_LADDERS_QUERY_IDS: Tuple[str, ...] = (
     "move_outcome_value",
     "best_roll_value",
 )
@@ -69,7 +69,7 @@ class SnakesLaddersMove:
 class SnakesLaddersSample:
     """Complete sampled scene and query trace."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     board_side: int
@@ -244,7 +244,7 @@ __all__ = [
     "SUPPORTED_BOARD_SIDES",
     "SUPPORTED_DIE_VALUES",
     "SUPPORTED_HORIZON_ROLL_COUNTS",
-    "SUPPORTED_SNAKES_LADDERS_QUERY_VARIANTS",
+    "SUPPORTED_SNAKES_LADDERS_QUERY_IDS",
     "SUPPORTED_SNAKES_LADDERS_SCENE_VARIANTS",
     "SUPPORTED_SNAKES_LADDERS_STYLE_VARIANTS",
     "SnakesLaddersJump",

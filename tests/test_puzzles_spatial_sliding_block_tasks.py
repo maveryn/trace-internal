@@ -41,11 +41,11 @@ def test_sliding_block_tasks_emit_contracts() -> None:
         execution = trace["execution_trace"]
 
         assert out.scene_id == "sliding_block"
-        assert out.query_variant == "default"
+        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == answer_type
         assert out.evidence_gt.type == "bbox_set"
-        assert trace["query_spec"]["params"]["query_variant"] == "default"
+        assert trace["query_spec"]["params"]["query_id"] == "default"
         assert trace["query_spec"]["params"]["query_id"] == query_id
         assert trace["render_spec"]["scene_id"] == "sliding_block"
         if query_id == "move_result_label":

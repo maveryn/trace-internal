@@ -39,7 +39,7 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 
 
 TASK_ID = "charts_composition_share_arithmetic_value_base"
-SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "contiguous_chart_order_sum",
     "positional_segment_share_sum",
     "chart_order_share_to_count",
@@ -49,15 +49,15 @@ SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
 )
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("pie", "donut", "stacked_bar", "stacked_horizontal_bar")
 CONTIGUOUS_SCENE_VARIANTS: Tuple[str, ...] = ("pie", "donut")
-TRANSFER_GAP_QUERY_VARIANTS: Tuple[str, ...] = (
+TRANSFER_GAP_QUERY_IDS: Tuple[str, ...] = (
     "chart_order_adjacent_transfer_gap",
 )
-PART_WHOLE_QUERY_VARIANTS: Tuple[str, ...] = (
+PART_WHOLE_QUERY_IDS: Tuple[str, ...] = (
     "chart_order_share_to_count",
     "chart_order_remaining_count",
     "sector_share_to_angle",
 )
-CIRCULAR_ONLY_QUERY_VARIANTS = frozenset(
+CIRCULAR_ONLY_QUERY_IDS = frozenset(
     {
         "contiguous_chart_order_sum",
         "positional_segment_share_sum",
@@ -67,12 +67,12 @@ CIRCULAR_ONLY_QUERY_VARIANTS = frozenset(
         "chart_order_adjacent_transfer_gap",
     }
 )
-COMPACT_VALUE_QUERY_VARIANTS = frozenset(
+COMPACT_VALUE_QUERY_IDS = frozenset(
     {
         "contiguous_chart_order_sum",
         "positional_segment_share_sum",
-        *TRANSFER_GAP_QUERY_VARIANTS,
-        *PART_WHOLE_QUERY_VARIANTS,
+        *TRANSFER_GAP_QUERY_IDS,
+        *PART_WHOLE_QUERY_IDS,
     }
 )
 CIRCULAR_ORDER_DIRECTIONS: Tuple[str, ...] = ("clockwise", "counterclockwise")
@@ -158,17 +158,17 @@ class _RenderedShareChart:
     layout_jitter_meta: Dict[str, Any]
 
 
-def _resolve_query_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
+def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_QUERY_IDS,
         task_id=TASK_ID,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        balance_flag_key="balanced_query_variant_sampling",
-        axis_namespace="query_variant",
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
     )
 
 
@@ -196,9 +196,9 @@ def _axis_is_explicit(params: Mapping[str, Any], *, explicit_key: str, weights_k
 
 
 def _task_axis_stride(params: Mapping[str, Any]) -> int:
-    if _axis_is_explicit(params, explicit_key="query_variant", weights_key="query_variant_weights"):
+    if _axis_is_explicit(params, explicit_key="query_id", weights_key="query_id_weights"):
         return 1
-    return len(SUPPORTED_QUERY_VARIANTS)
+    return len(SUPPORTED_QUERY_IDS)
 
 
 def _scene_axis_stride(params: Mapping[str, Any]) -> int:
@@ -292,14 +292,14 @@ def _chart_order_phrase(scene_variant: str) -> str:
     return "in chart order"
 
 
-def _scene_variants_for_task(query_variant: str) -> Tuple[str, ...]:
-    if str(query_variant) in CIRCULAR_ONLY_QUERY_VARIANTS:
+def _scene_variants_for_task(query_id: str) -> Tuple[str, ...]:
+    if str(query_id) in CIRCULAR_ONLY_QUERY_IDS:
         return CONTIGUOUS_SCENE_VARIANTS
     return SUPPORTED_SCENE_VARIANTS
 
 
-def _category_count_bounds(params: Mapping[str, Any], *, query_variant: str) -> Tuple[int, int]:
-    if str(query_variant) == "contiguous_chart_order_sum":
+def _category_count_bounds(params: Mapping[str, Any], *, query_id: str) -> Tuple[int, int]:
+    if str(query_id) == "contiguous_chart_order_sum":
         return _resolve_count_bounds(
             params,
             min_key="contiguous_category_count_min",
@@ -307,7 +307,7 @@ def _category_count_bounds(params: Mapping[str, Any], *, query_variant: str) -> 
             fallback_min=5,
             fallback_max=10,
         )
-    if str(query_variant) in TRANSFER_GAP_QUERY_VARIANTS:
+    if str(query_id) in TRANSFER_GAP_QUERY_IDS:
         return _resolve_count_bounds(
             params,
             min_key="counterfactual_category_count_min",
@@ -315,7 +315,7 @@ def _category_count_bounds(params: Mapping[str, Any], *, query_variant: str) -> 
             fallback_min=8,
             fallback_max=14,
         )
-    if str(query_variant) in PART_WHOLE_QUERY_VARIANTS:
+    if str(query_id) in PART_WHOLE_QUERY_IDS:
         return _resolve_count_bounds(
             params,
             min_key="part_whole_category_count_min",
@@ -323,7 +323,7 @@ def _category_count_bounds(params: Mapping[str, Any], *, query_variant: str) -> 
             fallback_min=8,
             fallback_max=14,
         )
-    if str(query_variant) == "positional_segment_share_sum":
+    if str(query_id) == "positional_segment_share_sum":
         return _resolve_count_bounds(
             params,
             min_key="positional_category_count_min",
@@ -340,8 +340,8 @@ def _category_count_bounds(params: Mapping[str, Any], *, query_variant: str) -> 
     )
 
 
-def _value_bounds(params: Mapping[str, Any], *, query_variant: str) -> Tuple[int, int]:
-    if str(query_variant) in COMPACT_VALUE_QUERY_VARIANTS:
+def _value_bounds(params: Mapping[str, Any], *, query_id: str) -> Tuple[int, int]:
+    if str(query_id) in COMPACT_VALUE_QUERY_IDS:
         return _resolve_count_bounds(
             params,
             min_key="compact_value_min",
@@ -738,7 +738,7 @@ def _sample_chart_order_adjacent_transfer(
 
 def _sample_transfer_categories_and_query(
     *,
-    query_variant: str,
+    query_id: str,
     category_count: int,
     value_min: int,
     value_max: int,
@@ -751,7 +751,7 @@ def _sample_transfer_categories_and_query(
         "threshold_conditioned_transfer_gap": _sample_threshold_conditioned_transfer,
         "chart_order_adjacent_transfer_gap": _sample_chart_order_adjacent_transfer,
     }
-    selector = selectors[str(query_variant)]
+    selector = selectors[str(query_id)]
     for attempt in range(160):
         categories = _sample_categories(
             category_count=int(category_count),
@@ -767,7 +767,7 @@ def _sample_transfer_categories_and_query(
         )
         if query is not None:
             return tuple(categories), query, int(attempt)
-    raise ValueError(f"could not construct transfer-gap query for {query_variant}")
+    raise ValueError(f"could not construct transfer-gap query for {query_id}")
 
 
 def _sample_total_count(
@@ -966,7 +966,7 @@ def _build_chart_order_span_query(
 
 def _sample_part_whole_categories_and_query(
     *,
-    query_variant: str,
+    query_id: str,
     category_count: int,
     value_min: int,
     value_max: int,
@@ -981,7 +981,7 @@ def _sample_part_whole_categories_and_query(
             value_max=int(value_max),
             instance_seed=int(instance_seed) + (int(attempt) * 1009),
         )
-        if str(query_variant) in {"chart_order_share_to_count", "chart_order_remaining_count"}:
+        if str(query_id) in {"chart_order_share_to_count", "chart_order_remaining_count"}:
             selected, query_extras = _build_chart_order_span_query(
                 categories,
                 params=params,
@@ -991,10 +991,10 @@ def _sample_part_whole_categories_and_query(
                 max_key="part_whole_span_count_max",
                 fallback_min=3,
                 fallback_max=5,
-                namespace_suffix=str(query_variant),
+                namespace_suffix=str(query_id),
             )
             return tuple(categories), tuple(selected), dict(query_extras), int(attempt)
-        if str(query_variant) == "selected_share_to_count":
+        if str(query_id) == "selected_share_to_count":
             selected, query_extras = _build_selected_share_to_count_query(
                 categories,
                 params=params,
@@ -1002,7 +1002,7 @@ def _sample_part_whole_categories_and_query(
                 instance_seed=int(instance_seed) + int(attempt),
             )
             return tuple(categories), tuple(selected), dict(query_extras), int(attempt)
-        if str(query_variant) == "sector_share_to_angle":
+        if str(query_id) == "sector_share_to_angle":
             query = _build_sector_share_to_angle_query(
                 categories,
                 params=params,
@@ -1013,7 +1013,7 @@ def _sample_part_whole_categories_and_query(
                 continue
             selected, query_extras = query
             return tuple(categories), tuple(selected), dict(query_extras), int(attempt)
-    raise ValueError(f"could not construct part-whole query for {query_variant}")
+    raise ValueError(f"could not construct part-whole query for {query_id}")
 
 
 def _build_ranked_group_share_gap_query(
@@ -1225,17 +1225,17 @@ def _evidence_value_for_label(
 
 def _build_dataset(
     *,
-    query_variant: str,
+    query_id: str,
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _Dataset:
-    category_min, category_max = _category_count_bounds(params, query_variant=str(query_variant))
+    category_min, category_max = _category_count_bounds(params, query_id=str(query_id))
     count_params = _params_with_shifted_sample_cursor(
         params,
         divisor=int(_task_axis_stride(params) * _scene_axis_stride(params)),
     )
     category_count_support = list(range(int(category_min), int(category_max) + 1))
-    if str(query_variant) == "positional_segment_share_sum":
+    if str(query_id) == "positional_segment_share_sum":
         category_count_support = [int(value) for value in category_count_support if int(value) % 2 == 0]
         if not category_count_support:
             raise ValueError("positional_segment_share_sum requires at least one even category count")
@@ -1245,7 +1245,7 @@ def _build_dataset(
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.category_count",
     )
-    value_min, value_max = _value_bounds(params, query_variant=str(query_variant))
+    value_min, value_max = _value_bounds(params, query_id=str(query_id))
     transfer_query: _TransferQuery | None = None
     transfer_sampling_attempt: int | None = None
     part_whole_selected: Tuple[_CategorySpec, ...] = ()
@@ -1261,16 +1261,16 @@ def _build_dataset(
     cumulative_selected: Tuple[_CategorySpec, ...] = ()
     cumulative_query_extras: Dict[str, Any] = {}
     cumulative_sampling_attempt: int | None = None
-    if str(query_variant) == "ranked_position_set_sum":
+    if str(query_id) == "ranked_position_set_sum":
         categories = _sample_ranked_categories(
             category_count=int(category_count),
             instance_seed=int(instance_seed),
         )
-    elif str(query_variant) == "conditional_share_sum":
+    elif str(query_id) == "conditional_share_sum":
         categories = ()
-    elif str(query_variant) in TRANSFER_GAP_QUERY_VARIANTS:
+    elif str(query_id) in TRANSFER_GAP_QUERY_IDS:
         categories, transfer_query, transfer_sampling_attempt = _sample_transfer_categories_and_query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             category_count=int(category_count),
             value_min=int(value_min),
             value_max=int(value_max),
@@ -1278,9 +1278,9 @@ def _build_dataset(
             count_params=count_params,
             instance_seed=int(instance_seed),
         )
-    elif str(query_variant) in PART_WHOLE_QUERY_VARIANTS:
+    elif str(query_id) in PART_WHOLE_QUERY_IDS:
         categories, part_whole_selected, part_whole_query_extras, part_whole_sampling_attempt = _sample_part_whole_categories_and_query(
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             category_count=int(category_count),
             value_min=int(value_min),
             value_max=int(value_max),
@@ -1288,7 +1288,7 @@ def _build_dataset(
             count_params=count_params,
             instance_seed=int(instance_seed),
         )
-    elif str(query_variant) == "ranked_group_share_gap":
+    elif str(query_id) == "ranked_group_share_gap":
         categories = _sample_ranked_categories(
             category_count=int(category_count),
             instance_seed=int(instance_seed),
@@ -1299,14 +1299,14 @@ def _build_dataset(
             count_params=count_params,
             instance_seed=int(instance_seed),
         )
-    elif str(query_variant) == "known_part_to_group_count":
+    elif str(query_id) == "known_part_to_group_count":
         categories, known_part_selected, known_part_category, known_part_query_extras, known_part_sampling_attempt = _sample_known_part_count_categories_and_query(
             category_count=int(category_count),
             params=params,
             count_params=count_params,
             instance_seed=int(instance_seed),
         )
-    elif str(query_variant) == "cumulative_share_threshold_count":
+    elif str(query_id) == "cumulative_share_threshold_count":
         categories, cumulative_selected, cumulative_query_extras, cumulative_sampling_attempt = _sample_cumulative_threshold_categories_and_query(
             category_count=int(category_count),
             params=params,
@@ -1321,7 +1321,7 @@ def _build_dataset(
             instance_seed=int(instance_seed),
         )
 
-    if str(query_variant) == "conditional_share_sum":
+    if str(query_id) == "conditional_share_sum":
         categories, lower_ref, upper_ref, selected, sampling_attempt = _sample_conditional_categories_and_query(
             category_count=int(category_count),
             value_min=int(value_min),
@@ -1343,7 +1343,7 @@ def _build_dataset(
         "table_order_labels": [str(label) for label in sorted(labels)],
     }
 
-    if str(query_variant) == "ranked_position_set_sum":
+    if str(query_id) == "ranked_position_set_sum":
         rank_min, rank_max = _resolve_count_bounds(
             params,
             min_key="rank_position_min",
@@ -1390,7 +1390,7 @@ def _build_dataset(
             }
         )
         evidence_labels = tuple(str(label) for label in selected)
-    elif str(query_variant) == "conditional_share_sum":
+    elif str(query_id) == "conditional_share_sum":
         selected_labels = tuple(str(category.label) for category in selected)
         answer_value = int(sum(int(category.value) for category in selected))
         extras.update(
@@ -1407,7 +1407,7 @@ def _build_dataset(
             }
         )
         evidence_labels = (str(lower_ref.label), str(upper_ref.label), *selected_labels)
-    elif str(query_variant) == "contiguous_chart_order_sum":
+    elif str(query_id) == "contiguous_chart_order_sum":
         span_min, span_max = _resolve_count_bounds(
             params,
             min_key="contiguous_span_count_min",
@@ -1459,7 +1459,7 @@ def _build_dataset(
             }
         )
         evidence_labels = tuple(str(label) for label in selected)
-    elif str(query_variant) == "positional_segment_share_sum":
+    elif str(query_id) == "positional_segment_share_sum":
         relation_index = _balanced_int(
             range(0, len(POSITIONAL_RELATIONS)),
             params=count_params,
@@ -1560,7 +1560,7 @@ def _build_dataset(
             }
         )
         evidence_labels = (*evidence_prefix, *tuple(str(label) for label in selected))
-    elif str(query_variant) == "ranked_group_share_gap":
+    elif str(query_id) == "ranked_group_share_gap":
         largest_group = tuple(ranked_group_largest)
         smallest_group = tuple(ranked_group_smallest)
         largest_labels = tuple(str(category.label) for category in largest_group)
@@ -1577,7 +1577,7 @@ def _build_dataset(
             }
         )
         evidence_labels = (*largest_labels, *smallest_labels)
-    elif str(query_variant) == "known_part_to_group_count":
+    elif str(query_id) == "known_part_to_group_count":
         if known_part_category is None:
             raise ValueError("known part category was not constructed")
         selected_categories = tuple(known_part_selected)
@@ -1594,7 +1594,7 @@ def _build_dataset(
             }
         )
         evidence_labels = ("__known_count__", str(known_part_category.label), *tuple(str(label) for label in selected))
-    elif str(query_variant) == "cumulative_share_threshold_count":
+    elif str(query_id) == "cumulative_share_threshold_count":
         selected_categories = tuple(cumulative_selected)
         selected = tuple(str(category.label) for category in selected_categories)
         answer_value = int(len(selected_categories))
@@ -1606,7 +1606,7 @@ def _build_dataset(
             }
         )
         evidence_labels = tuple(str(label) for label in selected)
-    elif str(query_variant) in TRANSFER_GAP_QUERY_VARIANTS:
+    elif str(query_id) in TRANSFER_GAP_QUERY_IDS:
         if transfer_query is None:
             raise ValueError("transfer query was not constructed")
         source = transfer_query.source
@@ -1629,12 +1629,12 @@ def _build_dataset(
             }
         )
         evidence_labels = (str(source.label), str(target.label))
-    elif str(query_variant) in PART_WHOLE_QUERY_VARIANTS:
+    elif str(query_id) in PART_WHOLE_QUERY_IDS:
         selected_categories = tuple(part_whole_selected)
         selected = tuple(str(category.label) for category in selected_categories)
         selected_share = int(sum(int(category.value) for category in selected_categories))
         total_count = 0
-        if str(query_variant) in {
+        if str(query_id) in {
             "selected_share_to_count",
             "excluded_share_to_remaining_count",
             "chart_order_share_to_count",
@@ -1645,7 +1645,7 @@ def _build_dataset(
                 count_params=count_params,
                 instance_seed=int(instance_seed),
             )
-        if str(query_variant) in {"selected_share_to_count", "chart_order_share_to_count"}:
+        if str(query_id) in {"selected_share_to_count", "chart_order_share_to_count"}:
             answer_value = _count_from_share(int(total_count), int(selected_share))
             extras.update(
                 {
@@ -1655,14 +1655,14 @@ def _build_dataset(
                     "part_whole_sampling_attempt": int(part_whole_sampling_attempt or 0),
                     "calculation": (
                         "sum_chart_order_category_shares_then_convert_to_total_count"
-                        if str(query_variant) == "chart_order_share_to_count"
+                        if str(query_id) == "chart_order_share_to_count"
                         else "sum_ranked_category_shares_then_convert_to_total_count"
                     ),
                     **dict(part_whole_query_extras),
                 }
             )
             evidence_labels = ("__total__", *tuple(str(label) for label in selected))
-        elif str(query_variant) in {"excluded_share_to_remaining_count", "chart_order_remaining_count"}:
+        elif str(query_id) in {"excluded_share_to_remaining_count", "chart_order_remaining_count"}:
             remaining_share = int(100 - int(selected_share))
             answer_value = _count_from_share(int(total_count), int(remaining_share))
             extras.update(
@@ -1674,13 +1674,13 @@ def _build_dataset(
                     "part_whole_sampling_attempt": int(part_whole_sampling_attempt or 0),
                     "calculation": (
                         "exclude_chart_order_category_shares_then_convert_remaining_share_to_count"
-                        if str(query_variant) == "chart_order_remaining_count"
+                        if str(query_id) == "chart_order_remaining_count"
                         else "exclude_conditioned_category_shares_then_convert_remaining_share_to_count"
                     ),
                     **dict(part_whole_query_extras),
                 }
             )
-            if str(query_variant) == "chart_order_remaining_count":
+            if str(query_id) == "chart_order_remaining_count":
                 evidence_labels = ("__total__", *tuple(str(label) for label in selected))
             else:
                 evidence_labels = (
@@ -1689,7 +1689,7 @@ def _build_dataset(
                     str(extras["upper_reference_category"]),
                     *tuple(str(label) for label in selected),
                 )
-        elif str(query_variant) == "sector_share_to_angle":
+        elif str(query_id) == "sector_share_to_angle":
             if int(selected_share) % 5 != 0:
                 raise ValueError("sector_share_to_angle requires selected share to be divisible by 5")
             answer_value = int((int(selected_share) * 360) // 100)
@@ -1704,9 +1704,9 @@ def _build_dataset(
             )
             evidence_labels = tuple(str(label) for label in selected)
         else:
-            raise ValueError(f"unsupported part-whole variant: {query_variant}")
+            raise ValueError(f"unsupported part-whole variant: {query_id}")
     else:
-        raise ValueError(f"unsupported query_variant: {query_variant}")
+        raise ValueError(f"unsupported query_id: {query_id}")
 
     extras["answer_value"] = int(answer_value)
     extras["evidence_labels"] = [str(label) for label in evidence_labels]
@@ -2391,14 +2391,14 @@ class ChartsCompositionShareArithmeticValueTask:
             merged_params = dict(public_overrides)
             merged_params.update(dict(params))
             params = merged_params
-        query_variant, query_variant_probabilities = _resolve_query_variant(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_query_id(params, instance_seed=int(instance_seed))
         scene_params = _params_for_scene_axis(params)
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(
             scene_params,
             instance_seed=int(instance_seed),
-            supported_variants=_scene_variants_for_task(str(query_variant)),
+            supported_variants=_scene_variants_for_task(str(query_id)),
         )
-        dataset = _build_dataset(query_variant=str(query_variant), params=params, instance_seed=int(instance_seed))
+        dataset = _build_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
 
         canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
         canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
@@ -2459,16 +2459,16 @@ class ChartsCompositionShareArithmeticValueTask:
         )
         extras = dict(dataset.trace_extras)
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_variant)}"])
-        json_example = str(prompt_defaults[f"json_example_{str(query_variant)}"])
-        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_variant)}"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(query_id)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(query_id)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(query_id)}"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(query_variant),
+            query_key=str(query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -2523,21 +2523,21 @@ class ChartsCompositionShareArithmeticValueTask:
                 "scene_kind": f"chart_{str(scene_variant)}_composition_share_arithmetic",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
                     "category_labels": [str(category.label) for category in dataset.categories],
                 },
             },
             "query_spec": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_variant": str(query_variant),
+                    "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
-                    "query_variant_probabilities": dict(query_variant_probabilities),
+                    "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "category_count": int(extras["category_count"]),
                     "evidence_labels": [str(label) for label in dataset.evidence_labels],
@@ -2568,7 +2568,7 @@ class ChartsCompositionShareArithmeticValueTask:
                 },
             },
             "execution_trace": {
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "answer_value": int(dataset.answer_value),
                 "category_count": int(extras["category_count"]),
@@ -2585,13 +2585,13 @@ class ChartsCompositionShareArithmeticValueTask:
                 "evidence_labels": [str(label) for label in dataset.evidence_labels],
                 "evidence_values": [int(value) for value in evidence_values],
                 "question_format": "numeric_open",
-                "query_variant_probabilities": dict(query_variant_probabilities),
+                "query_id_probabilities": dict(query_id_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 **dict(extras),
             },
             "witness_symbolic": {
                 "type": "composition_share_arithmetic",
-                "query_variant": str(query_variant),
+                "query_id": str(query_id),
                 "answer_value": int(dataset.answer_value),
                 "evidence_values": [int(value) for value in evidence_values],
                 "calculation": dict(extras),
@@ -2605,7 +2605,7 @@ class ChartsCompositionShareArithmeticValueTask:
             weights=_COMPLEXITY_WEIGHTS,
             components={
                 "visual_scan": normalize_int_with_bounds(int(extras["category_count"]), extras["category_count_range"]),
-                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_variant)]),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(query_id)]),
                 "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
@@ -2618,45 +2618,25 @@ class ChartsCompositionShareArithmeticValueTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(query_variant),
+            query_id=str(query_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
 @register_task
-class ChartsCompositionChartOrderShareSumValueTask(
+class ChartsCompositionChartOrderedSegmentValueTask(
     MergedChartQueryVariantTaskMixin,
     ChartsCompositionShareArithmeticValueTask,
 ):
-    """Sum category shares after selecting categories by chart order."""
+    """Compute ordered part-whole segment shares, counts, or angles."""
 
-    task_id = "task_charts__part_whole__order_share_sum_value"
-    allowed_query_variants = (
+    task_id = "task_charts__part_whole__ordered_segment_value"
+    allowed_query_ids = (
         "contiguous_chart_order_sum",
         "positional_segment_share_sum",
+        "chart_order_share_to_count",
+        "sector_share_to_angle",
     )
-
-
-@register_task
-class ChartsCompositionChartOrderCountConversionValueTask(
-    MergedChartQueryVariantTaskMixin,
-    ChartsCompositionShareArithmeticValueTask,
-):
-    """Convert a chart-order selected or excluded share into a count."""
-
-    task_id = "task_charts__part_whole__order_count_conversion_value"
-    allowed_query_variants = ("chart_order_share_to_count",)
-
-
-@register_task
-class ChartsCompositionChartOrderSectorAngleValueTask(
-    MergedChartQueryVariantTaskMixin,
-    ChartsCompositionShareArithmeticValueTask,
-):
-    """Convert a contiguous chart-order sector share into an angle."""
-
-    task_id = "task_charts__part_whole__order_sector_angle_value"
-    allowed_query_variants = ("sector_share_to_angle",)
 
 
 @register_task
@@ -2667,15 +2647,13 @@ class ChartsCompositionChartAdjacentTransferGapValueTask(
     """Compute a transfer gap after choosing an adjacent chart-order target."""
 
     task_id = "task_charts__part_whole__adjacent_transfer_gap_value"
-    allowed_query_variants = ("chart_order_adjacent_transfer_gap",)
+    allowed_query_ids = ("chart_order_adjacent_transfer_gap",)
 
 
 __all__ = [
-    "ChartsCompositionChartOrderCountConversionValueTask",
-    "ChartsCompositionChartOrderSectorAngleValueTask",
-    "ChartsCompositionChartOrderShareSumValueTask",
     "ChartsCompositionChartAdjacentTransferGapValueTask",
+    "ChartsCompositionChartOrderedSegmentValueTask",
     "ChartsCompositionShareArithmeticValueTask",
     "SUPPORTED_SCENE_VARIANTS",
-    "SUPPORTED_QUERY_VARIANTS",
+    "SUPPORTED_QUERY_IDS",
 ]

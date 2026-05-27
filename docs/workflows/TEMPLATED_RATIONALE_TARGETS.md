@@ -22,13 +22,13 @@ The initial implementation should store rationale targets in sidecar/review
 artifacts, not in the `TrainInstance` ABI. Extend the training ABI only after a
 separate decision on how these targets will be consumed.
 
-## Query Variant Alignment
+## Query ID Alignment
 
-Use `query_id` as the canonical field and **query variant** as the prose term.
+Use `query_id` as the canonical field and **query id** as the prose term.
 Do not use **task variant** for this feature; `task_id` remains the public
 sampling unit.
 
-For rationale generation, a query variant is any task-internal branch that
+For rationale generation, a query id is any task-internal branch that
 requires a distinct rationale template family. This is now the practical test
 for whether a branch needs its own `query_id`.
 
@@ -46,7 +46,7 @@ Required alignment:
    use slots such as `{extremum_direction}`, `{axis_name}`, or
    `{comparison_operator}` when the reasoning steps stay identical.
 5. Scene/render/style variants, object counts, labels, sampled numeric values,
-   and difficulty knobs are not query variants unless they change the rationale
+   and difficulty knobs are not query ids unless they change the rationale
    template family.
 6. Branches that require different algorithmic/objective families should be
    separate public tasks, not merely separate `query_id` values, even if their

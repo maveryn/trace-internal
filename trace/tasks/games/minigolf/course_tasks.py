@@ -26,7 +26,7 @@ from ..shared.complexity import build_games_minigolf_course_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.minigolf_common import (
-    SUPPORTED_MINIGOLF_QUERY_VARIANTS,
+    SUPPORTED_MINIGOLF_QUERY_IDS,
     SUPPORTED_MINIGOLF_SCENE_VARIANTS,
     SUPPORTED_MINIGOLF_STYLE_VARIANTS,
     MinigolfObstacle,
@@ -38,7 +38,7 @@ from ..shared.minigolf_common import (
     validate_minigolf_sample,
 )
 from ..shared.minigolf_scene import MinigolfRenderParams, render_minigolf_scene
-from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
@@ -76,14 +76,14 @@ class _TaskDefaults:
 class _ResolvedAxes:
     """Resolved semantic and visual axes for one Mini-golf instance."""
 
-    query_variant: str
+    query_id: str
     scene_variant: str
     style_variant: str
     obstacle_count: int
     path_option_count: int
     target_obstacle_label: str | None
     target_path_index: int | None
-    query_variant_probabilities: Dict[str, float]
+    query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
     obstacle_count_probabilities: Dict[str, float]
@@ -102,15 +102,15 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="mini
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="minigolf", apply_prob=0.5)
 
 
-def _resolve_query_variant(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
-    """Resolve one balanced Mini-golf query variant."""
+def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
+    """Resolve one balanced Mini-golf query id."""
 
-    return resolve_games_query_variant(
+    return resolve_games_query_id(
         task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_MINIGOLF_QUERY_VARIANTS,
+        supported_variants=SUPPORTED_MINIGOLF_QUERY_IDS,
     )
 
 
@@ -183,7 +183,7 @@ def _resolve_label_choice(
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
     """Resolve all semantic and visual axes for one Mini-golf instance."""
 
-    query_variant, query_variant_probabilities = _resolve_query_variant(instance_seed=int(instance_seed), params=params)
+    query_id, query_id_probabilities = _resolve_query_id(instance_seed=int(instance_seed), params=params)
     scene_variant, scene_variant_probabilities = _resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
@@ -220,7 +220,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     target_obstacle_label_probabilities: Dict[str, float] | None = None
     target_path_index: int | None = None
     target_path_index_probabilities: Dict[str, float] | None = None
-    if str(query_variant) == "first_obstacle_label":
+    if str(query_id) == "first_obstacle_label":
         target_obstacle_label, target_obstacle_label_probabilities = _resolve_label_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -230,7 +230,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
             namespace=f"{TASK_ID}.target_obstacle_label",
             balanced_flag_key="balanced_target_obstacle_label_sampling",
         )
-    if str(query_variant) == "shot_path_label":
+    if str(query_id) == "shot_path_label":
         path_option_count, path_option_count_probabilities = resolve_integer_choice(
             instance_seed=int(instance_seed),
             params=params,
@@ -256,14 +256,14 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         path_option_count = max(int(path_option_count), int(target_path_index) + 1)
 
     return _ResolvedAxes(
-        query_variant=str(query_variant),
+        query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         obstacle_count=int(obstacle_count),
         path_option_count=int(path_option_count),
         target_obstacle_label=None if target_obstacle_label is None else str(target_obstacle_label),
         target_path_index=None if target_path_index is None else int(target_path_index),
-        query_variant_probabilities=dict(query_variant_probabilities),
+        query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         obstacle_count_probabilities=dict(obstacle_count_probabilities),
@@ -557,7 +557,7 @@ def _sample_first_obstacle(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
         if str(first_id) != str(target_obstacle.obstacle_id):
             continue
         sample = MinigolfSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_obstacle.label),
@@ -707,7 +707,7 @@ def _sample_shot_path(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
         if success_count != 1 or str(success_id) != str(target_option.path_id):
             continue
         sample = MinigolfSample(
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             answer=str(target_option.label),
@@ -734,18 +734,18 @@ def _sample_shot_path(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
 def _sample_scene(*, rng: Any, axes: _ResolvedAxes) -> MinigolfSample:
     """Construct one Mini-golf scene for the requested query."""
 
-    query = str(axes.query_variant)
+    query = str(axes.query_id)
     if query == "first_obstacle_label":
         return _sample_first_obstacle(rng=rng, axes=axes)
     if query == "shot_path_label":
         return _sample_shot_path(rng=rng, axes=axes)
-    raise ValueError(f"unsupported Mini-golf query_variant: {query}")
+    raise ValueError(f"unsupported Mini-golf query_id: {query}")
 
 
-def _build_prompt_json_examples(query_variant: str) -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Mini-golf JSON output."""
 
-    if str(query_variant) == "shot_path_label":
+    if str(query_id) == "shot_path_label":
         answer_value = "3"
         evidence_value = [[642, 594, 680, 632]]
     else:
@@ -789,7 +789,7 @@ class GamesMinigolfCourseTask:
         rendered_scene = render_minigolf_scene(
             obstacles=sampled_scene.obstacles,
             shot_options=sampled_scene.shot_options,
-            query_variant=str(sampled_scene.query_variant),
+            query_id=str(sampled_scene.query_id),
             ball_xy_norm=(float(sampled_scene.ball_x_norm), float(sampled_scene.ball_y_norm)),
             hole_xy_norm=(float(sampled_scene.hole_x_norm), float(sampled_scene.hole_y_norm)),
             cue_visible_fraction=float(sampled_scene.cue_visible_fraction),
@@ -827,14 +827,14 @@ class GamesMinigolfCourseTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_variant))
+        json_example, json_example_answer_only = _build_prompt_json_examples(str(axes.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=str(axes.query_variant),
+            query_key=str(axes.query_id),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_defaults[f"object_description_{str(axes.scene_variant)}"]),
@@ -842,8 +842,8 @@ class GamesMinigolfCourseTask:
                 "minigolf_bank_rule_text": str(prompt_defaults["minigolf_bank_rule_text"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_variant)}"]),
-                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_variant)}"]),
+                "answer_hint": str(prompt_defaults[f"answer_hint_{str(axes.query_id)}"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
             },
@@ -857,7 +857,7 @@ class GamesMinigolfCourseTask:
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
             scene_variant=str(axes.scene_variant),
-            query_variant=str(axes.query_variant),
+            query_id=str(axes.query_id),
             obstacle_count=len(sampled_scene.obstacles),
             path_option_count=len(sampled_scene.shot_options),
             evidence_count=len(sampled_scene.evidence_entity_ids),
@@ -891,8 +891,7 @@ class GamesMinigolfCourseTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "obstacle_count": len(sampled_scene.obstacles),
                     "path_option_count": len(sampled_scene.shot_options),
@@ -900,23 +899,22 @@ class GamesMinigolfCourseTask:
                 },
             },
             "query_spec": {
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(axes.scene_variant),
-                    "query_variant": str(axes.query_variant),
-                    "query_variant": str(axes.query_variant),
+                    "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
                     "obstacle_count": int(axes.obstacle_count),
                     "path_option_count": int(axes.path_option_count),
                     "target_obstacle_label": axes.target_obstacle_label,
                     "target_path_index": axes.target_path_index,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
-                    "query_variant_probabilities": dict(axes.query_variant_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
+                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "obstacle_count_probabilities": dict(axes.obstacle_count_probabilities),
                     "path_option_count_probabilities": dict(axes.path_option_count_probabilities),
@@ -937,8 +935,7 @@ class GamesMinigolfCourseTask:
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
-                "query_variant": str(axes.query_variant),
-                "query_variant": str(axes.query_variant),
+                "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
                 "ball_xy_norm": [float(sampled_scene.ball_x_norm), float(sampled_scene.ball_y_norm)],
                 "hole_xy_norm": [float(sampled_scene.hole_x_norm), float(sampled_scene.hole_y_norm)],
@@ -973,9 +970,8 @@ class GamesMinigolfCourseTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_variant=str(axes.query_variant),
             scene_id="minigolf",
-            query_id=str(axes.query_variant),
+            query_id=str(axes.query_id),
         )
 
 
@@ -984,7 +980,7 @@ class GamesMinigolfFirstObstacleLabelTask(FixedQueryVariantTaskMixin, GamesMinig
     """Identify the first labeled obstacle hit by the shown putting cue."""
 
     task_id = "task_games__minigolf__first_obstacle_label"
-    fixed_query_variant = "first_obstacle_label"
+    fixed_query_id = "first_obstacle_label"
 
 
 @register_task
@@ -992,7 +988,7 @@ class GamesMinigolfShotPathLabelTask(FixedQueryVariantTaskMixin, GamesMinigolfCo
     """Identify the numbered shot cue that reaches the hole."""
 
     task_id = "task_games__minigolf__shot_path_label"
-    fixed_query_variant = "shot_path_label"
+    fixed_query_id = "shot_path_label"
 
 
 __all__ = [

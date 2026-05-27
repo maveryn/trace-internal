@@ -8,7 +8,7 @@
 5. Goal: choose the option that fills one missing cell in a row/column uniqueness grid.
 
 ## Contract
-1. Public `query_variant`: `default`
+1. Branch metadata: `query_id`
 2. `query_id`: `grid_uniqueness_completion`
 3. Internal `uniqueness_query`: `axis_uniqueness|row_and_column_uniqueness`
 4. `axis_uniqueness` samples `uniqueness_axis=row|column`

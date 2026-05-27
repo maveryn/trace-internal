@@ -50,7 +50,7 @@ def test_cell_board_shortest_path_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "shortest_path"
+    assert str(out.query_id) == "shortest_path"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_sequence"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -163,7 +163,7 @@ def test_cell_board_reachable_target_count_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.query_variant) == "reachable_target_count"
+    assert str(out.query_id) == "reachable_target_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]

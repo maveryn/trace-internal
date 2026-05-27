@@ -46,7 +46,7 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
     task = IconsRelationBetweenTwoAnchorsCountTask()
     out = task.generate(
         14910,
-        params={"query_variant": "inside_vertical_strip", "target_count": 2, "distractor_count": 4},
+        params={"query_id": "inside_vertical_strip", "target_count": 2, "distractor_count": 4},
         max_attempts=200,
     )
     trace = out.trace_payload
@@ -64,11 +64,11 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_two_anchor_strip_relation"
     assert execution["question_format"] == "count_scene_icon_centers_in_strip_between_two_anchors"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "inside_vertical_strip"
-    assert execution["query_variant"] == "default"
+    assert execution["query_id"] == "default"
     assert execution["query_id"] == "inside_vertical_strip"
-    assert execution["internal_query_variant"] == "inside_vertical_strip"
+    assert execution["internal_query_id"] == "inside_vertical_strip"
     assert execution["strip_axis"] == "vertical"
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
@@ -112,7 +112,7 @@ def test_icons_relation_between_two_anchors_count_supports_zero_matches() -> Non
     task = IconsRelationBetweenTwoAnchorsCountTask()
     out = task.generate(
         14911,
-        params={"query_variant": "inside_horizontal_strip", "target_count": 0, "distractor_count": 4},
+        params={"query_id": "inside_horizontal_strip", "target_count": 0, "distractor_count": 4},
         max_attempts=200,
     )
     assert int(out.answer_gt.value) == 0
@@ -151,7 +151,7 @@ def test_icons_relation_between_two_anchors_count_balanced_sampling_defaults() -
         distractor_count = int(execution["distractor_count"])
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        assert str(execution["query_variant"]) == "default"
+        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) in {"inside_vertical_strip", "inside_horizontal_strip"}
         strip_axis = str(execution["strip_axis"])
         strip_axis_counts[strip_axis] += 1

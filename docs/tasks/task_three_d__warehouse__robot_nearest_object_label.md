@@ -7,7 +7,7 @@
 - Query ids: `closest_robot_to_reference`, `closest_object_to_robot`
 - Answer type: `option_letter`
 - Evidence type: one-box `bbox_set`
-- Status: reviewed_pending_probe
+- Status: pending_v0_review
 
 ## Contract
 The image shows a synthetic perspective 3D warehouse aisle with a gridded full-bleed floor, far-side shelf racks, lower warehouse equipment nearer the camera, one unlettered reference item, and `5` lettered candidates.
@@ -23,7 +23,7 @@ Evidence is the bounding box of the selected lettered candidate: a robot for `cl
 The prompt bundle is `three_d_warehouse_v0` under `prompts/three_d/warehouse/`. The trace records camera pose, projection frame, scene variant, aisle heading, reference metadata, candidate labels/types, robot designs/headings/colors where applicable, nearest-distance order, per-label distances to the reference, selected object id, and projected object bboxes.
 
 ## Calibration
-The manual review workbook, distribution report, and combined warehouse scene review have been regenerated. Distribution passed with `100` samples per query variant, `5` unique answers per variant, max per-variant answer frequency `0.270`, and overall max answer frequency `0.235`. Solve-rate calibration is pending.
+Fresh v0 task review, distribution check, scene review, and qwen25vl7b solve-rate calibration are pending. Only artifacts generated from current code/config with `calibration_baseline: "v0"` should be used as current acceptance evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, config defaults, prompt bundle, and code versions. Answers and evidence come from the same finalized 3D warehouse scene trace.

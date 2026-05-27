@@ -25,7 +25,7 @@ def test_word_search_location_contract() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "word_search"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "word_location_label"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value in "ABCDEFGH"
@@ -46,7 +46,7 @@ def test_word_search_letter_count_matches_trace() -> None:
     grid_count = sum(1 for row in trace["grid"] for value in row if value == target)
 
     assert out.scene_id == "word_search"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "letter_count_value"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == grid_count
@@ -59,7 +59,7 @@ def test_word_search_present_word_count_matches_trace() -> None:
     trace = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "word_search"
-    assert out.query_variant == "default"
+    assert out.query_id == "default"
     assert out.query_id == "present_word_count"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == len(trace["present_words"])

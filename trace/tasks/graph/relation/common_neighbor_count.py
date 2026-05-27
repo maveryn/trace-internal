@@ -755,7 +755,6 @@ class GraphRelationCommonNeighborCountTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     max_degree_key: int(max_degree),
                 },
             },

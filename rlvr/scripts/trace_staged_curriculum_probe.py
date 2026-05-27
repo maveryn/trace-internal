@@ -74,14 +74,14 @@ def _ensure_record(records: dict[int, dict[str, Any]], dataset_index: int, item:
     metadata = _parse_metadata(item.get("metadata"))
     answer_gt = _maybe_parse_json_mapping(item["answer_gt"])
     evidence_gt = _maybe_parse_json_mapping(item["evidence_gt"])
-    query_variant = metadata.get("query_variant") or metadata.get("query_variant") or metadata.get("variant")
+    query_id = metadata.get("query_id")
     record = {
         "dataset_index": int(dataset_index),
         "uid": str(item.get("uid", "")),
         "domain": str(item.get("domain", "")),
         "task_group": str(item.get("task_group", "")),
         "task": str(item.get("task", "")),
-        "query_variant": None if query_variant is None else str(query_variant),
+        "query_id": None if query_id is None else str(query_id),
         "complexity_score": None if item.get("complexity_score") is None else float(item.get("complexity_score")),
         "difficulty_bin": None if item.get("difficulty_bin") is None else int(item.get("difficulty_bin")),
         "bucket_id_str": None if item.get("bucket_id_str") is None else str(item.get("bucket_id_str")),

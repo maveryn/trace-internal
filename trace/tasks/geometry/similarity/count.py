@@ -801,9 +801,8 @@ class GeometrySimilarityCountTask:
         query_params = {
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
+            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
             "candidate_label_pool": list(query.candidate_label_pool),
@@ -815,7 +814,6 @@ class GeometrySimilarityCountTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_id": str(query.query_id),
                     "matching_labels": list(evidence_labels),
                     "target_count": int(query.target_count),
                     "query_id": str(query.query_id),
@@ -852,7 +850,6 @@ class GeometrySimilarityCountTask:
                 "scene_variant": str(query.scene_variant),
                 "query_id": str(query.query_id),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_id_probabilities": dict(query.query_id_probabilities),
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "target_count": int(query.target_count),
                 "target_count_probabilities": dict(query.target_count_probabilities),

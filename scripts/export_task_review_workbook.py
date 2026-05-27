@@ -291,10 +291,10 @@ def _write_inspection_excel(
     workbook = Workbook()
     image_buffers: List[io.BytesIO] = []
     used_titles: set[str] = set()
-    variant_to_sheet: Dict[str, str] = {}
+    query_id_to_sheet: Dict[str, str] = {}
 
-    sorted_variants = sorted(str(variant) for variant in rows_by_query_id.keys()) or [""]
-    for index, query_id in enumerate(sorted_variants):
+    sorted_query_ids = sorted(str(variant) for variant in rows_by_query_id.keys()) or [""]
+    for index, query_id in enumerate(sorted_query_ids):
         base_title = str(query_id).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if index == 0:
@@ -302,7 +302,7 @@ def _write_inspection_excel(
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(query_id)] = str(sheet_title)
+        query_id_to_sheet[str(query_id)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
             rows=list(rows_by_query_id.get(str(query_id), [])),
@@ -312,7 +312,7 @@ def _write_inspection_excel(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(path)
-    return variant_to_sheet
+    return query_id_to_sheet
 
 
 def main() -> int:
@@ -430,7 +430,6 @@ def main() -> int:
         rows_by_query_id[review_query_id].append(
             {
                 "task": task_id,
-                "query_id": query_id,
                 "scene_id": scene_id,
                 "query_id": query_id,
                 "prompt": prompt_answer_and_evidence,
@@ -460,7 +459,7 @@ def main() -> int:
         "calibration_baseline": str(args.calibration_baseline),
         "review_label": review_label,
         "inspection_count": int(sum(len(rows) for rows in rows_by_query_id.values())),
-        "variants": {
+        "query_ids": {
             str(variant): int(len(rows_by_query_id[variant]))
             for variant in sorted(rows_by_query_id.keys())
         },

@@ -41,7 +41,7 @@ if [[ -z "${MAX_PROMPT_LENGTH:-}" ]]; then
   esac
 fi
 
-TRAIN_FILES="${TRAIN_FILES:-$RLVR_ROOT/dataset/train/trace_rlvr_train_102400_variant_alpha0_5_answer_retained_seed20260504.parquet}"
+TRAIN_FILES="${TRAIN_FILES:-$RLVR_ROOT/dataset/train/trace_rlvr_train_102400_query_id_alpha0_5_answer_retained_seed20260504.parquet}"
 TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
 case "$TRACE_OUTPUT_MODE" in
   answer|answer_only)

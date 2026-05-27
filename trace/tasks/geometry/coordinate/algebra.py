@@ -951,7 +951,6 @@ def _trace_payload(
     relations = {
         "scene_id": SCENE_ID,
         "query_id": str(query.query_id),
-        "variant_probabilities": {"default": 1.0},
         "query_id_probabilities": dict(query.query_probabilities),
         "winner_label": str(query.winner_label),
         "target_label_name": str(rendered.problem.target_label_name),
@@ -986,7 +985,6 @@ def _trace_payload(
             "params": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
@@ -1031,7 +1029,6 @@ def _trace_payload(
             "guide_segments": [list(segment) for segment in rendered.problem.guide_segments],
             "known_points_by_label": dict(known_trace),
             "candidate_points_by_label": dict(candidate_trace),
-            "variant_probabilities": {"default": 1.0},
             "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
@@ -1136,6 +1133,7 @@ def _generate_output(
         trace_payload=trace_payload,
         complexity=_build_complexity(
             task_id=str(task_id),
+            query_id=str(query.query_id),
             object_count=len(rendered.problem.known_points_by_label) + len(rendered.candidate_points_by_label),
         ),
         task_versions=default_task_versions(),

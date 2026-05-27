@@ -1006,8 +1006,6 @@ class _PuzzlesLogicStarBattleBaseTask:
             for spec in dataset.get("candidate_specs", [])
         ]
         query_params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": str(query_id),
             "query_id_probabilities": dict(query_id_probabilities),
             "scene_id": SCENE_ID,

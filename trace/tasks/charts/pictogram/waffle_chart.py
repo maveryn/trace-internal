@@ -1022,7 +1022,6 @@ class ChartsPictogramChartTask:
         query_params = {
             "query_id": str(query_id),
             "query_id_probabilities": dict(dataset.query_id_probabilities),
-            "query_id_probabilities": dict(dataset.query_id_probabilities),
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "glyph_name": str(dataset.glyph_name),

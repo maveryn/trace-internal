@@ -723,7 +723,7 @@ class GeometryCountingShapeTypeTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(query_id),
-                    "variant_probabilities": dict(variant_probabilities),
+                    "query_id_probabilities": dict(variant_probabilities),
                     "object_count": int(object_count),
                     "object_count_probabilities": dict(object_count_probabilities),
                     "target_count": int(target_count),
@@ -785,6 +785,7 @@ class GeometryCountingShapeTypeTask:
                 object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
                 target_count=int(target_count),
                 task_kind="shape_type",
+                query_id=str(query_id),
             ),
             task_versions=default_task_versions(),
             query_id=str(query_id),

@@ -622,14 +622,12 @@ class GeometryGraphingAverageRateValueBaseTask:
         evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=list(rendered_scene.evidence_value))
         query_params = {
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "target_rate": float(query.target_rate),
             "target_rate_probabilities": dict(query.target_rate_probabilities),
         }
         execution_trace = {
             "query_id": str(query.query_id),
-            "query_id_probabilities": dict(query.query_id_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "target_rate": float(query.target_rate),
             "target_rate_probabilities": dict(query.target_rate_probabilities),

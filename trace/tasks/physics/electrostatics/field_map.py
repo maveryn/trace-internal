@@ -1846,7 +1846,6 @@ class _PhysicsElectrostaticsFieldMapBaseTask:
                         "correct_option_letter": axes.correct_option_letter,
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "direction_mode_probabilities": dict(axes.direction_mode_probabilities),
                         "target_direction_probabilities": dict(axes.target_direction_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),

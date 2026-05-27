@@ -1005,7 +1005,6 @@ class GamesChessVariantBoardTask:
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "rule_family_probabilities": dict(axes.rule_family_probabilities),
                     "range_k_probabilities": dict(axes.range_k_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),

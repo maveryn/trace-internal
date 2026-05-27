@@ -4,11 +4,11 @@ set -euo pipefail
 if [[ $# -lt 1 || "$1" == "-h" || "$1" == "--help" ]]; then
   cat <<'EOF'
 Usage:
-  scripts/prepare_trace_variant_aware_rlvr_train.sh <alpha> [cpu_count]
+  scripts/prepare_trace_query_id_aware_rlvr_train.sh <alpha> [cpu_count]
 
 Example:
-  scripts/prepare_trace_variant_aware_rlvr_train.sh 0.5
-  scripts/prepare_trace_variant_aware_rlvr_train.sh 0.5 180
+  scripts/prepare_trace_query_id_aware_rlvr_train.sh 0.5
+  scripts/prepare_trace_query_id_aware_rlvr_train.sh 0.5 180
 
 Optional environment overrides:
   NUM_INSTANCES=200000
@@ -18,7 +18,7 @@ Optional environment overrides:
   WORKERS=0
   MAX_IN_FLIGHT=0
   PARQUET_CPU_COUNT=0
-  VARIANT_COUNT_PROBE_SAMPLES=8
+  QUERY_ID_COUNT_PROBE_SAMPLES=8
   IMAGE_STORAGE_MODE=embedded_bytes
   RESET=1
 EOF
@@ -39,7 +39,7 @@ else
   PARQUET_CPU_COUNT="${PARQUET_CPU_COUNT:-0}"
 fi
 MAX_IN_FLIGHT="${MAX_IN_FLIGHT:-0}"
-VARIANT_COUNT_PROBE_SAMPLES="${VARIANT_COUNT_PROBE_SAMPLES:-8}"
+QUERY_ID_COUNT_PROBE_SAMPLES="${QUERY_ID_COUNT_PROBE_SAMPLES:-8}"
 IMAGE_STORAGE_MODE="${IMAGE_STORAGE_MODE:-embedded_bytes}"
 RESET="${RESET:-1}"
 
@@ -53,7 +53,7 @@ if [[ -z "${ALPHA_TAG}" ]]; then
   exit 2
 fi
 
-DATASET_NAME="${DATASET_NAME:-trace_rlvr_train_${NUM_INSTANCES}_variant_alpha${ALPHA_TAG}_${PROMPT_VARIANT}_seed${SAMPLING_SEED}}"
+DATASET_NAME="${DATASET_NAME:-trace_rlvr_train_${NUM_INSTANCES}_query_id_alpha${ALPHA_TAG}_${PROMPT_VARIANT}_seed${SAMPLING_SEED}}"
 RLVR_OUTPUT="${RLVR_OUTPUT:-rlvr/dataset/train/${DATASET_NAME}.parquet}"
 
 cmd=(
@@ -61,9 +61,9 @@ cmd=(
   --output-root "${OUTPUT_ROOT}"
   --dataset-name "${DATASET_NAME}"
   --num-instances "${NUM_INSTANCES}"
-  --task-sampling-policy variant_aware
-  --variant-weight-alpha "${ALPHA}"
-  --variant-count-probe-samples "${VARIANT_COUNT_PROBE_SAMPLES}"
+  --task-sampling-policy query_id_aware
+  --query-id-weight-alpha "${ALPHA}"
+  --query-id-count-probe-samples "${QUERY_ID_COUNT_PROBE_SAMPLES}"
   --sampling-seed "${SAMPLING_SEED}"
   --workers "${WORKERS}"
   --max-in-flight "${MAX_IN_FLIGHT}"
@@ -77,7 +77,7 @@ if [[ "${RESET}" != "0" && "${RESET,,}" != "false" && "${RESET,,}" != "no" ]]; t
   cmd+=(--reset)
 fi
 
-echo "TRACE variant-aware RLVR build"
+echo "TRACE query-id-aware RLVR build"
 echo "  alpha: ${ALPHA}"
 echo "  dataset: ${DATASET_NAME}"
 echo "  rows: ${NUM_INSTANCES}"

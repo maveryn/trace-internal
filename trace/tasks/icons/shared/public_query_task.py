@@ -16,7 +16,7 @@ def rewrite_icons_query_output(
     task_id: str | None = None,
     query_probabilities: Mapping[str, float] | None = None,
 ) -> TaskOutput:
-    """Rewrite generated output so public icon tasks do not expose semantic variants."""
+    """Rewrite generated output to the selected public icon query id."""
 
     query_id_text = str(query_id)
     scene_id_text = str(scene_id)
@@ -32,7 +32,6 @@ def rewrite_icons_query_output(
         include_render_spec=True,
         include_scene_ir_root=True,
         query_id_probabilities=dict(query_probability_map),
-        variant_probabilities={"default": 1.0},
         preserve_internal_query_id_as=("source_query_id", "internal_query_id"),
         preserve_prior_task_id_as="source_task_id",
         update_existing_taxonomy=True,

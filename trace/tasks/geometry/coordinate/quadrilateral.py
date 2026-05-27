@@ -976,7 +976,6 @@ def _completion_trace_payload(
             "relations": {
                 "scene_id": COMPLETION_SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
@@ -992,7 +991,6 @@ def _completion_trace_payload(
             "params": {
                 "scene_id": COMPLETION_SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
@@ -1031,7 +1029,6 @@ def _completion_trace_payload(
             "missing_point_graph": [int(value) for value in rendered.missing_point],
             "candidate_points_by_label": dict(candidate_trace),
             "target_ordered_vertices": [[int(value) for value in point] for point in rendered.target_ordered_vertices],
-            "variant_probabilities": {"default": 1.0},
             "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
@@ -1075,7 +1072,6 @@ def _panel_trace_payload(
             "relations": {
                 "scene_id": PANEL_SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
@@ -1091,7 +1087,6 @@ def _panel_trace_payload(
             "params": {
                 "scene_id": PANEL_SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "target_kind": str(query.target_kind),
                 "target_shape_name": str(query.target_shape_name),
@@ -1128,7 +1123,6 @@ def _panel_trace_payload(
             "target_kind": str(query.target_kind),
             "target_shape_name": str(query.target_shape_name),
             "panels_by_label": dict(panels_trace),
-            "variant_probabilities": {"default": 1.0},
             "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
@@ -1233,6 +1227,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(
                 task_id=self.task_id,
+                query_id=str(query.query_id),
                 object_count=3 + len(rendered.candidate_points_by_label),
             ),
             task_versions=default_task_versions(),
@@ -1325,6 +1320,7 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
             trace_payload=trace_payload,
             complexity=_build_complexity(
                 task_id=self.task_id,
+                query_id=str(query.query_id),
                 object_count=4,
                 panel_count=len(rendered.panels_by_label),
             ),

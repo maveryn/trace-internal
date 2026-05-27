@@ -822,7 +822,6 @@ class GamesReversiMoveCountTask:
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size": int(axes.board_size),
                     "current_player": str(current_player_name),

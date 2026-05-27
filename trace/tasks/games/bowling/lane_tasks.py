@@ -801,7 +801,6 @@ class GamesBowlingLaneTask:
                     "target_path_index": axes.target_path_index,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "visible_pin_count_probabilities": dict(axes.visible_pin_count_probabilities),
                     "path_option_count_probabilities": dict(axes.path_option_count_probabilities),

@@ -52,7 +52,6 @@ def rewrite_public_query_output(
     include_scene_ir_root: bool = False,
     query_id_probabilities: Mapping[str, float] | object = _UNSET,
     params_query_id_probabilities: Mapping[str, float] | object = _UNSET,
-    variant_probabilities: Mapping[str, float] | object = _UNSET,
     scene_variant_probabilities: Mapping[str, float] | object = _UNSET,
     preserve_internal_query_id_as: str | Sequence[str] | None = None,
     preserve_prior_task_id_as: str | None = None,
@@ -91,11 +90,6 @@ def rewrite_public_query_output(
         params_probabilities = top_query_probabilities
     else:
         params_probabilities = normalize_probability_map(params_query_id_probabilities)  # type: ignore[arg-type]
-    variant_probability_map = (
-        _UNSET
-        if variant_probabilities is _UNSET
-        else normalize_probability_map(variant_probabilities)  # type: ignore[arg-type]
-    )
     scene_variant_probability_map = (
         _UNSET
         if scene_variant_probabilities is _UNSET
@@ -105,10 +99,10 @@ def rewrite_public_query_output(
     def _preserve_internal(value: Dict[str, Any]) -> None:
         if not preserve_internal_keys:
             return
-        prior_variant = value.get("query_id")
-        if prior_variant is not None and str(prior_variant) != "default":
+        prior_query_id = value.get("query_id")
+        if prior_query_id is not None and str(prior_query_id) != "default":
             for key in preserve_internal_keys:
-                value.setdefault(str(key), str(prior_variant))
+                value.setdefault(str(key), str(prior_query_id))
 
     def _rewrite_task_id(value: Dict[str, Any]) -> None:
         if task_id_text is None:
@@ -153,8 +147,6 @@ def rewrite_public_query_output(
         value["query_id"] = query_id_text
         if top_query_probabilities is not _UNSET:
             value["query_id_probabilities"] = dict(top_query_probabilities)  # type: ignore[arg-type]
-        if variant_probability_map is not _UNSET:
-            value["variant_probabilities"] = dict(variant_probability_map)  # type: ignore[arg-type]
         if scene_variant_probability_map is not _UNSET and scene_variant_probability_map:
             value["scene_variant_probabilities"] = dict(scene_variant_probability_map)  # type: ignore[arg-type]
         value.update(extra_field_map)
@@ -171,8 +163,6 @@ def rewrite_public_query_output(
         params["query_id"] = query_id_text
         if params_probabilities is not _UNSET:
             params["query_id_probabilities"] = dict(params_probabilities)  # type: ignore[arg-type]
-        if variant_probability_map is not _UNSET:
-            params["variant_probabilities"] = dict(variant_probability_map)  # type: ignore[arg-type]
         if scene_variant_probability_map is not _UNSET and scene_variant_probability_map:
             params["scene_variant_probabilities"] = dict(scene_variant_probability_map)  # type: ignore[arg-type]
         params.update(extra_param_field_map)

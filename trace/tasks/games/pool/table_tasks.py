@@ -859,7 +859,6 @@ class GamesPoolTableTask:
                     "marked_pocket_id": sampled_scene.marked_pocket_id,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "object_ball_count_probabilities": dict(axes.object_ball_count_probabilities),
                     "target_answer": int(sampled_scene.target_answer),

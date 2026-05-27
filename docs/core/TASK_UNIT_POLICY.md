@@ -25,7 +25,7 @@ Use it when:
    - and what kind of scene grammar it sees repeatedly.
 4. Public taxonomy identifies this as `domain -> scene_id -> task_id`.
 5. Source `task_group` remains an implementation/config grouping during the transition, but it is not the public taxonomy unit.
-6. Do not introduce a field, config key, prompt column, or artifact column named `task_variant`; use `query_id` for branch identity and `query_id` only for internal replay selectors.
+6. Use `query_id` for task-internal branch identity and replay selectors.
 
 ## 2.1) Hard Task Boundary
 
@@ -271,10 +271,10 @@ inconsistent enough to block classification.
 2. `query_id` values are diagnostics for query ids inside one task, not
    separate public tasks. Source `query_id` remains only an internal replay
    selector.
-3. Large RLVR training builds may optionally use variant-aware task counts when comparing task-unit ablations.
+3. Large RLVR training builds may optionally use query-id-aware task counts when comparing task-unit ablations.
 4. The supported weight formula is:
    - `task_weight = 1 + alpha * (active_query_id_count - 1)`
-5. Use `alpha=0.0` for the equal-task baseline, `alpha=0.5` for the balanced variant-aware recipe, and `alpha=1.0` for the variant-proportional ablation.
+5. Use `alpha=0.0` for the equal-task baseline, `alpha=0.5` for the balanced query-id-aware recipe, and `alpha=1.0` for the query-id-proportional ablation.
 6. This changes only task-level build counts; task-local query sampling remains owned by each task's config and generator.
 
 ## 11) Practical checklist

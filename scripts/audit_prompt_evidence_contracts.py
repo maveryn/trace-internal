@@ -611,7 +611,7 @@ def _generate_explicit_samples(
     *,
     task_id: str,
     variants: Sequence[tuple[str, Mapping[str, Any]]],
-    samples_per_variant: int,
+    samples_per_query_id: int,
     seed: int,
     max_attempts: int,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -620,7 +620,7 @@ def _generate_explicit_samples(
     generated_counts: Counter[str] = Counter()
     errors: Counter[str] = Counter()
     for variant, params in variants:
-        for sample_index in range(int(samples_per_variant)):
+        for sample_index in range(int(samples_per_query_id)):
             instance_seed = int(hash64(int(seed), f"prompt_evidence.explicit.{task_id}.{variant}", int(sample_index)))
             generation_params = dict(params)
             try:
@@ -652,7 +652,7 @@ def _generate_explicit_samples(
         "incomplete_query_ids": [
             variant
             for variant in expected_query_ids
-            if int(collected_counts.get(variant, 0)) < int(samples_per_variant)
+            if int(collected_counts.get(variant, 0)) < int(samples_per_query_id)
         ],
         "generation_error_counts": dict(sorted(errors.items())),
         "total_generated": int(sum(generated_counts.values())),
@@ -663,7 +663,7 @@ def _generate_explicit_samples(
 def _collect_task_records(
     *,
     task_id: str,
-    samples_per_variant: int,
+    samples_per_query_id: int,
     seed: int,
     max_attempts: int,
     max_total_samples_per_task: int,
@@ -673,15 +673,15 @@ def _collect_task_records(
     if explicit_variants is not None:
         return _generate_explicit_samples(
             task_id=str(task_id),
-            variants=explicit_variants,
-            samples_per_variant=int(samples_per_variant),
+            query_ids=explicit_variants,
+            samples_per_query_id=int(samples_per_query_id),
             seed=int(seed),
             max_attempts=int(max_attempts),
         )
 
     collected = collect_query_id_samples(
         task_id=str(task_id),
-        target_count_per_query_id=int(samples_per_variant),
+        target_count_per_query_id=int(samples_per_query_id),
         seed=int(seed),
         max_attempts_per_instance=int(max_attempts),
         max_total_samples_per_task=int(max_total_samples_per_task),
@@ -731,7 +731,7 @@ def _collect_task_records_worker(queue: Any, kwargs: Mapping[str, Any]) -> None:
 def _collect_task_records_with_timeout(
     *,
     task_id: str,
-    samples_per_variant: int,
+    samples_per_query_id: int,
     seed: int,
     max_attempts: int,
     max_total_samples_per_task: int,
@@ -741,7 +741,7 @@ def _collect_task_records_with_timeout(
     if int(timeout_seconds) <= 0:
         return _collect_task_records(
             task_id=str(task_id),
-            samples_per_variant=int(samples_per_variant),
+            samples_per_query_id=int(samples_per_query_id),
             seed=int(seed),
             max_attempts=int(max_attempts),
             max_total_samples_per_task=int(max_total_samples_per_task),
@@ -752,7 +752,7 @@ def _collect_task_records_with_timeout(
     queue = ctx.Queue(maxsize=1)
     kwargs = {
         "task_id": str(task_id),
-        "samples_per_variant": int(samples_per_variant),
+        "samples_per_query_id": int(samples_per_query_id),
         "seed": int(seed),
         "max_attempts": int(max_attempts),
         "max_total_samples_per_task": int(max_total_samples_per_task),
@@ -829,7 +829,7 @@ def _coverage_issues(coverage_rows: Sequence[Mapping[str, Any]]) -> list[dict[st
                 {
                     **_issue(
                         category="generation",
-                        code="incomplete_variant_coverage",
+                        code="incomplete_query_id_coverage",
                         severity="error",
                         message="Audit could not generate the requested sample count for this variant.",
                     ),
@@ -968,7 +968,7 @@ def _write_projection_report(
         "",
         "## Coverage",
         "",
-        "| task | expected variants | collected counts | generated | issues |",
+        "| task | expected query ids | collected counts | generated | issues |",
         "| --- | --- | --- | ---: | --- |",
     ]
     for row in coverage_rows:
@@ -1006,7 +1006,7 @@ def _write_summary_report(
     output_dir: Path,
 ) -> None:
     variant_pairs = {(str(record.get("task", "")), str(record.get("query_id", ""))) for record in records}
-    expected_variant_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
+    expected_query_id_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
     domain_counts: dict[str, set[str]] = defaultdict(set)
     for task_id in task_ids:
         domain_counts[_task_domain(str(task_id))].add(str(task_id))
@@ -1014,7 +1014,7 @@ def _write_summary_report(
         "# Prompt/Evidence Contract Audit",
         "",
         f"- tasks: `{len(task_ids)}`",
-        f"- expected public-facing variants: `{expected_variant_count}`",
+        f"- expected public-facing query ids: `{expected_query_id_count}`",
         f"- sampled query ids: `{len(variant_pairs)}`",
         f"- sampled instances: `{len(records)}`",
         f"- issues: `{len(issues)}`",
@@ -1096,7 +1096,7 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tasks", default="", help="Comma-separated task ids. Defaults to default-enabled tasks.")
     parser.add_argument("--all-registered", action="store_true", help="Audit every registered task, including disabled tasks.")
-    parser.add_argument("--samples-per-variant", type=int, default=1)
+    parser.add_argument("--samples-per-query-id", type=int, default=1)
     parser.add_argument("--seed", type=int, default=20260504)
     parser.add_argument("--max-attempts", type=int, default=200)
     parser.add_argument("--max-total-samples-per-task", type=int, default=1024)
@@ -1120,8 +1120,8 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    if int(args.samples_per_variant) <= 0:
-        raise ValueError("--samples-per-variant must be > 0")
+    if int(args.samples_per_query_id) <= 0:
+        raise ValueError("--samples-per-query-id must be > 0")
     if int(args.max_attempts) <= 0:
         raise ValueError("--max-attempts must be > 0")
     if int(args.max_total_samples_per_task) <= 0:
@@ -1139,7 +1139,7 @@ def main() -> int:
             print(f"[{index}/{len(task_ids)}] auditing {task_id}", file=sys.stderr, flush=True)
         records, coverage = _collect_task_records_with_timeout(
             task_id=str(task_id),
-            samples_per_variant=int(args.samples_per_variant),
+            samples_per_query_id=int(args.samples_per_query_id),
             seed=int(hash64(int(args.seed), f"prompt_evidence_contracts.{task_id}", 0)),
             max_attempts=int(args.max_attempts),
             max_total_samples_per_task=int(args.max_total_samples_per_task),
@@ -1151,20 +1151,20 @@ def main() -> int:
         if bool(args.progress):
             print(
                 f"[{index}/{len(task_ids)}] done {task_id}: "
-                f"variants={len(coverage.get('expected_query_ids', []))}, "
+                f"query_ids={len(coverage.get('expected_query_ids', []))}, "
                 f"records={len(records)}, issues={sum(len(record.get('issues', [])) for record in records)}",
                 file=sys.stderr,
                 flush=True,
             )
 
     issues, issue_counts = _issue_summary(all_records, coverage_rows)
-    expected_variant_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
+    expected_query_id_count = sum(len(row.get("expected_query_ids", [])) for row in coverage_rows)
     output_dir = Path(args.output_dir)
     payload = {
         "config": {
             "tasks": list(task_ids),
             "default_only": not bool(args.all_registered),
-            "samples_per_variant": int(args.samples_per_variant),
+            "samples_per_query_id": int(args.samples_per_query_id),
             "seed": int(args.seed),
             "max_attempts": int(args.max_attempts),
             "max_total_samples_per_task": int(args.max_total_samples_per_task),
@@ -1173,7 +1173,7 @@ def main() -> int:
         },
         "summary": {
             "task_count": int(len(task_ids)),
-            "expected_public_variant_count": int(expected_variant_count),
+            "expected_public_query_id_count": int(expected_query_id_count),
             "sampled_instance_count": int(len(all_records)),
             "sampled_query_id_count": int(len({(record["task"], record["query_id"]) for record in all_records})),
             "issue_count": int(len(issues)),
@@ -1209,7 +1209,7 @@ def main() -> int:
         max_attempts=int(args.max_attempts),
     )
     print(
-        f"audited {len(task_ids)} tasks, {expected_variant_count} expected variants, "
+        f"audited {len(task_ids)} tasks, {expected_query_id_count} expected query ids, "
         f"{len(all_records)} samples, {len(issues)} issues; wrote {output_dir}"
     )
     return 0

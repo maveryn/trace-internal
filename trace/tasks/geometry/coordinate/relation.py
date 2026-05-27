@@ -1580,9 +1580,8 @@ class GeometryCoordinateRelationTask:
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
+            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         }
         if query.target_count is not None:
             query_params["target_count"] = int(query.target_count)
@@ -1600,7 +1599,6 @@ class GeometryCoordinateRelationTask:
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_id_probabilities": dict(query.query_id_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "required_evidence_labels": list(rendered_scene.required_evidence_labels),
             "question_format": str(question_format),

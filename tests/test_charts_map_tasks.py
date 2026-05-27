@@ -266,12 +266,11 @@ def test_chart_map_marker_tasks_use_marker_bubble_evidence(task_cls, expected_qu
         projected = trace["projected_evidence"]
 
         assert out.query_id == expected_query_id
-        assert out.query_id == "default"
         assert out.scene_id == "marker_map"
         assert out.answer_gt.type == expected_answer_type
         assert out.evidence_gt.type == "bbox_set"
         assert str(execution["question_format"]) == "map_marker_query"
-        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) == expected_query_id
         assert str(trace["query_spec"]["params"]["marker_render_variant"]) == render_variant
         assert str(render["marker_render"]["marker_render_variant"]) == render_variant
         assert projected["bbox_set"] == out.evidence_gt.value

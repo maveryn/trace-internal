@@ -55,11 +55,11 @@ launch_probe() {
   echo "[launch] alpha=${alpha} pid=$(cat "${RUN_ROOT}/alpha${alpha}.pid") log=${log_file}"
 }
 
-ALPHA0_DATASET="${ALPHA0_DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_variant_alpha0_answer_seed20260504.parquet}"
-ALPHA1_DATASET="${ALPHA1_DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_variant_alpha1_answer_seed20260504.parquet}"
+ALPHA0_DATASET="${ALPHA0_DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_query_id_alpha0_answer_seed20260504.parquet}"
+ALPHA1_DATASET="${ALPHA1_DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_query_id_alpha1_answer_seed20260504.parquet}"
 
-ALPHA0_OUTPUT="${ALPHA0_OUTPUT:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_variant_alpha0_answer_staged4to16_seed20260504}"
-ALPHA1_OUTPUT="${ALPHA1_OUTPUT:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_variant_alpha1_answer_staged4to16_seed20260504}"
+ALPHA0_OUTPUT="${ALPHA0_OUTPUT:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_query_id_alpha0_answer_staged4to16_seed20260504}"
+ALPHA1_OUTPUT="${ALPHA1_OUTPUT:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_query_id_alpha1_answer_staged4to16_seed20260504}"
 
 launch_probe "0" "${ALPHA0_GPUS:-0,1,2,3}" "${ALPHA0_DATASET}" "${ALPHA0_OUTPUT}"
 launch_probe "1" "${ALPHA1_GPUS:-4,5,6,7}" "${ALPHA1_DATASET}" "${ALPHA1_OUTPUT}"

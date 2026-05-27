@@ -718,7 +718,7 @@ class GeometryShapeMeasureBase:
             "shape_variant": str(variant_kind),
             "answer_scalar": int(answer_scalar),
             "answer_format": str(answer_format),
-            "variant_probabilities": dict(variant_probabilities),
+            "query_id_probabilities": dict(variant_probabilities),
             "required_graph_cells": int(required_graph_cells),
             "required_evidence_labels": [str(label) for label in evidence.get("required_labels", [])],
         }
@@ -788,7 +788,7 @@ class GeometryShapeMeasureBase:
                 "params": {
                     "shape_variant": str(variant_kind),
                     "supported_shape_variants": [str(item) for item in supported_variants],
-                    "variant_probabilities": dict(variant_probabilities),
+                    "query_id_probabilities": dict(variant_probabilities),
                     "answer_min": (int(answer_min) if answer_min is not None else None),
                     "answer_max": (int(answer_max) if answer_max is not None else None),
                     "required_graph_cells": int(required_graph_cells),

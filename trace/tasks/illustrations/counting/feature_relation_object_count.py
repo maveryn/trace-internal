@@ -654,6 +654,7 @@ class IllustrationsCountingFeatureRelationObjectCountTask:
             image_id="img0",
             trace_payload=trace_payload,
             complexity=_build_complexity(
+                query_id=str(choice.query_id),
                 object_count=int(len(scene.placements)),
                 target_count=int(answer),
                 theme_id=str(choice.theme_id),

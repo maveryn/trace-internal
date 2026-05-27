@@ -557,7 +557,7 @@ def _load_review_payload(path: Path) -> dict[str, Any] | None:
 
 
 def load_review_samples(repo_root: Path, row: ProgressTaskRow) -> list[ReviewSample]:
-    """Load review JSON rows for one current task, respecting manifest variant counts when present."""
+    """Load review JSON rows for one current task, respecting manifest query-id counts when present."""
     task_dir = repo_root / "plans" / "task-reviews" / _domain_slug(row.domain) / row.task_id
     data_dir = task_dir / "data"
     if not data_dir.exists():

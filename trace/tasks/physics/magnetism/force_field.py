@@ -986,7 +986,6 @@ class _PhysicsMagnetismForceFieldBaseTask:
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "field_orientation_probabilities": dict(axes.field_orientation_probabilities),
                         "velocity_direction_probabilities": dict(axes.velocity_direction_probabilities),
                         "charge_sign_probabilities": dict(axes.charge_sign_probabilities),

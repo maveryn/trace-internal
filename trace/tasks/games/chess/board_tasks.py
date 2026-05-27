@@ -1148,7 +1148,6 @@ class GamesChessBoardTask:
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(evaluation.answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],

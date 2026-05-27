@@ -169,9 +169,9 @@ def _query_support_selection_index(
         and not bool(query_id_overridden)
         and is_uniform_probability_map(query_id_probabilities)
     ):
-        active_variant_count = sum(1 for value in query_id_probabilities.values() if float(value) > 0.0)
-        if int(active_variant_count) > 1:
-            return int(selection_index // int(active_variant_count))
+        active_query_id_count = sum(1 for value in query_id_probabilities.values() if float(value) > 0.0)
+        if int(active_query_id_count) > 1:
+            return int(selection_index // int(active_query_id_count))
     return int(selection_index)
 
 

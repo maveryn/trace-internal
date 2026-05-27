@@ -189,9 +189,9 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0, help="Base seed")
     parser.add_argument("--out-root", default="task-reviews", help="Output root for task review artifacts")
     parser.add_argument("--random-count", type=int, default=100, help="Random sample count per task")
-    parser.add_argument("--count-per-variant", type=int, default=100, help="Target samples per query id")
+    parser.add_argument("--count-per-query-id", type=int, default=100, help="Target samples per query id")
     parser.add_argument(
-        "--inspection-count-per-variant",
+        "--inspection-count-per-query-id",
         type=int,
         default=25,
         help="Source balanced inspection samples per query; used only with --balanced-inspection-by-query",
@@ -206,7 +206,7 @@ def _parse_cli() -> argparse.Namespace:
         "--max-total-samples-per-task",
         type=int,
         default=30000,
-        help="Safety cap while collecting per-variant samples",
+        help="Safety cap while collecting per-query-id samples",
     )
     parser.add_argument(
         "--workers",
@@ -411,12 +411,12 @@ def _answer_collector(output: Any, instance_seed: int) -> Dict[str, Any]:
     }
 
 
-def _has_true_variants(variant_counts: Mapping[str, int], expected_probabilities: Mapping[str, float]) -> bool:
-    """Return true when a task has more than one meaningful variant."""
+def _has_multiple_query_ids(query_id_counts: Mapping[str, int], expected_probabilities: Mapping[str, float]) -> bool:
+    """Return true when a task has more than one meaningful query id."""
     expected_non_empty = [str(key) for key in expected_probabilities.keys() if str(key).strip()]
     if len(expected_non_empty) > 1:
         return True
-    observed_non_empty = [str(key) for key, value in variant_counts.items() if str(key).strip() and int(value) > 0]
+    observed_non_empty = [str(key) for key, value in query_id_counts.items() if str(key).strip() and int(value) > 0]
     return len(observed_non_empty) > 1
 
 
@@ -480,10 +480,10 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
     ]
     answer_report = evaluate_answer_distribution(answer_rows)
     sampling_axes = _build_sampling_axis_reports(rows)
-    variant_axis = sampling_axes.get("query_id", {})
-    variant_counts = variant_axis.get("observed_counts", {}) if isinstance(variant_axis, Mapping) else {}
-    variant_expected = variant_axis.get("expected_probabilities", {}) if isinstance(variant_axis, Mapping) else {}
-    has_variants = _has_true_variants(variant_counts, variant_expected)
+    query_id_axis = sampling_axes.get("query_id", {})
+    query_id_counts = query_id_axis.get("observed_counts", {}) if isinstance(query_id_axis, Mapping) else {}
+    query_id_expected = query_id_axis.get("expected_probabilities", {}) if isinstance(query_id_axis, Mapping) else {}
+    has_query_ids = _has_multiple_query_ids(query_id_counts, query_id_expected)
 
     return {
         "task_id": str(task_id),
@@ -491,12 +491,12 @@ def _build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any
         "answer_distribution": answer_report,
         "sampling_axes": sampling_axes,
         "query_id_distribution": {
-            "has_variants": bool(has_variants),
-            "status": "reported" if bool(has_variants) else "skipped_no_variants",
-            "observed_counts": dict(variant_counts),
-            "expected_probabilities": dict(variant_expected),
-            "expected_source": str(variant_axis.get("expected_source", "")) if isinstance(variant_axis, Mapping) else "",
-            "expected_conflict": bool(variant_axis.get("expected_conflict", False)) if isinstance(variant_axis, Mapping) else False,
+            "has_query_ids": bool(has_query_ids),
+            "status": "reported" if bool(has_query_ids) else "skipped_no_query_ids",
+            "observed_counts": dict(query_id_counts),
+            "expected_probabilities": dict(query_id_expected),
+            "expected_source": str(query_id_axis.get("expected_source", "")) if isinstance(query_id_axis, Mapping) else "",
+            "expected_conflict": bool(query_id_axis.get("expected_conflict", False)) if isinstance(query_id_axis, Mapping) else False,
         },
     }
 
@@ -534,14 +534,14 @@ def _build_distribution_review_report(
     scene_id: str,
     random_rows: Sequence[Mapping[str, Any]],
     random_report: Mapping[str, Any],
-    variant_rows: Mapping[str, List[Dict[str, Any]]] | None,
+    query_id_rows: Mapping[str, List[Dict[str, Any]]] | None,
     query_id_collection_meta: Mapping[str, Any] | None,
 ) -> Dict[str, Any]:
-    """Build distribution review report from random and per-variant samples."""
-    variant_distribution = random_report.get("query_id_distribution", {})
-    has_variants = bool(variant_distribution.get("has_variants", False))
+    """Build distribution review report from random and per-query-id samples."""
+    query_id_distribution = random_report.get("query_id_distribution", {})
+    has_query_ids = bool(query_id_distribution.get("has_query_ids", False))
 
-    if not has_variants:
+    if not has_query_ids:
         single_report = _evaluate_rows(random_rows)
         return {
             "task_id": str(task_id),
@@ -552,51 +552,51 @@ def _build_distribution_review_report(
             "has_query_ids": False,
             "overall": dict(single_report),
             "per_query_id": {"": dict(single_report)},
-            "failed_variants": [""] if not bool(single_report.get("pass", False)) else [],
+            "failed_query_ids": [""] if not bool(single_report.get("pass", False)) else [],
             "incomplete_query_ids": [],
             "pass": bool(single_report.get("pass", False)),
-            "query_id_distribution": dict(variant_distribution),
+            "query_id_distribution": dict(query_id_distribution),
             "sampling_axes": dict(random_report.get("sampling_axes", {})),
         }
 
-    variant_rows = variant_rows or {}
+    query_id_rows = query_id_rows or {}
     query_id_collection_meta = query_id_collection_meta or {}
     expected_query_ids = list(query_id_collection_meta.get("expected_query_ids", []))
     if not expected_query_ids:
-        expected_query_ids = sorted(variant_rows.keys())
-    per_variant: Dict[str, Any] = {}
+        expected_query_ids = sorted(query_id_rows.keys())
+    per_query_id: Dict[str, Any] = {}
     combined_rows: List[Dict[str, Any]] = []
 
     for query_id in expected_query_ids:
-        rows = list(variant_rows.get(str(query_id), []))
+        rows = list(query_id_rows.get(str(query_id), []))
         combined_rows.extend(rows)
         if rows:
-            per_variant[str(query_id)] = _evaluate_rows(rows)
+            per_query_id[str(query_id)] = _evaluate_rows(rows)
 
     overall = _evaluate_rows(combined_rows)
-    failed_variants = [
+    failed_query_ids = [
         str(query_id)
-        for query_id, result in per_variant.items()
+        for query_id, result in per_query_id.items()
         if not bool(result.get("pass", False))
     ]
     incomplete_query_ids = list(query_id_collection_meta.get("incomplete_query_ids", []))
     no_samples_collected = not bool(combined_rows)
-    task_pass = bool((not failed_variants) and (not incomplete_query_ids) and (not no_samples_collected))
+    task_pass = bool((not failed_query_ids) and (not incomplete_query_ids) and (not no_samples_collected))
 
     return {
         "task_id": str(task_id),
         "domain": str(domain),
         "task_group": str(task_group),
         "scene_id": str(scene_id),
-        "mode": "per_variant",
+        "mode": "per_query_id",
         "has_query_ids": True,
         "overall": overall,
-        "per_query_id": per_variant,
-        "failed_variants": failed_variants,
+        "per_query_id": per_query_id,
+        "failed_query_ids": failed_query_ids,
         "incomplete_query_ids": incomplete_query_ids,
         "no_samples_collected": bool(no_samples_collected),
         "pass": bool(task_pass),
-        "query_id_distribution": dict(variant_distribution),
+        "query_id_distribution": dict(query_id_distribution),
         "sampling_axes": dict(random_report.get("sampling_axes", {})),
         "collection": {
             "target_count_per_query_id": int(query_id_collection_meta.get("target_count_per_query_id", 0)),
@@ -739,13 +739,13 @@ def _write_inspection_excel(
     workbook = Workbook()
     image_buffers: List[io.BytesIO] = []
     used_titles: set[str] = set()
-    variant_to_sheet: Dict[str, str] = {}
+    query_id_to_sheet: Dict[str, str] = {}
 
-    sorted_variants = sorted(str(variant) for variant in rows_by_query_id.keys())
-    if not sorted_variants:
-        sorted_variants = [""]
+    sorted_query_ids = sorted(str(variant) for variant in rows_by_query_id.keys())
+    if not sorted_query_ids:
+        sorted_query_ids = [""]
 
-    for index, query_id in enumerate(sorted_variants):
+    for index, query_id in enumerate(sorted_query_ids):
         base_title = str(query_id).strip() or "default"
         sheet_title = _dedupe_sheet_title(base_title, used_titles)
         if int(index) == 0:
@@ -753,7 +753,7 @@ def _write_inspection_excel(
             sheet.title = sheet_title
         else:
             sheet = workbook.create_sheet(title=sheet_title)
-        variant_to_sheet[str(query_id)] = str(sheet_title)
+        query_id_to_sheet[str(query_id)] = str(sheet_title)
         _populate_inspection_sheet(
             sheet,
             rows=list(rows_by_query_id.get(str(query_id), [])),
@@ -763,7 +763,7 @@ def _write_inspection_excel(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(path)
-    return variant_to_sheet
+    return query_id_to_sheet
 
 
 def _task_sheet_title(task_id: str, *, domain: str) -> str:
@@ -1201,7 +1201,6 @@ def _inspection_rows_from_task_dir(*, out_root: Path, task_dir: Path) -> List[Di
         rows.append(
             {
                 "task": str(payload.get("task", task_dir.name)),
-                "query_id": str(payload.get("query_id", "")),
                 "scene_id": str(payload.get("scene_id", task_dir.parent.name)),
                 "query_id": str(payload.get("query_id", "")),
                 "prompt": prompt,
@@ -1385,7 +1384,7 @@ def build_scene_review_workbooks(*, out_root: Path, scene_keys: Sequence[tuple[s
 
 
 def _safe_query_id_dir_name(query_id: str) -> str:
-    """Return filesystem-safe variant directory label."""
+    """Return filesystem-safe query-id directory label."""
     value = str(query_id).strip()
     if not value:
         return "default"
@@ -1426,17 +1425,14 @@ def _build_inspection_rows(
             if str(query_id).strip():
                 forced_task_params = dict(generation_params)
                 forced_task_params["query_id"] = str(query_id)
-                forced_task_params["query_id"] = str(query_id)
                 generation_param_candidates.append(forced_task_params)
 
                 query_only_params = dict(generation_params)
                 query_only_params.pop("query_id", None)
                 query_only_params["query_id"] = str(query_id)
-                query_only_params["query_id"] = str(query_id)
                 generation_param_candidates.append(query_only_params)
 
                 replay_params = dict(generation_params)
-                replay_params.setdefault("query_id", str(query_id))
                 replay_params.setdefault("query_id", str(query_id))
                 generation_param_candidates.append(replay_params)
             else:
@@ -1484,7 +1480,7 @@ def _build_inspection_rows(
                     break
             if output is None:
                 raise RuntimeError(
-                    f"{task_id} failed to build inspection row for variant {query_id!r} "
+                    f"{task_id} failed to build inspection row for query id {query_id!r} "
                     f"after {len(candidate_seeds)} deterministic seed attempts"
                 ) from last_error
 
@@ -1500,11 +1496,11 @@ def _build_inspection_rows(
                 output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
                 evidence_gt=output.evidence_gt,
             )
-            output_variant = str(getattr(output, "query_id", "") or "")
+            output_query_id = str(getattr(output, "query_id", "") or "")
             review_query_id = resolve_review_query_id(output)
             query_id = str(
                 getattr(output, "query_id", "")
-                or resolve_task_query_id(query_id=output_variant, trace_payload=sanitized_trace_payload)
+                or resolve_task_query_id(query_id=output_query_id, trace_payload=sanitized_trace_payload)
             )
             sanitized_trace_payload = inject_taxonomy_metadata(
                 sanitized_trace_payload,
@@ -1547,11 +1543,10 @@ def _build_inspection_rows(
             answer_only_ground_truth = {
                 "answer": output.answer_gt.value,
             }
-            variant_rows = rows_by_query_id.setdefault(str(review_query_id), [])
-            variant_rows.append(
+            query_id_rows = rows_by_query_id.setdefault(str(review_query_id), [])
+            query_id_rows.append(
                 {
                     "task": str(task_id),
-                    "query_id": str(output_variant),
                     "scene_id": str(taxonomy.scene_id),
                     "query_id": query_id,
                     "prompt": prompt_answer_and_evidence,
@@ -1586,7 +1581,7 @@ def _build_inspection_rows(
     manifest = {
         "task_id": str(task_id),
         "inspection_count": int(inspection_total),
-        "variants": {
+        "query_ids": {
             str(variant): int(len(seed_rows_by_query_id.get(str(variant), [])))
             for variant in sorted(seed_rows_by_query_id.keys())
         },
@@ -1618,9 +1613,9 @@ def main() -> int:
     if int(args.random_count) <= 0:
         raise ValueError("--random-count must be > 0")
     if int(args.count_per_query_id) <= 0:
-        raise ValueError("--count-per-variant must be > 0")
+        raise ValueError("--count-per-query-id must be > 0")
     if int(args.inspection_count_per_query_id) <= 0:
-        raise ValueError("--inspection-count-per-variant must be > 0")
+        raise ValueError("--inspection-count-per-query-id must be > 0")
     if int(args.max_attempts_per_instance) <= 0:
         raise ValueError("--max-attempts-per-instance must be > 0")
     if int(args.max_total_samples_per_task) <= 0:
@@ -1673,7 +1668,7 @@ def main() -> int:
 
         random_rows: List[Dict[str, Any]] = []
         random_report: Dict[str, Any] | None = None
-        distribution_variant_rows: Dict[str, List[Dict[str, Any]]] | None = None
+        distribution_query_id_rows: Dict[str, List[Dict[str, Any]]] | None = None
 
         if str(args.mode) in {"full", "distribution"}:
             random_rows = generate_random_samples(
@@ -1689,10 +1684,10 @@ def main() -> int:
             write_json_file(random_path, random_report)
             task_summary["reports"]["random_review"] = str(random_path.relative_to(out_root).as_posix())
 
-            has_variants = bool(random_report["query_id_distribution"]["has_variants"])
-            variant_rows: Dict[str, List[Dict[str, Any]]] | None = None
+            has_query_ids = bool(random_report["query_id_distribution"]["has_query_ids"])
+            query_id_rows: Dict[str, List[Dict[str, Any]]] | None = None
             collection_meta: Dict[str, Any] | None = None
-            if has_variants:
+            if has_query_ids:
                 collected = collect_query_id_samples(
                     task_id=str(task_id),
                     target_count_per_query_id=int(args.count_per_query_id),
@@ -1702,11 +1697,11 @@ def main() -> int:
                     workers=int(args.workers),
                     collector=_answer_collector,
                 )
-                variant_rows = {
+                query_id_rows = {
                     str(variant): list(collected.get("samples_by_query_id", {}).get(str(variant), []))
                     for variant in list(collected.get("expected_query_ids", []))
                 }
-                distribution_variant_rows = dict(variant_rows)
+                distribution_query_id_rows = dict(query_id_rows)
                 collection_meta = {
                     key: collected.get(key)
                     for key in (
@@ -1727,7 +1722,7 @@ def main() -> int:
                 scene_id=str(taxonomy.scene_id),
                 random_rows=random_rows,
                 random_report=random_report,
-                variant_rows=variant_rows,
+                query_id_rows=query_id_rows,
                 query_id_collection_meta=collection_meta,
             )
             dist_path = task_dir / "distribution_review.json"
@@ -1782,11 +1777,11 @@ def main() -> int:
                         collector=_answer_collector,
                     )
                     seed_rows_by_query_id = {"": list(fallback_rows)}
-            elif bool(random_report["query_id_distribution"]["has_variants"]):
-                if distribution_variant_rows is not None and str(args.mode) == "full":
+            elif bool(random_report["query_id_distribution"]["has_query_ids"]):
+                if distribution_query_id_rows is not None and str(args.mode) == "full":
                     seed_rows_by_query_id = {
                         str(variant): list(rows[: int(args.inspection_count_per_query_id)])
-                        for variant, rows in distribution_variant_rows.items()
+                        for variant, rows in distribution_query_id_rows.items()
                     }
                 else:
                     inspection_collected = collect_query_id_samples(

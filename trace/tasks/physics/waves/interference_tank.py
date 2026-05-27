@@ -1257,7 +1257,6 @@ class _PhysicsWavesInterferenceTankBaseTask:
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "phase_relation_probabilities": dict(axes.phase_relation_probabilities),
                         "target_condition_probabilities": dict(axes.target_condition_probabilities),
                         "correct_option_letter_probabilities": dict(axes.correct_option_letter_probabilities),

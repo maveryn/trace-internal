@@ -48,7 +48,6 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_singleton_type_counting"
-    assert out.query_id == "default"
     assert out.query_id == "singleton_type_count"
     assert execution["question_format"] == "count_singleton_type_icons"
     assert execution["query_id"] == "default"
@@ -170,7 +169,7 @@ def test_icons_counting_singleton_type_repeated_distractors_share_visual_style()
 def test_icons_counting_type_frequency_sampling_defaults() -> None:
     task = IconsIconFieldTypeFrequencyCountTask()
     object_counts: Counter[int] = Counter()
-    variant_counts: Counter[str] = Counter()
+    query_id_counts: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
     singleton_targets: Counter[int] = Counter()
     most_frequent_targets: Counter[int] = Counter()
@@ -185,7 +184,7 @@ def test_icons_counting_type_frequency_sampling_defaults() -> None:
         target_count = int(execution["target_count"])
         query_id = str(execution["query_id"])
         object_counts[object_count] += 1
-        variant_counts[query_id] += 1
+        query_id_counts[query_id] += 1
         target_counts[target_count] += 1
         if query_id == "singleton_type_count":
             singleton_targets[target_count] += 1
@@ -196,7 +195,7 @@ def test_icons_counting_type_frequency_sampling_defaults() -> None:
             assert query_id == "most_frequent_type_count"
             assert 7 <= object_count <= 12
             assert 3 <= target_count <= 5
-    assert set(variant_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}
+    assert set(query_id_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}
     assert set(singleton_targets.keys()) == set(range(0, 5))
     assert set(most_frequent_targets.keys()) == set(range(3, 6))
     assert min(object_counts.keys()) >= 5

@@ -120,7 +120,7 @@ def _iter_prompt_rows(task_ids: Iterable[str], *, samples_per_task: int, max_att
 
 
 def _collect_prompt_sample(output: Any, instance_seed: int) -> dict[str, Any]:
-    """Collector callback used by variant-aware sampling."""
+    """Collector callback used by query-id-aware sampling."""
     return {
         "task": getattr(output, "task_id", "") or "",
         "query_id": str(getattr(output, "query_id", "") or ""),
@@ -130,16 +130,16 @@ def _collect_prompt_sample(output: Any, instance_seed: int) -> dict[str, Any]:
     }
 
 
-def _iter_variant_prompt_rows(
+def _iter_query_id_prompt_rows(
     task_ids: Iterable[str],
     *,
-    samples_per_variant: int,
+    samples_per_query_id: int,
     max_attempts: int,
     max_total_samples_per_task: int,
     workers: int,
     progress: bool = False,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Collect prompt rows while trying to cover each declared or observed variant."""
+    """Collect prompt rows while trying to cover each declared or observed query id."""
     rows: list[dict[str, Any]] = []
     coverage_rows: list[dict[str, Any]] = []
     task_id_list = list(task_ids)
@@ -148,8 +148,8 @@ def _iter_variant_prompt_rows(
             print(f"[{index}/{len(task_id_list)}] sampling {task_id}", file=sys.stderr, flush=True)
         collected = collect_query_id_samples(
             task_id=str(task_id),
-            target_count_per_query_id=int(samples_per_variant),
-            seed=int(hash64(20260415, f"prompt_concision.variant.{task_id}", 0)),
+            target_count_per_query_id=int(samples_per_query_id),
+            seed=int(hash64(20260415, f"prompt_concision.query_id.{task_id}", 0)),
             max_attempts_per_instance=int(max_attempts),
             max_total_samples_per_task=int(max_total_samples_per_task),
             workers=int(workers),
@@ -191,7 +191,7 @@ def _iter_variant_prompt_rows(
             incomplete = list(collected.get("incomplete_query_ids", []))
             print(
                 f"[{index}/{len(task_id_list)}] done {task_id}: "
-                f"variants={len(collected.get('expected_query_ids', []))}, "
+                f"query_ids={len(collected.get('expected_query_ids', []))}, "
                 f"generated={collected.get('total_generated', 0)}, incomplete={len(incomplete)}",
                 file=sys.stderr,
                 flush=True,
@@ -221,7 +221,7 @@ def _write_markdown(
     )[:top_k]
 
     task_counts = Counter(row["task"] for row in rows)
-    variant_counts = Counter((row["task"], row["query_id"]) for row in rows if str(row["mode"]) != "<generation_failed>")
+    query_id_counts = Counter((row["task"], row["query_id"]) for row in rows if str(row["mode"]) != "<generation_failed>")
     incomplete_coverage = [
         row
         for row in (coverage_rows or [])
@@ -232,17 +232,17 @@ def _write_markdown(
         "",
         f"- rendered prompts: `{len(rows)}`",
         f"- tasks covered: `{len(task_counts)}`",
-        f"- observed query ids covered: `{len(variant_counts)}`",
+        f"- observed query ids covered: `{len(query_id_counts)}`",
         "",
         "## Variant Coverage",
         "",
     ]
     if coverage_rows is None:
-        lines.extend(["- variant-aware sampling: `disabled`", ""])
+        lines.extend(["- query-id-aware sampling: `disabled`", ""])
     else:
         lines.extend(
             [
-                f"- tasks with incomplete variants or generation errors: `{len(incomplete_coverage)}`",
+                f"- tasks with incomplete query ids or generation errors: `{len(incomplete_coverage)}`",
                 "",
                 "| task | expected_query_ids | collected_query_id_counts | generated | issues |",
                 "| --- | --- | --- | ---: | --- |",
@@ -342,8 +342,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tasks", default="", help="Comma-separated task ids. Defaults to all registered tasks.")
     parser.add_argument("--samples-per-task", type=int, default=1)
-    parser.add_argument("--variant-coverage", action="store_true", help="Sample until declared/observed variants are covered.")
-    parser.add_argument("--samples-per-variant", type=int, default=1)
+    parser.add_argument("--query-id-coverage", action="store_true", help="Sample until declared/observed query ids are covered.")
+    parser.add_argument("--samples-per-query-id", type=int, default=1)
     parser.add_argument("--max-total-samples-per-task", type=int, default=256)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--max-attempts", type=int, default=128)
@@ -355,10 +355,10 @@ def main() -> None:
 
     task_ids = _resolve_task_ids(args.tasks)
     coverage_rows = None
-    if bool(args.variant_coverage):
-        rows, coverage_rows = _iter_variant_prompt_rows(
+    if bool(args.query_id_coverage):
+        rows, coverage_rows = _iter_query_id_prompt_rows(
             task_ids,
-            samples_per_variant=int(args.samples_per_variant),
+            samples_per_query_id=int(args.samples_per_query_id),
             max_attempts=int(args.max_attempts),
             max_total_samples_per_task=int(args.max_total_samples_per_task),
             workers=int(args.workers),

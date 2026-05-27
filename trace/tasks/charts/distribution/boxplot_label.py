@@ -406,7 +406,6 @@ def _render_boxplot_public_output(
     trace_params = {
         "query_id": str(query_id),
         "query_id_probabilities": dict(query_id_probabilities),
-        "query_id_probabilities": {"default": 1.0},
         **dict(trace_extras),
     }
     trace_payload = {

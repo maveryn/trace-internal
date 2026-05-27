@@ -691,7 +691,7 @@ class TraceRLHFDataset(Dataset):
             "reward_contract",
             "trace_ref",
             "metadata",
-            "query_variant",
+            "query_id",
             "scene_variant",
             "source_dataset_index",
             "curriculum_probe_rollout_count",

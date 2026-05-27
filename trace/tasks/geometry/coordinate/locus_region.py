@@ -1006,7 +1006,6 @@ def _point_trace_payload(
             "relations": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "region": _region_trace(rendered.region),
@@ -1021,7 +1020,6 @@ def _point_trace_payload(
             "params": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
@@ -1053,7 +1051,6 @@ def _point_trace_payload(
             "region": _region_trace(rendered.region),
             "center_point_px": list(rendered.center_point_px) if rendered.center_point_px is not None else None,
             "candidate_points_by_label": dict(candidate_trace),
-            "variant_probabilities": {"default": 1.0},
             "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
@@ -1095,7 +1092,6 @@ def _panel_trace_payload(
             "relations": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "condition_text": str(rendered.condition_text),
@@ -1110,7 +1106,6 @@ def _panel_trace_payload(
             "params": {
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
-                "variant_probabilities": {"default": 1.0},
                 "query_id_probabilities": dict(query.query_probabilities),
                 "winner_label": str(query.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
@@ -1141,7 +1136,6 @@ def _panel_trace_payload(
             "answer_value": str(query.winner_label),
             "condition_text": str(rendered.condition_text),
             "panels_by_label": dict(panels_trace),
-            "variant_probabilities": {"default": 1.0},
             "query_id_probabilities": dict(query.query_probabilities),
         },
         "witness_symbolic": {
@@ -1240,6 +1234,7 @@ class GeometryCoordinateLocusPointLabelTask:
             ),
             complexity=_build_complexity(
                 task_id=self.task_id,
+                query_id=str(query.query_id),
                 object_count=len(rendered.candidate_points_by_label),
             ),
             task_versions=default_task_versions(),
@@ -1331,6 +1326,7 @@ class GeometryCoordinateLocusPanelMatchLabelTask:
             ),
             complexity=_build_complexity(
                 task_id=self.task_id,
+                query_id=str(query.query_id),
                 object_count=len(rendered.panels_by_label),
                 panel_count=len(rendered.panels_by_label),
             ),

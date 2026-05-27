@@ -1251,7 +1251,7 @@ class GeometryLengthMeasure2DTask:
                 "params": {
                     "shape_variant": str(variant_kind),
                     "supported_shape_variants": [str(item) for item in supported_variants],
-                    "variant_probabilities": dict(variant_probabilities),
+                    "query_id_probabilities": dict(variant_probabilities),
                     "answer_min": int(answer_min),
                     "answer_max": int(answer_max),
                     "required_graph_cells": int(required_graph_cells),
@@ -1276,7 +1276,7 @@ class GeometryLengthMeasure2DTask:
                 "shape_variant": str(variant_kind),
                 "answer_scalar": int(answer_scalar),
                 "answer_format": "integer",
-                "variant_probabilities": dict(variant_probabilities),
+                "query_id_probabilities": dict(variant_probabilities),
                 "required_graph_cells": int(required_graph_cells),
                 "required_evidence_labels": [str(label) for label in evidence.get("required_labels", [])],
                 "question_text": str(question_text),

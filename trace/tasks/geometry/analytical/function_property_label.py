@@ -1776,7 +1776,6 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "query_id": str(query.query_id),
-                    "variant_probabilities": dict(query.query_id_probabilities),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "winner_label": str(query.winner_label),
                     "winner_label_probabilities": dict(query.winner_label_probabilities),
@@ -1814,7 +1813,7 @@ class GeometryAnalyticalFunctionPropertyLabelTask:
                 "winner_label": str(query.winner_label),
                 "winner_relation": dict(_relation_trace_payload(winner_relation)),
                 "relations_by_label": dict(relations_trace),
-                "variant_probabilities": dict(query.query_id_probabilities),
+                "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),
                 "target_interval": str(rendered_scene.target_interval),
             },

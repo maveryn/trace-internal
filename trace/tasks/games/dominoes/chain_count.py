@@ -1394,7 +1394,6 @@ class GamesDominoesChainCountTask:
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": sampled_scene.answer_value,
                     "target_answer_index": int(axes.target_answer),

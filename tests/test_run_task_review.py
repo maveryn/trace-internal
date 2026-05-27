@@ -17,7 +17,7 @@ from trace.tasks.base import TaskOutput
 class _DummyVariantTask:
     """Minimal task stub used to verify inspection workbook variant routing."""
 
-    task_id = "task_dummy__review__variant"
+    task_id = "task_dummy__review__query"
     domain = "dummy"
     task_group = "review"
 
@@ -50,7 +50,7 @@ def test_build_inspection_rows_passes_requested_query_id(
     monkeypatch,
 ) -> None:
     out_root = tmp_path / "task-reviews"
-    task_dir = out_root / "dummy" / "task_dummy__review__variant"
+    task_dir = out_root / "dummy" / "task_dummy__review__query"
     out_root.mkdir(parents=True, exist_ok=True)
     task_dir.mkdir(parents=True, exist_ok=True)
 
@@ -58,26 +58,26 @@ def test_build_inspection_rows_passes_requested_query_id(
     monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
 
     manifest = review._build_inspection_rows(
-        task_id="task_dummy__review__variant",
+        task_id="task_dummy__review__query",
         out_root=out_root,
         task_dir=task_dir,
         seed_rows_by_query_id={
-            "variant_alpha": [{"instance_seed": 101}],
-            "variant_beta": [{"instance_seed": 202}],
+            "query_alpha": [{"instance_seed": 101}],
+            "query_beta": [{"instance_seed": 202}],
         },
         max_attempts_per_instance=10,
     )
 
     assert dummy_task.calls == [
-        (101, {"query_id": "variant_alpha", "query_id": "variant_alpha", "query_id": "variant_alpha"}),
-        (202, {"query_id": "variant_beta", "query_id": "variant_beta", "query_id": "variant_beta"}),
+        (101, {"query_id": "query_alpha"}),
+        (202, {"query_id": "query_beta"}),
     ]
-    assert manifest["variants"] == {"variant_alpha": 1, "variant_beta": 1}
+    assert manifest["query_ids"] == {"query_alpha": 1, "query_beta": 1}
 
-    alpha_payload = json.loads((task_dir / "data" / "variant_alpha" / "0000.json").read_text(encoding="utf-8"))
-    beta_payload = json.loads((task_dir / "data" / "variant_beta" / "0000.json").read_text(encoding="utf-8"))
-    assert alpha_payload["query_id"] == "variant_alpha"
-    assert beta_payload["query_id"] == "variant_beta"
+    alpha_payload = json.loads((task_dir / "data" / "query_alpha" / "0000.json").read_text(encoding="utf-8"))
+    beta_payload = json.loads((task_dir / "data" / "query_beta" / "0000.json").read_text(encoding="utf-8"))
+    assert alpha_payload["query_id"] == "query_alpha"
+    assert beta_payload["query_id"] == "query_beta"
 
 
 def test_resolve_task_review_dir_uses_domain_scene_scoped_layout() -> None:
@@ -85,10 +85,10 @@ def test_resolve_task_review_dir_uses_domain_scene_scoped_layout() -> None:
     out_root = Path("/tmp/task-reviews")
     task_dir = review._resolve_task_review_dir(
         out_root=out_root,
-        task_id="task_dummy__review__variant",
+        task_id="task_dummy__review__query",
         task_obj=dummy_task,
     )
-    assert task_dir == out_root / "dummy" / "review" / "task_dummy__review__variant"
+    assert task_dir == out_root / "dummy" / "review" / "task_dummy__review__query"
 
 
 def test_review_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:

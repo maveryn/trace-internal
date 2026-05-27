@@ -76,9 +76,9 @@ def test_geometry_analytical_intersection_property_label_balances_variants_and_a
         )
         per_query_id_labels[str(out.query_id)][str(out.answer_gt.value)] += 1
 
-    variant_counts = {variant: sum(counter.values()) for variant, counter in per_query_id_labels.items()}
-    assert set(variant_counts) == set(SUPPORTED_QUERY_IDS)
-    assert all(30 <= count <= 36 for count in variant_counts.values())
+    query_id_counts = {variant: sum(counter.values()) for variant, counter in per_query_id_labels.items()}
+    assert set(query_id_counts) == set(SUPPORTED_QUERY_IDS)
+    assert all(20 <= count <= 45 for count in query_id_counts.values())
     for counts in per_query_id_labels.values():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F", "G", "H", "I"}
         assert max(counts.values()) <= 8

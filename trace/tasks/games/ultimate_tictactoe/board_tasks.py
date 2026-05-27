@@ -896,7 +896,6 @@ class _UltimateTicTacToeTask:
                     "query_id": str(sample.query_id),
                     "style_variant": str(style_variant),
                     "query_id_probabilities": dict(query_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),
                 },

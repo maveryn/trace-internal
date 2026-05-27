@@ -1128,7 +1128,6 @@ class PhysicsFluidsHydraulicMissingValueTask:
                         "target_answer": int(axes.target_answer),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": {"default": 1.0},
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),
                     },

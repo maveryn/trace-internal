@@ -43,12 +43,8 @@ def _query_probability_map(specs: Sequence[_TileQuerySpec]) -> Dict[str, float]:
 def _has_explicit_query(params: Mapping[str, Any]) -> bool:
     """Return whether caller explicitly pinned a cell-board query branch."""
 
-    for key in ("query_id", "query_id"):
-        candidate = params.get(key)
-        if candidate is None:
-            continue
-        if key == "query_id" and str(candidate) == "default":
-            continue
+    candidate = params.get("query_id")
+    if candidate is not None and str(candidate) != "default":
         return True
     return False
 
@@ -120,7 +116,6 @@ def _rewrite_fixed_tile_output(
         query_id=query_id_text,
         include_render_spec=True,
         query_id_probabilities=dict(query_probabilities),
-        variant_probabilities={"default": 1.0},
         preserve_internal_query_id_as="internal_query_id",
         extra_fields={
             "public_task_id": str(public_task_id),

@@ -2629,7 +2629,6 @@ class GeometryCircleTheoremValueTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         query_params = {
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "target_answer": int(query.target_answer),
             "target_answer_probabilities": dict(query.target_answer_probabilities),
@@ -2694,7 +2693,6 @@ class GeometryCircleTheoremValueTask:
             "execution_trace": {
                 "query_id": str(query.query_id),
                 "query_id_probabilities": dict(query.query_id_probabilities),
-                "variant_probabilities": dict(query.query_id_probabilities),
                 "target_answer": int(query.target_answer),
                 "target_answer_probabilities": dict(query.target_answer_probabilities),
                 "answer_type": "integer",

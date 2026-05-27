@@ -1841,7 +1841,6 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                         "correct_option_letter": axes.correct_option_letter,
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "work_mode_probabilities": dict(axes.work_mode_probabilities),
                         "target_sign_probabilities": dict(axes.target_sign_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),

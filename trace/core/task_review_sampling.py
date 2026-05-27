@@ -145,34 +145,34 @@ def _generate_explicit_query_id_batch(
 ) -> List[Dict[str, Any]]:
     """Generate one round-robin batch that explicitly targets missing query ids."""
 
-    pending_variants = [
-        str(variant)
-        for variant in expected_query_ids
-        if len(samples_by_query_id.get(str(variant), [])) < int(target_count)
+    pending_query_ids = [
+        str(query_id_value)
+        for query_id_value in expected_query_ids
+        if len(samples_by_query_id.get(str(query_id_value), [])) < int(target_count)
     ]
-    if not pending_variants or int(batch_size) <= 0:
+    if not pending_query_ids or int(batch_size) <= 0:
         return []
 
     jobs: List[tuple[str, int, int, Mapping[str, Any] | None]] = []
     query_id_index = 0
     while len(jobs) < int(batch_size):
-        pending_variants = [
-            str(variant)
-            for variant in expected_query_ids
-            if len(samples_by_query_id.get(str(variant), [])) < int(target_count)
+        pending_query_ids = [
+            str(query_id_value)
+            for query_id_value in expected_query_ids
+            if len(samples_by_query_id.get(str(query_id_value), [])) < int(target_count)
         ]
-        if not pending_variants:
+        if not pending_query_ids:
             break
-        variant = str(pending_variants[int(query_id_index) % len(pending_variants)])
-        request_index = int(request_counts_by_query_id.get(str(variant), 0))
-        request_counts_by_query_id[str(variant)] = int(request_index + 1)
+        query_id_value = str(pending_query_ids[int(query_id_index) % len(pending_query_ids)])
+        request_index = int(request_counts_by_query_id.get(str(query_id_value), 0))
+        request_counts_by_query_id[str(query_id_value)] = int(request_index + 1)
         jobs.append(
             (
                 str(task_id),
-                int(hash64(int(seed), f"{str(task_id)}|query_id:{variant}", int(request_index))),
+                int(hash64(int(seed), f"{str(task_id)}|query_id:{query_id_value}", int(request_index))),
                 int(max_attempts),
                 {
-                    "query_id": str(variant),
+                    "query_id": str(query_id_value),
                 },
             )
         )
@@ -205,7 +205,7 @@ def collect_query_id_samples(
     expected_query_ids: set[str] = set()
     request_counts_by_query_id: Dict[str, int] = {}
     known_from_probabilities = False
-    no_new_variant_streak = 0
+    no_new_query_id_streak = 0
     total_generated = 0
     generation_error_counts: Dict[str, int] = {}
 
@@ -214,10 +214,10 @@ def collect_query_id_samples(
     try:
         while int(total_generated) < int(max_total_samples_per_task):
             if expected_query_ids and all(
-                len(samples_by_query_id.get(str(variant), [])) >= int(target_count)
-                for variant in expected_query_ids
+                len(samples_by_query_id.get(str(query_id_value), [])) >= int(target_count)
+                for query_id_value in expected_query_ids
             ):
-                if known_from_probabilities or int(no_new_variant_streak) >= int(target_count):
+                if known_from_probabilities or int(no_new_query_id_streak) >= int(target_count):
                     break
 
             base_batch = max(16, int(max_workers * 8))
@@ -280,9 +280,9 @@ def collect_query_id_samples(
                         expected_query_ids.discard("default")
                         samples_by_query_id.pop("default", None)
                 if len(expected_query_ids) > int(expected_before):
-                    no_new_variant_streak = 0
+                    no_new_query_id_streak = 0
                 else:
-                    no_new_variant_streak += 1
+                    no_new_query_id_streak += 1
 
                 if transitioned_to_explicit:
                     samples_by_query_id = {}
@@ -290,15 +290,15 @@ def collect_query_id_samples(
                     break
 
                 if not transitioned_to_explicit:
-                    variant_rows = samples_by_query_id.setdefault(str(query_id), [])
-                    if len(variant_rows) < int(target_count):
-                        variant_rows.append(dict(collector(output, instance_seed)))
+                    query_rows = samples_by_query_id.setdefault(str(query_id), [])
+                    if len(query_rows) < int(target_count):
+                        query_rows.append(dict(collector(output, instance_seed)))
 
                 if expected_query_ids and all(
-                    len(samples_by_query_id.get(str(variant), [])) >= int(target_count)
-                    for variant in expected_query_ids
+                    len(samples_by_query_id.get(str(query_id_value), [])) >= int(target_count)
+                    for query_id_value in expected_query_ids
                 ):
-                    if known_from_probabilities or int(no_new_variant_streak) >= int(target_count):
+                    if known_from_probabilities or int(no_new_query_id_streak) >= int(target_count):
                         task_complete = True
                         break
 
@@ -312,13 +312,13 @@ def collect_query_id_samples(
 
     expected_query_ids_sorted = sorted(str(value) for value in expected_query_ids)
     collected_query_id_counts = {
-        str(variant): int(len(samples_by_query_id.get(str(variant), [])))
-        for variant in expected_query_ids_sorted
+        str(query_id_value): int(len(samples_by_query_id.get(str(query_id_value), [])))
+        for query_id_value in expected_query_ids_sorted
     }
     incomplete_query_ids = [
-        str(variant)
-        for variant in expected_query_ids_sorted
-        if int(collected_query_id_counts.get(str(variant), 0)) < int(target_count)
+        str(query_id_value)
+        for query_id_value in expected_query_ids_sorted
+        if int(collected_query_id_counts.get(str(query_id_value), 0)) < int(target_count)
     ]
 
     return {
@@ -334,8 +334,8 @@ def collect_query_id_samples(
             str(key): int(value) for key, value in sorted(generation_error_counts.items(), key=lambda item: item[0])
         },
         "samples_by_query_id": {
-            str(variant): list(samples_by_query_id.get(str(variant), []))
-            for variant in expected_query_ids_sorted
+            str(query_id_value): list(samples_by_query_id.get(str(query_id_value), []))
+            for query_id_value in expected_query_ids_sorted
         },
     }
 

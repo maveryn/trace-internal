@@ -90,7 +90,7 @@ def _positive_probability_count(value: Any) -> int | None:
     return count if count > 0 else None
 
 
-def _variant_probability_count_from_output(output: TaskOutput) -> int | None:
+def _query_id_probability_count_from_output(output: TaskOutput) -> int | None:
     """Extract the active query branch support size from one output."""
 
     payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
@@ -108,7 +108,7 @@ def _variant_probability_count_from_output(output: TaskOutput) -> int | None:
     return None
 
 
-def resolve_task_active_variant_count(
+def resolve_task_active_query_id_count(
     task_id: str,
     *,
     probe_samples: int = 8,
@@ -123,11 +123,11 @@ def resolve_task_active_variant_count(
     """
 
     task = create_task(str(task_id))
-    observed_variants: set[str] = set()
+    observed_query_ids: set[str] = set()
     probe_total = max(1, int(probe_samples))
     last_error: Exception | None = None
     for probe_index in range(probe_total):
-        instance_seed = hash64(0, f"{task_id}:variant_count_probe", probe_index)
+        instance_seed = hash64(0, f"{task_id}:query_id_count_probe", probe_index)
         try:
             output = task.generate(
                 int(instance_seed),
@@ -138,22 +138,22 @@ def resolve_task_active_variant_count(
             last_error = exc
             continue
 
-        probability_count = _variant_probability_count_from_output(output)
+        probability_count = _query_id_probability_count_from_output(output)
         if probability_count is not None:
             return max(1, int(probability_count))
 
-        variant_label = str(getattr(output, "query_id", "") or "").strip()
-        if variant_label and variant_label != "default":
-            observed_variants.add(variant_label)
+        query_id_label = str(getattr(output, "query_id", "") or "").strip()
+        if query_id_label and query_id_label != "default":
+            observed_query_ids.add(query_id_label)
 
-    if observed_variants:
-        return len(observed_variants)
+    if observed_query_ids:
+        return len(observed_query_ids)
     if last_error is not None:
         raise ValueError(f"failed to probe query ids for {task_id}: {last_error}") from last_error
     return 1
 
 
-def resolve_variant_aware_task_weights(
+def resolve_query_id_aware_task_weights(
     *,
     task_ids: list[str],
     alpha: float,
@@ -165,17 +165,17 @@ def resolve_variant_aware_task_weights(
     alpha_value = float(alpha)
     if alpha_value < 0.0:
         raise ValueError("alpha must be non-negative")
-    variant_counts: Dict[str, int] = {}
+    query_id_counts: Dict[str, int] = {}
     weights: Dict[str, float] = {}
     for task_id in task_ids:
-        count = resolve_task_active_variant_count(
+        count = resolve_task_active_query_id_count(
             str(task_id),
             probe_samples=int(probe_samples),
             max_attempts_per_instance=int(max_attempts_per_instance),
         )
-        variant_counts[str(task_id)] = int(count)
+        query_id_counts[str(task_id)] = int(count)
         weights[str(task_id)] = 1.0 + alpha_value * max(0, int(count) - 1)
-    return dict(sorted(weights.items())), dict(sorted(variant_counts.items()))
+    return dict(sorted(weights.items())), dict(sorted(query_id_counts.items()))
 
 
 def build_equal_split_all_tasks_config(
@@ -222,12 +222,12 @@ def build_equal_split_all_tasks_config(
     )
 
 
-def build_variant_weighted_all_tasks_config(
+def build_query_id_weighted_all_tasks_config(
     *,
     output_root: str,
     dataset_name: str,
     num_instances: int,
-    variant_weight_alpha: float,
+    query_id_weight_alpha: float,
     instance_version: str = "v0",
     image_format: str = "png",
     strict_repro: bool = False,
@@ -236,20 +236,20 @@ def build_variant_weighted_all_tasks_config(
     workers: int = 0,
     max_in_flight: int = 0,
     task_params_by_id: Mapping[str, Mapping[str, Any]] | None = None,
-    variant_count_probe_samples: int = 8,
+    query_id_count_probe_samples: int = 8,
 ) -> BuildConfig:
-    """Build a config with exact task counts scaled by active variant count.
+    """Build a config with exact task counts scaled by active query-id count.
 
     The task weight formula is:
 
-    `1 + variant_weight_alpha * (active_query_branch_count - 1)`.
+    `1 + query_id_weight_alpha * (active_query_branch_count - 1)`.
     """
 
     task_ids = list_default_task_ids()
-    weights, _variant_counts = resolve_variant_aware_task_weights(
+    weights, _query_id_counts = resolve_query_id_aware_task_weights(
         task_ids=[str(task_id) for task_id in task_ids],
-        alpha=float(variant_weight_alpha),
-        probe_samples=int(variant_count_probe_samples),
+        alpha=float(query_id_weight_alpha),
+        probe_samples=int(query_id_count_probe_samples),
         max_attempts_per_instance=int(max_attempts_per_instance),
     )
     target_counts = resolve_weighted_task_counts(

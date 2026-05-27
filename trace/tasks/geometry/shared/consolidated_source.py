@@ -108,7 +108,7 @@ def normalize_source_geometry_output(
     query_params["query_id_probabilities"] = {
         str(key): float(value) for key, value in sorted(query_id_probabilities.items())
     }
-    query_params["variant_probabilities"] = {
+    query_params["query_id_probabilities"] = {
         str(key): float(value) for key, value in sorted(query_id_probabilities.items())
     }
     if extra_query_params:

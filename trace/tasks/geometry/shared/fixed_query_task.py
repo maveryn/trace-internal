@@ -101,7 +101,7 @@ def rewrite_fixed_geometry_query_output(
     allowed_scene_variants: Sequence[str] = (),
     query_id_probabilities: Mapping[str, float] | None = None,
 ) -> TaskOutput:
-    """Rewrite generated output so the public task has no semantic query id."""
+    """Rewrite generated output to the selected public query id."""
 
     query_id_text = str(query_id)
     scene_id_text = str(scene_id)
@@ -119,7 +119,6 @@ def rewrite_fixed_geometry_query_output(
         query_id=query_id_text,
         include_render_spec=True,
         query_id_probabilities=dict(query_probabilities),
-        variant_probabilities={"default": 1.0},
         scene_variant_probabilities=dict(scene_probabilities) if scene_probabilities else {},
     )
 

@@ -481,7 +481,7 @@ class IllustrationsVisualObjectDifferenceCountTask:
                 "params": {
                     "target_count": int(sample.target_count),
                     "object_count": int(sample.object_count),
-                    "variant_probabilities": dict(sample.variant_probabilities),
+                    "query_id_probabilities": dict(sample.variant_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "object_count_probabilities": dict(sample.object_count_probabilities),
                 },

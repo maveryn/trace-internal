@@ -646,7 +646,6 @@ class GraphCountingNodeColorCountTask:
                     "edge_routing_variant_probabilities": dict(query.edge_routing_variant_probabilities),
                     "theme_node_color_name": str(query.theme_node_color_name),
                     "theme_node_color_name_probabilities": dict(query.theme_node_color_name_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     max_degree_key: int(max_degree),
                 },
             },

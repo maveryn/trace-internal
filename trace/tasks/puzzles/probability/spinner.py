@@ -717,7 +717,6 @@ class _SpinnerProbabilityBaseTask:
                 "scene_kind": "puzzle_probability_spinner_panel",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_id": "default",
                     "scene_id": SCENE_ID,
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
@@ -732,8 +731,6 @@ class _SpinnerProbabilityBaseTask:
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
                 "prompt_variants": dict(prompt_meta["prompt_variants_for_trace"]),
                 "params": {
-                    "query_id": "default",
-                    "query_id_probabilities": {"default": 1.0},
                     "scene_id": SCENE_ID,
                     "query_id": str(query_id),
                     "query_id_probabilities": dict(query_id_probabilities),
@@ -766,8 +763,6 @@ class _SpinnerProbabilityBaseTask:
                 "evidence_source": "panel_bboxes_px",
             },
             "execution_trace": {
-                "query_id": "default",
-                "query_id_probabilities": {"default": 1.0},
                 "query_id": str(query_id),
                 "query_id_probabilities": dict(query_id_probabilities),
                 "scene_id": SCENE_ID,

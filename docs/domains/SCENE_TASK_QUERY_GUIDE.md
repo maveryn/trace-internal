@@ -27,7 +27,7 @@ not be copied into skills or planning notes.
    primary witness kind, visual search pattern, and algorithmic/objective
    family stay intact. Add a new task when any of those axes changes.
 5. Use `query_id` as the canonical metadata field and "query id" as the
-   human-facing name. Do not reintroduce `task_variant` as a public concept.
+   human-facing name.
 
 ## Geometry scene/task rules
 1. `measurement` should use **one primary object per image**.

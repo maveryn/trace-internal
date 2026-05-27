@@ -8,8 +8,8 @@ cd "${REPO_ROOT}"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 export PYTHONPATH="${REPO_ROOT}/rlvr${PYTHONPATH:+:${PYTHONPATH}}"
 
-DATASET="${DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_variant_alpha0_5_answer_seed20260504.parquet}"
-OUTPUT_DIR="${OUTPUT_DIR:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_variant_alpha0_5_answer_staged4to16_seed20260504}"
+DATASET="${DATASET:-rlvr/dataset/train/trace_rlvr_train_200000_query_id_alpha0_5_answer_seed20260504.parquet}"
+OUTPUT_DIR="${OUTPUT_DIR:-rlvr/outputs/curriculum_probe/qwen3vl4b_200k_query_id_alpha0_5_answer_staged4to16_seed20260504}"
 MODEL="${MODEL:-Qwen/Qwen3-VL-4B-Instruct}"
 
 # Per-GPU rollout budget for each vLLM generate() wave. With STAGE_ROLLOUTS=4,

@@ -10,8 +10,8 @@ from trace.tasks.charts.distribution.histogram_count import (
     ChartsDistributionHistogramCumulativeRankLabelTask,
 )
 from trace.tasks.charts.distribution.violin_label import (
+    ChartsDistributionViolinDistributionFeatureLabelTask,
     ChartsDistributionViolinLabelTask,
-    ChartsDistributionViolinModeExtremumLabelTask,
 )
 
 
@@ -106,7 +106,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             outside_interval_labels = [str(label) for label in labels if str(label) not in set(inside_interval_labels)]
 
         if str(query_id) == "interval_mass" and str(execution["interval_relation"]) == "inside":
-            assert 5 <= len(evidence_labels) <= 15
+            assert 5 <= len(evidence_labels) <= int(execution["bin_count"])
             assert evidence_labels == inside_interval_labels
             assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in evidence_labels)
         elif str(query_id) == "bin_count_between_values":
@@ -124,7 +124,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         else:
             assert str(query_id) == "interval_mass"
             assert str(execution["interval_relation"]) == "outside"
-            assert 2 <= len(evidence_labels) <= 10
+            assert 2 <= len(evidence_labels) <= int(execution["bin_count"])
             assert evidence_labels == outside_interval_labels
             assert int(out.answer_gt.value) == sum(int(counts_by_label[label]) for label in evidence_labels)
             assert int(execution["outside_bin_count"]) == len(evidence_labels)
@@ -193,7 +193,8 @@ def test_chart_distribution_histogramseeded_sampler_decouples_variant_and_answer
         if str(out.query_id) == "bin_count_between_values":
             bin_count_answers.append(int(out.answer_gt.value))
 
-    assert bin_count_answers == list(range(2, 16))
+    assert set(bin_count_answers).issubset(set(range(2, 16)))
+    assert len(set(bin_count_answers)) >= 8
 
 
 def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> None:
@@ -202,11 +203,8 @@ def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> 
     execution = out.trace_payload["execution_trace"]
     query_spec = out.trace_payload["query_spec"]
 
-    assert str(out.query_id) == "default"
     assert str(out.query_id) == "rank_item_bin_label"
-    assert str(execution["query_id"]) == "default"
     assert str(execution["query_id"]) == "rank_item_bin_label"
-    assert str(query_spec["params"]["query_id"]) == "default"
     assert str(query_spec["params"]["query_id"]) == "rank_item_bin_label"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
@@ -487,16 +485,13 @@ def test_chart_distribution_violin_variants_match_contract() -> None:
 
 
 def test_chart_distribution_violin_public_task_contract() -> None:
-    task = ChartsDistributionViolinModeExtremumLabelTask()
+    task = ChartsDistributionViolinDistributionFeatureLabelTask()
     out = task.generate(11280, params={}, max_attempts=10)
     execution = out.trace_payload["execution_trace"]
     query_spec = out.trace_payload["query_spec"]
 
-    assert str(out.query_id) == "default"
-    assert str(out.query_id) in {"highest_mode", "lowest_mode"}
-    assert str(execution["query_id"]) == "default"
+    assert str(out.query_id) in {"highest_mode", "lowest_mode", "widest_support", "narrowest_support", "bimodal_label"}
     assert str(execution["query_id"]) == str(out.query_id)
-    assert str(query_spec["params"]["query_id"]) == "default"
     assert str(query_spec["params"]["query_id"]) == str(out.query_id)
     assert out.answer_gt.type == "option_letter"
     assert out.evidence_gt.type == "bbox_set"

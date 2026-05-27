@@ -485,7 +485,7 @@ def _fields_from_train_record(record: Mapping[str, Any]) -> dict[str, str]:
     }
 
 
-def _build_variant_field_assignments(
+def _build_query_field_assignments(
     records: list[Mapping[str, Any]],
     *,
     dataset_root: Path,
@@ -529,11 +529,11 @@ def _build_variant_field_assignments(
             instance_ids = instances_by_line.get(line_index)
             if not instance_ids:
                 continue
-            variant_fields = _query_fields_from_trace_record(trace_record)
+            query_fields = _query_fields_from_trace_record(trace_record)
             for instance_id in instance_ids:
                 fallback_fields = _fields_from_train_record(records_by_instance.get(instance_id, {}))
                 assignments[instance_id] = {
-                    key: str(variant_fields.get(key, "") or fallback_fields.get(key, ""))
+                    key: str(query_fields.get(key, "") or fallback_fields.get(key, ""))
                     for key in ("scene_variant", "scene_id", "query_id")
                 }
                 shard_found_count += 1
@@ -543,7 +543,7 @@ def _build_variant_field_assignments(
     missing = sorted(set(instance_to_ref) - set(assignments))
     if missing:
         sample = ", ".join(missing[:5])
-        raise ValueError(f"failed to recover TRACE variant fields for {len(missing)} rows, sample: {sample}")
+        raise ValueError(f"failed to recover TRACE query fields for {len(missing)} rows, sample: {sample}")
     return assignments
 
 
@@ -742,8 +742,8 @@ def export_trace_dataset_to_rlvr(
         tqdm.write(f"Assign curriculum bins for {len(records)} rows")
     curriculum_assignments = _build_curriculum_assignments(records)
     if _EXPORT_PROGRESS_ENABLED:
-        tqdm.write(f"Recover variant fields for {len(records)} rows")
-    variant_assignments = _build_variant_field_assignments(records, dataset_root=dataset_root)
+        tqdm.write(f"Recover query fields for {len(records)} rows")
+    query_assignments = _build_query_field_assignments(records, dataset_root=dataset_root)
     rows = []
     with tqdm(
         total=len(records),
@@ -763,7 +763,7 @@ def export_trace_dataset_to_rlvr(
                         image_path_mode=image_path_mode,
                         image_storage_mode=image_storage_mode,
                     ),
-                    **variant_assignments[str(record.get("instance_id", "")).strip()],
+                    **query_assignments[str(record.get("instance_id", "")).strip()],
                     **curriculum_assignments[str(record.get("instance_id", "")).strip()],
                 }
             )

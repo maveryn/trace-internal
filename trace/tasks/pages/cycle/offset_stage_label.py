@@ -234,7 +234,6 @@ class PagesCycleOffsetStageLabelTask:
                     "cycle_direction_probabilities": dict(cycle_direction_probabilities),
                     "stage_count": int(dataset["stage_count"]),
                     "step_count": int(dataset["step_count"]),
-                    "query_relationship": str(dataset["query_relationship"]),
                 },
             },
             "render_spec": {

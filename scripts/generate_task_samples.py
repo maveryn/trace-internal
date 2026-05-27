@@ -403,13 +403,13 @@ def _extract_query_id_distribution_hints(trace_payload: Mapping[str, Any]) -> Di
     query_params = query_spec.get("params", {}) if isinstance(query_spec, Mapping) else {}
     execution_trace = trace_payload.get("execution_trace", {}) if isinstance(trace_payload, Mapping) else {}
 
-    variant_probabilities = _normalize_probability_map(
+    query_id_probabilities = _normalize_probability_map(
         execution_trace.get("query_id_probabilities")
         if isinstance(execution_trace, Mapping)
         else {}
     )
-    if not variant_probabilities:
-        variant_probabilities = _normalize_probability_map(
+    if not query_id_probabilities:
+        query_id_probabilities = _normalize_probability_map(
             query_params.get("query_id_probabilities")
             if isinstance(query_params, Mapping)
             else {}
@@ -442,7 +442,7 @@ def _extract_query_id_distribution_hints(trace_payload: Mapping[str, Any]) -> Di
             break
 
     return {
-        "query_id_probabilities": variant_probabilities,
+        "query_id_probabilities": query_id_probabilities,
         "source_kind": str(source_kind),
         "source_kind_probabilities": source_kind_probabilities,
         "answer_option_labels": list(option_labels),
@@ -452,10 +452,10 @@ def _extract_query_id_distribution_hints(trace_payload: Mapping[str, Any]) -> Di
 def _resolve_query_id_expected_probabilities(
     rows_by_query_id: Mapping[str, List[Dict[str, Any]]],
 ) -> Tuple[Dict[str, float], str]:
-    """Resolve expected variant probabilities from trace metadata or fallback uniform."""
-    observed_variants = sorted(str(key) for key in rows_by_query_id.keys())
-    if not observed_variants:
-        return {}, "no_variants"
+    """Resolve expected query-id probabilities from trace metadata or fallback uniform."""
+    observed_query_ids = sorted(str(key) for key in rows_by_query_id.keys())
+    if not observed_query_ids:
+        return {}, "no_query_ids"
 
     direct_maps: List[Dict[str, float]] = []
     for rows in rows_by_query_id.values():
@@ -469,15 +469,15 @@ def _resolve_query_id_expected_probabilities(
             return dict(first), "query_id_probabilities"
 
     source_probability_maps: List[Dict[str, float]] = []
-    source_to_variant: Dict[str, str] = {}
+    source_to_query_id: Dict[str, str] = {}
     source_mapping_valid = True
     for variant, rows in rows_by_query_id.items():
         for row in rows:
             source_kind = str(row.get("_source_kind", "")).strip()
             if source_kind:
-                existing = source_to_variant.get(source_kind)
+                existing = source_to_query_id.get(source_kind)
                 if existing is None:
-                    source_to_variant[source_kind] = str(variant)
+                    source_to_query_id[source_kind] = str(variant)
                 elif str(existing) != str(variant):
                     source_mapping_valid = False
             parsed = _normalize_probability_map(row.get("_source_kind_probabilities"))
@@ -488,7 +488,7 @@ def _resolve_query_id_expected_probabilities(
         if all(_probability_maps_match(first_source_map, item) for item in source_probability_maps[1:]):
             aggregated: Dict[str, float] = defaultdict(float)
             for source_kind, probability in first_source_map.items():
-                variant = source_to_variant.get(str(source_kind))
+                variant = source_to_query_id.get(str(source_kind))
                 if variant is None:
                     continue
                 aggregated[str(variant)] += float(probability)
@@ -496,8 +496,8 @@ def _resolve_query_id_expected_probabilities(
             if normalized_aggregated:
                 return normalized_aggregated, "derived_from_source_kind_probabilities"
 
-    uniform_probability = 1.0 / float(len(observed_variants))
-    return {variant: float(uniform_probability) for variant in observed_variants}, "uniform_fallback"
+    uniform_probability = 1.0 / float(len(observed_query_ids))
+    return {variant: float(uniform_probability) for variant in observed_query_ids}, "uniform_fallback"
 
 
 def _finalize_binned_check(
@@ -550,7 +550,7 @@ def _finalize_binned_check(
     return out
 
 
-def _build_answer_distribution_for_variant(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def _build_answer_distribution_for_query_id(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     """Build one answer-distribution report for a query-id slice."""
     answer_counter = Counter(_json_cell(row.get("answer_value")) for row in rows)
     report: Dict[str, Any] = {
@@ -670,7 +670,7 @@ def _build_answer_distribution_for_variant(rows: Sequence[Dict[str, Any]]) -> Di
     return report
 
 
-def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _build_query_id_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build query-id and answer-bin distribution reports for one task."""
     rows_by_query_id: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -678,12 +678,12 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
 
     expected_query_id_probabilities, expected_query_id_source = _resolve_query_id_expected_probabilities(rows_by_query_id)
     query_id_labels = sorted(expected_query_id_probabilities.keys() or rows_by_query_id.keys())
-    variant_counts = {str(variant): int(len(rows_by_query_id.get(str(variant), []))) for variant in query_id_labels}
+    query_id_counts = {str(variant): int(len(rows_by_query_id.get(str(variant), []))) for variant in query_id_labels}
     query_id_bins = [
         {
             "bin_id": int(index),
             "label": str(variant),
-            "count": int(variant_counts.get(str(variant), 0)),
+            "count": int(query_id_counts.get(str(variant), 0)),
             "expected_probability": float(expected_query_id_probabilities.get(str(variant), 0.0)),
         }
         for index, variant in enumerate(query_id_labels)
@@ -695,31 +695,31 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
         expected_query_id_probabilities = {str(item["label"]): float(uniform_probability) for item in query_id_bins}
         expected_query_id_source = "uniform_fallback"
 
-    variant_distribution_check = _finalize_binned_check(
+    query_id_distribution_check = _finalize_binned_check(
         bins=query_id_bins,
         sample_count=int(len(rows)),
     )
-    variant_distribution_report = {
+    query_id_distribution_report = {
         "accepted_samples": int(len(rows)),
         "expected_probabilities": dict(sorted(expected_query_id_probabilities.items())),
         "expected_source": str(expected_query_id_source),
-        "check": variant_distribution_check,
+        "check": query_id_distribution_check,
     }
 
-    per_variant: Dict[str, Any] = {}
+    per_query_id: Dict[str, Any] = {}
     checks_run = 0
     checks_failed = 0
     checks_skipped = 0
 
-    if str(variant_distribution_check.get("status")) in {"pass", "fail"}:
+    if str(query_id_distribution_check.get("status")) in {"pass", "fail"}:
         checks_run += 1
-        if str(variant_distribution_check.get("status")) == "fail":
+        if str(query_id_distribution_check.get("status")) == "fail":
             checks_failed += 1
     else:
         checks_skipped += 1
 
     for query_id in sorted(rows_by_query_id.keys()):
-        variant_report = _build_answer_distribution_for_variant(rows_by_query_id[query_id])
+        variant_report = _build_answer_distribution_for_query_id(rows_by_query_id[query_id])
         distribution_check = variant_report.get("distribution_check", {})
         status = str(distribution_check.get("status", "skipped"))
         if status in {"pass", "fail"}:
@@ -728,7 +728,7 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
                 checks_failed += 1
         else:
             checks_skipped += 1
-        per_variant[str(query_id)] = variant_report
+        per_query_id[str(query_id)] = variant_report
 
     return {
         "thresholds": {
@@ -739,8 +739,8 @@ def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, 
         "checks_run": int(checks_run),
         "checks_failed": int(checks_failed),
         "checks_skipped": int(checks_skipped),
-        "query_id_distribution": variant_distribution_report,
-        "per_query_id": per_variant,
+        "query_id_distribution": query_id_distribution_report,
+        "per_query_id": per_query_id,
     }
 
 
@@ -767,7 +767,7 @@ def _generate_samples_for_task(
     max_candidates = max(int(count) * 20, int(count))
     rejections: Dict[str, int] = {}
     rows: List[Dict[str, Any]] = []
-    accepted_by_variant: Dict[str, int] = defaultdict(int)
+    accepted_by_query_id: Dict[str, int] = defaultdict(int)
 
     def _attempt_sample(*, seed_namespace: str, seed_index: int) -> None:
         nonlocal accepted
@@ -868,7 +868,7 @@ def _generate_samples_for_task(
             }
         )
         accepted += 1
-        accepted_by_variant[str(getattr(output, "query_id", "default"))] += 1
+        accepted_by_query_id[str(getattr(output, "query_id", "default"))] += 1
 
     seed_index = 0
     while accepted < int(count) and seed_index < int(max_candidates):
@@ -880,7 +880,7 @@ def _generate_samples_for_task(
     attempted_candidates = int(seed_index)
     requested_samples = int(count)
 
-    distribution_report = _build_variant_distribution_report(rows)
+    distribution_report = _build_query_id_distribution_report(rows)
 
     summary = {
         "domain": task.domain,
@@ -888,10 +888,10 @@ def _generate_samples_for_task(
         "task": task.task_id,
         "requested_samples": int(requested_samples),
         "accepted_samples": int(accepted),
-        "accepted_samples_by_query_id": dict(sorted((k, int(v)) for k, v in accepted_by_variant.items())),
+        "accepted_samples_by_query_id": dict(sorted((k, int(v)) for k, v in accepted_by_query_id.items())),
         "attempted_candidates": int(attempted_candidates),
         "max_candidates": int(max_candidates),
-        "query_ids": sorted(accepted_by_variant.keys()),
+        "query_ids": sorted(accepted_by_query_id.keys()),
         "rejections_by_error": dict(sorted(rejections.items())),
         "distribution_checks": {
             "checks_run": int(distribution_report.get("checks_run", 0)),
@@ -914,10 +914,10 @@ def main() -> int:
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
     parser.add_argument("--count", type=int, default=50, help="Samples per task (default: 50)")
     parser.add_argument(
-        "--count-per-variant",
+        "--count-per-query-id",
         type=int,
         default=0,
-        help="Reserved for future variant-targeted sampling (must be 0 for now)",
+        help="Reserved for future query-id-targeted sampling (must be 0 for now)",
     )
     parser.add_argument("--seed", type=int, default=0, help="Base sampling seed")
     parser.add_argument("--max-attempts-per-instance", type=int, default=100, help="Max generation attempts per instance")
@@ -944,7 +944,7 @@ def main() -> int:
     if int(args.count) <= 0:
         raise ValueError("--count must be positive")
     if int(args.count_per_query_id) != 0:
-        raise ValueError("--count-per-variant is not supported yet; use --count")
+        raise ValueError("--count-per-query-id is not supported yet; use --count")
     if args.clean and args.clean_all:
         raise ValueError("use only one of --clean or --clean-all")
     if args.clean and not args.tasks.strip():

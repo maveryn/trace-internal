@@ -291,7 +291,6 @@ def _render_source_scene(sample: _SampleSpec, *, instance_seed: int, params: Map
         "source_task_id": str(sample.source_query.source_task_id),
         "source_scene_id": str(out.scene_id),
         "source_query_id": str(out.query_id),
-        "source_query_id": str(out.query_id),
         "source_trace_ref": dict(out.trace_payload).get("trace_ref"),
     }
     return out.image.convert("RGB"), evidence_boxes, source_info

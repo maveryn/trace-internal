@@ -14,7 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from trace.core.build_presets import (
     build_equal_split_all_tasks_config,
-    build_variant_weighted_all_tasks_config,
+    build_query_id_weighted_all_tasks_config,
 )
 from trace.core.builder import BuildError, build_dataset, resolve_build_paths
 from trace.core.rlvr_export import export_trace_dataset_to_rlvr, resolve_export_output_path
@@ -49,21 +49,21 @@ def main() -> int:
     )
     parser.add_argument(
         "--task-sampling-policy",
-        choices=("equal", "variant_aware"),
+        choices=("equal", "query_id_aware"),
         default="equal",
         help="Task-level sampling policy: equal per-task counts or counts scaled by active query-id support",
     )
     parser.add_argument(
-        "--variant-weight-alpha",
+        "--query-id-weight-alpha",
         type=float,
         default=0.0,
-        help="Variant-aware task weight alpha: weight = 1 + alpha * (active_variant_count - 1)",
+        help="Query-id-aware task weight alpha: weight = 1 + alpha * (active_query_id_count - 1)",
     )
     parser.add_argument(
-        "--variant-count-probe-samples",
+        "--query-id-count-probe-samples",
         type=int,
         default=8,
-        help="Deterministic per-task probes used to resolve active variant counts for variant-aware sampling",
+        help="Deterministic per-task probes used to resolve active query-id counts for query-id-aware sampling",
     )
     parser.add_argument("--instance-version", default="v0", help="TRACE instance ABI version")
     parser.add_argument("--image-format", default="png", help="TRACE image format")
@@ -131,12 +131,12 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if str(args.task_sampling_policy) == "variant_aware":
-        config = build_variant_weighted_all_tasks_config(
+    if str(args.task_sampling_policy) == "query_id_aware":
+        config = build_query_id_weighted_all_tasks_config(
             output_root=str(args.output_root),
             dataset_name=str(args.dataset_name),
             num_instances=int(args.num_instances),
-            variant_weight_alpha=float(args.variant_weight_alpha),
+            query_id_weight_alpha=float(args.query_id_weight_alpha),
             instance_version=str(args.instance_version),
             image_format=str(args.image_format),
             strict_repro=False,
@@ -144,7 +144,7 @@ def main() -> int:
             sampling_seed=int(args.sampling_seed),
             workers=int(args.workers),
             max_in_flight=int(args.max_in_flight),
-            variant_count_probe_samples=int(args.variant_count_probe_samples),
+            query_id_count_probe_samples=int(args.query_id_count_probe_samples),
         )
     else:
         config = build_equal_split_all_tasks_config(

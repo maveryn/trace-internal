@@ -855,7 +855,6 @@ class GamesPlatformerLevelTask:
                     "target_collectible_count": axes.target_collectible_count,
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "platform_count_probabilities": dict(axes.platform_count_probabilities),
                     "hazard_count_probabilities": dict(axes.hazard_count_probabilities),

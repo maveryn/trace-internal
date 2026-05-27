@@ -35,7 +35,7 @@ def _parse_cli() -> argparse.Namespace:
     )
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
     parser.add_argument(
-        "--count-per-variant",
+        "--count-per-query-id",
         type=int,
         default=100,
         help="Collected samples per query id (default: 100)",
@@ -57,7 +57,7 @@ def _parse_cli() -> argparse.Namespace:
         "--max-total-samples-per-task",
         type=int,
         default=20000,
-        help="Safety cap on generated instances per task while collecting per-variant samples",
+        help="Safety cap on generated instances per task while collecting per-query-id samples",
     )
     parser.add_argument(
         "--workers",
@@ -121,7 +121,7 @@ def main() -> int:
     if args.count is not None:
         args.count_per_query_id = int(args.count)
     if int(args.count_per_query_id) <= 0:
-        raise ValueError("--count-per-variant must be > 0")
+        raise ValueError("--count-per-query-id must be > 0")
     if int(args.max_attempts_per_instance) <= 0:
         raise ValueError("--max-attempts-per-instance must be > 0")
     if int(args.max_total_samples_per_task) <= 0:
@@ -184,14 +184,14 @@ def main() -> int:
             else _empty_distribution_report()
         )
 
-        failing_variants = [
+        failing_query_ids = [
             str(query_id)
             for query_id, variant_report in variant_reports.items()
             if not bool(variant_report["pass"])
         ]
         incomplete_query_ids = list(collected.get("incomplete_query_ids", []))
         no_samples_collected = not bool(combined_rows)
-        task_pass = bool((not failing_variants) and (not incomplete_query_ids) and (not no_samples_collected))
+        task_pass = bool((not failing_query_ids) and (not incomplete_query_ids) and (not no_samples_collected))
 
         task_report: Dict[str, Any] = dict(overall_report)
         task_report["task_id"] = str(task_id)
@@ -205,7 +205,7 @@ def main() -> int:
         task_report["generation_error_counts"] = dict(collected.get("generation_error_counts", {}))
         task_report["overall"] = overall_report
         task_report["per_query_id"] = variant_reports
-        task_report["failed_variants"] = list(failing_variants)
+        task_report["failed_query_ids"] = list(failing_query_ids)
         task_report["incomplete_query_ids"] = list(incomplete_query_ids)
         task_report["no_samples_collected"] = bool(no_samples_collected)
         task_report["pass"] = bool(task_pass)
@@ -237,7 +237,7 @@ def main() -> int:
         "failed_tasks": int(failed_count),
         "failed_task_ids": sorted(failed),
         "failed_query_id_map": {
-            str(task_report["task_id"]): list(task_report.get("failed_variants", []))
+            str(task_report["task_id"]): list(task_report.get("failed_query_ids", []))
             for task_report in report["tasks"]
             if not bool(task_report.get("pass"))
         },

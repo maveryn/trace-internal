@@ -621,8 +621,6 @@ class _PuzzlesLogicNonogramBaseTask:
                 "prompt_variant_active_key": str(prompt_meta["prompt_variant_active_key"]),
                 "prompt_variants": dict(prompt_meta["prompt_variants_for_trace"]),
                 "params": {
-                    "query_id": "default",
-                    "query_id_probabilities": {"default": 1.0},
                     "query_id": str(query_id),
                     "query_id_probabilities": {str(query_id): 1.0},
                     "scene_id": SCENE_ID,
@@ -663,8 +661,6 @@ class _PuzzlesLogicNonogramBaseTask:
                 "evidence_source": "item_bboxes_px",
             }, render_params.unit_size_jitter or {}),
             "execution_trace": {
-                "query_id": "default",
-                "query_id_probabilities": {"default": 1.0},
                 "query_id": str(query_id),
                 "query_id_probabilities": {str(query_id): 1.0},
                 "scene_id": SCENE_ID,

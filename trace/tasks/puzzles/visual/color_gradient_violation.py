@@ -1292,8 +1292,6 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         query_params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": QUERY_ID,
             "query_id_probabilities": {QUERY_ID: 1.0},
             "scene_id": SCENE_ID,
@@ -1545,8 +1543,6 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         query_params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": COMPLETION_QUERY_ID,
             "query_id_probabilities": {COMPLETION_QUERY_ID: 1.0},
             "scene_id": SCENE_ID,

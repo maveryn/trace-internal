@@ -11,8 +11,8 @@ from PIL import Image
 from trace.core.build_presets import (
     build_equal_split_all_tasks_config,
     resolve_equal_split_task_count,
-    resolve_task_active_variant_count,
-    resolve_variant_aware_task_weights,
+    resolve_task_active_query_id_count,
+    resolve_query_id_aware_task_weights,
     resolve_weighted_task_counts,
 )
 from trace.core.builder import BuildError, build_dataset
@@ -580,7 +580,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         resolve_equal_split_task_count(num_instances=(len(default_task_ids) * 2) + 1, task_count=len(default_task_ids))
 
 
-def test_variant_aware_task_weight_helpers() -> None:
+def test_query_id_aware_task_weight_helpers() -> None:
     _register_dummy_tasks()
 
     counts = resolve_weighted_task_counts(
@@ -595,13 +595,13 @@ def test_variant_aware_task_weight_helpers() -> None:
         "task_dummy__weights__weighted_a": 3,
     }
 
-    assert resolve_task_active_variant_count(
+    assert resolve_task_active_query_id_count(
         "task_dummy__weights__variant_support",
         probe_samples=1,
         max_attempts_per_instance=10,
     ) == 3
 
-    weights, variant_counts = resolve_variant_aware_task_weights(
+    weights, query_id_counts = resolve_query_id_aware_task_weights(
         task_ids=[
             "task_dummy__weights__weighted_a",
             "task_dummy__weights__variant_support",
@@ -610,7 +610,7 @@ def test_variant_aware_task_weight_helpers() -> None:
         probe_samples=1,
         max_attempts_per_instance=10,
     )
-    assert variant_counts == {
+    assert query_id_counts == {
         "task_dummy__weights__variant_support": 3,
         "task_dummy__weights__weighted_a": 1,
     }

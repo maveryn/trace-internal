@@ -1202,7 +1202,6 @@ class _Match3Task:
                     "style_variant": str(style_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "query_id_probabilities": dict(query_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),
                 },

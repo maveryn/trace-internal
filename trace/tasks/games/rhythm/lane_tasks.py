@@ -707,7 +707,6 @@ class GamesRhythmLanesTask:
                     "answer_lane_label": str(sampled_scene.answer),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),

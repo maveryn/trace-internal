@@ -199,8 +199,8 @@ prompt, contract, sampling, and artifact checks below are clean.
 ### A. Prompt And Contract
 
 1. Prompt text must use the current scene/task/query composition and must not
-   contain stale task-family wording or obsolete `task_variant` fields. The public task unit is
-   `task_id`; task-internal branches are `query_id` or query ids.
+   contain stale task-family wording. The public task unit is `task_id`;
+   task-internal branches are `query_id` / query ids.
 2. The final prompt must not repeat the same scene description, target
    instruction, or answer-format rule in multiple layers.
 3. Prompt, rendered image, answer schema, evidence schema, and verifier trace

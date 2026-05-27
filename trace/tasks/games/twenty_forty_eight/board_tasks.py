@@ -901,7 +901,6 @@ class Games2048BoardTask:
                     "goal_cell": str(axes.goal_cell_name),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "move_direction_probabilities": dict(axes.move_direction_probabilities),
                     "goal_cell_probabilities": dict(axes.goal_cell_probabilities),

@@ -814,7 +814,6 @@ class GamesSpaceShooterPlayfieldTask:
                     "blocker_count": len(sampled_scene.blockers),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "enemy_count_probabilities": dict(axes.enemy_count_probabilities),

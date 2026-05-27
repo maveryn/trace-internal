@@ -562,7 +562,6 @@ class GamesBackgammonBoardTask:
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
                 },

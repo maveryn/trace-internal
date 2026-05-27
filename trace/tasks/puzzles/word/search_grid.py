@@ -1120,8 +1120,6 @@ class _PuzzlesWordSearchBaseTask:
             for spec in dataset.option_specs
         ]
         query_params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": str(dataset.query_id),
             "query_id_probabilities": {str(dataset.query_id): 1.0},
             "scene_id": SCENE_ID,

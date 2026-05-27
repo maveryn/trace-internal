@@ -833,7 +833,6 @@ class GamesSnakesLaddersBoardTask:
                     "last_square": int(board_last_square(int(axes.board_side))),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "target_answer": int(axes.target_answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],

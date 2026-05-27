@@ -53,7 +53,6 @@ Rules:
 
 - `task_group` is implementation/config organization, not public taxonomy.
 - `query_id` is the task-internal branch identity.
-- Do not introduce or preserve user-facing `task_variant` wording.
 - A public task must keep one stable answer schema and one stable evidence
   schema across all query branches.
 - Prompt text must come from external prompt bundles, not task modules.

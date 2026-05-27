@@ -892,7 +892,6 @@ class _PhysicsOpticsRayTraceBaseTask:
                         "accent_color_name": str(axes.accent_color_name),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),

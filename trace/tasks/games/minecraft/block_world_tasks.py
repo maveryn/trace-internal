@@ -709,7 +709,6 @@ class GamesMinecraftBlockWorldTask:
                     "grid_depth_probabilities": dict(axes.grid_depth_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),
                     "query_id_probabilities": {str(sampled_scene.query_id): 1.0},
-                    "query_id_probabilities": {"default": 1.0},
                 },
             },
             "render_spec": {

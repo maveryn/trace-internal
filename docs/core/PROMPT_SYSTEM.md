@@ -41,7 +41,7 @@ Required fields:
 Trace `query_spec.prompt_variant` should include:
 1. bundle/key identifiers (`scene_key`, `task_key`, optional `query_key`),
 2. selected variant indices,
-3. variant counts,
+3. query-id counts,
 4. slot values for declared required slots,
 5. output-mode key/index when mode templates exist.
 
@@ -71,7 +71,7 @@ Train records should store:
 6. Avoid repeating broad nouns such as image, chart, table, diagram, board, question, or answer across adjacent prompt layers.
 7. Scene-layer wording should establish only the visible scaffold; it should not restate the task operation or tell the model how to answer.
 8. Task templates that wrap `{question_text}` should stay short, for example `{question_text}` or `Question: {question_text}`. Avoid wrappers that repeat the scene noun unless the task genuinely needs that extra context.
-9. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-variant 1 --include-all-prompts` so observed query branches are sampled and written to `samples/prompt_concision_audit_all.md`.
+9. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-query-id 1 --include-all-prompts` so observed query branches are sampled and written to `samples/prompt_concision_audit_all.md`.
 
 ## 5) Active bundles/tasks
 Active prompt bundle usage is derived from `configs/domains/**/*.yaml`
@@ -93,5 +93,5 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_prompt_system
 
 For prompt wording reviews, use:
 ```bash
-PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-variant 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
+PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-query-id 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
 ```

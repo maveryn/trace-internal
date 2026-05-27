@@ -46,8 +46,8 @@ For new or distribution-changing task logic:
    - by default review scripts use all visible CPUs via `--workers`; override it explicitly when you need a smaller review footprint
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
-   - per-variant distribution review: 100 samples per query id when variants exist (`distribution_review.json`)
-     - per-variant collection uses the same task sampler as dataset generation, with only explicit public variant/query overrides when needed for coverage
+   - per-query-id distribution review: 100 samples per query id when variants exist (`distribution_review.json`)
+     - per-query-id collection uses the same task sampler as dataset generation, with only explicit public variant/query overrides when needed for coverage
    - manual inspection workbook: 100 random samples per public task in `plans/task-reviews/<domain>/<scene_id>/<task_id>/<task_id>.xlsx`, grouped into one sheet per query id or query id when variants exist
      - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration workbooks should use the default 100 total task samples
    - review artifacts live under `plans/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows

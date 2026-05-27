@@ -820,7 +820,6 @@ class GamesMinesweeperGridTask:
                     "board_size": int(sampled_scene.size),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "board_size_probabilities": dict(axes.board_size_probabilities),
                     "target_answer": sampled_scene.target_answer,

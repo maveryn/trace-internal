@@ -10,7 +10,7 @@ TRACE public metadata uses:
 3. `task_id` is the sampling unit.
 4. `query_id` is optional diagnostic metadata for the query id inside one
    task. Use **query id** as the human-facing term and `query_id` as the
-   canonical field. Do not use `task_variant` for this concept.
+   canonical field.
 
 `task_group` remains an implementation/config grouping field for module layout,
 prompt bundles, and domain config defaults. It is not a public taxonomy level.

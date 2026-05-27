@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-05-26
+Date: 2026-05-27
 
 ## Active Inventory
 The generated source of truth for active public domains, scenes, and tasks is
@@ -17,8 +17,8 @@ Current generated summary:
 
 | Metric | Value |
 | --- | ---: |
-| Default tasks | 487 |
-| Registered tasks | 487 |
+| Default tasks | 480 |
+| Registered tasks | 480 |
 | Public domains | 10 |
 | Public scenes | 192 |
 | Missing taxonomy mappings | 0 |
@@ -28,7 +28,7 @@ Current generated domain counts:
 
 | Domain | Scenes | Tasks |
 | --- | ---: | ---: |
-| charts | 33 | 100 |
+| charts | 33 | 93 |
 | games | 36 | 80 |
 | geometry | 23 | 75 |
 | graph | 8 | 39 |

@@ -885,8 +885,6 @@ class _PuzzlesLogicMatchstickBaseTask:
         option_count: int,
     ) -> Dict[str, Any]:
         params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": str(query_id),
             "query_id_probabilities": {str(query_id): 1.0},
             "scene_id": SCENE_ID,

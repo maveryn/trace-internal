@@ -864,7 +864,6 @@ class GamesBingoCompletedLineCountTask:
                     "line_sum_distractor_mark_prob": float(line_sum_distractor_mark_prob),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "line_axis_probabilities": dict(axes.line_axis_probabilities),
                     "extremum_probabilities": dict(axes.extremum_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),

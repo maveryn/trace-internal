@@ -863,7 +863,6 @@ class _CurvilinearCompositeBaseTask:
             "scene_variant": str(problem.scene_variant),
             "query_id": str(problem.query_id),
             "query_id_probabilities": dict(problem.query_probabilities),
-            "variant_probabilities": {"default": 1.0},
             "target_support_probabilities": dict(problem.support_probabilities),
             **dict(problem.params),
         }

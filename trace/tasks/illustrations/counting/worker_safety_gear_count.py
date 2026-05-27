@@ -344,7 +344,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
                 "entities": construction_scene_entities(scene),
-                "relations": {"query_id": str(sample.query_id), "query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
+                "relations": {"query_id": str(sample.query_id), "match_phrase": str(sample.match_phrase)},
             },
             "query_spec": {
                 "task_id": self.task_id,

@@ -1499,7 +1499,6 @@ class GamesTetrisBoardTask:
                     "option_count": int(axes.option_count),
                     "target_label": axes.target_label,
                     "query_id_probabilities": dict(axes.query_probabilities),
-                    "query_id_probabilities": {"default": 1.0},
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),

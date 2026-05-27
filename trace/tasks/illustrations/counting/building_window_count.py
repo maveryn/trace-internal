@@ -290,7 +290,7 @@ class IllustrationsCountingBuildingWindowCountTask:
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
                 "entities": environment_scene_entities(scene),
-                "relations": {"query_id": "default", "query_id": QUERY_ID, "window_mode": str(query.window_mode)},
+                "relations": {"query_id": QUERY_ID, "window_mode": str(query.window_mode)},
             },
             "query_spec": {
                 "task_id": self.task_id,

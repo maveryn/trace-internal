@@ -1738,9 +1738,8 @@ class GeometryGraphingCountTask:
         query_params = {
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
+            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),
         }
@@ -1755,7 +1754,6 @@ class GeometryGraphingCountTask:
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
             "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-            "query_id_probabilities": dict(query.query_id_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
             "target_count": int(query.target_count),
             "target_count_probabilities": dict(query.target_count_probabilities),

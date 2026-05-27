@@ -86,7 +86,7 @@ _TABLE_PROMPT_DEFAULTS: Dict[str, Any] = {
 }
 
 
-def _rewrite_variant_probabilities(payload: Dict[str, Any], probabilities: Mapping[str, float]) -> None:
+def _rewrite_query_id_probabilities(payload: Dict[str, Any], probabilities: Mapping[str, float]) -> None:
     for section_key in ("execution_trace",):
         section = payload.get(section_key)
         if isinstance(section, dict):
@@ -127,7 +127,7 @@ class PagesCountingFilterCountTask:
             max_attempts=int(max_attempts),
         )
         output.query_id = str(query_id)
-        _rewrite_variant_probabilities(output.trace_payload, probabilities)
+        _rewrite_query_id_probabilities(output.trace_payload, probabilities)
         return rewrite_pages_query_output(
             output,
             query_id=str(query_id),

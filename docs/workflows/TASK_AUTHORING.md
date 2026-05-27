@@ -13,13 +13,12 @@ Use this as the implementation checklist for new or modified tasks.
    task-local operators or parameters inside the same family.
 5. Define task contracts:
    - scene,
-   - query ids / query ids or internal task parameters,
+   - query ids or internal task parameters,
    - answer type,
    - evidence type(s),
    - constraints/rejection policy.
    Use **query id** as the human-facing name for task-internal branches and
-   `query_id` as the canonical field. Do not introduce new `task_variant`
-   surfaces; `query_id` is an internal replay selector only.
+   `query_id` as the canonical field for internal replay selectors.
 6. Check shared helpers first:
    - `trace/core`
    - `trace/tasks/shared`
@@ -103,14 +102,14 @@ Use this as the implementation checklist for new or modified tasks.
 17. If that feasibility probe is reusable across sibling variants (for example polygon-side variants sharing one target-conditioned sampler), implement it in a domain-shared helper instead of task-local resampling code.
 18. If one variant still collapses to a tiny feasible answer set under a generic sampler, switch that variant to a constructive sampler that directly realizes broader valid targets while preserving the task contract.
 19. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
-20. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
+20. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase query-id count.
 21. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 22. Keep task/query wording off the answer-only-response pattern (`Answer with ...`, `Respond with ...`, `Return only ...`) when output-mode templates already specify the structured answer format.
 23. Keep prompt layers concise and non-overlapping: scene templates should describe the visual scaffold, task templates should add only a needed operation hint, query templates or `question_text` should ask the actual question, and output-mode templates should only state field hints/examples.
 24. Scene templates should use ordinary visual framing such as `The image shows ...`, `The chart shows ...`, `The table shows ...`, `The diagram shows ...`, or `The board shows ...`.
 25. Avoid telegraphic or imperative scene stems such as `Shown is`, `Displayed is`, `Use this`, `Read this`, `Look at`, `The image contains`, or `The chart is`.
 26. If a query template already contains the full question, use empty task templates with `allow_empty_task_templates: true` rather than adding a redundant task-layer sentence.
-27. Before and after broad prompt edits, run `PYTHONPATH=. python scripts/audit_prompt_concision.py --tasks <task_ids>` to inspect rendered prompt length and repeated scaffolding terms. For all-task coverage, add `--variant-coverage --samples-per-variant 1 --include-all-prompts --output samples/prompt_concision_audit_all.md`.
+27. Before and after broad prompt edits, run `PYTHONPATH=. python scripts/audit_prompt_concision.py --tasks <task_ids>` to inspect rendered prompt length and repeated scaffolding terms. For all-task coverage, add `--variant-coverage --samples-per-query-id 1 --include-all-prompts --output samples/prompt_concision_audit_all.md`.
 27. When a task prompt refers to a specific color, pass the color to templates as a combined label `<color_name> [#RRGGBB]` so color-name ambiguity is reduced consistently across the repo.
 28. For multi-object counting tasks, label whole objects for readability but ground evidence with whole-object `bbox_set` or object-center `point_set` evidence.
 29. For mixed-shape classification/counting tasks, enforce visible separation between visually adjacent classes (for example circles vs ellipses) in the sampler itself instead of leaving borderline cases to human interpretation.

@@ -316,7 +316,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
-                "scene template variant count does not match required count",
+                "scene template query-id count does not match required count",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 scene_key=scene_key,
@@ -328,7 +328,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
-                "task template variant count does not match required count",
+                "task template query-id count does not match required count",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 task_key=task_key,
@@ -340,7 +340,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_BUNDLE_INVALID,
-                "query template variant count does not match required count",
+                "query template query-id count does not match required count",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 query_key=query_key,
@@ -370,7 +370,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_METADATA_MISSING,
-                "missing scene variant count in prompt metadata",
+                "missing scene query-id count in prompt metadata",
                 instance_id=iid,
                 field_path=f"query_spec.prompt_variant.variant_count_by_key.{scene_count_key}",
             )
@@ -379,7 +379,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
         errors.append(
             _err(
                 error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                "scene variant count mismatch between metadata and bundle",
+                "scene query-id count mismatch between metadata and bundle",
                 instance_id=iid,
                 prompt_bundle_id=bundle_id,
                 scene_key=scene_key,
@@ -459,7 +459,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 errors.append(
                     _err(
                         error_codes.PROMPT_METADATA_MISSING,
-                        "missing answer_or_evidence variant count in prompt metadata",
+                        "missing answer_or_evidence query-id count in prompt metadata",
                         instance_id=iid,
                         field_path=f"query_spec.prompt_variant.variant_count_by_key.{mode_count_key}",
                     )
@@ -468,7 +468,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 errors.append(
                     _err(
                         error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
-                        "answer_or_evidence variant count mismatch between metadata and bundle",
+                        "answer_or_evidence query-id count mismatch between metadata and bundle",
                         instance_id=iid,
                         prompt_bundle_id=bundle_id,
                         answer_or_evidence_key=mode_key,

@@ -251,7 +251,7 @@ class IllustrationsCountingTypeCountTask:
                 "domain": self.domain,
                 "scene_id": SCENE_ID,
                 "entities": scene_entities(scene),
-                "relations": {"query_id": "default", "query_id": QUERY_ID, "object_type": str(sample.object_type)},
+                "relations": {"query_id": QUERY_ID, "object_type": str(sample.object_type)},
             },
             "query_spec": {
                 "task_id": self.task_id,

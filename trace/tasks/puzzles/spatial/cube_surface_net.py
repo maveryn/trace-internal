@@ -941,7 +941,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 },
             },
             "query_spec": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -974,7 +973,6 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 "evidence_source": "face_bboxes_px+option_panel_bboxes_px",
             },
             "execution_trace": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
@@ -1096,7 +1094,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 },
             },
             "query_spec": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -1132,7 +1129,6 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 "evidence_source": "start_cube_bbox_px+path_panel_bbox_px+option_panel_bboxes_px",
             },
             "execution_trace": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),

@@ -390,7 +390,6 @@ def _build_dataset(
     trace: Dict[str, Any] = {
         "query_id": str(query_id),
         "query_id_probabilities": dict(query_probabilities),
-        "query_id_probabilities": dict(query_probabilities),
         "target_series_label": str(target_series.label),
     }
 
@@ -933,7 +932,6 @@ class ChartsScatterSeriesReadoutTask:
                     "query_id": str(query_id),
                     "scene_variant": str(dataset.scene_variant),
                     "query_id_probabilities": dict(query_probabilities),
-                    "query_id_probabilities": dict(query_probabilities),
                     "scene_variant_probabilities": {"marker_scatter": 1.0},
                     "series_count": len(dataset.series),
                     "x_count": len(dataset.x_labels),
@@ -977,7 +975,6 @@ class ChartsScatterSeriesReadoutTask:
                 "target_series_label": str(dataset.query.target_series_label),
                 "target_x_label": "" if target_point is None else str(target_point.x_label),
                 "target_y_value": None if target_point is None else int(target_point.y_value),
-                "query_id_probabilities": dict(query_probabilities),
                 "query_id_probabilities": dict(query_probabilities),
                 **dict(dataset.query.trace),
             },

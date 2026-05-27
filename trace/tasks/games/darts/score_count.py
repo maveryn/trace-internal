@@ -787,7 +787,6 @@ class GamesDartsScoreCountTask:
                     "style_variant": str(axes.style_variant),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "dart_count": int(axes.dart_count),
                     "dart_count_probabilities": dict(axes.dart_count_probabilities),

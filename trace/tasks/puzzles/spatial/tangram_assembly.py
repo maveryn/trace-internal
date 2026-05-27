@@ -246,7 +246,6 @@ class _TangramAssemblyBaseTask:
                 "scene_kind": "puzzle_spatial_tangram_assembly",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_id": "default",
                     "scene_id": TANGRAM_SCENE_ID,
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
@@ -256,7 +255,6 @@ class _TangramAssemblyBaseTask:
                 },
             },
             "query_spec": {
-                "query_id": "default",
                 "scene_id": TANGRAM_SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -264,7 +262,6 @@ class _TangramAssemblyBaseTask:
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_id": "default",
                     "scene_id": TANGRAM_SCENE_ID,
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
@@ -309,7 +306,6 @@ class _TangramAssemblyBaseTask:
                 "evidence_source": "piece_bboxes_px_and_option_panel_bboxes_px",
             },
             "execution_trace": {
-                "query_id": "default",
                 "scene_id": TANGRAM_SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),

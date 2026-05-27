@@ -1458,7 +1458,6 @@ class _CompositeMeasurementBaseTask:
                     "scene_id": scene_id,
                     "query_id": str(rendered.query_id),
                     "query_id_probabilities": dict(query_probs),
-                    "variant_probabilities": {"default": 1.0},
                     "case_answer": int(rendered.answer),
                 },
             },

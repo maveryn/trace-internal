@@ -671,7 +671,6 @@ class GamesBrickBreakerPlayfieldTask:
                     "lane_count": int(sampled_scene.lane_count),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "brick_rows_probabilities": dict(axes.brick_rows_probabilities),
                     "brick_cols_probabilities": dict(axes.brick_cols_probabilities),

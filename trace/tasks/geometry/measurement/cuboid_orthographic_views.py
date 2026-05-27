@@ -634,7 +634,6 @@ class _CuboidOrthographicViewsBaseTask:
             "scene_variant": "three_view_cuboid_projection",
             "query_id": str(problem.query_id),
             "query_id_probabilities": dict(problem.query_probabilities),
-            "variant_probabilities": {"default": 1.0},
             "target_support_probabilities": dict(problem.support_probabilities),
             **dict(rendered.witness),
         }

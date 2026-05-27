@@ -2003,8 +2003,6 @@ def _common_trace(
     execution_trace: Mapping[str, Any],
 ) -> Dict[str, Any]:
     query_params = {
-        "query_id": "default",
-        "query_id_probabilities": {"default": 1.0},
         "query_id": str(query_id),
         "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
         "scene_id": str(scene_id),

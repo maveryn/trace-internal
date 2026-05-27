@@ -11,16 +11,15 @@ from trace.core.seed import hash64
 from trace.tasks.charts.pictogram.waffle_chart import (
     SUPPORTED_GLYPHS,
     SUPPORTED_SCENE_VARIANTS,
-    ChartsPictogramCategoryTotalValueTask,
-    ChartsPictogramGroupDifferenceValueTask,
+    ChartsPictogramGroupArithmeticValueTask,
     ChartsPictogramThresholdCountTask,
 )
 from trace.tasks.registry import list_default_task_ids
 
 
 TASK_CASES = (
-    (ChartsPictogramCategoryTotalValueTask, "category_total_value"),
-    (ChartsPictogramGroupDifferenceValueTask, "group_difference_value"),
+    (ChartsPictogramGroupArithmeticValueTask, "category_total_value"),
+    (ChartsPictogramGroupArithmeticValueTask, "group_difference_value"),
     (ChartsPictogramThresholdCountTask, "threshold_count"),
 )
 
@@ -51,7 +50,7 @@ def _expected_answer(execution: dict, query_params: dict, query_id: str) -> int:
 @pytest.mark.parametrize(("task_cls", "query_id"), TASK_CASES)
 def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) -> None:
     task = task_cls()
-    out = task.generate(91200 + len(query_id), params={}, max_attempts=60)
+    out = task.generate(91200 + len(query_id), params={"query_id": query_id}, max_attempts=60)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
@@ -60,7 +59,6 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
 
     assert task_cls.task_id in list_default_task_ids()
     assert out.scene_id == "pictogram"
-    assert out.query_id == "default"
     assert out.query_id == query_id
     assert str(execution["query_id"]) == query_id
     assert str(query_params["query_id"]) == query_id
@@ -108,8 +106,8 @@ def test_charts_pictogram_tasks_match_contract(task_cls: type, query_id: str) ->
 
 
 def test_charts_pictogram_prompt_examples_match_contract() -> None:
-    for task_cls, _query_id in TASK_CASES:
-        out = task_cls().generate(91300 + len(task_cls.task_id), params={}, max_attempts=60)
+    for task_cls, query_id in TASK_CASES:
+        out = task_cls().generate(91300 + len(task_cls.task_id) + len(query_id), params={"query_id": query_id}, max_attempts=60)
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_evidence["answer"], int)
@@ -134,9 +132,9 @@ def test_charts_pictogram_balanced_sampling_covers_scene_and_glyph_axes() -> Non
 
 
 def test_charts_pictogram_is_deterministic() -> None:
-    params = {"scene_variant": "pictogram_rows", "glyph_name": "star"}
-    out_a = ChartsPictogramGroupDifferenceValueTask().generate(91500, params=params, max_attempts=60)
-    out_b = ChartsPictogramGroupDifferenceValueTask().generate(91500, params=params, max_attempts=60)
+    params = {"query_id": "group_difference_value", "scene_variant": "pictogram_rows", "glyph_name": "star"}
+    out_a = ChartsPictogramGroupArithmeticValueTask().generate(91500, params=params, max_attempts=60)
+    out_b = ChartsPictogramGroupArithmeticValueTask().generate(91500, params=params, max_attempts=60)
 
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()

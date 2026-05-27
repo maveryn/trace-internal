@@ -1475,7 +1475,6 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                         "correct_option_letter": str(axes.correct_option_letter),
                         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                         "query_id_probabilities": dict(axes.query_id_probabilities),
-                        "query_id_probabilities": dict(axes.query_id_probabilities),
                         "component_axis_probabilities": dict(axes.component_axis_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": answer_value,

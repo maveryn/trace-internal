@@ -949,7 +949,6 @@ class ChartsRadialProgressChartTask:
         query_params = {
             "query_id": str(query_id),
             "query_id_probabilities": dict(dataset.query_probabilities),
-            "query_id_probabilities": dict(dataset.query_probabilities),
             "scene_variant": str(scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "item_count": int(len(dataset.items)),

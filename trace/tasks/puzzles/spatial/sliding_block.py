@@ -1503,7 +1503,6 @@ class _SlidingBlockBaseTask:
                 "scene_kind": "puzzle_spatial_sliding_block",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
-                    "query_id": "default",
                     "scene_id": SCENE_ID,
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
@@ -1515,7 +1514,6 @@ class _SlidingBlockBaseTask:
                 },
             },
             "query_spec": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
@@ -1523,7 +1521,6 @@ class _SlidingBlockBaseTask:
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
-                    "query_id": "default",
                     "scene_id": SCENE_ID,
                     "query_id": str(query_id),
                     "scene_variant": str(scene_variant),
@@ -1572,7 +1569,6 @@ class _SlidingBlockBaseTask:
                 "evidence_source": "block_bboxes_px+option_panel_bboxes_px" if str(query_id) == "move_result_label" else "block_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
-                "query_id": "default",
                 "scene_id": SCENE_ID,
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),

@@ -77,7 +77,7 @@ git diff --check -- docs skills scripts tests trace configs prompts plans assets
 If a broad prompt edit lands, also run:
 
 ```bash
-PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-variant 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
+PYTHONPATH=. python scripts/audit_prompt_concision.py --variant-coverage --samples-per-query-id 1 --include-all-prompts --output samples/prompt_concision_audit_all.md
 ```
 
 Remove local cache artifacts such as `__pycache__/`, `.pytest_cache/`, and

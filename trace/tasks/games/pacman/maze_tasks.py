@@ -920,7 +920,6 @@ class GamesPacmanMazeTask:
                     "ghost_count": len(sampled_scene.ghosts),
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
-                    "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),
                     "col_count_probabilities": dict(axes.col_count_probabilities),

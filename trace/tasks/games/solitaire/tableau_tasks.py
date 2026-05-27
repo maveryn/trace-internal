@@ -1284,8 +1284,6 @@ class _SolitaireTableauTask:
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "query_id": str(sample.query_id),
                     "query_id_probabilities": {str(sample.query_id): 1.0},
-                    "query_id": "default",
-                    "query_id_probabilities": {"default": 1.0},
                     "style_variant": str(style_variant),
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     **dict(sample.metadata),

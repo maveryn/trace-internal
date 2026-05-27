@@ -188,11 +188,11 @@ def _query_support_selection_index(
         and not bool(query_id_overridden)
         and is_uniform_probability_map(query_id_probabilities)
     ):
-        active_variant_count = sum(
+        active_query_id_count = sum(
             1 for value in query_id_probabilities.values() if float(value) > 0.0
         )
-        if int(active_variant_count) > 1:
-            divisor *= int(active_variant_count)
+        if int(active_query_id_count) > 1:
+            divisor *= int(active_query_id_count)
 
     balanced_degree_modes = bool(
         params.get(

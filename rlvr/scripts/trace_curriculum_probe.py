@@ -573,7 +573,7 @@ def _build_per_rollout_row(
         "domain": str(item.get("domain", "")),
         "task_group": str(item.get("task_group", "")),
         "task": str(item.get("task", "")),
-        "query_variant": None,
+        "query_id": None,
         "complexity_score": _as_float(item.get("complexity_score")),
         "difficulty_bin": None if item.get("difficulty_bin") is None else int(item.get("difficulty_bin")),
         "bucket_id_str": None if item.get("bucket_id_str") is None else str(item.get("bucket_id_str")),
@@ -588,9 +588,9 @@ def _build_per_rollout_row(
     }
     metadata = _parse_json_mapping_or_none(item.get("metadata"))
     if metadata is not None:
-        query_variant = metadata.get("query_variant") or metadata.get("query_variant") or metadata.get("variant")
-        if query_variant is not None:
-            row["query_variant"] = str(query_variant)
+        query_id = metadata.get("query_id")
+        if query_id is not None:
+            row["query_id"] = str(query_id)
 
     for prefix, score in (("strict", strict_score), ("fallback", fallback_score)):
         row[f"{prefix}_task_reward"] = float(score.get("task_reward_raw", 0.0))

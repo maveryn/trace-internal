@@ -1482,8 +1482,6 @@ class PuzzlesTopologyPipeFlowRepairTileLabelTask:
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         query_params = {
-            "query_id": "default",
-            "query_id_probabilities": {"default": 1.0},
             "query_id": QUERY_ID,
             "query_id_probabilities": {QUERY_ID: 1.0},
             "scene_id": SCENE_ID,

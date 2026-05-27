@@ -38,7 +38,7 @@ def rewrite_time_artifact_query_output(
     scene_id: str,
     query_probabilities: Mapping[str, float] | None = None,
 ) -> TaskOutput:
-    """Rewrite generated output so the public task has no semantic query id."""
+    """Rewrite generated output to the selected public query id."""
 
     query_id_text = str(query_id)
     scene_id_text = str(scene_id)
@@ -52,7 +52,6 @@ def rewrite_time_artifact_query_output(
         query_id=query_id_text,
         include_render_spec=True,
         query_id_probabilities=dict(query_probability_map),
-        variant_probabilities={"default": 1.0},
         preserve_internal_query_id_as="source_query_id",
     )
 

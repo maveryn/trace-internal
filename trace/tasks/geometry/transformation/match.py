@@ -1110,9 +1110,8 @@ class GeometryTransformationMatchTask:
         query_params: Dict[str, Any] = {
             "scene_variant": str(query.scene_variant),
             "query_id": str(query.query_id),
-            "variant_probabilities": dict(query.query_id_probabilities),
-            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "query_id_probabilities": dict(query.query_id_probabilities),
+            "scene_variant_probabilities": dict(query.scene_variant_probabilities),
             "winner_label_probabilities": dict(query.winner_label_probabilities),
             "candidate_label_pool": list(query.candidate_label_pool),
         }
@@ -1128,7 +1127,6 @@ class GeometryTransformationMatchTask:
                 "entities": [dict(entity) for entity in rendered_scene.scene_entities],
                 "relations": {
                     "scene_variant": str(query.scene_variant),
-                    "query_id": str(query.query_id),
                     "winner_label": str(rendered_scene.winner_label),
                     "cue_kind": str(rendered_scene.cue_kind),
                     "query_id": str(query.query_id),
@@ -1166,7 +1164,6 @@ class GeometryTransformationMatchTask:
                 "scene_variant": str(query.scene_variant),
                 "query_id": str(query.query_id),
                 "scene_variant_probabilities": dict(query.scene_variant_probabilities),
-                "query_id_probabilities": dict(query.query_id_probabilities),
                 "query_id_probabilities": dict(query.query_id_probabilities),
                 "winner_label": str(rendered_scene.winner_label),
                 "winner_label_probabilities": dict(query.winner_label_probabilities),

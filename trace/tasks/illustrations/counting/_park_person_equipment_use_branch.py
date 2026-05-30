@@ -265,10 +265,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "person_scan": round(float(person_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "equipment_load": round(float(equipment_load), 6),
-            "equipment_type": str(sample.equipment_type),
-            "target_count": int(sample.target_count),
-            "equipment_count": int(sample.equipment_count),
-            "person_count": int(sample.person_count),
         },
     )
 

@@ -190,9 +190,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "zone_filter_load": round(float(zone_filter_load), 6),
-            "zone": str(sample.zone),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
         },
     )
 

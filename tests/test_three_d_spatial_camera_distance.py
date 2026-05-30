@@ -46,7 +46,6 @@ def test_camera_distance_extremum_answer_and_evidence(query_id: str) -> None:
     expected = sorted_specs[0] if query_id == "closest_to_camera" else sorted_specs[-1]
     expected_label = str(expected["point_label"])
 
-    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
@@ -77,7 +76,7 @@ def test_camera_distance_extremum_answer_and_evidence(query_id: str) -> None:
     assert all(0.86 <= float(spec["dimension_scale"]) <= 1.16 for spec in point_specs)
     assert all(0.96 <= float(spec["dimension_scale"]) <= 1.20 for spec in context_specs)
     assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
-    assert any(max(spec["dimensions_xyz"][:2]) > 1.35 for spec in context_specs)
+    assert any(max(spec["dimensions_xyz"]) > 1.35 for spec in context_specs)
     assert output.evidence_gt.type == "bbox_set"
     assert output.evidence_gt.value == [
         output.trace_payload["render_map"]["point_bboxes_px"][expected_label]

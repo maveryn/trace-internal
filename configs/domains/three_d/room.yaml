@@ -9,7 +9,6 @@ generation:
         wall_shelf_wall_mounted_count: 1.0
         wall_fan_wall_mounted_count: 1.0
         air_conditioner_wall_mounted_count: 1.0
-        hanging_plant_wall_mounted_count: 1.0
         hanging_coat_wall_mounted_count: 1.0
       scene_variant_weights:
         living_room: 1.0

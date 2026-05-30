@@ -104,11 +104,12 @@ OBJECT_TEMPLATES: Dict[str, ObjectTemplate] = {
     "apple": ObjectTemplate("apple", "object", 0.85, {"fruit": 1}),
     "egg": ObjectTemplate("egg", "object", 1.15, {}),
     "soccer_ball": ObjectTemplate("soccer_ball", "object", 1.00, {}),
+    "rugby_ball": ObjectTemplate("rugby_ball", "object", 1.75, {}),
     "spoon": ObjectTemplate("spoon", "object", 2.20, {}),
-    "plate": ObjectTemplate("plate", "object", 1.45, {}),
+    "plate": ObjectTemplate("plate", "object", 1.20, {}),
     "book": ObjectTemplate("book", "object", 1.45, {}),
     "camera": ObjectTemplate("camera", "object", 1.25, {}),
-    "remote": ObjectTemplate("remote", "object", 1.65, {}),
+    "remote": ObjectTemplate("remote", "object", 0.48, {}),
     "pencil": ObjectTemplate("pencil", "object", 2.70, {}),
     "ruler": ObjectTemplate("ruler", "object", 2.80, {}),
     "clock": ObjectTemplate("clock", "object", 1.00, {}),
@@ -149,6 +150,7 @@ OBJECT_DISPLAY_NAMES: Dict[str, str] = {
     "road_sign": "road sign",
     "trash_bin": "trash bin",
     "soccer_ball": "soccer ball",
+    "rugby_ball": "rugby ball",
     "quadruped": "animal",
 }
 
@@ -806,19 +808,56 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _ellipse(draw, highlight, fill=(255, 251, 231), outline=None, width=1, scale=scale)
         boxes.append(egg)
     elif object_type == "soccer_ball":
-        ball = _rel_bbox(box, 0.16, 0.16, 0.84, 0.84)
+        ball = _rel_bbox(box, 0.12, 0.12, 0.88, 0.88)
         _ellipse(draw, ball, fill=(246, 247, 245), outline=outline, width=width, scale=scale)
         cx = (ball[0] + ball[2]) * 0.5
         cy = (ball[1] + ball[3]) * 0.5
         radius = (ball[2] - ball[0]) * 0.5
-        _poly(draw, _regular_polygon_points(cx, cy, radius * 0.20, 5), fill=(42, 46, 54), outline=None, width=1, scale=scale)
-        for angle in range(-90, 270, 72):
+        panel = (36, 40, 48)
+        seam = (80, 87, 96)
+        center_poly = _regular_polygon_points(cx, cy, radius * 0.21, 5, start_degrees=-90.0)
+        outer_centers: list[tuple[float, float]] = []
+        for angle in (-90, -18, 54, 126, 198):
             a = math.radians(float(angle))
-            px = cx + radius * 0.48 * math.cos(a)
-            py = cy + radius * 0.48 * math.sin(a)
-            _poly(draw, _regular_polygon_points(px, py, radius * 0.13, 5, start_degrees=float(angle)), fill=(42, 46, 54), outline=None, width=1, scale=scale)
-            _line(draw, [(cx, cy), (px, py)], fill=SOFT_OUTLINE_RGB, width=max(1, width - 1), scale=scale)
+            outer_centers.append((cx + radius * 0.56 * math.cos(a), cy + radius * 0.56 * math.sin(a)))
+        for index, point in enumerate(center_poly):
+            _line(draw, [point, outer_centers[index]], fill=seam, width=max(1, width - 1), scale=scale)
+        for angle, center in zip((-90, -18, 54, 126, 198), outer_centers):
+            ex = cx + radius * 0.86 * math.cos(math.radians(float(angle)))
+            ey = cy + radius * 0.86 * math.sin(math.radians(float(angle)))
+            _line(draw, [center, (ex, ey)], fill=seam, width=max(1, width - 1), scale=scale)
+        _poly(draw, center_poly, fill=panel, outline=None, width=1, scale=scale)
+        for angle, center in zip((-90, -18, 54, 126, 198), outer_centers):
+            _poly(draw, _regular_polygon_points(center[0], center[1], radius * 0.13, 5, start_degrees=float(angle)), fill=panel, outline=None, width=1, scale=scale)
         boxes.append(ball)
+    elif object_type == "rugby_ball":
+        ball_points: list[tuple[float, float]] = []
+        cx = box[0] + 0.50 * (box[2] - box[0])
+        cy = box[1] + 0.50 * (box[3] - box[1])
+        rx = 0.43 * (box[2] - box[0])
+        ry = 0.31 * (box[3] - box[1])
+        for index in range(13):
+            theta = math.pi * float(index) / 12.0
+            ball_points.append((cx + rx * math.cos(theta), cy - ry * math.sin(theta)))
+        for index in range(13):
+            theta = math.pi * float(12 - index) / 12.0
+            ball_points.append((cx + rx * math.cos(theta), cy + ry * math.sin(theta)))
+        _poly(draw, ball_points, fill=(151, 87, 50), outline=outline, width=width, scale=scale)
+        seam = _rel_bbox(box, 0.32, 0.43, 0.68, 0.57)
+        _line(draw, [(seam[0], cy), (seam[2], cy)], fill=(246, 238, 218), width=max(2, width), scale=scale)
+        for tick_x in (0.39, 0.45, 0.51, 0.57):
+            _line(
+                draw,
+                [
+                    (box[0] + tick_x * (box[2] - box[0]), cy - 0.055 * (box[3] - box[1])),
+                    (box[0] + tick_x * (box[2] - box[0]), cy + 0.055 * (box[3] - box[1])),
+                ],
+                fill=(246, 238, 218),
+                width=max(1, width - 1),
+                scale=scale,
+            )
+        _arc(draw, _rel_bbox(box, 0.18, 0.24, 0.82, 0.76), start=202, end=338, fill=(105, 61, 39), width=max(1, width - 1), scale=scale)
+        boxes.append(_rel_bbox(box, 0.07, 0.19, 0.93, 0.81))
     elif object_type == "spoon":
         bowl = _rel_bbox(box, 0.08, 0.25, 0.34, 0.75)
         handle = _rel_bbox(box, 0.30, 0.44, 0.92, 0.56)
@@ -826,8 +865,8 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _rect(draw, handle, fill=(201, 194, 181), outline=outline, width=max(1, width - 1), scale=scale, radius=5)
         boxes.extend([bowl, handle])
     elif object_type == "plate":
-        rim = _rel_bbox(box, 0.08, 0.22, 0.92, 0.78)
-        well = _rel_bbox(box, 0.22, 0.34, 0.78, 0.66)
+        rim = _rel_bbox(box, 0.08, 0.14, 0.92, 0.86)
+        well = _rel_bbox(box, 0.22, 0.28, 0.78, 0.72)
         _ellipse(draw, rim, fill=(238, 238, 230), outline=outline, width=width, scale=scale)
         _ellipse(draw, well, fill=(220, 228, 228), outline=(178, 187, 188) if outline else None, width=max(1, width - 1), scale=scale)
         boxes.append(rim)
@@ -857,15 +896,15 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         _rect(draw, flash, fill=(248, 235, 164), outline=outline, width=1, scale=scale, radius=2)
         boxes.extend([body, top, lens, flash])
     elif object_type == "remote":
-        body = _rel_bbox(box, 0.16, 0.16, 0.84, 0.84)
+        body = _rel_bbox(box, 0.10, 0.06, 0.90, 0.94)
         _rect(draw, body, fill=(65, 72, 82), outline=outline, width=width, scale=scale, radius=7)
-        for row in range(2):
-            for col in range(3):
-                cx0 = 0.30 + 0.16 * col
-                cy0 = 0.32 + 0.18 * row
-                button = _rel_bbox(box, cx0, cy0, cx0 + 0.08, cy0 + 0.08)
+        for row in range(4):
+            for col in range(2):
+                cx0 = 0.34 + 0.20 * col
+                cy0 = 0.30 + 0.13 * row
+                button = _rel_bbox(box, cx0, cy0, cx0 + 0.12, cy0 + 0.055)
                 _ellipse(draw, button, fill=(216, 222, 225), outline=None, width=1, scale=scale)
-        red = _rel_bbox(box, 0.30, 0.22, 0.39, 0.30)
+        red = _rel_bbox(box, 0.42, 0.14, 0.58, 0.21)
         _ellipse(draw, red, fill=(220, 80, 75), outline=None, width=1, scale=scale)
         boxes.append(body)
     elif object_type == "pencil":
@@ -1049,8 +1088,31 @@ def _draw_object_item(draw: ImageDraw.ImageDraw, *, box: BBox, object_type: str,
         parts.add("light", light)
         boxes.extend([shade, stand, base])
     elif object_type == "umbrella":
-        canopy = _rel_bbox(box, 0.12, 0.16, 0.88, 0.54)
-        _ellipse(draw, canopy, fill=primary, outline=outline, width=width, scale=scale)
+        canopy_points = [
+            (box[0] + 0.10 * (box[2] - box[0]), box[1] + 0.53 * (box[3] - box[1])),
+            (box[0] + 0.16 * (box[2] - box[0]), box[1] + 0.36 * (box[3] - box[1])),
+            (box[0] + 0.32 * (box[2] - box[0]), box[1] + 0.20 * (box[3] - box[1])),
+            (box[0] + 0.50 * (box[2] - box[0]), box[1] + 0.14 * (box[3] - box[1])),
+            (box[0] + 0.68 * (box[2] - box[0]), box[1] + 0.20 * (box[3] - box[1])),
+            (box[0] + 0.84 * (box[2] - box[0]), box[1] + 0.36 * (box[3] - box[1])),
+            (box[0] + 0.90 * (box[2] - box[0]), box[1] + 0.53 * (box[3] - box[1])),
+            (box[0] + 0.70 * (box[2] - box[0]), box[1] + 0.57 * (box[3] - box[1])),
+            (box[0] + 0.50 * (box[2] - box[0]), box[1] + 0.58 * (box[3] - box[1])),
+            (box[0] + 0.30 * (box[2] - box[0]), box[1] + 0.57 * (box[3] - box[1])),
+        ]
+        _poly(draw, canopy_points, fill=primary, outline=outline, width=width, scale=scale)
+        canopy = _rel_bbox(box, 0.10, 0.14, 0.90, 0.58)
+        for rib_x in (0.30, 0.50, 0.70):
+            _line(
+                draw,
+                [
+                    (box[0] + 0.50 * (box[2] - box[0]), box[1] + 0.16 * (box[3] - box[1])),
+                    (box[0] + rib_x * (box[2] - box[0]), box[1] + 0.56 * (box[3] - box[1])),
+                ],
+                fill=SOFT_OUTLINE_RGB,
+                width=max(1, width - 1),
+                scale=scale,
+            )
         shaft = _rel_bbox(box, 0.48, 0.48, 0.53, 0.82)
         _rect(draw, shaft, fill=SOFT_OUTLINE_RGB, outline=None, width=1, scale=scale)
         handle = _rel_bbox(box, 0.44, 0.75, 0.64, 0.92)

@@ -1,6 +1,7 @@
 # task_illustrations__environment__lit_window_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -30,6 +31,8 @@ on the buildings.
 ## Trace Contract
 - `scene_ir.entities` contains buildings, windows, environment features, and
   non-query scene decor.
+- environment buildings record `building_style_id` in their attributes; style
+  variation changes facade treatment but not the lit-window answer contract.
 - `render_map.window_bboxes_px` stores visible building-window bboxes.
 - `render_map.counted_window_ids`, `witness_symbolic.counted_window_ids`, and
   `projected_evidence.bbox_set` are derived from the same rendered windows.
@@ -39,5 +42,7 @@ on the buildings.
 - `task_key = building_window_count_task`
 - `query_id = building_window_count`
 - prompts ask for lit windows on buildings
+- scene prompt variants name the outdoor setting without mentioning unrelated
+  foreground-object counts
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

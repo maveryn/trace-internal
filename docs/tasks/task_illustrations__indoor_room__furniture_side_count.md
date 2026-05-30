@@ -1,6 +1,7 @@
 # task_illustrations__indoor_room__furniture_side_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -41,6 +42,8 @@ use answer support `1..6`.
 - `scene_key = indoor_room_canvas`
 - `task_key = furniture_side_count_task`
 - `query_id = furniture_side_count`
+- scene prompts name the room setting without redundant illustrated-object
+  phrasing
 - prompts ask for named objects in the requested relation to furniture
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

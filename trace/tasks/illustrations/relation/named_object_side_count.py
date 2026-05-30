@@ -178,9 +178,6 @@ def _build_complexity(*, object_count: int, target_count: int, relation: str) ->
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "relation_load": round(float(relation_load), 6),
-            "object_count": int(object_count),
-            "target_count": int(target_count),
-            "relation": str(relation),
         },
     )
 

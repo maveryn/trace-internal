@@ -98,6 +98,7 @@ _ENV_LAND = (
     "mailbox",
     "bench",
     "soccer_ball",
+    "rugby_ball",
     "shovel",
     "trash_bin",
     "mug",
@@ -108,6 +109,7 @@ _INDOOR_OBJECTS = (
     "backpack",
     "egg",
     "soccer_ball",
+    "rugby_ball",
     "spoon",
     "plate",
     "book",
@@ -137,6 +139,7 @@ _SMALL_SHARED = {
     "apple",
     "egg",
     "soccer_ball",
+    "rugby_ball",
     "spoon",
     "camera",
     "pencil",
@@ -174,6 +177,7 @@ _ENV_THEME_LAND: Dict[str, Tuple[str, ...]] = {
         "road_sign",
         "bench",
         "soccer_ball",
+        "rugby_ball",
         "trash_bin",
         "bottle",
     ),
@@ -193,6 +197,7 @@ _ENV_THEME_LAND: Dict[str, Tuple[str, ...]] = {
         "camera",
         "bench",
         "soccer_ball",
+        "rugby_ball",
         "shovel",
         "trash_bin",
         "bottle",
@@ -214,6 +219,7 @@ _ENV_THEME_LAND: Dict[str, Tuple[str, ...]] = {
         "road_sign",
         "bench",
         "soccer_ball",
+        "rugby_ball",
         "shovel",
         "trash_bin",
         "bottle",
@@ -295,7 +301,6 @@ def _shared_entries() -> Tuple[CatalogEntry, ...]:
 _MIXED_BACKGROUNDS = ("studio", "meadow", "sky_ground", "tabletop", "paper", "shelf")
 _ENVIRONMENT_THEMES = ("park_road", "river_meadow", "road_and_river", "canal_city", "skyline_street")
 _INDOOR_THEMES = ("living_room", "kitchen", "study", "bedroom")
-_MARKET_SETTINGS = ("street_market", "plaza_market")
 _LIBRARY_SETTINGS = ("reading_room", "archive_room", "childrens_corner")
 _PARK_SETTINGS = ("playground_lawn", "picnic_park", "pond_playground", "flower_garden")
 _TRANSIT_SETTINGS = ("rail_station", "bus_terminal", "airport_concourse")
@@ -307,7 +312,6 @@ def _background_entries() -> Tuple[CatalogEntry, ...]:
         ("mixed_background", "object_field", _MIXED_BACKGROUNDS),
         ("environment_theme", "environment", _ENVIRONMENT_THEMES),
         ("indoor_theme", "indoor_room", _INDOOR_THEMES),
-        ("market_setting", "market", _MARKET_SETTINGS),
         ("library_setting", "library", _LIBRARY_SETTINGS),
         ("park_setting", "park_playground", _PARK_SETTINGS),
         ("transit_setting", "transit_terminal", _TRANSIT_SETTINGS),
@@ -356,63 +360,6 @@ def _environment_feature_entries() -> Tuple[CatalogEntry, ...]:
         )
         for feature_type, object_type, public_name, family, render_layer, size_class in specs
     )
-
-
-_MARKET_SHOPS: Dict[str, Tuple[str, str, Tuple[str, ...]]] = {
-    "fruit": ("FRUIT", "fruit stall", ("apple", "orange", "pear", "grapes", "banana", "bowl")),
-    "bakery": ("BAKERY", "bakery", ("bread", "cake", "pastry", "muffin", "apple", "mug")),
-    "flowers": ("FLOWERS", "flower stall", ("flower", "bouquet", "potted_plant", "vase", "candle")),
-    "books": ("BOOKS", "book stall", ("book", "magazine", "newspaper", "pencil", "ruler")),
-    "coffee": ("COFFEE", "coffee stand", ("mug", "cup", "bottle", "pastry", "cake")),
-    "grocery": ("GROCERY", "grocery stall", ("apple", "orange", "bread", "bottle", "egg", "bowl")),
-    "fish": ("FISH", "fish stand", ("fish", "shrimp", "bottle", "bowl")),
-    "clothes": ("CLOTHES", "clothes stall", ("shirt", "hat", "bag", "scarf", "umbrella")),
-    "toys": ("TOYS", "toy stall", ("ball", "toy_car", "kite", "book", "duck")),
-    "hardware": ("TOOLS", "tool stall", ("hammer", "wrench", "ruler", "scissors", "key")),
-    "gift": ("GIFTS", "gift shop", ("mug", "vase", "candle", "book", "flower", "toy_car")),
-}
-_MARKET_ITEM_NAMES: Dict[str, str] = {
-    "toy_car": "toy car",
-    "potted_plant": "potted plant",
-}
-
-
-def _market_entries() -> Tuple[CatalogEntry, ...]:
-    entries: list[CatalogEntry] = []
-    for shop_type, (label, display, inventory) in _MARKET_SHOPS.items():
-        entries.append(
-            _entry(
-                f"market_shop.{shop_type}",
-                object_type="shop",
-                public_name=display,
-                family="structure",
-                render_layer="fixture",
-                size_class="large",
-                placement_tags=("market_shop",),
-                scene_tags=("market",),
-                renderer_id="urban_market_shop",
-                variant_id=shop_type,
-                label_text=label,
-                metadata={"inventory_types": tuple(inventory)},
-            )
-        )
-    market_items = tuple(sorted({item for _label, _display, inventory in _MARKET_SHOPS.values() for item in inventory}))
-    for item_type in market_items:
-        entries.append(
-            _entry(
-                f"market_item.{item_type}",
-                object_type="market_item",
-                public_name=_MARKET_ITEM_NAMES.get(item_type, item_type.replace("_", " ")),
-                family="object",
-                render_layer="foreground",
-                size_class="small",
-                placement_tags=("market_item",),
-                scene_tags=("market",),
-                renderer_id="urban_market_item",
-                variant_id=item_type,
-            )
-        )
-    return tuple(entries)
 
 
 _LIBRARY_SECTIONS: Dict[str, Tuple[str, str]] = {
@@ -782,7 +729,6 @@ CATALOG_ENTRIES: Tuple[CatalogEntry, ...] = (
     *_shared_entries(),
     *_background_entries(),
     *_environment_feature_entries(),
-    *_market_entries(),
     *_library_entries(),
     *_park_entries(),
     *_transit_entries(),
@@ -807,9 +753,6 @@ _TAG_VARIANT_ORDER: Dict[str, Tuple[str, ...]] = {
     "indoor_surface": _INDOOR_SURFACES,
     "indoor_container": _INDOOR_CONTAINERS,
     "indoor_furniture": _INDOOR_FURNITURE,
-    "market_setting": _MARKET_SETTINGS,
-    "market_shop": tuple(_MARKET_SHOPS),
-    "market_item": tuple(sorted({item for _label, _display, inventory in _MARKET_SHOPS.values() for item in inventory})),
     "library_setting": _LIBRARY_SETTINGS,
     "library_section": tuple(_LIBRARY_SECTIONS),
     "library_book_orientation": ("upright", "horizontal"),
@@ -912,25 +855,6 @@ def plural_name_map_for_tag(tag: str) -> Dict[str, str]:
     return {entry.variant_id: str(entry.plural_name or entry.public_name) for entry in entries_with_tag(str(tag))}
 
 
-def market_shop_inventory_types() -> Dict[str, Tuple[str, ...]]:
-    """Return market inventory variant ids keyed by shop variant id."""
-
-    return {
-        entry.variant_id: tuple(str(value) for value in entry.metadata.get("inventory_types", ()))
-        for entry in entries_with_tag("market_shop")
-    }
-
-
-def market_item_allowed_shops() -> Dict[str, Tuple[str, ...]]:
-    """Return market shop variants that can show each market item variant."""
-
-    result: Dict[str, list[str]] = {}
-    for shop_type, inventory in market_shop_inventory_types().items():
-        for item_type in inventory:
-            result.setdefault(str(item_type), []).append(str(shop_type))
-    return {item_type: tuple(shops) for item_type, shops in sorted(result.items())}
-
-
 def environment_theme_land_object_types(theme_id: str) -> Tuple[str, ...]:
     """Return land object types suitable for one environment theme."""
 
@@ -959,8 +883,6 @@ __all__ = [
     "entries_with_size_class",
     "environment_theme_land_object_types",
     "label_map_for_tag",
-    "market_item_allowed_shops",
-    "market_shop_inventory_types",
     "object_types_with_tag",
     "plural_name_map_for_tag",
     "public_name_map_for_tag",

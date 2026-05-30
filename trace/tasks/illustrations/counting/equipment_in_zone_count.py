@@ -235,9 +235,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "scene_clutter": round(float(scene_clutter), 6),
-            "query_id": str(sample.query_id),
-            "target_count": int(sample.target_count),
-            "equipment_count": int(sample.equipment_count),
         },
     )
 
@@ -276,6 +273,8 @@ class IllustrationsCountingEquipmentInZoneCountTask:
                     render_scale=int(rp["render_scale"]),
                     setting_weights=setting_weights(params, _RENDER_DEFAULTS),
                     style_weights=style_weights(params, _RENDER_DEFAULTS),
+                    instance_seed=int(instance_seed),
+                    font_params={**dict(_RENDER_DEFAULTS), **dict(params)},
                 )
                 break
             except Exception as exc:  # pragma: no cover

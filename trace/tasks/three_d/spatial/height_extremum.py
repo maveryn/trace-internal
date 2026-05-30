@@ -37,7 +37,7 @@ from ..shared.object_resources import (
     SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES,
     SPATIAL_HEIGHT_SUPPORT_PLACEMENTS,
 )
-from .camera_distance import (
+from ..shared.object_scene import (
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -509,10 +509,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             prefix="point_count",
-            minimum_default=6,
-            maximum_default=6,
-            lower=6,
-            upper=6,
+            minimum_default=len(SUPPORT_PLACEMENTS),
+            maximum_default=len(SUPPORT_PLACEMENTS),
+            lower=len(SUPPORT_PLACEMENTS),
+            upper=len(SUPPORT_PLACEMENTS),
         )
         context_object_count, context_object_count_probabilities = _shared_resolve_count(
             params,
@@ -520,10 +520,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             prefix="context_object_count",
-            minimum_default=5,
-            maximum_default=5,
-            lower=5,
-            upper=5,
+            minimum_default=len(SUPPORT_PLACEMENTS) - 1,
+            maximum_default=len(SUPPORT_PLACEMENTS) - 1,
+            lower=len(SUPPORT_PLACEMENTS) - 1,
+            upper=len(SUPPORT_PLACEMENTS) - 1,
         )
         answer_label_index = resolve_selection_index(
             params=params,

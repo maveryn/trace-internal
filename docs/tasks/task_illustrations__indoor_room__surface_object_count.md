@@ -1,6 +1,7 @@
 # task_illustrations__indoor_room__surface_object_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -40,6 +41,8 @@ named type are on a named surface such as a table, shelf, or counter.
 - `scene_key = indoor_room_canvas`
 - `task_key = object_type_on_surface_count_task`
 - `query_id = object_type_on_surface_count`
+- scene prompts name the room setting without redundant illustrated-object
+  phrasing
 - prompts ask for named objects on the named surface
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

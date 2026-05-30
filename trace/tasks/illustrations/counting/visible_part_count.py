@@ -19,6 +19,7 @@ from ..shared.mixed_object_scene import (
     choose_background_id,
     render_mixed_object_scene,
     resolve_content_bbox,
+    sample_background_layout,
     sample_placements,
     scene_entities,
 )
@@ -310,9 +311,6 @@ def _build_complexity(*, sample: _SampleSpec, distractor_part_count: int) -> Tas
             "visual_scan": round(float(object_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "distractor_part_fraction": round(float(distractor_load), 6),
-            "object_count": int(sample.object_count),
-            "target_count": int(sample.target_count),
-            "queried_part_kind": str(sample.part_kind),
         },
     )
 
@@ -342,6 +340,12 @@ class IllustrationsCountingVisiblePartCountTask:
                 scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:scene", int(attempt))
                 background_weights = _positive_background_weights(params)
                 background_id = choose_background_id(scene_rng, background_weights, object_types=sample.object_types)
+                background_layout = sample_background_layout(
+                    scene_rng,
+                    background_id=str(background_id),
+                    canvas_width=int(render_params["canvas_width"]),
+                    canvas_height=int(render_params["canvas_height"]),
+                )
                 placements = sample_placements(
                     object_types=sample.object_types,
                     rng=scene_rng,
@@ -355,6 +359,7 @@ class IllustrationsCountingVisiblePartCountTask:
                     placement_max_attempts=int(render_params["placement_max_attempts"]),
                     style_weights=_positive_style_weights(params),
                     background_id=str(background_id),
+                    background_layout=background_layout,
                 )
                 scene = render_mixed_object_scene(
                     placements=placements,
@@ -365,6 +370,7 @@ class IllustrationsCountingVisiblePartCountTask:
                     render_scale=int(render_params["render_scale"]),
                     content_bbox=content_bbox,
                     background_id=str(background_id),
+                    background_layout=background_layout,
                 )
                 break
             except Exception as exc:  # pragma: no cover - exercised by max_attempts smoke tests.

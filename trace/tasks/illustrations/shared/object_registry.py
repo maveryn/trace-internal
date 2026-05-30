@@ -96,25 +96,18 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         semantic_attributes=_attrs("luggage_type", "area_id"),
         visual_attributes=_attrs("primary_color_rgb"),
     ),
-    "market_item": ObjectTypeDef(
-        "market_item",
-        "market item",
-        "object",
-        semantic_attributes=_attrs("item_type", "item_name", "shop_id", "slot_index"),
-        visual_attributes=_attrs("color_rgb", "accent_color_rgb"),
-    ),
     "person": ObjectTypeDef(
         "person",
         "person",
         "person",
-        semantic_attributes=_attrs("activity", "activity_label", "area_id", "pose_id", "zone", "near_shop_id", "near_shop_type"),
+        semantic_attributes=_attrs("activity", "activity_label", "area_id", "pose_id", "zone"),
         visual_attributes=_attrs("primary_color_rgb", "accent_color_rgb", "skin_color_rgb", "style_id", "gender_id"),
     ),
     "pedestrian_with_bag": ObjectTypeDef(
         "pedestrian_with_bag",
         "pedestrian with bag",
         "person",
-        semantic_attributes=_attrs("activity", "activity_label", "area_id", "pose_id", "zone", "near_shop_id", "near_shop_type"),
+        semantic_attributes=_attrs("activity", "activity_label", "area_id", "pose_id", "zone"),
         visual_attributes=_attrs("primary_color_rgb", "accent_color_rgb", "skin_color_rgb", "style_id", "gender_id"),
     ),
     "playground_equipment": ObjectTypeDef(
@@ -128,13 +121,6 @@ _SCENE_OBJECT_DEFS: Dict[str, ObjectTypeDef] = {
         "service point",
         "fixture",
         semantic_attributes=_attrs("service_point_id", "display_name"),
-    ),
-    "shop": ObjectTypeDef(
-        "shop",
-        "shop",
-        "structure",
-        semantic_attributes=_attrs("shop_type", "shop_name", "item_types"),
-        visual_attributes=_attrs("signboard_color_rgb", "awning_color_rgb", "facade_color_rgb"),
     ),
     "surface": ObjectTypeDef(
         "surface",

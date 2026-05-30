@@ -71,10 +71,10 @@
     ],
     "indoor_room_canvas": [
       "The image shows {room_setting}.",
-      "The scene shows objects arranged in {room_setting}.",
-      "The picture shows illustrated objects in {room_setting}.",
+      "The scene shows {room_setting} with small objects.",
+      "The picture shows {room_setting} with small objects.",
       "The canvas shows {room_setting}.",
-      "This is {room_setting}."
+      "This indoor illustration shows {room_setting}."
     ]
   },
   "query_templates": {

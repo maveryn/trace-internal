@@ -169,9 +169,6 @@ def _build_complexity(*, object_count: int, target_count: int, window_mode: str)
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "window_load": round(float(window_load), 6),
-            "object_count": int(object_count),
-            "target_count": int(target_count),
-            "window_mode": str(window_mode),
         },
     )
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image
@@ -55,36 +56,22 @@ DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
     "park_sitting": {
         "source_task_id": "task_illustrations__park_playground__person_count",
         "source_params": {"query_id": "sitting_person_count"},
-        "singular_phrase": "person sitting",
-        "plural_phrase": "people sitting",
+        "singular_phrase": "sitting person",
+        "plural_phrase": "sitting people",
         "scene_id": "park_playground",
     },
     "park_walking": {
         "source_task_id": "task_illustrations__park_playground__person_count",
         "source_params": {"query_id": "walking_person_count"},
-        "singular_phrase": "person walking",
-        "plural_phrase": "people walking",
+        "singular_phrase": "walking person",
+        "plural_phrase": "walking people",
         "scene_id": "park_playground",
     },
     "construction_tools": {
         "source_task_id": "task_illustrations__construction_site__worker_attribute_count",
         "source_params": {"query_id": "tool_holding_worker_count"},
-        "singular_phrase": "worker holding a tool",
-        "plural_phrase": "workers holding tools",
-        "scene_id": "construction_site",
-    },
-    "construction_brick_stacks": {
-        "source_task_id": "task_illustrations__construction_site__material_stack_count",
-        "source_params": {"query_id": "brick_stack_count"},
-        "singular_phrase": "brick stack",
-        "plural_phrase": "brick stacks",
-        "scene_id": "construction_site",
-    },
-    "construction_pipe_bundles": {
-        "source_task_id": "task_illustrations__construction_site__material_stack_count",
-        "source_params": {"query_id": "pipe_bundle_count"},
-        "singular_phrase": "pipe bundle",
-        "plural_phrase": "pipe bundles",
+        "singular_phrase": "tool-holding worker",
+        "plural_phrase": "tool-holding workers",
         "scene_id": "construction_site",
     },
 }
@@ -265,10 +252,6 @@ def _source_params_for(sample: _SampleSpec, params: Mapping[str, Any]) -> Dict[s
         source_params["worker_count"] = max(10, int(sample.current_count) + 4)
         source_params["worker_count_min"] = max(10, int(sample.current_count) + 4)
         source_params["worker_count_max"] = max(10, int(sample.current_count) + 4)
-    elif sample.source_query.source_task_id == "task_illustrations__construction_site__material_stack_count":
-        source_params["material_count"] = max(10, int(sample.current_count) + 4)
-        source_params["material_count_min"] = max(10, int(sample.current_count) + 4)
-        source_params["material_count_max"] = max(10, int(sample.current_count) + 4)
     return source_params
 
 
@@ -303,14 +286,32 @@ def _count_phrase(k: int, singular: str, plural: str, *, more: bool) -> str:
     return f"{count_word} more {plural}" if more else f"{count_word} {plural}"
 
 
+def _example_json_for(sample: _SampleSpec, *, include_evidence: bool) -> str:
+    example_current = max(3, int(sample.edit_count_k) + 2)
+    if str(sample.query_id) == ADDED_VARIANT:
+        example_answer = example_current + int(sample.edit_count_k)
+    else:
+        example_answer = example_current - int(sample.edit_count_k)
+    payload: Dict[str, Any] = {"answer": int(example_answer)}
+    if include_evidence:
+        boxes = [
+            [120 + 82 * index, 220, 176 + 82 * index, 292]
+            for index in range(example_current)
+        ]
+        payload = {"evidence": boxes, "answer": int(example_answer)}
+    return json.dumps(payload, separators=(",", ":"))
+
+
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
-    edit_load = (int(sample.edit_count_k) - 1) / 2.0
-    count_load = min(1.0, float(sample.current_count) / 8.0)
+    edit_support = _int_support({}, "edit_count_k_min", "edit_count_k_max", _DEFAULTS.edit_count_k_min, _DEFAULTS.edit_count_k_max)
+    count_support = _int_support({}, "current_count_min", "current_count_max", _DEFAULTS.current_count_min, _DEFAULTS.current_count_max)
+    edit_load = (int(sample.edit_count_k) - min(edit_support)) / max(1, max(edit_support) - min(edit_support))
+    count_load = (int(sample.current_count) - min(count_support)) / max(1, max(count_support) - min(count_support))
     return TaskComplexity(
         complexity_score=round(0.42 + 0.16 * edit_load + 0.18 * count_load, 3),
         complexity_components={
-            "current_count": float(sample.current_count),
-            "edit_count_k": float(sample.edit_count_k),
+            "current_count_load": round(float(count_load), 3),
+            "edit_count_load": round(float(edit_load), 3),
             "hypothetical_arithmetic": 1.0,
         },
     )
@@ -356,8 +357,8 @@ class IllustrationsCounterfactualObjectCountAfterEditTask:
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "evidence_hint": str(prompt_defaults["evidence_hint"]).format(object_plural=str(sample.source_query.plural_phrase)),
             "answer_hint": str(prompt_defaults["answer_hint"]),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            "json_example": _example_json_for(sample, include_evidence=True),
+            "json_example_answer_only": _example_json_for(sample, include_evidence=False),
         }
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,

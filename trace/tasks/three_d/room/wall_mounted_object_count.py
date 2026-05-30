@@ -34,6 +34,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.object_resources import (
@@ -52,7 +53,7 @@ from ..shared.object_resources import (
     ROOM_SURFACE_PROP_TYPES,
     ROOM_WALL_BASE_DIMENSIONS,
 )
-from ..spatial.camera_distance import (
+from ..shared.object_scene import (
     _CameraSpec,
     CONTEXT_OBJECT_COLORS,
     POINT_COLORS,
@@ -92,7 +93,6 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "wall_shelf_wall_mounted_count",
     "wall_fan_wall_mounted_count",
     "air_conditioner_wall_mounted_count",
-    "hanging_plant_wall_mounted_count",
     "hanging_coat_wall_mounted_count",
 )
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("living_room", "office_room", "studio_room")
@@ -421,7 +421,7 @@ def _support_can_hold(object_type: str, support_spec: Mapping[str, Any]) -> bool
     support_type = str(support_spec.get("object_type", ""))
     support_width = float(support_spec["dimensions_xyz"][0])
     if str(object_type) == "tv":
-        return support_type in {"coffee_table", "media_console", "desk", "bed"} and support_width >= 0.90
+        return support_type in {"media_console", "desk", "bed"} and support_width >= 0.90
     if str(object_type) in {"clock", "picture_frame"}:
         return support_type in set(SURFACE_PROP_TYPES)
     return False
@@ -1005,26 +1005,104 @@ def _draw_wall_tv_object(
     camera,
     frame,
 ) -> List[float]:
-    bbox = _draw_wall_cuboid(
-        draw,
-        spec,
-        camera=camera,
-        frame=frame,
-        normal_near=0.018,
-        normal_far=0.18,
-        fill=(35, 41, 50),
-        outline=(17, 22, 28),
+    shadow_points = _wall_quad_points(spec, -0.50, -0.50, 0.50, 0.50, normal_offset=0.012)
+    shadow_projected = _project_points(shadow_points, camera, frame)
+    shadow_projected = [(x + 3.0, y + 4.0) for x, y in shadow_projected]
+    draw.polygon(shadow_projected, fill=(84, 91, 98))
+    bboxes: List[List[float]] = [_points_bbox(shadow_projected)]
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.018,
+            normal_far=0.082,
+            fill=(34, 39, 47),
+            outline=(12, 15, 19),
+        )
     )
-    inner_points = _wall_rect_points(
-        {
-            **dict(spec),
-            "wall_width": float(spec["wall_width"]) * 0.78,
-            "wall_height": float(spec["wall_height"]) * 0.66,
-        },
-        normal_offset=0.186,
+    bezel_points = _wall_quad_points(spec, -0.48, -0.46, 0.48, 0.46, normal_offset=0.088)
+    bboxes.append(
+        _draw_poly(
+            draw,
+            bezel_points,
+            camera=camera,
+            frame=frame,
+            fill=(18, 21, 26),
+            outline=(7, 9, 12),
+            width=2,
+        )
     )
-    _draw_poly(draw, inner_points, camera=camera, frame=frame, fill=(16, 25, 36), outline=(80, 96, 112), width=1)
-    return list(bbox)
+    screen_points = _wall_quad_points(spec, -0.405, -0.335, 0.405, 0.335, normal_offset=0.092)
+    bboxes.append(
+        _draw_poly(
+            draw,
+            screen_points,
+            camera=camera,
+            frame=frame,
+            fill=(20, 35, 51),
+            outline=(75, 92, 108),
+            width=1,
+        )
+    )
+    glow_points = _wall_quad_points(spec, -0.35, -0.27, 0.35, 0.27, normal_offset=0.094)
+    bboxes.append(
+        _draw_poly(
+            draw,
+            glow_points,
+            camera=camera,
+            frame=frame,
+            fill=(31, 55, 77),
+            outline=(31, 55, 77),
+            width=1,
+        )
+    )
+    highlight_points = _wall_quad_points(spec, -0.34, 0.12, 0.20, 0.22, normal_offset=0.096)
+    projected_highlight = _project_points(highlight_points, camera, frame)
+    draw.polygon(projected_highlight, fill=(69, 94, 113))
+    bboxes.append(_points_bbox(projected_highlight))
+    status_bar = _wall_quad_points(spec, -0.16, -0.425, 0.16, -0.385, normal_offset=0.097)
+    projected_status = _project_points(status_bar, camera, frame)
+    draw.polygon(projected_status, fill=(71, 78, 87))
+    bboxes.append(_points_bbox(projected_status))
+    mount_neck_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 0.12,
+        "wall_height": float(spec["wall_height"]) * 0.11,
+        "world_xyz": list(_wall_physical_point(spec, 0.0, -float(spec["wall_height"]) * 0.58, normal_offset=0.048)),
+    }
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            mount_neck_spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.0,
+            normal_far=0.045,
+            fill=(28, 32, 38),
+            outline=(12, 15, 19),
+        )
+    )
+    mount_plate_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 0.32,
+        "wall_height": float(spec["wall_height"]) * 0.055,
+        "world_xyz": list(_wall_physical_point(spec, 0.0, -float(spec["wall_height"]) * 0.66, normal_offset=0.048)),
+    }
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            mount_plate_spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.0,
+            normal_far=0.045,
+            fill=(26, 30, 35),
+            outline=(12, 15, 19),
+        )
+    )
+    return _bbox_union(*bboxes)
 
 
 def _draw_wall_shelf_object(
@@ -1074,6 +1152,20 @@ def _draw_wall_shelf_object(
             outline=(67, 51, 39),
         )
     )
+    item_specs = [
+        (-0.34, 0.10, 0.10, 0.30, (79, 119, 165)),
+        (-0.22, 0.10, 0.08, 0.24, (201, 92, 78)),
+        (0.04, 0.10, 0.12, 0.22, (224, 182, 82)),
+        (0.28, 0.10, 0.12, 0.18, (75, 138, 92)),
+    ]
+    for h_center, bottom_v, item_w, item_h, color in item_specs:
+        item = [
+            _wall_physical_point(spec, h_center - item_w * 0.5, half_h + bottom_v, normal_offset=0.455),
+            _wall_physical_point(spec, h_center + item_w * 0.5, half_h + bottom_v, normal_offset=0.455),
+            _wall_physical_point(spec, h_center + item_w * 0.5, half_h + bottom_v + item_h, normal_offset=0.455),
+            _wall_physical_point(spec, h_center - item_w * 0.5, half_h + bottom_v + item_h, normal_offset=0.455),
+        ]
+        bracket_bboxes.append(_draw_poly(draw, item, camera=camera, frame=frame, fill=color, outline=(45, 45, 38), width=1))
     return _bbox_union(board_bbox, *bracket_bboxes)
 
 
@@ -1137,47 +1229,74 @@ def _draw_wall_fan_object(
     camera,
     frame,
 ) -> List[float]:
-    bbox = _draw_wall_disc(
-        draw,
-        spec,
-        camera=camera,
-        frame=frame,
-        fill=(214, 222, 224),
-        outline=(45, 56, 66),
-        radius_u=0.50,
-        radius_v=0.50,
+    bboxes: List[List[float]] = []
+    bboxes.append(
+        _draw_wall_disc(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            fill=(225, 233, 235),
+            outline=(35, 46, 55),
+            radius_u=0.50,
+            radius_v=0.50,
+            normal_offset=0.032,
+        )
     )
-    for angle in (math.pi * 0.5, math.pi * 1.17, math.pi * 1.83):
+    blade_fill = (89, 116, 132)
+    blade_outline = (42, 56, 66)
+    for angle in (math.pi * 0.50, math.pi, math.pi * 1.50, math.tau):
+        inner_left = angle - 0.34
+        inner_right = angle + 0.34
+        outer_left = angle + 0.12
+        outer_right = angle + 0.50
         blade = [
-            _wall_plane_point(spec, 0.06 * math.cos(angle - 0.30), 0.06 * math.sin(angle - 0.30), normal_offset=0.042),
-            _wall_plane_point(spec, 0.40 * math.cos(angle), 0.40 * math.sin(angle), normal_offset=0.042),
-            _wall_plane_point(spec, 0.06 * math.cos(angle + 0.30), 0.06 * math.sin(angle + 0.30), normal_offset=0.042),
+            _wall_plane_point(spec, 0.10 * math.cos(inner_left), 0.10 * math.sin(inner_left), normal_offset=0.046),
+            _wall_plane_point(spec, 0.42 * math.cos(outer_left), 0.42 * math.sin(outer_left), normal_offset=0.046),
+            _wall_plane_point(spec, 0.34 * math.cos(outer_right), 0.34 * math.sin(outer_right), normal_offset=0.046),
+            _wall_plane_point(spec, 0.10 * math.cos(inner_right), 0.10 * math.sin(inner_right), normal_offset=0.046),
         ]
-        _fill_wall_shape(draw, blade, camera=camera, frame=frame, fill=(112, 130, 140))
-        _outline_wall_shape(draw, blade, camera=camera, frame=frame, outline=(55, 67, 76), width=1)
-    hub_spec = {**dict(spec), "wall_width": float(spec["wall_width"]) * 0.22, "wall_height": float(spec["wall_height"]) * 0.22}
-    hub_spec["world_xyz"] = list(_wall_plane_point(spec, 0.0, 0.0, normal_offset=0.045))
-    _draw_wall_disc(
-        draw,
-        hub_spec,
-        camera=camera,
-        frame=frame,
-        fill=(68, 82, 92),
-        outline=(34, 42, 48),
-        radius_u=0.50,
-        radius_v=0.50,
-        normal_offset=0.047,
+        bboxes.append(_draw_poly(draw, blade, camera=camera, frame=frame, fill=blade_fill, outline=blade_outline, width=2))
+    hub_spec = {**dict(spec), "wall_width": float(spec["wall_width"]) * 0.24, "wall_height": float(spec["wall_height"]) * 0.24}
+    hub_spec["world_xyz"] = list(_wall_plane_point(spec, 0.0, 0.0, normal_offset=0.054))
+    bboxes.append(
+        _draw_wall_disc(
+            draw,
+            hub_spec,
+            camera=camera,
+            frame=frame,
+            fill=(55, 69, 80),
+            outline=(24, 31, 37),
+            radius_u=0.50,
+            radius_v=0.50,
+            normal_offset=0.056,
+        )
     )
-    center = _project_points([_wall_plane_point(spec, 0.0, 0.0, normal_offset=0.048)], camera, frame)[0]
+    center = _project_points([_wall_plane_point(spec, 0.0, 0.0, normal_offset=0.060)], camera, frame)[0]
     for angle in (0.0, math.pi * 0.25, math.pi * 0.50, math.pi * 0.75, math.pi, math.pi * 1.25, math.pi * 1.50, math.pi * 1.75):
-        edge = _project_points([_wall_plane_point(spec, 0.44 * math.cos(angle), 0.44 * math.sin(angle), normal_offset=0.048)], camera, frame)[0]
-        _draw_line(draw, center, edge, fill=(108, 121, 130), width=1)
-    # A few grill chords make this read as a fan rather than a second clock.
-    for u in (-0.24, 0.0, 0.24):
-        top = _project_points([_wall_plane_point(spec, u, 0.34, normal_offset=0.046)], camera, frame)[0]
-        bottom = _project_points([_wall_plane_point(spec, u, -0.34, normal_offset=0.046)], camera, frame)[0]
-        _draw_line(draw, top, bottom, fill=(115, 128, 136), width=1)
-    return list(bbox)
+        edge = _project_points([_wall_plane_point(spec, 0.48 * math.cos(angle), 0.48 * math.sin(angle), normal_offset=0.060)], camera, frame)[0]
+        _draw_line(draw, center, edge, fill=(77, 91, 101), width=2)
+        bboxes.append(_points_bbox([center, edge]))
+    for radius_u, radius_v, color in ((0.36, 0.36, (104, 118, 128)), (0.47, 0.47, (55, 67, 76))):
+        ring_points = [
+            _wall_plane_point(spec, math.cos(math.tau * index / 36.0) * radius_u, math.sin(math.tau * index / 36.0) * radius_v, normal_offset=0.061)
+            for index in range(36)
+        ]
+        projected_ring = _project_points(ring_points, camera, frame)
+        for index in range(len(projected_ring)):
+            _draw_line(draw, projected_ring[index], projected_ring[(index + 1) % len(projected_ring)], fill=color, width=2)
+        bboxes.append(_points_bbox(projected_ring))
+    mount = _project_points(
+        [
+            _wall_plane_point(spec, 0.0, -0.50, normal_offset=0.050),
+            _wall_plane_point(spec, 0.0, -0.62, normal_offset=0.050),
+        ],
+        camera,
+        frame,
+    )
+    _draw_line(draw, mount[0], mount[1], fill=(45, 54, 61), width=3)
+    bboxes.append(_points_bbox(mount))
+    return _bbox_union(*bboxes)
 
 
 def _draw_wall_air_conditioner_object(
@@ -1212,59 +1331,6 @@ def _draw_wall_air_conditioner_object(
     _fill_wall_shape(draw, indicator, camera=camera, frame=frame, fill=(88, 151, 174))
     _outline_wall_shape(draw, indicator, camera=camera, frame=frame, outline=(47, 83, 96), width=1)
     return list(bbox)
-
-
-def _draw_wall_hanging_plant_object(
-    draw: ImageDraw.ImageDraw,
-    spec: Mapping[str, Any],
-    *,
-    camera,
-    frame,
-) -> List[float]:
-    bboxes: List[List[float]] = []
-    hook = [
-        _wall_plane_point(spec, 0.0, 0.46, normal_offset=0.038),
-        _wall_plane_point(spec, -0.20, 0.15, normal_offset=0.038),
-        _wall_plane_point(spec, 0.20, 0.15, normal_offset=0.038),
-    ]
-    projected_hook = _project_points(hook, camera, frame)
-    _draw_line(draw, projected_hook[0], projected_hook[1], fill=(69, 74, 70), width=2)
-    _draw_line(draw, projected_hook[0], projected_hook[2], fill=(69, 74, 70), width=2)
-    bboxes.append(_points_bbox(projected_hook))
-
-    pot = [
-        _wall_plane_point(spec, -0.28, 0.12, normal_offset=0.052),
-        _wall_plane_point(spec, 0.28, 0.12, normal_offset=0.052),
-        _wall_plane_point(spec, 0.20, -0.30, normal_offset=0.052),
-        _wall_plane_point(spec, -0.20, -0.30, normal_offset=0.052),
-    ]
-    bboxes.append(_draw_poly(draw, pot, camera=camera, frame=frame, fill=(137, 86, 55), outline=(68, 48, 34), width=2))
-    for u, v, width_scale, height_scale, fill in (
-        (-0.20, 0.24, 0.24, 0.18, (65, 132, 80)),
-        (0.00, 0.30, 0.26, 0.20, (78, 150, 87)),
-        (0.22, 0.22, 0.22, 0.18, (58, 122, 74)),
-        (-0.02, 0.08, 0.22, 0.16, (46, 112, 66)),
-    ):
-        leaf_spec = {
-            **dict(spec),
-            "wall_width": float(spec["wall_width"]) * float(width_scale),
-            "wall_height": float(spec["wall_height"]) * float(height_scale),
-            "world_xyz": list(_wall_plane_point(spec, float(u), float(v), normal_offset=0.062)),
-        }
-        bboxes.append(
-            _draw_wall_disc(
-                draw,
-                leaf_spec,
-                camera=camera,
-                frame=frame,
-                fill=fill,
-                outline=(35, 82, 48),
-                radius_u=0.50,
-                radius_v=0.42,
-                normal_offset=0.064,
-            )
-        )
-    return _bbox_union(*bboxes)
 
 
 def _draw_wall_hanging_coat_object(
@@ -1589,6 +1655,259 @@ def _draw_wall_speaker_object(
     return _bbox_union(*bboxes)
 
 
+def _draw_wall_picture_frame_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.012,
+            normal_far=0.060,
+            fill=(122, 73, 48),
+            outline=(64, 39, 28),
+        )
+    )
+    mat = _wall_quad_points(spec, -0.40, -0.36, 0.40, 0.36, normal_offset=0.064)
+    bboxes.append(_draw_poly(draw, mat, camera=camera, frame=frame, fill=(232, 219, 194), outline=(83, 53, 36), width=2))
+    inner_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 0.66,
+        "wall_height": float(spec["wall_height"]) * 0.56,
+        "world_xyz": list(_wall_plane_point(spec, 0.0, 0.0, normal_offset=0.069)),
+    }
+    _draw_wall_scenery(
+        draw,
+        inner_spec,
+        camera=camera,
+        frame=frame,
+        variant=str(spec.get("scenery_variant", "mountains")),
+        outline=(74, 48, 37),
+    )
+    bboxes.append(_projected_polygon_bbox(_wall_rect_points(inner_spec, normal_offset=0.070), camera, frame))
+    return _bbox_union(*bboxes)
+
+
+def _draw_wall_mirror_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.012,
+            normal_far=0.055,
+            fill=(67, 91, 104),
+            outline=(38, 55, 64),
+        )
+    )
+    glass = _wall_quad_points(spec, -0.34, -0.40, 0.34, 0.40, normal_offset=0.060)
+    bboxes.append(_draw_poly(draw, glass, camera=camera, frame=frame, fill=(178, 218, 229), outline=(43, 74, 87), width=2))
+    shine_lines = [
+        [(-0.24, 0.26), (0.10, 0.38)],
+        [(-0.28, 0.06), (0.28, 0.26)],
+        [(-0.18, -0.24), (0.18, -0.10)],
+    ]
+    for start, end in shine_lines:
+        p1, p2 = _project_points(
+            [
+                _wall_plane_point(spec, start[0], start[1], normal_offset=0.064),
+                _wall_plane_point(spec, end[0], end[1], normal_offset=0.064),
+            ],
+            camera,
+            frame,
+        )
+        _draw_line(draw, p1, p2, fill=(232, 249, 252), width=2)
+        bboxes.append(_points_bbox([p1, p2]))
+    return _bbox_union(*bboxes)
+
+
+def _draw_wall_lamp_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    glow_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 1.12,
+        "wall_height": float(spec["wall_height"]) * 1.06,
+    }
+    bboxes.append(
+        _draw_wall_disc(
+            draw,
+            glow_spec,
+            camera=camera,
+            frame=frame,
+            fill=(252, 231, 137),
+            outline=(190, 145, 55),
+            radius_u=0.50,
+            radius_v=0.48,
+            normal_offset=0.026,
+        )
+    )
+    plate_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 0.40,
+        "wall_height": float(spec["wall_height"]) * 0.72,
+    }
+    bboxes.append(
+        _draw_wall_disc(
+            draw,
+            plate_spec,
+            camera=camera,
+            frame=frame,
+            fill=(92, 67, 42),
+            outline=(46, 35, 25),
+            radius_u=0.42,
+            radius_v=0.50,
+            normal_offset=0.052,
+        )
+    )
+    arm_points = [
+        _wall_plane_point(spec, 0.0, 0.08, normal_offset=0.058),
+        _wall_plane_point(spec, 0.12, -0.04, normal_offset=0.105),
+        _wall_plane_point(spec, 0.0, -0.20, normal_offset=0.150),
+    ]
+    projected_arm = _project_points(arm_points, camera, frame)
+    _draw_line(draw, projected_arm[0], projected_arm[1], fill=(62, 47, 32), width=4)
+    _draw_line(draw, projected_arm[1], projected_arm[2], fill=(62, 47, 32), width=4)
+    bboxes.append(_points_bbox(projected_arm))
+    shade = [
+        _wall_plane_point(spec, -0.34, -0.04, normal_offset=0.165),
+        _wall_plane_point(spec, 0.34, -0.04, normal_offset=0.165),
+        _wall_plane_point(spec, 0.48, -0.42, normal_offset=0.165),
+        _wall_plane_point(spec, -0.48, -0.42, normal_offset=0.165),
+    ]
+    bboxes.append(_draw_poly(draw, shade, camera=camera, frame=frame, fill=(226, 171, 62), outline=(82, 61, 35), width=3))
+    shade_lip = [
+        _wall_plane_point(spec, -0.50, -0.42, normal_offset=0.170),
+        _wall_plane_point(spec, 0.50, -0.42, normal_offset=0.170),
+        _wall_plane_point(spec, 0.43, -0.50, normal_offset=0.170),
+        _wall_plane_point(spec, -0.43, -0.50, normal_offset=0.170),
+    ]
+    bboxes.append(_draw_poly(draw, shade_lip, camera=camera, frame=frame, fill=(166, 103, 40), outline=(82, 61, 35), width=2))
+    bulb_spec = {
+        **dict(spec),
+        "wall_width": float(spec["wall_width"]) * 0.24,
+        "wall_height": float(spec["wall_height"]) * 0.20,
+        "world_xyz": list(_wall_plane_point(spec, 0.0, -0.30, normal_offset=0.178)),
+    }
+    bboxes.append(
+        _draw_wall_disc(
+            draw,
+            bulb_spec,
+            camera=camera,
+            frame=frame,
+            fill=(255, 242, 172),
+            outline=(151, 115, 48),
+            radius_u=0.50,
+            radius_v=0.50,
+            normal_offset=0.182,
+        )
+    )
+    for u0, v0, u1, v1 in ((-0.36, -0.54, -0.20, -0.64), (0.0, -0.56, 0.0, -0.68), (0.36, -0.54, 0.20, -0.64)):
+        ray = _project_points(
+            [
+                _wall_plane_point(spec, u0, v0, normal_offset=0.060),
+                _wall_plane_point(spec, u1, v1, normal_offset=0.060),
+            ],
+            camera,
+            frame,
+        )
+        _draw_line(draw, ray[0], ray[1], fill=(232, 190, 75), width=2)
+        bboxes.append(_points_bbox(ray))
+    return _bbox_union(*bboxes)
+
+
+def _draw_wall_cabinet_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    bboxes.append(
+        _draw_wall_cuboid(
+            draw,
+            spec,
+            camera=camera,
+            frame=frame,
+            normal_near=0.018,
+            normal_far=0.135,
+            fill=(126, 113, 96),
+            outline=(55, 48, 40),
+        )
+    )
+    left = _wall_quad_points(spec, -0.42, -0.38, -0.02, 0.38, normal_offset=0.142)
+    right = _wall_quad_points(spec, 0.02, -0.38, 0.42, 0.38, normal_offset=0.142)
+    bboxes.append(_draw_poly(draw, left, camera=camera, frame=frame, fill=(146, 129, 107), outline=(64, 57, 48), width=2))
+    bboxes.append(_draw_poly(draw, right, camera=camera, frame=frame, fill=(113, 101, 86), outline=(64, 57, 48), width=2))
+    seam = _project_points(
+        [
+            _wall_plane_point(spec, 0.0, -0.38, normal_offset=0.148),
+            _wall_plane_point(spec, 0.0, 0.38, normal_offset=0.148),
+        ],
+        camera,
+        frame,
+    )
+    _draw_line(draw, seam[0], seam[1], fill=(48, 43, 36), width=2)
+    bboxes.append(_points_bbox(seam))
+    for u in (-0.08, 0.08):
+        handle = _project_points(
+            [
+                _wall_plane_point(spec, u, -0.12, normal_offset=0.152),
+                _wall_plane_point(spec, u, 0.12, normal_offset=0.152),
+            ],
+            camera,
+            frame,
+        )
+        _draw_line(draw, handle[0], handle[1], fill=(219, 184, 96), width=3)
+        bboxes.append(_points_bbox(handle))
+    return _bbox_union(*bboxes)
+
+
+def _draw_wall_poster_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    outer = _wall_rect_points(spec, normal_offset=0.026)
+    bboxes.append(_draw_poly(draw, outer, camera=camera, frame=frame, fill=(196, 106, 105), outline=(96, 54, 52), width=2))
+    top_band = _wall_quad_points(spec, -0.40, 0.25, 0.40, 0.39, normal_offset=0.031)
+    bottom_band = _wall_quad_points(spec, -0.40, -0.39, 0.40, -0.26, normal_offset=0.031)
+    bboxes.append(_draw_poly(draw, top_band, camera=camera, frame=frame, fill=(242, 191, 105), outline=(126, 70, 62), width=1))
+    bboxes.append(_draw_poly(draw, bottom_band, camera=camera, frame=frame, fill=(78, 124, 155), outline=(75, 62, 68), width=1))
+    diamond = [
+        _wall_plane_point(spec, 0.0, 0.18, normal_offset=0.034),
+        _wall_plane_point(spec, 0.24, 0.00, normal_offset=0.034),
+        _wall_plane_point(spec, 0.0, -0.18, normal_offset=0.034),
+        _wall_plane_point(spec, -0.24, 0.00, normal_offset=0.034),
+    ]
+    bboxes.append(_draw_poly(draw, diamond, camera=camera, frame=frame, fill=(235, 229, 202), outline=(96, 54, 52), width=2))
+    return _bbox_union(*bboxes)
+
+
 def _draw_wall_object(
     draw: ImageDraw.ImageDraw,
     spec: Mapping[str, Any],
@@ -1624,51 +1943,622 @@ def _draw_wall_object(
         draw.ellipse((center[0] - dot_r, center[1] - dot_r, center[0] + dot_r, center[1] + dot_r), fill=(38, 45, 54))
         return list(bbox)
     if object_type == "picture_frame":
-        outer = _draw_wall_flat_object(draw, spec, camera=camera, frame=frame, fill=(172, 112, 82), trim=(74, 48, 37))
-        inner_spec = {
-            **dict(spec),
-            "wall_width": float(spec["wall_width"]) * 0.66,
-            "wall_height": float(spec["wall_height"]) * 0.58,
-        }
-        _draw_wall_scenery(
-            draw,
-            inner_spec,
-            camera=camera,
-            frame=frame,
-            variant=str(spec.get("scenery_variant", "mountains")),
-            outline=(74, 48, 37),
-        )
-        return list(outer)
+        return _draw_wall_picture_frame_object(draw, spec, camera=camera, frame=frame)
     if object_type == "mirror":
-        return _draw_wall_flat_object(draw, spec, camera=camera, frame=frame, fill=(106, 139, 154), trim=(56, 75, 85))
+        return _draw_wall_mirror_object(draw, spec, camera=camera, frame=frame)
     if object_type == "wall_shelf":
         return _draw_wall_shelf_object(draw, spec, camera=camera, frame=frame)
     if object_type == "wall_fan":
         return _draw_wall_fan_object(draw, spec, camera=camera, frame=frame)
     if object_type == "air_conditioner":
         return _draw_wall_air_conditioner_object(draw, spec, camera=camera, frame=frame)
-    if object_type == "hanging_plant":
-        return _draw_wall_hanging_plant_object(draw, spec, camera=camera, frame=frame)
     if object_type == "hanging_coat":
         return _draw_wall_hanging_coat_object(draw, spec, camera=camera, frame=frame)
     if object_type == "wall_lamp":
-        return _draw_wall_disc(
-            draw,
-            spec,
-            camera=camera,
-            frame=frame,
-            fill=(240, 206, 112),
-            outline=(82, 67, 42),
-            radius_u=0.42,
-            radius_v=0.46,
-        )
+        return _draw_wall_lamp_object(draw, spec, camera=camera, frame=frame)
     if object_type == "speaker":
         return _draw_wall_speaker_object(draw, spec, camera=camera, frame=frame)
     if object_type == "wall_cabinet":
-        return _draw_wall_flat_object(draw, spec, camera=camera, frame=frame, fill=(126, 113, 96), trim=(64, 57, 48))
+        return _draw_wall_cabinet_object(draw, spec, camera=camera, frame=frame)
     if object_type == "poster":
-        return _draw_wall_flat_object(draw, spec, camera=camera, frame=frame, fill=(189, 114, 108), trim=(96, 54, 52))
+        return _draw_wall_poster_object(draw, spec, camera=camera, frame=frame)
     return _draw_wall_flat_object(draw, spec, camera=camera, frame=frame, fill=(160, 160, 150), trim=(70, 70, 68))
+
+
+def _room_floor_base_z(spec: Mapping[str, Any]) -> float:
+    raw_base = spec.get("base_xyz", (0.0, 0.0, 0.0))
+    if isinstance(raw_base, Sequence) and len(raw_base) >= 3:
+        return float(raw_base[2])
+    world_z = float(spec["world_xyz"][2])
+    height = float(spec["dimensions_xyz"][2])
+    return float(world_z - height * 0.5)
+
+
+def _room_distance_sq(point: Sequence[float], camera) -> float:
+    camera_xyz = tuple(float(value) for value in camera.camera_position)
+    return sum((float(point[index]) - camera_xyz[index]) ** 2 for index in range(3))
+
+
+def _room_sub_box_spec(
+    spec: Mapping[str, Any],
+    *,
+    offset_xyz: Tuple[float, float, float],
+    dimensions_xyz: Tuple[float, float, float],
+) -> Dict[str, Any]:
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    base_z = _room_floor_base_z(spec)
+    width, depth, height = (float(value) for value in dimensions_xyz)
+    center_x = float(x + float(offset_xyz[0]))
+    center_y = float(y + float(offset_xyz[1]))
+    part_base_z = float(base_z + float(offset_xyz[2]))
+    return {
+        **dict(spec),
+        "shape_type": "rectangular_prism",
+        "world_xyz": [round(center_x, 4), round(center_y, 4), round(part_base_z + height * 0.5, 4)],
+        "base_xyz": [round(center_x, 4), round(center_y, 4), round(part_base_z, 4)],
+        "dimensions_xyz": [round(width, 4), round(depth, 4), round(height, 4)],
+    }
+
+
+def _draw_room_box_parts(
+    draw: ImageDraw.ImageDraw,
+    parts: Sequence[Tuple[Mapping[str, Any], Tuple[int, int, int]]],
+    *,
+    camera,
+    frame,
+) -> List[float]:
+    bboxes: List[List[float]] = []
+    for part, fill in sorted(parts, key=lambda item: _room_distance_sq(item[0]["world_xyz"], camera), reverse=True):
+        bboxes.append(_draw_box_object(draw, part, camera=camera, frame=frame, fill=fill))
+    return _bbox_union(*bboxes)
+
+
+def _room_point_at_height(spec: Mapping[str, Any], height_frac: float, camera, frame) -> Tuple[float, float]:
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    height = float(spec["dimensions_xyz"][2])
+    point = (float(x), float(y), float(_room_floor_base_z(spec) + height * float(height_frac)))
+    return _project_points([point], camera, frame)[0]
+
+
+def _draw_clock_face(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> None:
+    face = _inset_bbox(bbox, 0.05, 0.05)
+    draw.ellipse(tuple(face), fill=(245, 239, 205), outline=(45, 54, 62), width=2)
+    cx = (float(face[0]) + float(face[2])) * 0.5
+    cy = (float(face[1]) + float(face[3])) * 0.5
+    radius = min(float(face[2]) - float(face[0]), float(face[3]) - float(face[1])) * 0.30
+    if radius <= 1.0:
+        return
+    for angle_index in range(12):
+        angle = math.pi * 0.5 - angle_index * math.tau / 12.0
+        tick_outer = (cx + math.cos(angle) * radius * 1.42, cy - math.sin(angle) * radius * 1.42)
+        tick_inner = (
+            cx + math.cos(angle) * radius * (1.10 if angle_index % 3 == 0 else 1.24),
+            cy - math.sin(angle) * radius * (1.10 if angle_index % 3 == 0 else 1.24),
+        )
+        _draw_line(draw, tick_inner, tick_outer, fill=(70, 77, 84), width=2 if angle_index % 3 == 0 else 1)
+    _draw_line(draw, (cx, cy), (cx, cy - radius), fill=(38, 45, 54), width=2)
+    _draw_line(draw, (cx, cy), (cx + radius * 0.78, cy + radius * 0.30), fill=(38, 45, 54), width=2)
+    draw.ellipse((cx - 2.2, cy - 2.2, cx + 2.2, cy + 2.2), fill=(38, 45, 54))
+
+
+def _draw_room_table_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    object_type = str(spec.get("object_type"))
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    top_h = max(0.06, height * 0.16)
+    leg_h = max(0.05, height - top_h)
+    leg_w = min(width, depth) * (0.12 if object_type != "desk" else 0.10)
+    parts: List[Tuple[Mapping[str, Any], Tuple[int, int, int]]] = [
+        (
+            _room_sub_box_spec(spec, offset_xyz=(sx * width * 0.36, sy * depth * 0.34, 0.0), dimensions_xyz=(leg_w, leg_w, leg_h)),
+            _shade(fill, 0.78),
+        )
+        for sx in (-1.0, 1.0)
+        for sy in (-1.0, 1.0)
+    ]
+    parts.append(
+        (
+            _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, leg_h), dimensions_xyz=(width, depth, top_h)),
+            _tint(fill, 0.18),
+        )
+    )
+    if object_type == "desk":
+        drawer_h = leg_h * 0.45
+        parts.append(
+            (
+                _room_sub_box_spec(
+                    spec,
+                    offset_xyz=(width * 0.24, -depth * 0.31, leg_h * 0.23),
+                    dimensions_xyz=(width * 0.36, depth * 0.16, drawer_h),
+                ),
+                _shade(fill, 0.84),
+            )
+        )
+    bbox = _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+    if object_type == "desk":
+        panel = _inset_bbox(bbox, 0.55, 0.42)
+        panel[0] = float(bbox[0]) + (float(bbox[2]) - float(bbox[0])) * 0.54
+        panel[2] = float(bbox[0]) + (float(bbox[2]) - float(bbox[0])) * 0.86
+        draw.rectangle(tuple(panel), fill=_shade(fill, 0.72), outline=(62, 50, 40), width=1)
+        for frac in (0.38, 0.62):
+            y = float(panel[1]) + (float(panel[3]) - float(panel[1])) * frac
+            _draw_line(draw, (float(panel[0]) + 2.0, y), (float(panel[2]) - 2.0, y), fill=(62, 50, 40), width=1)
+    return list(bbox)
+
+
+def _draw_room_sofa_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    parts = [
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.08, 0.0), dimensions_xyz=(width * 0.82, depth * 0.66, height * 0.34)), _shade(fill, 0.88)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.34, height * 0.25), dimensions_xyz=(width * 0.92, depth * 0.20, height * 0.70)), _shade(fill, 0.72)),
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.47, -depth * 0.02, 0.0), dimensions_xyz=(width * 0.13, depth * 0.76, height * 0.58)), _shade(fill, 0.76)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.47, -depth * 0.02, 0.0), dimensions_xyz=(width * 0.13, depth * 0.76, height * 0.58)), _shade(fill, 0.76)),
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.21, -depth * 0.13, height * 0.18), dimensions_xyz=(width * 0.34, depth * 0.50, height * 0.22)), _tint(fill, 0.15)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.21, -depth * 0.13, height * 0.18), dimensions_xyz=(width * 0.34, depth * 0.50, height * 0.22)), _tint(fill, 0.09)),
+    ]
+    bbox = _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+    seam_x = (float(bbox[0]) + float(bbox[2])) * 0.5
+    _draw_line(draw, (seam_x, float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.38), (seam_x, float(bbox[3]) - 3.0), fill=(55, 69, 88), width=1)
+    return list(bbox)
+
+
+def _draw_room_armchair_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    parts = [
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.08, 0.0), dimensions_xyz=(width * 0.70, depth * 0.62, height * 0.34)), _shade(fill, 0.88)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.34, height * 0.25), dimensions_xyz=(width * 0.74, depth * 0.20, height * 0.68)), _shade(fill, 0.72)),
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.42, -depth * 0.04, 0.0), dimensions_xyz=(width * 0.16, depth * 0.70, height * 0.55)), _shade(fill, 0.76)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.42, -depth * 0.04, 0.0), dimensions_xyz=(width * 0.16, depth * 0.70, height * 0.55)), _shade(fill, 0.76)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.14, height * 0.18), dimensions_xyz=(width * 0.52, depth * 0.46, height * 0.20)), _tint(fill, 0.14)),
+    ]
+    return _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+
+
+def _draw_room_bed_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    parts = [
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, -depth * 0.05, height * 0.08), dimensions_xyz=(width * 0.94, depth * 0.84, height * 0.38)), _tint(fill, 0.28)),
+        (_room_sub_box_spec(spec, offset_xyz=(0.0, depth * 0.47, height * 0.08), dimensions_xyz=(width, depth * 0.12, height * 0.84)), _shade(fill, 0.70)),
+    ]
+    bbox = _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+    width_px = float(bbox[2]) - float(bbox[0])
+    height_px = float(bbox[3]) - float(bbox[1])
+    pillow = [float(bbox[0]) + width_px * 0.16, float(bbox[1]) + height_px * 0.22, float(bbox[0]) + width_px * 0.46, float(bbox[1]) + height_px * 0.40]
+    blanket = [float(bbox[0]) + width_px * 0.30, float(bbox[1]) + height_px * 0.50, float(bbox[2]) - width_px * 0.10, float(bbox[3]) - height_px * 0.12]
+    draw.rounded_rectangle(tuple(pillow), radius=4, fill=(236, 232, 221), outline=(116, 107, 136), width=1)
+    draw.rounded_rectangle(tuple(blanket), radius=4, fill=(94, 128, 166), outline=(65, 82, 105), width=1)
+    return list(_bbox_union(bbox, pillow, blanket))
+
+
+def _draw_room_media_console_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    front = _inset_bbox(bbox, 0.10, 0.20)
+    panel_w = (float(front[2]) - float(front[0])) / 3.0
+    for index in range(3):
+        x1 = float(front[0]) + panel_w * index + 1.0
+        x2 = float(front[0]) + panel_w * (index + 1) - 1.0
+        panel = [x1, float(front[1]), x2, float(front[3])]
+        draw.rectangle(tuple(panel), fill=_shade(fill, 0.74 + index * 0.04), outline=(58, 48, 40), width=1)
+        handle_y = (float(panel[1]) + float(panel[3])) * 0.52
+        _draw_line(draw, (x1 + panel_w * 0.28, handle_y), (x2 - panel_w * 0.28, handle_y), fill=(215, 181, 95), width=2)
+    return list(_bbox_union(bbox, front))
+
+
+def _draw_room_tv_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    base_h = height * 0.08
+    stand_h = height * 0.16
+    panel_h = height - base_h - stand_h * 0.35
+    panel_z = height - panel_h
+    base = _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width * 0.42, depth * 0.85, base_h))
+    stand = _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, base_h), dimensions_xyz=(width * 0.10, depth * 0.48, stand_h))
+    panel = _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, panel_z), dimensions_xyz=(width, depth, panel_h))
+    bboxes = [
+        _draw_box_object(draw, base, camera=camera, frame=frame, fill=(45, 48, 54)),
+        _draw_box_object(draw, stand, camera=camera, frame=frame, fill=(35, 38, 44)),
+        _draw_box_object(draw, panel, camera=camera, frame=frame, fill=fill),
+    ]
+    panel_bbox = _object_screen_bbox(panel, camera, frame, pad_px=0.0)
+    screen = _inset_bbox(panel_bbox, 0.12, 0.14)
+    draw.rectangle(tuple(screen), fill=(16, 24, 34), outline=(74, 88, 103), width=2)
+    shine = [float(screen[0]) + 3.0, float(screen[1]) + 3.0, float(screen[2]) - 3.0, float(screen[1]) + max(5.0, (float(screen[3]) - float(screen[1])) * 0.22)]
+    draw.rectangle(tuple(shine), fill=(31, 52, 68))
+    return list(_bbox_union(*bboxes, screen))
+
+
+def _draw_room_clock_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    height = float(spec["dimensions_xyz"][2])
+    if str(spec.get("mounting")) != "on_furniture" and height >= 0.75:
+        bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=(138, 94, 56))
+        width_px = float(bbox[2]) - float(bbox[0])
+        height_px = float(bbox[3]) - float(bbox[1])
+        face = [
+            float(bbox[0]) + width_px * 0.20,
+            float(bbox[1]) + height_px * 0.09,
+            float(bbox[2]) - width_px * 0.20,
+            float(bbox[1]) + height_px * 0.43,
+        ]
+        _draw_clock_face(draw, face)
+        window = [
+            float(bbox[0]) + width_px * 0.28,
+            float(bbox[1]) + height_px * 0.50,
+            float(bbox[2]) - width_px * 0.28,
+            float(bbox[3]) - height_px * 0.12,
+        ]
+        draw.rectangle(tuple(window), fill=(94, 64, 42), outline=(52, 36, 27), width=1)
+        cx = (float(window[0]) + float(window[2])) * 0.5
+        _draw_line(draw, (cx, float(window[1]) + 2.0), (cx, float(window[3]) - 6.0), fill=(218, 176, 82), width=2)
+        draw.ellipse((cx - 4.0, float(window[3]) - 10.0, cx + 4.0, float(window[3]) - 2.0), fill=(218, 176, 82), outline=(64, 48, 25), width=1)
+        return list(_bbox_union(bbox, face, window))
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    _draw_clock_face(draw, _inset_bbox(bbox, 0.18, 0.14))
+    return list(bbox)
+
+
+def _draw_room_picture_frame_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    mat = _inset_bbox(bbox, 0.10, 0.10)
+    draw.rectangle(tuple(mat), fill=(133, 86, 61), outline=(72, 46, 34), width=2)
+    inner = _inset_bbox(bbox, 0.18, 0.17)
+    _draw_screen_scenery(draw, inner, variant=str(spec.get("scenery_variant", "mountains")), outline=(72, 46, 34))
+    if str(spec.get("mounting")) != "on_furniture":
+        foot_y = float(bbox[3]) - 2.0
+        _draw_line(draw, ((float(bbox[0]) + float(bbox[2])) * 0.5, foot_y), (float(bbox[2]) - 4.0, foot_y + 5.0), fill=(72, 46, 34), width=2)
+    return list(_bbox_union(bbox, mat, inner))
+
+
+def _draw_room_mirror_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    inner = _inset_bbox(bbox, 0.16, 0.12)
+    draw.rectangle(tuple(inner), fill=(197, 226, 232), outline=(70, 91, 100), width=2)
+    _draw_line(draw, (inner[0], inner[1]), (inner[2], inner[3]), fill=(229, 244, 247), width=2)
+    _draw_line(draw, (float(inner[0]) + 5.0, float(inner[1]) + 10.0), (float(inner[2]) - 8.0, float(inner[1]) + 25.0), fill=(237, 250, 252), width=2)
+    return list(_bbox_union(bbox, inner))
+
+
+def _draw_room_standing_shelf_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    post_w = width * 0.10
+    shelf_h = height * 0.07
+    parts: List[Tuple[Mapping[str, Any], Tuple[int, int, int]]] = [
+        (_room_sub_box_spec(spec, offset_xyz=(-width * 0.44, 0.0, 0.0), dimensions_xyz=(post_w, depth, height)), _shade(fill, 0.78)),
+        (_room_sub_box_spec(spec, offset_xyz=(width * 0.44, 0.0, 0.0), dimensions_xyz=(post_w, depth, height)), _shade(fill, 0.78)),
+    ]
+    for z_frac in (0.04, 0.34, 0.64, 0.92):
+        parts.append(
+            (
+                _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * z_frac), dimensions_xyz=(width, depth, shelf_h)),
+                _tint(fill, 0.08),
+            )
+        )
+    book_colors = [(180, 72, 76), (79, 127, 168), (229, 177, 78), (88, 145, 94), (128, 93, 150)]
+    for shelf_index, z_frac in enumerate((0.13, 0.43, 0.73)):
+        for book_index in range(4):
+            book_w = width * 0.075
+            x_offset = -width * 0.26 + book_index * width * 0.15
+            book_h = height * (0.13 + 0.015 * ((book_index + shelf_index) % 2))
+            parts.append(
+                (
+                    _room_sub_box_spec(
+                        spec,
+                        offset_xyz=(x_offset, -depth * 0.18, height * z_frac),
+                        dimensions_xyz=(book_w, depth * 0.20, book_h),
+                    ),
+                    book_colors[(book_index + shelf_index) % len(book_colors)],
+                )
+            )
+    return _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
+
+
+def _draw_room_floor_lamp_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _object_screen_bbox(spec, camera, frame, pad_px=2.0)
+    width_px = float(bbox[2]) - float(bbox[0])
+    height_px = float(bbox[3]) - float(bbox[1])
+    base_center = _room_point_at_height(spec, 0.02, camera, frame)
+    shade_center = _room_point_at_height(spec, 0.82, camera, frame)
+    top_center = _room_point_at_height(spec, 0.98, camera, frame)
+    pole_top = (float(shade_center[0]), float(shade_center[1]) + height_px * 0.06)
+    pole_bottom = (float(base_center[0]), float(base_center[1]) - height_px * 0.05)
+    _draw_line(draw, pole_bottom, pole_top, fill=(91, 70, 44), width=max(2, int(width_px * 0.06)))
+    base = [
+        float(base_center[0]) - width_px * 0.25,
+        float(base_center[1]) - height_px * 0.035,
+        float(base_center[0]) + width_px * 0.25,
+        float(base_center[1]) + height_px * 0.035,
+    ]
+    draw.ellipse(tuple(base), fill=(128, 91, 52), outline=(60, 45, 29), width=2)
+    shade = [
+        (float(top_center[0]) - width_px * 0.23, float(top_center[1]) + height_px * 0.02),
+        (float(top_center[0]) + width_px * 0.23, float(top_center[1]) + height_px * 0.02),
+        (float(shade_center[0]) + width_px * 0.36, float(shade_center[1]) + height_px * 0.15),
+        (float(shade_center[0]) - width_px * 0.36, float(shade_center[1]) + height_px * 0.15),
+    ]
+    draw.polygon(shade, fill=fill, outline=(88, 62, 35))
+    lip_y = float(shade_center[1]) + height_px * 0.15
+    draw.ellipse((shade[3][0], lip_y - height_px * 0.035, shade[2][0], lip_y + height_px * 0.035), fill=_shade(fill, 0.78), outline=(88, 62, 35), width=2)
+    return list(_bbox_union(bbox, base, _points_bbox(shade)))
+
+
+def _draw_room_plant_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    width, depth, height = (float(value) for value in spec["dimensions_xyz"])
+    pot = _room_sub_box_spec(spec, offset_xyz=(0.0, 0.0, 0.0), dimensions_xyz=(width * 0.55, depth * 0.55, height * 0.32))
+    pot_bbox = _draw_cylinder_object(draw, pot, camera=camera, frame=frame, fill=(154, 98, 64))
+    bbox = _object_screen_bbox(spec, camera, frame, pad_px=2.0)
+    width_px = float(bbox[2]) - float(bbox[0])
+    height_px = float(bbox[3]) - float(bbox[1])
+    center = _room_point_at_height(spec, 0.66, camera, frame)
+    leaf_bboxes: List[List[float]] = []
+    for index, (dx, dy, sx, sy, color) in enumerate(
+        (
+            (-0.22, -0.10, 0.28, 0.26, (61, 128, 82)),
+            (0.20, -0.12, 0.30, 0.24, (76, 151, 89)),
+            (-0.04, -0.28, 0.26, 0.30, (51, 116, 77)),
+            (0.02, 0.08, 0.36, 0.26, (84, 158, 96)),
+            (-0.30, 0.08, 0.24, 0.22, (63, 137, 86)),
+        )
+    ):
+        cx = float(center[0]) + width_px * dx
+        cy = float(center[1]) + height_px * dy
+        rx = max(5.0, width_px * sx)
+        ry = max(5.0, height_px * sy)
+        leaf = [cx - rx, cy - ry, cx + rx, cy + ry]
+        draw.ellipse(tuple(leaf), fill=color, outline=(37, 88, 57), width=1)
+        _draw_line(draw, (cx, cy + ry * 0.78), (cx, cy - ry * 0.70), fill=(37, 88, 57), width=1)
+        leaf_bboxes.append(leaf)
+    return list(_bbox_union(pot_bbox, bbox, *leaf_bboxes))
+
+
+def _draw_room_closed_box_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    width_px = float(bbox[2]) - float(bbox[0])
+    height_px = float(bbox[3]) - float(bbox[1])
+    tape = (219, 189, 122)
+    _draw_line(draw, (float(bbox[0]) + width_px * 0.50, float(bbox[1]) + height_px * 0.10), (float(bbox[0]) + width_px * 0.50, float(bbox[3]) - height_px * 0.08), fill=tape, width=3)
+    _draw_line(draw, (float(bbox[0]) + width_px * 0.15, float(bbox[1]) + height_px * 0.30), (float(bbox[2]) - width_px * 0.15, float(bbox[1]) + height_px * 0.30), fill=tape, width=3)
+    return list(bbox)
+
+
+def _draw_room_open_box_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_open_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    inner = _inset_bbox(bbox, 0.22, 0.26)
+    inner[3] = float(inner[1]) + max(5.0, (float(bbox[3]) - float(bbox[1])) * 0.22)
+    draw.polygon(
+        [
+            (float(inner[0]), float(inner[3])),
+            ((float(inner[0]) + float(inner[2])) * 0.5, float(inner[1])),
+            (float(inner[2]), float(inner[3])),
+            ((float(inner[0]) + float(inner[2])) * 0.5, float(inner[3]) + 5.0),
+        ],
+        fill=(93, 65, 42),
+        outline=(56, 41, 30),
+    )
+    return list(_bbox_union(bbox, inner))
+
+
+def _draw_room_floor_fan_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _object_screen_bbox(spec, camera, frame, pad_px=2.0)
+    width_px = float(bbox[2]) - float(bbox[0])
+    height_px = float(bbox[3]) - float(bbox[1])
+    face = [
+        float(bbox[0]) + width_px * 0.12,
+        float(bbox[1]) + height_px * 0.06,
+        float(bbox[2]) - width_px * 0.12,
+        float(bbox[1]) + height_px * 0.58,
+    ]
+    draw.ellipse(tuple(face), fill=(214, 222, 224), outline=(45, 56, 66), width=2)
+    cx = (float(face[0]) + float(face[2])) * 0.5
+    cy = (float(face[1]) + float(face[3])) * 0.5
+    radius = min(float(face[2]) - float(face[0]), float(face[3]) - float(face[1])) * 0.34
+    for angle in (math.pi * 0.5, math.pi * 1.17, math.pi * 1.83):
+        tip = (cx + math.cos(angle) * radius, cy + math.sin(angle) * radius)
+        _draw_line(draw, (cx, cy), tip, fill=(96, 113, 124), width=2)
+    for angle in (0.0, math.pi * 0.25, math.pi * 0.50, math.pi * 0.75, math.pi, math.pi * 1.25, math.pi * 1.50, math.pi * 1.75):
+        tip = (cx + math.cos(angle) * radius * 1.22, cy + math.sin(angle) * radius * 1.22)
+        _draw_line(draw, (cx, cy), tip, fill=(123, 137, 146), width=1)
+    draw.ellipse((cx - 3.0, cy - 3.0, cx + 3.0, cy + 3.0), fill=(48, 58, 68))
+    pole_bottom = (cx, float(bbox[3]) - height_px * 0.12)
+    _draw_line(draw, (cx, float(face[3])), pole_bottom, fill=(45, 56, 66), width=3)
+    base = [cx - width_px * 0.24, float(bbox[3]) - height_px * 0.12, cx + width_px * 0.24, float(bbox[3]) - height_px * 0.03]
+    draw.ellipse(tuple(base), fill=(106, 119, 127), outline=(45, 56, 66), width=2)
+    return list(_bbox_union(bbox, face, base))
+
+
+def _draw_room_portable_ac_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=fill)
+    grille = _inset_bbox(bbox, 0.18, 0.18)
+    grille[3] = grille[1] + max(10.0, (float(bbox[3]) - float(bbox[1])) * 0.24)
+    draw.rectangle(tuple(grille), fill=(182, 197, 202), outline=(76, 91, 98), width=1)
+    for index in range(4):
+        y = float(grille[1]) + (index + 1) * (float(grille[3]) - float(grille[1])) / 4.0
+        _draw_line(draw, (float(grille[0]) + 2.0, y), (float(grille[2]) - 2.0, y), fill=(86, 101, 108), width=1)
+    side_vent = [
+        float(bbox[2]) - (float(bbox[2]) - float(bbox[0])) * 0.20,
+        float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.22,
+        float(bbox[2]) - (float(bbox[2]) - float(bbox[0])) * 0.08,
+        float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.70,
+    ]
+    draw.rectangle(tuple(side_vent), fill=(119, 137, 145), outline=(60, 72, 78), width=1)
+    outlet = _inset_bbox(bbox, 0.20, 0.22)
+    outlet[1] = float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.58
+    outlet[3] = float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.78
+    draw.rectangle(tuple(outlet), fill=(233, 238, 238), outline=(76, 91, 98), width=1)
+    wheel_y = float(bbox[3]) - 3.0
+    _draw_line(draw, (float(bbox[0]) + 5.0, wheel_y), (float(bbox[0]) + 14.0, wheel_y), fill=(58, 65, 70), width=2)
+    _draw_line(draw, (float(bbox[2]) - 14.0, wheel_y), (float(bbox[2]) - 5.0, wheel_y), fill=(58, 65, 70), width=2)
+    return list(_bbox_union(bbox, grille, side_vent, outlet))
+
+
+def _draw_room_coat_stand_object(
+    draw: ImageDraw.ImageDraw,
+    spec: Mapping[str, Any],
+    *,
+    camera,
+    frame,
+    fill: Tuple[int, int, int],
+) -> List[float]:
+    bbox = _object_screen_bbox(spec, camera, frame, pad_px=2.0)
+    stand_top = _room_point_at_height(spec, 0.98, camera, frame)
+    stand_mid = _room_point_at_height(spec, 0.58, camera, frame)
+    stand_base = _room_point_at_height(spec, 0.02, camera, frame)
+    _draw_line(draw, stand_base, stand_top, fill=(66, 47, 35), width=3)
+    _draw_line(draw, (stand_top[0] - 10.0, stand_top[1] + 5.0), (stand_top[0] + 10.0, stand_top[1] + 5.0), fill=(66, 47, 35), width=3)
+    _draw_line(draw, (stand_base[0] - 14.0, stand_base[1]), (stand_base[0] + 14.0, stand_base[1]), fill=(66, 47, 35), width=3)
+    body = _inset_bbox(bbox, 0.14, 0.08)
+    sleeve_y = body[1] + (body[3] - body[1]) * 0.30
+    draw.polygon(
+        [
+            (body[0] + (body[2] - body[0]) * 0.15, body[1] + (body[3] - body[1]) * 0.12),
+            (body[0] - (body[2] - body[0]) * 0.26, sleeve_y),
+            (body[0] - (body[2] - body[0]) * 0.10, sleeve_y + (body[3] - body[1]) * 0.28),
+            (body[0] + (body[2] - body[0]) * 0.28, body[1] + (body[3] - body[1]) * 0.40),
+        ],
+        fill=_shade(fill, 0.84),
+        outline=(53, 42, 68),
+    )
+    draw.polygon(
+        [
+            (body[2] - (body[2] - body[0]) * 0.15, body[1] + (body[3] - body[1]) * 0.12),
+            (body[2] + (body[2] - body[0]) * 0.26, sleeve_y),
+            (body[2] + (body[2] - body[0]) * 0.10, sleeve_y + (body[3] - body[1]) * 0.28),
+            (body[2] - (body[2] - body[0]) * 0.28, body[1] + (body[3] - body[1]) * 0.40),
+        ],
+        fill=_shade(fill, 0.92),
+        outline=(53, 42, 68),
+    )
+    draw.polygon(
+        [
+            ((body[0] + body[2]) * 0.5, body[1]),
+            (body[2], body[1] + (body[3] - body[1]) * 0.34),
+            (body[2] - (body[2] - body[0]) * 0.12, body[3]),
+            (body[0] + (body[2] - body[0]) * 0.12, body[3]),
+            (body[0], body[1] + (body[3] - body[1]) * 0.34),
+        ],
+        fill=fill,
+        outline=(53, 42, 68),
+    )
+    collar = [
+        ((body[0] + body[2]) * 0.5, body[1] + (body[3] - body[1]) * 0.20),
+        (body[0] + (body[2] - body[0]) * 0.36, body[1] + (body[3] - body[1]) * 0.08),
+        (body[0] + (body[2] - body[0]) * 0.46, body[1] + (body[3] - body[1]) * 0.24),
+        (body[2] - (body[2] - body[0]) * 0.46, body[1] + (body[3] - body[1]) * 0.24),
+        (body[2] - (body[2] - body[0]) * 0.36, body[1] + (body[3] - body[1]) * 0.08),
+    ]
+    draw.polygon(collar, fill=(226, 218, 202), outline=(53, 42, 68))
+    button_x = (float(body[0]) + float(body[2])) * 0.5
+    for button_y in (body[1] + (body[3] - body[1]) * 0.44, body[1] + (body[3] - body[1]) * 0.64):
+        draw.ellipse((button_x - 2.0, button_y - 2.0, button_x + 2.0, button_y + 2.0), fill=(226, 218, 202))
+    return list(_bbox_union(bbox, body, _points_bbox([stand_base, stand_mid, stand_top])))
 
 
 def _draw_floor_object(
@@ -1697,6 +2587,41 @@ def _draw_floor_object(
         "box": (185, 128, 60),
         "toy": (91, 154, 200),
     }.get(color_role, CONTEXT_OBJECT_COLORS[sum(ord(char) for char in str(spec["object_id"])) % len(CONTEXT_OBJECT_COLORS)])
+    object_type = str(spec.get("object_type"))
+    if object_type == "sofa":
+        return _draw_room_sofa_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "armchair":
+        return _draw_room_armchair_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type in {"side_table", "desk"}:
+        return _draw_room_table_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "media_console":
+        return _draw_room_media_console_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "bed":
+        return _draw_room_bed_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "plant":
+        return _draw_room_plant_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "floor_lamp":
+        return _draw_room_floor_lamp_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "box":
+        return _draw_room_closed_box_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "open_box":
+        return _draw_room_open_box_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "wall_shelf":
+        return _draw_room_standing_shelf_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "tv":
+        return _draw_room_tv_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "clock":
+        return _draw_room_clock_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "picture_frame":
+        return _draw_room_picture_frame_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "mirror":
+        return _draw_room_mirror_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "wall_fan":
+        return _draw_room_floor_fan_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "air_conditioner":
+        return _draw_room_portable_ac_object(draw, spec, camera=camera, frame=frame, fill=color)
+    if object_type == "hanging_coat":
+        return _draw_room_coat_stand_object(draw, spec, camera=camera, frame=frame, fill=color)
     shape_type = str(spec["shape_type"])
     if shape_type == "table":
         return _draw_table_object(draw, spec, camera=camera, frame=frame, fill=color)
@@ -1710,137 +2635,7 @@ def _draw_floor_object(
         return _draw_pyramid_object(draw, spec, camera=camera, frame=frame, fill=color)
     if shape_type == "open_box":
         return _draw_open_box_object(draw, spec, camera=camera, frame=frame, fill=color)
-    bbox = _draw_box_object(draw, spec, camera=camera, frame=frame, fill=color)
-    if str(spec.get("object_type")) == "tv":
-        inner = [
-            float(bbox[0]) + (float(bbox[2]) - float(bbox[0])) * 0.14,
-            float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.14,
-            float(bbox[2]) - (float(bbox[2]) - float(bbox[0])) * 0.14,
-            float(bbox[3]) - (float(bbox[3]) - float(bbox[1])) * 0.14,
-        ]
-        draw.rectangle(tuple(inner), fill=(18, 25, 35), outline=(74, 88, 103), width=2)
-    elif str(spec.get("object_type")) == "clock":
-        inner = _inset_bbox(bbox, 0.22, 0.18)
-        draw.ellipse(tuple(inner), fill=(245, 239, 205), outline=(45, 54, 62), width=2)
-        cx = (float(inner[0]) + float(inner[2])) * 0.5
-        cy = (float(inner[1]) + float(inner[3])) * 0.5
-        radius = min(float(inner[2]) - float(inner[0]), float(inner[3]) - float(inner[1])) * 0.28
-        for angle_index in range(12):
-            angle = math.pi * 0.5 - angle_index * math.tau / 12.0
-            tick_outer = (cx + math.cos(angle) * radius * 1.42, cy - math.sin(angle) * radius * 1.42)
-            tick_inner = (cx + math.cos(angle) * radius * (1.12 if angle_index % 3 == 0 else 1.25), cy - math.sin(angle) * radius * (1.12 if angle_index % 3 == 0 else 1.25))
-            _draw_line(draw, tick_inner, tick_outer, fill=(70, 77, 84), width=2 if angle_index % 3 == 0 else 1)
-        _draw_line(draw, (cx, cy), (cx, cy - radius), fill=(38, 45, 54), width=2)
-        _draw_line(draw, (cx, cy), (cx + radius * 0.78, cy + radius * 0.30), fill=(38, 45, 54), width=2)
-        draw.ellipse((cx - 2.2, cy - 2.2, cx + 2.2, cy + 2.2), fill=(38, 45, 54))
-    elif str(spec.get("object_type")) == "picture_frame":
-        inner = _inset_bbox(bbox, 0.17, 0.16)
-        draw.rectangle(tuple(_inset_bbox(bbox, 0.10, 0.10)), fill=(133, 86, 61), outline=(72, 46, 34), width=2)
-        _draw_screen_scenery(draw, inner, variant=str(spec.get("scenery_variant", "mountains")), outline=(72, 46, 34))
-    elif str(spec.get("object_type")) == "mirror":
-        inner = _inset_bbox(bbox, 0.16, 0.12)
-        draw.rectangle(tuple(inner), fill=(197, 226, 232), outline=(70, 91, 100), width=2)
-        _draw_line(draw, (inner[0], inner[1]), (inner[2], inner[3]), fill=(229, 244, 247), width=2)
-    elif str(spec.get("object_type")) == "bed":
-        pillow = _inset_bbox(bbox, 0.24, 0.18)
-        pillow[3] = pillow[1] + max(8.0, (float(bbox[3]) - float(bbox[1])) * 0.20)
-        draw.rounded_rectangle(tuple(pillow), radius=4, fill=(233, 229, 218), outline=(116, 107, 136), width=1)
-    elif str(spec.get("object_type")) == "wall_fan":
-        face = _inset_bbox(bbox, 0.12, 0.10)
-        face[3] = face[1] + max(16.0, (float(bbox[3]) - float(bbox[1])) * 0.56)
-        draw.ellipse(tuple(face), fill=(214, 222, 224), outline=(45, 56, 66), width=2)
-        cx = (float(face[0]) + float(face[2])) * 0.5
-        cy = (float(face[1]) + float(face[3])) * 0.5
-        radius = min(float(face[2]) - float(face[0]), float(face[3]) - float(face[1])) * 0.34
-        for angle in (math.pi * 0.5, math.pi * 1.17, math.pi * 1.83):
-            tip = (cx + math.cos(angle) * radius, cy + math.sin(angle) * radius)
-            _draw_line(draw, (cx, cy), tip, fill=(96, 113, 124), width=2)
-        for angle in (0.0, math.pi * 0.25, math.pi * 0.50, math.pi * 0.75, math.pi, math.pi * 1.25, math.pi * 1.50, math.pi * 1.75):
-            tip = (cx + math.cos(angle) * radius * 1.22, cy + math.sin(angle) * radius * 1.22)
-            _draw_line(draw, (cx, cy), tip, fill=(123, 137, 146), width=1)
-        draw.ellipse((cx - 3.0, cy - 3.0, cx + 3.0, cy + 3.0), fill=(48, 58, 68))
-        _draw_line(draw, (cx, float(face[3])), (cx, float(bbox[3])), fill=(45, 56, 66), width=2)
-    elif str(spec.get("object_type")) == "air_conditioner":
-        grille = _inset_bbox(bbox, 0.18, 0.18)
-        grille[3] = grille[1] + max(10.0, (float(bbox[3]) - float(bbox[1])) * 0.24)
-        draw.rectangle(tuple(grille), fill=(182, 197, 202), outline=(76, 91, 98), width=1)
-        for index in range(4):
-            y = float(grille[1]) + (index + 1) * (float(grille[3]) - float(grille[1])) / 4.0
-            _draw_line(draw, (float(grille[0]) + 2.0, y), (float(grille[2]) - 2.0, y), fill=(86, 101, 108), width=1)
-        side_vent = [
-            float(bbox[2]) - (float(bbox[2]) - float(bbox[0])) * 0.20,
-            float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.22,
-            float(bbox[2]) - (float(bbox[2]) - float(bbox[0])) * 0.08,
-            float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.70,
-        ]
-        draw.rectangle(tuple(side_vent), fill=(119, 137, 145), outline=(60, 72, 78), width=1)
-        outlet = _inset_bbox(bbox, 0.20, 0.22)
-        outlet[1] = float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.58
-        outlet[3] = float(bbox[1]) + (float(bbox[3]) - float(bbox[1])) * 0.78
-        draw.rectangle(tuple(outlet), fill=(233, 238, 238), outline=(76, 91, 98), width=1)
-        wheel_y = float(bbox[3]) - 3.0
-        _draw_line(draw, (float(bbox[0]) + 5.0, wheel_y), (float(bbox[0]) + 14.0, wheel_y), fill=(58, 65, 70), width=2)
-        _draw_line(draw, (float(bbox[2]) - 14.0, wheel_y), (float(bbox[2]) - 5.0, wheel_y), fill=(58, 65, 70), width=2)
-    elif str(spec.get("object_type")) == "hanging_plant":
-        x1, y1, x2, y2 = (float(value) for value in bbox)
-        width = max(1.0, x2 - x1)
-        height = max(1.0, y2 - y1)
-        pot = [
-            round(x1 + width * 0.24, 3),
-            round(y1 + height * 0.58, 3),
-            round(x2 - width * 0.24, 3),
-            round(y2 - height * 0.08, 3),
-        ]
-        draw.rectangle(tuple(pot), fill=(137, 86, 55), outline=(68, 48, 34), width=2)
-        leaves = _inset_bbox(bbox, 0.16, 0.14)
-        leaves[3] = leaves[1] + max(12.0, (float(bbox[3]) - float(bbox[1])) * 0.38)
-        draw.ellipse(tuple(leaves), fill=(63, 132, 80), outline=(35, 82, 48), width=2)
-    elif str(spec.get("object_type")) == "hanging_coat":
-        body = _inset_bbox(bbox, 0.14, 0.08)
-        sleeve_y = body[1] + (body[3] - body[1]) * 0.30
-        draw.polygon(
-            [
-                (body[0] + (body[2] - body[0]) * 0.15, body[1] + (body[3] - body[1]) * 0.12),
-                (body[0] - (body[2] - body[0]) * 0.26, sleeve_y),
-                (body[0] - (body[2] - body[0]) * 0.10, sleeve_y + (body[3] - body[1]) * 0.28),
-                (body[0] + (body[2] - body[0]) * 0.28, body[1] + (body[3] - body[1]) * 0.40),
-            ],
-            fill=(98, 67, 124),
-            outline=(53, 42, 68),
-        )
-        draw.polygon(
-            [
-                (body[2] - (body[2] - body[0]) * 0.15, body[1] + (body[3] - body[1]) * 0.12),
-                (body[2] + (body[2] - body[0]) * 0.26, sleeve_y),
-                (body[2] + (body[2] - body[0]) * 0.10, sleeve_y + (body[3] - body[1]) * 0.28),
-                (body[2] - (body[2] - body[0]) * 0.28, body[1] + (body[3] - body[1]) * 0.40),
-            ],
-            fill=(107, 74, 135),
-            outline=(53, 42, 68),
-        )
-        draw.polygon(
-            [
-                ((body[0] + body[2]) * 0.5, body[1]),
-                (body[2], body[1] + (body[3] - body[1]) * 0.34),
-                (body[2] - (body[2] - body[0]) * 0.12, body[3]),
-                (body[0] + (body[2] - body[0]) * 0.12, body[3]),
-                (body[0], body[1] + (body[3] - body[1]) * 0.34),
-            ],
-            fill=(116, 80, 145),
-            outline=(53, 42, 68),
-        )
-        collar = [
-            ((body[0] + body[2]) * 0.5, body[1] + (body[3] - body[1]) * 0.20),
-            (body[0] + (body[2] - body[0]) * 0.36, body[1] + (body[3] - body[1]) * 0.08),
-            (body[0] + (body[2] - body[0]) * 0.46, body[1] + (body[3] - body[1]) * 0.24),
-            (body[2] - (body[2] - body[0]) * 0.46, body[1] + (body[3] - body[1]) * 0.24),
-            (body[2] - (body[2] - body[0]) * 0.36, body[1] + (body[3] - body[1]) * 0.08),
-        ]
-        draw.polygon(collar, fill=(226, 218, 202), outline=(53, 42, 68))
-        button_x = (float(body[0]) + float(body[2])) * 0.5
-        for button_y in (body[1] + (body[3] - body[1]) * 0.44, body[1] + (body[3] - body[1]) * 0.64):
-            draw.ellipse((button_x - 2.0, button_y - 2.0, button_x + 2.0, button_y + 2.0), fill=(226, 218, 202))
-    return list(bbox)
+    return _draw_box_object(draw, spec, camera=camera, frame=frame, fill=color)
 
 
 def _draw_room_option_label(
@@ -1860,14 +2655,14 @@ def _draw_room_option_label(
         round(x + width * 0.5 + 4.0, 3),
         round(y + height * 0.5 + 3.0, 3),
     ]
-    draw.text(
+    draw_text_traced(draw,
         (x - width * 0.5, y - height * 0.5 - 1.0),
         str(label),
         font=font,
         fill=(255, 255, 255),
         stroke_width=3,
         stroke_fill=(24, 29, 38),
-    )
+     role="readout", required=False,)
     return list(label_bbox)
 
 

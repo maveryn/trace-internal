@@ -36,8 +36,6 @@ def test_object_relation_answer_and_evidence(query_id: str) -> None:
     expected_labels = [str(label) for label, is_match in relation_status.items() if bool(is_match)]
     reference_id = str(trace["reference_object_id"])
     reference_spec = next(spec for spec in context_specs if str(spec["object_id"]) == reference_id)
-
-    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"

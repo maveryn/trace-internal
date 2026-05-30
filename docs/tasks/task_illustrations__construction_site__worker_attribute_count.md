@@ -1,6 +1,7 @@
 # task_illustrations__construction_site__worker_attribute_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -40,10 +41,14 @@ tool condition.
 - `render_map.counted_worker_ids`, `witness_symbolic.counted_worker_ids`, and
   `projected_evidence.bbox_set` are derived from the same rendered worker
   records.
+- `render_spec.style.layout.zone_label_font` records the single global-pool
+  font family used consistently for all visible construction-zone labels.
 
 ## Prompt Contract
 - `scene_key = construction_site_canvas`
 - `task_key = worker_safety_gear_count_task`
 - `query_id` is one of the three worker-safety branches above
+- color query prompts use color names with hex codes, for example
+  `orange [#E87E36]`
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples

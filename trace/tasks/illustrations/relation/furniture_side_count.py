@@ -278,11 +278,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "relation_load": round(float(relation_load), 6),
-            "object_count": int(sample.object_count),
-            "target_count": int(sample.target_count),
-            "furniture_type": str(sample.furniture_type),
-            "relation": str(sample.relation),
-            "object_type": str(sample.object_type),
         },
     )
 

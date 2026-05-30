@@ -16,7 +16,7 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ..shared.visual_task_common import SOURCE_SCENE_BY_TASK, bbox_list, default_font, fit_source_image
+from ..shared.visual_task_common import SOURCE_SCENE_BY_TASK, bbox_list, draw_label_badge, fit_source_image, sample_visual_label_font_trace
 
 
 TASK_ID = "task_illustrations__scene_options__odd_scene_label"
@@ -56,6 +56,26 @@ DEFAULT_SOURCE_QUERIES: Mapping[str, Mapping[str, Any]] = {
     },
 }
 DEFAULT_COUNT_PAIRS: Tuple[Tuple[int, int], ...] = ((2, 3), (3, 2), (3, 4), (4, 3), (4, 5), (5, 4), (5, 6))
+OPTION_FRAME_STYLES: Dict[str, Dict[str, Any]] = {
+    "slate_grid": {
+        "canvas_rgb": (238, 241, 245),
+        "panel_outline_rgb": (66, 73, 84),
+        "badge_fill_rgb": (255, 255, 255),
+        "badge_outline_rgb": (43, 50, 60),
+    },
+    "warm_grid": {
+        "canvas_rgb": (244, 240, 232),
+        "panel_outline_rgb": (82, 68, 54),
+        "badge_fill_rgb": (255, 252, 244),
+        "badge_outline_rgb": (82, 68, 54),
+    },
+    "cool_grid": {
+        "canvas_rgb": (235, 242, 244),
+        "panel_outline_rgb": (42, 70, 83),
+        "badge_fill_rgb": (249, 253, 254),
+        "badge_outline_rgb": (42, 70, 83),
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -78,6 +98,7 @@ class _SourceQuery:
 @dataclass(frozen=True)
 class _SampleSpec:
     correct_index: int
+    option_count: int
     source_query: _SourceQuery
     common_count: int
     odd_count: int
@@ -193,6 +214,7 @@ def _sample_spec(*, params: Mapping[str, Any], instance_seed: int) -> _SampleSpe
 
     return _SampleSpec(
         correct_index=int(correct_index),
+        option_count=int(option_count),
         source_query=source_query,
         common_count=int(common_count),
         odd_count=int(odd_count),
@@ -234,11 +256,23 @@ def _render_panel(
     }
 
 
+def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
+    value = style[key]
+    return (int(value[0]), int(value[1]), int(value[2]))
+
+
+def _sample_option_frame_style(rng) -> Dict[str, Any]:
+    style_id = str(rng.choice(tuple(OPTION_FRAME_STYLES)))
+    return {"style_id": style_id, **dict(OPTION_FRAME_STYLES[style_id])}
+
+
 def _compose_options(
     *,
     panels: Sequence[Image.Image],
     labels: Sequence[str],
     params: Mapping[str, Any],
+    frame_style: Mapping[str, Any],
+    label_font_family: str,
 ) -> Tuple[Image.Image, Dict[str, list[float]]]:
     panel_w, panel_h = _panel_size(params)
     margin = int(params.get("render_margin", group_default(_RENDER_DEFAULTS, "render_margin", _DEFAULTS.render_margin)))
@@ -247,9 +281,8 @@ def _compose_options(
     rows = (len(panels) + columns - 1) // columns
     full_w = 2 * margin + columns * panel_w + (columns - 1) * gap
     full_h = 2 * margin + rows * panel_h + (rows - 1) * gap
-    canvas = Image.new("RGB", (int(full_w), int(full_h)), (238, 241, 245))
+    canvas = Image.new("RGB", (int(full_w), int(full_h)), _rgb(frame_style, "canvas_rgb"))
     draw = ImageDraw.Draw(canvas)
-    label_font = default_font(20, bold=True)
     panel_bboxes: Dict[str, list[float]] = {}
     for index, panel in enumerate(panels):
         row = index // columns
@@ -258,24 +291,29 @@ def _compose_options(
         y = int(margin + row * (panel_h + gap))
         thumb = fit_source_image(panel, width=panel_w, height=panel_h)
         canvas.paste(thumb, (x, y))
-        draw.rectangle((x, y, x + panel_w, y + panel_h), outline=(66, 73, 84), width=2)
+        draw.rectangle((x, y, x + panel_w, y + panel_h), outline=_rgb(frame_style, "panel_outline_rgb"), width=2)
         label = str(labels[index])
-        label_box = draw.textbbox((0, 0), label, font=label_font)
-        badge_w = max(34, int(label_box[2] - label_box[0]) + 18)
-        badge_h = 28
-        draw.rounded_rectangle((x + 8, y + 8, x + 8 + badge_w, y + 8 + badge_h), radius=5, fill=(255, 255, 255), outline=(43, 50, 60), width=2)
-        draw.text((x + 8 + (badge_w - (label_box[2] - label_box[0])) / 2, y + 10), label, fill=(16, 23, 33), font=label_font)
+        draw_label_badge(
+            draw,
+            label,
+            (x + 8, y + 8, x + 44, y + 36),
+            font_family=label_font_family,
+            fill=_rgb(frame_style, "badge_fill_rgb"),
+            outline=_rgb(frame_style, "badge_outline_rgb"),
+        )
         panel_bboxes[label] = bbox_list((x, y, x + panel_w, y + panel_h))
     return canvas, panel_bboxes
 
 
-def _build_complexity() -> TaskComplexity:
+def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
+    panel_count_load = (int(sample.option_count) - 3) / max(1.0, float(len(OPTION_LABELS) - 3))
+    same_panel_fraction = (int(sample.option_count) - 1) / max(1.0, float(sample.option_count))
     return TaskComplexity(
         complexity_score=0.66,
         complexity_components={
-            "panel_count": 6,
-            "same_count_panel_count": 5,
-            "odd_count_panel_count": 1,
+            "panel_count_load": round(float(panel_count_load), 6),
+            "same_panel_fraction": round(float(same_panel_fraction), 6),
+            "odd_panel_fraction": round(float(1.0 / max(1.0, float(sample.option_count))), 6),
             "visual_scan_load": 1.0,
         },
     )
@@ -292,10 +330,19 @@ class IllustrationsVisualOddSceneLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         sample = _sample_spec(params=params, instance_seed=int(instance_seed))
-        option_count = int(params.get("option_count", group_default(_GEN_DEFAULTS, "option_count", _DEFAULTS.option_count)))
-        option_count = max(3, min(len(OPTION_LABELS), option_count))
+        option_count = int(sample.option_count)
         labels = OPTION_LABELS[:option_count]
         same_scene_count = int(option_count) - 1
+        style_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style")
+        frame_style = _sample_option_frame_style(style_rng)
+        label_font = sample_visual_label_font_trace(
+            task_id=TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace_suffix="option_label_font",
+            explicit_key="scene_options_label_font_family",
+            weights_key="scene_options_label_font_family_weights",
+        )
         panels: list[Image.Image] = []
         panel_sources: list[Dict[str, Any]] = []
         for index in range(option_count):
@@ -314,7 +361,13 @@ class IllustrationsVisualOddSceneLabelTask:
             source_info["panel_target_count"] = int(target_count)
             panel_sources.append(source_info)
 
-        image, panel_bboxes = _compose_options(panels=panels, labels=labels, params=params)
+        image, panel_bboxes = _compose_options(
+            panels=panels,
+            labels=labels,
+            params=params,
+            frame_style=frame_style,
+            label_font_family=str(label_font["font_family"]),
+        )
         answer_label = str(labels[int(sample.correct_index)])
         evidence_boxes = [panel_bboxes[answer_label]]
 
@@ -414,6 +467,8 @@ class IllustrationsVisualOddSceneLabelTask:
                 "style": {
                     "panel_grid": [int((option_count + 2) // 3), 3],
                     "panel_size": list(_panel_size(params)),
+                    "frame_style": dict(frame_style),
+                    "option_label_font": dict(label_font),
                 },
             },
             "render_map": {
@@ -445,7 +500,7 @@ class IllustrationsVisualOddSceneLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(),
+            complexity=_build_complexity(sample),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=QUERY_ID,

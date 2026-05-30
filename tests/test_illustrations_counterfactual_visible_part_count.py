@@ -7,6 +7,7 @@ from collections import Counter
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.illustrations.counterfactual.visible_part_count import (
     AIRPLANE_VARIANT,
+    BACKGROUND_STYLES,
     BICYCLE_VARIANT,
     BIRD_VARIANT,
     BUTTERFLY_VARIANT,
@@ -36,7 +37,7 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
         (QUADRUPED_VARIANT, 6, 4, "leg"),
         (AIRPLANE_VARIANT, 4, 2, "wing"),
         (BUTTERFLY_VARIANT, 6, 4, "wing"),
-        (BICYCLE_VARIANT, 4, 2, "wheel"),
+        (BICYCLE_VARIANT, 5, 2, "wheel"),
         (TRAFFIC_LIGHT_VARIANT, 5, 3, "lens"),
         (CLOVER_VARIANT, 6, 3, "leaf"),
         (STAR_VARIANT, 8, 5, "point"),
@@ -50,7 +51,6 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
         out = task.generate(2026052600 + index, params={"query_id": variant, "target_answer": answer}, max_attempts=20)
         trace = out.trace_payload
         assert out.scene_id == "single_object_figure"
-        assert out.query_id == "default"
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(answer)
@@ -72,6 +72,14 @@ def test_illustrations_counterfactual_visible_part_count_contracts_match_trace()
         if variant == CLOVER_VARIANT:
             assert "clover_fill" in colors
             assert "clover_accent" in colors
+        background_style = trace["render_spec"]["style"]["background_style"]
+        assert background_style["style_id"] in {style["style_id"] for style in BACKGROUND_STYLES}
+        assert trace["render_spec"]["style"]["object_center_px"] != [480.0, 360.0]
+        for box in out.evidence_gt.value:
+            x0, y0, x1, y1 = [float(value) for value in box]
+            assert 0 <= x0 < x1 <= out.image.width
+            assert 0 <= y0 < y1 <= out.image.height
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
 
 def test_illustrations_counterfactual_visible_part_count_sampling_balances_variants() -> None:

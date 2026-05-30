@@ -8,9 +8,11 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.color_format import format_named_color_with_hex
 from ...shared.named_colors import named_color
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .object_library import (
     BBox,
     RGB,
@@ -146,6 +148,7 @@ def _draw_fit_text(
     scale: int,
     fill: RGB = (37, 42, 50),
     bold: bool = True,
+    font_family: str | None = None,
     min_size_px: int = 8,
     max_size_px: int = 30,
     stroke_fill: RGB | None = None,
@@ -157,6 +160,7 @@ def _draw_fit_text(
         max_width=max(1.0, float(x1 - x0)),
         max_height=max(1.0, float(y1 - y0)),
         bold=bool(bold),
+        font_family=font_family,
         min_size_px=int(min_size_px) * int(scale),
         max_size_px=int(max_size_px) * int(scale),
         fill_ratio=0.84,
@@ -169,19 +173,38 @@ def _draw_fit_text(
         text_w, text_h = draw.textsize(str(text), font=font)
     tx = float(x0 + (x1 - x0 - text_w) * 0.5)
     ty = float(y0 + (y1 - y0 - text_h) * 0.5)
-    draw.text(
+    draw_text_traced(draw,
         (int(round(tx)), int(round(ty))),
         str(text),
         font=font,
         fill=tuple(fill),
         stroke_width=max(0, int(scale) if stroke_fill else 0),
         stroke_fill=tuple(stroke_fill) if stroke_fill else None,
-    )
+     role="readout", required=False,)
 
 
 def _readable_text_color(fill: RGB) -> RGB:
     luminance = 0.299 * float(fill[0]) + 0.587 * float(fill[1]) + 0.114 * float(fill[2])
     return (245, 244, 236) if luminance < 132.0 else (36, 42, 50)
+
+
+def _sample_section_label_font_trace(*, instance_seed: int | None, params: Mapping[str, Any] | None) -> Dict[str, Any]:
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=0 if instance_seed is None else int(instance_seed),
+        namespace="illustrations.library.section_labels",
+        params=params,
+        explicit_key="library_section_label_font_family",
+        weights_key="library_section_label_font_family_weights",
+    )
+    record = get_font_family_record(str(font_family))
+    return {
+        **record.to_trace(),
+        "font_asset_version": font_asset_version(),
+        "pool": "global_approved_font_pool",
+        "role": "library_section_label",
+        "consistent_scope": "library_section_labels",
+    }
 
 
 def _json_safe(value: Any) -> Any:
@@ -263,6 +286,7 @@ def _draw_section_shell(
     bbox: BBox,
     row_count: int,
     scale: int,
+    section_label_font_family: str,
 ) -> Tuple[BBox, Tuple[BBox, ...], RGB, RGB]:
     x0, y0, x1, y1 = [float(v) for v in bbox]
     wood = _jitter_rgb(rng, rng.choice(((139, 91, 58), (151, 103, 70), (121, 92, 70), (162, 118, 78))), amount=14)
@@ -282,6 +306,7 @@ def _draw_section_shell(
         scale=s,
         fill=_readable_text_color(label_fill),
         bold=True,
+        font_family=str(section_label_font_family),
         min_size_px=8,
         max_size_px=24,
         stroke_fill=(36, 42, 50) if _readable_text_color(label_fill) == (245, 244, 236) else None,
@@ -452,6 +477,8 @@ def render_library_scene(
     render_scale: int = 2,
     setting_weights: Mapping[str, float] | None = None,
     style_weights: Mapping[str, float] | None = None,
+    instance_seed: int | None = None,
+    font_params: Mapping[str, Any] | None = None,
 ) -> RenderedLibraryScene:
     """Render one synthetic library scene from semantic section/book specs."""
 
@@ -462,7 +489,9 @@ def render_library_scene(
         raise ValueError("library scene needs at least one section")
     setting_id = _choose_weighted(rng, setting_weights or {setting: 1.0 for setting in LIBRARY_SETTING_IDS}, LIBRARY_SETTING_IDS)
     style_id = _choose_weighted(rng, style_weights or {style: 1.0 for style in STYLE_IDS}, STYLE_IDS)
+    section_label_font = _sample_section_label_font_trace(instance_seed=instance_seed, params=font_params)
     section_boxes, layout = _section_layouts(rng, width=width, height=height, specs=section_specs)
+    layout["section_label_font"] = dict(section_label_font)
 
     image = Image.new("RGB", (width * scale, height * scale), (245, 244, 238))
     draw = ImageDraw.Draw(image)
@@ -483,6 +512,7 @@ def render_library_scene(
             bbox=section_boxes[str(section_spec.section_key)],
             row_count=row_count,
             scale=scale,
+            section_label_font_family=str(section_label_font["font_family"]),
         )
         section_books, book_ids = _draw_section_books(
             draw,
@@ -504,7 +534,7 @@ def render_library_scene(
                 shelf_bboxes_xyxy=tuple(tuple(float(v) for v in row) for row in shelf_rows),
                 book_ids=tuple(book_ids),
                 role=str(section_spec.role),
-                attributes={**dict(section_spec.attributes), "row_count": int(row_count)},
+                attributes={**dict(section_spec.attributes), "row_count": int(row_count), "label_font": dict(section_label_font)},
             )
         )
     decor = _draw_foreground_decor(draw, rng=rng, width=width, height=height, scale=scale, style_id=str(style_id))

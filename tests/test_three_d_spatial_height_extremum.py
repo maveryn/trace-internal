@@ -19,8 +19,8 @@ def test_height_extremum_answer_and_evidence(query_id: str) -> None:
         params={
             "query_id": query_id,
             "scene_variant": "floor_grid_room",
-            "point_count": 6,
-            "context_object_count": 5,
+            "point_count": 5,
+            "context_object_count": 4,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=220,
@@ -32,14 +32,12 @@ def test_height_extremum_answer_and_evidence(query_id: str) -> None:
     height_by_label = {str(label): float(value) for label, value in trace["height_by_label"].items()}
     sorted_labels = [str(label) for label, _value in sorted(height_by_label.items(), key=lambda item: (float(item[1]), str(item[0])))]
     expected_label = sorted_labels[-1] if query_id == "highest_above_floor" else sorted_labels[0]
-
-    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
-    assert len(point_specs) == 6
-    assert len(context_specs) == 5
+    assert len(point_specs) == 5
+    assert len(context_specs) == 4
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
     assert output.evidence_gt.type == "bbox_set"

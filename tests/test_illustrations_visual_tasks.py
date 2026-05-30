@@ -37,6 +37,11 @@ def test_object_difference_count_variants_contract() -> None:
         assert len(out.evidence_gt.value) == 2
         assert len(trace["execution_trace"]["changed_object_ids"]) == 2
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["render_spec"]["style"]["panel_label_font"]["pool"] == "global_approved_font_pool"
+        if variant == "moved_object_count":
+            distances = trace["render_map"]["moved_center_distances_px"]
+            assert len(distances) == 2
+            assert min(float(value) for value in distances.values()) >= 72.0
 
 
 def test_object_differenceseeded_sampler_balances_variants_and_answers() -> None:
@@ -86,6 +91,8 @@ def test_jigsaw_piece_order_contract() -> None:
     assert sorted(trace["render_map"]["display_order_content_indices"]) == [1, 2, 3]
     assert trace["query_spec"]["params"]["board_shape"] == "board_2x2"
     assert trace["query_spec"]["params"]["option_piece_count"] == 3
+    assert trace["render_spec"]["style"]["option_label_font"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["style"]["board_style"]["style_id"] in {"pale_cross", "warm_corner", "cool_dots"}
     assert "3 remaining piece labels" in out.prompt
 
 
@@ -148,6 +155,8 @@ def test_rotated_tile_label_contract() -> None:
     assert trace["render_map"]["rotation_degrees"] == 90
     assert trace["render_map"]["grid_shape"] == [3, 3]
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["style"]["tile_label_font"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["style"]["grid_style"]["style_id"] in {"slate_badges", "ink_badges", "blueprint_badges"}
     assert trace["scene_ir"]["entities"]["source_image_shown"] is True
     assert trace["scene_ir"]["entities"]["rotated_tile"]["label"] == "E"
     assert trace["scene_ir"]["entities"]["rotated_tile"]["bbox"] == out.evidence_gt.value[0]
@@ -188,10 +197,13 @@ def test_missing_patch_label_variants_contract() -> None:
         assert out.query_id == mode
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == expected_label
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(out.evidence_gt.value) == 2
+        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert set(out.evidence_gt.value) == {"missing_region", "selected_option"}
         assert trace["render_map"]["correct_option_label"] == expected_label
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+        assert trace["render_spec"]["style"]["label_font"]["pool"] == "global_approved_font_pool"
+        assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_cards", "warm_cards", "cool_cards"}
         assert trace["scene_ir"]["entities"]["source_scene_id"] != "object_field"
 
 
@@ -211,10 +223,9 @@ def test_missing_patch_four_options_use_two_by_two_grid() -> None:
     assert set(trace["render_map"]["option_bboxes_px"]) == {"A", "B", "C", "D"}
 
 
-def test_missing_patch_source_support_excludes_mixed_and_urban_market_sources() -> None:
+def test_missing_patch_source_support_excludes_mixed_sources() -> None:
     support = tuple(_MISSING_PATCH_GEN_DEFAULTS["source_task_id_support"])
     assert "task_illustrations__object_field__object_type_count" not in support
-    assert "task_illustrations__market__shop_attribute_count" not in support
     assert support == (
         "task_illustrations__library__section_book_count",
         "task_illustrations__park_playground__person_count",
@@ -251,6 +262,10 @@ def test_odd_scene_label_contract() -> None:
     assert trace["query_spec"]["params"]["option_count"] == 6
     assert trace["query_spec"]["params"]["source_query_key"] == "environment_road"
     assert trace["render_spec"]["style"]["panel_grid"] == [2, 3]
+    assert trace["render_spec"]["style"]["option_label_font"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["style"]["frame_style"]["style_id"] in {"slate_grid", "warm_grid", "cool_grid"}
+    assert out.complexity.complexity_components["panel_count_load"] == 1.0
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
 
 def test_odd_sceneseeded_sampler_balances_option_labels() -> None:

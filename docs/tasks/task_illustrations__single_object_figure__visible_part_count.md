@@ -1,6 +1,6 @@
 # task_illustrations__single_object_figure__visible_part_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed pending solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -13,7 +13,8 @@ The task renders one large stylized object whose visible part count may differ
 from the familiar canonical count. The prompt asks only for the visible count.
 Object colors vary by seed as render-only visual variation. Traffic-light lens
 colors stay fixed in signal order, while the casing/post color varies; clovers
-vary only within green palettes.
+vary only within green palettes. The neutral figure background and final object
+placement are sampled as render-only variation and recorded in trace metadata.
 
 Query ids:
 - `bird_visible_leg_count`
@@ -39,6 +40,14 @@ Query ids:
 The trace stores the rendered object bbox, counted part bboxes, canonical bias
 answer, counterfactual delta, and `counterfactual_edit_type =
 visible_part_count_changed`. The render style also records the sampled RGB
-colors under `colors_rgb`; traffic-light traces additionally record the fixed
-lens color policy and the visible lens RGB sequence. The verifier source of
-truth is the generated visible part records, not pixels or the canonical prior.
+colors under `colors_rgb`, the sampled `background_style`, the final object
+center, and the final object box; traffic-light traces additionally record the
+fixed lens color policy and the visible lens RGB sequence. The verifier source
+of truth is the generated visible part records, not pixels or the canonical
+prior.
+
+Fresh v0 review artifacts:
+- `review/task-reviews/illustrations/single_object_figure/scene_review.xlsx`
+- `review/task-reviews/illustrations/single_object_figure/task_illustrations__single_object_figure__visible_part_count/task_illustrations__single_object_figure__visible_part_count.xlsx`
+
+Solve-rate calibration remains pending.

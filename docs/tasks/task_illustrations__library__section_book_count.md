@@ -1,6 +1,7 @@
 # task_illustrations__library__section_book_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Overview
 
@@ -25,6 +26,8 @@ for a count of books in one section. Query ids are:
 - `evidence_gt.type = bbox_set`
 - Evidence is one `[x0, y0, x1, y1]` final-image pixel bbox for every counted book.
 - Answer and evidence are projected from rendered book records, not pixels.
+- `bbox_set` is intentional: all evidence witnesses are homogeneous counted
+  books, so no keyed role binding is needed.
 
 ## Prompt
 
@@ -39,3 +42,8 @@ The section-total variant samples target counts `3..8`; color and orientation
 variants sample target counts `1..6`. The renderer keeps distractor books in
 the target section so filtered queries require scanning color or orientation,
 not only reading the section label.
+
+Fresh artifact review on 2026-05-28 regenerated
+`review/task-reviews/illustrations/library/scene_review.xlsx`. Section label text
+uses one sampled global-approved font family per scene, recorded in render
+metadata and kept consistent across all labeled shelf sections.

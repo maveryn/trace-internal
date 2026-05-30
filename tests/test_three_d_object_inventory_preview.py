@@ -27,12 +27,4 @@ def test_inventory_preview_dispatches_all_registered_profiles_to_native_adapters
         assert preview.metadata["profile_source_scene"] == profile.source_scene
 
     assert errors == []
-    assert preview_renderer_counts == Counter(
-        {
-            "object_scene_shape": 117,
-            "room_wall_object": 13,
-            "room_floor_object": 24,
-            "street_object": 22,
-            "warehouse_object": 27,
-        }
-    )
+    assert preview_renderer_counts == Counter(str(profile.renderer) for profile in THREE_D_OBJECT_PROFILES)

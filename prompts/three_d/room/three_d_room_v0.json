@@ -150,13 +150,6 @@
       "How many AC units are on the room walls?",
       "What is the number of air conditioners mounted on the walls?"
     ],
-    "hanging_plant_wall_mounted_count": [
-      "How many hanging plants are on the walls?",
-      "How many hanging plants are attached to the room walls?",
-      "Count the plants that are hanging from a wall.",
-      "How many wall-mounted hanging plants are visible?",
-      "What is the number of hanging plants on the walls?"
-    ],
     "hanging_coat_wall_mounted_count": [
       "How many coats are hanging on the walls?",
       "How many coats are hanging from wall hooks?",

@@ -19,8 +19,9 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.visual_task_common import (
     bbox_list,
-    default_font,
+    draw_label_badge,
     render_source_illustration,
+    sample_visual_label_font_trace,
 )
 
 
@@ -48,6 +49,38 @@ POSITION_TEXT: Dict[str, str] = {
     "top_right": "top-right",
     "bottom_left": "bottom-left",
     "bottom_right": "bottom-right",
+}
+JIGSAW_BOARD_STYLES: Dict[str, Dict[str, Any]] = {
+    "pale_cross": {
+        "canvas_rgb": (238, 241, 245),
+        "blank_fill_rgb": (222, 228, 236),
+        "blank_outline_rgb": (92, 102, 116),
+        "blank_mark_rgb": (200, 208, 219),
+        "board_outline_rgb": (44, 52, 65),
+        "badge_fill_rgb": (255, 255, 255),
+        "badge_outline_rgb": (44, 52, 65),
+        "blank_marker": "x",
+    },
+    "warm_corner": {
+        "canvas_rgb": (244, 240, 232),
+        "blank_fill_rgb": (232, 224, 211),
+        "blank_outline_rgb": (104, 91, 76),
+        "blank_mark_rgb": (188, 174, 154),
+        "board_outline_rgb": (58, 50, 42),
+        "badge_fill_rgb": (255, 252, 244),
+        "badge_outline_rgb": (58, 50, 42),
+        "blank_marker": "corners",
+    },
+    "cool_dots": {
+        "canvas_rgb": (235, 242, 244),
+        "blank_fill_rgb": (218, 232, 234),
+        "blank_outline_rgb": (70, 93, 101),
+        "blank_mark_rgb": (174, 198, 204),
+        "board_outline_rgb": (35, 54, 64),
+        "badge_fill_rgb": (250, 253, 253),
+        "badge_outline_rgb": (35, 54, 64),
+        "blank_marker": "dots",
+    },
 }
 
 
@@ -134,13 +167,14 @@ def _piece_crops(source: Image.Image, *, rows: int, cols: int) -> Tuple[Tuple[Im
     return tuple(pieces)
 
 
-def _non_identity_permutation(rng, n: int) -> Tuple[int, ...]:
-    order = list(range(int(n)))
+def _non_identity_permutation(rng, items: Sequence[int]) -> Tuple[int, ...]:
+    identity = tuple(int(value) for value in items)
+    order = list(identity)
     for _ in range(24):
         rng.shuffle(order)
-        if order != list(range(int(n))):
+        if tuple(order) != identity:
             return tuple(int(value) for value in order)
-    if int(n) > 1:
+    if len(order) > 1:
         order[0], order[1] = order[1], order[0]
     return tuple(int(value) for value in order)
 
@@ -158,9 +192,52 @@ def _option_content_order(
         return tuple()
     if option_permutation_index is not None:
         return permutations_by_index[abs(int(option_permutation_index)) % len(permutations_by_index)]
+    if len(remaining_content_indices) > 2:
+        return _non_identity_permutation(rng, remaining_content_indices)
     order = list(tuple(int(item) for item in remaining_content_indices))
     rng.shuffle(order)
     return tuple(int(item) for item in order)
+
+
+def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
+    value = style[key]
+    return (int(value[0]), int(value[1]), int(value[2]))
+
+
+def _sample_jigsaw_board_style(rng) -> Dict[str, Any]:
+    style_id = str(rng.choice(tuple(JIGSAW_BOARD_STYLES)))
+    return {"style_id": style_id, **dict(JIGSAW_BOARD_STYLES[style_id])}
+
+
+def _draw_blank_cell_marker(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_xyxy: Tuple[int, int, int, int],
+    style: Mapping[str, Any],
+) -> None:
+    x0, y0, x1, y1 = [int(value) for value in bbox_xyxy]
+    mark = str(style.get("blank_marker", "x"))
+    color = _rgb(style, "blank_mark_rgb")
+    if mark == "corners":
+        length = max(18, int(min(x1 - x0, y1 - y0) * 0.16))
+        inset = max(14, int(min(x1 - x0, y1 - y0) * 0.08))
+        for sx, sy in ((x0 + inset, y0 + inset), (x1 - inset, y0 + inset), (x0 + inset, y1 - inset), (x1 - inset, y1 - inset)):
+            dx = length if sx < (x0 + x1) // 2 else -length
+            dy = length if sy < (y0 + y1) // 2 else -length
+            draw.line((sx, sy, sx + dx, sy), fill=color, width=3)
+            draw.line((sx, sy, sx, sy + dy), fill=color, width=3)
+        return
+    if mark == "dots":
+        radius = 4
+        cx = int((x0 + x1) * 0.5)
+        cy = int((y0 + y1) * 0.5)
+        gap = max(16, int(min(x1 - x0, y1 - y0) * 0.10))
+        for oy in (-gap, 0, gap):
+            for ox in (-gap, 0, gap):
+                draw.ellipse((cx + ox - radius, cy + oy - radius, cx + ox + radius, cy + oy + radius), fill=color)
+        return
+    draw.line((x0 + 18, y0 + 18, x1 - 18, y1 - 18), fill=color, width=2)
+    draw.line((x0 + 18, y1 - 18, x1 - 18, y0 + 18), fill=color, width=2)
 
 
 def _compose_jigsaw_image(
@@ -169,6 +246,8 @@ def _compose_jigsaw_image(
     display_order: Sequence[int],
     rows: int,
     cols: int,
+    board_style: Mapping[str, Any],
+    label_font_family: str,
 ) -> Tuple[Image.Image, Dict[str, list[float]], Tuple[str, ...]]:
     margin = int(_DEFAULTS.render_margin)
     piece_w = max(int(piece.size[0]) for piece, _box in pieces)
@@ -184,16 +263,15 @@ def _compose_jigsaw_image(
     board_y = 46
     options_y = board_y + int(board_h) + 42
     full_h = options_y + label_h + option_h + margin
-    canvas = Image.new("RGB", (int(full_w), int(full_h)), (238, 241, 245))
+    canvas = Image.new("RGB", (int(full_w), int(full_h)), _rgb(board_style, "canvas_rgb"))
     draw = ImageDraw.Draw(canvas)
-    label_font = default_font(20, bold=True)
     option_bboxes: Dict[str, list[float]] = {}
     labels = tuple(str(index + 1) for index in range(len(display_order)))
     content_to_label: Dict[int, str] = {}
 
     board_x = int((full_w - board_w) // 2)
-    blank_fill = (222, 228, 236)
-    blank_outline = (92, 102, 116)
+    blank_fill = _rgb(board_style, "blank_fill_rgb")
+    blank_outline = _rgb(board_style, "blank_outline_rgb")
     for row in range(int(rows)):
         for col in range(int(cols)):
             x0 = int(board_x + col * piece_w)
@@ -204,10 +282,9 @@ def _compose_jigsaw_image(
                 canvas.paste(pieces[0][0].convert("RGB"), (x0, y0))
             else:
                 draw.rectangle((x0, y0, x1, y1), fill=blank_fill)
-                draw.line((x0 + 18, y0 + 18, x1 - 18, y1 - 18), fill=(200, 208, 219), width=2)
-                draw.line((x0 + 18, y1 - 18, x1 - 18, y0 + 18), fill=(200, 208, 219), width=2)
+                _draw_blank_cell_marker(draw, bbox_xyxy=(x0, y0, x1, y1), style=board_style)
             draw.rectangle((x0, y0, x1, y1), outline=blank_outline, width=3)
-    draw.rectangle((board_x, board_y, board_x + board_w, board_y + board_h), outline=(44, 52, 65), width=3)
+    draw.rectangle((board_x, board_y, board_x + board_w, board_y + board_h), outline=_rgb(board_style, "board_outline_rgb"), width=3)
 
     for option_index, content_index in enumerate(display_order):
         row_width = row_capacity * option_w + (row_capacity - 1) * option_gap
@@ -219,8 +296,14 @@ def _compose_jigsaw_image(
         patch_y = y + label_h
         canvas.paste(piece_image, (patch_x, patch_y))
         label = labels[option_index]
-        draw.rounded_rectangle((x, y, x + 36, y + 24), radius=5, fill=(255, 255, 255), outline=(44, 52, 65), width=2)
-        draw.text((x + 11, y + 1), label, fill=(18, 25, 35), font=label_font)
+        draw_label_badge(
+            draw,
+            label,
+            (x, y, x + 36, y + 24),
+            font_family=label_font_family,
+            fill=_rgb(board_style, "badge_fill_rgb"),
+            outline=_rgb(board_style, "badge_outline_rgb"),
+        )
         option_bboxes[label] = bbox_list((patch_x, patch_y, patch_x + int(piece_image.width), patch_y + int(piece_image.height)))
         content_to_label[int(content_index)] = str(label)
     answer_labels = tuple(content_to_label[index] for index in range(1, len(pieces)))
@@ -229,14 +312,14 @@ def _compose_jigsaw_image(
 
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
     piece_count = int(sample.rows) * int(sample.cols)
+    piece_count_load = (int(piece_count) - 3) / 1.0
+    board_shape_load = 1.0 if str(sample.board_shape) == "board_2x2" else 0.0
     score = min(1.0, 0.20 + 0.16 * float(piece_count))
     return TaskComplexity(
         complexity_score=round(float(score), 6),
         complexity_components={
-            "piece_count": int(piece_count),
-            "rows": int(sample.rows),
-            "cols": int(sample.cols),
-            "board_shape": str(sample.board_shape),
+            "piece_count_load": round(float(piece_count_load), 6),
+            "board_shape_load": round(float(board_shape_load), 6),
         },
     )
 
@@ -272,6 +355,16 @@ class IllustrationsVisualJigsawPieceOrderTask:
         )
         pieces = _piece_crops(source_image, rows=int(sample.rows), cols=int(sample.cols))
         remaining_content_indices = tuple(index for index in range(1, len(pieces)))
+        style_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style")
+        board_style = _sample_jigsaw_board_style(style_rng)
+        option_label_font = sample_visual_label_font_trace(
+            task_id=TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace_suffix="option_label_font",
+            explicit_key="image_cutout_board_option_label_font_family",
+            weights_key="image_cutout_board_option_label_font_family_weights",
+        )
         display_order = _option_content_order(
             option_permutation_index=sample.option_permutation_index,
             rng=rng,
@@ -282,6 +375,8 @@ class IllustrationsVisualJigsawPieceOrderTask:
             display_order=display_order,
             rows=int(sample.rows),
             cols=int(sample.cols),
+            board_style=board_style,
+            label_font_family=str(option_label_font["font_family"]),
         )
         answer_value = " ".join(answer_labels)
         evidence_sequence = [option_bboxes[label] for label in answer_labels]
@@ -377,6 +472,8 @@ class IllustrationsVisualJigsawPieceOrderTask:
                 "style": {
                     "source_task_id": str(source.source_task_id),
                     "source_scene_id": str(source.source_scene_id),
+                    "board_style": dict(board_style),
+                    "option_label_font": dict(option_label_font),
                 },
             },
             "render_map": {

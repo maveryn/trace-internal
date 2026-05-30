@@ -59,7 +59,7 @@ def test_street_same_road_arm_reference_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_id == "default"
+    assert output.query_id == "same_road_arm_as_reference"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "same_road_arm_as_reference"
     assert output.answer_gt.type == "option_letter"

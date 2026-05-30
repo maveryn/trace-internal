@@ -18,11 +18,12 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.visual_task_common import (
     bbox_list,
-    default_font,
+    draw_label_badge,
     draw_panel_label,
     fit_source_image,
     image_detail_score,
     render_source_illustration,
+    sample_visual_label_font_trace,
 )
 
 
@@ -31,6 +32,32 @@ SCENE_ID = "missing_patch"
 QUERY_ID = "missing_patch_label"
 PATCH_MODES: Tuple[str, ...] = ("plain_patch_label", "transformed_patch_label", "irregular_cutout_patch_label")
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+FRAME_STYLES: Dict[str, Dict[str, Any]] = {
+    "slate_cards": {
+        "canvas_rgb": (238, 241, 245),
+        "panel_outline_rgb": (58, 66, 78),
+        "badge_fill_rgb": (255, 255, 255),
+        "badge_outline_rgb": (44, 52, 65),
+        "hole_fill_rgb": (18, 20, 24),
+        "hole_outline_rgb": (255, 255, 255),
+    },
+    "warm_cards": {
+        "canvas_rgb": (244, 240, 232),
+        "panel_outline_rgb": (76, 64, 52),
+        "badge_fill_rgb": (255, 252, 244),
+        "badge_outline_rgb": (76, 64, 52),
+        "hole_fill_rgb": (26, 23, 21),
+        "hole_outline_rgb": (255, 250, 238),
+    },
+    "cool_cards": {
+        "canvas_rgb": (235, 242, 244),
+        "panel_outline_rgb": (42, 70, 83),
+        "badge_fill_rgb": (249, 253, 254),
+        "badge_outline_rgb": (42, 70, 83),
+        "hole_fill_rgb": (15, 27, 35),
+        "hole_outline_rgb": (245, 252, 255),
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -50,6 +77,7 @@ class _Defaults:
 class _SampleSpec:
     patch_mode: str
     correct_index: int
+    option_count: int
     patch_mode_probabilities: Dict[str, float]
     correct_index_probabilities: Dict[str, float]
 
@@ -101,6 +129,7 @@ def _sample_spec(*, params: Mapping[str, Any], instance_seed: int) -> _SampleSpe
     return _SampleSpec(
         patch_mode=str(patch_mode),
         correct_index=int(correct_index),
+        option_count=int(option_count),
         patch_mode_probabilities=dict(mode_probabilities),
         correct_index_probabilities=dict(index_probabilities),
     )
@@ -178,11 +207,27 @@ def _transform_patch(patch: Image.Image, rng) -> Tuple[Image.Image, str]:
     return ImageOps.flip(patch), transform
 
 
-def _draw_hole(source: Image.Image, *, box: Sequence[int], patch_mode: str) -> Image.Image:
+def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
+    value = style[key]
+    return (int(value[0]), int(value[1]), int(value[2]))
+
+
+def _sample_frame_style(rng) -> Dict[str, Any]:
+    style_id = str(rng.choice(tuple(FRAME_STYLES)))
+    return {"style_id": style_id, **dict(FRAME_STYLES[style_id])}
+
+
+def _draw_hole(source: Image.Image, *, box: Sequence[int], patch_mode: str, frame_style: Mapping[str, Any]) -> Image.Image:
     image = source.copy()
     draw = ImageDraw.Draw(image)
     x0, y0, x1, y1 = [int(v) for v in box]
-    draw.rectangle((x0, y0, x1, y1), fill=(18, 20, 24), outline=(255, 255, 255), width=3)
+    del patch_mode
+    draw.rectangle(
+        (x0, y0, x1, y1),
+        fill=_rgb(frame_style, "hole_fill_rgb"),
+        outline=_rgb(frame_style, "hole_outline_rgb"),
+        width=3,
+    )
     return image
 
 
@@ -200,7 +245,10 @@ def _compose_options(
     options: Sequence[Image.Image],
     correct_index: int,
     hole_box: Sequence[int],
+    frame_style: Mapping[str, Any],
+    label_font_family: str,
 ) -> Tuple[Image.Image, Dict[str, list[float]], list[float]]:
+    del correct_index
     margin = int(_DEFAULTS.render_margin)
     source_w, source_h = source_with_hole.size
     option_count = len(options)
@@ -214,13 +262,16 @@ def _compose_options(
     top_y = 58
     options_y = top_y + source_h + 54
     full_h = options_y + option_rows * (option_h + label_h + 18) + margin
-    canvas = Image.new("RGB", (int(full_w), int(full_h)), (238, 241, 245))
+    canvas = Image.new("RGB", (int(full_w), int(full_h)), _rgb(frame_style, "canvas_rgb"))
     draw = ImageDraw.Draw(canvas)
     source_x = (full_w - source_w) // 2
     canvas.paste(source_with_hole, (source_x, top_y))
-    draw.rectangle((source_x, top_y, source_x + source_w, top_y + source_h), outline=(58, 66, 78), width=2)
-    draw_panel_label(draw, "Source", (source_x + 10, 18), size=22)
-    label_font = default_font(20, bold=True)
+    draw.rectangle(
+        (source_x, top_y, source_x + source_w, top_y + source_h),
+        outline=_rgb(frame_style, "panel_outline_rgb"),
+        width=2,
+    )
+    draw_panel_label(draw, "Source", (source_x + 10, 18), size=22, font_family=label_font_family)
     option_bboxes: Dict[str, list[float]] = {}
     labels = OPTION_LABELS[:option_count]
     for index, option in enumerate(display_options):
@@ -234,8 +285,14 @@ def _compose_options(
         patch_y = y + label_h + (option_h - int(option.height)) // 2
         canvas.paste(option, (patch_x, patch_y))
         label = labels[index]
-        draw.rounded_rectangle((x, y, x + 42, y + 24), radius=5, fill=(255, 255, 255), outline=(44, 52, 65), width=2)
-        draw.text((x + 11, y + 1), label, fill=(18, 25, 35), font=label_font)
+        draw_label_badge(
+            draw,
+            label,
+            (x, y, x + 42, y + 24),
+            font_family=label_font_family,
+            fill=_rgb(frame_style, "badge_fill_rgb"),
+            outline=_rgb(frame_style, "badge_outline_rgb"),
+        )
         option_bboxes[str(label)] = bbox_list((patch_x, patch_y, patch_x + int(option.width), patch_y + int(option.height)))
     hole_bbox = bbox_list(hole_box, dx=source_x, dy=top_y)
     return canvas, option_bboxes, hole_bbox
@@ -243,12 +300,12 @@ def _compose_options(
 
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
     mode_load = {"plain_patch_label": 0.35, "transformed_patch_label": 0.68, "irregular_cutout_patch_label": 0.55}[str(sample.patch_mode)]
+    option_load = (int(sample.option_count) - 2) / max(1.0, float(len(OPTION_LABELS) - 2))
     return TaskComplexity(
         complexity_score=round(float(0.34 + 0.48 * mode_load), 6),
         complexity_components={
-            "patch_mode": str(sample.patch_mode),
             "mode_load": round(float(mode_load), 6),
-            "option_count": int(_DEFAULTS.option_count),
+            "option_load": round(float(option_load), 6),
         },
     )
 
@@ -284,8 +341,17 @@ class IllustrationsVisualMissingPatchLabelTask:
         correct_transform = "none"
         if str(sample.patch_mode) == "transformed_patch_label":
             correct_patch, correct_transform = _transform_patch(correct_patch, rng)
-        option_count = int(params.get("option_count", group_default(_GEN_DEFAULTS, "option_count", _DEFAULTS.option_count)))
-        option_count = max(2, min(len(OPTION_LABELS), option_count))
+        option_count = int(sample.option_count)
+        style_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style")
+        frame_style = _sample_frame_style(style_rng)
+        label_font = sample_visual_label_font_trace(
+            task_id=TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            namespace_suffix="label_font",
+            explicit_key="missing_patch_label_font_family",
+            weights_key="missing_patch_label_font_family_weights",
+        )
         options = []
         for option_index in range(option_count):
             if option_index == int(sample.correct_index):
@@ -303,16 +369,26 @@ class IllustrationsVisualMissingPatchLabelTask:
             if str(sample.patch_mode) == "plain_patch_label" and option_index == 0:
                 distractor, _ = _transform_patch(correct_patch, rng)
             options.append(distractor)
-        source_with_hole = _draw_hole(source_image, box=hole_box, patch_mode=str(sample.patch_mode))
+        source_with_hole = _draw_hole(
+            source_image,
+            box=hole_box,
+            patch_mode=str(sample.patch_mode),
+            frame_style=frame_style,
+        )
         image, option_bboxes, hole_bbox = _compose_options(
             source_with_hole=source_with_hole,
             options=options,
             correct_index=int(sample.correct_index),
             hole_box=hole_box,
+            frame_style=frame_style,
+            label_font_family=str(label_font["font_family"]),
         )
         labels = OPTION_LABELS[:option_count]
         answer_label = labels[int(sample.correct_index)]
-        evidence_boxes = [hole_bbox, option_bboxes[str(answer_label)]]
+        evidence_boxes = {
+            "missing_region": list(hole_bbox),
+            "selected_option": list(option_bboxes[str(answer_label)]),
+        }
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -391,12 +467,15 @@ class IllustrationsVisualMissingPatchLabelTask:
                     "source_scene_id": str(source.source_scene_id),
                     "correct_transform": str(correct_transform),
                     "panel_grid": list(_option_grid_shape(int(option_count))),
+                    "frame_style": dict(frame_style),
+                    "label_font": dict(label_font),
                 },
             },
             "render_map": {
                 "hole_bbox_px": list(hole_bbox),
                 "option_bboxes_px": dict(option_bboxes),
                 "correct_option_label": str(answer_label),
+                "evidence_bboxes_px": dict(evidence_boxes),
             },
             "execution_trace": {
                 "query_id": str(sample.patch_mode),
@@ -410,13 +489,13 @@ class IllustrationsVisualMissingPatchLabelTask:
                 "answer": str(answer_label),
                 "correct_option_label": str(answer_label),
             },
-            "projected_evidence": {"bbox_set": list(evidence_boxes)},
+            "projected_evidence": {"keyed_bbox_map": dict(evidence_boxes)},
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="option_letter", value=str(answer_label)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_boxes)),
+            evidence_gt=TypedValue(type="keyed_bbox_map", value=dict(evidence_boxes)),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

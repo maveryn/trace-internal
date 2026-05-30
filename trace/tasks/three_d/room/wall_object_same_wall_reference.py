@@ -36,7 +36,7 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import ROOM_SAME_WALL_REFERENCE_WALL_OBJECT_TYPES
-from ..spatial.camera_distance import POINT_LABELS
+from ..shared.object_scene import POINT_LABELS
 from .wall_mounted_object_count import (
     ROOM_FRONT_Y,
     ROOM_HEIGHT,

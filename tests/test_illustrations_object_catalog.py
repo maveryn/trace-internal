@@ -10,17 +10,13 @@ from trace.tasks.illustrations.shared import (
     mixed_object_rendering as mixed,
     park_playground_rendering as park,
     transit_terminal_rendering as transit,
-    urban_market_rendering as market,
 )
 from trace.tasks.illustrations.shared.object_catalog import (
     catalog_entries,
-    entries_for_scene,
     entries_with_render_layer,
     entries_with_size_class,
     environment_theme_land_object_types,
     label_map_for_tag,
-    market_item_allowed_shops,
-    market_shop_inventory_types,
     plural_name_map_for_tag,
     public_name_map_for_tag,
     variant_ids_with_tag,
@@ -38,7 +34,6 @@ def test_catalog_has_layer_size_and_scene_coverage() -> None:
     assert any(entry.catalog_id == "environment_feature.road" for entry in entries)
     assert {entry.render_layer for entry in entries_with_size_class("scene_scale")} >= {"background", "region"}
     assert {entry.size_class for entry in entries_with_render_layer("fixture")} >= {"medium", "large"}
-    assert {entry.variant_id for entry in entries_for_scene("market")} >= {"street_market", "fruit", "apple"}
 
 
 def test_renderer_constants_are_catalog_derived() -> None:
@@ -59,12 +54,6 @@ def test_renderer_constants_are_catalog_derived() -> None:
 
 
 def test_scene_variant_maps_are_catalog_derived() -> None:
-    assert market.MARKET_SETTING_IDS == variant_ids_with_tag("market_setting")
-    assert market.MARKET_SHOP_TYPES == variant_ids_with_tag("market_shop")
-    assert market.MARKET_SHOP_LABELS == label_map_for_tag("market_shop")
-    assert market.MARKET_SHOP_DISPLAY_NAMES == public_name_map_for_tag("market_shop")
-    assert market.MARKET_SHOP_INVENTORY_TYPES == market_shop_inventory_types()
-    assert market.MARKET_ITEM_ALLOWED_SHOPS == market_item_allowed_shops()
     assert library.LIBRARY_SETTING_IDS == variant_ids_with_tag("library_setting")
     assert library.LIBRARY_SECTION_TYPES == variant_ids_with_tag("library_section")
     assert library.LIBRARY_SECTION_LABELS == label_map_for_tag("library_section")
@@ -83,5 +72,4 @@ def test_registry_exposes_catalog_categories_for_object_types() -> None:
     assert object_type_definition("worker").render_layer == "foreground"
     assert object_type_definition("worker").size_class == "medium"
     assert "construction_worker" in object_type_definition("worker").placement_tags
-    assert object_type_definition("shop").render_layer == "fixture"
     assert object_type_definition("building").render_layer == "background"

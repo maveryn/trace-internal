@@ -42,7 +42,7 @@ from ..shared.object_resources import (
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB,
     WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE,
 )
-from ..spatial.camera_distance import (
+from ..shared.object_scene import (
     POINT_LABELS,
     _bbox_intersection_area,
     _bbox_union,

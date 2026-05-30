@@ -40,6 +40,10 @@ THEME_OBJECT_COUNT_CAPS: Dict[str, int] = {
     "canal_city": 15,
     "skyline_street": 15,
 }
+ROAD_STYLE_IDS: Tuple[str, ...] = ("asphalt_median", "curb_edges", "rough_asphalt", "light_concrete")
+RIVER_STYLE_IDS: Tuple[str, ...] = ("blue_channel", "reed_bank", "stone_bank", "canal_edge")
+BRIDGE_STYLE_IDS: Tuple[str, ...] = ("wood_plank", "concrete_slab", "rail_bridge")
+BUILDING_STYLE_IDS: Tuple[str, ...] = ("glass_office", "apartment_grid", "brick_row", "storefront_row")
 
 
 @dataclass(frozen=True)
@@ -281,6 +285,9 @@ def _sample_environment_layout(rng, *, theme_id: str, width: int, height: int) -
         "road_width_px": round(float(rng.uniform(84.0, 112.0) if theme != "skyline_street" else rng.uniform(98.0, 124.0)), 3),
         "river_width_px": round(float(rng.uniform(94.0, 116.0) if theme != "canal_city" else rng.uniform(84.0, 104.0)), 3),
         "building_horizon_y": round(float(land_top) + float(rng.uniform(-38.0, 8.0)), 3),
+        "road_style_id": str(rng.choice(ROAD_STYLE_IDS)),
+        "river_style_id": str(rng.choice(RIVER_STYLE_IDS)),
+        "bridge_style_id": str(rng.choice(BRIDGE_STYLE_IDS)),
         "sky_rgb": _jitter_rgb(rng, (235, 246, 255), 8),
         "ground_rgb": _jitter_rgb(rng, (221, 234, 204), 10),
         "city_ground_rgb": _jitter_rgb(rng, (224, 223, 210), 9),
@@ -435,21 +442,47 @@ def _draw_river(
     *,
     path_points: Sequence[Tuple[float, float]],
     width_px: float,
+    river_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
-    _draw_line(draw, path_points, fill=(139, 184, 185), width=float(width_px) + 28.0, scale=scale)
-    _draw_line(draw, path_points, fill=(88, 169, 205), width=float(width_px), scale=scale)
-    _draw_line(draw, path_points, fill=(139, 203, 224), width=max(6.0, float(width_px) * 0.18), scale=scale)
+    river_style = str(river_style_id)
+    if river_style == "reed_bank":
+        bank_color, water_color, highlight_color, edge_color, bank_extra = (128, 162, 116), (77, 158, 196), (157, 212, 221), (74, 136, 157), 34.0
+    elif river_style == "stone_bank":
+        bank_color, water_color, highlight_color, edge_color, bank_extra = (164, 169, 160), (74, 153, 194), (151, 205, 222), (94, 126, 150), 32.0
+    elif river_style == "canal_edge":
+        bank_color, water_color, highlight_color, edge_color, bank_extra = (176, 179, 169), (73, 163, 199), (158, 215, 229), (97, 134, 158), 26.0
+    else:
+        bank_color, water_color, highlight_color, edge_color, bank_extra = (139, 184, 185), (88, 169, 205), (139, 203, 224), (72, 148, 187), 28.0
+
+    _draw_line(draw, path_points, fill=bank_color, width=float(width_px) + bank_extra, scale=scale)
+    if river_style == "canal_edge":
+        for offset in (-0.58, 0.58):
+            edge_path = tuple((float(x), float(y) + offset * float(width_px)) for x, y in path_points)
+            _draw_line(draw, edge_path, fill=(124, 129, 124), width=5.0, scale=scale)
+    _draw_line(draw, path_points, fill=water_color, width=float(width_px), scale=scale)
+    _draw_line(draw, path_points, fill=highlight_color, width=max(6.0, float(width_px) * 0.18), scale=scale)
     for offset in (-0.24, 0.24):
         shifted = tuple((float(x), float(y) + offset * float(width_px)) for x, y in path_points)
-        _draw_line(draw, shifted, fill=(72, 148, 187), width=3.0, scale=scale)
+        _draw_line(draw, shifted, fill=edge_color, width=3.0, scale=scale)
+    if river_style == "reed_bank":
+        for x, y in path_points[1::3]:
+            for side in (-1.0, 1.0):
+                base_y = float(y) + side * (0.54 * float(width_px) + 3.0)
+                _draw_line(draw, ((float(x) - 5.0, base_y + 8.0 * side), (float(x) + 3.0, base_y - 10.0 * side)), fill=(82, 128, 79), width=2.0, scale=scale)
+    elif river_style == "stone_bank":
+        for index, (x, y) in enumerate(path_points[1::3]):
+            side = -1.0 if index % 2 == 0 else 1.0
+            cy = float(y) + side * (0.58 * float(width_px) + 4.0)
+            box = (float(x) - 5.0, cy - 3.0, float(x) + 5.0, cy + 3.0)
+            draw.ellipse(_scale_bbox(box, scale), fill=(121, 126, 121))
     return EnvironmentFeature(
         feature_id="river_0",
         feature_type="river",
-        bbox_xyxy=_path_bbox(path_points, float(width_px) + 28.0),
+        bbox_xyxy=_path_bbox(path_points, float(width_px) + bank_extra),
         path_points=tuple((float(x), float(y)) for x, y in path_points),
         width_px=float(width_px),
-        attributes={"is_curved": True, "surface": "water"},
+        attributes={"is_curved": True, "surface": "water", "river_style_id": river_style},
     )
 
 
@@ -458,22 +491,42 @@ def _draw_road(
     *,
     path_points: Sequence[Tuple[float, float]],
     width_px: float,
+    road_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
-    _draw_line(draw, path_points, fill=(128, 127, 119), width=float(width_px) + 18.0, scale=scale)
-    _draw_line(draw, path_points, fill=(91, 96, 101), width=float(width_px), scale=scale)
+    road_style = str(road_style_id)
+    if road_style == "curb_edges":
+        shoulder_color, road_color, lane_color, edge_extra = (178, 177, 166), (81, 88, 94), (246, 244, 229), 24.0
+    elif road_style == "rough_asphalt":
+        shoulder_color, road_color, lane_color, edge_extra = (122, 120, 113), (74, 79, 84), (229, 213, 132), 20.0
+    elif road_style == "light_concrete":
+        shoulder_color, road_color, lane_color, edge_extra = (151, 150, 141), (126, 132, 133), (247, 240, 198), 18.0
+    else:
+        shoulder_color, road_color, lane_color, edge_extra = (128, 127, 119), (91, 96, 101), (242, 231, 157), 18.0
+
+    _draw_line(draw, path_points, fill=shoulder_color, width=float(width_px) + edge_extra, scale=scale)
+    _draw_line(draw, path_points, fill=road_color, width=float(width_px), scale=scale)
+    if road_style == "curb_edges":
+        for offset in (-0.43, 0.43):
+            edge_path = tuple((float(x), float(y) + offset * float(width_px)) for x, y in path_points)
+            _draw_line(draw, edge_path, fill=(226, 226, 216), width=4.0, scale=scale)
     dash_segments = []
     for a, b in zip(path_points[1::2], path_points[2::2]):
         dash_segments.append((a, b))
     for a, b in dash_segments:
-        _draw_line(draw, (a, b), fill=(242, 231, 157), width=5.0, scale=scale)
+        _draw_line(draw, (a, b), fill=lane_color, width=5.0, scale=scale)
+    if road_style == "rough_asphalt":
+        for a, b in zip(path_points[2::4], path_points[3::4]):
+            mx = 0.5 * (float(a[0]) + float(b[0]))
+            my = 0.5 * (float(a[1]) + float(b[1]))
+            _draw_line(draw, ((mx - 18.0, my - 9.0), (mx - 4.0, my + 2.0), (mx + 11.0, my - 5.0)), fill=(55, 59, 62), width=2.0, scale=scale)
     return EnvironmentFeature(
         feature_id="road_0",
         feature_type="road",
-        bbox_xyxy=_path_bbox(path_points, float(width_px) + 18.0),
+        bbox_xyxy=_path_bbox(path_points, float(width_px) + edge_extra),
         path_points=tuple((float(x), float(y)) for x, y in path_points),
         width_px=float(width_px),
-        attributes={"is_curved": True, "surface": "asphalt"},
+        attributes={"is_curved": True, "surface": "asphalt", "road_style_id": road_style},
     )
 
 
@@ -484,6 +537,7 @@ def _draw_bridge(
     river_path: Sequence[Tuple[float, float]],
     x: float,
     river_width: float,
+    bridge_style_id: str,
     scale: int,
 ) -> EnvironmentFeature:
     y = _interpolate_path_y(river_path, float(x))
@@ -493,24 +547,42 @@ def _draw_bridge(
         float(x) + 24.0,
         float(y) + 0.62 * float(river_width),
     )
+    bridge_style = str(bridge_style_id)
+    if bridge_style == "concrete_slab":
+        fill, outline, rail_fill, radius = (185, 184, 174), (112, 113, 109), (137, 138, 132), 4
+    elif bridge_style == "rail_bridge":
+        fill, outline, rail_fill, radius = (150, 156, 158), (76, 83, 88), (70, 75, 79), 5
+    else:
+        fill, outline, rail_fill, radius = (199, 169, 119), (124, 101, 72), (117, 88, 61), 8
     draw.rounded_rectangle(
         _scale_bbox(box, scale),
-        radius=max(1, int(8 * int(scale))),
-        fill=(199, 169, 119),
-        outline=(124, 101, 72),
+        radius=max(1, int(radius * int(scale))),
+        fill=fill,
+        outline=outline,
         width=max(1, int(3 * int(scale))),
     )
-    rail_left = (box[0] + 7.0, box[1] + 6.0, box[0] + 12.0, box[3] - 6.0)
-    rail_right = (box[2] - 12.0, box[1] + 6.0, box[2] - 7.0, box[3] - 6.0)
-    for rail in (rail_left, rail_right):
-        draw.rounded_rectangle(_scale_bbox(rail, scale), radius=max(1, int(2 * int(scale))), fill=(117, 88, 61))
+    if bridge_style == "rail_bridge":
+        for offset in (-13.0, 13.0):
+            _draw_line(draw, ((float(x) + offset, box[1] + 5.0), (float(x) + offset, box[3] - 5.0)), fill=rail_fill, width=4.0, scale=scale)
+        for y_step in range(0, 5):
+            yy = box[1] + 10.0 + y_step * max(8.0, (box[3] - box[1] - 20.0) / 4.0)
+            _draw_line(draw, ((box[0] + 8.0, yy), (box[2] - 8.0, yy)), fill=(214, 216, 208), width=2.0, scale=scale)
+    else:
+        rail_left = (box[0] + 7.0, box[1] + 6.0, box[0] + 12.0, box[3] - 6.0)
+        rail_right = (box[2] - 12.0, box[1] + 6.0, box[2] - 7.0, box[3] - 6.0)
+        for rail in (rail_left, rail_right):
+            draw.rounded_rectangle(_scale_bbox(rail, scale), radius=max(1, int(2 * int(scale))), fill=rail_fill)
+        if bridge_style == "wood_plank":
+            for y_step in range(1, 5):
+                yy = box[1] + y_step * (box[3] - box[1]) / 5.0
+                _draw_line(draw, ((box[0] + 13.0, yy), (box[2] - 13.0, yy)), fill=(154, 124, 84), width=2.0, scale=scale)
     return EnvironmentFeature(
         feature_id=str(bridge_id),
         feature_type="bridge",
         bbox_xyxy=tuple(float(v) for v in box),
         path_points=((float(x), float(box[1])), (float(x), float(box[3]))),
         width_px=float(box[2] - box[0]),
-        attributes={"crosses_feature_id": "river_0", "orientation": "vertical"},
+        attributes={"crosses_feature_id": "river_0", "orientation": "vertical", "bridge_style_id": bridge_style},
     )
 
 
@@ -557,16 +629,54 @@ def _draw_buildings(
     building_specs: List[Dict[str, Any]] = []
     x = float(rng.uniform(8.0, 30.0))
     index = 0
-    palette = ((92, 115, 139), (129, 121, 147), (151, 132, 112), (91, 132, 146), (152, 104, 102))
     while x < float(width) - 40.0 and index < int(max_buildings):
-        bw = float(rng.uniform(54.0, 112.0))
-        bh = float(rng.uniform(118.0, 260.0))
+        building_style = str(rng.choice(BUILDING_STYLE_IDS))
+        if building_style == "glass_office":
+            palette = ((83, 116, 145), (88, 132, 156), (99, 126, 164), (72, 106, 136))
+            bw = float(rng.uniform(66.0, 128.0))
+            bh = float(rng.uniform(158.0, 282.0))
+            dark_window_fill = (63, 92, 121)
+            lit_window_fill = (250, 224, 128)
+        elif building_style == "brick_row":
+            palette = ((145, 91, 78), (158, 103, 82), (133, 83, 75), (166, 117, 90))
+            bw = float(rng.uniform(58.0, 112.0))
+            bh = float(rng.uniform(126.0, 238.0))
+            dark_window_fill = (62, 75, 91)
+            lit_window_fill = (249, 212, 112)
+        elif building_style == "storefront_row":
+            palette = ((154, 132, 109), (142, 119, 139), (128, 143, 137), (165, 128, 112))
+            bw = float(rng.uniform(82.0, 146.0))
+            bh = float(rng.uniform(98.0, 168.0))
+            dark_window_fill = (70, 86, 99)
+            lit_window_fill = (250, 218, 118)
+        else:
+            palette = ((92, 115, 139), (129, 121, 147), (151, 132, 112), (91, 132, 146), (152, 104, 102))
+            bw = float(rng.uniform(54.0, 112.0))
+            bh = float(rng.uniform(118.0, 260.0))
+            dark_window_fill = (65, 82, 101)
+            lit_window_fill = (249, 218, 114)
         y1 = float(horizon_y) + float(rng.uniform(-5.0, 20.0))
         box = (x, y1 - bh, min(float(width) - 8.0, x + bw), y1)
         fill = tuple(int(v) for v in rng.choice(palette))
         outline = (61, 70, 83)
         draw.rectangle(_scale_bbox(box, scale), fill=fill, outline=outline, width=max(1, int(2 * scale)))
-        roof_type = str(rng.choice(("flat", "slanted", "antenna")))
+        if building_style == "glass_office":
+            shine = (min(255, fill[0] + 34), min(255, fill[1] + 34), min(255, fill[2] + 34))
+            shine_box = (box[0] + 0.12 * (box[2] - box[0]), box[1] + 8.0, box[0] + 0.25 * (box[2] - box[0]), box[3] - 12.0)
+            draw.rectangle(_scale_bbox(shine_box, scale), fill=shine)
+        elif building_style == "brick_row":
+            brick_line = (112, 72, 64)
+            yy = box[1] + 16.0
+            while yy < box[3] - 20.0:
+                _draw_line(draw, ((box[0] + 4.0, yy), (box[2] - 4.0, yy)), fill=brick_line, width=1.0, scale=scale)
+                yy += 18.0
+
+        roof_choices = ("flat", "slanted", "antenna")
+        if building_style == "storefront_row":
+            roof_choices = ("flat", "awning")
+        elif building_style == "glass_office":
+            roof_choices = ("flat", "antenna")
+        roof_type = str(rng.choice(roof_choices))
         if roof_type == "slanted":
             roof = ((box[0], box[1]), (0.5 * (box[0] + box[2]), box[1] - 24.0), (box[2], box[1]))
             draw.polygon(_scale_points(roof, scale), fill=(78, 82, 92), outline=outline)
@@ -574,32 +684,65 @@ def _draw_buildings(
             cx = 0.5 * (box[0] + box[2])
             _draw_line(draw, ((cx, box[1]), (cx, box[1] - 28.0)), fill=outline, width=2.0, scale=scale)
             _draw_line(draw, ((cx - 10.0, box[1] - 18.0), (cx + 10.0, box[1] - 18.0)), fill=outline, width=2.0, scale=scale)
+        awning_bbox: BBox | None = None
+        if roof_type == "awning" or building_style == "storefront_row":
+            awning_bbox = (box[0] + 4.0, box[3] - 48.0, box[2] - 4.0, box[3] - 30.0)
+            awning_fill = (210, 84, 76) if index % 2 == 0 else (226, 178, 87)
+            draw.rectangle(_scale_bbox(awning_bbox, scale), fill=awning_fill, outline=outline, width=max(1, int(1 * scale)))
+            stripe_w = max(8.0, (awning_bbox[2] - awning_bbox[0]) / 5.0)
+            stripe_x = awning_bbox[0]
+            while stripe_x < awning_bbox[2]:
+                stripe = (stripe_x, awning_bbox[1], min(awning_bbox[2], stripe_x + 0.48 * stripe_w), awning_bbox[3])
+                draw.rectangle(_scale_bbox(stripe, scale), fill=(245, 237, 207))
+                stripe_x += stripe_w
         window_bboxes: List[BBox] = []
-        cols = max(2, int((box[2] - box[0]) // 24))
-        rows = max(2, int((box[3] - box[1]) // 34))
-        pad_x = 10.0
-        pad_y = 18.0
+        if building_style == "glass_office":
+            cols = max(2, int((box[2] - box[0]) // 26))
+            rows = max(3, int((box[3] - box[1]) // 30))
+            pad_x, pad_y, window_radius = 8.0, 14.0, 1
+            window_bottom_limit = box[3] - 18.0
+        elif building_style == "storefront_row":
+            cols = max(2, int((box[2] - box[0]) // 30))
+            rows = max(1, int(max(34.0, box[3] - box[1] - 56.0) // 34))
+            pad_x, pad_y, window_radius = 10.0, 14.0, 2
+            window_bottom_limit = box[3] - 54.0
+        else:
+            cols = max(2, int((box[2] - box[0]) // 24))
+            rows = max(2, int((box[3] - box[1]) // 34))
+            pad_x, pad_y, window_radius = 10.0, 18.0, 2
+            window_bottom_limit = box[3] - 22.0
         cell_w = max(12.0, (box[2] - box[0] - 2.0 * pad_x) / float(cols))
-        cell_h = max(14.0, (box[3] - box[1] - 2.0 * pad_y) / float(rows))
+        cell_h = max(14.0, (window_bottom_limit - box[1] - pad_y) / float(rows))
         for row in range(rows):
             for col in range(cols):
                 wx0 = box[0] + pad_x + col * cell_w + 3.0
                 wy0 = box[1] + pad_y + row * cell_h + 4.0
-                wb = (wx0, wy0, wx0 + min(14.0, cell_w - 6.0), wy0 + min(18.0, cell_h - 7.0))
-                if wb[3] > box[3] - 22.0:
+                if building_style == "glass_office":
+                    wb = (wx0, wy0, wx0 + min(18.0, cell_w - 5.0), wy0 + min(22.0, cell_h - 6.0))
+                else:
+                    wb = (wx0, wy0, wx0 + min(14.0, cell_w - 6.0), wy0 + min(18.0, cell_h - 7.0))
+                if wb[3] > window_bottom_limit:
                     continue
                 window_bboxes.append(tuple(float(v) for v in wb))
         door: BBox | None = None
         if (box[2] - box[0]) > 60.0:
-            door = (0.5 * (box[0] + box[2]) - 10.0, box[3] - 30.0, 0.5 * (box[0] + box[2]) + 10.0, box[3])
+            door_width = 24.0 if building_style == "storefront_row" else 20.0
+            door_height = 34.0 if building_style == "storefront_row" else 30.0
+            door = (0.5 * (box[0] + box[2]) - 0.5 * door_width, box[3] - door_height, 0.5 * (box[0] + box[2]) + 0.5 * door_width, box[3])
             draw.rectangle(_scale_bbox(door, scale), fill=(54, 47, 51))
         building_specs.append(
             {
                 "building_id": f"building_{index:02d}",
                 "bbox_xyxy": tuple(float(v) for v in box),
+                "building_style_id": building_style,
                 "roof_type": roof_type,
                 "window_bboxes": tuple(window_bboxes),
                 "door_bbox": door,
+                "awning_bbox": awning_bbox,
+                "dark_window_fill": dark_window_fill,
+                "lit_window_fill": lit_window_fill,
+                "window_radius": int(window_radius),
+                "outline": outline,
             }
         )
         x = box[2] + float(rng.uniform(5.0, 16.0))
@@ -626,11 +769,16 @@ def _draw_buildings(
             lit = (building_index, window_index) in lit_keys if lit_window_count_override is not None else bool(rng.random() < 0.42)
             draw.rounded_rectangle(
                 _scale_bbox(wb, scale),
-                radius=max(1, int(2 * scale)),
-                fill=(249, 218, 114) if lit else (65, 82, 101),
+                radius=max(1, int(int(spec["window_radius"]) * scale)),
+                fill=tuple(spec["lit_window_fill"]) if lit else tuple(spec["dark_window_fill"]),
             )
+            if spec["building_style_id"] == "apartment_grid" and window_index % 2 == 0:
+                _draw_line(draw, ((wb[0] - 2.0, wb[3] + 3.0), (wb[2] + 2.0, wb[3] + 3.0)), fill=(214, 211, 196), width=1.0, scale=scale)
             if lit:
                 lit_window_bboxes.append(tuple(float(v) for v in wb))
+        if spec["awning_bbox"] is not None:
+            awning = tuple(float(v) for v in spec["awning_bbox"])
+            draw.rectangle(_scale_bbox(awning, scale), outline=tuple(spec["outline"]), width=max(1, int(1 * scale)))
         if spec["door_bbox"] is not None:
             draw.rectangle(_scale_bbox(spec["door_bbox"], scale), fill=(54, 47, 51))
         buildings.append(
@@ -642,6 +790,7 @@ def _draw_buildings(
                 lit_window_bboxes=tuple(lit_window_bboxes),
                 door_bbox=spec["door_bbox"],
                 attributes={
+                    "building_style_id": str(spec["building_style_id"]),
                     "window_count": len(window_bboxes),
                     "lit_window_count": len(lit_window_bboxes),
                     "height_px": round(float(spec["bbox_xyxy"][3] - spec["bbox_xyxy"][1]), 3),
@@ -1081,6 +1230,7 @@ def render_environment_object_scene(
             draw,
             path_points=river_path,
             width_px=_layout_float(layout, "river_width_px", 94.0 if theme_id == "canal_city" else 104.0),
+            river_style_id=str(layout.get("river_style_id", RIVER_STYLE_IDS[0])),
             scale=scale,
         )
         features.append(river)
@@ -1097,6 +1247,7 @@ def render_environment_object_scene(
                     river_path=river_path,
                     x=bx,
                     river_width=river.width_px,
+                    bridge_style_id=str(layout.get("bridge_style_id", BRIDGE_STYLE_IDS[0])),
                     scale=scale,
                 )
             )
@@ -1118,6 +1269,7 @@ def render_environment_object_scene(
             draw,
             path_points=road_path,
             width_px=_layout_float(layout, "road_width_px", 94.0 if theme_id != "skyline_street" else 108.0),
+            road_style_id=str(layout.get("road_style_id", ROAD_STYLE_IDS[0])),
             scale=scale,
         )
         features.append(road)
@@ -1291,6 +1443,8 @@ def serialize_environment_scene(scene: RenderedEnvironmentObjectScene) -> Dict[s
 
 
 __all__ = [
+    "BRIDGE_STYLE_IDS",
+    "BUILDING_STYLE_IDS",
     "ENVIRONMENT_THEME_IDS",
     "EnvironmentBuilding",
     "EnvironmentFeature",
@@ -1298,7 +1452,9 @@ __all__ = [
     "LAND_OBJECT_TYPES",
     "RenderedEnvironmentObjectScene",
     "RIVER_OBJECT_TYPES",
+    "RIVER_STYLE_IDS",
     "ROAD_OBJECT_TYPES",
+    "ROAD_STYLE_IDS",
     "SKY_OBJECT_TYPES",
     "THEME_LAND_OBJECT_TYPES",
     "effective_environment_object_count",

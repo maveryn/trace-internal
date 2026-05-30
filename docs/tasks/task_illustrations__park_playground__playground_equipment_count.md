@@ -1,6 +1,7 @@
 # task_illustrations__park_playground__playground_equipment_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -31,6 +32,8 @@ Each variant asks for the count of one equipment type.
 ## Evidence Contract
 - `evidence_gt.type = bbox_set`
 - one `[x0, y0, x1, y1]` pixel bbox around each counted equipment item
+- `bbox_set` is intentional: each query asks for an unordered homogeneous set
+  of counted equipment items, so no keyed role binding is needed.
 
 ## Trace Contract
 - `render_map.decor_bboxes_px` stores final decor and equipment bboxes.
@@ -46,3 +49,8 @@ Each variant asks for the count of one equipment type.
 - `query_id` is one of the four equipment-count branches above
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
+
+## Calibration Notes
+- Fresh artifact review on 2026-05-28 regenerated
+  `review/task-reviews/illustrations/park_playground/scene_review.xlsx`.
+- Solve-rate calibration remains pending.

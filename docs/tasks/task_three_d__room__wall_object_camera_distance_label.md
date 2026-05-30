@@ -12,7 +12,7 @@
 ## Contract
 The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, and lettered wall-mounted objects. The prompt asks which lettered wall-mounted object is closest to the camera.
 
-Each instance renders `6` lettered answer candidates spread across the left, back, and right walls. Candidate object types come from TVs, clocks, picture frames, mirrors, wall fans, air conditioners, hanging plants, and hanging coats. Unlettered wall objects and floor/furniture props provide room context but are excluded from the answer options.
+Each instance renders `6` lettered answer candidates spread across the left, back, and right walls. Candidate object types come from TVs, clocks, picture frames, mirrors, wall fans, air conditioners, and hanging coats. Unlettered wall objects and floor/furniture props provide room context but are excluded from the answer options.
 
 The task uses a narrower front-oblique camera band and keeps side-wall candidates away from the open front edge of the room, so wall-mounted objects remain visibly hanging on the wall rather than collapsing into edge-on slivers. Generation rejects side-wall candidates whose projected wall face is too skinny.
 

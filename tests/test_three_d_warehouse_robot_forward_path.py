@@ -58,8 +58,6 @@ def test_warehouse_robot_forward_path_answer_evidence_and_geometry(
         for label, flag in trace["first_reached_by_label"].items()
         if bool(flag)
     ]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "first_object_ahead"
     assert output.answer_gt.type == "option_letter"

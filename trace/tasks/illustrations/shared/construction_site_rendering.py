@@ -7,6 +7,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
+from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
 from .object_library import BBox, RGB, STYLE_IDS
 from .object_registry import make_object_record
@@ -145,10 +148,21 @@ class RenderedConstructionSiteScene:
     layout: Mapping[str, Any]
 
 
-def construction_color_display_name(color_name: str) -> str:
-    """Return a prompt-facing color name."""
+def construction_color_hex(color_name: str) -> str:
+    """Return the canonical hex string for a construction color."""
 
-    return str(color_name).replace("_", " ")
+    rgb = CONSTRUCTION_COLOR_RGB.get(str(color_name))
+    if rgb is None:
+        return ""
+    return f"#{int(rgb[0]):02X}{int(rgb[1]):02X}{int(rgb[2]):02X}"
+
+
+def construction_color_display_name(color_name: str) -> str:
+    """Return a prompt-facing color name with hex disambiguation."""
+
+    name = str(color_name).replace("_", " ")
+    hex_value = construction_color_hex(str(color_name))
+    return f"{name} [{hex_value}]" if hex_value else name
 
 
 def construction_material_display_name(material_type: str) -> str:
@@ -251,11 +265,27 @@ def _line(draw: ImageDraw.ImageDraw, points: Sequence[Tuple[float, float]], *, f
     draw.line(_scale_points(points, scale), fill=tuple(fill), width=max(1, int(width) * int(scale)), joint="curve")
 
 
-def _font(size: int, scale: int) -> ImageFont.ImageFont:
-    try:
-        return ImageFont.truetype("DejaVuSans-Bold.ttf", max(8, int(size) * int(scale)))
-    except Exception:
-        return ImageFont.load_default()
+def _font(size: int, scale: int, *, font_family: str | None = None) -> ImageFont.ImageFont:
+    return load_font(max(8, int(size) * int(scale)), bold=True, font_family=font_family)
+
+
+def _sample_zone_label_font_trace(*, instance_seed: int | None, params: Mapping[str, Any] | None) -> Dict[str, Any]:
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=0 if instance_seed is None else int(instance_seed),
+        namespace="illustrations.construction_site.zone_labels",
+        params=params,
+        explicit_key="construction_zone_label_font_family",
+        weights_key="construction_zone_label_font_family_weights",
+    )
+    record = get_font_family_record(str(font_family))
+    return {
+        **record.to_trace(),
+        "font_asset_version": font_asset_version(),
+        "pool": "global_approved_font_pool",
+        "role": "construction_zone_label",
+        "consistent_scope": "construction_site_zone_labels",
+    }
 
 
 def _draw_centered_text(
@@ -275,14 +305,14 @@ def _draw_centered_text(
         text_h = float(text_bbox[3] - text_bbox[1])
     except Exception:  # pragma: no cover
         text_w, text_h = draw.textsize(str(text), font=font)
-    draw.text(
+    draw_text_traced(draw,
         (int(round(float(cx) * int(scale) - text_w / 2.0)), int(round(float(cy) * int(scale) - text_h / 2.0))),
         str(text),
         font=font,
         fill=tuple(fill),
         stroke_width=max(0, int(scale) if stroke_fill else 0),
         stroke_fill=tuple(stroke_fill) if stroke_fill else None,
-    )
+     role="readout", required=False,)
 
 
 def _expanded_intersects(a: BBox, b: BBox, gap: float) -> bool:
@@ -364,6 +394,7 @@ def _draw_background(
     setting_id: str,
     layout: Mapping[str, Any],
     zones: Sequence[ConstructionZone],
+    zone_label_font_family: str,
     width: int,
     height: int,
     scale: int,
@@ -420,7 +451,7 @@ def _draw_background(
         _line(draw, [(0.0, 802.0), (float(width), 680.0)], fill=(240, 203, 82), width=5, scale=s)
 
     # Semantic zones are visible and labeled.
-    label_font = _font(17, s)
+    label_font = _font(17, s, font_family=str(zone_label_font_family))
     for zone in zones:
         _rect(draw, zone.bbox_xyxy, fill=zone.fill_rgb, outline=zone.outline_rgb, width=2, scale=s, radius=18)
         cx = (float(zone.bbox_xyxy[0]) + float(zone.bbox_xyxy[2])) / 2.0
@@ -619,6 +650,8 @@ def render_construction_site_scene(
     render_scale: int,
     setting_weights: Mapping[str, float],
     style_weights: Mapping[str, float],
+    instance_seed: int | None = None,
+    font_params: Mapping[str, Any] | None = None,
 ) -> RenderedConstructionSiteScene:
     """Render a construction-site illustration from semantic specs."""
 
@@ -628,6 +661,8 @@ def render_construction_site_scene(
     setting_id = _choose_weighted(rng, setting_weights, CONSTRUCTION_SETTING_IDS)
     style_id = _choose_weighted(rng, style_weights, STYLE_IDS)
     layout = _sample_layout(rng, width=width, height=height, setting_id=setting_id)
+    zone_label_font_trace = _sample_zone_label_font_trace(instance_seed=instance_seed, params=font_params)
+    layout["zone_label_font"] = dict(zone_label_font_trace)
     zones = _build_zones(layout)
     zone_by_id = _zone_lookup(zones)
     image = Image.new("RGB", (width * scale, height * scale), (244, 239, 224))
@@ -638,6 +673,7 @@ def render_construction_site_scene(
         setting_id=setting_id,
         layout=layout,
         zones=zones,
+        zone_label_font_family=str(zone_label_font_trace["font_family"]),
         width=width,
         height=height,
         scale=scale,
@@ -760,16 +796,20 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
     """Return trace-ready construction scene entities."""
 
     entities: List[Dict[str, Any]] = []
+    zone_label_font = scene.layout.get("zone_label_font", {}) if isinstance(scene.layout, Mapping) else {}
     for zone in scene.zones:
+        zone_visual_attributes: Dict[str, Any] = {
+            "fill_rgb": [int(v) for v in zone.fill_rgb],
+            "outline_rgb": [int(v) for v in zone.outline_rgb],
+        }
+        if isinstance(zone_label_font, Mapping):
+            zone_visual_attributes["label_font"] = _safe_json(zone_label_font)
         object_record = make_object_record(
             object_id=str(zone.zone_id),
             object_type="zone",
             bbox_xyxy=zone.bbox_xyxy,
             semantic_attributes={"zone_id": str(zone.zone_id), "label": str(zone.label)},
-            visual_attributes={
-                "fill_rgb": [int(v) for v in zone.fill_rgb],
-                "outline_rgb": [int(v) for v in zone.outline_rgb],
-            },
+            visual_attributes=zone_visual_attributes,
             source_entity_type="construction_zone",
         ).as_dict()
         entities.append(
@@ -778,6 +818,7 @@ def construction_scene_entities(scene: RenderedConstructionSiteScene) -> List[Di
                 "type": "construction_zone",
                 "label": str(zone.label),
                 "bbox_xyxy": [round(float(v), 3) for v in zone.bbox_xyxy],
+                "label_font": _safe_json(zone_label_font) if isinstance(zone_label_font, Mapping) else {},
                 "object_record": object_record,
             }
         )
@@ -966,6 +1007,7 @@ __all__ = [
     "ConstructionWorkerSpec",
     "RenderedConstructionSiteScene",
     "construction_color_display_name",
+    "construction_color_hex",
     "construction_equipment_bbox_map",
     "construction_equipment_display_name",
     "construction_material_bbox_map",

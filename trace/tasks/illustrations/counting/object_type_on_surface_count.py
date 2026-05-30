@@ -198,10 +198,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "compound_query_load": round(float(compound_query_load), 6),
-            "object_count": int(sample.object_count),
-            "target_count": int(sample.target_count),
-            "object_type": str(sample.object_type),
-            "surface_type": str(sample.surface_type),
         },
     )
 

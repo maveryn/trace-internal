@@ -31,51 +31,6 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert max(counts.values()) <= int(expected * 1.7) + 1
 
 
-def test_container_object_count_contract() -> None:
-    out = create_task("task_illustrations__indoor_room__container_object_count").generate(
-        hash64(2026052401, "container", 0),
-        params={"container_type": "basket", "target_count": 3, "object_count": 10, "theme_id": "kitchen"},
-        max_attempts=80,
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-    placements = trace["render_map"]["placements"]
-    assert out.scene_id == "indoor_room"
-    assert out.query_id == "container_object_count"
-    assert execution["container_type"] == "basket"
-    assert int(out.answer_gt.value) == 3
-    assert all(placements[object_id]["container_type"] == "basket" for object_id in execution["counted_object_ids"])
-    assert sorted(out.evidence_gt.value) == sorted(_expected_bboxes(trace, execution["counted_object_ids"]))
-
-
-def test_container_object_count_calibration_sampling_is_decoupled() -> None:
-    task = create_task("task_illustrations__indoor_room__container_object_count")
-    answer_counts: Counter[int] = Counter()
-    object_counts: Counter[int] = Counter()
-    answer_container_pairs: Counter[tuple[int, str]] = Counter()
-
-    for index in range(100):
-        out = task.generate(
-            hash64(2026052401, "container-sampling", index),
-            params={},
-            max_attempts=80,
-        )
-        execution = out.trace_payload["execution_trace"]
-        answer = int(out.answer_gt.value)
-        container_type = str(execution["container_type"])
-        answer_counts[answer] += 1
-        object_counts[int(execution["object_count"])] += 1
-        answer_container_pairs[(answer, container_type)] += 1
-
-    _assert_hash_balanced_counts(answer_counts, range(0, 5))
-    _assert_hash_balanced_counts(object_counts, range(8, 13))
-    assert set(answer_container_pairs) == {
-        (answer, container_type)
-        for answer in range(0, 5)
-        for container_type in ("basket", "box", "drawer")
-    }
-
-
 def test_object_type_on_surface_count_contract() -> None:
     out = create_task("task_illustrations__indoor_room__surface_object_count").generate(
         hash64(2026052401, "type-on-surface", 0),

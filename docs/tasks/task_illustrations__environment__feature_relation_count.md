@@ -1,6 +1,7 @@
 # task_illustrations__environment__feature_relation_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Overview
 
@@ -32,6 +33,8 @@ a count relative to the environmental feature. Query ids are:
 - `scene_key = environment_object_canvas`
 - `task_key = feature_relation_object_count_task`
 - `query_id` is one of the branches listed above.
+- Scene prompt variants name the outdoor setting without injecting irrelevant
+  numeric context; the query layer names the counted relation.
 
 ## Calibration Notes
 
@@ -39,3 +42,8 @@ The feature-side branch keeps answer counts in `1..12`, the on-feature branch
 targets `2..7`, and the crossing branch targets `1..5`. Road/river themes and
 above/below relation choices are sampled as task metadata and recorded in the
 trace payload.
+
+The renderer samples large-feature visual styles for roads, rivers, and bridges
+and records those style ids in the layout and feature attributes. These styles
+change the visual surface treatment only; answer/evidence projection remains
+based on rendered bboxes and relation metadata.

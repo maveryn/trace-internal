@@ -14,7 +14,7 @@ The image shows a synthetic perspective 3D indoor room with a floor, back/side w
 
 Each instance renders `6` lettered answer candidates across the left, back, and right walls. Exactly one lettered candidate is on the reference object's wall. Candidate object types exclude the sampled reference object type, and generation requires the reference prompt name to appear exactly once in finalized scene metadata.
 
-The reference object is sampled from recognizable wall-mounted categories such as TV, clock, mirror, fan, air conditioner, hanging plant, and coat. Extra wall and floor objects provide room context but are excluded from answer options.
+The reference object is sampled from recognizable wall-mounted categories such as TV, clock, mirror, fan, air conditioner, and coat. Extra wall and floor objects provide room context but are excluded from answer options.
 
 The renderer uses a lower interior camera, extends the open/front floor toward the camera, keeps side-wall continuation capped to avoid cutaway wall panels, and includes foreground floor context so the scene reads from inside the room. Reference/candidate placement, wall assignments, same-wall flags, and verifier geometry still use the semantic room coordinates recorded in trace metadata.
 

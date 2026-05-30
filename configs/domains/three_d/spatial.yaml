@@ -14,6 +14,21 @@ generation:
       context_object_count_max: 2
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
+    task_three_d__object_scene__counterfactual_attribute_count:
+      query_id_weights:
+        attribute_count_after_edits: 1.0
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      object_count_min: 12
+      object_count_max: 15
+      target_count_min: 2
+      target_count_max: 5
+      edit_step_count_min: 1
+      edit_step_count_max: 3
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
     task_three_d__object_scene__object_relation_label:
       query_id_weights:
         on_top_of_prop: 1.0
@@ -82,6 +97,61 @@ generation:
       context_object_count_max: 5
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
+    task_three_d__object_scene__multiview_object_match_label:
+      query_id_weights:
+        same_object_in_second_view: 1.0
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      point_count_min: 6
+      point_count_max: 6
+      context_object_count_min: 0
+      context_object_count_max: 0
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_scene__named_object_count:
+      query_id_weights:
+        object_type_count: 1.0
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      object_count_min: 13
+      object_count_max: 16
+      target_count_min: 2
+      target_count_max: 5
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_scene__spatial_relation_count:
+      query_id_weights:
+        on_top_of_reference_count: 1.0
+        under_reference_count: 1.0
+        inside_reference_count: 1.0
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      object_count_min: 10
+      object_count_max: 12
+      target_count_min: 2
+      target_count_max: 3
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_three_d__object_scene__view_relation_count:
+      query_id_weights:
+        left_of_reference_in_view_count: 1.0
+        right_of_reference_in_view_count: 1.0
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      object_count_min: 10
+      object_count_max: 13
+      target_count_min: 2
+      target_count_max: 5
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
 
 rendering:
   task_overrides:
@@ -92,6 +162,26 @@ rendering:
       scene_margin_right_px: 54
       scene_margin_top_px: 42
       scene_margin_bottom_px: 48
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb: [232, 239, 242]
+      grid_rgb: [184, 197, 207]
+      edge_rgb: [93, 108, 124]
+      text_rgb: [30, 34, 42]
+      text_stroke_rgb: [255, 255, 255]
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_scene__counterfactual_attribute_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 38
+      scene_margin_bottom_px: 44
       room_extent: 3.2
       room_height: 3.0
       grid_step: 0.8
@@ -195,6 +285,86 @@ rendering:
       edge_rgb: [93, 108, 124]
       text_rgb: [30, 34, 42]
       text_stroke_rgb: [255, 255, 255]
+    task_three_d__object_scene__multiview_object_match_label:
+      canvas_width: 1480
+      canvas_height: 900
+      scene_margin_left_px: 54
+      scene_margin_right_px: 54
+      scene_margin_top_px: 42
+      scene_margin_bottom_px: 48
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb: [232, 239, 242]
+      grid_rgb: [184, 197, 207]
+      edge_rgb: [93, 108, 124]
+      text_rgb: [30, 34, 42]
+      text_stroke_rgb: [255, 255, 255]
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_scene__named_object_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 38
+      scene_margin_bottom_px: 44
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb: [232, 239, 242]
+      grid_rgb: [184, 197, 207]
+      edge_rgb: [93, 108, 124]
+      text_rgb: [30, 34, 42]
+      text_stroke_rgb: [255, 255, 255]
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_scene__spatial_relation_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 38
+      scene_margin_bottom_px: 44
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb: [232, 239, 242]
+      grid_rgb: [184, 197, 207]
+      edge_rgb: [93, 108, 124]
+      text_rgb: [30, 34, 42]
+      text_stroke_rgb: [255, 255, 255]
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_scene__view_relation_count:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 48
+      scene_margin_right_px: 48
+      scene_margin_top_px: 38
+      scene_margin_bottom_px: 44
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 22
+      label_font_size_px: 24
+      line_width_px: 2
+      floor_rgb: [232, 239, 242]
+      grid_rgb: [184, 197, 207]
+      edge_rgb: [93, 108, 124]
+      text_rgb: [30, 34, 42]
+      text_stroke_rgb: [255, 255, 255]
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
 
 complexity:
   task_overrides:
@@ -204,6 +374,12 @@ complexity:
         depth_reasoning: 0.38
         ambiguity: 0.14
         scene_variant_load: 0.08
+    task_three_d__object_scene__counterfactual_attribute_count:
+      criteria_weights:
+        visual_scan: 0.42
+        counterfactual_steps: 0.30
+        target_count: 0.18
+        scene_variant_load: 0.10
     task_three_d__object_scene__object_relation_label:
       criteria_weights:
         visual_scan: 0.36
@@ -234,6 +410,30 @@ complexity:
         vertical_reasoning: 0.40
         support_load: 0.16
         scene_variant_load: 0.10
+    task_three_d__object_scene__multiview_object_match_label:
+      criteria_weights:
+        visual_scan: 0.34
+        multiview_reasoning: 0.44
+        camera_baseline: 0.14
+        scene_variant_load: 0.08
+    task_three_d__object_scene__named_object_count:
+      criteria_weights:
+        visual_scan: 0.50
+        target_count: 0.24
+        distractor_load: 0.18
+        scene_variant_load: 0.08
+    task_three_d__object_scene__spatial_relation_count:
+      criteria_weights:
+        visual_scan: 0.40
+        relation_reasoning: 0.34
+        target_count: 0.16
+        scene_variant_load: 0.10
+    task_three_d__object_scene__view_relation_count:
+      criteria_weights:
+        visual_scan: 0.46
+        view_relation: 0.26
+        target_count: 0.18
+        scene_variant_load: 0.10
 
 prompt:
   shared:
@@ -247,6 +447,14 @@ prompt:
       answer_hint: set "answer" to the selected small object letter
       json_example: '{"evidence":[[318,260,366,308]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
+    task_three_d__object_scene__counterfactual_attribute_count:
+      scene_key: object_scene
+      task_key: counterfactual_attribute_count_query
+      object_description: a perspective 3D scene with a gridded floor and many unlettered colored objects
+      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around each visible starting object matching the final counted description
+      answer_hint: set "answer" to the final count
+      json_example: '{"evidence":[[118,442,176,503],[391,316,448,374]],"answer":4}'
+      json_example_answer_only: '{"answer":4}'
     task_three_d__object_scene__object_relation_label:
       scene_key: object_scene
       task_key: object_relation_query
@@ -287,3 +495,35 @@ prompt:
       answer_hint: set "answer" to the selected letter
       json_example: '{"evidence":[[318,260,366,308]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
+    task_three_d__object_scene__multiview_object_match_label:
+      scene_key: object_scene
+      task_key: multiview_object_match_query
+      object_description: two side-by-side perspective views of the same open 3D setup with a gridded floor or platform, one red-boxed object in the left view, and lettered candidate objects in the right view
+      evidence_hint: set "evidence" to an object with keys "reference_view_object" and "second_view_match"; each value is a bounding box [x0, y0, x1, y1] around the red-boxed object in the left view and the matching lettered object in the right view
+      answer_hint: set "answer" to the selected object letter from the right view
+      json_example: '{"evidence":{"reference_view_object":[112,210,168,276],"second_view_match":[842,228,902,296]},"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    task_three_d__object_scene__named_object_count:
+      scene_key: object_scene
+      task_key: named_object_count_query
+      object_description: an open synthetic 3D setup with a gridded floor or platform, perspective depth cues, and many unlettered small 3D objects
+      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around each counted object
+      answer_hint: set "answer" to the number of counted objects
+      json_example: '{"evidence":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_three_d__object_scene__spatial_relation_count:
+      scene_key: object_scene
+      task_key: spatial_relation_count_query
+      object_description: an open synthetic 3D setup with a gridded floor or platform, perspective depth cues, one named unlettered reference prop, and many unlettered small 3D objects
+      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around each counted small object
+      answer_hint: set "answer" to the number of counted small objects
+      json_example: '{"evidence":[[118,442,176,503],[391,316,448,374]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_three_d__object_scene__view_relation_count:
+      scene_key: object_scene
+      task_key: view_relation_count_query
+      object_description: an open synthetic 3D setup with a gridded floor or platform, perspective depth cues, one uniquely named unlettered small reference object, and many other unlettered small 3D objects
+      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around each counted small object
+      answer_hint: set "answer" to the number of counted small objects
+      json_example: '{"evidence":[[118,442,176,503],[391,316,448,374],[702,521,758,579]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'

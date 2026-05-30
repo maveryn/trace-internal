@@ -20,13 +20,15 @@ from trace.tasks.three_d.room.wall_object_side_relation import (
 
 
 @pytest.mark.parametrize(
-    ("query_id", "relation_key"),
+    ("reference_wall", "query_id", "relation_key"),
     [
-        ("left_of_reference_on_wall", "left_of_reference_on_wall_by_label"),
-        ("right_of_reference_on_wall", "right_of_reference_on_wall_by_label"),
+        ("back", "left_of_reference_on_wall", "left_of_reference_on_wall_by_label"),
+        ("back", "right_of_reference_on_wall", "right_of_reference_on_wall_by_label"),
+        ("left", "left_of_reference_on_wall", "left_of_reference_on_wall_by_label"),
+        ("right", "left_of_reference_on_wall", "left_of_reference_on_wall_by_label"),
+        ("right", "right_of_reference_on_wall", "right_of_reference_on_wall_by_label"),
     ],
 )
-@pytest.mark.parametrize("reference_wall", ["back", "left", "right"])
 def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
     reference_wall: str,
     query_id: str,
@@ -44,7 +46,7 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
             "reference_wall": reference_wall,
             "post_image_noise_apply_prob": 0.0,
         },
-        max_attempts=180,
+        max_attempts=220,
     )
 
     trace = output.trace_payload["execution_trace"]
@@ -73,8 +75,6 @@ def test_room_wall_object_side_relation_answer_evidence_and_unique_reference(
             "candidate_wall_left_coordinates_by_label"
         ].items()
     }
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == query_id
     assert output.answer_gt.type == "option_letter"

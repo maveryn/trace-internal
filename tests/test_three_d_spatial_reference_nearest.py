@@ -31,8 +31,6 @@ def test_reference_nearest_answer_and_evidence() -> None:
     sorted_labels = sorted(gaps_by_label, key=lambda label: (float(gaps_by_label[label]), str(label)))
     expected_label = str(sorted_labels[0])
     reference_id = str(trace["reference_object_id"])
-
-    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == "closest_to_reference"
     assert output.answer_gt.type == "option_letter"

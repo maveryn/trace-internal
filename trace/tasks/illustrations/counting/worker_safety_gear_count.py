@@ -21,6 +21,7 @@ from ..shared.construction_site_scene import (
     ConstructionMaterialSpec,
     ConstructionWorkerSpec,
     construction_color_display_name,
+    construction_color_hex,
     construction_scene_entities,
     construction_worker_bbox_map,
     render_construction_site_scene,
@@ -245,9 +246,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "query_scope": round(float(query_scope), 6),
-            "query_id": str(sample.query_id),
-            "target_count": int(sample.target_count),
-            "worker_count": int(sample.worker_count),
         },
     )
 
@@ -280,6 +278,8 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                     render_scale=int(rp["render_scale"]),
                     setting_weights=setting_weights(params, _RENDER_DEFAULTS),
                     style_weights=style_weights(params, _RENDER_DEFAULTS),
+                    instance_seed=int(instance_seed),
+                    font_params={**dict(_RENDER_DEFAULTS), **dict(params)},
                 )
                 break
             except Exception as exc:  # pragma: no cover
@@ -354,6 +354,8 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "target_color": str(sample.target_color) if sample.target_color else None,
+                    "target_color_label": construction_color_display_name(str(sample.target_color)) if sample.target_color else None,
+                    "target_color_hex": construction_color_hex(str(sample.target_color)) if sample.target_color else None,
                     "match_phrase": str(sample.match_phrase),
                     "target_count": int(sample.target_count),
                     "worker_count": int(sample.worker_count),
@@ -386,6 +388,8 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
                 "query_id_probabilities": dict(sample.query_probabilities),
                 "target_count": int(sample.target_count),
                 "worker_count": int(sample.worker_count),
+                "target_color_label": construction_color_display_name(str(sample.target_color)) if sample.target_color else None,
+                "target_color_hex": construction_color_hex(str(sample.target_color)) if sample.target_color else None,
                 "worker_color_counts": {
                     "hard_hat": dict(Counter(str(worker.hard_hat_color) for worker in scene.workers)),
                     "vest": dict(Counter(str(worker.vest_color) for worker in scene.workers)),

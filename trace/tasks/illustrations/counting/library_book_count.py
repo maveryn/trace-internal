@@ -402,10 +402,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "filter_load": round(float(filter_load), 6),
-            "section_count": int(sample.section_count),
-            "target_count": int(sample.target_count),
-            "section_key": str(sample.section_key),
-            "query_id": str(sample.query_id),
         },
     )
 
@@ -484,6 +480,8 @@ class IllustrationsCountingLibraryBookCountTask:
                     render_scale=int(rp["render_scale"]),
                     setting_weights=setting_weights(params, _RENDER_DEFAULTS),
                     style_weights=style_weights(params, _RENDER_DEFAULTS),
+                    instance_seed=int(instance_seed),
+                    font_params=params,
                 )
                 break
             except Exception as exc:  # pragma: no cover

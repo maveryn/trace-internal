@@ -54,8 +54,6 @@ def test_wall_mounted_object_count_answer_and_evidence(query_id: str) -> None:
         target_specs,
         key=lambda spec: (str(spec.get("wall", "")), float(spec["base_xyz"][2]), float(spec["world_xyz"][0]), float(spec["world_xyz"][1])),
     )]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == query_id
     assert output.answer_gt.type == "integer"

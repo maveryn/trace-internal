@@ -55,7 +55,6 @@ def test_street_intersection_nearest_answer_evidence_and_geometry(scene_variant:
     }
     sorted_labels = sorted(distances, key=lambda label: (distances[label], label))
 
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_to_intersection"
     assert output.answer_gt.type == "option_letter"

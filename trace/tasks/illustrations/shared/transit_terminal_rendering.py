@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 
 from .render_geometry import scale_bbox as _scale_bbox, scale_points as _scale_points
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .object_catalog import label_map_for_tag, plural_name_map_for_tag, variant_ids_with_tag
 from .object_library import BBox, RGB, STYLE_IDS
 from .object_registry import make_object_record
@@ -243,14 +244,14 @@ def _draw_fit_text(
         text_w, text_h = draw.textsize(str(text), font=font)
     tx = float(x0 + (x1 - x0 - text_w) * 0.5)
     ty = float(y0 + (y1 - y0 - text_h) * 0.5)
-    draw.text(
+    draw_text_traced(draw,
         (int(round(tx)), int(round(ty))),
         str(text),
         font=font,
         fill=tuple(fill),
         stroke_width=max(0, int(scale) if stroke_fill else 0),
         stroke_fill=tuple(stroke_fill) if stroke_fill else None,
-    )
+     role="readout", required=False,)
 
 
 def _bbox_union(boxes: Iterable[BBox]) -> BBox:
@@ -601,7 +602,7 @@ def _draw_service_points(
     return tuple(points)
 
 
-def _candidate_person_box(rng, *, layout: Mapping[str, Any], area_id: str, pose_id: str, width: int, height: int) -> BBox:
+def _person_placement_bounds(*, layout: Mapping[str, Any], area_id: str, width: int, height: int) -> Tuple[float, float, float, float]:
     area = _area_bbox(layout, str(area_id)) or tuple(float(v) for v in layout["concourse_bbox"])
     if str(area_id) in set(TRANSIT_BOARDING_AREA_IDS):
         y_min = area[1] + min(138.0, 0.50 * (area[3] - area[1]))
@@ -610,19 +611,59 @@ def _candidate_person_box(rng, *, layout: Mapping[str, Any], area_id: str, pose_
         x_max = area[2] - 24.0
     else:
         x_min, y_min, x_max, y_max = area[0] + 26.0, area[1] + 20.0, area[2] - 26.0, area[3] - 14.0
-    person_h = float(rng.uniform(76.0, 104.0))
-    if str(pose_id) == "seated":
-        person_h = float(rng.uniform(62.0, 82.0))
-    person_w = person_h * float(rng.uniform(0.46, 0.64))
     if x_max <= x_min:
         x_min, x_max = 70.0, float(width) - 70.0
     if y_max <= y_min:
         y_min, y_max = 430.0, float(height) - 40.0
-    cx = float(rng.uniform(x_min, x_max))
-    bottom = float(rng.uniform(y_min + person_h, y_max))
-    x0 = max(18.0, min(float(width) - person_w - 18.0, cx - 0.5 * person_w))
-    y1 = max(260.0, min(float(height) - 18.0, bottom))
+    return float(x_min), float(y_min), float(x_max), float(y_max)
+
+
+def _candidate_person_box(rng, *, layout: Mapping[str, Any], area_id: str, pose_id: str, width: int, height: int) -> BBox:
+    x_min, y_min, x_max, y_max = _person_placement_bounds(layout=layout, area_id=str(area_id), width=width, height=height)
+    person_h = float(rng.uniform(76.0, 104.0))
+    if str(pose_id) == "seated":
+        person_h = float(rng.uniform(62.0, 82.0))
+    usable_w = max(1.0, float(x_max - x_min))
+    usable_h = max(1.0, float(y_max - y_min))
+    person_h = max(38.0, min(float(person_h), usable_h - 4.0))
+    person_w = person_h * float(rng.uniform(0.46, 0.64))
+    person_w = max(22.0, min(float(person_w), usable_w - 4.0))
+    left_max = max(float(x_min), float(x_max) - person_w)
+    x0 = float(rng.uniform(float(x_min), left_max)) if left_max > float(x_min) else float(x_min)
+    bottom_min = float(y_min) + person_h
+    bottom = float(rng.uniform(bottom_min, float(y_max))) if bottom_min < float(y_max) else float(y_max)
+    y1 = max(float(y_min) + person_h, min(float(y_max), bottom))
     return (round(x0, 3), round(y1 - person_h, 3), round(x0 + person_w, 3), round(y1, 3))
+
+
+def _fallback_person_box(
+    *,
+    layout: Mapping[str, Any],
+    area_id: str,
+    pose_id: str,
+    fallback_index: int,
+    width: int,
+    height: int,
+) -> BBox:
+    x_min, y_min, x_max, y_max = _person_placement_bounds(layout=layout, area_id=str(area_id), width=width, height=height)
+    usable_w = max(1.0, float(x_max - x_min))
+    usable_h = max(1.0, float(y_max - y_min))
+    preferred_h = 68.0 if str(pose_id) == "seated" else 82.0
+    cols = max(1, min(8, int(usable_w // max(34.0, 0.50 * preferred_h))))
+    rows = max(1, min(4, int(usable_h // max(48.0, 0.64 * preferred_h))))
+    cell_w = usable_w / float(cols)
+    cell_h = usable_h / float(rows)
+    index = max(0, int(fallback_index))
+    col = index % int(cols)
+    row = (index // int(cols)) % int(rows)
+    person_h = max(38.0, min(preferred_h, cell_h - 6.0, usable_h - 2.0))
+    person_w = max(22.0, min(person_h * 0.54, cell_w - 6.0, usable_w - 2.0))
+    x0 = x_min + float(col) * cell_w + 0.5 * (cell_w - person_w)
+    y1 = min(y_max - 2.0, y_min + float(row + 1) * cell_h - 3.0)
+    y0 = max(y_min + 2.0, y1 - person_h)
+    if y1 <= y0:
+        y1 = min(y_max, y0 + max(24.0, person_h))
+    return (round(float(x0), 3), round(float(y0), 3), round(float(x0 + person_w), 3), round(float(y1), 3))
 
 
 def _queue_person_box(
@@ -666,13 +707,16 @@ def _place_persons(rng, *, specs: Sequence[TransitPersonSpec], layout: Mapping[s
     ordered = list(specs)
     rng.shuffle(ordered)
     queue_counts: Dict[str, int] = {}
+    fallback_counts: Dict[str, int] = {}
     for index, spec in enumerate(ordered):
         pose_id = str(spec.attributes.get("pose_id") or rng.choice(TRANSIT_PERSON_POSES))
         box: BBox | None = None
         service_point_id = spec.attributes.get("service_point_id")
+        fallback_key = str(spec.area_id)
         if bool(spec.attributes.get("queue_member")) and service_point_id is not None:
             queue_index = int(queue_counts.get(str(service_point_id), 0))
             queue_counts[str(service_point_id)] = int(queue_index) + 1
+            fallback_key = f"queue:{service_point_id}"
             box = _queue_person_box(
                 rng,
                 layout=layout,
@@ -688,11 +732,30 @@ def _place_persons(rng, *, specs: Sequence[TransitPersonSpec], layout: Mapping[s
                     box = candidate
                     break
         if box is None:
-            col = index % 8
-            row = index // 8
-            x = 78.0 + float(col) * 138.0
-            y = 530.0 + float(row) * 112.0
-            box = (x, y, x + 42.0, y + 84.0)
+            start_index = int(fallback_counts.get(str(fallback_key), 0))
+            for extra in range(32):
+                candidate = _fallback_person_box(
+                    layout=layout,
+                    area_id=str(spec.area_id),
+                    pose_id=str(pose_id),
+                    fallback_index=int(start_index + extra),
+                    width=width,
+                    height=height,
+                )
+                if all(not _expanded_intersects(candidate, other, 2.0) for other in existing):
+                    box = candidate
+                    fallback_counts[str(fallback_key)] = int(start_index + extra + 1)
+                    break
+            if box is None:
+                box = _fallback_person_box(
+                    layout=layout,
+                    area_id=str(spec.area_id),
+                    pose_id=str(pose_id),
+                    fallback_index=int(start_index),
+                    width=width,
+                    height=height,
+                )
+                fallback_counts[str(fallback_key)] = int(start_index + 1)
         existing.append(tuple(float(v) for v in box))
         placed.append((spec, tuple(float(v) for v in box), pose_id))
     return tuple(placed)
@@ -802,9 +865,12 @@ def _place_luggage(
     width: int,
     height: int,
     occupied: Sequence[BBox] = (),
+    occupied_gap: float = 14.0,
+    luggage_gap: float = 3.0,
 ) -> Tuple[Tuple[TransitLuggageSpec, BBox], ...]:
     placed: List[Tuple[TransitLuggageSpec, BBox]] = []
-    existing: List[BBox] = [tuple(float(v) for v in box) for box in occupied]
+    occupied_boxes: List[BBox] = [tuple(float(v) for v in box) for box in occupied]
+    placed_boxes: List[BBox] = []
     ordered = list(specs)
     rng.shuffle(ordered)
     for index, spec in enumerate(ordered):
@@ -818,13 +884,11 @@ def _place_luggage(
                 width=width,
                 height=height,
             )
-            if all(not _expanded_intersects(candidate, other, 1.0) for other in existing):
+            if all(not _expanded_intersects(candidate, other, float(occupied_gap)) for other in occupied_boxes) and all(not _expanded_intersects(candidate, other, float(luggage_gap)) for other in placed_boxes):
                 box = candidate
                 break
         if box is None:
             area = _area_bbox(layout, str(spec.area_id)) or tuple(float(v) for v in layout["concourse_bbox"])
-            col = index % 7
-            row = index // 7
             item_w = 34.0 if str(spec.luggage_type) != "luggage_cart" else 50.0
             item_h = 40.0 if str(spec.luggage_type) != "luggage_cart" else 34.0
             if str(spec.area_id) in set(TRANSIT_BOARDING_AREA_IDS):
@@ -837,10 +901,22 @@ def _place_luggage(
                 max_x = area[2] - item_w - 12.0
                 min_y = area[1] + 18.0
                 max_y = area[3] - item_h - 8.0
-            x = max(min_x, min(max_x, min_x + float(col) * 39.0))
-            y = max(min_y, min(max_y, min_y + float(row) * 34.0))
-            box = (x, y, x + item_w, y + item_h)
-        existing.append(tuple(float(v) for v in box))
+            for extra in range(42):
+                col = int(index + extra) % 7
+                row = int(index + extra) // 7
+                x = max(min_x, min(max_x, min_x + float(col) * 39.0))
+                y = max(min_y, min(max_y, min_y + float(row) * 34.0))
+                candidate = (x, y, x + item_w, y + item_h)
+                if all(not _expanded_intersects(candidate, other, float(occupied_gap)) for other in occupied_boxes) and all(not _expanded_intersects(candidate, other, float(luggage_gap)) for other in placed_boxes):
+                    box = candidate
+                    break
+            if box is None:
+                col = index % 7
+                row = index // 7
+                x = max(min_x, min(max_x, min_x + float(col) * 39.0))
+                y = max(min_y, min(max_y, min_y + float(row) * 34.0))
+                box = (x, y, x + item_w, y + item_h)
+        placed_boxes.append(tuple(float(v) for v in box))
         placed.append((spec, tuple(float(v) for v in box)))
     return tuple(placed)
 
@@ -919,22 +995,6 @@ def render_transit_terminal_scene(
         if bool(show_service_points)
         else tuple()
     )
-    placed_luggage = _place_luggage(rng, specs=luggage_specs, layout=layout, width=width, height=height)
-    luggage_items: List[TransitLuggageItem] = []
-    for index, (spec, bbox) in enumerate(sorted(placed_luggage, key=lambda item: (float(item[1][3]), float(item[1][0])))):
-        luggage_id = f"luggage_{index:02d}"
-        color = _clothes_color(rng)
-        luggage_items.append(
-            TransitLuggageItem(
-                luggage_id=str(luggage_id),
-                area_id=str(spec.area_id),
-                luggage_type=str(spec.luggage_type),
-                bbox_xyxy=tuple(round(float(v), 3) for v in bbox),
-                primary_color_rgb=tuple(int(v) for v in color),
-                role=str(spec.role),
-                attributes={**dict(spec.attributes), "area_id": str(spec.area_id), "luggage_type": str(spec.luggage_type)},
-            )
-        )
     placed = _place_persons(rng, specs=person_specs, layout=layout, width=width, height=height)
     placed_sorted = sorted(placed, key=lambda item: (float(item[1][3]), float(item[1][0])))
     persons: List[TransitPerson] = []
@@ -978,6 +1038,29 @@ def render_transit_terminal_scene(
                 attributes={**dict(spec.attributes), "area_id": str(spec.area_id), "pose_id": str(pose_id)},
             )
         )
+    placed_luggage = _place_luggage(
+        rng,
+        specs=luggage_specs,
+        layout=layout,
+        width=width,
+        height=height,
+        occupied=[person.bbox_xyxy for person in persons],
+    )
+    luggage_items: List[TransitLuggageItem] = []
+    for index, (spec, bbox) in enumerate(sorted(placed_luggage, key=lambda item: (float(item[1][3]), float(item[1][0])))):
+        luggage_id = f"luggage_{index:02d}"
+        color = _clothes_color(rng)
+        luggage_items.append(
+            TransitLuggageItem(
+                luggage_id=str(luggage_id),
+                area_id=str(spec.area_id),
+                luggage_type=str(spec.luggage_type),
+                bbox_xyxy=tuple(round(float(v), 3) for v in bbox),
+                primary_color_rgb=tuple(int(v) for v in color),
+                role=str(spec.role),
+                attributes={**dict(spec.attributes), "area_id": str(spec.area_id), "luggage_type": str(spec.luggage_type)},
+            )
+        )
     for item in luggage_items:
         _draw_luggage_item(
             draw,
@@ -1012,7 +1095,7 @@ def transit_person_bbox_map(scene: RenderedTransitTerminalScene) -> Dict[str, Li
 
 
 def transit_luggage_bbox_map(scene: RenderedTransitTerminalScene) -> Dict[str, List[float]]:
-    """Return loose luggage bboxes keyed by luggage id."""
+    """Return standalone luggage bboxes keyed by luggage id."""
 
     return {str(item.luggage_id): [round(float(v), 3) for v in item.bbox_xyxy] for item in scene.luggage}
 

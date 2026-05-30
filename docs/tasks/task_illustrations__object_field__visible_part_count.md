@@ -1,6 +1,7 @@
 # task_illustrations__object_field__visible_part_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -29,6 +30,8 @@ metadata as `part_kind`.
 - `evidence_gt.type = bbox_set`
 - one `[x0, y0, x1, y1]` pixel bbox for each counted visible part
 - evidence boxes are sorted deterministically by rendered position
+- `bbox_set` is intentional: witnesses are homogeneous visible part instances,
+  so no keyed role binding is needed.
 
 ## Trace Contract
 - `scene_ir.entities` contains one `illustration_object` entity per object and
@@ -46,3 +49,11 @@ metadata as `part_kind`.
   object priors
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
+
+## Calibration Notes
+- Fresh artifact review on 2026-05-28 regenerated
+  `review/task-reviews/illustrations/object_field/scene_review.xlsx`.
+- The renderer samples one background layout before object placement and uses
+  the same layout for final rendering, so projected part evidence is tied to
+  the final placement geometry.
+- Solve-rate calibration remains pending.

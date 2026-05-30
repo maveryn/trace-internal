@@ -57,8 +57,6 @@ def test_warehouse_robot_nearest_object_answer_evidence_and_geometry(
         for label, flag in trace["nearest_robot_by_label"].items()
         if bool(flag)
     ]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_robot_to_reference"
     assert output.answer_gt.type == "option_letter"
@@ -145,8 +143,6 @@ def test_warehouse_object_nearest_robot_answer_evidence_and_geometry(
         for label, flag in trace["nearest_object_by_label"].items()
         if bool(flag)
     ]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_object_to_robot"
     assert output.answer_gt.type == "option_letter"

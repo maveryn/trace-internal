@@ -23,6 +23,13 @@ def _assert_hash_balanced_counts(counts: Counter, expected_keys) -> None:
     assert max(counts.values()) <= int(expected * 1.7) + 1
 
 
+def _assert_evidence_inside_canvas(out) -> None:
+    width, height = out.trace_payload["render_spec"]["canvas_size"]
+    for x0, y0, x1, y1 in out.evidence_gt.value:
+        assert 0 <= x0 < x1 <= width
+        assert 0 <= y0 < y1 <= height
+
+
 def test_person_activity_count_contract() -> None:
     out = create_task("task_illustrations__park_playground__person_count").generate(
         hash64(2026052407, "park-person-activity", 0),
@@ -36,7 +43,7 @@ def test_person_activity_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "playing_ball_person_count"
-    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "playing_ball_person_count"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_activity"
     assert out.answer_gt.type == "integer"
@@ -91,7 +98,7 @@ def test_playground_equipment_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "slide_count"
-    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "slide_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == 3
@@ -145,7 +152,7 @@ def test_person_using_equipment_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "person_using_swing_set_count"
-    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "person_using_swing_set_count"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_equipment_use"
     assert out.answer_gt.type == "integer"
@@ -155,10 +162,31 @@ def test_person_using_equipment_count_contract() -> None:
     assert execution["target_equipment_type"] == "swing_set"
     assert sorted(out.evidence_gt.value) == sorted(person_bboxes[person_id] for person_id in counted_person_ids)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    _assert_evidence_inside_canvas(out)
     for person in execution["persons"]:
         attrs = person["attributes"]
         is_target = attrs.get("using_equipment_type") == "swing_set"
         assert (person["person_id"] in set(counted_person_ids)) == is_target
+
+
+def test_person_using_equipment_fallback_stays_inside_canvas() -> None:
+    cases = [
+        (
+            2078012179606475,
+            {"query_id": "person_using_slide_count", "target_count": 2, "equipment_count": 4, "person_count": 13},
+        ),
+        (
+            2475395254715432,
+            {"query_id": "person_using_swing_set_count", "target_count": 3, "equipment_count": 5, "person_count": 14},
+        ),
+    ]
+    for seed, params in cases:
+        out = create_task("task_illustrations__park_playground__person_count").generate(
+            seed,
+            params=params,
+            max_attempts=100,
+        )
+        _assert_evidence_inside_canvas(out)
 
 
 def test_person_using_equipment_countseeded_sampler_covers_answers_and_variants() -> None:
@@ -200,7 +228,7 @@ def test_person_in_park_zone_count_contract() -> None:
 
     assert out.scene_id == "park_playground"
     assert out.query_id == "picnic_area_person_count"
-    assert out.query_id == "default"
+    assert trace["query_spec"]["query_id"] == "picnic_area_person_count"
     assert trace["query_spec"]["task_id"] == "task_illustrations__park_playground__person_count"
     assert trace["query_spec"]["branch_id"] == "park_person_zone"
     assert out.answer_gt.type == "integer"
@@ -213,6 +241,25 @@ def test_person_in_park_zone_count_contract() -> None:
     for person in execution["persons"]:
         is_target = person["attributes"]["zone"] == "picnic"
         assert (person["person_id"] in set(counted_person_ids)) == is_target
+
+
+def test_person_in_park_zone_fallback_stays_inside_zone() -> None:
+    out = create_task("task_illustrations__park_playground__person_count").generate(
+        1263967333006255,
+        params={"query_id": "garden_area_person_count", "target_count": 6, "person_count": 9},
+        max_attempts=100,
+    )
+    trace = out.trace_payload
+    garden_bbox = trace["render_spec"]["style"]["layout"]["garden_bbox"]
+    counted_person_ids = trace["render_map"]["counted_person_ids"]
+    person_bboxes = trace["render_map"]["person_bboxes_px"]
+
+    _assert_evidence_inside_canvas(out)
+    for person_id in counted_person_ids:
+        x0, _y0, x1, y1 = person_bboxes[person_id]
+        foot_x = 0.5 * (x0 + x1)
+        assert garden_bbox[0] <= foot_x <= garden_bbox[2]
+        assert garden_bbox[1] <= y1 <= garden_bbox[3]
 
 
 def test_person_in_park_zone_countseeded_sampler_covers_answers_and_variants() -> None:

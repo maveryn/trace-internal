@@ -28,18 +28,25 @@ generation:
         - below
       indoor_object_type_support:
         - apple
+        - backpack
         - egg
+        - soccer_ball
+        - rugby_ball
         - spoon
         - plate
         - book
+        - camera
         - remote
         - pencil
         - ruler
         - clock
+        - gift
         - vase
         - bowl
         - candle
+        - lightbulb
         - mug
+        - teapot
         - bottle
         - key
         - scissors

@@ -42,15 +42,8 @@ from ..shared.transit_terminal_scene import (
 TASK_ID = "private_terminal_queue_person"
 SCENE_ID = "transit_terminal"
 QUERY_IDS: Tuple[str, ...] = (
-    "security_queue_person_count",
-    "ticket_counter_queue_person_count",
-    "gate_queue_person_count",
+    "person_in_queue_count",
 )
-_QUERY_SERVICE_POINT: Dict[str, str] = {
-    "security_queue_person_count": "security_queue",
-    "ticket_counter_queue_person_count": "ticket_counter",
-    "gate_queue_person_count": "gate_queue",
-}
 _PERSON_POSES_NO_LUGGAGE: Tuple[str, ...] = tuple(pose for pose in TRANSIT_PERSON_POSES if pose != "with_luggage")
 
 
@@ -78,6 +71,7 @@ class _SampleSpec:
     person_count: int
     person_specs: Tuple[TransitPersonSpec, ...]
     query_probabilities: Dict[str, float]
+    service_point_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     distractor_queue_count_probabilities: Dict[str, float]
     background_person_count_probabilities: Dict[str, float]
@@ -129,9 +123,18 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_index = int(base_index) % len(query_values)
         query_id = str(query_values[query_index])
         query_probabilities = uniform_string_probability_map(query_values)
-    service_point_id = str(_QUERY_SERVICE_POINT[str(query_id)])
-    if service_point_id not in set(service_values):
-        raise ValueError("query service point is outside configured support")
+
+    explicit_service_point = params.get("service_point_id")
+    if explicit_service_point is not None:
+        service_point_id = str(explicit_service_point)
+        if service_point_id not in set(service_values):
+            raise ValueError("service_point_id is outside configured support")
+        service_index = int(service_values.index(service_point_id))
+        service_point_probabilities = uniform_string_probability_map(service_values, selected=service_point_id)
+    else:
+        service_index = int(base_index // max(1, len(query_values))) % len(service_values)
+        service_point_id = str(service_values[service_index])
+        service_point_probabilities = uniform_string_probability_map(service_values)
 
     target_count, target_probabilities = sample_count(
         params=params,
@@ -140,7 +143,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values))) + 2 * int(query_index),
+        cycle_index=int(base_index // max(1, len(query_values) * len(service_values))) + 2 * int(service_index) + int(query_index),
     )
     distractor_min, distractor_max = bounds(
         params,
@@ -157,7 +160,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(distractor_min),
         high=int(distractor_max),
         explicit_key="distractor_queue_count",
-        cycle_index=int(base_index // max(1, len(query_values) * int(target_max - target_min + 1))),
+        cycle_index=int(base_index // max(1, len(query_values) * len(service_values) * int(target_max - target_min + 1))),
     )
     background_min, background_max = bounds(
         params,
@@ -174,7 +177,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(background_min),
         high=int(background_max),
         explicit_key="background_person_count",
-        cycle_index=int(base_index // max(1, len(query_values) * int(target_max - target_min + 1) * int(distractor_max - distractor_min + 1))),
+        cycle_index=int(base_index // max(1, len(query_values) * len(service_values) * int(target_max - target_min + 1) * int(distractor_max - distractor_min + 1))),
     )
 
     distractor_services = [str(value) for value in service_values if str(value) != str(service_point_id)]
@@ -217,6 +220,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         person_count=int(len(person_specs)),
         person_specs=tuple(person_specs),
         query_probabilities=dict(query_probabilities),
+        service_point_probabilities=dict(service_point_probabilities),
         target_count_probabilities=dict(target_probabilities),
         distractor_queue_count_probabilities=dict(distractor_queue_count_probabilities),
         background_person_count_probabilities=dict(background_person_count_probabilities),
@@ -234,11 +238,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "queue_scan": round(float(queue_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "background_clutter": round(float(background_clutter), 6),
-            "service_point_id": str(sample.service_point_id),
-            "target_count": int(sample.target_count),
-            "distractor_queue_count": int(sample.distractor_queue_count),
-            "background_person_count": int(sample.background_person_count),
-            "person_count": int(sample.person_count),
         },
     )
 
@@ -358,6 +357,7 @@ class TerminalQueuePersonBranch:
                     "background_person_count": int(sample.background_person_count),
                     "person_count": int(sample.person_count),
                     "query_probabilities": dict(sample.query_probabilities),
+                    "service_point_probabilities": dict(sample.service_point_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "distractor_queue_count_probabilities": dict(sample.distractor_queue_count_probabilities),
                     "background_person_count_probabilities": dict(sample.background_person_count_probabilities),

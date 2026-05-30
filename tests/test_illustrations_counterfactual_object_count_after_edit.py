@@ -43,7 +43,6 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
         )
         trace = out.trace_payload
         assert out.scene_id == "source_scene_edit"
-        assert out.query_id == "default"
         assert out.query_id == variant
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(expected_answer)
@@ -53,6 +52,11 @@ def test_illustrations_counterfactual_object_count_after_edit_contracts_match_tr
         assert trace["execution_trace"]["current_count"] == current_count
         assert trace["execution_trace"]["edit_count_k"] == edit_count_k
         assert trace["execution_trace"]["result_count"] == expected_answer
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
+        if variant == ADDED_VARIANT:
+            assert '"answer":6' in out.prompt
+        else:
+            assert '"answer":2' in out.prompt
 
 
 def test_illustrations_counterfactual_object_count_after_edit_sampling_distribution() -> None:

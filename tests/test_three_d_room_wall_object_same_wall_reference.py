@@ -52,8 +52,6 @@ def test_room_wall_object_same_wall_reference_answer_evidence_and_unique_referen
         for label, is_same_wall in trace["same_wall_as_reference_by_label"].items()
         if bool(is_same_wall)
     ]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "same_wall_as_reference"
     assert output.answer_gt.type == "option_letter"

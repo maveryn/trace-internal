@@ -180,6 +180,22 @@ def _expanded_intersects(a: BBox, b: BBox, gap: float) -> bool:
     )
 
 
+def _clamp_bbox_to_canvas(box: BBox, *, width: int, height: int, margin: float = 20.0) -> BBox:
+    x0, y0, x1, y1 = (float(v) for v in box)
+    box_w = max(1.0, x1 - x0)
+    box_h = max(1.0, y1 - y0)
+    max_x0 = max(float(margin), float(width) - float(margin) - box_w)
+    max_y0 = max(float(margin), float(height) - float(margin) - box_h)
+    clamped_x0 = max(float(margin), min(float(x0), max_x0))
+    clamped_y0 = max(float(margin), min(float(y0), max_y0))
+    return (
+        round(float(clamped_x0), 3),
+        round(float(clamped_y0), 3),
+        round(float(clamped_x0 + box_w), 3),
+        round(float(clamped_y0 + box_h), 3),
+    )
+
+
 def _safe_json(value: Any) -> Any:
     if isinstance(value, Mapping):
         return {str(key): _safe_json(item) for key, item in value.items()}
@@ -623,10 +639,11 @@ def _place_persons(
     rng.shuffle(ordered)
     for index, spec in enumerate(ordered):
         box: BBox | None = None
+        last_candidate: BBox | None = None
         requested_zone = spec.attributes.get("zone")
         equipment_type = spec.attributes.get("using_equipment_type")
         zone = "playground" if equipment_type is not None else (str(requested_zone) if requested_zone is not None else None)
-        for _attempt in range(180):
+        for attempt in range(220):
             candidate = _candidate_person_box(
                 rng,
                 activity=str(spec.activity),
@@ -637,15 +654,21 @@ def _place_persons(
                 equipment_decor=equipment_decor,
                 equipment_type=str(equipment_type) if equipment_type is not None else None,
             )
-            if all(not _expanded_intersects(candidate, other, 12.0) for other in existing):
+            candidate = _clamp_bbox_to_canvas(candidate, width=int(width), height=int(height))
+            last_candidate = candidate
+            gap = 12.0 if int(attempt) < 130 else 5.0 if int(attempt) < 190 else 0.0
+            if all(not _expanded_intersects(candidate, other, gap) for other in existing):
                 box = candidate
                 break
         if box is None:
-            col = index % 6
-            row = index // 6
-            px = 88.0 + col * 190.0
-            py = 500.0 + row * 160.0
-            box = (px, py, px + 56.0, py + 96.0)
+            if last_candidate is not None:
+                box = last_candidate
+            else:
+                col = index % 6
+                row = index // 6
+                px = 88.0 + col * 190.0
+                py = 500.0 + row * 160.0
+                box = _clamp_bbox_to_canvas((px, py, px + 56.0, py + 96.0), width=int(width), height=int(height))
         existing.append(tuple(float(v) for v in box))
         center = (0.5 * (float(box[0]) + float(box[2])), 0.5 * (float(box[1]) + float(box[3])))
         resolved_zone = zone if zone in set(PARK_ZONE_TYPES) else _zone_for_point(layout, center)

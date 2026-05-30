@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 
 from .object_resources import ThreeDObjectProfile
 from ..room import wall_mounted_object_count as room_scene
-from ..spatial import camera_distance as object_scene
+from . import object_scene
 from ..street import intersection_nearest as street_scene
 from ..warehouse import robot_forward_path as warehouse_scene
 
@@ -396,8 +396,9 @@ def _render_street_profile(
     )
     spec["object_name"] = str(profile.display_name)
     spec["prompt_name"] = str(profile.display_name)
-    if object_type == "building":
-        spec.update({"building_style": "concrete_midrise", "building_style_name": "concrete midrise"})
+    if object_type in street_scene.STREET_BUILDING_CONTEXT_OBJECT_TYPES:
+        style = street_scene._fixed_building_style_for_street_object(object_type) or "concrete_midrise"
+        spec = street_scene._apply_street_building_style(spec, style=style)
     reference_points = [
         (-render_params.street_extent, -render_params.street_extent, 0.0),
         (render_params.street_extent, -render_params.street_extent, 0.0),

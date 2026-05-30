@@ -33,19 +33,20 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ..shared.object_resources import STREET_OBJECT_TYPES
+from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
-from ..spatial.camera_distance import (
+from ..shared.object_scene import (
     POINT_LABELS,
     _build_projection_frame,
     _object_reference_points,
     _sample_camera,
 )
-from .intersection_nearest import (
+from .intersection_scene import (
     MIN_CANDIDATE_VISIBLE_PX,
     SCENE_ID,
     STREET_CAMERA_YAW_BANDS_DEGREES,
-    STREET_OBJECT_TYPES,
     SUPPORTED_INTERSECTION_LAYOUTS,
     SUPPORTED_SCENE_VARIANTS,
     _StreetRenderParams,
@@ -59,7 +60,6 @@ from .intersection_nearest import (
     _make_street_object_spec,
     _min_pairwise,
     _missing_arm_for_layout,
-    _normalize_unit,
     _object_screen_bbox as _street_object_screen_bbox,
     _orientation_axis_for_xy,
     _resolve_render_params,

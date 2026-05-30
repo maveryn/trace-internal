@@ -33,7 +33,7 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import SPATIAL_OCCLUSION_REFERENCE_SHAPE_TYPES
-from .camera_distance import (
+from ..shared.object_scene import (
     NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,

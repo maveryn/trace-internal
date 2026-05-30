@@ -62,7 +62,7 @@ def test_street_lane_ahead_answer_evidence_and_geometry(
         if bool(flag)
     ]
 
-    assert output.query_id == "default"
+    assert output.query_id == "ahead_along_lane"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "ahead_along_lane"
     assert output.answer_gt.type == "option_letter"

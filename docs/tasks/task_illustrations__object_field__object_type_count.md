@@ -1,6 +1,7 @@
 # task_illustrations__object_field__object_type_count
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed_pending_probe. Fresh v0 task review regenerated; solve-rate
+calibration pending.
 
 ## Identity
 - domain: `illustrations`
@@ -25,6 +26,8 @@ The query asks how many objects of a named type are present.
 - `evidence_gt.type = bbox_set`
 - one `[x0, y0, x1, y1]` pixel bbox for each counted object instance
 - evidence boxes are sorted deterministically by rendered position
+- `bbox_set` is intentional: witnesses are homogeneous counted object
+  instances, so no keyed role binding is needed.
 
 ## Trace Contract
 - `scene_ir.entities` contains object entities with type, style, placement, and
@@ -40,3 +43,8 @@ The query asks how many objects of a named type are present.
 - prompts ask for the count of a named object type
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
+
+## Calibration Notes
+- Fresh artifact review on 2026-05-28 regenerated
+  `review/task-reviews/illustrations/object_field/scene_review.xlsx`.
+- Solve-rate calibration remains pending.

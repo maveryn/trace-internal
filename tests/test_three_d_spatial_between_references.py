@@ -30,8 +30,6 @@ def test_between_references_answer_and_evidence() -> None:
     expected_labels = [str(label) for label, is_between in between_status.items() if bool(is_between)]
     reference_ids = {str(item) for item in trace["reference_object_ids"]}
     reference_names = [str(item) for item in trace["reference_object_names"]]
-
-    assert output.query_id == "default"
     assert output.scene_id == "object_scene"
     assert output.query_id == "between_references"
     assert output.answer_gt.type == "option_letter"

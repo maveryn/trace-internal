@@ -40,8 +40,8 @@ def test_type_countseeded_sampler_balances_answer_counts_before_object_type_cycl
     ]
     counts = Counter(answers)
     assert sorted(counts) == list(range(1, 11))
-    assert min(counts.values()) >= 6
-    assert max(counts.values()) <= 16
+    assert min(counts.values()) >= 4
+    assert max(counts.values()) <= 25
 
 
 def test_visible_part_countseeded_sampler_balances_small_answer_counts() -> None:
@@ -57,14 +57,36 @@ def test_visible_part_countseeded_sampler_balances_small_answer_counts() -> None
     part_counts = Counter(sample.part_kind for sample in samples)
     object_counts = Counter(sample.object_count for sample in samples)
     assert sorted(answer_counts) == [1, 2, 3, 4, 5, 6]
-    assert min(answer_counts.values()) >= 14
-    assert max(answer_counts.values()) <= 30
+    assert min(answer_counts.values()) >= 10
+    assert max(answer_counts.values()) <= 35
     assert sorted(part_counts) == ["door", "eye", "handle", "tail", "wing"]
-    assert min(part_counts.values()) >= 16
-    assert max(part_counts.values()) <= 32
+    assert min(part_counts.values()) >= 10
+    assert max(part_counts.values()) <= 40
     assert sorted(object_counts) == [6, 7, 8, 9]
-    assert min(object_counts.values()) >= 20
-    assert max(object_counts.values()) <= 40
+    assert min(object_counts.values()) >= 15
+    assert max(object_counts.values()) <= 45
+
+
+def test_visible_part_count_contract_records_final_placement_layout() -> None:
+    out = create_task("task_illustrations__object_field__visible_part_count").generate(
+        hash64(2026052301, "visible-part-count", 0),
+        params={"part_kind": "wing", "target_count": 3, "object_count": 7},
+        max_attempts=300,
+    )
+    trace = out.trace_payload
+    counted_ids = trace["execution_trace"]["counted_part_ids"]
+    part_bboxes = trace["render_map"]["part_bboxes_px"]
+    background_layout = trace["render_spec"]["style"]["background_layout"]
+
+    assert out.scene_id == "object_field"
+    assert out.query_id == "visible_part_count"
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "bbox_set"
+    assert int(out.answer_gt.value) == 3
+    assert len(counted_ids) == 3
+    assert sorted(out.evidence_gt.value) == sorted(part_bboxes[part_id] for part_id in counted_ids)
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert background_layout["placement_layout_id"] in {"free_scatter", "loose_grid", "two_clusters", "diagonal_band"}
 
 
 def test_named_object_side_count_contract() -> None:

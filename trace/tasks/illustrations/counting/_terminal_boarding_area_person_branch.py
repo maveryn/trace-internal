@@ -41,17 +41,8 @@ from ..shared.transit_terminal_scene import (
 TASK_ID = "private_terminal_boarding_area_person"
 SCENE_ID = "transit_terminal"
 QUERY_IDS: Tuple[str, ...] = (
-    "boarding_area_a_person_count",
-    "boarding_area_b_person_count",
-    "boarding_area_c_person_count",
-    "boarding_area_d_person_count",
+    "person_in_boarding_area_count",
 )
-_QUERY_AREA: Dict[str, str] = {
-    "boarding_area_a_person_count": "area_a",
-    "boarding_area_b_person_count": "area_b",
-    "boarding_area_c_person_count": "area_c",
-    "boarding_area_d_person_count": "area_d",
-}
 
 
 @dataclass(frozen=True)
@@ -74,6 +65,7 @@ class _SampleSpec:
     person_count: int
     person_specs: Tuple[TransitPersonSpec, ...]
     query_probabilities: Dict[str, float]
+    area_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     person_count_probabilities: Dict[str, float]
 
@@ -92,7 +84,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
     base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:cycle")
     query_values = _shared_query_support(params, _GEN_DEFAULTS, QUERY_IDS)
-    area_values = area_support(params, _GEN_DEFAULTS, fallback=tuple(_QUERY_AREA[q] for q in query_values))
+    area_values = area_support(params, _GEN_DEFAULTS, fallback=TRANSIT_BOARDING_AREA_IDS)
     target_min, target_max = bounds(
         params,
         _GEN_DEFAULTS,
@@ -113,9 +105,18 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_index = int(base_index) % len(query_values)
         query_id = str(query_values[query_index])
         query_probabilities = uniform_string_probability_map(query_values)
-    area_id = str(_QUERY_AREA[str(query_id)])
-    if area_id not in set(area_values):
-        raise ValueError("query boarding area is outside configured support")
+
+    explicit_area = params.get("area_id")
+    if explicit_area is not None:
+        area_id = str(explicit_area)
+        if area_id not in set(area_values):
+            raise ValueError("area_id is outside configured support")
+        area_index = int(area_values.index(area_id))
+        area_probabilities = uniform_string_probability_map(area_values, selected=area_id)
+    else:
+        area_index = int(base_index // max(1, len(query_values))) % len(area_values)
+        area_id = str(area_values[area_index])
+        area_probabilities = uniform_string_probability_map(area_values)
 
     target_count, target_probabilities = sample_count(
         params=params,
@@ -124,7 +125,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values))) + 2 * int(query_index),
+        cycle_index=int(base_index // max(1, len(query_values) * len(area_values))) + 2 * int(area_index) + int(query_index),
     )
     person_min, person_max = bounds(
         params,
@@ -142,7 +143,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(person_low),
         high=int(person_max),
         explicit_key="person_count",
-        cycle_index=int(base_index // max(1, len(query_values) * int(target_max - target_min + 1))),
+        cycle_index=int(base_index // max(1, len(query_values) * len(area_values) * int(target_max - target_min + 1))),
     )
 
     distractor_areas = [str(value) for value in area_values if str(value) != str(area_id)]
@@ -179,6 +180,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         person_count=int(person_count),
         person_specs=tuple(specs),
         query_probabilities=dict(query_probabilities),
+        area_probabilities=dict(area_probabilities),
         target_count_probabilities=dict(target_probabilities),
         person_count_probabilities=dict(person_count_probabilities),
     )
@@ -195,9 +197,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "visual_scan": round(float(visual_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "area_filter_load": round(float(area_filter_load), 6),
-            "area_id": str(sample.area_id),
-            "target_count": int(sample.target_count),
-            "person_count": int(sample.person_count),
         },
     )
 
@@ -310,6 +309,7 @@ class TerminalBoardingAreaPersonBranch:
                     "target_count": int(sample.target_count),
                     "person_count": int(sample.person_count),
                     "query_probabilities": dict(sample.query_probabilities),
+                    "area_probabilities": dict(sample.area_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "person_count_probabilities": dict(sample.person_count_probabilities),
                 },

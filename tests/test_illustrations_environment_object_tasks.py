@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from trace.core.seed import hash64
 from trace.tasks import create_task
+from trace.tasks.illustrations.shared.environment_object_rendering import (
+    BRIDGE_STYLE_IDS,
+    BUILDING_STYLE_IDS,
+    RIVER_STYLE_IDS,
+    ROAD_STYLE_IDS,
+)
 
 
 def test_feature_side_object_count_contracts() -> None:
@@ -32,11 +38,23 @@ def test_feature_side_object_count_contracts() -> None:
         execution = trace["execution_trace"]
         render_map = trace["render_map"]
         assert out.scene_id == "environment"
-        assert out.query_id == "default"
         assert out.query_id == "feature_side_object_count"
         assert execution["theme_id"] == theme_id
         assert execution["feature_type"] == feature_type
         assert execution["relation"] == relation
+        layout = trace["render_spec"]["style"]["layout"]
+        assert layout["road_style_id"] in ROAD_STYLE_IDS
+        assert layout["river_style_id"] in RIVER_STYLE_IDS
+        assert layout["bridge_style_id"] in BRIDGE_STYLE_IDS
+        target_feature = next(
+            entity
+            for entity in trace["scene_ir"]["entities"]
+            if entity["entity_type"] == "environment_feature" and entity["entity_id"] == execution["feature_id"]
+        )
+        if feature_type == "road":
+            assert target_feature["attributes"]["road_style_id"] in ROAD_STYLE_IDS
+        else:
+            assert target_feature["attributes"]["river_style_id"] in RIVER_STYLE_IDS
         assert int(out.answer_gt.value) == len(execution["counted_object_ids"])
         assert len(out.evidence_gt.value) == int(out.answer_gt.value)
         assert execution["feature_id"] in render_map["feature_bboxes_px"]
@@ -80,6 +98,13 @@ def test_crossing_feature_count_contract() -> None:
     assert out.scene_id == "environment"
     assert out.query_id == "crossing_feature_count"
     assert execution["crossing_type"] == "bridge"
+    bridge_features = [
+        entity
+        for entity in trace["scene_ir"]["entities"]
+        if entity["entity_type"] == "environment_feature" and entity["entity_id"] in set(execution["counted_feature_ids"])
+    ]
+    assert bridge_features
+    assert all(feature["attributes"]["bridge_style_id"] in BRIDGE_STYLE_IDS for feature in bridge_features)
     assert int(out.answer_gt.value) == len(execution["counted_feature_ids"])
     expected = [render_map["feature_bboxes_px"][feature_id] for feature_id in execution["counted_feature_ids"]]
     assert sorted(out.evidence_gt.value) == sorted(expected)
@@ -99,5 +124,8 @@ def test_building_window_count_contract() -> None:
     assert execution["window_mode"] == "lit"
     assert int(out.answer_gt.value) == 6
     assert int(out.answer_gt.value) == len(execution["counted_window_ids"])
+    buildings = [entity for entity in trace["scene_ir"]["entities"] if entity["entity_type"] == "environment_building"]
+    assert buildings
+    assert all(building["attributes"]["building_style_id"] in BUILDING_STYLE_IDS for building in buildings)
     expected = [render_map["window_bboxes_px"][window_id] for window_id in execution["counted_window_ids"]]
     assert sorted(out.evidence_gt.value) == sorted(expected)

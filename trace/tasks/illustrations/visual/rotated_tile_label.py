@@ -16,7 +16,13 @@ from ...shared.config_defaults import group_default, required_group_defaults, sp
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ..shared.visual_task_common import bbox_list, default_font, image_detail_score, render_source_illustration
+from ..shared.visual_task_common import (
+    bbox_list,
+    draw_label_badge,
+    image_detail_score,
+    render_source_illustration,
+    sample_visual_label_font_trace,
+)
 
 
 TASK_ID = "task_illustrations__image_cutout_board__rotated_tile_label"
@@ -26,6 +32,29 @@ GRID_ROWS = 3
 GRID_COLS = 3
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
 ROTATION_DEGREES: Tuple[int, ...] = (90, 180, 270)
+ROTATED_GRID_STYLES: Dict[str, Dict[str, Any]] = {
+    "slate_badges": {
+        "canvas_rgb": (238, 241, 245),
+        "grid_rgb": (33, 39, 49),
+        "badge_fill_rgb": (255, 255, 255),
+        "badge_outline_rgb": (33, 39, 49),
+        "grid_width_px": 3,
+    },
+    "ink_badges": {
+        "canvas_rgb": (244, 240, 232),
+        "grid_rgb": (45, 41, 37),
+        "badge_fill_rgb": (255, 252, 244),
+        "badge_outline_rgb": (45, 41, 37),
+        "grid_width_px": 3,
+    },
+    "blueprint_badges": {
+        "canvas_rgb": (235, 242, 244),
+        "grid_rgb": (36, 69, 86),
+        "badge_fill_rgb": (249, 253, 254),
+        "badge_outline_rgb": (36, 69, 86),
+        "grid_width_px": 4,
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -139,21 +168,32 @@ def _source_params(params: Mapping[str, Any]) -> Dict[str, Any]:
     return source_params
 
 
+def _rgb(style: Mapping[str, Any], key: str) -> Tuple[int, int, int]:
+    value = style[key]
+    return (int(value[0]), int(value[1]), int(value[2]))
+
+
+def _sample_rotated_grid_style(rng) -> Dict[str, Any]:
+    style_id = str(rng.choice(tuple(ROTATED_GRID_STYLES)))
+    return {"style_id": style_id, **dict(ROTATED_GRID_STYLES[style_id])}
+
+
 def _compose_rotated_grid(
     *,
     source_image: Image.Image,
     pieces: Sequence[Tuple[Image.Image, Tuple[int, int, int, int]]],
     sample: _SampleSpec,
     params: Mapping[str, Any],
+    grid_style: Mapping[str, Any],
+    label_font_family: str,
 ) -> Tuple[Image.Image, Dict[str, list[float]], list[float]]:
     margin = int(params.get("render_margin", group_default(_RENDER_DEFAULTS, "render_margin", _DEFAULTS.render_margin)))
     tile_w = int(source_image.width // GRID_COLS)
     tile_h = int(source_image.height // GRID_ROWS)
     canvas_w = int(source_image.width) + 2 * int(margin)
     canvas_h = int(source_image.height) + 2 * int(margin)
-    canvas = Image.new("RGB", (canvas_w, canvas_h), (238, 241, 245))
+    canvas = Image.new("RGB", (canvas_w, canvas_h), _rgb(grid_style, "canvas_rgb"))
     draw = ImageDraw.Draw(canvas)
-    label_font = default_font(18, bold=True)
     tile_bboxes: Dict[str, list[float]] = {}
     grid_x = int(margin)
     grid_y = int(margin)
@@ -172,33 +212,47 @@ def _compose_rotated_grid(
 
     for col in range(GRID_COLS + 1):
         x = int(grid_x + col * tile_w)
-        draw.line((x, grid_y, x, grid_y + int(source_image.height)), fill=(33, 39, 49), width=3)
+        draw.line(
+            (x, grid_y, x, grid_y + int(source_image.height)),
+            fill=_rgb(grid_style, "grid_rgb"),
+            width=int(grid_style.get("grid_width_px", 3)),
+        )
     for row in range(GRID_ROWS + 1):
         y = int(grid_y + row * tile_h)
-        draw.line((grid_x, y, grid_x + int(source_image.width), y), fill=(33, 39, 49), width=3)
+        draw.line(
+            (grid_x, y, grid_x + int(source_image.width), y),
+            fill=_rgb(grid_style, "grid_rgb"),
+            width=int(grid_style.get("grid_width_px", 3)),
+        )
 
     for index, label in enumerate(OPTION_LABELS):
         row = int(index // GRID_COLS)
         col = int(index % GRID_COLS)
         x = int(grid_x + col * tile_w + 10)
         y = int(grid_y + row * tile_h + 9)
-        draw.rounded_rectangle((x, y, x + 34, y + 28), radius=5, fill=(255, 255, 255), outline=(33, 39, 49), width=2)
-        draw.text((x + 10, y + 3), str(label), fill=(18, 25, 35), font=label_font)
+        draw_label_badge(
+            draw,
+            str(label),
+            (x, y, x + 34, y + 28),
+            font_family=label_font_family,
+            fill=_rgb(grid_style, "badge_fill_rgb"),
+            outline=_rgb(grid_style, "badge_outline_rgb"),
+        )
 
     return canvas, tile_bboxes, list(tile_bboxes[str(sample.correct_label)])
 
 
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
     rotation_load = {90: 0.72, 180: 0.62, 270: 0.72}.get(int(sample.rotation_degrees), 0.70)
+    tile_position_load = int(sample.correct_index) / max(1.0, float(len(OPTION_LABELS) - 1))
     score = 0.42 + 0.30 * rotation_load + 0.28 * (len(OPTION_LABELS) / 9.0)
     return TaskComplexity(
         complexity_score=round(min(1.0, float(score)), 6),
         complexity_components={
-            "grid_rows": GRID_ROWS,
-            "grid_cols": GRID_COLS,
-            "option_count": len(OPTION_LABELS),
-            "rotation_degrees": int(sample.rotation_degrees),
-            "rotated_tile_index": int(sample.correct_index),
+            "grid_load": 1.0,
+            "option_load": round(float(len(OPTION_LABELS) / 9.0), 6),
+            "rotation_load": round(float(rotation_load), 6),
+            "tile_position_load": round(float(tile_position_load), 6),
         },
     )
 
@@ -247,11 +301,23 @@ class IllustrationsVisualRotatedTileLabelTask:
                 )
                 if not _tile_is_usable(original, rotated, params=params):
                     raise ValueError("rotated tile is not visually distinctive enough")
+                style_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:style", int(attempt))
+                grid_style = _sample_rotated_grid_style(style_rng)
+                tile_label_font = sample_visual_label_font_trace(
+                    task_id=TASK_ID,
+                    instance_seed=int(instance_seed),
+                    params=params,
+                    namespace_suffix="tile_label_font",
+                    explicit_key="image_cutout_board_tile_label_font_family",
+                    weights_key="image_cutout_board_tile_label_font_family_weights",
+                )
                 image, tile_bboxes, evidence_box = _compose_rotated_grid(
                     source_image=source_image,
                     pieces=pieces,
                     sample=sample,
                     params=params,
+                    grid_style=grid_style,
+                    label_font_family=str(tile_label_font["font_family"]),
                 )
                 evidence_value = [list(evidence_box)]
                 break
@@ -362,6 +428,8 @@ class IllustrationsVisualRotatedTileLabelTask:
                     "source_task_id": str(source.source_task_id),
                     "source_scene_id": str(source.source_scene_id),
                     "grid_shape": [GRID_ROWS, GRID_COLS],
+                    "grid_style": dict(grid_style),
+                    "tile_label_font": dict(tile_label_font),
                 },
             },
             "render_map": {

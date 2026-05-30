@@ -25,11 +25,11 @@ FEATURE_TYPES_BY_THEME: Dict[str, tuple[str, ...]] = {
 }
 
 ENVIRONMENT_SETTING_NAMES: Dict[str, str] = {
-    "park_road": "a park road scene",
-    "river_meadow": "a meadow river scene",
-    "road_and_river": "a scene with both a road and a river",
-    "canal_city": "a city canal scene",
-    "skyline_street": "a city street scene",
+    "park_road": "a park road setting",
+    "river_meadow": "a meadow river setting",
+    "road_and_river": "an outdoor setting with both a road and a river",
+    "canal_city": "a city canal setting",
+    "skyline_street": "a city street setting",
 }
 
 

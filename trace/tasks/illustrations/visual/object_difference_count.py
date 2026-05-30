@@ -14,6 +14,7 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.mixed_object_scene import ObjectPlacementSpec
@@ -55,6 +56,7 @@ class _Defaults:
     object_min_gap_px: int = 7
     max_overlap_fraction: float = 0.01
     placement_max_attempts: int = 260
+    moved_min_center_distance_px: int = 72
     render_scale: int = 2
 
 
@@ -164,6 +166,16 @@ def _overlap_area(a: Sequence[float], b: Sequence[float]) -> float:
     return max(0.0, x1 - x0) * max(0.0, y1 - y0)
 
 
+def _bbox_center(box: Sequence[float]) -> Tuple[float, float]:
+    return ((float(box[0]) + float(box[2])) * 0.5, (float(box[1]) + float(box[3])) * 0.5)
+
+
+def _center_distance(a: Sequence[float], b: Sequence[float]) -> float:
+    ax, ay = _bbox_center(a)
+    bx, by = _bbox_center(b)
+    return ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5
+
+
 def _fits(existing: Sequence[Sequence[float]], candidate: Sequence[float], *, min_gap: float = 10.0) -> bool:
     expanded = (float(candidate[0]) - min_gap, float(candidate[1]) - min_gap, float(candidate[2]) + min_gap, float(candidate[3]) + min_gap)
     for other in existing:
@@ -185,6 +197,8 @@ def _new_bbox_for_type(
     height_min: int,
     height_max: int,
     same_size_as: Sequence[float] | None = None,
+    min_center_distance_from: Sequence[float] | None = None,
+    min_center_distance_px: float = 0.0,
 ) -> Tuple[float, float, float, float]:
     x0, y0, x1, y1 = [float(v) for v in content_bbox]
     aspect = max(0.35, float(aspect_ratio_for_object(str(object_type))))
@@ -200,6 +214,8 @@ def _new_bbox_for_type(
         px = float(rng.uniform(x0, x1 - w))
         py = float(rng.uniform(y0, y1 - h))
         candidate = (px, py, px + w, py + h)
+        if min_center_distance_from is not None and _center_distance(candidate, min_center_distance_from) < float(min_center_distance_px):
+            continue
         if _fits(existing, candidate):
             return tuple(float(v) for v in candidate)
     raise ValueError("could not place changed object without overlap")
@@ -263,6 +279,12 @@ def _modify_scene(
     if sample.variant == "moved_object_count":
         moved: list[ObjectPlacementSpec] = []
         existing = [p.bbox_xyxy for p in placements if str(p.object_id) not in target_set]
+        moved_min_distance = float(
+            params.get(
+                "moved_min_center_distance_px",
+                group_default(_GEN_DEFAULTS, "moved_min_center_distance_px", _DEFAULTS.moved_min_center_distance_px),
+            )
+        )
         for placement in placements:
             if str(placement.object_id) not in target_set:
                 moved.append(placement)
@@ -275,6 +297,8 @@ def _modify_scene(
                 height_min=_DEFAULTS.object_size_min_px,
                 height_max=_DEFAULTS.object_size_max_px,
                 same_size_as=placement.bbox_xyxy,
+                min_center_distance_from=placement.bbox_xyxy,
+                min_center_distance_px=moved_min_distance,
             )
             existing.append(new_bbox)
             moved.append(replace(placement, bbox_xyxy=new_bbox))
@@ -330,7 +354,29 @@ def _modify_scene(
     )
 
 
-def _compose_pair_image(scene_a: MixedVisualScene, scene_b: MixedVisualScene) -> Tuple[Image.Image, Tuple[int, int], Tuple[int, int]]:
+def _sample_panel_label_font_trace(*, instance_seed: int, params: Mapping[str, Any]) -> Dict[str, Any]:
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:panel_label_font",
+        params=params,
+        explicit_key="difference_pair_panel_label_font_family",
+        weights_key="difference_pair_panel_label_font_family_weights",
+    )
+    record = get_font_family_record(str(font_family))
+    return {
+        "font_asset_version": font_asset_version(),
+        "pool": "global_approved_font_pool",
+        **record.to_trace(),
+    }
+
+
+def _compose_pair_image(
+    scene_a: MixedVisualScene,
+    scene_b: MixedVisualScene,
+    *,
+    panel_label_font_family: str | None = None,
+) -> Tuple[Image.Image, Tuple[int, int], Tuple[int, int]]:
     panel_w = int(scene_a.scene.canvas_width)
     panel_h = int(scene_a.scene.canvas_height)
     margin = 28
@@ -344,8 +390,8 @@ def _compose_pair_image(scene_a: MixedVisualScene, scene_b: MixedVisualScene) ->
     canvas.paste(scene_b.scene.image, offset_b)
     draw.rectangle((offset_a[0], offset_a[1], offset_a[0] + panel_w, offset_a[1] + panel_h), outline=(65, 72, 82), width=2)
     draw.rectangle((offset_b[0], offset_b[1], offset_b[0] + panel_w, offset_b[1] + panel_h), outline=(65, 72, 82), width=2)
-    draw_panel_label(draw, "Scene A", (offset_a[0] + 10, margin + 8), size=22)
-    draw_panel_label(draw, "Scene B", (offset_b[0] + 10, margin + 8), size=22)
+    draw_panel_label(draw, "Scene A", (offset_a[0] + 10, margin + 8), size=22, font_family=panel_label_font_family)
+    draw_panel_label(draw, "Scene B", (offset_b[0] + 10, margin + 8), size=22, font_family=panel_label_font_family)
     return canvas, offset_a, offset_b
 
 
@@ -365,9 +411,6 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "object_load": round(float(object_load), 6),
             "answer_load": round(float(answer_load), 6),
             "variant_load": round(float(variant_load), 6),
-            "object_count": int(sample.object_count),
-            "target_count": int(sample.target_count),
-            "variant": str(sample.variant),
         },
     )
 
@@ -417,11 +460,21 @@ class IllustrationsVisualObjectDifferenceCountTask:
         if base is None or changed is None:
             raise RuntimeError(f"could not generate {TASK_ID}: {last_error}") from last_error
 
-        image, offset_a, offset_b = _compose_pair_image(base, changed)
+        panel_label_font = _sample_panel_label_font_trace(instance_seed=int(instance_seed), params=params)
+        image, offset_a, offset_b = _compose_pair_image(
+            base,
+            changed,
+            panel_label_font_family=str(panel_label_font["font_family"]),
+        )
         if sample.variant == "removed_object_count":
             evidence_boxes = sort_bboxes_by_position([bbox_list(base.object_bboxes[obj_id], dx=offset_a[0], dy=offset_a[1]) for obj_id in changed_ids])
         else:
             evidence_boxes = sort_bboxes_by_position([bbox_list(changed.object_bboxes[obj_id], dx=offset_b[0], dy=offset_b[1]) for obj_id in changed_ids])
+        moved_center_distances_px = {
+            str(obj_id): round(float(_center_distance(base.object_bboxes[obj_id], changed.object_bboxes[obj_id])), 3)
+            for obj_id in changed_ids
+            if str(sample.variant) == "moved_object_count" and obj_id in base.object_bboxes and obj_id in changed.object_bboxes
+        }
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -481,6 +534,12 @@ class IllustrationsVisualObjectDifferenceCountTask:
                 "params": {
                     "target_count": int(sample.target_count),
                     "object_count": int(sample.object_count),
+                    "moved_min_center_distance_px": int(
+                        params.get(
+                            "moved_min_center_distance_px",
+                            group_default(_GEN_DEFAULTS, "moved_min_center_distance_px", _DEFAULTS.moved_min_center_distance_px),
+                        )
+                    ),
                     "query_id_probabilities": dict(sample.variant_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "object_count_probabilities": dict(sample.object_count_probabilities),
@@ -494,6 +553,7 @@ class IllustrationsVisualObjectDifferenceCountTask:
                     "source_background_id": str(base.scene.background_id),
                     "scene_a_offset_px": list(offset_a),
                     "scene_b_offset_px": list(offset_b),
+                    "panel_label_font": dict(panel_label_font),
                 },
             },
             "render_map": {
@@ -502,6 +562,7 @@ class IllustrationsVisualObjectDifferenceCountTask:
                 "scene_a_offset_px": list(offset_a),
                 "scene_b_offset_px": list(offset_b),
                 "changed_object_ids": list(changed_ids),
+                "moved_center_distances_px": dict(moved_center_distances_px),
             },
             "execution_trace": {
                 "query_id": str(sample.variant),

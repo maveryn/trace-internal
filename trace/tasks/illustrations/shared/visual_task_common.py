@@ -9,8 +9,11 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageStat
 
 from ....core.sampling import normalize_positive_weights
 from ....core.seed import spawn_rng
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
+from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.text_legibility import draw_text_traced
 from .mixed_object_scene import (
     ObjectPlacementSpec,
     RenderedMixedObjectScene,
@@ -28,7 +31,6 @@ SOURCE_TASK_IDS: Tuple[str, ...] = (
     "task_illustrations__object_field__object_type_count",
     "task_illustrations__environment__feature_relation_count",
     "task_illustrations__indoor_room__surface_object_count",
-    "task_illustrations__market__shop_attribute_count",
     "task_illustrations__library__section_book_count",
     "task_illustrations__park_playground__person_count",
     "task_illustrations__transit_terminal__entity_location_count",
@@ -39,7 +41,6 @@ SOURCE_SCENE_BY_TASK: Dict[str, str] = {
     "task_illustrations__object_field__object_type_count": "object_field",
     "task_illustrations__environment__feature_relation_count": "environment",
     "task_illustrations__indoor_room__surface_object_count": "indoor_room",
-    "task_illustrations__market__shop_attribute_count": "market",
     "task_illustrations__library__section_book_count": "library",
     "task_illustrations__park_playground__person_count": "park_playground",
     "task_illustrations__transit_terminal__entity_location_count": "transit_terminal",
@@ -85,25 +86,23 @@ def sort_bboxes_by_position(boxes: Sequence[Sequence[float]]) -> list[list[float
 
 
 def default_font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
-    """Load a consistent UI font with a PIL fallback."""
+    """Load the active shared font for compact illustration labels."""
 
-    paths = (
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-    )
-    for path in paths:
-        try:
-            return ImageFont.truetype(path, int(size))
-        except OSError:
-            continue
-    return ImageFont.load_default()
+    return load_font(int(size), bold=bool(bold))
 
 
-def draw_panel_label(draw: ImageDraw.ImageDraw, label: str, xy: Tuple[int, int], *, size: int = 24) -> None:
+def draw_panel_label(
+    draw: ImageDraw.ImageDraw,
+    label: str,
+    xy: Tuple[int, int],
+    *,
+    size: int = 24,
+    font_family: str | None = None,
+) -> None:
     """Draw a compact panel label."""
 
     x, y = int(xy[0]), int(xy[1])
-    font = default_font(int(size), bold=True)
+    font = load_font(int(size), bold=True, font_family=str(font_family or "")) if font_family else default_font(int(size), bold=True)
     text = str(label)
     bbox = draw.textbbox((x, y), text, font=font)
     pad_x = 8
@@ -115,7 +114,70 @@ def draw_panel_label(draw: ImageDraw.ImageDraw, label: str, xy: Tuple[int, int],
         outline=(42, 49, 58),
         width=2,
     )
-    draw.text((x, y), text, fill=(22, 28, 36), font=font)
+    draw_text_traced(draw,(x, y), text, fill=(22, 28, 36), font=font, role="readout", required=False)
+
+
+def sample_visual_label_font_trace(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace_suffix: str,
+    explicit_key: str,
+    weights_key: str,
+) -> Dict[str, Any]:
+    """Sample one approved font family for a visual-task label role."""
+
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:{namespace_suffix}",
+        params=params,
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+    )
+    record = get_font_family_record(str(font_family))
+    return {
+        "font_asset_version": font_asset_version(),
+        "pool": "global_approved_font_pool",
+        **record.to_trace(),
+    }
+
+
+def draw_label_badge(
+    draw: ImageDraw.ImageDraw,
+    label: str,
+    bbox_xyxy: Sequence[float],
+    *,
+    font_family: str | None = None,
+    fill: Tuple[int, int, int] = (255, 255, 255),
+    outline: Tuple[int, int, int] = (44, 52, 65),
+    text_fill: Tuple[int, int, int] = (18, 25, 35),
+    radius: int = 5,
+    width: int = 2,
+) -> None:
+    """Draw a fitted compact label badge."""
+
+    x0, y0, x1, y1 = [float(value) for value in bbox_xyxy]
+    draw.rounded_rectangle((x0, y0, x1, y1), radius=int(radius), fill=fill, outline=outline, width=int(width))
+    text = str(label)
+    font = fit_font_to_box(
+        draw,
+        text=text,
+        max_width=max(1.0, (x1 - x0) - 8.0),
+        max_height=max(1.0, (y1 - y0) - 6.0),
+        bold=True,
+        font_family=font_family,
+        min_size_px=8,
+        max_size_px=int(max(8.0, (y1 - y0) - 4.0)),
+        fill_ratio=1.0,
+    )
+    text_bbox = draw.textbbox((0, 0), text, font=font)
+    text_w = float(text_bbox[2] - text_bbox[0])
+    text_h = float(text_bbox[3] - text_bbox[1])
+    text_x = float(x0 + ((x1 - x0) - text_w) * 0.5 - float(text_bbox[0]))
+    text_y = float(y0 + ((y1 - y0) - text_h) * 0.5 - float(text_bbox[1]))
+    draw_text_traced(draw,(text_x, text_y), text, fill=text_fill, font=font, role="readout", required=False)
 
 
 def fit_source_image(image: Image.Image, *, width: int, height: int) -> Image.Image:
@@ -346,6 +408,7 @@ __all__ = [
     "SourceIllustration",
     "bbox_list",
     "default_font",
+    "draw_label_badge",
     "draw_panel_label",
     "fit_source_image",
     "image_detail_score",
@@ -354,6 +417,7 @@ __all__ = [
     "render_source_illustration",
     "rerender_mixed_visual_scene",
     "resolve_source_task",
+    "sample_visual_label_font_trace",
     "sample_count_axis",
     "sample_object_types",
     "sort_bboxes_by_position",

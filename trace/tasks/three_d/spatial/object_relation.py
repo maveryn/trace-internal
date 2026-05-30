@@ -38,7 +38,7 @@ from ..shared.object_resources import (
     SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES,
 )
-from .camera_distance import (
+from ..shared.object_scene import (
     LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,

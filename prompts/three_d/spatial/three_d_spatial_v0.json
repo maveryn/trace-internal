@@ -9,6 +9,13 @@
       "",
       ""
     ],
+    "counterfactual_attribute_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "object_relation_query": [
       "",
       "",
@@ -43,6 +50,34 @@
       "",
       "",
       ""
+    ],
+    "multiview_object_match_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "named_object_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "spatial_relation_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "view_relation_count_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
     ]
   },
   "required_slots_by_key": {
@@ -71,10 +106,10 @@
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nAnswer field: {answer_hint}.\nEvidence field: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFor \"evidence\": {evidence_hint}.\nFor \"answer\": {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field contents: {evidence_hint}.\nAnswer field contents: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field contents: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -83,7 +118,7 @@
       "The scene shows {object_description}.",
       "This 3D view shows {object_description}.",
       "The visual shows {object_description}.",
-      "The rendered scene shows {object_description}."
+      "The 3D scene shows {object_description}."
     ]
   },
   "query_templates": {
@@ -100,6 +135,13 @@
       "Using the perspective depth cues, choose the small object letter farthest from the camera.",
       "Which small lettered shape is farthest from the viewer?",
       "Among the small lettered 3D objects, which one is farthest from the camera?"
+    ],
+    "attribute_count_after_edits": [
+      "Start with the objects shown. Apply these edits:\n{edit_steps_text}\nAfter the edits, how many {target_property_phrase} are there?",
+      "Using the starting scene, make these changes:\n{edit_steps_text}\nHow many {target_property_phrase} are there afterward?",
+      "Apply every listed edit to the objects shown:\n{edit_steps_text}\nWhat is the final count of {target_property_phrase}?",
+      "Begin with the visible objects, then update the scene with these steps:\n{edit_steps_text}\nHow many {target_property_phrase} remain afterward?",
+      "After these add/remove edits are applied:\n{edit_steps_text}\nHow many {target_property_phrase} are in the scene?"
     ],
     "on_top_of_prop": [
       "Which small lettered 3D object is on top of the {reference_name}?",
@@ -156,6 +198,55 @@
       "Which option letter marks the object at the lowest height above the floor?",
       "Using the 3D height cues, choose the lettered object lowest above the floor.",
       "Which lettered object is raised the least from the floor?"
+    ],
+    "same_object_in_second_view": [
+      "Which lettered object in the right view is the same physical object as the red-boxed object in the left view?",
+      "The two views show the same 3D setup. Which lettered object in the right view matches the red-boxed object in the left view?",
+      "Match the red-boxed object from the left view to the right view. Which letter is on that same object?",
+      "Using the two camera views, choose the right-view letter for the object boxed in red on the left.",
+      "Which option letter in the right view marks the same object that is boxed in red in the left view?"
+    ],
+    "object_type_count": [
+      "How many {target_object_plural} are in the scene?",
+      "Count the {target_object_plural} in the 3D scene. How many are there?",
+      "What is the total number of {target_object_plural} visible in the scene?",
+      "Looking across the unlettered objects, how many {target_object_plural} are present?",
+      "How many of the objects are {target_object_plural}?"
+    ],
+    "on_top_of_reference_count": [
+      "How many small objects are on top of the {reference_name}?",
+      "Count the small objects sitting on the {reference_name}. How many are there?",
+      "What is the number of small objects placed on top of the {reference_name}?",
+      "Looking at the {reference_name}, how many small objects are resting on it?",
+      "How many of the small objects are on the {reference_name}?"
+    ],
+    "under_reference_count": [
+      "How many small objects are under the {reference_name}?",
+      "Count the small objects below the {reference_name}. How many are there?",
+      "What is the number of small objects placed under the {reference_name}?",
+      "Looking at the {reference_name}, how many small objects are underneath it?",
+      "How many of the small objects are beneath the {reference_name}?"
+    ],
+    "inside_reference_count": [
+      "How many small objects are inside the {reference_name}?",
+      "Count the small objects contained in the {reference_name}. How many are there?",
+      "What is the number of small objects placed inside the {reference_name}?",
+      "Looking at the {reference_name}, how many small objects are in it?",
+      "How many of the small objects are within the {reference_name}?"
+    ],
+    "left_of_reference_in_view_count": [
+      "How many other small objects appear to the left of the {reference_name} in the image?",
+      "In the image, count the other small objects that appear to the left of the {reference_name}. How many are there?",
+      "What is the number of other small objects visible to the left of the {reference_name} in the image?",
+      "Looking at the image, how many other small objects appear image-left of the {reference_name}?",
+      "How many small objects, excluding the {reference_name}, appear to its left in the image?"
+    ],
+    "right_of_reference_in_view_count": [
+      "How many other small objects appear to the right of the {reference_name} in the image?",
+      "In the image, count the other small objects that appear to the right of the {reference_name}. How many are there?",
+      "What is the number of other small objects visible to the right of the {reference_name} in the image?",
+      "Looking at the image, how many other small objects appear image-right of the {reference_name}?",
+      "How many small objects, excluding the {reference_name}, appear to its right in the image?"
     ]
   },
   "allow_empty_task_templates": true

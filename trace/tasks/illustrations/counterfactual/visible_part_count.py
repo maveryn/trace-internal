@@ -134,6 +134,36 @@ SNOWFLAKE_COLOR_PALETTE: Tuple[Tuple[Tuple[int, int, int], Tuple[int, int, int],
     ((94, 172, 174), (204, 237, 230), (38, 91, 91)),
     ((126, 154, 213), (222, 231, 249), (57, 79, 128)),
 )
+BACKGROUND_STYLES: Tuple[Dict[str, Any], ...] = (
+    {
+        "style_id": "outdoor_horizon",
+        "sky_rgb": (238, 246, 252),
+        "ground_rgb": (222, 232, 218),
+        "motif_rgb": (205, 222, 198),
+        "motif": "grass_ovals",
+    },
+    {
+        "style_id": "cool_floor",
+        "sky_rgb": (232, 241, 247),
+        "ground_rgb": (222, 232, 238),
+        "motif_rgb": (198, 213, 224),
+        "motif": "floor_lines",
+    },
+    {
+        "style_id": "warm_paper",
+        "sky_rgb": (247, 243, 233),
+        "ground_rgb": (235, 228, 213),
+        "motif_rgb": (216, 205, 184),
+        "motif": "short_dashes",
+    },
+    {
+        "style_id": "soft_studio",
+        "sky_rgb": (242, 244, 242),
+        "ground_rgb": (229, 234, 226),
+        "motif_rgb": (207, 216, 204),
+        "motif": "corner_grid",
+    },
+)
 
 
 @dataclass(frozen=True)
@@ -228,7 +258,7 @@ def _support_for_variant(query_id: str, params: Mapping[str, Any]) -> Tuple[int,
     elif query_id == BUTTERFLY_VARIANT:
         low_key, high_key, fallback = "butterfly_wing_count_min", "butterfly_wing_count_max", (2, 6)
     elif query_id == BICYCLE_VARIANT:
-        low_key, high_key, fallback = "bicycle_wheel_count_min", "bicycle_wheel_count_max", (1, 4)
+        low_key, high_key, fallback = "bicycle_wheel_count_min", "bicycle_wheel_count_max", (1, 5)
     elif query_id == TRAFFIC_LIGHT_VARIANT:
         low_key, high_key, fallback = "traffic_light_lens_count_min", "traffic_light_lens_count_max", (1, 5)
     elif query_id == CLOVER_VARIANT:
@@ -343,6 +373,61 @@ def _colors_for_trace(colors: Mapping[str, Tuple[int, int, int]]) -> Dict[str, l
         str(key): [int(channel) for channel in value]
         for key, value in sorted(colors.items())
     }
+
+
+def _background_style_for_trace(style: Mapping[str, Any]) -> Dict[str, Any]:
+    return {
+        "style_id": str(style["style_id"]),
+        "sky_rgb": [int(channel) for channel in style["sky_rgb"]],
+        "ground_rgb": [int(channel) for channel in style["ground_rgb"]],
+        "motif_rgb": [int(channel) for channel in style["motif_rgb"]],
+        "motif": str(style["motif"]),
+    }
+
+
+def _draw_background(
+    draw: ImageDraw.ImageDraw,
+    *,
+    width: int,
+    height: int,
+    scale: int,
+    horizon: int,
+    style: Mapping[str, Any],
+) -> None:
+    sky_rgb = tuple(int(channel) for channel in style["sky_rgb"])
+    ground_rgb = tuple(int(channel) for channel in style["ground_rgb"])
+    motif_rgb = tuple(int(channel) for channel in style["motif_rgb"])
+    draw.rectangle((0, 0, int(width) * int(scale), int(height) * int(scale)), fill=sky_rgb)
+    draw.rectangle((0, int(horizon) * int(scale), int(width) * int(scale), int(height) * int(scale)), fill=ground_rgb)
+    motif = str(style["motif"])
+    if motif == "grass_ovals":
+        for x in range(0, int(width), 120):
+            draw.ellipse(
+                (
+                    int((x + 18) * scale),
+                    int((horizon + 28) * scale),
+                    int((x + 74) * scale),
+                    int((horizon + 56) * scale),
+                ),
+                fill=motif_rgb,
+            )
+    elif motif == "floor_lines":
+        for offset in range(22, int(height - horizon), 54):
+            y = int(horizon + offset)
+            draw.line((0, y * scale, width * scale, y * scale), fill=motif_rgb, width=max(1, int(scale)))
+    elif motif == "short_dashes":
+        for x in range(22, int(width), 96):
+            y = int(horizon + 32 + (x // 96) % 3 * 18)
+            draw.line(
+                (int(x * scale), int(y * scale), int((x + 36) * scale), int(y * scale)),
+                fill=motif_rgb,
+                width=max(1, int(2 * scale)),
+            )
+    else:
+        for x in range(0, int(width), 80):
+            draw.line((x * scale, int(horizon) * scale, x * scale, int(height) * scale), fill=motif_rgb, width=max(1, int(scale)))
+        for y in range(int(horizon), int(height), 64):
+            draw.line((0, y * scale, width * scale, y * scale), fill=motif_rgb, width=max(1, int(scale)))
 
 
 def _draw_leg(
@@ -555,7 +640,7 @@ def _draw_traffic_light(draw: ImageDraw.ImageDraw, *, box: Sequence[float], styl
     usable_h = 0.88 * height
     stack_factor = float(lens_count) + gap_factor * float(max(0, lens_count - 1))
     fit_d = max(9.0, (usable_h - casing_pad_y) / max(1.0, stack_factor))
-    lens_d = min(width * 0.72, fit_d, 52.0)
+    lens_d = min(width * 0.72, fit_d, 78.0)
     gap = lens_d * gap_factor
     casing_h = lens_count * lens_d + max(0, lens_count - 1) * gap + casing_pad_y
     casing_w = lens_d * 1.85
@@ -853,12 +938,11 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
     scale_min = float(params.get("object_scale_min", group_default(_RENDER_DEFAULTS, "object_scale_min", _DEFAULTS.object_scale_min)))
     scale_max = float(params.get("object_scale_max", group_default(_RENDER_DEFAULTS, "object_scale_max", _DEFAULTS.object_scale_max)))
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}:render:{sample.query_id}:{sample.visible_count}:{sample.style_id}")
-    image = Image.new("RGB", (width * scale, height * scale), (238, 246, 252))
+    background_style = BACKGROUND_STYLES[int(rng.randint(0, len(BACKGROUND_STYLES) - 1))]
+    image = Image.new("RGB", (width * scale, height * scale), tuple(background_style["sky_rgb"]))
     draw = ImageDraw.Draw(image)
     horizon = int(height * float(rng.uniform(0.68, 0.76)))
-    draw.rectangle((0, horizon * scale, width * scale, height * scale), fill=(222, 232, 218))
-    for x in range(0, width, 120):
-        draw.ellipse((int((x + 18) * scale), int((horizon + 28) * scale), int((x + 74) * scale), int((horizon + 56) * scale)), fill=(205, 222, 198))
+    _draw_background(draw, width=width, height=height, scale=scale, horizon=horizon, style=background_style)
     object_scale = float(rng.uniform(scale_min, scale_max))
     if sample.query_id == AIRPLANE_VARIANT:
         base_w, base_h = 520.0, 360.0
@@ -884,8 +968,11 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
         base_w, base_h = 520.0, 430.0
     box_w = base_w * object_scale
     box_h = base_h * object_scale
-    cx = width * float(rng.uniform(0.49, 0.53))
-    cy = height * float(rng.uniform(0.44, 0.48))
+    margin = 24.0
+    cx = width * float(rng.uniform(0.45, 0.55))
+    cy = height * float(rng.uniform(0.40, 0.50))
+    cx = max(box_w * 0.5 + margin, min(width - box_w * 0.5 - margin, cx))
+    cy = max(box_h * 0.5 + margin, min(height - box_h * 0.5 - margin, cy))
     box = (cx - box_w * 0.5, cy - box_h * 0.5, cx + box_w * 0.5, cy + box_h * 0.5)
     colors = _sample_colors(str(sample.query_id), rng)
     if sample.query_id == BIRD_VARIANT:
@@ -918,7 +1005,11 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
         "canvas_height": int(height),
         "render_scale": int(scale),
         "style_id": str(sample.style_id),
+        "background_style": _background_style_for_trace(background_style),
+        "background_style_probabilities": {str(style["style_id"]): 1.0 / float(len(BACKGROUND_STYLES)) for style in BACKGROUND_STYLES},
         "object_scale": round(float(object_scale), 4),
+        "object_center_px": [round(float(cx), 3), round(float(cy), 3)],
+        "object_box_px": [round(float(value), 3) for value in box],
         "horizon_y_px": int(horizon),
         "colors_rgb": _colors_for_trace(colors),
     }
@@ -934,11 +1025,14 @@ def _render_scene(sample: _SampleSpec, *, instance_seed: int, params: Mapping[st
 def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
     support = _support_for_variant(sample.query_id, {})
     answer_load = (int(sample.visible_count) - min(support)) / max(1, max(support) - min(support))
+    canonical = int(CANONICAL_BIAS_ANSWER[str(sample.query_id)])
+    canonical_delta_load = min(1.0, abs(int(sample.visible_count) - canonical) / max(1.0, float(max(support) - min(support))))
     return TaskComplexity(
-        complexity_score=round(0.36 + 0.30 * float(answer_load), 3),
+        complexity_score=round(0.34 + 0.24 * float(answer_load) + 0.12 * float(canonical_delta_load), 3),
         complexity_components={
             "single_object": 1.0,
-            "visible_count": float(sample.visible_count),
+            "visible_count_load": round(float(answer_load), 3),
+            "canonical_delta_load": round(float(canonical_delta_load), 3),
             "answer_load": round(float(answer_load), 3),
         },
     )

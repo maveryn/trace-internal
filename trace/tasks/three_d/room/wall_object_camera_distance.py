@@ -37,7 +37,7 @@ from ..shared.object_resources import (
     ROOM_CAMERA_DISTANCE_CANDIDATE_WALL_OBJECT_TYPES,
     ROOM_CAMERA_DISTANCE_CONTEXT_WALL_OBJECT_TYPES,
 )
-from ..spatial.camera_distance import POINT_LABELS, _bbox_intersection_area
+from ..shared.object_scene import POINT_LABELS, _bbox_intersection_area
 from .wall_mounted_object_count import (
     FLOOR_PROP_SHAPES,
     ROOM_FRONT_Y,

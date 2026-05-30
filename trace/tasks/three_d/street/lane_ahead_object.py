@@ -28,22 +28,22 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.object_resources import STREET_LANE_AHEAD_REFERENCE_OBJECT_TYPE
+from ..shared.object_resources import STREET_LANE_AHEAD_REFERENCE_OBJECT_TYPE, STREET_OBJECT_TYPES
 from ..shared.task_support import (
+    normalize_unit as _normalize_unit,
     resolve_axis_variant as _resolve_axis_variant,
     resolve_count as _resolve_count,
 )
-from ..spatial.camera_distance import (
+from ..shared.object_scene import (
     POINT_LABELS,
     _build_projection_frame,
     _object_reference_points,
     _sample_camera,
 )
-from .intersection_nearest import (
+from .intersection_scene import (
     MIN_CANDIDATE_VISIBLE_PX,
     SCENE_ID,
     STREET_CAMERA_YAW_BANDS_DEGREES,
-    STREET_OBJECT_TYPES,
     SUPPORTED_INTERSECTION_LAYOUTS,
     SUPPORTED_SCENE_VARIANTS,
     _StreetRenderParams,
@@ -56,7 +56,6 @@ from .intersection_nearest import (
     _make_street_object_spec,
     _min_pairwise,
     _missing_arm_for_layout,
-    _normalize_unit,
     _object_screen_bbox as _street_object_screen_bbox,
     _resolve_render_params,
     _sample_context_specs,

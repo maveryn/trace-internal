@@ -1,6 +1,6 @@
 # task_illustrations__source_scene_edit__object_count_after_edit
 
-Status: pending fresh v0 task review and solve-rate calibration.
+Status: reviewed pending solve-rate calibration.
 
 ## Taxonomy
 - domain: `illustrations`
@@ -36,3 +36,13 @@ The trace stores `current_count`, `edit_count_k`, `edit_operation`,
 `result_count`, source scene metadata, and current target bboxes. The verifier
 source of truth is the source task evidence plus the sampled hypothetical edit,
 not pixels alone.
+
+Prompt JSON examples are generated from the active operation and sampled
+`edit_count_k` so the example arithmetic remains valid for both add and remove
+variants.
+
+Fresh v0 review artifacts:
+- `review/task-reviews/illustrations/source_scene_edit/scene_review.xlsx`
+- `review/task-reviews/illustrations/source_scene_edit/task_illustrations__source_scene_edit__object_count_after_edit/task_illustrations__source_scene_edit__object_count_after_edit.xlsx`
+
+Solve-rate calibration remains pending.

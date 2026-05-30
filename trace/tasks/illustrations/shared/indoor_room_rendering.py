@@ -129,6 +129,11 @@ def _as_rgb(value: Any, fallback: RGB) -> RGB:
     return tuple(int(channel) for channel in fallback)  # type: ignore[return-value]
 
 
+def _blend_rgb(a: RGB, b: RGB, t: float) -> RGB:
+    mix = max(0.0, min(1.0, float(t)))
+    return tuple(int(round((1.0 - mix) * int(left) + mix * int(right))) for left, right in zip(a, b))  # type: ignore[return-value]
+
+
 def _scale_design_box(box: Sequence[float], *, sx: float, sy: float) -> BBox:
     return (
         round(float(box[0]) * float(sx), 3),
@@ -156,13 +161,14 @@ def _scale_plane(plane: Mapping[str, Tuple[float, float]], *, sx: float, sy: flo
     return {str(key): _scale_design_point(value, sx=sx, sy=sy) for key, value in plane.items()}
 
 
-def _draw_background(draw: ImageDraw.ImageDraw, *, rng, theme_id: str, width: int, height: int, scale: int) -> None:
+def _draw_background(draw: ImageDraw.ImageDraw, *, rng, theme_id: str, style_id: str, width: int, height: int, scale: int) -> None:
     palettes = {
         "living_room": ((235, 226, 211), (196, 174, 151)),
         "kitchen": ((226, 238, 239), (199, 207, 194)),
         "study": ((225, 230, 214), (177, 154, 126)),
         "bedroom": ((235, 224, 235), (202, 184, 196)),
     }
+    style = str(style_id)
     wall_base, floor_base = palettes.get(str(theme_id), palettes["living_room"])
     wall = _jitter_rgb(rng, wall_base, amount=10)
     floor = _jitter_rgb(rng, floor_base, amount=12)
@@ -170,21 +176,85 @@ def _draw_background(draw: ImageDraw.ImageDraw, *, rng, theme_id: str, width: in
     draw.rectangle((0, 0, int(width) * s, int(height) * s), fill=tuple(wall))
     floor_y = int(round(float(rng.uniform(0.605, 0.635)) * int(height) * s))
     draw.rectangle((0, floor_y, int(width) * s, int(height) * s), fill=tuple(floor))
-    draw.line([(0, floor_y), (int(width) * s, floor_y)], fill=(144, 135, 126), width=max(1, 2 * s))
+    horizon = _blend_rgb(floor, (96, 88, 82), 0.35)
+    draw.line([(0, floor_y), (int(width) * s, floor_y)], fill=horizon, width=max(1, 2 * s))
+    baseboard_h = max(5 * s, int(round(float(rng.uniform(8.0, 15.0)) * s)))
+    draw.rectangle((0, floor_y - baseboard_h, int(width) * s, floor_y), fill=_blend_rgb(wall, floor, 0.34))
+    draw.line([(0, floor_y - baseboard_h), (int(width) * s, floor_y - baseboard_h)], fill=_blend_rgb(horizon, (255, 255, 255), 0.25), width=max(1, s))
+
+    floor_pattern = str(rng.choice(("planks", "diagonal_planks", "tiles", "plain_rug_band")))
+    if style == "flat_vector" and floor_pattern != "tiles":
+        floor_pattern = str(rng.choice(("plain_rug_band", "planks")))
+    pattern_rgb = _blend_rgb(floor, (80, 72, 65), 0.16 if style != "outlined_cartoon" else 0.26)
+    if floor_pattern == "tiles":
+        spacing = int(round(float(rng.uniform(62.0, 92.0)) * s))
+        offset = int(round(float(rng.uniform(0.0, spacing)) if spacing > 0 else 0.0))
+        for x in range(offset, int(width) * s + spacing, max(1, spacing)):
+            draw.line([(x, floor_y), (x, int(height) * s)], fill=pattern_rgb, width=max(1, s))
+        for y in range(floor_y + spacing, int(height) * s, max(1, spacing)):
+            draw.line([(0, y), (int(width) * s, y)], fill=pattern_rgb, width=max(1, s))
+    elif floor_pattern in {"planks", "diagonal_planks"}:
+        spacing = int(round(float(rng.uniform(44.0, 68.0)) * s))
+        for y in range(floor_y + spacing, int(height) * s, max(1, spacing)):
+            draw.line([(0, y), (int(width) * s, y)], fill=pattern_rgb, width=max(1, s))
+        if floor_pattern == "diagonal_planks":
+            step = int(round(float(rng.uniform(105.0, 145.0)) * s))
+            for x in range(-int(height) * s, int(width) * s + step, max(1, step)):
+                draw.line([(x, floor_y), (x + int(height) * s, int(height) * s)], fill=_blend_rgb(pattern_rgb, floor, 0.35), width=max(1, s))
+    else:
+        band_h = int(round(float(rng.uniform(18.0, 28.0)) * s))
+        band_y = floor_y + int(round(float(rng.uniform(120.0, 190.0)) * s))
+        if band_y + band_h < int(height) * s:
+            draw.rectangle((0, band_y, int(width) * s, band_y + band_h), fill=_blend_rgb(floor, wall, 0.18))
+
     window_w = float(rng.uniform(170.0, 230.0)) * float(width) / 1280.0
     window_h = float(rng.uniform(130.0, 170.0)) * float(height) / 840.0
     window_x0 = float(rng.uniform(500.0, 600.0)) * float(width) / 1280.0
     window_y0 = float(rng.uniform(76.0, 118.0)) * float(height) / 840.0
     window = _scale_bbox((window_x0, window_y0, window_x0 + window_w, window_y0 + window_h), s)
-    draw.rounded_rectangle(window, radius=max(1, 8 * s), fill=(206, 226, 238), outline=(111, 126, 136), width=max(1, 3 * s))
+    window_style = str(rng.choice(("plain", "curtains", "deep_frame", "arched_top")))
+    frame_rgb = _jitter_rgb(rng, (111, 126, 136), amount=8)
+    if style in {"paper_cutout", "soft_shadow"}:
+        shadow_pad = 5 * s
+        draw.rounded_rectangle((window[0] + shadow_pad, window[1] + shadow_pad, window[2] + shadow_pad, window[3] + shadow_pad), radius=max(1, 10 * s), fill=_blend_rgb(wall, (85, 78, 72), 0.12))
+    if window_style == "curtains":
+        curtain_rgb = _jitter_rgb(rng, rng.choice(((171, 107, 108), (107, 133, 164), (145, 137, 92), (143, 119, 151))), amount=12)
+        rod_y = window[1] - 14 * s
+        draw.line([(window[0] - 22 * s, rod_y), (window[2] + 22 * s, rod_y)], fill=_blend_rgb(curtain_rgb, (70, 60, 54), 0.30), width=max(2, 3 * s))
+        draw.rounded_rectangle((window[0] - 24 * s, window[1] - 4 * s, window[0] + 18 * s, window[3] + 12 * s), radius=max(1, 8 * s), fill=curtain_rgb)
+        draw.rounded_rectangle((window[2] - 18 * s, window[1] - 4 * s, window[2] + 24 * s, window[3] + 12 * s), radius=max(1, 8 * s), fill=_jitter_rgb(rng, curtain_rgb, amount=8))
+    if window_style == "arched_top":
+        arch = (window[0], window[1] - int(0.24 * (window[2] - window[0])), window[2], window[1] + int(0.52 * (window[3] - window[1])))
+        draw.pieslice(arch, 180, 360, fill=(206, 226, 238), outline=frame_rgb, width=max(1, 3 * s))
+    draw.rounded_rectangle(window, radius=max(1, 8 * s), fill=(206, 226, 238), outline=frame_rgb, width=max(1, (4 if style == "outlined_cartoon" else 3) * s))
     wx0, wy0, wx1, wy1 = window
-    draw.line([((wx0 + wx1) // 2, wy0), ((wx0 + wx1) // 2, wy1)], fill=(111, 126, 136), width=max(1, 2 * s))
-    draw.line([(wx0, (wy0 + wy1) // 2), (wx1, (wy0 + wy1) // 2)], fill=(111, 126, 136), width=max(1, 2 * s))
+    if window_style == "deep_frame":
+        inner = (wx0 + 11 * s, wy0 + 11 * s, wx1 - 11 * s, wy1 - 11 * s)
+        draw.rounded_rectangle(inner, radius=max(1, 5 * s), outline=_blend_rgb(frame_rgb, (255, 255, 255), 0.20), width=max(1, 2 * s))
+    draw.line([((wx0 + wx1) // 2, wy0), ((wx0 + wx1) // 2, wy1)], fill=frame_rgb, width=max(1, 2 * s))
+    draw.line([(wx0, (wy0 + wy1) // 2), (wx1, (wy0 + wy1) // 2)], fill=frame_rgb, width=max(1, 2 * s))
+
+    art_count = int(rng.choice((0, 1, 1, 2)))
+    art_slots = [
+        (float(rng.uniform(120.0, 230.0)), float(rng.uniform(92.0, 148.0))),
+        (float(rng.uniform(930.0, 1040.0)), float(rng.uniform(88.0, 152.0))),
+    ]
+    for index in range(art_count):
+        ax, ay = art_slots[index]
+        aw = float(rng.uniform(78.0, 116.0)) * float(width) / 1280.0
+        ah = float(rng.uniform(52.0, 78.0)) * float(height) / 840.0
+        frame = _scale_bbox((ax, ay, ax + aw, ay + ah), s)
+        draw.rounded_rectangle(frame, radius=max(1, 5 * s), fill=_blend_rgb(wall, (255, 255, 255), 0.34), outline=_blend_rgb(horizon, (55, 48, 42), 0.26), width=max(1, 2 * s))
+        ix0, iy0, ix1, iy1 = frame[0] + 7 * s, frame[1] + 7 * s, frame[2] - 7 * s, frame[3] - 7 * s
+        draw.rectangle((ix0, iy0, ix1, iy1), fill=_jitter_rgb(rng, (204, 220, 211), amount=14))
+        draw.polygon([(ix0, iy1), (ix0 + int(0.42 * (ix1 - ix0)), iy0 + int(0.50 * (iy1 - iy0))), (ix0 + int(0.72 * (ix1 - ix0)), iy1)], fill=_jitter_rgb(rng, (111, 151, 105), amount=12))
+        draw.ellipse((ix1 - 22 * s, iy0 + 8 * s, ix1 - 8 * s, iy0 + 22 * s), fill=_jitter_rgb(rng, (232, 184, 79), amount=10))
 
 
-def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[IndoorFurniture, ...], Tuple[IndoorSurface, ...], Tuple[IndoorContainer, ...]]:
+def _layout(rng, *, width: int, height: int, theme_id: str, style_id: str) -> Tuple[Tuple[IndoorFurniture, ...], Tuple[IndoorSurface, ...], Tuple[IndoorContainer, ...]]:
     sx = float(width) / 1280.0
     sy = float(height) / 840.0
+    style = str(style_id)
     wood_base = {
         "living_room": (171, 123, 80),
         "kitchen": (183, 142, 91),
@@ -200,6 +270,16 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
     rug_outline = _jitter_rgb(rng, (104, 91, 112), amount=10)
 
     layout_variant = str(rng.choice(("cabinet_right_sofa_left", "cabinet_left_sofa_right", "wide_left_storage", "wide_right_storage")))
+    table_style = str(rng.choice(("straight_legs", "tapered_legs", "trestle")))
+    sofa_style = str(rng.choice(("block", "rounded_arms", "split_cushions")))
+    cabinet_style = str(rng.choice(("panel_doors", "open_shelves", "mixed_drawers")))
+    shelf_style = str(rng.choice(("plank", "brackets", "cubby")))
+    rug_pattern = str(rng.choice(("plain", "border", "stripes", "dots")))
+    container_style = str(rng.choice(("plain", "slatted", "woven")))
+    if style == "paper_cutout":
+        rug_pattern = str(rng.choice(("border", "dots", "stripes")))
+    elif style == "flat_vector":
+        table_style = str(rng.choice(("straight_legs", "tapered_legs")))
 
     table_w = float(rng.uniform(360.0, 455.0))
     if layout_variant in {"cabinet_right_sofa_left", "wide_right_storage"}:
@@ -283,6 +363,9 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             {
                 "role": "central_table",
                 "layout_variant": layout_variant,
+                "style_id": style,
+                "table_style": table_style,
+                "rug_pattern": rug_pattern,
                 "fill_rgb": wood,
                 "dark_rgb": wood_dark,
                 "top_rgb": _jitter_rgb(rng, wood_light, amount=10),
@@ -298,14 +381,14 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             "sofa",
             "sofa",
             _scale_design_box((sofa_x0, sofa_y0, sofa_x1, sofa_y1), sx=sx, sy=sy),
-            {"role": "seating", "layout_variant": layout_variant, "side": sofa_side, "fill_rgb": sofa_fill, "back_fill_rgb": sofa_back, "outline_rgb": _jitter_rgb(rng, (69, 84, 101), amount=10)},
+            {"role": "seating", "layout_variant": layout_variant, "side": sofa_side, "style_id": style, "sofa_style": sofa_style, "fill_rgb": sofa_fill, "back_fill_rgb": sofa_back, "outline_rgb": _jitter_rgb(rng, (69, 84, 101), amount=10)},
         ),
         IndoorFurniture(
             "furniture_cabinet",
             "cabinet",
             "cabinet",
             _scale_design_box((cab_x0, cab_y0, cab_x1, cab_y1), sx=sx, sy=sy),
-            {"role": "storage", "layout_variant": layout_variant, "side": cabinet_side, "fill_rgb": _jitter_rgb(rng, wood, amount=10), "panel_rgb": _jitter_rgb(rng, wood_light, amount=12), "outline_rgb": wood_dark},
+            {"role": "storage", "layout_variant": layout_variant, "side": cabinet_side, "style_id": style, "cabinet_style": cabinet_style, "fill_rgb": _jitter_rgb(rng, wood, amount=10), "panel_rgb": _jitter_rgb(rng, wood_light, amount=12), "outline_rgb": wood_dark},
         ),
     )
     surfaces = (
@@ -316,7 +399,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             _scale_design_box((table_x0, table_back_y, table_x1, table_lip_bottom), sx=sx, sy=sy),
             _scale_design_box((table_x0 + 20.0, table_back_y - 88.0, table_x1 - 20.0, table_front_y), sx=sx, sy=sy),
             "furniture_table",
-            {"plane": _scale_plane(table_plane, sx=sx, sy=sy), "lip_bottom_y": round(table_lip_bottom * sy, 3), "top_fill_rgb": _jitter_rgb(rng, wood_light, amount=10), "lip_fill_rgb": _jitter_rgb(rng, wood, amount=12), "outline_rgb": wood_dark},
+            {"plane": _scale_plane(table_plane, sx=sx, sy=sy), "lip_bottom_y": round(table_lip_bottom * sy, 3), "style_id": style, "surface_style": table_style, "top_fill_rgb": _jitter_rgb(rng, wood_light, amount=10), "lip_fill_rgb": _jitter_rgb(rng, wood, amount=12), "outline_rgb": wood_dark},
         ),
         IndoorSurface(
             "surface_shelf",
@@ -325,7 +408,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             _scale_design_box((shelf_x0, shelf_back_y, shelf_x1, shelf_lip_bottom), sx=sx, sy=sy),
             _scale_design_box((shelf_x0 + 20.0, shelf_back_y - 64.0, shelf_x1 - 20.0, shelf_front_y), sx=sx, sy=sy),
             None,
-            {"plane": _scale_plane(shelf_plane, sx=sx, sy=sy), "lip_bottom_y": round(shelf_lip_bottom * sy, 3), "board_bbox": _scale_design_box((shelf_x0, shelf_back_y - 28.0, shelf_x1, shelf_back_y + 4.0), sx=sx, sy=sy), "top_fill_rgb": _jitter_rgb(rng, wood_light, amount=10), "lip_fill_rgb": _jitter_rgb(rng, wood_dark, amount=8), "outline_rgb": wood_dark},
+            {"plane": _scale_plane(shelf_plane, sx=sx, sy=sy), "lip_bottom_y": round(shelf_lip_bottom * sy, 3), "style_id": style, "shelf_style": shelf_style, "board_bbox": _scale_design_box((shelf_x0, shelf_back_y - 28.0, shelf_x1, shelf_back_y + 4.0), sx=sx, sy=sy), "top_fill_rgb": _jitter_rgb(rng, wood_light, amount=10), "lip_fill_rgb": _jitter_rgb(rng, wood_dark, amount=8), "outline_rgb": wood_dark},
         ),
         IndoorSurface(
             "surface_counter",
@@ -334,7 +417,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             _scale_design_box((cab_x0 + 10.0, cab_y0, cab_x1 - 10.0, counter_lip_bottom), sx=sx, sy=sy),
             _scale_design_box((cab_x0 + 30.0, cab_y0 - 62.0, cab_x1 - 30.0, counter_front_y), sx=sx, sy=sy),
             "furniture_cabinet",
-            {"plane": _scale_plane(counter_plane, sx=sx, sy=sy), "lip_bottom_y": round(counter_lip_bottom * sy, 3), "top_fill_rgb": _jitter_rgb(rng, (222, 211, 188), amount=12), "lip_fill_rgb": _jitter_rgb(rng, wood_light, amount=12), "outline_rgb": _jitter_rgb(rng, (96, 82, 66), amount=8)},
+            {"plane": _scale_plane(counter_plane, sx=sx, sy=sy), "lip_bottom_y": round(counter_lip_bottom * sy, 3), "style_id": style, "surface_style": cabinet_style, "top_fill_rgb": _jitter_rgb(rng, (222, 211, 188), amount=12), "lip_fill_rgb": _jitter_rgb(rng, wood_light, amount=12), "outline_rgb": _jitter_rgb(rng, (96, 82, 66), amount=8)},
         ),
     )
     containers = (
@@ -344,7 +427,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             "basket",
             _scale_design_box((basket_x0, basket_y0, basket_x0 + basket_w, basket_y0 + basket_h), sx=sx, sy=sy),
             _scale_design_box((basket_x0 + 22.0, basket_y0 - 54.0, basket_x0 + basket_w - 22.0, basket_y0 + 88.0), sx=sx, sy=sy),
-            {"surface": "floor", "fill_rgb": _jitter_rgb(rng, (193, 145, 86), amount=14), "outline_rgb": _jitter_rgb(rng, (94, 69, 42), amount=10)},
+            {"surface": "floor", "style_id": style, "container_style": container_style, "fill_rgb": _jitter_rgb(rng, (193, 145, 86), amount=14), "outline_rgb": _jitter_rgb(rng, (94, 69, 42), amount=10)},
         ),
         IndoorContainer(
             "container_box",
@@ -352,7 +435,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             "box",
             _scale_design_box((box_x0, box_y0, box_x0 + box_w, box_y0 + box_h), sx=sx, sy=sy),
             _scale_design_box((box_x0 + 22.0, box_y0 - 52.0, box_x0 + box_w - 22.0, box_y0 + 88.0), sx=sx, sy=sy),
-            {"surface": "floor", "fill_rgb": _jitter_rgb(rng, (177, 130, 72), amount=14), "outline_rgb": _jitter_rgb(rng, (99, 69, 38), amount=10)},
+            {"surface": "floor", "style_id": style, "container_style": container_style, "fill_rgb": _jitter_rgb(rng, (177, 130, 72), amount=14), "outline_rgb": _jitter_rgb(rng, (99, 69, 38), amount=10)},
         ),
         IndoorContainer(
             "container_drawer",
@@ -360,7 +443,7 @@ def _layout(rng, *, width: int, height: int, theme_id: str) -> Tuple[Tuple[Indoo
             "drawer",
             _scale_design_box((drawer_x0, drawer_y0, drawer_x0 + drawer_w, drawer_y0 + drawer_h), sx=sx, sy=sy),
             _scale_design_box((drawer_x0 + 20.0, drawer_y0 - 46.0, drawer_x0 + drawer_w - 20.0, drawer_y0 + 62.0), sx=sx, sy=sy),
-            {"furniture_id": "furniture_cabinet", "fill_rgb": _jitter_rgb(rng, (151, 103, 69), amount=14), "outline_rgb": wood_dark},
+            {"furniture_id": "furniture_cabinet", "style_id": style, "container_style": container_style, "fill_rgb": _jitter_rgb(rng, (151, 103, 69), amount=14), "outline_rgb": wood_dark},
         ),
     )
     return furniture, surfaces, containers
@@ -464,24 +547,59 @@ def _draw_room_furniture(
     table_attrs = dict(table.attributes)
     rug_bbox = table_attrs.get("rug_bbox")
     if isinstance(rug_bbox, Sequence) and not isinstance(rug_bbox, (str, bytes)) and len(rug_bbox) == 4:
+        rug_fill = _as_rgb(table_attrs.get("rug_fill_rgb"), (153, 130, 166))
+        rug_outline = _as_rgb(table_attrs.get("rug_outline_rgb"), (111, 95, 124))
         draw.rounded_rectangle(
             _scale_bbox(rug_bbox, s),
             radius=max(1, 34 * s),
-            fill=_as_rgb(table_attrs.get("rug_fill_rgb"), (153, 130, 166)),
-            outline=_as_rgb(table_attrs.get("rug_outline_rgb"), (111, 95, 124)),
+            fill=rug_fill,
+            outline=rug_outline,
             width=max(1, 3 * s),
         )
+        rx0, ry0, rx1, ry1 = [float(v) for v in rug_bbox]
+        rug_pattern = str(table_attrs.get("rug_pattern", "plain"))
+        if rug_pattern == "border":
+            pad = 15.0
+            draw.rounded_rectangle(
+                _scale_bbox((rx0 + pad, ry0 + pad, rx1 - pad, ry1 - pad), s),
+                radius=max(1, 22 * s),
+                outline=_blend_rgb(rug_outline, rug_fill, 0.30),
+                width=max(1, 3 * s),
+            )
+        elif rug_pattern == "stripes":
+            stripe = _blend_rgb(rug_fill, rug_outline, 0.18)
+            for y in (ry0 + 0.25 * (ry1 - ry0), ry0 + 0.50 * (ry1 - ry0), ry0 + 0.75 * (ry1 - ry0)):
+                draw.line(_scale_points([(rx0 + 18.0, y), (rx1 - 18.0, y)], s), fill=stripe, width=max(1, 4 * s))
+        elif rug_pattern == "dots":
+            dot = _blend_rgb(rug_fill, (255, 255, 255), 0.28)
+            for col in range(4):
+                for row in range(2):
+                    cx = rx0 + (0.22 + 0.18 * col) * (rx1 - rx0)
+                    cy = ry0 + (0.34 + 0.28 * row) * (ry1 - ry0)
+                    draw.ellipse(_scale_bbox((cx - 5.0, cy - 5.0, cx + 5.0, cy + 5.0), s), fill=dot)
 
     shelf = surface_by_type["shelf"]
     shelf_attrs = dict(shelf.attributes)
     board_bbox = shelf_attrs.get("board_bbox")
+    shelf_style = str(shelf_attrs.get("shelf_style", "plank"))
     if isinstance(board_bbox, Sequence) and not isinstance(board_bbox, (str, bytes)) and len(board_bbox) == 4:
+        board_fill = _as_rgb(shelf_attrs.get("top_fill_rgb"), (170, 132, 88))
+        board_outline = _as_rgb(shelf_attrs.get("outline_rgb"), (91, 70, 52))
         draw.rectangle(
             _scale_bbox(board_bbox, s),
-            fill=_as_rgb(shelf_attrs.get("top_fill_rgb"), (170, 132, 88)),
-            outline=_as_rgb(shelf_attrs.get("outline_rgb"), (91, 70, 52)),
+            fill=board_fill,
+            outline=board_outline,
             width=max(1, 3 * s),
         )
+        bx0, by0, bx1, by1 = [float(v) for v in board_bbox]
+        if shelf_style == "brackets":
+            for bx in (bx0 + 0.18 * (bx1 - bx0), bx1 - 0.18 * (bx1 - bx0)):
+                bracket = [(bx - 15.0, by1), (bx + 15.0, by1), (bx, by1 + 38.0)]
+                draw.polygon(_scale_points(bracket, s), fill=_blend_rgb(board_fill, board_outline, 0.18), outline=board_outline)
+        elif shelf_style == "cubby":
+            for frac in (0.33, 0.66):
+                x = bx0 + frac * (bx1 - bx0)
+                draw.line(_scale_points([(x, by0 + 3.0), (x, by1 + 30.0)], s), fill=board_outline, width=max(1, 2 * s))
     _draw_surface_plane(
         draw,
         surface_type=shelf,
@@ -497,20 +615,38 @@ def _draw_room_furniture(
     sw = sx1 - sx0
     sh = sy1 - sy0
     sofa_outline = _as_rgb(sofa_attrs.get("outline_rgb"), (63, 83, 104))
+    sofa_fill = _as_rgb(sofa_attrs.get("fill_rgb"), (111, 142, 167))
+    sofa_back = _as_rgb(sofa_attrs.get("back_fill_rgb"), (126, 158, 183))
+    sofa_style = str(sofa_attrs.get("sofa_style", "block"))
     draw.rounded_rectangle(
         _scale_bbox((sx0, sy0 + 0.18 * sh, sx1, sy1), s),
         radius=max(1, 28 * s),
-        fill=_as_rgb(sofa_attrs.get("fill_rgb"), (111, 142, 167)),
+        fill=sofa_fill,
         outline=sofa_outline,
         width=max(1, 3 * s),
     )
     draw.rounded_rectangle(
         _scale_bbox((sx0 + 0.08 * sw, sy0, sx1 - 0.08 * sw, sy0 + 0.50 * sh), s),
         radius=max(1, 26 * s),
-        fill=_as_rgb(sofa_attrs.get("back_fill_rgb"), (126, 158, 183)),
+        fill=sofa_back,
         outline=sofa_outline,
         width=max(1, 3 * s),
     )
+    if sofa_style == "rounded_arms":
+        arm_w = 0.16 * sw
+        arm_fill = _blend_rgb(sofa_fill, sofa_back, 0.35)
+        for arm in ((sx0, sy0 + 0.26 * sh, sx0 + arm_w, sy1), (sx1 - arm_w, sy0 + 0.26 * sh, sx1, sy1)):
+            draw.rounded_rectangle(_scale_bbox(arm, s), radius=max(1, 24 * s), fill=arm_fill, outline=sofa_outline, width=max(1, 3 * s))
+    elif sofa_style == "split_cushions":
+        seam = _blend_rgb(sofa_outline, sofa_fill, 0.35)
+        for frac in (0.36, 0.64):
+            x = sx0 + frac * sw
+            draw.line(_scale_points([(x, sy0 + 0.27 * sh), (x, sy1 - 10.0)], s), fill=seam, width=max(1, 2 * s))
+        draw.line(_scale_points([(sx0 + 0.08 * sw, sy0 + 0.59 * sh), (sx1 - 0.08 * sw, sy0 + 0.59 * sh)], s), fill=seam, width=max(1, 2 * s))
+    else:
+        leg_fill = _blend_rgb(sofa_outline, (35, 30, 27), 0.35)
+        for lx in (sx0 + 0.16 * sw, sx1 - 0.19 * sw):
+            draw.rectangle(_scale_bbox((lx, sy1 - 6.0, lx + 18.0, sy1 + 18.0), s), fill=leg_fill)
 
     cabinet = furniture_by_type["cabinet"]
     cab_attrs = dict(cabinet.attributes)
@@ -518,11 +654,29 @@ def _draw_room_furniture(
     cw = cx1 - cx0
     ch = cy1 - cy0
     cab_outline = _as_rgb(cab_attrs.get("outline_rgb"), (82, 60, 43))
-    draw.rectangle(_scale_bbox(cabinet.bbox_xyxy, s), fill=_as_rgb(cab_attrs.get("fill_rgb"), (164, 122, 82)), outline=cab_outline, width=max(1, 3 * s))
+    cab_fill = _as_rgb(cab_attrs.get("fill_rgb"), (164, 122, 82))
+    cabinet_style = str(cab_attrs.get("cabinet_style", "panel_doors"))
+    draw.rectangle(_scale_bbox(cabinet.bbox_xyxy, s), fill=cab_fill, outline=cab_outline, width=max(1, 3 * s))
     panel_fill = _as_rgb(cab_attrs.get("panel_rgb"), (187, 143, 94))
-    draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.16 * ch, cx0 + 0.46 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-    draw.rectangle(_scale_bbox((cx0 + 0.51 * cw, cy0 + 0.16 * ch, cx0 + 0.91 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
-    draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.56 * ch, cx0 + 0.91 * cw, cy0 + 0.90 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+    if cabinet_style == "open_shelves":
+        inner = (cx0 + 0.08 * cw, cy0 + 0.14 * ch, cx0 + 0.92 * cw, cy0 + 0.88 * ch)
+        draw.rectangle(_scale_bbox(inner, s), fill=_blend_rgb(cab_fill, (255, 255, 255), 0.10), outline=cab_outline, width=max(1, 2 * s))
+        for frac in (0.40, 0.66):
+            y = cy0 + frac * ch
+            draw.line(_scale_points([(inner[0], y), (inner[2], y)], s), fill=cab_outline, width=max(1, 2 * s))
+        x = cx0 + 0.50 * cw
+        draw.line(_scale_points([(x, inner[1]), (x, inner[3])], s), fill=cab_outline, width=max(1, 2 * s))
+    elif cabinet_style == "mixed_drawers":
+        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.15 * ch, cx0 + 0.91 * cw, cy0 + 0.34 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.39 * ch, cx0 + 0.46 * cw, cy0 + 0.88 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+        draw.rectangle(_scale_bbox((cx0 + 0.52 * cw, cy0 + 0.39 * ch, cx0 + 0.91 * cw, cy0 + 0.88 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+        for frac in (0.22, 0.50, 0.74):
+            y = cy0 + frac * ch
+            draw.line(_scale_points([(cx0 + 0.17 * cw, y), (cx0 + 0.82 * cw, y)], s), fill=_blend_rgb(cab_outline, panel_fill, 0.35), width=max(1, s))
+    else:
+        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.16 * ch, cx0 + 0.46 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+        draw.rectangle(_scale_bbox((cx0 + 0.51 * cw, cy0 + 0.16 * ch, cx0 + 0.91 * cw, cy0 + 0.48 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
+        draw.rectangle(_scale_bbox((cx0 + 0.08 * cw, cy0 + 0.56 * ch, cx0 + 0.91 * cw, cy0 + 0.90 * ch), s), fill=panel_fill, outline=cab_outline, width=max(1, 2 * s))
     counter = surface_by_type["counter"]
     counter_attrs = dict(counter.attributes)
     _draw_surface_plane(
@@ -547,13 +701,25 @@ def _draw_room_furniture(
     tx0, ty0, tx1, ty1 = [float(v) for v in table.bbox_xyxy]
     tsx0, tsy0, tsx1, tsy1 = [float(v) for v in table_surface.bbox_xyxy]
     leg_w = float(table_attrs.get("leg_width", 34.0))
-    for leg_x in (tx0 + 0.13 * (tx1 - tx0), tx1 - 0.13 * (tx1 - tx0) - leg_w):
-        draw.rectangle(
-            _scale_bbox((leg_x, tsy1 - 4.0, leg_x + leg_w, ty1), s),
-            fill=_as_rgb(table_attrs.get("dark_rgb"), (132, 86, 55)),
-            outline=_as_rgb(table_surface_attrs.get("outline_rgb"), (91, 62, 41)),
-            width=max(1, 2 * s),
-        )
+    table_dark = _as_rgb(table_attrs.get("dark_rgb"), (132, 86, 55))
+    table_outline = _as_rgb(table_surface_attrs.get("outline_rgb"), (91, 62, 41))
+    table_style = str(table_attrs.get("table_style", "straight_legs"))
+    if table_style == "trestle":
+        center_x = 0.5 * (tx0 + tx1)
+        draw.rectangle(_scale_bbox((center_x - 0.58 * leg_w, tsy1 - 4.0, center_x + 0.58 * leg_w, ty1 - 14.0), s), fill=table_dark, outline=table_outline, width=max(1, 2 * s))
+        draw.rectangle(_scale_bbox((tx0 + 0.18 * (tx1 - tx0), ty1 - 22.0, tx1 - 0.18 * (tx1 - tx0), ty1), s), fill=table_dark, outline=table_outline, width=max(1, 2 * s))
+    elif table_style == "tapered_legs":
+        for leg_x in (tx0 + 0.13 * (tx1 - tx0), tx1 - 0.13 * (tx1 - tx0) - leg_w):
+            points = [(leg_x, tsy1 - 4.0), (leg_x + leg_w, tsy1 - 4.0), (leg_x + 1.24 * leg_w, ty1), (leg_x - 0.20 * leg_w, ty1)]
+            draw.polygon(_scale_points(points, s), fill=table_dark, outline=table_outline)
+    else:
+        for leg_x in (tx0 + 0.13 * (tx1 - tx0), tx1 - 0.13 * (tx1 - tx0) - leg_w):
+            draw.rectangle(
+                _scale_bbox((leg_x, tsy1 - 4.0, leg_x + leg_w, ty1), s),
+                fill=table_dark,
+                outline=table_outline,
+                width=max(1, 2 * s),
+            )
 
     for container in containers:
         box = container.bbox_xyxy
@@ -563,12 +729,26 @@ def _draw_room_furniture(
         if container.container_type == "basket":
             draw.rounded_rectangle(_scale_bbox(box, s), radius=max(1, 22 * s), fill=fill_rgb, outline=outline_rgb, width=max(1, 3 * s))
             draw.arc(_scale_bbox((box[0] + 20, box[1] - 52, box[2] - 20, box[1] + 38), s), 180, 360, fill=outline_rgb, width=max(1, 5 * s))
+            if str(attrs.get("container_style", "plain")) in {"slatted", "woven"}:
+                for frac in (0.28, 0.45, 0.62, 0.79):
+                    x = box[0] + frac * (box[2] - box[0])
+                    draw.line(_scale_points([(x, box[1] + 16.0), (x, box[3] - 10.0)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
         elif container.container_type == "box":
             draw.polygon(_scale_points([(box[0], box[1] + 34), (box[2], box[1] + 34), (box[2] - 20, box[3]), (box[0] + 20, box[3])], s), fill=fill_rgb, outline=outline_rgb)
             draw.line(_scale_points([(box[0] + 18, box[1] + 34), (box[0] + 2, box[1]), (box[2] - 2, box[1]), (box[2] - 18, box[1] + 34)], s), fill=outline_rgb, width=max(1, 3 * s))
+            if str(attrs.get("container_style", "plain")) == "slatted":
+                for frac in (0.44, 0.62, 0.80):
+                    y = box[1] + frac * (box[3] - box[1])
+                    draw.line(_scale_points([(box[0] + 18.0, y), (box[2] - 18.0, y)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
         else:
             draw.rectangle(_scale_bbox(box, s), fill=fill_rgb, outline=outline_rgb, width=max(1, 3 * s))
             draw.line(_scale_points([(box[0] + 18, box[1] + 20), (box[2] - 18, box[1] + 20)], s), fill=outline_rgb, width=max(1, 3 * s))
+            if str(attrs.get("container_style", "plain")) in {"slatted", "woven"}:
+                draw.line(_scale_points([(box[0] + 18.0, box[1] + 0.58 * (box[3] - box[1])), (box[2] - 18.0, box[1] + 0.58 * (box[3] - box[1]))], s), fill=outline_rgb, width=max(1, 2 * s))
+            if str(attrs.get("container_style", "plain")) == "woven":
+                for frac in (0.30, 0.50, 0.70):
+                    x = box[0] + frac * (box[2] - box[0])
+                    draw.line(_scale_points([(x, box[1] + 24.0), (x, box[3] - 8.0)], s), fill=_blend_rgb(outline_rgb, fill_rgb, 0.35), width=max(1, s))
 
 
 def _surface_map(surfaces: Sequence[IndoorSurface]) -> Dict[str, IndoorSurface]:
@@ -605,24 +785,31 @@ def _surface_contact_ratio(object_type: str) -> float:
 
     ratios = {
         "apple": 0.84,
+        "backpack": 0.86,
         "bottle": 0.86,
         "book": 0.88,
         "bowl": 0.84,
+        "camera": 0.78,
         "candle": 0.92,
         "clock": 0.90,
         "egg": 0.72,
         "flower": 0.88,
+        "gift": 0.84,
         "key": 0.66,
         "lamp": 0.88,
+        "lightbulb": 0.86,
         "mug": 0.82,
         "mushroom": 0.86,
         "pencil": 0.62,
         "plate": 0.78,
         "potted_plant": 0.92,
-        "remote": 0.84,
+        "remote": 0.94,
         "ruler": 0.66,
+        "rugby_ball": 0.81,
         "scissors": 0.78,
+        "soccer_ball": 0.88,
         "spoon": 0.75,
+        "teapot": 0.78,
         "vase": 0.86,
     }
     return float(ratios.get(str(object_type), 0.88))
@@ -768,7 +955,7 @@ def render_indoor_room_scene(
     scale = max(1, int(render_scale))
     theme_id = _choose_weighted(rng, theme_weights or {theme: 1.0 for theme in INDOOR_THEME_IDS}, INDOOR_THEME_IDS)
     style_id = _choose_weighted(rng, style_weights or {style: 1.0 for style in STYLE_IDS}, STYLE_IDS)
-    furniture, surfaces, containers = _layout(rng, width=width, height=height, theme_id=str(theme_id))
+    furniture, surfaces, containers = _layout(rng, width=width, height=height, theme_id=str(theme_id), style_id=str(style_id))
     surfaces_by_type = _surface_map(surfaces)
     containers_by_type = _container_map(containers)
     furniture_by_type = _furniture_map(furniture)
@@ -827,7 +1014,7 @@ def render_indoor_room_scene(
 
     image = Image.new("RGB", (width * scale, height * scale), (246, 246, 241))
     draw = ImageDraw.Draw(image)
-    _draw_background(draw, rng=rng, theme_id=theme_id, width=width, height=height, scale=scale)
+    _draw_background(draw, rng=rng, theme_id=theme_id, style_id=str(style_id), width=width, height=height, scale=scale)
     _draw_room_furniture(draw, furniture=furniture, surfaces=surfaces, containers=containers, scale=scale)
 
     placements: List[IndoorObjectPlacement] = []

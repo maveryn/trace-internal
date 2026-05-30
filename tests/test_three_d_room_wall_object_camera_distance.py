@@ -34,8 +34,6 @@ def test_room_wall_object_camera_distance_answer_and_evidence() -> None:
     candidates = list(trace["candidate_object_specs"])
     nearest = min(candidates, key=lambda spec: (float(spec["camera_distance"]), str(spec["point_label"])))
     expected_bbox = render_map["object_bboxes_px"][str(nearest["object_id"])]
-
-    assert output.query_id == "default"
     assert output.scene_id == SCENE_ID
     assert output.query_id == "closest_to_camera"
     assert output.answer_gt.type == "option_letter"

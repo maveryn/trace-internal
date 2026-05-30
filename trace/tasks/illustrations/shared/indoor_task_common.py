@@ -23,10 +23,10 @@ from .object_library import STYLE_IDS, display_name_for_object_type, serialize_o
 
 
 INDOOR_SETTING_NAMES: Dict[str, str] = {
-    "living_room": "an illustrated living room",
-    "kitchen": "an illustrated kitchen",
-    "study": "an illustrated study",
-    "bedroom": "an illustrated bedroom",
+    "living_room": "a living room",
+    "kitchen": "a kitchen",
+    "study": "a study",
+    "bedroom": "a bedroom",
 }
 
 

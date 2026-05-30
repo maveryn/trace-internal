@@ -27,20 +27,12 @@ from trace.tasks.illustrations.shared.park_playground_scene import (
     park_scene_entities,
 )
 from trace.tasks.illustrations.shared.scene_objects import extract_scene_object_records, normalized_object_record
-from trace.tasks.illustrations.shared.urban_market_scene import (
-    MarketDecor,
-    MarketItem,
-    MarketShop,
-    RenderedUrbanMarketScene,
-    urban_market_scene_entities,
-)
 
 
 def test_registry_contains_shared_and_scene_specific_object_types() -> None:
     registered = set(registered_object_types())
-    assert {"duck", "person", "worker", "shop", "market_item", "playground_equipment", "boarding_area"} <= registered
+    assert {"duck", "person", "worker", "playground_equipment", "boarding_area"} <= registered
     assert object_type_definition("worker").family == "person"
-    assert object_type_definition("shop").public_name == "shop"
 
 
 def test_serialize_object_embeds_normalized_object_record() -> None:
@@ -162,46 +154,6 @@ def test_scene_entities_embed_normalized_object_records() -> None:
         style_id="flat_vector",
         layout={},
     )
-    market = RenderedUrbanMarketScene(
-        image=image,
-        setting_id="street_market",
-        shops=(
-            MarketShop(
-                shop_id="shop_0",
-                shop_type="fruit",
-                display_name="fruit stall",
-                bbox_xyxy=(0, 0, 50, 60),
-                sign_bbox_xyxy=(0, 0, 50, 10),
-                awning_bbox_xyxy=(0, 10, 50, 20),
-                facade_bbox_xyxy=(0, 0, 50, 60),
-                display_bbox_xyxy=(5, 20, 45, 45),
-                counter_bbox_xyxy=(5, 45, 45, 60),
-                item_ids=("item_0",),
-                item_types=("apple",),
-                role="target",
-                attributes={"signboard_color_rgb": [1, 2, 3], "awning_color_rgb": [4, 5, 6], "facade_color_rgb": [7, 8, 9]},
-            ),
-        ),
-        items=(
-            MarketItem(
-                item_id="item_0",
-                item_type="apple",
-                display_name="apple",
-                bbox_xyxy=(10, 25, 20, 35),
-                shop_id="shop_0",
-                slot_index=0,
-                color_rgb=(200, 0, 0),
-                accent_color_rgb=(0, 100, 0),
-                attributes={"role": "target"},
-            ),
-        ),
-        decor=(MarketDecor("customer_0", "customer", (60, 20, 75, 55), {"customer_object_type": "person", "gender_id": "female", "role": "target"}),),
-        canvas_width=100,
-        canvas_height=80,
-        render_scale=1,
-        style_id="flat_vector",
-        layout={},
-    )
     library = RenderedLibraryScene(
         image=image,
         setting_id="reading_room",
@@ -219,7 +171,6 @@ def test_scene_entities_embed_normalized_object_records() -> None:
         [
             *park_scene_entities(park),
             *construction_scene_entities(construction),
-            *urban_market_scene_entities(market),
             *library_scene_entities(library),
         ]
     )
@@ -227,14 +178,9 @@ def test_scene_entities_embed_normalized_object_records() -> None:
     assert by_id["person_00"]["semantic_attributes"]["activity"] == "walking"
     assert by_id["equipment_00"]["object_type"] == "playground_equipment"
     assert by_id["worker_0"]["object_type"] == "worker"
-    assert by_id["shop_0"]["object_type"] == "shop"
-    assert by_id["item_0"]["object_type"] == "market_item"
-    assert by_id["customer_0"]["object_type"] == "person"
-    assert by_id["customer_0"]["visual_attributes"]["gender_id"] == "female"
     assert by_id["person_00"]["visual_attributes"]["gender_id"] == "male"
     assert by_id["worker_0"]["visual_attributes"]["gender_id"] == "female"
     assert by_id["library_person_0"]["visual_attributes"]["gender_id"] == "female"
     assert "gender_id" not in by_id["person_00"]["semantic_attributes"]
     assert "gender_id" not in by_id["worker_0"]["semantic_attributes"]
-    assert "gender_id" not in by_id["customer_0"]["semantic_attributes"]
     assert "gender_id" not in by_id["library_person_0"]["semantic_attributes"]

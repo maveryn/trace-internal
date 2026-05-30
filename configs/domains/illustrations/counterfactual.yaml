@@ -12,7 +12,7 @@ generation:
       butterfly_wing_count_min: 2
       butterfly_wing_count_max: 6
       bicycle_wheel_count_min: 1
-      bicycle_wheel_count_max: 4
+      bicycle_wheel_count_max: 5
       traffic_light_lens_count_min: 1
       traffic_light_lens_count_max: 5
       clover_leaf_count_min: 2
@@ -40,8 +40,6 @@ generation:
         - park_sitting
         - park_walking
         - construction_tools
-        - construction_brick_stacks
-        - construction_pipe_bundles
 
 rendering:
   shared:

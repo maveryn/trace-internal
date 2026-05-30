@@ -37,7 +37,7 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import ROOM_SIDE_RELATION_REFERENCE_OBJECT_TYPE
-from ..spatial.camera_distance import POINT_LABELS, _bbox_intersection_area
+from ..shared.object_scene import POINT_LABELS, _bbox_intersection_area
 from .wall_mounted_object_count import (
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
@@ -855,11 +855,16 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
             lower=3,
             upper=8,
         )
+        reference_wall_support = (
+            ("back", "right")
+            if str(query_id) == "right_of_reference_on_wall"
+            else ("back", "left", "right")
+        )
         reference_wall, reference_wall_probabilities = _resolve_choice(
             params,
             instance_seed=int(instance_seed),
             key="reference_wall",
-            support=("back", "left", "right"),
+            support=reference_wall_support,
         )
         render_params = _resolve_render_params(params, render_defaults=_RENDER_DEFAULTS)
         dataset = _build_room_wall_side_relation_dataset(

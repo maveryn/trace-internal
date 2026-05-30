@@ -19,12 +19,12 @@ free-form captions.
 
 ## Calibration state
 Illustration tasks are pending fresh `v0` task review and qwen25vl7b
-solve-rate calibration unless `plans/PROGRESS_SUMMARY.md` records regenerated
-baseline-tagged artifacts for a task. Current retained solve-rate artifacts
-must use `100` prompts with `24` rollouts per prompt unless a task note says
-otherwise. The current domain inventory is generated in
-`docs/ACTIVE_TASK_INVENTORY.md`; task-level retained solve-rate artifacts and
-status files are indexed in `plans/PROGRESS_SUMMARY.md`.
+solve-rate calibration unless `review/calibration_sweep_status.json` records
+regenerated baseline-tagged artifacts for a task. Current retained solve-rate
+artifacts must use `100` prompts with `24` rollouts per prompt unless a task
+note says otherwise. The current domain inventory is generated in
+`docs/ACTIVE_TASK_INVENTORY.md`; task-level review sidecars live under
+`review/task-reviews/illustrations/<scene_id>/<task_id>/`.
 
 ## Scene contract
 1. `object_field` renders a single canvas with multiple non-overlapping
@@ -33,46 +33,40 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    crosswalks, city skylines, and mixed foreground objects.
 3. `indoor_room` renders room backgrounds with semantic furniture,
    surfaces, containers, and small household/tool/plant/fruit objects.
-4. `market` renders 2.5D market shop and stall fronts with
-   signs, awnings, counters, shelves, inventory items, street/plaza
-   backgrounds, semantic customers tied to shop fronts, dirt pedestrian paths,
-   and non-query street decor. The renderer supports an inventory layout for
-   readable item displays, a customer-plaza layout with wider open paths
-   between shop rows, and a denser sign layout with two or three market lanes,
-   sampled as either rows or columns, for sign and color counting. The canvas
-   remains `1280x960`; task difficulty comes from shop density, not a larger
-   image.
-5. `library` renders a synthetic library with labeled shelf sections,
+4. `library` renders a synthetic library with labeled shelf sections,
    visible book spines/covers, reading tables, people, plants, desk books, and
    other non-query decor. Library tasks count only semantic book records
    assigned to labeled sections; desk books and people are visual distractors.
-6. `park_playground` renders a synthetic park/playground with curved
+   Section labels sample one font from the role-appropriate shared font pool per scene
+   and use it consistently across all shelf-section labels.
+5. `park_playground` renders a synthetic park/playground with curved
    walking paths, playground equipment, picnic/pond/garden zones, benches,
    trees, flowers, lamps, and activity-labeled people.
-7. `transit_terminal` renders a synthetic transit terminal with labeled
+6. `transit_terminal` renders a synthetic transit terminal with labeled
    boarding areas, train/bus/airport visual settings, vehicles or gates,
    departure boards, clocks, info kiosks, benches, service counters, queue ropes,
    loose luggage, luggage carts, and people assigned to semantic boarding
    areas or queues.
-8. `construction_site` renders a synthetic construction site with
+7. `construction_site` renders a synthetic construction site with
    labeled excavation/loading/roadwork zones, workers, material stacks,
    construction vehicles/equipment, scaffold/crane/roadwork decor, and varied
-   site layouts/styles.
-9. Shared visual task scenes render derived canvases from illustration sources:
+   site layouts/styles. Construction zone labels sample one font from the
+   role-appropriate shared font pool per scene and use it consistently across all zone
+   labels; the resolved font trace is recorded in render metadata.
+8. Shared visual task scenes render derived canvases from illustration sources:
    `difference_pair` shows Scene A/B panels, `image_cutout_board`
    supports jigsaw-style image reconstruction layouts including 1x3 and 2x2
    anchored-piece boards and a 3x3 rotated-tile grid, and
    `missing_patch` shows a source image with a missing
    region plus labeled patch options. These tasks may draw their source image
    from current illustration scene renderers but ask scene-agnostic visual
-   comparison or reconstruction questions. Missing-patch sources exclude
-   `object_field` and `market`; jigsaw-order sources
-   exclude `object_field`.
-10. Public object taxonomy is global across illustration scenes. Scene
+   comparison or reconstruction questions. Missing-patch and jigsaw-order
+   sources exclude `object_field`.
+9. Public object taxonomy is global across illustration scenes. Scene
    interfaces should request object/background types plus attributes; scenes
    own grammar, placement constraints, and allowed object subsets, not drawing
    implementations or private object naming conventions.
-11. Object/background drawing and object metadata are separated:
+10. Object/background drawing and object metadata are separated:
    - `object_catalog.py` is the single source for drawable object, fixture,
      region, and background vocabularies, including render layer, size class,
      placement tags, scene tags, renderer id, public names, labels, and variant
@@ -81,7 +75,7 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    - `object_library.py` owns reusable glyph drawing and visible-part records
      for shared synthetic objects. `person_rendering.py` owns shared
      person-appearance helpers used by shared people, park people, transit
-     people, market customers, and construction workers.
+     people, and construction workers.
    - `object_schema.py` defines the normalized `object_record` payload.
    - `object_registry.py` adapts catalog-backed public object type definitions
      into the normalized `object_record` contract, including families,
@@ -94,18 +88,18 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    - `*_scene.py` modules are drawing-free public interfaces. Architecture
      tests enforce that they do not import PIL, create images/draw contexts, or
      define local `_draw_*` helpers.
-12. Each object-capable entity should include an `object_record` with:
+11. Each object-capable entity should include an `object_record` with:
    - `object_id`, public `object_type`, `public_name`, `family`, and bbox,
    - `semantic_attributes` used by tasks/verifiers, such as activity, zone,
-     shop type, material type, or queried color name,
+     material type, or queried color name,
    - `visual_attributes` used only for rendering variation, such as RGB fills,
      style id, and person `gender_id`,
    - `role`, `source_entity_type`, and optional visible part records.
-13. Existing scene-specific entity fields remain available for compatibility,
+12. Existing scene-specific entity fields remain available for compatibility,
    but new cross-scene visual tasks should consume `object_record` or
    `extract_scene_object_records(...)` instead of branching on every scene.
-14. Person-like entities use public categories such as `person`,
-   `pedestrian_with_bag`, `customer`, or `worker`. They sample render-only
+13. Person-like entities use public categories such as `person`,
+   `pedestrian_with_bag`, or `worker`. They sample render-only
    `gender_id` from `male`/`female` with equal probability where supported, but
    no task prompt or verifier should ask a gender-specific question. `child` is
    not a public object category; `childrens_corner` remains only a library
@@ -126,16 +120,15 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 18. Current environment themes are `park_road`, `river_meadow`, `road_and_river`,
     `canal_city`, and `skyline_street`.
 19. Current indoor themes are `living_room`, `kitchen`, `study`, and `bedroom`.
-20. Current urban-market settings are `street_market` and `plaza_market`.
-21. Current library settings are `reading_room`, `archive_room`, and
+20. Current library settings are `reading_room`, `archive_room`, and
     `childrens_corner`.
-22. Current park settings are `playground_lawn`, `picnic_park`,
+21. Current park settings are `playground_lawn`, `picnic_park`,
     `pond_playground`, and `flower_garden`.
-23. Current transit-terminal settings are `rail_station`, `bus_terminal`, and
+22. Current transit-terminal settings are `rail_station`, `bus_terminal`, and
     `airport_concourse`.
-24. Current construction-site settings are `urban_build`, `roadwork`,
+23. Current construction-site settings are `urban_build`, `roadwork`,
     `foundation_yard`, and `scaffold_site`.
-25. Object placement should be habitat-aware rather than uniformly random:
+24. Object placement should be habitat-aware rather than uniformly random:
    airplanes, birds, butterflies, and kites use sky bands; cars/buses/trucks/
    bicycles plus taxis/vans/scooters use roads when a road scene is present;
    boats, sailboats, canoes, fish, ducks, buoys, and lily pads use rivers when
@@ -146,62 +139,61 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    objects, cameras, backpacks, and sports/tool props.
    City/canal themes may cap foreground object count slightly below the global
    request to keep crowded skyline scenes legible.
-26. Environment features are semantic entities:
+25. Environment features are semantic entities:
    - roads and rivers store curved path points, width, bbox, and nearest-point
-     geometry support,
+     geometry support plus a sampled large-feature style id,
    - bridges and crosswalks store bboxes and crossing relationships,
    - buildings store building bboxes, roof type, door bbox, window bboxes, and
-     lit-window bboxes.
-27. Clouds and sun are non-counted sky decor features in environment scenes;
+     lit-window bboxes; each building also records a sampled building style id.
+26. Clouds and sun are non-counted sky decor features in environment scenes;
     they enrich backgrounds but do not enter foreground-object count tasks.
-28. Benches, road signs, streetlamps, traffic lights, mailboxes, trash bins,
+27. Benches, road signs, streetlamps, traffic lights, mailboxes, trash bins,
     and similar scene fixtures are foreground objects when placed through the
     object library, so they are eligible for object-level count tasks.
-29. Object placements in environment scenes record the sampled zone and
+28. Object placements in environment scenes record the sampled zone and
     precomputed relation metadata to roads/rivers, including above/below/on
     relation, signed vertical distance, nearest distance, nearest point, and
     whether the object lies between the road and river when both are present.
-30. Task generators may request exact road/river placement counts from the
+29. Task generators may request exact road/river placement counts from the
     renderer when a count target must be balanced by construction; the renderer
     still owns final object positions and bboxes.
-31. Indoor-room placements record whether each object is on a named surface,
+30. Indoor-room placements record whether each object is on a named surface,
     inside a named container, or in a side region relative to named furniture.
     Furniture, surface, and container bboxes are exported in the render map.
-32. Indoor surfaces are rendered as 2.5D perspective planes: table, shelf, and
+31. Indoor surfaces are rendered as 2.5D perspective planes: table, shelf, and
     counter tops use trapezoid support geometry, surface objects record a
     pixel-space contact point and depth value, and evidence remains the final
     tight rendered object bbox.
-33. Indoor-room furniture, shelf/counter/table geometry, containers, rugs,
+32. Indoor-room furniture, shelf/counter/table geometry, containers, rugs,
     window placement, and large-object colors are sampled per instance. Layout
     variants swap the cabinet/shelf and sofa/container sides so the room
     topology is not fixed. The renderer exports the sampled furniture,
     surface, and container bboxes plus each surface plane so task answers and
     evidence stay tied to the same geometry that is drawn.
+33. Indoor-room visual style variation applies to both foreground objects and
+    room structure. The room renderer samples furniture shape variants
+    including table-leg, sofa, cabinet, shelf, rug-pattern, container, floor,
+    window, and wall-decor styles while preserving the same semantic
+    furniture/surface/container bboxes used by tasks.
 34. Environment scenes sample explicit layout metadata per instance, including
     land/sky boundary, road/river base paths, path amplitudes, feature widths,
     city building horizon, background colors, and zone-bias weights. This keeps
     road/river/city scenes varied while preserving semantic path, feature, and
     object-placement metadata for verification.
-35. Urban-market scenes record each shop/stall bbox, sign bbox, display bbox,
-    counter bbox, item ids, and item types. Inventory items also record their
-    item type, display name, owning shop id, and pixel bbox. Tasks that count
-    shops use shop/stall bboxes as evidence; tasks that count individual
-    inventory items should use item bboxes. The renderer exports the sampled
-    lane layout and road/alley bbox or bboxes in
-    `render_spec.style.layout.shop_layout`.
-36. Library scenes record each labeled section bbox, label bbox, shelf row
+35. Library scenes record each labeled section bbox, label bbox, shelf row
     bboxes, book ids, book color, book orientation, and book bbox. Library
     tasks use book bboxes as evidence because the answer unit is an individual
-    shelf book.
-37. Park/playground scenes record each person bbox, symbolic activity id, and
+    shelf book. Section label bboxes and font trace are metadata, not public
+    evidence for the section-book count task.
+36. Park/playground scenes record each person bbox, symbolic activity id, and
     semantic zone id. The activity pose and any supporting object such as a
     bench or ball are drawn from the same person record. Park person tasks use
     person bboxes as evidence because the answer unit is a person.
-38. Park/playground scenes also record semantic playground-equipment decor
+37. Park/playground scenes also record semantic playground-equipment decor
     records for slides, swing sets, seesaws, and climbing frames. Equipment
     count tasks use the equipment decor bbox because the answer unit is the
     equipment item, not a person or support object.
-39. Transit-terminal scenes record each boarding area bbox, sign bbox,
+38. Transit-terminal scenes record each boarding area bbox, sign bbox,
    platform bbox, person bbox, semantic person area id, setting id, layout id,
     and non-query decor bboxes. Transit person-count tasks use person bboxes
     as evidence because the answer unit is a person.
@@ -222,6 +214,8 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
      pixel coordinates
 5. The answer and evidence are projected from object placement/feature relation
    metadata and rendered bboxes, not pixels.
+6. Environment scene prompt variants name the outdoor setting only; task/query
+   variants name the counted relation or lit-window target.
 
 ### Other environment-count tasks
 1. `task_illustrations__environment__lit_window_count` counts lit windows in
@@ -230,45 +224,31 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    counted lit window.
 
 ### Indoor-room tasks
-1. `task_illustrations__indoor_room__container_object_count` counts objects inside
-   a blue-outlined named container: basket, box, or drawer. Evidence is one bbox
-   per counted object; the configured answer support is `0..4`.
-2. `task_illustrations__indoor_room__surface_object_count` counts objects
+1. `task_illustrations__indoor_room__surface_object_count` counts objects
    of one named type on one named surface. Distractors include the same object
    type elsewhere and other object types on the queried surface.
-3. `task_illustrations__indoor_room__furniture_side_count` counts objects of one
+2. `task_illustrations__indoor_room__furniture_side_count` counts objects of one
    named type left/right/above/below a named furniture item: table, sofa, or
    cabinet. Distractors include the same object type on another side and other
    object types on the queried side. The configured answer support is `1..6`,
    with task-local sampling decoupled across answer, furniture/relation, object
    type, object count, and room theme.
+3. The configured indoor task object support uses `27` recognizable household,
+   tabletop, toy, tool, plant, and decor objects; it excludes oversized or
+   awkward surface-query objects such as guitars.
 4. All indoor answers are constructed by semantic placement metadata and all
    evidence boxes are final image pixel bboxes for the counted objects.
-
-### Urban-market tasks
-1. `task_illustrations__market__shop_attribute_count` counts shops or
-   stalls by internal `query_id`. Query ids cover shop/stall sign
-   category, signboard/awning/facade color, and named item sold. Category and
-   selling-object queries use one shop/stall bbox per counted shop; color
-   queries use the queried colored surface bbox.
-2. `task_illustrations__market__customer_at_shop_count` counts customer
-   figures standing at shops or stalls with a named sign label. Generic street
-   people are disabled for this task; every visible customer has metadata
-   linking it to the nearby shop/stall type. It uses the customer-plaza layout
-   so customers stand close to the queried shop fronts along a dirt pedestrian
-   path. Evidence is one customer bbox per counted customer.
-3. For shop-category and shop-selling queries, evidence is one
-   bbox per counted shop or stall, because the answer unit is
-   the shop/stall rather than each visible item glyph.
-4. The renderer exports shop inventory, shop bboxes, surface-specific bboxes,
-   customer bboxes, and item bboxes in the render map so answer and evidence
-   are projected from the same records that are drawn.
+5. Indoor-room scenes do not render text, so the role-aware font rule does not
+   apply. Scene prompts name the room setting directly, while task/query prompt
+   layers name the counted object, surface, furniture, or relation.
 
 ### Library tasks
 1. `task_illustrations__library__section_book_count` counts books in one
    labeled shelf section. Query ids count all books, books with a
    queried canonical color, upright books, or horizontal books. Prompt color
-   names include hex codes. Evidence is one bbox per counted book.
+   names include hex codes. Evidence is one bbox per counted book; keyed
+   evidence is not needed because the witnesses are an unordered homogeneous
+   set of counted books.
 2. Library scenes include people, reading tables, plants, lamps, and desk-book
    decor as distractors, but those decor records are not counted for section
    book tasks.
@@ -294,32 +274,34 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
 
 ### Transit-terminal tasks
 1. `task_illustrations__transit_terminal__entity_location_count` counts
-   terminal entities by internal `query_id`. Query ids cover people in
-   Boarding Areas A-D, loose suitcases/backpacks/luggage carts in a boarding
-   area, and people standing in the security, ticket-counter, or gate queue.
+   terminal entities by internal `query_id`. Query ids cover the reasoning
+   pattern: people in a named boarding area, suitcases/backpacks/luggage carts
+   in a named boarding area, and people standing in a named terminal queue.
+   The specific boarding area, luggage type, and service point are sampled
+   parameters rather than separate query ids.
 2. The transit scene samples rail-station, bus-terminal, and airport-concourse
    visual settings plus multiple boarding-area layouts. The semantic area id is
    assigned by the task sampler and preserved in each rendered person record.
    Current sampling uses `14..22` people with queried area counts `2..8`.
 3. Evidence is one final-image pixel bbox per counted entity. Person queries use
-   person bboxes; loose-luggage tasks use loose luggage bboxes. Vehicles, signs,
+   person bboxes; luggage tasks use standalone luggage bboxes. Vehicles, signs,
    clocks, info kiosks, benches, queue ropes, and boarding-area surfaces are
-   decor/support entities unless a task explicitly targets them.
+   decor/support entities unless a task explicitly targets them. Transit raw
+   count and location diagnostics stay in trace metadata; public complexity
+   components use normalized numeric scan/load/clutter values.
 
 ### Construction-site tasks
 1. `task_illustrations__construction_site__worker_attribute_count` counts workers with a
    queried hard-hat color, safety-vest color, or visible hand tool. Evidence is
-   one worker bbox per counted worker.
-2. `task_illustrations__construction_site__material_stack_count` counts one visible
-   material type: brick stacks, pipe bundles, lumber stacks, or cement bag
-   stacks. Default target answers use `2..6`. Evidence is one material bbox
-   per counted stack or bundle.
-3. `task_illustrations__construction_site__equipment_zone_count` counts construction
+   one worker bbox per counted worker. Color-query prompts include color names
+   with hex codes.
+2. `task_illustrations__construction_site__equipment_zone_count` counts construction
    vehicles or equipment items in one labeled site zone. Evidence is one
    equipment bbox per counted item.
-4. Construction-site tasks construct target and distractor records explicitly;
+3. Construction-site tasks construct target and distractor records explicitly;
    answers are checked against rendered worker/material/equipment records after
-   rendering.
+   rendering. Zone bbox jitter, object placement, and counted evidence are all
+   resolved before projected evidence is emitted.
 
 ### `task_illustrations__object_field__visible_part_count`
 1. `task_illustrations__object_field__visible_part_count` records
@@ -340,25 +322,35 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    and counts object-level changes. Query ids are
    `added_object_count`, `removed_object_count`, `changed_color_object_count`,
    and `moved_object_count`. Evidence is one bbox per changed object, using
-   Scene B boxes except for removed objects, which use Scene A boxes.
+   Scene B boxes except for removed objects, which use Scene A boxes. Moved
+   objects must clear the configured minimum center displacement, and the
+   sampled Scene A/B panel-label font is recorded in render metadata.
 2. `task_illustrations__image_cutout_board__jigsaw_piece_order` shows either a 1x3 board
    with the left source piece anchored or a 2x2 board with the top-left source
    piece anchored. The remaining labeled pieces are shuffled below the board.
    The answer is a space-separated label string in the prompted empty-cell
    order. Evidence is a `bbox_sequence` over the displayed piece options in
    answer order. Default sampling gives the two board shapes equal weight.
+   The 2x2 option row avoids the already-correct display order, and board
+   style plus option-label font are recorded in render metadata.
 3. `task_illustrations__image_cutout_board__rotated_tile_label` shows a full illustration cut
    into a labeled 3x3 grid, with exactly one tile rotated in place. The answer
-   is the rotated tile label, and evidence is the tile bbox.
+   is the rotated tile label, and evidence is the full rotated tile bbox.
+   Grid style and tile-label font are recorded in render metadata.
 4. `task_illustrations__missing_patch__missing_patch_label` shows a source image with a
-   blacked-out missing region and four labeled patch options. Query ids
+   blacked-out missing region and labeled patch options. Query ids
    use plain rectangular patches, rotation/reflection-allowed patches, and an
-   axis-aligned rectangular cutout. Evidence contains the missing-region bbox
-   and selected option bbox.
+   axis-aligned rectangular cutout. Evidence is a `keyed_bbox_map` with
+   `missing_region` and `selected_option` boxes. The default option count is
+   six so option-letter answer support clears review diversity gates, while
+   explicit four-option renders remain supported. Frame style and label font
+   are recorded in render metadata.
 5. `task_illustrations__scene_options__odd_scene_label` shows six labeled illustration
    panels from one source query. Five panels share the same count for a named
    target, and one panel has a different count. The answer is the odd panel
-   label, and evidence is the odd panel bbox.
+   label, and evidence is the full odd panel image bbox, not just its label
+   badge. Option frame style and one consistent global-pool option-label font
+   are recorded in render metadata.
 6. These tasks intentionally test image comparison/reconstruction rather than
    scene-specific world knowledge. Source images for jigsaw and missing-patch
    tasks are sampled from current illustration renderers to keep
@@ -371,12 +363,16 @@ status files are indexed in `plans/PROGRESS_SUMMARY.md`.
    airplane or butterfly, visible bicycle wheels, visible traffic-light lenses,
    visible clover leaves, star points, glove fingers, fork tines, snowflake
    arms, or chair legs. The rendered visible count may differ from the familiar
-   canonical count; evidence is one bbox per counted visible part.
+   canonical count; evidence is one bbox per counted visible part. Neutral
+   background style, object placement, object style, and object colors are
+   sampled as render-only variation and recorded in trace metadata.
 2. `task_illustrations__source_scene_edit__object_count_after_edit` renders one
    current source illustration scene in scene `source_scene_edit`.
    Query ids ask for the resulting target-object count after `K=1..3`
    objects are hypothetically added or removed. Evidence is the bbox set of all
-   currently visible target objects before the hypothetical edit.
+   currently visible target objects before the hypothetical edit. Prompt JSON
+   examples are generated from the active add/remove operation and sampled
+   `K` so their arithmetic stays valid for each rendered instance.
 
 ### Other mixed-object tasks
 1. `task_illustrations__object_field__object_type_count` counts objects of one named object

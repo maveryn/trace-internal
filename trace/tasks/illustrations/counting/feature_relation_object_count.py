@@ -363,10 +363,6 @@ def _build_complexity(*, query_id: str, object_count: int, target_count: int, th
             "answer_load": round(float(answer_load), 6),
             "relation_load": round(float(relation_load), 6),
             "scene_load": round(float(scene_load), 6),
-            "object_count": int(object_count),
-            "target_count": int(target_count),
-            "query_id": str(query_id),
-            "theme_id": str(theme_id),
         },
     )
 

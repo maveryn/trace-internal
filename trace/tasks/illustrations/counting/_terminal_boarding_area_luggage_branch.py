@@ -1,4 +1,4 @@
-"""Count loose luggage of one type in one labeled boarding area."""
+"""Count standalone luggage of one type in one labeled boarding area."""
 
 from __future__ import annotations
 
@@ -44,15 +44,8 @@ from ..shared.transit_terminal_scene import (
 TASK_ID = "private_terminal_boarding_area_luggage"
 SCENE_ID = "transit_terminal"
 QUERY_IDS: Tuple[str, ...] = (
-    "suitcase_in_boarding_area_count",
-    "backpack_in_boarding_area_count",
-    "luggage_cart_in_boarding_area_count",
+    "luggage_in_boarding_area_count",
 )
-_QUERY_LUGGAGE: Dict[str, str] = {
-    "suitcase_in_boarding_area_count": "suitcase",
-    "backpack_in_boarding_area_count": "backpack",
-    "luggage_cart_in_boarding_area_count": "luggage_cart",
-}
 _PERSON_POSES_NO_LUGGAGE: Tuple[str, ...] = tuple(pose for pose in TRANSIT_PERSON_POSES if pose != "with_luggage")
 
 
@@ -82,6 +75,7 @@ class _SampleSpec:
     luggage_specs: Tuple[TransitLuggageSpec, ...]
     person_specs: Tuple[TransitPersonSpec, ...]
     query_probabilities: Dict[str, float]
+    luggage_type_probabilities: Dict[str, float]
     area_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     luggage_count_probabilities: Dict[str, float]
@@ -134,9 +128,18 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_index = int(base_index) % len(query_values)
         query_id = str(query_values[query_index])
         query_probabilities = uniform_string_probability_map(query_values)
-    luggage_type = str(_QUERY_LUGGAGE[str(query_id)])
-    if luggage_type not in set(luggage_values):
-        raise ValueError("query luggage type is outside configured support")
+
+    explicit_luggage_type = params.get("luggage_type")
+    if explicit_luggage_type is not None:
+        luggage_type = str(explicit_luggage_type)
+        if luggage_type not in set(luggage_values):
+            raise ValueError("luggage_type is outside configured support")
+        luggage_index = int(luggage_values.index(luggage_type))
+        luggage_type_probabilities = uniform_string_probability_map(luggage_values, selected=luggage_type)
+    else:
+        luggage_index = int(base_index // max(1, len(query_values))) % len(luggage_values)
+        luggage_type = str(luggage_values[luggage_index])
+        luggage_type_probabilities = uniform_string_probability_map(luggage_values)
 
     explicit_area = params.get("area_id")
     if explicit_area is not None:
@@ -146,7 +149,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         area_index = int(area_values.index(area_id))
         area_probabilities = uniform_string_probability_map(area_values, selected=area_id)
     else:
-        area_index = int(base_index) % len(area_values)
+        area_index = int(base_index // max(1, len(query_values) * len(luggage_values))) % len(area_values)
         area_id = str(area_values[area_index])
         area_probabilities = uniform_string_probability_map(area_values)
 
@@ -157,7 +160,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values))) + 2 * int(query_index),
+        cycle_index=int(base_index // max(1, len(query_values) * len(luggage_values) * len(area_values))) + 2 * int(luggage_index) + int(area_index) + int(query_index),
     )
     luggage_min, luggage_max = bounds(
         params,
@@ -175,7 +178,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(luggage_low),
         high=int(luggage_max),
         explicit_key="luggage_count",
-        cycle_index=int(base_index // max(1, len(query_values) * len(area_values) * int(target_max - target_min + 1))),
+        cycle_index=int(base_index // max(1, len(query_values) * len(luggage_values) * len(area_values) * int(target_max - target_min + 1))),
     )
     person_min, person_max = bounds(
         params,
@@ -192,7 +195,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(person_min),
         high=int(person_max),
         explicit_key="person_count",
-        cycle_index=int(base_index // max(1, len(query_values) * len(area_values) * int(target_max - target_min + 1) * max(1, int(luggage_max - luggage_min + 1)))),
+        cycle_index=int(base_index // max(1, len(query_values) * len(luggage_values) * len(area_values) * int(target_max - target_min + 1) * max(1, int(luggage_max - luggage_min + 1)))),
     )
 
     other_areas = [str(value) for value in area_values if str(value) != str(area_id)]
@@ -222,10 +225,9 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         luggage_specs.append(TransitLuggageSpec(area_id=distractor_area, luggage_type=distractor_type, role="distractor"))
     rng.shuffle(luggage_specs)
 
-    person_area_values = tuple(area_values) + ("concourse",)
     person_specs = tuple(
         TransitPersonSpec(
-            area_id=str(rng.choice(person_area_values)),
+            area_id="concourse",
             role="decor",
             attributes={"pose_id": str(rng.choice(_PERSON_POSES_NO_LUGGAGE))},
         )
@@ -243,6 +245,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         luggage_specs=tuple(luggage_specs),
         person_specs=tuple(person_specs),
         query_probabilities=dict(query_probabilities),
+        luggage_type_probabilities=dict(luggage_type_probabilities),
         area_probabilities=dict(area_probabilities),
         target_count_probabilities=dict(target_probabilities),
         luggage_count_probabilities=dict(luggage_count_probabilities),
@@ -261,17 +264,12 @@ def _build_complexity(sample: _SampleSpec) -> TaskComplexity:
             "luggage_scan": round(float(luggage_scan), 6),
             "answer_load": round(float(answer_load), 6),
             "person_clutter": round(float(person_clutter), 6),
-            "luggage_type": str(sample.luggage_type),
-            "area_id": str(sample.area_id),
-            "target_count": int(sample.target_count),
-            "luggage_count": int(sample.luggage_count),
-            "person_count": int(sample.person_count),
         },
     )
 
 
 class TerminalBoardingAreaLuggageBranch:
-    """Count loose luggage of one type in one labeled boarding area."""
+    """Count standalone luggage of one type in one labeled boarding area."""
 
     task_id = TASK_ID
     branch_id = "terminal_boarding_area_luggage"
@@ -389,6 +387,7 @@ class TerminalBoardingAreaLuggageBranch:
                     "luggage_count": int(sample.luggage_count),
                     "person_count": int(sample.person_count),
                     "query_probabilities": dict(sample.query_probabilities),
+                    "luggage_type_probabilities": dict(sample.luggage_type_probabilities),
                     "area_probabilities": dict(sample.area_probabilities),
                     "target_count_probabilities": dict(sample.target_count_probabilities),
                     "luggage_count_probabilities": dict(sample.luggage_count_probabilities),

@@ -18,10 +18,11 @@ from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_centered_text_with_auto_stroke as _draw_centered_text
 from ...shared.drawing import draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -153,6 +154,11 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+LEVER_SEMANTIC_COLORS: Tuple[Tuple[int, int, int], ...] = (
+    (255, 238, 240),
+    (192, 62, 84),
+    (196, 56, 79),
+)
 
 
 def _is_missing_weight_query(query_id: str) -> bool:
@@ -625,6 +631,135 @@ def _beam_center_x(
     return float(center_x + (direction * offset_px))
 
 
+def _lever_content_bbox(
+    *,
+    render_defaults: Mapping[str, Any],
+    scene_variant: str,
+    placements: Sequence[Tuple[str, int, int | None, bool, bool]],
+) -> List[float]:
+    """Return a conservative bbox for the whole lever diagram before placement offset."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    scene_rng = spawn_rng(int(render_defaults.get("instance_seed", 0)), f"{TASK_ID}.scene_layout.{str(scene_variant)}")
+    beam_center_x = _beam_center_x(scene_rng, scene_variant=str(scene_variant), canvas_width=int(canvas_width))
+    beam_center_y = float(render_defaults["beam_center_y_px"])
+    beam_width = float(render_defaults["beam_width_px"])
+    beam_height = float(render_defaults["beam_height_px"])
+    beam_bbox_px = [
+        float(beam_center_x - (0.5 * beam_width)),
+        float(beam_center_y - (0.5 * beam_height)),
+        float(beam_center_x + (0.5 * beam_width)),
+        float(beam_center_y + (0.5 * beam_height)),
+    ]
+    fulcrum_width = float(render_defaults["fulcrum_width_px"])
+    fulcrum_height = float(render_defaults["fulcrum_height_px"])
+    fulcrum_bbox_px = [
+        float(beam_center_x - (0.5 * fulcrum_width)),
+        float(beam_bbox_px[3]),
+        float(beam_center_x + (0.5 * fulcrum_width)),
+        float(beam_bbox_px[3] + fulcrum_height),
+    ]
+    left = min(float(beam_bbox_px[0]), float(fulcrum_bbox_px[0]))
+    top = min(float(beam_bbox_px[1] - 36.0), float(fulcrum_bbox_px[1]))
+    right = max(float(beam_bbox_px[2]), float(fulcrum_bbox_px[2]))
+    bottom = max(float(beam_bbox_px[3] + 50.0), float(fulcrum_bbox_px[3]))
+    slot_spacing = float(render_defaults["slot_spacing_px"])
+    box_width = float(render_defaults["weight_box_width_px"])
+    box_height = float(render_defaults["weight_box_height_px"])
+    for side, distance_units, _value, _missing, _relevant in placements:
+        sign = -1.0 if str(side) == "left" else 1.0
+        center_x = float(beam_center_x + (sign * float(distance_units) * slot_spacing))
+        box_left = float(center_x - (0.5 * box_width) - 8.0)
+        box_top = float(beam_bbox_px[1] - float(render_defaults["weight_box_gap_px"]) - box_height - 8.0)
+        box_right = float(center_x + (0.5 * box_width) + 8.0)
+        box_bottom = float(beam_bbox_px[1] - float(render_defaults["weight_box_gap_px"]) + 8.0)
+        left = min(left, box_left)
+        top = min(top, box_top)
+        right = max(right, box_right)
+        bottom = max(bottom, box_bottom)
+    return [round(float(left), 3), round(float(top), 3), round(float(right), 3), round(float(bottom), 3)]
+
+
+def _resolve_lever_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    scene_variant: str,
+    placements: Sequence[Tuple[str, int, int | None, bool, bool]],
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-diagram placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _lever_content_bbox(
+        render_defaults=render_defaults,
+        scene_variant=str(scene_variant),
+        placements=placements,
+    )
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.lever_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 18))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_lever_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
+
+
 def _draw_beam_texture(
     draw: ImageDraw.ImageDraw,
     *,
@@ -655,6 +790,7 @@ def _render_scene(
     render_defaults: Mapping[str, Any],
     background: Image.Image,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> _RenderedScene:
     """Render one finalized lever-balance scene."""
 
@@ -663,8 +799,10 @@ def _render_scene(
     canvas_width = int(render_defaults["canvas_width"])
     lever_theme = build_physics_lever_theme(str(accent_color_name), diagram_style=diagram_style)
     scene_rng = spawn_rng(int(render_defaults.get("instance_seed", 0)), f"{TASK_ID}.scene_layout.{str(scene_variant)}")
-    beam_center_x = _beam_center_x(scene_rng, scene_variant=str(scene_variant), canvas_width=int(canvas_width))
-    beam_center_y = float(render_defaults["beam_center_y_px"])
+    beam_center_x = _beam_center_x(scene_rng, scene_variant=str(scene_variant), canvas_width=int(canvas_width)) + float(
+        render_defaults.get("layout_offset_x_px", 0)
+    )
+    beam_center_y = float(render_defaults["beam_center_y_px"]) + float(render_defaults.get("layout_offset_y_px", 0))
     beam_width = float(render_defaults["beam_width_px"])
     beam_height = float(render_defaults["beam_height_px"])
     beam_bbox_px = [
@@ -711,8 +849,9 @@ def _render_scene(
 
     distance_support = _distance_support(render_defaults)
     slot_spacing = float(render_defaults["slot_spacing_px"])
-    distance_font = load_font(int(render_defaults["distance_font_size_px"]), bold=True)
-    weight_font = load_font(int(render_defaults["weight_font_size_px"]), bold=True)
+    resolved_font_family = None if font_family is None else str(font_family)
+    distance_font = load_font(int(render_defaults["distance_font_size_px"]), bold=True, font_family=resolved_font_family)
+    weight_font = load_font(int(render_defaults["weight_font_size_px"]), bold=True, font_family=resolved_font_family)
     for distance_units in distance_support:
         for side, sign in (("left", -1.0), ("right", 1.0)):
             tick_x = float(beam_center_x + (sign * float(distance_units) * slot_spacing))
@@ -825,12 +964,8 @@ def _render_scene(
         if bool(missing):
             placeholder_bbox_px = list(weight_bbox)
 
-    if _is_missing_weight_query(str(query_id)) and placeholder_bbox_px is not None:
-        evidence_bboxes = [list(placeholder_bbox_px)]
-        evidence_entity_ids = ["missing_weight_marker"]
-    else:
-        evidence_bboxes = [list(bbox) for bbox in relevant_weight_bboxes]
-        evidence_entity_ids = [str(item) for item in relevant_weight_ids]
+    evidence_bboxes = [list(bbox) for bbox in relevant_weight_bboxes]
+    evidence_entity_ids = [str(item) for item in relevant_weight_ids]
 
     render_map = {
         "accent_color_name": str(accent_color_name),
@@ -895,50 +1030,66 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                 canvas_height=int(canvas_height),
                 instance_seed=int(instance_seed),
                 params=params,
+                protected_colors=LEVER_SEMANTIC_COLORS,
+            )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
+            render_defaults = {
+                key: (
+                    params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key)))
+                    if key == "distance_support"
+                    else resolve_render_int(
+                        params,
+                        _RENDER_DEFAULTS,
+                        key,
+                        int(getattr(_DEFAULTS, key)),
+                        instance_seed=int(instance_seed),
+                        namespace=TASK_ID,
+                    )
+                )
+                for key in (
+                    "canvas_width",
+                    "canvas_height",
+                    "beam_width_px",
+                    "beam_height_px",
+                    "beam_corner_radius_px",
+                    "beam_center_y_px",
+                    "fulcrum_width_px",
+                    "fulcrum_height_px",
+                    "fulcrum_offset_px",
+                    "slot_spacing_px",
+                    "distance_support",
+                    "weight_box_width_px",
+                    "weight_box_height_px",
+                    "weight_box_gap_px",
+                    "weight_font_size_px",
+                    "distance_font_size_px",
+                    "label_stroke_width_px",
+                    "texture_line_width_px",
+                    "texture_spacing_px",
+                )
+            } | {"instance_seed": int(instance_seed)}
+            render_defaults, layout_placement_meta = _resolve_lever_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_variant=str(axes.scene_variant),
+                placements=list(placements),
             )
             rendered_scene = _render_scene(
                 scene_variant=str(axes.scene_variant),
                 query_id=str(axes.query_id),
                 accent_color_name=str(axes.accent_color_name),
                 placements=list(placements),
-                render_defaults={
-                    key: (
-                        params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key)))
-                        if key == "distance_support"
-                        else resolve_render_int(
-                            params,
-                            _RENDER_DEFAULTS,
-                            key,
-                            int(getattr(_DEFAULTS, key)),
-                            instance_seed=int(instance_seed),
-                            namespace=TASK_ID,
-                        )
-                    )
-                    for key in (
-                        "canvas_width",
-                        "canvas_height",
-                        "beam_width_px",
-                        "beam_height_px",
-                        "beam_corner_radius_px",
-                        "beam_center_y_px",
-                        "fulcrum_width_px",
-                        "fulcrum_height_px",
-                        "fulcrum_offset_px",
-                        "slot_spacing_px",
-                        "distance_support",
-                        "weight_box_width_px",
-                        "weight_box_height_px",
-                        "weight_box_gap_px",
-                        "weight_font_size_px",
-                        "distance_font_size_px",
-                        "label_stroke_width_px",
-                        "texture_line_width_px",
-                        "texture_spacing_px",
-                    )
-                }
-                | {"instance_seed": int(instance_seed)},
+                render_defaults=render_defaults,
                 background=background,
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1047,8 +1198,21 @@ class _PhysicsMechanicsLeverBalanceBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "lever_balance_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),

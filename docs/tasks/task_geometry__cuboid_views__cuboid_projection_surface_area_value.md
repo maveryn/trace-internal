@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `surface_area_from_orthographic_views`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_bbox_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_cuboid_orthographic_views_v0`
@@ -17,7 +17,7 @@
 Compute the total surface area of a cuboid from its front, right, and top orthographic rectangular views. The visible labels give the three view perimeters, from which `L`, `W`, and `H` are inferred before computing `2(LW + LH + WH)` as an integer.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around the target `SA=?` cue followed by the visible top-view, front-view, and right-view perimeter label boxes. Verifier evidence is projected from the same generated scene metadata used to compute the answer.
+Prompt-facing evidence is a `keyed_bbox_map` over the three visible orthographic view rectangles: `top_view`, `front_view`, and `right_view`. Each rectangle contains the perimeter label used to infer the cuboid dimensions. The `SA=?` cue remains render metadata, not public evidence. Verifier evidence is projected from the same generated scene metadata used to compute the answer.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

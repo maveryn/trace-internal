@@ -48,20 +48,18 @@ def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(54001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert 2 <= len(out.evidence_gt.value) <= 4
+    assert out.evidence_gt.type in {"keyed_bbox_map", "keyed_point_map"}
+    assert 1 <= len(out.evidence_gt.value) <= 3
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["type"] == out.evidence_gt.type
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -104,14 +102,31 @@ def test_curvilinear_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        if out.evidence_gt.type == "keyed_bbox_map":
+            for x0, y0, x1, y1 in out.evidence_gt.value.values():
+                assert 0.0 <= x0 < x1 <= float(width)
+                assert 0.0 <= y0 < y1 <= float(height)
+                assert (x1 - x0) > 8.0
+                assert (y1 - y0) > 8.0
+        else:
+            assert out.evidence_gt.type == "keyed_point_map"
+            for x, y in out.evidence_gt.value.values():
+                assert 0.0 <= x <= float(width)
+                assert 0.0 <= y <= float(height)
 
 
 def test_curvilinear_tasks_reject_unknown_query_id() -> None:
     task = GeometryCurvilinearCompositeAreaValueTask()
     with pytest.raises(ValueError):
         task.generate(54031, params={"query_id": "not_a_query"}, max_attempts=20)
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_curvilinear_public_evidence_avoids_measurement_label_boxes(task_cls) -> None:
+    task = task_cls()
+    for index, query_id in enumerate(QUERY_IDS_BY_TASK[task_cls]):
+        out = task.generate(54061 + index, params={"query_id": query_id}, max_attempts=20)
+        assert out.trace_payload["projected_evidence"]["type"] == out.evidence_gt.type
+        assert set(out.evidence_gt.value) == set(out.trace_payload["execution_trace"]["evidence_roles"])
+        assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["evidence_roles"])
+        assert "support_roles" in out.trace_payload["render_map"]

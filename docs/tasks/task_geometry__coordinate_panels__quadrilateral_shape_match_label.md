@@ -20,7 +20,10 @@ Choose the labeled mini coordinate panel whose four unlabeled points form the re
 Each image contains six panels. The target panel has exactly one requested shape, while distractor panels use other exact quadrilateral families or non-matching four-point sets. Rectangle and rhombus branches avoid square ambiguity, and the parallelogram branch uses a non-rectangle/non-rhombus parallelogram target with non-parallelogram distractors.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected panel. The four graph coordinates and exact classification for each panel are retained in trace metadata.
+Verifier evidence is the final-image pixel bounding box around the selected
+panel. This is a visual-option task, so the selected option panel is the
+minimal visual witness. The four graph coordinates and exact classification
+for each panel are retained in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Query IDs, panel labels, point sets, marker style/color, prompt bundle IDs, and render choices are recorded in trace metadata.

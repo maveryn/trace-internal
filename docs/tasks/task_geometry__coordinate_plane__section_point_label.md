@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `one_third_from_p_to_q` or `two_thirds_from_p_to_q`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+7. Evidence type: `point_set`
 
 ## Prompt Bundle
 - Bundle id: `geometry_coordinate_algebra_v0`
@@ -20,7 +20,7 @@ Choose the lettered candidate point at a one-third or two-thirds section of segm
 The verifier computes the target point from the section formula `P + k/3 * (Q - P)`, where `k` is `1` or `2`. Sampled endpoints make the section point an integer lattice point, and exactly one candidate has the target coordinate.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected candidate point. Graph coordinates, section ratio, candidate points, and target point are recorded in trace metadata.
+Verifier evidence is one final-image pixel point at the center of the selected candidate marker. Graph coordinates, section ratio, candidate points, and target point are recorded in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Query IDs, candidate labels, marker styles/colors, graph frame, prompt bundle IDs, and render choices are recorded in trace metadata.

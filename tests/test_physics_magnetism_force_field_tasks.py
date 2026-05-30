@@ -33,16 +33,14 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
 
-    assert len(out.evidence_gt.value) == 1
-
-    assert out.query_id == "default"
+    assert set(out.evidence_gt.value) == {"field_orientation", "charge", "velocity"}
 
     assert out.scene_id == "magnetic_force"
 
     assert out.query_id == "force_direction_choice"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "force_direction_choice"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "force_direction_choice"
 
@@ -56,9 +54,19 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert scenario["option_directions"]["D"] == "south"
 
-    assert execution["evidence_entity_ids"] == ["option_D"]
+    assert execution["evidence_entity_ids"] == ["field_orientation_label", "particle", "velocity_vector"]
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+
+    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+
+    assert trace["render_map"]["correct_option_bbox_px"] not in out.evidence_gt.value.values()
+
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_magnetic_force_diagram_offset"
 
 
 def test_physics_magnetism_tasks_are_deterministic() -> None:

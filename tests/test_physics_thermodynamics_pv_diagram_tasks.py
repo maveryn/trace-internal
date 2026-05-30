@@ -39,15 +39,13 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_id == "default"
-
     assert out.scene_id == "pv_diagram"
 
     assert out.query_id == "work_value"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "work_value"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "work_value"
-    assert execution["query_id"] == "default"
+    assert execution["query_id"] == "work_value"
 
     assert execution["internal_query_id"] == "work_value"
 
@@ -63,7 +61,12 @@ def test_physics_thermodynamics_pv_work_value_single_process_contract() -> None:
 
     assert int(scenario["work_value"]) == 24
 
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pv_diagram_offset"
 
 
 def test_physics_thermodynamics_pv_work_value_cycle_contract() -> None:
@@ -126,8 +129,6 @@ def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
 
     assert len(out.evidence_gt.value) == 1
 
-    assert out.query_id == "default"
-
     assert out.query_id == "process_sign_choice"
 
     assert execution["target_sign"] == "zero"
@@ -141,6 +142,10 @@ def test_physics_thermodynamics_pv_process_sign_choice_contract() -> None:
     assert [candidate for candidate in candidates if candidate["is_correct"]][0]["option_letter"] == "D"
 
     assert trace["render_map"]["option_signs"]["D"] == "zero"
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["render_map"]["evidence_bboxes_px"] == out.evidence_gt.value
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pv_diagram_offset"
 
 
 def test_physics_thermodynamics_pv_tasks_are_deterministic() -> None:
@@ -212,3 +217,5 @@ def test_physics_thermodynamics_pv_prompt_bundle_supports_variants() -> None:
     assert len(bundle["query_templates"]["work_value"]) == 5
 
     assert len(bundle["query_templates"]["process_sign_choice"]) == 5
+
+    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5

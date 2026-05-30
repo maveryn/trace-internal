@@ -20,6 +20,7 @@ from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_geometry_measurement_complexity, clamp_unit_interval, normalize_linear
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.measurement_rendering import (
@@ -159,14 +160,14 @@ def _draw_point_label(ctx: _RenderContext, label: str, point: Point, offset: Poi
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
     top = float(center[1]) - (text_h / 2.0)
-    ctx.draw.text(
+    draw_text_traced(ctx.draw,
         (left, top),
         str(label),
         font=ctx.point_font,
         fill=ctx.label_color,
         stroke_width=2,
         stroke_fill=ctx.label_stroke_color,
-    )
+     role="readout", required=False,)
     return _pad_bbox((left, top, left + text_w, top + text_h), 3.0, width=ctx.width, height=ctx.height)
 
 

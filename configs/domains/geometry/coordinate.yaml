@@ -149,8 +149,10 @@ prompt:
       scene_key: coordinate_quadrilateral_candidate_scene
       task_key: coordinate_quadrilateral_query
       object_description: a coordinate grid with three unlabeled points and lettered candidate points
-      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_panels__quadrilateral_shape_match_label:
       bundle_id: geometry_coordinate_quadrilateral_v0
       scene_key: coordinate_panels_scene
@@ -158,34 +160,44 @@ prompt:
       object_description: six labeled coordinate panels, each containing four unlabeled points
       evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
       answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
+      json_example: '{"evidence":[[361,32,661,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__missing_endpoint_label:
       bundle_id: geometry_coordinate_algebra_v0
       scene_key: coordinate_algebra_midpoint_scene
       task_key: coordinate_algebra_query
       object_description: a coordinate grid with a labeled endpoint, labeled midpoint, and lettered candidate points
-      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__section_point_label:
       bundle_id: geometry_coordinate_algebra_v0
       scene_key: coordinate_algebra_section_scene
       task_key: coordinate_algebra_query
       object_description: a coordinate grid with segment PQ and lettered candidate section points
-      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__transformed_point_label:
       bundle_id: geometry_coordinate_algebra_v0
       scene_key: coordinate_algebra_transform_scene
       task_key: coordinate_algebra_query
       object_description: a coordinate grid with a labeled point, a visible transformation, and lettered candidate image points
-      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_point_label:
       bundle_id: geometry_coordinate_locus_v0
       scene_key: coordinate_locus_candidate_scene
       task_key: coordinate_locus_query
       object_description: a coordinate grid with one shaded locus region and lettered candidate points
-      evidence_hint_candidate_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected candidate point
+      evidence_hint_candidate_point: set "evidence" to an array containing exactly one pixel point [x,y] at the center of the selected candidate point
       answer_hint_option_letter: set "answer" to the selected candidate letter as a capital letter
+      json_example: '{"evidence":[[420,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_panel_match_label:
       bundle_id: geometry_coordinate_locus_v0
       scene_key: coordinate_locus_panel_grid_scene
@@ -193,6 +205,8 @@ prompt:
       object_description: six labeled coordinate panels with shaded locus regions and a condition box
       evidence_hint_selected_panel_bbox: set "evidence" to an array containing exactly one bounding box [x0,y0,x1,y1] around the selected panel
       answer_hint_option_letter: set "answer" to the selected panel label as a capital letter
+      json_example: '{"evidence":[[361,32,661,344]],"answer":"B"}'
+      json_example_answer_only: '{"answer":"B"}'
 
 complexity:
   shared:

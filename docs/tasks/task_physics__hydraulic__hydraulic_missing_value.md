@@ -7,7 +7,7 @@
 - Task id: `task_physics__hydraulic__hydraulic_missing_value`
 - Query id: `missing_output_force|missing_input_force|missing_piston_area`
 - Answer type: `integer`
-- Evidence type: unordered `bbox_set`
+- Evidence type: `keyed_bbox_map`
 
 ## Visual Scaffold
 - The image shows one connected three-piston hydraulic system.
@@ -41,7 +41,11 @@
 - The final answer is unique by construction for each query branch.
 
 ## Evidence Contract
-- Prompt-facing evidence is the unordered set of all six force and area label bboxes in the connected three-piston system, including the marked red `?` label.
+- Prompt-facing evidence is a `keyed_bbox_map` over only the known force/area labels needed to compute the missing value.
+- `missing_output_force` uses keys `input_force`, `input_area`, and `output_area`.
+- `missing_input_force` uses keys `output_force`, `input_area`, and `output_area`.
+- `missing_piston_area` uses keys `input_force`, `output_force`, and `input_area`.
+- The red `?` target label and middle reference labels remain visible cues but are not prompt-facing evidence for the current query branches.
 
 ## Sampling Notes
 - Input-force support is `4..12`.
@@ -53,4 +57,4 @@
 ## Prompt Policy
 - Prompt text should identify the system as a connected three-piston hydraulic piston diagram.
 - Prompt text should ask only for an integer force or area value.
-- Prompt-facing evidence should stay on the visible force and area labels, not on the fluid chamber frames or decorative connector pipe.
+- Prompt-facing evidence should stay on the minimal known force and area labels, keyed by semantic role.

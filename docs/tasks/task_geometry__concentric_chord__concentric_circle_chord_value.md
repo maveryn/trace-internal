@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `chord_length_from_radii` or `inner_radius_from_chord`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_point_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_concentric_circle_chord_v0`
@@ -21,11 +21,12 @@ circle. The verifier uses `R^2 = r^2 + (c/2)^2`; answers are rounded to one
 decimal place.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set` around the visible label boxes needed
-for the selected query. The chord-length query uses the outer-radius and
-inner-radius labels. The inner-radius query uses the outer-radius and
-chord-length labels. Verifier evidence is projected from the same generated
-scene metadata used to compute the answer.
+Prompt-facing evidence is a `keyed_point_map` over the visible construction
+points `O`, `A`, `B`, and `T`, where `O` is the shared center, `A` and `B` are
+the chord endpoints, and `T` is the tangency point. Radius and chord-length
+labels remain visible annotations and render metadata, not public evidence.
+Verifier evidence is projected from the same generated scene metadata used to
+compute the answer.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt

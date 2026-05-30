@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `missing_endpoint_from_midpoint` or `missing_startpoint_from_midpoint`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+7. Evidence type: `point_set`
 
 ## Prompt Bundle
 - Bundle id: `geometry_coordinate_algebra_v0`
@@ -20,7 +20,7 @@ Choose the lettered candidate point that completes segment `PQ` when one endpoin
 The rendered diagram draws the known half-segment from the visible endpoint to `M` and includes a small midpoint cue. The verifier computes the hidden endpoint from the midpoint relation, using `Q = 2M - P` or `P = 2M - Q`. Distractor points are unique lattice points and do not share the target coordinate.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected candidate point. Graph coordinates, midpoint formula, candidate points, and target endpoint are recorded in trace metadata.
+Verifier evidence is one final-image pixel point at the center of the selected candidate marker. Graph coordinates, midpoint formula, candidate points, and target endpoint are recorded in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Query IDs, candidate labels, marker styles/colors, graph frame, prompt bundle IDs, and render choices are recorded in trace metadata.

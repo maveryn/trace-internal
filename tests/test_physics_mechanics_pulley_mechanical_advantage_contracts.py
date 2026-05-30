@@ -55,24 +55,17 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.evidence_gt.type == "bbox_set"
-
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "keyed_bbox_map"
 
     assert out.query_id == "force_relation"
 
-    assert trace["query_spec"]["query_id"] == "default"
-
     assert trace["query_spec"]["query_id"] == "force_relation"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == "force_relation"
     assert trace["query_spec"]["params"]["internal_query_id"] in {
         "effort_force_for_load",
         "load_force_from_effort",
     }
-
-    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == "force_relation"
     assert execution["internal_query_id"] in {
@@ -87,7 +80,18 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert len(out.evidence_gt.value) == int(expected_count)
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["render_map"]["evidence_bbox_map_px"] == out.evidence_gt.value
+    assert set(out.evidence_gt.value) == {
+        *(f"support_{index}" for index in range(1, int(execution["support_segment_count"]) + 1)),
+        "known_force",
+        "target_force",
+    }
+    assert trace["witness_symbolic"]["type"] == "object_map"
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pulley_diagram_offset"
 
     assert 2 <= int(execution["support_segment_count"]) <= 6
 
@@ -186,8 +190,6 @@ def test_physics_mechanics_pulleyseeded_sampler_decouples_variant_and_answer_sup
             params={},
             max_attempts=60,
         )
-
-        assert str(out.query_id) == "default"
 
         assert str(out.query_id) == "force_relation"
         execution = out.trace_payload["execution_trace"]

@@ -71,6 +71,12 @@ rendering:
     texture_line_width_px_min: 1
     texture_line_width_px_max: 3
     texture_spacing_px: 18
+    layout_jitter_enabled: true
+    layout_jitter_min_margin_px: 18
+    layout_jitter_x_px_min: -18
+    layout_jitter_x_px_max: 18
+    layout_jitter_y_px_min: 0
+    layout_jitter_y_px_max: 24
   task_overrides:
     task_physics__hydraulic__hydraulic_missing_value: {}
 
@@ -94,7 +100,8 @@ prompt:
       object_description_wide_bench: a connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
       object_description_compact_frame: a compact connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
       object_description_tall_columns: a tall connected hydraulic piston diagram with three fluid chambers, piston area labels, downward force arrows, and one red `?` label
-      evidence_hint_force: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all force and area labels in the connected three-piston system, including the marked red `?` force label
-      evidence_hint_area: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all force and area labels in the connected three-piston system, including the marked red `?` area label
+      evidence_hint_missing_output_force: set "evidence" to an object with keys "input_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output force
+      evidence_hint_missing_input_force: set "evidence" to an object with keys "output_force", "input_area", and "output_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing input force
+      evidence_hint_missing_piston_area: set "evidence" to an object with keys "input_force", "output_force", and "input_area"; each value is a pixel bounding box [x0, y0, x1, y1] around the corresponding known label needed to compute the missing output area
       answer_hint_force: set "answer" to the requested integer force value in newtons
       answer_hint_area: set "answer" to the requested integer piston area in cm^2

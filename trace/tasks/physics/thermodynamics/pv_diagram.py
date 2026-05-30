@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -17,10 +18,11 @@ from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -787,11 +789,13 @@ def _arrow_bbox(start: Tuple[float, float], end: Tuple[float, float], *, padding
 def _plot_bbox(render_defaults: Mapping[str, Any]) -> List[float]:
     """Return the main plot bbox."""
 
+    offset_x = float(render_defaults.get("layout_offset_x_px", 0))
+    offset_y = float(render_defaults.get("layout_offset_y_px", 0))
     return [
-        float(render_defaults["plot_left_px"]),
-        float(render_defaults["plot_top_px"]),
-        float(render_defaults["plot_left_px"]) + float(render_defaults["plot_width_px"]),
-        float(render_defaults["plot_top_px"]) + float(render_defaults["plot_height_px"]),
+        float(render_defaults["plot_left_px"]) + float(offset_x),
+        float(render_defaults["plot_top_px"]) + float(offset_y),
+        float(render_defaults["plot_left_px"]) + float(render_defaults["plot_width_px"]) + float(offset_x),
+        float(render_defaults["plot_top_px"]) + float(render_defaults["plot_height_px"]) + float(offset_y),
     ]
 
 
@@ -1363,17 +1367,19 @@ def _draw_sign_choice_scene(
     label_font,
     option_font,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    """Draw six labeled mini-process PV diagrams."""
+    """Draw eight labeled mini-process PV diagrams."""
 
     entities: List[Dict[str, Any]] = []
     option_bboxes: Dict[str, List[float]] = {}
     option_process_bboxes: Dict[str, List[float]] = {}
     option_signs: Dict[str, str] = {}
+    offset_x = float(render_defaults.get("layout_offset_x_px", 0))
+    offset_y = float(render_defaults.get("layout_offset_y_px", 0))
     for index, candidate in enumerate(scene_spec.process_candidates):
         col = int(index % 4)
         row = int(index // 4)
-        cell_left = float(render_defaults["mini_plot_left_px"]) + (float(render_defaults["mini_cell_width_px"]) + float(render_defaults["mini_cell_gap_x_px"])) * float(col)
-        cell_top = float(render_defaults["mini_plot_top_px"]) + (float(render_defaults["mini_cell_height_px"]) + float(render_defaults["mini_cell_gap_y_px"])) * float(row)
+        cell_left = float(render_defaults["mini_plot_left_px"]) + float(offset_x) + (float(render_defaults["mini_cell_width_px"]) + float(render_defaults["mini_cell_gap_x_px"])) * float(col)
+        cell_top = float(render_defaults["mini_plot_top_px"]) + float(offset_y) + (float(render_defaults["mini_cell_height_px"]) + float(render_defaults["mini_cell_gap_y_px"])) * float(row)
         cell_bbox = [
             float(cell_left),
             float(cell_top),
@@ -1451,7 +1457,7 @@ def _draw_sign_choice_scene(
     target_bbox = _draw_text_tag(
         draw,
         text=target_text,
-        center=(float(render_defaults["mini_plot_left_px"] + 540.0), float(render_defaults["canvas_height"] - 42.0)),
+        center=(float(render_defaults["mini_plot_left_px"] + 540.0 + offset_x), float(render_defaults["canvas_height"] - 42.0 + offset_y)),
         font=label_font,
         fill_rgb=tuple(int(value) for value in theme.label_fill_rgb),
         outline_rgb=tuple(int(value) for value in theme.label_outline_rgb),
@@ -1483,17 +1489,18 @@ def _render_scene(
     accent_color_name: str,
     scene_spec: _SceneSpec,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> _RenderedScene:
     """Render one PV diagram and return trace metadata."""
 
     image = background.copy()
     draw = ImageDraw.Draw(image)
     theme = build_physics_pv_diagram_theme(str(accent_color_name), diagram_style=diagram_style)
-    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=True)
-    tick_font = load_font(int(render_defaults["tick_font_size_px"]), bold=False)
-    state_font = load_font(int(render_defaults["state_font_size_px"]), bold=True)
-    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True)
-    note_font = load_font(int(render_defaults["note_font_size_px"]), bold=True)
+    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=font_family)
+    tick_font = load_font(int(render_defaults["tick_font_size_px"]), bold=False, font_family=font_family)
+    state_font = load_font(int(render_defaults["state_font_size_px"]), bold=True, font_family=font_family)
+    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True, font_family=font_family)
+    note_font = load_font(int(render_defaults["note_font_size_px"]), bold=True, font_family=font_family)
 
     scene_entities: List[Dict[str, Any]] = []
     render_map: Dict[str, Any] = {
@@ -1594,6 +1601,7 @@ def _render_scene(
         if str(entity_id) in entity_bbox_map
     ]
     render_map["evidence_entity_ids"] = list(scene_spec.evidence_entity_ids)
+    render_map["evidence_bboxes_px"] = [list(bbox) for bbox in evidence_bboxes]
     return _RenderedScene(
         image=image,
         evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
@@ -1601,6 +1609,118 @@ def _render_scene(
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
+
+
+def _pv_content_bbox(
+    *,
+    render_defaults: Mapping[str, Any],
+    scene_spec: _SceneSpec,
+) -> List[float]:
+    """Return a conservative bbox for the whole PV content before layout offset."""
+
+    if str(scene_spec.query_id) == "work_value":
+        left = float(render_defaults["plot_left_px"]) - 92.0
+        top = float(render_defaults["plot_top_px"]) - 72.0
+        right = float(render_defaults["plot_left_px"]) + float(render_defaults["plot_width_px"]) + 82.0
+        bottom = float(render_defaults["plot_top_px"]) + float(render_defaults["plot_height_px"]) + 88.0
+    else:
+        column_count = 4
+        row_count = 2
+        left = float(render_defaults["mini_plot_left_px"]) - 14.0
+        top = float(render_defaults["mini_plot_top_px"]) - 26.0
+        right = (
+            float(render_defaults["mini_plot_left_px"])
+            + (float(render_defaults["mini_cell_width_px"]) * float(column_count))
+            + (float(render_defaults["mini_cell_gap_x_px"]) * float(column_count - 1))
+        )
+        bottom = max(
+            float(render_defaults["mini_plot_top_px"])
+            + (float(render_defaults["mini_cell_height_px"]) * float(row_count))
+            + (float(render_defaults["mini_cell_gap_y_px"]) * float(row_count - 1))
+            + 12.0,
+            float(render_defaults["canvas_height"]) - 16.0,
+        )
+    return [
+        round(float(left), 3),
+        round(float(top), 3),
+        round(float(right), 3),
+        round(float(bottom), 3),
+    ]
+
+
+def _resolve_pv_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    scene_spec: _SceneSpec,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-PV-diagram placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _pv_content_bbox(render_defaults=render_defaults, scene_spec=scene_spec)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.pv_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 8))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_pv_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
 
 
 def _answer_type(query_id: str) -> str:
@@ -1658,58 +1778,73 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
             except ValueError:
                 continue
 
+            render_defaults = {
+                key: resolve_render_int(
+                    params,
+                    _RENDER_DEFAULTS,
+                    key,
+                    int(getattr(_DEFAULTS, key)),
+                    instance_seed=int(instance_seed),
+                    namespace=TASK_ID,
+                )
+                for key in (
+                    "canvas_width",
+                    "canvas_height",
+                    "plot_left_px",
+                    "plot_top_px",
+                    "plot_width_px",
+                    "plot_height_px",
+                    "mini_plot_left_px",
+                    "mini_plot_top_px",
+                    "mini_cell_width_px",
+                    "mini_cell_height_px",
+                    "mini_cell_gap_x_px",
+                    "mini_cell_gap_y_px",
+                    "axis_width_px",
+                    "grid_line_width_px",
+                    "bold_grid_line_width_px",
+                    "process_line_width_px",
+                    "cycle_line_width_px",
+                    "arrow_head_length_px",
+                    "arrow_head_width_px",
+                    "label_font_size_px",
+                    "tick_font_size_px",
+                    "state_font_size_px",
+                    "option_font_size_px",
+                    "note_font_size_px",
+                    "label_stroke_width_px",
+                    "pressure_max_kpa",
+                    "volume_max_l",
+                )
+            }
+            render_defaults, layout_placement_meta = _resolve_pv_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_spec=scene_spec,
+            )
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id=SCENE_ID,
                 task_group=self.task_group,
-                canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-                canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+                canvas_width=int(render_defaults["canvas_width"]),
+                canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
                 params=params,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             rendered_scene = _render_scene(
                 background=background,
-                render_defaults={
-                    key: resolve_render_int(
-                        params,
-                        _RENDER_DEFAULTS,
-                        key,
-                        int(getattr(_DEFAULTS, key)),
-                        instance_seed=int(instance_seed),
-                        namespace=TASK_ID,
-                    )
-                    for key in (
-                        "canvas_width",
-                        "canvas_height",
-                        "plot_left_px",
-                        "plot_top_px",
-                        "plot_width_px",
-                        "plot_height_px",
-                        "mini_plot_left_px",
-                        "mini_plot_top_px",
-                        "mini_cell_width_px",
-                        "mini_cell_height_px",
-                        "mini_cell_gap_x_px",
-                        "mini_cell_gap_y_px",
-                        "axis_width_px",
-                        "grid_line_width_px",
-                        "bold_grid_line_width_px",
-                        "process_line_width_px",
-                        "cycle_line_width_px",
-                        "arrow_head_length_px",
-                        "arrow_head_width_px",
-                        "label_font_size_px",
-                        "tick_font_size_px",
-                        "state_font_size_px",
-                        "option_font_size_px",
-                        "note_font_size_px",
-                        "label_stroke_width_px",
-                        "pressure_max_kpa",
-                        "volume_max_l",
-                    )
-                },
+                render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1854,8 +1989,21 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "pv_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1881,7 +2029,9 @@ class _PhysicsThermodynamicsPVDiagramBaseTask:
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
                 },
                 "projected_evidence": {
+                    "type": "bbox_set",
                     "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "pixel_bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

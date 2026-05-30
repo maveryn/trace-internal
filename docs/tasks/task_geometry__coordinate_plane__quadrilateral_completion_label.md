@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `parallelogram_completion_label`, `rectangle_completion_label`, `square_completion_label`, or `rhombus_completion_label`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+7. Evidence type: `point_set`
 
 ## Prompt Bundle
 - Bundle id: `geometry_coordinate_quadrilateral_v0`
@@ -20,7 +20,7 @@ Choose the lettered candidate point that completes the requested quadrilateral w
 The scene samples exact lattice-point square, rectangle, rhombus, and parallelogram cases. Rectangle and rhombus branches avoid square ambiguity, and the parallelogram branch avoids rectangle/rhombus/square distractors so the selected candidate is unique.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected candidate point. Graph coordinates, candidate classifications, and the hidden missing point are recorded only in trace metadata.
+Verifier evidence is one final-image pixel point at the center of the selected candidate marker. Graph coordinates, candidate classifications, and the hidden missing point are recorded only in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Query IDs, candidate labels, marker styles/colors, graph frame, prompt bundle IDs, and render choices are recorded in trace metadata.

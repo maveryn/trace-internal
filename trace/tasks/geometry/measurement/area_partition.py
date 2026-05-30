@@ -10,7 +10,6 @@ from PIL import Image, ImageDraw
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -20,6 +19,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -32,9 +32,10 @@ from ..shared.complexity import (
     clamp_unit_interval,
     normalize_linear,
 )
-from ..shared.shape_style import (
-    extract_background_anchor_colors,
-    sample_geometry_shape_style,
+from ..shared.diagram_style import (
+    geometry_diagram_style_metadata,
+    geometry_shape_style_from_diagram_style,
+    prepare_geometry_diagram_style_and_background,
 )
 from ..shared.measurement_rendering import (
     bbox_to_list as _bbox_to_list,
@@ -48,8 +49,7 @@ Point = Tuple[float, float]
 BBox = Tuple[float, float, float, float]
 Color = Tuple[int, int, int]
 
-PARALLELOGRAM_SCENE_ID = "area_partition"
-TRIANGLE_SCENE_ID = "area_partition"
+AREA_PARTITION_SCENE_ID = "area_partition"
 TASK_GROUP = "measurement"
 PROMPT_BUNDLE_ID = "geometry_area_partition_v0"
 
@@ -104,6 +104,11 @@ _TRIANGLE_PARTITION_CASES: Tuple[Tuple[str, int, int], ...] = (
     ("triangle_medians_sixth", 57, 6),
 )
 
+_AREA_PARTITION_CASES: Tuple[Tuple[str, int, int], ...] = (
+    *_PARALLELOGRAM_PARTITION_CASES,
+    *_TRIANGLE_PARTITION_CASES,
+)
+
 
 @dataclass
 class _RenderContext:
@@ -122,6 +127,8 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    layout_offset: Point = (0.0, 0.0)
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -142,6 +149,7 @@ class _RenderedAreaPartitionScene:
     image: Image.Image
     answer: float
     evidence_bboxes: Tuple[BBox, ...]
+    evidence_keyed_bboxes: Mapping[str, BBox]
     evidence_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
@@ -158,6 +166,21 @@ def _centroid(a: Point, b: Point, c: Point) -> Point:
         (float(a[0]) + float(b[0]) + float(c[0])) / 3.0,
         (float(a[1]) + float(b[1]) + float(c[1])) / 3.0,
     )
+
+
+def _offset_point(ctx: _RenderContext, point: Point) -> Point:
+    """Apply the resolved non-semantic scene placement jitter to one point."""
+
+    return (
+        float(point[0]) + float(ctx.layout_offset[0]),
+        float(point[1]) + float(ctx.layout_offset[1]),
+    )
+
+
+def _offset_points(ctx: _RenderContext, points: Sequence[Point]) -> tuple[Point, ...]:
+    """Apply the resolved non-semantic scene placement jitter to several points."""
+
+    return tuple(_offset_point(ctx, point) for point in points)
 
 
 def _draw_equal_ticks(ctx: _RenderContext, segments: Sequence[Tuple[Point, Point]]) -> BBox:
@@ -263,6 +286,7 @@ def _draw_parallelogram(
     b = (534.0, 408.0)
     c = (646.0, 152.0)
     d = (242.0, 152.0)
+    a, b, c, d = _offset_points(ctx, (a, b, c, d))
     o = _midpoint(a, c)
     outer = (a, b, c, d)
     if problem.scene_variant == "parallelogram_diagonal_half":
@@ -314,6 +338,7 @@ def _draw_triangle(
     a = (382.0, 118.0)
     b = (116.0, 430.0)
     c = (654.0, 430.0)
+    a, b, c = _offset_points(ctx, (a, b, c))
     outer = (a, b, c)
     if problem.scene_variant == "triangle_median_half":
         d = _midpoint(b, c)
@@ -376,21 +401,21 @@ def _render_area_partition_scene(
 
     label_bboxes: Dict[str, BBox] = {}
     label_bboxes["given_area"] = _draw_label(
-        ctx, f"shaded area={problem.shaded_area}", (570.0, 82.0), small=True
+        ctx, f"shaded area={problem.shaded_area}", _offset_point(ctx, (570.0, 82.0)), small=True
     )
-    label_bboxes["target"] = _draw_label(ctx, "total area=?", (570.0, 510.0), small=True)
+    label_bboxes["target"] = _draw_label(ctx, "total area=?", _offset_point(ctx, (570.0, 510.0)), small=True)
     evidence_roles = (
-        "target_total_area_cue",
+        "outer_shape",
         "shaded_region",
-        "given_shaded_area_label",
-        "partition_marks",
     )
     evidence_bboxes = (
-        label_bboxes["target"],
+        outer_bbox,
         shaded_bbox,
-        label_bboxes["given_area"],
-        partition_bbox,
     )
+    evidence_keyed_bboxes = {
+        "outer_shape": outer_bbox,
+        "shaded_region": shaded_bbox,
+    }
     scene_entities = (
         {
             "entity_id": "outer_shape",
@@ -419,6 +444,7 @@ def _render_area_partition_scene(
         image=ctx.image,
         answer=float(problem.answer),
         evidence_bboxes=tuple(evidence_bboxes),
+        evidence_keyed_bboxes=dict(evidence_keyed_bboxes),
         evidence_roles=tuple(evidence_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
@@ -472,25 +498,48 @@ class _AreaPartitionBaseTask:
                 "canvas_height", group_default(render_defaults, "canvas_height", 560)
             )
         )
-        image, background_meta = make_background_canvas(
+        image, background_meta, diagram_style, diagram_style_resolution = prepare_geometry_diagram_style_and_background(
             canvas_width=int(width),
             canvas_height=int(height),
             instance_seed=int(instance_seed),
+            scene_id=AREA_PARTITION_SCENE_ID,
+            task_group=TASK_GROUP,
             params=params,
-            default_config=_BACKGROUND_DEFAULTS,
-            fallback_color=(255, 255, 252),
+            allow_dark=True,
         )
-        shape_style = sample_geometry_shape_style(
-            rng,
+        shape_style = geometry_shape_style_from_diagram_style(diagram_style)
+        font_family = sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"geometry.{TASK_GROUP}.{AREA_PARTITION_SCENE_ID}.font_family",
             params=params,
-            render_defaults=render_defaults,
-            anchor_colors=extract_background_anchor_colors(background_meta),
         )
+        font_record = get_font_family_record(str(font_family))
         palettes: Tuple[Tuple[Color, Color, Color, Color], ...] = (
-            ((229, 240, 255), (67, 140, 214), (27, 113, 191), (160, 176, 190)),
-            ((255, 240, 225), (213, 120, 60), (180, 88, 36), (164, 150, 136)),
-            ((238, 235, 255), (128, 102, 205), (111, 92, 190), (158, 152, 178)),
-            ((232, 248, 238), (44, 151, 102), (30, 132, 92), (144, 168, 150)),
+            (
+                tuple(int(value) for value in diagram_style.fill_rgb),
+                tuple(int(value) for value in diagram_style.accent_rgb),
+                tuple(int(value) for value in diagram_style.secondary_accent_rgb),
+                tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
+            ),
+            (
+                tuple(int(value) for value in diagram_style.muted_fill_rgb),
+                tuple(int(value) for value in diagram_style.highlight_rgb),
+                tuple(int(value) for value in diagram_style.accent_rgb),
+                tuple(int(value) for value in diagram_style.guide_rgb),
+            ),
+            (
+                tuple(int(value) for value in diagram_style.option_fill_rgb),
+                tuple(int(value) for value in diagram_style.secondary_accent_rgb),
+                tuple(int(value) for value in diagram_style.accent_rgb),
+                tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
+            ),
+            (
+                tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
+                tuple(int(value) for value in diagram_style.accent_rgb),
+                tuple(int(value) for value in diagram_style.highlight_rgb),
+                tuple(int(value) for value in diagram_style.guide_rgb),
+            ),
         )
         palette_index = resolve_selection_index(
             params=params,
@@ -528,11 +577,15 @@ class _AreaPartitionBaseTask:
             accent_color=accent_color,
             muted_color=muted_color,
             line_width=max(2, int(line_width)),
-            font=load_font(max(12, int(font_size)), bold=True),
-            small_font=load_font(max(10, int(small_font_size)), bold=True),
+            font=load_font(max(12, int(font_size)), bold=True, font_family=font_family),
+            small_font=load_font(max(10, int(small_font_size)), bold=True, font_family=font_family),
+            layout_offset=(float(rng.randint(-26, 24)), float(rng.randint(-14, 16))),
+            font_family=str(font_family),
         )
         render_meta = {
             "background_style": dict(background_meta),
+            "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+            "technical_diagram_style_resolution": dict(diagram_style_resolution),
             "shape_style": shape_style.to_trace_dict(),
             "line_width": int(ctx.line_width),
             "label_font_size": int(font_size),
@@ -541,6 +594,13 @@ class _AreaPartitionBaseTask:
             "shaded_color": list(shaded_color),
             "accent_color": list(accent_color),
             "muted_color": list(muted_color),
+            "font_family": font_record.to_trace(),
+            "font_asset_version": font_asset_version(),
+            "layout_jitter": {
+                "offset_px": [round(float(ctx.layout_offset[0]), 3), round(float(ctx.layout_offset[1]), 3)],
+                "offset_range_px": [-26, 24, -14, 16],
+                "applied_before_evidence_projection": True,
+            },
         }
         return ctx, render_meta
 
@@ -654,15 +714,19 @@ class _AreaPartitionBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
-            [
+        evidence_keyed_bboxes = {
+            str(key): _bbox_to_list(bbox)
+            for key, bbox in rendered.evidence_keyed_bboxes.items()
+        }
+        evidence_keyed_points = {
+            str(key): [
                 round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
                 round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
             ]
-            for bbox in evidence_bboxes
-        ]
+            for key, bbox in evidence_keyed_bboxes.items()
+        }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
         query_params = {
             "scene_id": scene_id,
             "scene_variant": str(problem.scene_variant),
@@ -718,16 +782,16 @@ class _AreaPartitionBaseTask:
                 "scene_id": scene_id,
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
-                "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "source_witness_type": "keyed_bbox_map",
+                "original_evidence_value": dict(evidence_keyed_bboxes),
                 **dict(rendered.witness),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
             },
         }
         return TaskOutput(
@@ -746,32 +810,18 @@ class _AreaPartitionBaseTask:
 
 
 @register_task
-class GeometryParallelogramAreaPartitionTotalAreaValueTask(_AreaPartitionBaseTask):
-    """Infer total area from a shaded parallelogram partition region."""
+class GeometryAreaPartitionTotalAreaValueTask(_AreaPartitionBaseTask):
+    """Infer total area from a shaded polygon partition region."""
 
-    task_id = "task_geometry__area_partition__parallelogram_area_partition_total_area_value"
-    scene_id = PARALLELOGRAM_SCENE_ID
-    public_scene_id = PARALLELOGRAM_SCENE_ID
-    partition_cases = _PARALLELOGRAM_PARTITION_CASES
-    supported_queries = _TOTAL_AREA_QUERIES
-    reasoning_kind = "total_area"
-
-
-@register_task
-class GeometryTriangleAreaPartitionTotalAreaValueTask(_AreaPartitionBaseTask):
-    """Infer total area from a shaded triangle partition region."""
-
-    task_id = "task_geometry__area_partition__triangle_area_partition_total_area_value"
-    scene_id = TRIANGLE_SCENE_ID
-    public_scene_id = TRIANGLE_SCENE_ID
-    partition_cases = _TRIANGLE_PARTITION_CASES
+    task_id = "task_geometry__area_partition__total_area_value"
+    scene_id = AREA_PARTITION_SCENE_ID
+    public_scene_id = AREA_PARTITION_SCENE_ID
+    partition_cases = _AREA_PARTITION_CASES
     supported_queries = _TOTAL_AREA_QUERIES
     reasoning_kind = "total_area"
 
 
 __all__ = [
-    "GeometryParallelogramAreaPartitionTotalAreaValueTask",
-    "GeometryTriangleAreaPartitionTotalAreaValueTask",
-    "PARALLELOGRAM_SCENE_ID",
-    "TRIANGLE_SCENE_ID",
+    "AREA_PARTITION_SCENE_ID",
+    "GeometryAreaPartitionTotalAreaValueTask",
 ]

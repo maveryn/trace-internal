@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -15,10 +16,11 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -34,6 +36,7 @@ from ..shared.visual_defaults import load_physics_noise_defaults
 
 
 TASK_ID = "physics_mechanics_spring_extension_family"
+SPRING_SEMANTIC_COLORS = ((255, 231, 231), (187, 56, 56), (167, 38, 38))
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "paired_springs",
     "staggered_springs",
@@ -586,6 +589,114 @@ def _sample_scene_spec(
     )
 
 
+def _spring_content_bbox(render_defaults: Mapping[str, Any], *, scene_variant: str) -> List[float]:
+    """Return a conservative spring-diagram bbox before whole-scene placement."""
+
+    card_left = float(render_defaults["card_left_px"])
+    card_top = float(render_defaults["card_top_px"])
+    card_width = float(render_defaults["card_width_px"])
+    card_height = float(render_defaults["card_height_px"])
+    card_gap = float(render_defaults["card_gap_px"])
+    stagger_offset = float(render_defaults["stagger_offset_y_px"]) if str(scene_variant) == "staggered_springs" else 0.0
+    right_left = float(card_left + card_width + card_gap)
+    right_top = float(card_top + stagger_offset)
+    max_column_extra_bottom = (
+        34.0
+        + float(render_defaults["support_height_px"])
+        + float(render_defaults["anchor_y_gap_px"])
+        + float(render_defaults["ruler_top_gap_px"])
+        + (float(render_defaults["ruler_value_max"]) * float(render_defaults["ruler_unit_px"]))
+        + float(render_defaults["weight_box_height_px"])
+    )
+    left = float(card_left - 14.0)
+    top = float(min(card_top, right_top) - 14.0)
+    right = float(right_left + card_width + 14.0)
+    bottom = max(
+        float(card_top + card_height),
+        float(right_top + card_height),
+        float(card_top + max_column_extra_bottom),
+        float(right_top + max_column_extra_bottom),
+    ) + 14.0
+    return [round(left, 3), round(top, 3), round(right, 3), round(bottom, 3)]
+
+
+def _resolve_spring_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    scene_variant: str,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-spring-diagram placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _spring_content_bbox(render_defaults, scene_variant=str(scene_variant))
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.spring_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 14))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["card_left_px"] = int(render_defaults["card_left_px"]) + int(dx)
+    adjusted["card_top_px"] = int(render_defaults["card_top_px"]) + int(dy)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_spring_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
+
+
 def _draw_card_texture(draw: ImageDraw.ImageDraw, *, bbox: Sequence[float], line_rgb: Tuple[int, int, int], spacing_px: int, width_px: int) -> None:
     """Draw light diagonal texture within one spring card."""
 
@@ -743,6 +854,7 @@ def _render_column(
     card_bbox: Sequence[float],
     render_defaults: Mapping[str, Any],
     scene_variant: str,
+    font_family: str | None = None,
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """Render one spring card and return trace metadata for the column."""
 
@@ -786,7 +898,7 @@ def _render_column(
         width_px=int(render_defaults["ruler_width_px"]),
         tick_long_px=int(render_defaults["ruler_tick_long_px"]),
         tick_short_px=int(render_defaults["ruler_tick_short_px"]),
-        font=load_font(int(render_defaults["ruler_font_size_px"]), bold=False),
+        font=load_font(int(render_defaults["ruler_font_size_px"]), bold=False, font_family=font_family),
         label_fill_rgb=tuple(int(value) for value in theme.ruler_text_rgb),
         line_rgb=tuple(int(value) for value in theme.ruler_rgb),
         stroke_width=int(render_defaults["label_stroke_width_px"]),
@@ -797,7 +909,7 @@ def _render_column(
     marker_height = int(render_defaults["marker_height_px"])
     weight_box_width = int(render_defaults["weight_box_width_px"])
     weight_box_height = int(render_defaults["weight_box_height_px"])
-    weight_font = load_font(int(render_defaults["weight_font_size_px"]), bold=True)
+    weight_font = load_font(int(render_defaults["weight_font_size_px"]), bold=True, font_family=font_family)
 
     shown_extension = None if spec.shown_extension_value is None else int(spec.shown_extension_value)
     true_extension = int(spec.true_extension_value)
@@ -839,7 +951,7 @@ def _render_column(
                 float((extension_marker_bbox[0] + extension_marker_bbox[2]) / 2.0),
                 float((extension_marker_bbox[1] + extension_marker_bbox[3]) / 2.0),
             ),
-            font=load_font(max(14, int(render_defaults["ruler_font_size_px"]) - 2), bold=True),
+            font=load_font(max(14, int(render_defaults["ruler_font_size_px"]) - 2), bold=True, font_family=font_family),
             fill=tuple(int(value) for value in theme.ruler_text_rgb),
             stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.ruler_text_rgb)),
             stroke_width=max(1, int(render_defaults["label_stroke_width_px"]) - 1),
@@ -869,7 +981,7 @@ def _render_column(
                 float((extension_marker_bbox[0] + extension_marker_bbox[2]) / 2.0),
                 float((extension_marker_bbox[1] + extension_marker_bbox[3]) / 2.0),
             ),
-            font=load_font(max(22, int(render_defaults["weight_font_size_px"])), bold=True),
+            font=load_font(max(22, int(render_defaults["weight_font_size_px"])), bold=True, font_family=font_family),
             fill=tuple(int(value) for value in theme.missing_text_rgb),
             stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.missing_text_rgb)),
             stroke_width=max(1, int(render_defaults["label_stroke_width_px"])),
@@ -1023,6 +1135,7 @@ def _render_scene(
     accent_color_name: str,
     scene_spec: _SceneSpec,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> _RenderedScene:
     """Render one spring-extension diagram and return trace metadata."""
 
@@ -1069,6 +1182,7 @@ def _render_scene(
         card_bbox=left_card_bbox,
         render_defaults=render_defaults,
         scene_variant=str(scene_spec.scene_variant),
+        font_family=font_family,
     )
     right_trace, right_entities = _render_column(
         draw,
@@ -1077,6 +1191,7 @@ def _render_scene(
         card_bbox=right_card_bbox,
         render_defaults=render_defaults,
         scene_variant=str(scene_spec.scene_variant),
+        font_family=font_family,
     )
 
     scene_entities = left_entities + right_entities
@@ -1096,6 +1211,9 @@ def _render_scene(
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
         "left_card_bbox_px": [round(float(value), 3) for value in left_card_bbox],
         "right_card_bbox_px": [round(float(value), 3) for value in right_card_bbox],
+        "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
+        "evidence_bboxes_px": [list(bbox) for bbox in evidence_bboxes],
+        "entity_bbox_map_px": {str(key): list(value) for key, value in entity_bbox_map.items()},
         "columns": {
             "left": dict(left_trace),
             "right": dict(right_trace),
@@ -1117,8 +1235,25 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) == "extension_difference":
         evidence = [[210, 222, 260, 232], [620, 274, 670, 284]]
     else:
-        evidence = [[170, 342, 248, 396], [204, 252, 256, 262], [595, 226, 647, 260], [598, 304, 650, 314]]
+        evidence = {
+            "reference_weight": [170, 342, 248, 396],
+            "reference_extension": [204, 252, 256, 262],
+            "query_weight": [595, 226, 647, 260],
+            "query_extension": [598, 304, 650, 314],
+        }
     return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
+
+
+def _spring_missing_value_evidence_map(rendered_scene: _RenderedScene) -> Dict[str, List[float]]:
+    """Return role-keyed evidence boxes for the public missing-value task."""
+
+    entity_bbox_map = dict(rendered_scene.render_map.get("entity_bbox_map_px", {}))
+    return {
+        "reference_weight": [float(value) for value in entity_bbox_map["left_weight_block"]],
+        "reference_extension": [float(value) for value in entity_bbox_map["left_extension_marker"]],
+        "query_weight": [float(value) for value in entity_bbox_map["right_weight_block"]],
+        "query_extension": [float(value) for value in entity_bbox_map["right_extension_marker"]],
+    }
 
 
 class _PhysicsMechanicsSpringExtensionBaseTask:
@@ -1146,67 +1281,85 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
             except ValueError:
                 continue
 
+            render_defaults = {
+                key: resolve_render_int(
+                    params,
+                    _RENDER_DEFAULTS,
+                    key,
+                    int(getattr(_DEFAULTS, key)),
+                    instance_seed=int(instance_seed),
+                    namespace=TASK_ID,
+                )
+                for key in (
+                    "canvas_width",
+                    "canvas_height",
+                    "card_width_px",
+                    "card_height_px",
+                    "card_left_px",
+                    "card_top_px",
+                    "card_gap_px",
+                    "stagger_offset_y_px",
+                    "card_corner_radius_px",
+                    "card_outline_width_px",
+                    "support_width_px",
+                    "support_height_px",
+                    "support_corner_radius_px",
+                    "anchor_y_gap_px",
+                    "hanger_line_width_px",
+                    "ruler_top_gap_px",
+                    "ruler_right_gap_px",
+                    "ruler_value_max",
+                    "ruler_unit_px",
+                    "ruler_width_px",
+                    "ruler_tick_long_px",
+                    "ruler_tick_short_px",
+                    "ruler_font_size_px",
+                    "spring_neutral_units",
+                    "spring_line_width_px",
+                    "spring_half_width_px",
+                    "spring_turn_count",
+                    "weight_box_width_px",
+                    "weight_box_height_px",
+                    "weight_font_size_px",
+                    "marker_height_px",
+                    "marker_width_px",
+                    "missing_tag_width_px",
+                    "missing_tag_height_px",
+                    "missing_tag_top_gap_px",
+                    "label_stroke_width_px",
+                    "texture_spacing_px",
+                    "texture_line_width_px",
+                )
+            }
+            render_defaults, layout_placement_meta = _resolve_spring_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_variant=str(axes.scene_variant),
+            )
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="spring",
                 task_group=self.task_group,
-                canvas_width=int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)),
-                canvas_height=int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)),
+                canvas_width=int(render_defaults["canvas_width"]),
+                canvas_height=int(render_defaults["canvas_height"]),
                 instance_seed=int(instance_seed),
                 params=params,
+                protected_colors=SPRING_SEMANTIC_COLORS,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             rendered_scene = _render_scene(
                 background=background,
-                render_defaults={
-                    key: resolve_render_int(
-                        params,
-                        _RENDER_DEFAULTS,
-                        key,
-                        int(getattr(_DEFAULTS, key)),
-                        instance_seed=int(instance_seed),
-                        namespace=TASK_ID,
-                    )
-                    for key in (
-                        "card_width_px",
-                        "card_height_px",
-                        "card_left_px",
-                        "card_top_px",
-                        "card_gap_px",
-                        "stagger_offset_y_px",
-                        "card_corner_radius_px",
-                        "card_outline_width_px",
-                        "support_width_px",
-                        "support_height_px",
-                        "support_corner_radius_px",
-                        "anchor_y_gap_px",
-                        "hanger_line_width_px",
-                        "ruler_top_gap_px",
-                        "ruler_right_gap_px",
-                        "ruler_value_max",
-                        "ruler_unit_px",
-                        "ruler_width_px",
-                        "ruler_tick_long_px",
-                        "ruler_tick_short_px",
-                        "ruler_font_size_px",
-                        "spring_neutral_units",
-                        "spring_line_width_px",
-                        "spring_half_width_px",
-                        "spring_turn_count",
-                        "weight_box_width_px",
-                        "weight_box_height_px",
-                        "weight_font_size_px",
-                        "marker_height_px",
-                        "marker_width_px",
-                        "missing_tag_width_px",
-                        "missing_tag_height_px",
-                        "missing_tag_top_gap_px",
-                        "label_stroke_width_px",
-                        "texture_spacing_px",
-                        "texture_line_width_px",
-                    )
-                },
+                render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1263,7 +1416,23 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            if str(axes.public_query_id) == "missing_value":
+                evidence_value = _spring_missing_value_evidence_map(rendered_scene)
+                evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_value))
+                projected_evidence = {
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": dict(evidence_value),
+                    "pixel_keyed_bbox_map": dict(evidence_value),
+                }
+                rendered_scene.render_map["evidence_bbox_map_px"] = dict(evidence_value)
+            else:
+                evidence_value = [list(bbox) for bbox in rendered_scene.evidence_bboxes]
+                evidence_gt = TypedValue(type="bbox_set", value=list(evidence_value))
+                projected_evidence = {
+                    "type": "bbox_set",
+                    "bbox_set": list(evidence_value),
+                    "pixel_bbox_set": list(evidence_value),
+                }
             target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_spring_extension_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1315,8 +1484,21 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "spring_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1356,7 +1538,7 @@ class _PhysicsMechanicsSpringExtensionBaseTask:
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    **dict(projected_evidence),
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -16,10 +17,11 @@ from ...registry import register_task
 from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -201,7 +203,9 @@ class _RenderedScene:
 
     image: Image.Image
     evidence_bboxes: List[List[float]]
+    evidence_bbox_map: Dict[str, List[float]]
     evidence_entity_ids: List[str]
+    evidence_entity_id_map: Dict[str, str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
     support_segment_bboxes: List[List[float]]
@@ -217,6 +221,11 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="mechanics", apply_prob=0.5)
+PULLEY_SEMANTIC_COLORS: Tuple[Tuple[int, int, int], ...] = (
+    (255, 231, 231),
+    (187, 56, 56),
+    (167, 38, 38),
+)
 
 
 def _answer_support_key(query_id: str) -> str:
@@ -763,15 +772,20 @@ def _render_scene(
     accent_color_name: str,
     scene_spec: _SceneSpec,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> _RenderedScene:
     """Render one single-system pulley diagram and return trace metadata."""
 
     image = background.copy()
     draw = ImageDraw.Draw(image)
     theme = build_physics_pulley_theme(str(accent_color_name), diagram_style=diagram_style)
+    layout_offset_x = float(render_defaults.get("layout_offset_x_px", 0))
+    layout_offset_y = float(render_defaults.get("layout_offset_y_px", 0))
+    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=font_family)
+    small_label_font = load_font(int(render_defaults["small_label_font_size_px"]), bold=True, font_family=font_family)
 
-    top_left = float(render_defaults["top_block_x_px"])
-    top_y = float(render_defaults["top_block_y_px"])
+    top_left = float(render_defaults["top_block_x_px"]) + float(layout_offset_x)
+    top_y = float(render_defaults["top_block_y_px"]) + float(layout_offset_y)
     top_width = float(render_defaults["top_block_width_px"])
     top_height = float(render_defaults["top_block_height_px"])
     top_bbox = [
@@ -782,11 +796,11 @@ def _render_scene(
     ]
     top_center_x = float((top_bbox[0] + top_bbox[2]) / 2.0)
     if str(scene_spec.scene_variant) == "compact_block":
-        lower_y = float(render_defaults["compact_lower_block_y_px"])
+        lower_y = float(render_defaults["compact_lower_block_y_px"]) + float(layout_offset_y)
     elif str(scene_spec.scene_variant) == "tall_block":
-        lower_y = float(render_defaults["tall_lower_block_y_px"])
+        lower_y = float(render_defaults["tall_lower_block_y_px"]) + float(layout_offset_y)
     else:
-        lower_y = float(render_defaults["lower_block_y_px"])
+        lower_y = float(render_defaults["lower_block_y_px"]) + float(layout_offset_y)
 
     segment_gap = float(render_defaults["support_segment_gap_px"])
     total_slots = int(scene_spec.support_segment_count) + int(scene_spec.disconnected_segment_count)
@@ -1002,7 +1016,7 @@ def _render_scene(
         draw,
         text=str(load_text),
         center=(float(connector_x), float((load_bbox[1] + load_bbox[3]) / 2.0)),
-        font=load_font(int(render_defaults["label_font_size_px"]), bold=True),
+        font=label_font,
         fill=tuple(int(value) for value in load_text_fill),
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(load_text_fill)),
         stroke_width=max(1, int(render_defaults["label_stroke_width_px"])),
@@ -1045,7 +1059,7 @@ def _render_scene(
         draw,
         text=str(effort_text),
         center=(float(min(image.size[0] - 96.0, effort_x + 52.0)), float((arrow_start_y + arrow_end_y) / 2.0)),
-        font=load_font(int(render_defaults["small_label_font_size_px"]), bold=True),
+        font=small_label_font,
         fill_rgb=tuple(int(value) for value in theme.missing_fill_rgb) if effort_missing else (255, 255, 255),
         outline_rgb=tuple(int(value) for value in theme.missing_outline_rgb)
         if effort_missing
@@ -1090,6 +1104,24 @@ def _render_scene(
         for entity_id in scene_spec.evidence_entity_ids
         if str(entity_id) in entity_bbox_map
     ]
+    evidence_bbox_map: Dict[str, List[float]] = {}
+    evidence_entity_id_map: Dict[str, str] = {}
+    for support_index in range(1, int(scene_spec.support_segment_count) + 1):
+        key = f"support_{int(support_index)}"
+        entity_id = f"support_segment_{int(support_index)}"
+        if entity_id in entity_bbox_map:
+            evidence_bbox_map[str(key)] = list(entity_bbox_map[entity_id])
+            evidence_entity_id_map[str(key)] = str(entity_id)
+    if str(scene_spec.query_id) == "effort_force_for_load":
+        known_entity_id = "load_force_label"
+        target_entity_id = "effort_force_label"
+    else:
+        known_entity_id = "effort_force_label"
+        target_entity_id = "load_force_label"
+    evidence_bbox_map["known_force"] = list(entity_bbox_map[str(known_entity_id)])
+    evidence_bbox_map["target_force"] = list(entity_bbox_map[str(target_entity_id)])
+    evidence_entity_id_map["known_force"] = str(known_entity_id)
+    evidence_entity_id_map["target_force"] = str(target_entity_id)
 
     render_map = {
         "accent_color_name": str(accent_color_name),
@@ -1105,12 +1137,16 @@ def _render_scene(
         "load_force_label_bbox_px": list(load_label_bbox),
         "effort_force_label_bbox_px": list(effort_label_bbox),
         "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
+        "evidence_bbox_map_px": dict(evidence_bbox_map),
+        "evidence_entity_id_map": dict(evidence_entity_id_map),
     }
 
     return _RenderedScene(
         image=image,
         evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        evidence_bbox_map=dict(evidence_bbox_map),
         evidence_entity_ids=list(scene_spec.evidence_entity_ids),
+        evidence_entity_id_map=dict(evidence_entity_id_map),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
         support_segment_bboxes=[list(bbox) for bbox in support_segment_bboxes],
@@ -1120,16 +1156,133 @@ def _render_scene(
     )
 
 
+def _pulley_content_bbox(
+    *,
+    render_defaults: Mapping[str, Any],
+    scene_spec: _SceneSpec,
+) -> List[float]:
+    """Return an approximate whole-diagram bbox before layout jitter."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    top_left = float(render_defaults["top_block_x_px"])
+    top_y = float(render_defaults["top_block_y_px"])
+    top_width = float(render_defaults["top_block_width_px"])
+    top_height = float(render_defaults["top_block_height_px"])
+    top_right = float(top_left + top_width)
+    top_center_x = float(top_left + (0.5 * top_width))
+    if str(scene_spec.scene_variant) == "compact_block":
+        lower_y = float(render_defaults["compact_lower_block_y_px"])
+    elif str(scene_spec.scene_variant) == "tall_block":
+        lower_y = float(render_defaults["tall_lower_block_y_px"])
+    else:
+        lower_y = float(render_defaults["lower_block_y_px"])
+    total_slots = int(scene_spec.support_segment_count) + int(scene_spec.disconnected_segment_count)
+    lower_width = max(250.0, ((int(total_slots) - 1) * float(render_defaults["support_segment_gap_px"])) + 130.0)
+    lower_height = float(render_defaults["lower_block_height_px"])
+    lower_left = float(top_center_x - (0.5 * lower_width))
+    lower_right = float(top_center_x + (0.5 * lower_width))
+    load_top = float(lower_y + lower_height + int(render_defaults["load_top_gap_px"]))
+    load_width = float(render_defaults["load_width_px"])
+    load_height = float(render_defaults["load_height_px"])
+    load_left = float(top_center_x - (0.5 * load_width))
+    load_right = float(top_center_x + (0.5 * load_width))
+    effort_x = min(
+        float(canvas_width - 120.0),
+        float(lower_right + int(render_defaults["effort_arrow_x_gap_px"])),
+    )
+    effort_label_right = min(float(canvas_width - 96.0), float(effort_x + 52.0)) + 150.0
+    effort_label_left = float(effort_x - 24.0)
+    return [
+        round(float(min(top_left, lower_left, load_left, effort_label_left) - 24.0), 3),
+        round(float(top_y - 24.0), 3),
+        round(float(max(top_right, lower_right, load_right, effort_label_right) + 24.0), 3),
+        round(float(load_top + load_height + 24.0), 3),
+    ]
+
+
+def _resolve_pulley_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    scene_spec: _SceneSpec,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-diagram placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _pulley_content_bbox(render_defaults=render_defaults, scene_spec=scene_spec)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 20))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_pulley_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
+
+
 def _build_prompt_examples(_: str) -> Tuple[str, str]:
     """Return one stable prompt JSON example for pulley force queries."""
 
-    evidence = [
-        [420, 166, 427, 428],
-        [468, 166, 475, 428],
-        [516, 166, 523, 428],
-        [649, 538, 819, 612],
-        [1036, 190, 1196, 350],
-    ]
+    evidence = {
+        "support_1": [420, 166, 427, 428],
+        "support_2": [468, 166, 475, 428],
+        "known_force": [649, 538, 819, 612],
+        "target_force": [1036, 190, 1196, 350],
+    }
     return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
 
 
@@ -1160,17 +1313,7 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             except ValueError:
                 continue
 
-            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
-                scene_id="pulley",
-                task_group=self.task_group,
-                canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-                canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-                instance_seed=int(instance_seed),
-                params=params,
-            )
-            rendered_scene = _render_scene(
-                background=background,
-                render_defaults={
+            render_defaults = {
                     key: resolve_render_int(
                         params,
                         _RENDER_DEFAULTS,
@@ -1180,6 +1323,8 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                         namespace=TASK_ID,
                     )
                     for key in (
+                        "canvas_width",
+                        "canvas_height",
                         "top_block_x_px",
                         "top_block_y_px",
                         "top_block_width_px",
@@ -1205,10 +1350,36 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                         "texture_spacing_px",
                         "cut_endpoint_radius_px",
                     )
-                },
+            }
+            render_defaults, layout_placement_meta = _resolve_pulley_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_spec=scene_spec,
+            )
+            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
+                scene_id="pulley",
+                task_group=self.task_group,
+                canvas_width=int(render_defaults["canvas_width"]),
+                canvas_height=int(render_defaults["canvas_height"]),
+                instance_seed=int(instance_seed),
+                params=params,
+                protected_colors=PULLEY_SEMANTIC_COLORS,
+            )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
+            rendered_scene = _render_scene(
+                background=background,
+                render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1262,7 +1433,11 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            evidence_value = {
+                str(key): [float(value) for value in bbox]
+                for key, bbox in rendered_scene.evidence_bbox_map.items()
+            }
+            evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_value))
             target_support_key = _answer_support_key(str(axes.query_id))
             complexity = build_physics_pulley_mechanical_advantage_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1336,8 +1511,21 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "pulley_system_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1376,11 +1564,14 @@ class PhysicsMechanicsPulleyMechanicalAdvantageTask:
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                 },
                 "witness_symbolic": {
-                    "type": "object_set",
-                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "type": "object_map",
+                    "ids": [str(item) for item in rendered_scene.evidence_entity_id_map.values()],
+                    "key_to_entity_id": dict(rendered_scene.evidence_entity_id_map),
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": dict(evidence_value),
+                    "pixel_keyed_bbox_map": dict(evidence_value),
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: one of `missing_width_from_semicircle_cap_area` or `missing_width_from_semicircle_cutout_area`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_point_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_curvilinear_composite_v0`
@@ -17,7 +17,7 @@
 Infer the missing rectangle width from the total area of a rectangle-plus-semicircle or rectangle-minus-semicircle composite. Answers use the internal pi value and are rounded to one decimal place.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set` over the unknown-width cue and supporting visible label boxes, including total area, height, and radius.
+Prompt-facing evidence is a `keyed_point_map` over the two visible endpoints of the unknown side. Total area, height, and radius labels remain visible annotations and render metadata, not public evidence.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

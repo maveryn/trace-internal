@@ -34,16 +34,18 @@ def test_physics_electrostatics_field_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "C"
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_point_map"
 
-    assert len(out.evidence_gt.value) == 1
+    assert len(out.evidence_gt.value) == 4
 
-    assert out.query_id == "default"
+    assert set(out.evidence_gt.value) == {"Q1", "Q2", "Q3", "P"}
+
+    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
 
     assert out.scene_id == "electrostatic_field"
 
     assert out.query_id == "field_direction_choice"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "field_direction_choice"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "field_direction_choice"
 
@@ -53,13 +55,50 @@ def test_physics_electrostatics_field_direction_choice_contract() -> None:
 
     assert scenario["option_directions"]["C"] == "northwest"
 
-    assert execution["evidence_entity_ids"] == ["option_C"]
+    assert execution["evidence_entity_ids"] == [
+        "charge_main",
+        "charge_cancel_a",
+        "charge_cancel_b",
+        "query_point",
+    ]
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert execution["evidence_key_by_entity_id"] == {
+        "charge_main": "Q1",
+        "charge_cancel_a": "Q2",
+        "charge_cancel_b": "Q3",
+        "query_point": "P",
+    }
+
+    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+
+    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+
+    assert trace["render_map"]["evidence_keyed_points_px"] == out.evidence_gt.value
 
     assert trace["render_spec"]["technical_diagram_style"]["kind"] == "technical_diagram_style"
 
     assert trace["render_spec"]["technical_diagram_style"]["protected_colors_rgb"]
+
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_electrostatics_diagram_offset"
+
+    entities = {str(entity["entity_id"]): entity for entity in trace["scene_ir"]["entities"]}
+
+    charge_entity = entities["charge_main"]
+    charge_bbox = charge_entity["bbox_px"]
+    marker_bbox = charge_entity["meta"]["charge_marker_bbox_px"]
+    id_label_bbox = charge_entity["meta"]["charge_id_label_bbox_px"]
+    label_bbox = charge_entity["meta"]["charge_label_bbox_px"]
+
+    assert charge_bbox[0] <= marker_bbox[0] <= marker_bbox[2] <= charge_bbox[2]
+    assert charge_bbox[1] <= marker_bbox[1] <= marker_bbox[3] <= charge_bbox[3]
+    assert charge_bbox[0] <= id_label_bbox[0] <= id_label_bbox[2] <= charge_bbox[2]
+    assert charge_bbox[1] <= id_label_bbox[1] <= id_label_bbox[3] <= charge_bbox[3]
+    assert charge_bbox[0] <= label_bbox[0] <= label_bbox[2] <= charge_bbox[2]
+    assert charge_bbox[1] <= label_bbox[1] <= label_bbox[3] <= charge_bbox[3]
+    assert charge_entity["meta"]["display_label"] == "Q1"
+    assert str(charge_entity["meta"]["charge_label_text"]).startswith("Q1=")
 
     assert "labeled candidate direction arrows" in out.prompt
 
@@ -98,7 +137,13 @@ def test_physics_electrostatics_zero_field_point_label_contract() -> None:
 
     assert out.query_id == "zero_field_point_label"
 
-    assert len(out.evidence_gt.value) == 1
+    assert out.evidence_gt.type == "keyed_point_map"
+
+    assert len(out.evidence_gt.value) == 2
+
+    assert set(out.evidence_gt.value) == {"Q1", "Q2"}
+
+    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
 
     assert scenario["correct_option_letter"] == "E"
 
@@ -114,7 +159,14 @@ def test_physics_electrostatics_zero_field_point_label_contract() -> None:
 
     assert abs(field_y) < 1e-9
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["candidate_E"]
+    expected_evidence_ids = [str(charge["charge_id"]) for charge in scenario["charges"]]
+
+    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == expected_evidence_ids
+
+    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
+        expected_evidence_ids[0]: "Q1",
+        expected_evidence_ids[1]: "Q2",
+    }
 
 
 def test_physics_electrostatics_potential_value_contract() -> None:
@@ -137,7 +189,13 @@ def test_physics_electrostatics_potential_value_contract() -> None:
 
     assert out.query_id == "potential_value"
 
-    assert len(out.evidence_gt.value) == 1
+    assert out.evidence_gt.type == "keyed_point_map"
+
+    assert len(out.evidence_gt.value) == 4
+
+    assert set(out.evidence_gt.value) == {"Q1", "Q2", "Q3", "P"}
+
+    assert all(len(point) == 2 for point in out.evidence_gt.value.values())
 
     assert [charge["potential_contribution"] for charge in scenario["charges"]] == [1, 2, 1]
 
@@ -147,7 +205,20 @@ def test_physics_electrostatics_potential_value_contract() -> None:
 
     assert scenario["potential_value"] == 4
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["potential_witness_region"]
+    expected_evidence_ids = [str(charge["charge_id"]) for charge in scenario["charges"]] + [
+        "query_point",
+    ]
+
+    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == expected_evidence_ids
+
+    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
+        expected_evidence_ids[0]: "Q1",
+        expected_evidence_ids[1]: "Q2",
+        expected_evidence_ids[2]: "Q3",
+        "query_point": "P",
+    }
+
+    assert out.trace_payload["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
 
 
 def test_physics_electrostatics_tasks_are_deterministic() -> None:

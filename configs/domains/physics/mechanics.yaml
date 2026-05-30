@@ -165,6 +165,12 @@ rendering:
       texture_line_width_px_min: 1
       texture_line_width_px_max: 3
       texture_spacing_px: 18
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -24
+      layout_jitter_x_px_max: 24
+      layout_jitter_y_px_min: -14
+      layout_jitter_y_px_max: 18
     physics_mechanics_spring_extension_family:
       canvas_width: 980
       canvas_height: 660
@@ -216,6 +222,12 @@ rendering:
       texture_line_width_px_min: 1
       texture_line_width_px_max: 3
       texture_spacing_px: 18
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 14
+      layout_jitter_x_px_min: -20
+      layout_jitter_x_px_max: 20
+      layout_jitter_y_px_min: -14
+      layout_jitter_y_px_max: 12
     task_physics__pulley__pulley_mechanical_advantage:
       canvas_width: 1280
       canvas_height: 760
@@ -251,6 +263,12 @@ rendering:
       texture_line_width_px_max: 3
       texture_spacing_px: 18
       cut_endpoint_radius_px: 6
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 20
+      layout_jitter_x_px_min: -28
+      layout_jitter_x_px_max: 18
+      layout_jitter_y_px_min: -18
+      layout_jitter_y_px_max: 10
     physics_mechanics_sticky_collision_family:
       canvas_width: 1180
       canvas_height: 760
@@ -292,6 +310,12 @@ rendering:
       option_arrow_head_length_px: 20
       option_arrow_head_width_px: 18
       grid_spacing_px: 44
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 20
+      layout_jitter_x_px_min: -28
+      layout_jitter_x_px_max: 28
+      layout_jitter_y_px_min: -18
+      layout_jitter_y_px_max: 10
 
 complexity:
   shared: {}
@@ -332,7 +356,7 @@ prompt:
       object_description_offset_fulcrum: a horizontal lever beam with an offset fulcrum, numbered distance marks, and weight blocks on both sides
       object_description_textured_beam: a textured lever beam with a fulcrum, numbered distance marks, and weight blocks on both sides
       evidence_hint_torque: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all weight blocks on the queried side of the fulcrum
-      evidence_hint_missing_weight: set "evidence" to an array containing the bounding box [x0, y0, x1, y1] of the marked `?` weight block
+      evidence_hint_missing_weight: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the known weight blocks and marked `?` weight block needed to determine the balancing weight
       answer_hint: set "answer" to the requested integer torque or missing weight value
     task_physics__pulley__pulley_mechanical_advantage:
       scene_key: pulley_system_diagram
@@ -340,8 +364,8 @@ prompt:
       object_description_open_block: one open block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
       object_description_compact_block: one compact block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
       object_description_tall_block: one tall block-and-tackle pulley system with upper and lower blocks, vertical supporting strands, optional cut non-supporting strands, a load, and an effort arrow
-      evidence_hint_effort_force: set "evidence" to [x0, y0, x1, y1] boxes for the full supporting strands, shown load-force label, and marked `?` effort label; exclude cut strands
-      evidence_hint_load_force: set "evidence" to [x0, y0, x1, y1] boxes for the full supporting strands, shown effort-force label, and marked `?` load label; exclude cut strands
+      evidence_hint_effort_force: set "evidence" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown load-force label box, and target_force to the marked `?` effort label box
+      evidence_hint_load_force: set "evidence" to an object mapping support_1, support_2, and so on to [x0, y0, x1, y1] pixel boxes around the full supporting strands, known_force to the shown effort-force label box, and target_force to the marked `?` load label box
       answer_hint: set "answer" to the requested integer force value
     physics_mechanics_spring_extension_family:
       scene_key: paired_spring_diagram
@@ -349,8 +373,8 @@ prompt:
       object_description_paired_springs: two identical hanging springs shown in side-by-side cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_staggered_springs: two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
       object_description_textured_spring: two identical hanging springs shown in textured cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring
-      evidence_hint_missing_weight: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the reference weight block, the reference extension marker, the marked red `?` weight block, and the queried extension marker
-      evidence_hint_missing_extension: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the reference weight block, the reference extension marker, the shown query weight block, and the marked red `?` extension tag
+      evidence_hint_missing_weight: set "evidence" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, marked red `?` weight block, and shown query extension marker
+      evidence_hint_missing_extension: set "evidence" to an object mapping reference_weight, reference_extension, query_weight, and query_extension to [x0, y0, x1, y1] pixel boxes around the reference weight block, reference extension marker, shown query weight block, and marked red `?` extension tag
       evidence_hint_difference: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the two shown extension markers being compared
       answer_hint: set "answer" to the requested integer weight, extension, or extension difference value
     physics_mechanics_sticky_collision_family:
@@ -359,7 +383,7 @@ prompt:
       object_description_wide_table: a collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
       object_description_compact_table: a compact collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
       object_description_gridded_table: a gridded collision table with puck A moving horizontally, puck B moving vertically, visible mass and speed labels, a stuck A+B puck, signed axes, and six candidate direction arrows
-      evidence_hint_direction_choice: set "evidence" to an array containing the bounding box [x0, y0, x1, y1] of the correct candidate direction arrow
-      evidence_hint_velocity_component: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the queried component's momentum witnesses and the combined-mass label
+      evidence_hint_direction_choice: set "evidence" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
+      evidence_hint_velocity_component: set "evidence" to an object mapping puck labels A, B, and A+B to pixel points [x,y] at their puck centers
       answer_hint_direction_choice: set "answer" to the option letter of the correct candidate arrow
       answer_hint_component: set "answer" to the requested signed integer velocity component in m/s

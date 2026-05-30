@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -16,10 +17,11 @@ from ...registry import register_task
 from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_physics_hydraulic_piston_complexity
@@ -180,7 +182,9 @@ class _RenderedScene:
 
     image: Image.Image
     evidence_bboxes: List[List[float]]
+    evidence_bbox_map: Dict[str, List[float]]
     evidence_entity_ids: List[str]
+    evidence_key_by_entity_id: Dict[str, str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
 
@@ -192,6 +196,11 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(task_group="fluids", apply_prob=0.5)
+HYDRAULIC_SEMANTIC_COLORS: Tuple[Tuple[int, int, int], ...] = (
+    (255, 231, 231),
+    (187, 56, 56),
+    (167, 38, 38),
+)
 
 
 def _support(params: Mapping[str, Any], key: str, fallback: Sequence[int]) -> Tuple[int, ...]:
@@ -473,15 +482,36 @@ def _sample_scene_spec(
         shown_output_force_value=shown_output_force,
         shown_output_area_value=shown_output_area,
         target_answer=int(target),
-        evidence_entity_ids=(
-            "left_force_label",
-            "left_area_label",
-            "middle_force_label",
-            "middle_area_label",
-            "right_force_label",
-            "right_area_label",
-        ),
+        evidence_entity_ids=_evidence_entity_ids_for_query(str(query_id)),
     )
+
+
+def _evidence_entity_ids_for_query(query_id: str) -> Tuple[str, ...]:
+    """Return the minimal prompt-facing label witnesses for one hydraulic query."""
+
+    return tuple(_evidence_entity_key_map_for_query(str(query_id)).keys())
+
+
+def _evidence_entity_key_map_for_query(query_id: str) -> Dict[str, str]:
+    """Return query-specific semantic evidence keys by rendered entity id."""
+
+    if str(query_id) == "missing_output_force":
+        return {
+            "left_force_label": "input_force",
+            "left_area_label": "input_area",
+            "right_area_label": "output_area",
+        }
+    if str(query_id) == "missing_input_force":
+        return {
+            "right_force_label": "output_force",
+            "left_area_label": "input_area",
+            "right_area_label": "output_area",
+        }
+    return {
+        "left_force_label": "input_force",
+        "right_force_label": "output_force",
+        "left_area_label": "input_area",
+    }
 
 
 def _draw_text_tag(
@@ -608,6 +638,129 @@ def _draw_chamber(
     return [round(float(value), 3) for value in bbox], list(piston_bbox)
 
 
+def _hydraulic_base_geometry(
+    *,
+    render_defaults: Mapping[str, int],
+    scene_variant: str,
+) -> Tuple[Tuple[float, float, float], float, float]:
+    """Return base chamber centers/top/height before whole-diagram placement."""
+
+    chamber_top = float(render_defaults["chamber_top_px"])
+    chamber_height = float(render_defaults["chamber_height_px"])
+    if str(scene_variant) == "compact_frame":
+        centers = (245.0, 560.0, 875.0)
+        chamber_top += 12.0
+        chamber_height -= 18.0
+    elif str(scene_variant) == "tall_columns":
+        centers = (230.0, 560.0, 890.0)
+        chamber_top -= 34.0
+        chamber_height += 42.0
+    else:
+        centers = (230.0, 560.0, 890.0)
+    return centers, float(chamber_top), float(chamber_height)
+
+
+def _hydraulic_content_bbox(
+    *,
+    render_defaults: Mapping[str, int],
+    scene_spec: _SceneSpec,
+) -> List[float]:
+    """Return a conservative bbox for the whole hydraulic diagram before placement."""
+
+    centers, chamber_top, chamber_height = _hydraulic_base_geometry(
+        render_defaults=render_defaults,
+        scene_variant=str(scene_spec.scene_variant),
+    )
+    left_center_x, _middle_center_x, right_center_x = [float(value) for value in centers]
+    chamber_bottom = float(chamber_top + chamber_height)
+    area_scale = int(render_defaults["chamber_area_scale_px"])
+    chamber_min_width = int(render_defaults["chamber_min_width_px"])
+    left_width = float(chamber_min_width + (int(scene_spec.input_area_value) * area_scale))
+    right_width = float(chamber_min_width + (int(scene_spec.output_area_value) * area_scale))
+    left = min(float(left_center_x - (left_width / 2.0) - 42.0), float(left_center_x - 100.0))
+    right = max(float(right_center_x + (right_width / 2.0) + 28.0), float(right_center_x + 152.0))
+    top = min(
+        float(chamber_top - 152.0),
+        float(chamber_top + int(render_defaults["fluid_top_gap_px"]) - int(render_defaults["piston_height_px"]) - int(render_defaults["force_arrow_length_px"]) - 32.0),
+    )
+    bottom = float(chamber_bottom + 78.0)
+    return [round(float(left), 3), round(float(top), 3), round(float(right), 3), round(float(bottom), 3)]
+
+
+def _resolve_hydraulic_layout_placement(
+    *,
+    render_defaults: Mapping[str, int],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    canvas_width: int,
+    canvas_height: int,
+    scene_spec: _SceneSpec,
+) -> Tuple[Dict[str, int], Dict[str, Any]]:
+    """Resolve whole-diagram placement before rendering and evidence projection."""
+
+    content_bbox = _hydraulic_content_bbox(render_defaults=render_defaults, scene_spec=scene_spec)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.hydraulic_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 18))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+    adjusted = dict(render_defaults)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_hydraulic_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
+
+
 def _draw_force_label(
     draw: ImageDraw.ImageDraw,
     *,
@@ -617,6 +770,7 @@ def _draw_force_label(
     missing: bool,
     theme,
     render_defaults: Mapping[str, int],
+    font_family: str,
 ) -> List[float]:
     """Draw a downward force arrow and label, returning the prompt-facing bbox."""
 
@@ -643,7 +797,7 @@ def _draw_force_label(
         draw,
         text=str(label_text),
         center=(float(center_x + 74.0), float(start[1] + 32.0)),
-        font=load_font(int(render_defaults["label_font_size_px"]), bold=True),
+        font=load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=str(font_family)),
         padding_px=int(render_defaults["label_padding_px"]),
         fill_rgb=tuple(int(value) for value in theme.missing_fill_rgb)
         if missing
@@ -665,6 +819,7 @@ def _render_scene(
     render_defaults: Mapping[str, int],
     accent_color_name: str,
     scene_spec: _SceneSpec,
+    font_family: str,
     diagram_style: Any | None = None,
 ) -> _RenderedScene:
     """Render one hydraulic piston diagram."""
@@ -673,18 +828,14 @@ def _render_scene(
     draw = ImageDraw.Draw(image)
     theme = build_physics_hydraulic_theme(str(accent_color_name), diagram_style=diagram_style)
     canvas_width, canvas_height = image.size
-    chamber_top = float(render_defaults["chamber_top_px"])
-    chamber_height = float(render_defaults["chamber_height_px"])
-    if str(scene_spec.scene_variant) == "compact_frame":
-        left_center_x, middle_center_x, right_center_x = 245.0, 560.0, 875.0
-        chamber_top += 12.0
-        chamber_height -= 18.0
-    elif str(scene_spec.scene_variant) == "tall_columns":
-        left_center_x, middle_center_x, right_center_x = 230.0, 560.0, 890.0
-        chamber_top -= 34.0
-        chamber_height += 42.0
-    else:
-        left_center_x, middle_center_x, right_center_x = 230.0, 560.0, 890.0
+    centers, chamber_top, chamber_height = _hydraulic_base_geometry(
+        render_defaults=render_defaults,
+        scene_variant=str(scene_spec.scene_variant),
+    )
+    dx = int(render_defaults.get("layout_offset_x_px", 0))
+    dy = int(render_defaults.get("layout_offset_y_px", 0))
+    left_center_x, middle_center_x, right_center_x = [float(value) + float(dx) for value in centers]
+    chamber_top = float(chamber_top) + float(dy)
 
     chamber_bottom = float(chamber_top + chamber_height)
     area_scale = int(render_defaults["chamber_area_scale_px"])
@@ -766,7 +917,7 @@ def _render_scene(
         textured=str(scene_spec.scene_variant) == "tall_columns",
     )
 
-    small_font = load_font(int(render_defaults["small_label_font_size_px"]), bold=True)
+    small_font = load_font(int(render_defaults["small_label_font_size_px"]), bold=True, font_family=str(font_family))
     for label, center_x in (("input", left_center_x), ("reference", middle_center_x), ("output", right_center_x)):
         draw_centered_text(
             draw,
@@ -791,6 +942,7 @@ def _render_scene(
         missing=bool(left_force_missing),
         theme=theme,
         render_defaults=render_defaults,
+        font_family=str(font_family),
     )
     middle_force_bbox = _draw_force_label(
         draw,
@@ -800,6 +952,7 @@ def _render_scene(
         missing=False,
         theme=theme,
         render_defaults=render_defaults,
+        font_family=str(font_family),
     )
     right_force_bbox = _draw_force_label(
         draw,
@@ -809,9 +962,10 @@ def _render_scene(
         missing=bool(right_force_missing),
         theme=theme,
         render_defaults=render_defaults,
+        font_family=str(font_family),
     )
 
-    area_font = load_font(int(render_defaults["label_font_size_px"]), bold=True)
+    area_font = load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=str(font_family))
     left_area_bbox = _draw_text_tag(
         draw,
         text=f"A = {int(scene_spec.input_area_value)} cm^2",
@@ -914,7 +1068,14 @@ def _render_scene(
                 "unit": "cm^2",
             }
 
-    evidence_bboxes = [list(entity_bboxes[entity_id]) for entity_id in scene_spec.evidence_entity_ids]
+    evidence_key_by_entity_id = _evidence_entity_key_map_for_query(str(scene_spec.query_id))
+    evidence_bboxes: List[List[float]] = []
+    evidence_bbox_map: Dict[str, List[float]] = {}
+    for entity_id in scene_spec.evidence_entity_ids:
+        evidence_key = str(evidence_key_by_entity_id[str(entity_id)])
+        bbox = list(entity_bboxes[str(entity_id)])
+        evidence_bboxes.append(list(bbox))
+        evidence_bbox_map[evidence_key] = list(bbox)
     render_map = {
         "accent_color_name": str(accent_color_name),
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
@@ -936,13 +1097,19 @@ def _render_scene(
         "output_area_value": int(scene_spec.output_area_value),
         "mechanical_advantage": int(scene_spec.mechanical_advantage),
         "middle_mechanical_advantage": int(scene_spec.middle_mechanical_advantage),
+        "evidence_entity_ids": [str(entity_id) for entity_id in scene_spec.evidence_entity_ids],
+        "evidence_key_by_entity_id": dict(evidence_key_by_entity_id),
+        "evidence_keyed_bboxes_px": {str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
+        "evidence_bboxes_px": [list(bbox) for bbox in evidence_bboxes],
         "canvas_width": int(canvas_width),
         "canvas_height": int(canvas_height),
     }
     return _RenderedScene(
         image=image,
         evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        evidence_bbox_map={str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
         evidence_entity_ids=[str(entity_id) for entity_id in scene_spec.evidence_entity_ids],
+        evidence_key_by_entity_id={str(key): str(value) for key, value in evidence_key_by_entity_id.items()},
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
@@ -951,16 +1118,25 @@ def _render_scene(
 def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Return stable prompt JSON examples for hydraulic queries."""
 
-    evidence = [
-        [174, 70, 286, 118],
-        [170, 520, 294, 562],
-        [504, 70, 616, 118],
-        [492, 520, 628, 562],
-        [834, 70, 946, 118],
-        [822, 520, 958, 562],
-    ]
-    answer_type = "integer"
-    return build_prompt_json_examples(evidence_value=evidence, answer_type=answer_type)
+    if str(query_id) == "missing_input_force":
+        evidence = {
+            "output_force": [834, 70, 946, 118],
+            "input_area": [170, 520, 294, 562],
+            "output_area": [822, 520, 958, 562],
+        }
+    elif str(query_id) == "missing_piston_area":
+        evidence = {
+            "input_force": [174, 70, 286, 118],
+            "output_force": [834, 70, 946, 118],
+            "input_area": [170, 520, 294, 562],
+        }
+    else:
+        evidence = {
+            "input_force": [174, 70, 286, 118],
+            "input_area": [170, 520, 294, 562],
+            "output_area": [822, 520, 958, 562],
+        }
+    return build_prompt_json_examples(evidence_value=evidence, answer_type="integer")
 
 
 @register_task
@@ -981,14 +1157,24 @@ class PhysicsFluidsHydraulicMissingValueTask:
                 axes=axes,
                 params=params,
             )
+            canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+            canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id=SCENE_ID,
                 task_group=self.task_group,
-                canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-                canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+                canvas_width=int(canvas_width),
+                canvas_height=int(canvas_height),
                 instance_seed=int(instance_seed),
                 params=params,
+                protected_colors=HYDRAULIC_SEMANTIC_COLORS,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             render_defaults = {
                 key: resolve_render_int(
                     params,
@@ -1020,11 +1206,20 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "texture_spacing_px",
                 )
             }
+            render_defaults, layout_placement_meta = _resolve_hydraulic_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                canvas_width=int(canvas_width),
+                canvas_height=int(canvas_height),
+                scene_spec=scene_spec,
+            )
             rendered_scene = _render_scene(
                 background=background,
                 render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
+                font_family=str(font_family),
                 diagram_style=diagram_style,
             )
             image, post_noise_meta = apply_post_image_noise(
@@ -1045,18 +1240,15 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "object_description_wide_bench",
                     "object_description_compact_frame",
                     "object_description_tall_columns",
-                    "evidence_hint_force",
-                    "evidence_hint_area",
+                    "evidence_hint_missing_output_force",
+                    "evidence_hint_missing_input_force",
+                    "evidence_hint_missing_piston_area",
                     "answer_hint_force",
                     "answer_hint_area",
                 ),
                 context=f"prompt defaults for {self.task_id}",
             )
-            evidence_hint = (
-                str(prompt_defaults["evidence_hint_area"])
-                if str(axes.query_id) == "missing_piston_area"
-                else str(prompt_defaults["evidence_hint_force"])
-            )
+            evidence_hint = str(prompt_defaults[f"evidence_hint_{str(axes.query_id)}"])
             answer_hint = (
                 str(prompt_defaults["answer_hint_area"])
                 if str(axes.query_id) == "missing_piston_area"
@@ -1085,7 +1277,10 @@ class PhysicsFluidsHydraulicMissingValueTask:
             prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
             answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            evidence_gt = TypedValue(
+                type="keyed_bbox_map",
+                value={str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+            )
             complexity = build_physics_hydraulic_piston_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=self.task_id,
@@ -1113,6 +1308,7 @@ class PhysicsFluidsHydraulicMissingValueTask:
                         "middle_mechanical_advantage": int(scene_spec.middle_mechanical_advantage),
                         "target_answer": int(axes.target_answer),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
                     },
                 },
                 "query_spec": {
@@ -1137,8 +1333,21 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "hydraulic_piston_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1175,13 +1384,19 @@ class PhysicsFluidsHydraulicMissingValueTask:
                     "output_force_support": list(_support(params, "output_force_support", _DEFAULTS.output_force_support)),
                     "output_area_support": list(_support(params, "output_area_support", _DEFAULTS.output_area_support)),
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
                 },
                 "witness_symbolic": {
-                    "type": "object_set",
+                    "type": "object_key_map",
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "keys": dict(rendered_scene.evidence_key_by_entity_id),
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                    "pixel_keyed_bbox_map": {
+                        str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()
+                    },
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

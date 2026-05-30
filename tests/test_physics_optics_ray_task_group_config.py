@@ -59,6 +59,10 @@ def test_physics_optics_ray_defaults_expose_scene_query_and_answer_support() -> 
 
     assert int(rendering["target_radius_px"]) == 18
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
+    assert int(rendering["layout_jitter_min_margin_px"]) == 8
+
     assert str(prompt["bundle_id"]) == "physics_optics_v0"
 
     assert "graph-paper" in str(prompt["object_description_double_mirror"])

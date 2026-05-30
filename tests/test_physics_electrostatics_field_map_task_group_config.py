@@ -70,6 +70,8 @@ def test_physics_electrostatics_defaults_expose_scene_query_and_answer_support()
 
     assert int(rendering["option_cell_width_px"]) == 140
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
 
     assert str(prompt["bundle_id"]) == "physics_electrostatics_v0"
 
@@ -79,12 +81,18 @@ def test_physics_electrostatics_defaults_expose_scene_query_and_answer_support()
 
     assert "electrostatics coordinate grid" in str(prompt["object_description_clean_grid"])
 
-    assert "labeled candidate direction arrows" in str(prompt["object_description_clean_grid_field_direction_choice"])
+    assert "charges labeled Q1, Q2, and Q3" in str(prompt["object_description_clean_grid_field_direction_choice"])
 
-    assert "labeled candidate points" in str(prompt["object_description_paper_grid_zero_field_point_label"])
+    assert "charges labeled Q1 and Q2" in str(prompt["object_description_paper_grid_zero_field_point_label"])
 
     assert "visible distance labels" in str(prompt["object_description_dense_grid_potential_value"])
 
-    assert "correct candidate direction arrow" in str(prompt["evidence_hint_field_direction_choice"])
+    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["evidence_hint_field_direction_choice"])
+
+    assert 'keys "Q1", "Q2", "Q3", and "P"' in str(prompt["evidence_hint_potential_value"])
+
+    assert 'keys "Q1" and "Q2"' in str(prompt["evidence_hint_zero_field_point_label"])
+
+    assert "do not" not in str(prompt["evidence_hint_potential_value"]).lower()
 
     assert "zero-field point" in str(prompt["answer_hint_zero_field_point_label"])

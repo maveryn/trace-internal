@@ -28,9 +28,9 @@ def test_missing_endpoint_task_has_unique_candidate_answer(query_id: str) -> Non
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [candidates["C"]["bbox_px"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.value == [candidates["C"]["point_px"]]
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert execution["target_point_graph"] == candidates["C"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -55,9 +55,9 @@ def test_section_point_task_has_unique_candidate_answer(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [candidates["D"]["bbox_px"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.value == [candidates["D"]["point_px"]]
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert execution["target_point_graph"] == candidates["D"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1
@@ -85,9 +85,9 @@ def test_transformed_point_task_has_unique_candidate_answer(query_id: str) -> No
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "E"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [candidates["E"]["bbox_px"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.value == [candidates["E"]["point_px"]]
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert execution["target_point_graph"] == candidates["E"]["point_graph"]
     assert len(candidates) == 6
     assert sum(1 for payload in candidates.values() if payload["point_graph"] == execution["target_point_graph"]) == 1

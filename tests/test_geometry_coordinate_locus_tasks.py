@@ -26,9 +26,9 @@ def test_locus_point_task_has_unique_region_member(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [candidates["C"]["bbox_px"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.value == [candidates["C"]["point_px"]]
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert len(candidates) == 6
     assert candidates["C"]["inside_region"] is True
     assert sum(1 for payload in candidates.values() if payload["inside_region"]) == 1

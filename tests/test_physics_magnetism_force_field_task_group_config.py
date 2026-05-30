@@ -64,6 +64,8 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert int(rendering["particle_font_size_px"]) == 31
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
 
     assert str(prompt["bundle_id"]) == "physics_magnetism_v0"
 
@@ -73,4 +75,6 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert "magnetic-field panel" in str(prompt["object_description_clean_panel"])
 
-    assert "correct candidate force arrow" in str(prompt["evidence_hint_force_direction_choice"])
+    assert "field_orientation" in str(prompt["evidence_hint_force_direction_choice"])
+
+    assert "charged particle" in str(prompt["evidence_hint_force_direction_choice"])

@@ -74,6 +74,12 @@ rendering:
       particle_font_size_px: 31
       option_font_size_px: 23
       equation_font_size_px: 25
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -26
+      layout_jitter_x_px_max: 26
+      layout_jitter_y_px_min: -18
+      layout_jitter_y_px_max: 18
 
 complexity:
   task_overrides:
@@ -94,5 +100,5 @@ prompt:
       object_description_clean_panel: a magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
       object_description_field_grid: a gridded magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
       object_description_lab_card: a lab-card style magnetic-field panel with repeated into-page or out-of-page field symbols, a charged particle, visible vectors, and a formula or candidate-arrow answer area
-      evidence_hint_force_direction_choice: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct candidate force arrow
+      evidence_hint_force_direction_choice: set "evidence" to an object mapping field_orientation, charge, and velocity to bounding boxes [x0, y0, x1, y1] for the magnetic-field label, charged particle, and velocity vector
       answer_hint_force_direction_choice: set "answer" to the option letter of the candidate force arrow

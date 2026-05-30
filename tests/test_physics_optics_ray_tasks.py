@@ -47,19 +47,12 @@ def test_physics_optics_ray_tasks_emit_expected_contract(
 
     assert out.evidence_gt.type == "point_set"
 
-    assert out.query_id == "default"
-
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_id"] == "default"
-
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
     assert trace["query_spec"]["params"]["internal_query_id"] == expected_query_id
-
-    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
     assert execution["internal_query_id"] == expected_query_id
@@ -75,6 +68,9 @@ def test_physics_optics_ray_tasks_emit_expected_contract(
     assert len(trace["projected_evidence"]["pixel_point_map"]) == len(out.evidence_gt.value)
 
     assert execution["evidence_pixel_points"] == out.evidence_gt.value
+    assert trace["render_map"]["evidence_point_set_px"] == out.evidence_gt.value
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_ray_optics_board_offset"
     width = int(trace["render_spec"]["canvas_width"])
     height = int(trace["render_spec"]["canvas_height"])
     for point in out.evidence_gt.value:
@@ -186,6 +182,8 @@ def test_physics_optics_ray_prompt_bundle_supports_variants() -> None:
     assert len(bundle["query_templates"]["bounce_count"]) == 5
 
     assert len(bundle["query_templates"]["target_hit_count"]) == 5
+
+    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5
 
 
 def test_physics_optics_ray_tasks_build_smoke(tmp_path: Path) -> None:

@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `circle_region_point`, `annulus_region_point`, `vertical_strip_region_point`, or `half_plane_intersection_region_point`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+7. Evidence type: `point_set`
 
 ## Prompt Bundle
 - Bundle id: `geometry_coordinate_locus_v0`
@@ -24,8 +24,8 @@ points. Exactly one candidate satisfies the region membership predicate, and
 all candidate graph coordinates and memberships are retained in metadata.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected
-candidate point. The shaded region specification and candidate membership
+Verifier evidence is one final-image pixel point at the center of the selected
+candidate marker. The shaded region specification and candidate membership
 trace are metadata-backed.
 
 ## Determinism

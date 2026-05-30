@@ -13,12 +13,13 @@ from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_scene_label_font_size_px
+from ...shared.text_legibility import draw_text_traced
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_task_complexity, clamp_unit_interval, resolve_geometry_complexity_weights
 from ..shared.fixed_query_task import select_geometry_query_id
@@ -34,6 +35,7 @@ from .quadrilateral import (
     _resolve_marker_colors,
     _sample_marker_style,
 )
+from .params import resolve_int_param as _resolve_int_param
 
 
 GraphPoint = Tuple[int, int]
@@ -205,10 +207,6 @@ def _split_defaults_for_task(task_id: str) -> Tuple[Dict[str, Any], Dict[str, An
         _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
         task_id=str(task_id),
     )
-
-
-def _resolve_int_param(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
 
 
 def _select_winner_label(
@@ -649,7 +647,7 @@ def _draw_label_box(
         int(text_bbox[3] + pad_y),
     ]
     draw.rounded_rectangle(box, radius=5 * scale, fill=(255, 255, 255), outline=(82, 92, 108), width=max(1, scale))
-    draw.text((left * scale, top * scale), str(text), fill=(34, 44, 58), font=font)
+    draw_text_traced(draw,(left * scale, top * scale), str(text), fill=(34, 44, 58), font=font, role="readout", required=False)
     return [int(round(value / float(scale))) for value in box]
 
 
@@ -930,7 +928,7 @@ def _trace_payload(
     rendered: _RenderedScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    evidence_value: List[List[int]],
+    evidence_value: List[List[float]],
 ) -> Dict[str, Any]:
     candidate_trace = {
         str(label): {
@@ -1044,11 +1042,20 @@ def _trace_payload(
             "formula": str(rendered.problem.formula),
         },
         "projected_evidence": {
-            "type": "bbox_set",
-            "bbox_set": list(evidence_value),
-            "candidate_bboxes_px_by_label": dict(rendered.candidate_bboxes_by_label),
+            "type": "point_set",
+            "point_set": list(evidence_value),
+            "pixel_point_set": list(evidence_value),
+            "candidate_points_px_by_label": {
+                str(label): [float(value) for value in point]
+                for label, point in rendered.candidate_points_px_by_label.items()
+            },
         },
     }
+
+
+def _candidate_point_evidence(rendered: _RenderedScene, label: str) -> List[List[float]]:
+    point = rendered.candidate_points_px_by_label[str(label)]
+    return [[float(point[0]), float(point[1])]]
 
 
 def _generate_output(
@@ -1085,12 +1092,12 @@ def _generate_output(
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "evidence_hint_candidate_bbox",
+            "evidence_hint_candidate_point",
             "answer_hint_option_letter",
         ),
         context=f"prompt defaults for {task_id}",
     )
-    evidence_value = [list(rendered.candidate_bboxes_by_label[str(query.winner_label)])]
+    evidence_value = _candidate_point_evidence(rendered, str(query.winner_label))
     json_example, json_example_answer_only = resolve_prompt_json_examples(
         prompt_defaults_all,
         evidence_value=evidence_value,
@@ -1108,7 +1115,7 @@ def _generate_output(
             "object_description": str(prompt_defaults["object_description"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint_candidate_bbox"]),
+            "evidence_hint": str(prompt_defaults["evidence_hint_candidate_point"]),
             "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -1127,7 +1134,7 @@ def _generate_output(
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-        evidence_gt=TypedValue(type="bbox_set", value=evidence_value),
+        evidence_gt=TypedValue(type="point_set", value=evidence_value),
         image=rendered.image,
         image_id="img0",
         trace_payload=trace_payload,

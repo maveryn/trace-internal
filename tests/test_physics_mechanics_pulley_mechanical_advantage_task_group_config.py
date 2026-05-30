@@ -62,14 +62,18 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
 
     assert int(rendering["load_width_px"]) > 0
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
     assert str(prompt["bundle_id"]) == "physics_mechanics_v0"
 
     assert "one open" in str(prompt["object_description_open_block"])
 
     assert "optional cut non-supporting strands" in str(prompt["object_description_open_block"])
 
-    assert "marked `?` effort label" in str(prompt["evidence_hint_effort_force"])
+    assert "known_force" in str(prompt["evidence_hint_effort_force"])
 
-    assert "marked `?` load label" in str(prompt["evidence_hint_load_force"])
+    assert "target_force" in str(prompt["evidence_hint_load_force"])
 
-    assert "exclude cut strands" in str(prompt["evidence_hint_load_force"])
+    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["evidence_hint_load_force"])
+
+    assert "exclude" not in str(prompt["evidence_hint_load_force"]).lower()

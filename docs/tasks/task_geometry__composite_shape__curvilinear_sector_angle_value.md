@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: one of `sector_angle_from_arc_length` or `sector_angle_from_area`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_point_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_curvilinear_composite_v0`
@@ -17,7 +17,7 @@
 Infer a circular sector's central angle from the shown radius plus either arc length or sector area. Answers use the internal pi value and are rounded to one decimal place.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set`: the unknown angle cue first, followed by the radius label and given arc or area label.
+Prompt-facing evidence is a `keyed_point_map` over the sector center and the two ray endpoints that define the central angle. The unknown angle cue, radius label, and arc/area label remain visible annotations and render metadata, not public evidence.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

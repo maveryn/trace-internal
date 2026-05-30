@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -12,11 +13,12 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.graph_point_evidence import labeled_grid_point_evidence_artifacts
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     resolve_compatible_scene_query_ids,
@@ -288,6 +290,100 @@ def _board_render_defaults(params: Mapping[str, Any], *, instance_seed: int | No
         )
         for key in keys
     }
+
+
+def _optics_content_bbox(render_defaults: Mapping[str, Any]) -> List[float]:
+    """Return the conservative full-board bbox before layout offset."""
+
+    board_left = float(render_defaults["board_left_px"])
+    board_top = float(render_defaults["board_top_px"])
+    board_cols = int(render_defaults["board_cols"])
+    board_rows = int(render_defaults["board_rows"])
+    cell_size = float(render_defaults["cell_size_px"])
+    board_right = float(board_left + (float(board_cols) * cell_size))
+    board_bottom = float(board_top + (float(board_rows) * cell_size))
+    return [
+        round(float(board_left - (0.95 * cell_size)), 3),
+        round(float(board_top - (0.65 * cell_size)), 3),
+        round(float(board_right + (0.70 * cell_size)), 3),
+        round(float(board_bottom + (0.60 * cell_size)), 3),
+    ]
+
+
+def _resolve_optics_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-board placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _optics_content_bbox(render_defaults)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.optics_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 8))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["board_left_px"] = int(render_defaults["board_left_px"]) + int(dx)
+    adjusted["board_top_px"] = int(render_defaults["board_top_px"]) + int(dy)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_ray_optics_board_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
 
 
 def _simulate_path(
@@ -725,7 +821,11 @@ class _PhysicsOpticsRayTraceBaseTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
-        render_defaults = _board_render_defaults(params, instance_seed=int(instance_seed))
+        render_defaults, layout_placement_meta = _resolve_optics_layout_placement(
+            render_defaults=_board_render_defaults(params, instance_seed=int(instance_seed)),
+            params=params,
+            instance_seed=int(instance_seed),
+        )
         rendered_scene: RenderedOpticsScene | None = None
         scene_layout: _SceneLayout | None = None
 
@@ -751,6 +851,13 @@ class _PhysicsOpticsRayTraceBaseTask:
                 instance_seed=int(instance_seed),
                 params=params,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             rendered_scene = render_optics_ray_scene(
                 background=background,
                 render_defaults=render_defaults,
@@ -783,6 +890,7 @@ class _PhysicsOpticsRayTraceBaseTask:
                 evidence_entity_ids=list(scene_layout.evidence_entity_ids),
                 query_id=str(axes.query_id),
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -854,6 +962,9 @@ class _PhysicsOpticsRayTraceBaseTask:
                 witness_type=str(witness_type),
                 ordered_labels=tuple(str(item) for item in rendered_scene.evidence_entity_ids),
             )
+            render_map = dict(rendered_scene.render_map)
+            render_map["evidence_point_map_px"] = dict(evidence_artifacts["projected_evidence"].get("pixel_point_map", {}))
+            render_map["evidence_point_set_px"] = list(evidence_artifacts["evidence_value"])
             evidence_gt = TypedValue(
                 type=str(evidence_artifacts["evidence_type"]),
                 value=list(evidence_artifacts["evidence_value"]),
@@ -902,11 +1013,24 @@ class _PhysicsOpticsRayTraceBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "ray_optics_board",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
-                "render_map": dict(rendered_scene.render_map),
+                "render_map": dict(render_map),
                 "execution_trace": {
                     "scene_variant": str(axes.scene_variant),
                     "query_id": str(axes.query_id),

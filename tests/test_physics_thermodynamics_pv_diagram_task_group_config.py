@@ -77,6 +77,10 @@ def test_physics_thermodynamics_pv_defaults_expose_scene_query_and_answer_suppor
 
     assert int(rendering["mini_cell_width_px"]) == 262
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
+    assert int(rendering["layout_jitter_min_margin_px"]) == 8
+
 
     assert str(prompt["bundle_id"]) == "physics_thermodynamics_v0"
 

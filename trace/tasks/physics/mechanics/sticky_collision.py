@@ -17,10 +17,11 @@ from ...registry import register_task
 from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -53,6 +54,12 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "compact_table": SUPPORTED_QUERY_IDS,
     "gridded_table": SUPPORTED_QUERY_IDS,
 }
+EVIDENCE_ENTITY_KEY_BY_ID: Dict[str, str] = {
+    "horizontal_puck": "A",
+    "vertical_puck": "B",
+    "stuck_pucks": "A+B",
+}
+EVIDENCE_ENTITY_IDS: Tuple[str, ...] = tuple(EVIDENCE_ENTITY_KEY_BY_ID.keys())
 
 
 @dataclass(frozen=True)
@@ -149,7 +156,8 @@ class _RenderedScene:
     """Rendered sticky-collision scene plus prompt-facing evidence metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
+    evidence_points: List[List[float]]
+    evidence_point_map: Dict[str, List[float]]
     evidence_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
@@ -602,11 +610,6 @@ def _sample_scene_spec(
         else:
             option_angles[str(letter)] = round(float(distractors.pop()), 3)
 
-    if str(query_id) == "direction_choice":
-        evidence_entity_ids = (f"option_{str(correct_option_letter)}",)
-    else:
-        evidence_entity_ids = (f"{_component_axis_label(component_axis)}_component_witness",)
-
     return _SceneSpec(
         scene_variant=str(scene_variant),
         query_id=str(query_id),
@@ -616,7 +619,7 @@ def _sample_scene_spec(
         option_angles_degrees=dict(option_angles),
         direction_label=str(_direction_label(correct_angle)),
         target_answer=target_answer,
-        evidence_entity_ids=tuple(str(item) for item in evidence_entity_ids),
+        evidence_entity_ids=tuple(EVIDENCE_ENTITY_IDS),
     )
 
 
@@ -755,6 +758,7 @@ def _render_scene(
     render_defaults: Mapping[str, Any],
     accent_color_name: str,
     scene_spec: _SceneSpec,
+    font_family: str,
     diagram_style: Any | None = None,
 ) -> _RenderedScene:
     """Render one sticky-collision diagram and return trace metadata."""
@@ -762,10 +766,11 @@ def _render_scene(
     image = background.copy()
     draw = ImageDraw.Draw(image)
     theme = build_physics_collision_theme(str(accent_color_name), diagram_style=diagram_style)
-    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=True)
-    small_font = load_font(max(14, int(render_defaults["label_font_size_px"]) - 3), bold=False)
-    puck_font = load_font(int(render_defaults["puck_font_size_px"]), bold=True)
-    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True)
+    resolved_font_family = str(font_family)
+    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=True, font_family=resolved_font_family)
+    small_font = load_font(max(14, int(render_defaults["label_font_size_px"]) - 3), bold=False, font_family=resolved_font_family)
+    puck_font = load_font(int(render_defaults["puck_font_size_px"]), bold=True, font_family=resolved_font_family)
+    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True, font_family=resolved_font_family)
 
     table_bbox = [
         float(render_defaults["table_left_px"]),
@@ -900,7 +905,7 @@ def _render_scene(
         fill_rgb=tuple(int(value) for value in theme.collision_fill_rgb),
         outline_rgb=tuple(int(value) for value in theme.collision_outline_rgb),
         text_rgb=tuple(int(value) for value in theme.puck_text_rgb),
-        font=load_font(max(18, int(render_defaults["puck_font_size_px"]) - 8), bold=True),
+        font=load_font(max(18, int(render_defaults["puck_font_size_px"]) - 8), bold=True, font_family=resolved_font_family),
     )
 
     final_angle = _angle_degrees(float(scenario.final_vx), float(scenario.final_vy))
@@ -1031,6 +1036,7 @@ def _render_scene(
             "entity_id": "horizontal_puck",
             "entity_type": "puck",
             "bbox_px": list(horizontal_puck_bbox),
+            "point_px": [round(float(horizontal_center[0]), 3), round(float(horizontal_center[1]), 3)],
             "meta": {
                 "label": "A",
                 "mass": int(scenario.horizontal_mass),
@@ -1042,6 +1048,7 @@ def _render_scene(
             "entity_id": "vertical_puck",
             "entity_type": "puck",
             "bbox_px": list(vertical_puck_bbox),
+            "point_px": [round(float(vertical_center[0]), 3), round(float(vertical_center[1]), 3)],
             "meta": {
                 "label": "B",
                 "mass": int(scenario.vertical_mass),
@@ -1053,6 +1060,7 @@ def _render_scene(
             "entity_id": "stuck_pucks",
             "entity_type": "stuck_puck_pair",
             "bbox_px": list(stuck_bbox),
+            "point_px": [round(float(collision_center[0]), 3), round(float(collision_center[1]), 3)],
             "meta": {"total_mass": int(scenario.total_mass)},
         },
         {
@@ -1210,19 +1218,32 @@ def _render_scene(
         for entity in scene_entities
         if entity.get("bbox_px") is not None
     }
-    evidence_bboxes = [
-        list(entity_bbox_map[entity_id])
+    entity_point_map = {
+        str(entity["entity_id"]): list(entity["point_px"])
+        for entity in scene_entities
+        if entity.get("point_px") is not None
+    }
+    evidence_points = [
+        list(entity_point_map[entity_id])
         for entity_id in scene_spec.evidence_entity_ids
-        if str(entity_id) in entity_bbox_map
+        if str(entity_id) in entity_point_map
     ]
+    evidence_point_map = {
+        EVIDENCE_ENTITY_KEY_BY_ID[str(entity_id)]: list(entity_point_map[str(entity_id)])
+        for entity_id in scene_spec.evidence_entity_ids
+        if str(entity_id) in entity_point_map
+    }
     render_map = {
         "accent_color_name": str(accent_color_name),
         "technical_diagram_frame_mode": str(getattr(diagram_style, "frame_mode", "none")),
         "table_bbox_px": [round(float(value), 3) for value in table_bbox],
         "collision_center_px": [round(float(center_x), 3), round(float(center_y), 3)],
         "horizontal_puck_bbox_px": list(horizontal_puck_bbox),
+        "horizontal_puck_center_px": [round(float(horizontal_center[0]), 3), round(float(horizontal_center[1]), 3)],
         "vertical_puck_bbox_px": list(vertical_puck_bbox),
+        "vertical_puck_center_px": [round(float(vertical_center[0]), 3), round(float(vertical_center[1]), 3)],
         "stuck_pucks_bbox_px": list(stuck_bbox),
+        "stuck_pucks_center_px": [round(float(collision_center[0]), 3), round(float(collision_center[1]), 3)],
         "horizontal_motion_arrow_bbox_px": list(horizontal_arrow_bbox),
         "vertical_motion_arrow_bbox_px": list(vertical_arrow_bbox),
         "horizontal_component_witness_bbox_px": list(horizontal_component_witness_bbox),
@@ -1233,14 +1254,95 @@ def _render_scene(
         "option_angles_degrees": dict(scene_spec.option_angles_degrees),
         "correct_option_letter": str(scene_spec.correct_option_letter),
         "evidence_entity_ids": list(scene_spec.evidence_entity_ids),
+        "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
+        "entity_points_px": {str(key): list(value) for key, value in entity_point_map.items()},
+        "evidence_points_px": [list(point) for point in evidence_points],
+        "evidence_keyed_points_px": {str(key): list(value) for key, value in evidence_point_map.items()},
     }
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        evidence_points=[list(point) for point in evidence_points],
+        evidence_point_map={str(key): list(value) for key, value in evidence_point_map.items()},
         evidence_entity_ids=list(scene_spec.evidence_entity_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
     )
+
+
+def _resolve_collision_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    canvas_width: int,
+    canvas_height: int,
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve a whole-diagram offset before rendering and evidence projection."""
+
+    content_left = min(float(render_defaults["table_left_px"]), float(render_defaults["option_cell_left_px"]))
+    content_top = min(float(render_defaults["table_top_px"]), float(render_defaults["option_panel_top_px"]))
+    content_right = max(
+        float(render_defaults["table_left_px"]) + float(render_defaults["table_width_px"]),
+        float(render_defaults["option_cell_left_px"]) + (float(render_defaults["option_cell_width_px"]) * len(OPTION_LETTERS)),
+    )
+    content_bottom = max(
+        float(render_defaults["table_top_px"]) + float(render_defaults["table_height_px"]),
+        float(render_defaults["option_panel_top_px"]) + 144.0,
+    )
+    base_bbox = [round(content_left, 3), round(content_top, 3), round(content_right, 3), round(content_bottom, 3)]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.collision_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 24))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    for key in ("table_left_px", "collision_center_x_px", "compact_collision_center_x_px", "option_cell_left_px"):
+        adjusted[key] = int(adjusted[key]) + int(dx)
+    for key in ("table_top_px", "collision_center_y_px", "compact_collision_center_y_px", "option_panel_top_px"):
+        adjusted[key] = int(adjusted[key]) + int(dy)
+
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_collision_diagram_offset",
+            "content_bbox_px": base_bbox,
+            "final_content_bbox_px": final_bbox,
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
 
 
 def _answer_type(query_id: str) -> str:
@@ -1256,11 +1358,19 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "direction_choice":
         return build_prompt_json_examples(
-            evidence_value=[[830, 596, 934, 690]],
+            evidence_value={
+                "A": [170, 304],
+                "B": [436, 152],
+                "A+B": [436, 304],
+            },
             answer_type="option_letter",
         )
     return build_prompt_json_examples(
-        evidence_value=[[104, 210, 642, 352]],
+        evidence_value={
+            "A": [170, 304],
+            "B": [436, 152],
+            "A+B": [436, 304],
+        },
         answer_type="integer",
     )
 
@@ -1292,60 +1402,78 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             except ValueError:
                 continue
 
+            canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+            canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
             background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
                 scene_id="collision",
                 task_group=self.task_group,
-                canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-                canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+                canvas_width=int(canvas_width),
+                canvas_height=int(canvas_height),
                 instance_seed=int(instance_seed),
                 params=params,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
+            render_defaults = {
+                key: resolve_render_int(
+                    params,
+                    _RENDER_DEFAULTS,
+                    key,
+                    int(getattr(_DEFAULTS, key)),
+                    instance_seed=int(instance_seed),
+                    namespace=TASK_ID,
+                )
+                for key in (
+                    "table_left_px",
+                    "table_top_px",
+                    "table_width_px",
+                    "table_height_px",
+                    "table_corner_radius_px",
+                    "collision_center_x_px",
+                    "collision_center_y_px",
+                    "compact_collision_center_x_px",
+                    "compact_collision_center_y_px",
+                    "horizontal_start_distance_px",
+                    "vertical_start_distance_px",
+                    "compact_start_distance_delta_px",
+                    "puck_radius_px",
+                    "stuck_radius_px",
+                    "motion_arrow_width_px",
+                    "final_arrow_width_px",
+                    "arrow_head_length_px",
+                    "arrow_head_width_px",
+                    "label_font_size_px",
+                    "puck_font_size_px",
+                    "option_font_size_px",
+                    "label_stroke_width_px",
+                    "option_panel_top_px",
+                    "option_cell_left_px",
+                    "option_cell_width_px",
+                    "option_arrow_length_px",
+                    "option_arrow_width_px",
+                    "option_arrow_head_length_px",
+                    "option_arrow_head_width_px",
+                    "grid_spacing_px",
+                )
+            }
+            render_defaults, layout_placement_meta = _resolve_collision_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                canvas_width=int(canvas_width),
+                canvas_height=int(canvas_height),
+            )
             rendered_scene = _render_scene(
                 background=background,
-                render_defaults={
-                    key: resolve_render_int(
-                        params,
-                        _RENDER_DEFAULTS,
-                        key,
-                        int(getattr(_DEFAULTS, key)),
-                        instance_seed=int(instance_seed),
-                        namespace=TASK_ID,
-                    )
-                    for key in (
-                        "table_left_px",
-                        "table_top_px",
-                        "table_width_px",
-                        "table_height_px",
-                        "table_corner_radius_px",
-                        "collision_center_x_px",
-                        "collision_center_y_px",
-                        "compact_collision_center_x_px",
-                        "compact_collision_center_y_px",
-                        "horizontal_start_distance_px",
-                        "vertical_start_distance_px",
-                        "compact_start_distance_delta_px",
-                        "puck_radius_px",
-                        "stuck_radius_px",
-                        "motion_arrow_width_px",
-                        "final_arrow_width_px",
-                        "arrow_head_length_px",
-                        "arrow_head_width_px",
-                        "label_font_size_px",
-                        "puck_font_size_px",
-                        "option_font_size_px",
-                        "label_stroke_width_px",
-                        "option_panel_top_px",
-                        "option_cell_left_px",
-                        "option_cell_width_px",
-                        "option_arrow_length_px",
-                        "option_arrow_width_px",
-                        "option_arrow_head_length_px",
-                        "option_arrow_head_width_px",
-                        "grid_spacing_px",
-                    )
-                },
+                render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
+                font_family=str(font_family),
                 diagram_style=diagram_style,
             )
             image, post_noise_meta = apply_post_image_noise(
@@ -1415,7 +1543,10 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
             else:
                 answer_value = int(scene_spec.scenario.final_vy)
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            evidence_gt = TypedValue(
+                type="keyed_point_map",
+                value={str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()},
+            )
             complexity = build_physics_sticky_collision_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
@@ -1424,7 +1555,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                 component_abs_sum=int(abs(scene_spec.scenario.final_vx) + abs(scene_spec.scenario.final_vy)),
                 total_mass=int(scene_spec.scenario.total_mass),
                 option_count=len(OPTION_LETTERS),
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                evidence_count=len(rendered_scene.evidence_point_map),
             )
             scenario_payload = {
                 "horizontal_mass": int(scene_spec.scenario.horizontal_mass),
@@ -1458,6 +1589,7 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                         "answer_type": str(answer_type),
                         "scenario": dict(scenario_payload),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
                     },
                 },
                 "query_spec": {
@@ -1487,8 +1619,21 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "collision_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1515,13 +1660,21 @@ class _PhysicsMechanicsStickyCollisionBaseTask:
                     "correct_option_letter": str(scene_spec.correct_option_letter),
                     "direction_label": str(scene_spec.direction_label),
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "evidence_key_by_entity_id": dict(EVIDENCE_ENTITY_KEY_BY_ID),
                 },
                 "witness_symbolic": {
-                    "type": "object_set",
+                    "type": "object_key_map",
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "keys": dict(EVIDENCE_ENTITY_KEY_BY_ID),
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "type": "keyed_point_map",
+                    "keyed_point_map": {
+                        str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()
+                    },
+                    "pixel_keyed_point_map": {
+                        str(key): list(point) for key, point in rendered_scene.evidence_point_map.items()
+                    },
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

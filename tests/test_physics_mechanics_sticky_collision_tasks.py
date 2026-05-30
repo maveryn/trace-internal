@@ -35,23 +35,32 @@ def test_physics_mechanics_sticky_collision_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_point_map"
 
-    assert len(out.evidence_gt.value) == 1
-
-    assert out.query_id == "default"
+    assert set(out.evidence_gt.value) == {"A", "B", "A+B"}
 
     assert out.query_id == "direction_choice"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "direction_choice"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "direction_choice"
-    assert execution["query_id"] == "default"
+    assert execution["query_id"] == "direction_choice"
 
     assert execution["internal_query_id"] == "direction_choice"
 
     assert scenario["correct_option_letter"] == "D"
 
-    assert execution["evidence_entity_ids"] == ["option_D"]
+    assert execution["evidence_entity_ids"] == [
+        "horizontal_puck",
+        "vertical_puck",
+        "stuck_pucks",
+    ]
+    assert execution["evidence_key_by_entity_id"] == {
+        "horizontal_puck": "A",
+        "vertical_puck": "B",
+        "stuck_pucks": "A+B",
+    }
+    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_keyed_point_map"] == out.evidence_gt.value
 
     assert "resultant_arrow_bbox_px" not in trace["render_map"]
 
@@ -92,11 +101,18 @@ def test_physics_mechanics_sticky_collision_component_contracts() -> None:
 
     assert horizontal.query_id == "velocity_component"
 
-    assert len(horizontal.evidence_gt.value) == 1
+    assert horizontal.evidence_gt.type == "keyed_point_map"
+
+    assert set(horizontal.evidence_gt.value) == {"A", "B", "A+B"}
 
     assert horizontal.trace_payload["execution_trace"]["component_axis"] == "x"
 
-    assert horizontal.trace_payload["execution_trace"]["evidence_entity_ids"] == ["horizontal_component_witness"]
+    assert horizontal.trace_payload["execution_trace"]["evidence_entity_ids"] == [
+        "horizontal_puck",
+        "vertical_puck",
+        "stuck_pucks",
+    ]
+    assert horizontal.trace_payload["projected_evidence"]["keyed_point_map"] == horizontal.evidence_gt.value
 
     assert int(horizontal.trace_payload["execution_trace"]["final_vx"]) == -4
 
@@ -109,11 +125,18 @@ def test_physics_mechanics_sticky_collision_component_contracts() -> None:
 
     assert vertical.query_id == "velocity_component"
 
-    assert len(vertical.evidence_gt.value) == 1
+    assert vertical.evidence_gt.type == "keyed_point_map"
+
+    assert set(vertical.evidence_gt.value) == {"A", "B", "A+B"}
 
     assert vertical.trace_payload["execution_trace"]["component_axis"] == "y"
 
-    assert vertical.trace_payload["execution_trace"]["evidence_entity_ids"] == ["vertical_component_witness"]
+    assert vertical.trace_payload["execution_trace"]["evidence_entity_ids"] == [
+        "horizontal_puck",
+        "vertical_puck",
+        "stuck_pucks",
+    ]
+    assert vertical.trace_payload["projected_evidence"]["keyed_point_map"] == vertical.evidence_gt.value
 
     assert int(vertical.trace_payload["execution_trace"]["final_vx"]) == -4
 

@@ -18,10 +18,11 @@ from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.drawing import draw_centered_text, draw_dashed_line, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -81,7 +82,7 @@ class _TaskDefaults:
     source_font_size_px: int = 21
     candidate_font_size_px: int = 23
     note_font_size_px: int = 20
-    path_difference_step_support: Tuple[int, ...] = (1, 2, 3, 4)
+    path_difference_step_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
 
 
 @dataclass(frozen=True)
@@ -170,7 +171,11 @@ class _RenderedScene:
     """Rendered wave scene plus prompt-facing evidence metadata."""
 
     image: Image.Image
+    evidence_type: str
     evidence_bboxes: List[List[float]]
+    evidence_bbox_map: Dict[str, List[float]]
+    evidence_points: List[List[float]]
+    evidence_key_by_entity_id: Dict[str, str]
     evidence_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
@@ -591,7 +596,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes) -> _SceneSpec:
             choice_scenario=None,
             path_scenario=scenario,
             target_answer=int(scenario.path_difference_steps),
-            evidence_entity_ids=("path_difference_witness_region",),
+            evidence_entity_ids=("path_S1P", "path_S2P"),
         )
     raise ValueError(f"unsupported waves query id: {axes.query_id}")
 
@@ -616,6 +621,89 @@ def _board_bbox(render_defaults: Mapping[str, Any]) -> List[float]:
         float(render_defaults["board_left_px"]) + float(render_defaults["board_width_px"]),
         float(render_defaults["board_top_px"]) + float(render_defaults["board_height_px"]),
     ]
+
+
+def _wave_content_bbox(render_defaults: Mapping[str, Any]) -> List[float]:
+    """Return a conservative bbox for the whole wave tank before placement."""
+
+    board = _board_bbox(render_defaults)
+    return [
+        round(float(board[0]) - 8.0, 3),
+        round(float(board[1]) - 8.0, 3),
+        round(float(board[2]) + 8.0, 3),
+        round(float(board[3]) + 8.0, 3),
+    ]
+
+
+def _resolve_wave_layout_placement(
+    *,
+    render_defaults: Mapping[str, Any],
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Resolve whole-tank placement before rendering and evidence projection."""
+
+    canvas_width = int(render_defaults["canvas_width"])
+    canvas_height = int(render_defaults["canvas_height"])
+    content_bbox = _wave_content_bbox(render_defaults)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.wave_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 18))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+
+    adjusted = dict(render_defaults)
+    adjusted["board_left_px"] = int(adjusted["board_left_px"]) + int(dx)
+    adjusted["board_top_px"] = int(adjusted["board_top_px"]) + int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_wave_tank_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
 
 
 def _source_positions(board: Sequence[float], *, unit_px: float) -> Dict[str, Tuple[float, float]]:
@@ -847,16 +935,18 @@ def _render_scene(
     accent_color_name: str,
     scene_spec: _SceneSpec,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> _RenderedScene:
     """Render one wave-interference scene."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     theme = build_physics_waves_theme(str(accent_color_name), diagram_style=diagram_style)
-    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=False)
-    source_font = load_font(int(render_defaults["source_font_size_px"]), bold=True)
-    candidate_font = load_font(int(render_defaults["candidate_font_size_px"]), bold=True)
-    note_font = load_font(int(render_defaults["note_font_size_px"]), bold=False)
+    resolved_font_family = None if font_family is None else str(font_family)
+    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=False, font_family=resolved_font_family)
+    source_font = load_font(int(render_defaults["source_font_size_px"]), bold=True, font_family=resolved_font_family)
+    candidate_font = load_font(int(render_defaults["candidate_font_size_px"]), bold=True, font_family=resolved_font_family)
+    note_font = load_font(int(render_defaults["note_font_size_px"]), bold=False, font_family=resolved_font_family)
     board = _board_bbox(render_defaults)
     _draw_tank(draw, board=board, scene_variant=str(scene_spec.scene_variant), theme=theme, render_defaults=render_defaults)
     source_positions = _source_positions(board, unit_px=float(render_defaults["half_wavelength_px"]))
@@ -909,12 +999,17 @@ def _render_scene(
     scene_entities.append({"entity_id": "phase_relation_label", "entity_type": "phase_label", "bbox": list(phase_bbox), "meta": {"phase_relation": str(scene_spec.phase_relation)}})
     scene_entities.append({"entity_id": "ring_spacing_label", "entity_type": "scale_label", "bbox": list(legend_bbox), "meta": {"spacing": "lambda/2"}})
 
+    evidence_type: str
     evidence_bboxes: List[List[float]]
+    evidence_bbox_map: Dict[str, List[float]]
+    evidence_points: List[List[float]]
+    evidence_key_by_entity_id: Dict[str, str]
     evidence_ids: List[str] = [str(entity_id) for entity_id in scene_spec.evidence_entity_ids]
     unit_px = float(render_defaults["half_wavelength_px"])
 
     if scene_spec.choice_scenario is not None:
         candidate_bboxes: Dict[str, List[float]] = {}
+        candidate_centers: Dict[str, List[float]] = {}
         for candidate in scene_spec.choice_scenario.candidates:
             center = _point_to_px(board, unit_px=unit_px, x_steps=float(candidate.x_steps), y_steps=float(candidate.y_steps))
             bbox = _draw_candidate(
@@ -926,6 +1021,7 @@ def _render_scene(
                 font=candidate_font,
             )
             candidate_bboxes[str(candidate.letter)] = list(bbox)
+            candidate_centers[str(candidate.letter)] = [round(float(center[0]), 3), round(float(center[1]), 3)]
             scene_entities.append(
                 {
                     "entity_id": f"candidate_{str(candidate.letter)}",
@@ -943,8 +1039,19 @@ def _render_scene(
                 }
             )
         correct_letter = str(scene_spec.choice_scenario.correct_option_letter)
-        evidence_bboxes = [list(candidate_bboxes[correct_letter])]
-        render_map.update({"source_bboxes_px": dict(source_bboxes), "candidate_bboxes_px": dict(candidate_bboxes)})
+        evidence_type = "point_set"
+        evidence_points = [list(candidate_centers[correct_letter])]
+        evidence_bboxes = []
+        evidence_bbox_map = {}
+        evidence_key_by_entity_id = {}
+        render_map.update(
+            {
+                "source_bboxes_px": dict(source_bboxes),
+                "candidate_bboxes_px": dict(candidate_bboxes),
+                "candidate_centers_px": dict(candidate_centers),
+                "evidence_point_set_px": [list(point) for point in evidence_points],
+            }
+        )
 
     elif scene_spec.path_scenario is not None:
         scenario = scene_spec.path_scenario
@@ -990,7 +1097,9 @@ def _render_scene(
             outline_rgb=theme.label_outline_rgb,
             text_rgb=theme.label_text_rgb,
         )
-        witness_bbox = _bbox_union(source_bboxes["S1"], source_bboxes["S2"], point_bbox, line_1_bbox, line_2_bbox, tag_1_bbox, tag_2_bbox)
+        path_s1p_bbox = _bbox_union(line_1_bbox, tag_1_bbox, point_bbox)
+        path_s2p_bbox = _bbox_union(line_2_bbox, tag_2_bbox, point_bbox)
+        witness_bbox = _bbox_union(source_bboxes["S1"], source_bboxes["S2"], path_s1p_bbox, path_s2p_bbox)
         scene_entities.append(
             {
                 "entity_id": "point_P",
@@ -1006,13 +1115,46 @@ def _render_scene(
         )
         scene_entities.append(
             {
+                "entity_id": "path_S1P",
+                "entity_type": "path_difference_guide",
+                "bbox": list(path_s1p_bbox),
+                "meta": {
+                    "path_key": "S1P",
+                    "source_id": "S1",
+                    "target_id": "P",
+                    "distance_steps": int(scenario.r1_steps),
+                },
+            }
+        )
+        scene_entities.append(
+            {
+                "entity_id": "path_S2P",
+                "entity_type": "path_difference_guide",
+                "bbox": list(path_s2p_bbox),
+                "meta": {
+                    "path_key": "S2P",
+                    "source_id": "S2",
+                    "target_id": "P",
+                    "distance_steps": int(scenario.r2_steps),
+                },
+            }
+        )
+        scene_entities.append(
+            {
                 "entity_id": "path_difference_witness_region",
                 "entity_type": "path_difference_witness_region",
                 "bbox": list(witness_bbox),
                 "meta": {"path_difference_steps": int(scenario.path_difference_steps)},
             }
         )
-        evidence_bboxes = [list(witness_bbox)]
+        evidence_type = "keyed_bbox_map"
+        evidence_bbox_map = {
+            "S1P": list(path_s1p_bbox),
+            "S2P": list(path_s2p_bbox),
+        }
+        evidence_key_by_entity_id = {"path_S1P": "S1P", "path_S2P": "S2P"}
+        evidence_bboxes = []
+        evidence_points = []
         render_map.update(
             {
                 "source_bboxes_px": dict(source_bboxes),
@@ -1021,7 +1163,10 @@ def _render_scene(
                 "path_s2_bbox_px": list(line_2_bbox),
                 "path_s1_label_bbox_px": list(tag_1_bbox),
                 "path_s2_label_bbox_px": list(tag_2_bbox),
+                "path_s1p_bbox_px": list(path_s1p_bbox),
+                "path_s2p_bbox_px": list(path_s2p_bbox),
                 "path_difference_witness_region_bbox_px": list(witness_bbox),
+                "evidence_bbox_map_px": {str(key): list(value) for key, value in evidence_bbox_map.items()},
             }
         )
     else:
@@ -1029,7 +1174,11 @@ def _render_scene(
 
     return _RenderedScene(
         image=image,
+        evidence_type=str(evidence_type),
         evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        evidence_bbox_map={str(key): list(value) for key, value in evidence_bbox_map.items()},
+        evidence_points=[list(point) for point in evidence_points],
+        evidence_key_by_entity_id={str(key): str(value) for key, value in evidence_key_by_entity_id.items()},
         evidence_entity_ids=list(evidence_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
@@ -1050,9 +1199,12 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
     """Build deterministic JSON examples for one query."""
 
     if str(query_id) == "interference_point_choice":
-        return build_prompt_json_examples(evidence_value=[[224, 202, 270, 248]], answer_type="option_letter")
+        return build_prompt_json_examples(evidence_value=[[247, 225]], answer_type="option_letter")
     if str(query_id) == "path_difference_value":
-        return build_prompt_json_examples(evidence_value=[[212, 164, 754, 474]], answer_type="integer")
+        return build_prompt_json_examples(
+            evidence_value={"S1P": [212, 164, 486, 356], "S2P": [446, 184, 754, 474]},
+            answer_type="integer",
+        )
     raise ValueError(f"unsupported waves query id: {query_id}")
 
 
@@ -1074,14 +1226,6 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 scene_spec = _sample_scene_spec(attempt_rng, axes=axes)
             except ValueError:
                 continue
-            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
-                scene_id=SCENE_ID,
-                task_group=self.task_group,
-                canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-                canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-                instance_seed=int(instance_seed),
-                params=params,
-            )
             render_defaults = {
                 key: resolve_render_int(
                     params,
@@ -1112,12 +1256,33 @@ class _PhysicsWavesInterferenceTankBaseTask:
                     "note_font_size_px",
                 )
             }
+            render_defaults, layout_placement_meta = _resolve_wave_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+            )
+            background, background_meta, diagram_style, diagram_style_meta = prepare_physics_diagram_style_and_background(
+                scene_id=SCENE_ID,
+                task_group=self.task_group,
+                canvas_width=int(render_defaults["canvas_width"]),
+                canvas_height=int(render_defaults["canvas_height"]),
+                instance_seed=int(instance_seed),
+                params=params,
+            )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             rendered_scene = _render_scene(
                 background=background,
                 render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
                 diagram_style=diagram_style,
+                font_family=str(font_family),
             )
             image, post_noise_meta = apply_post_image_noise(
                 rendered_scene.image,
@@ -1180,7 +1345,13 @@ class _PhysicsWavesInterferenceTankBaseTask:
             answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str = scene_spec.target_answer
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            if str(rendered_scene.evidence_type) == "point_set":
+                evidence_value = [list(point) for point in rendered_scene.evidence_points]
+            elif str(rendered_scene.evidence_type) == "keyed_bbox_map":
+                evidence_value = {str(key): list(value) for key, value in rendered_scene.evidence_bbox_map.items()}
+            else:
+                evidence_value = [list(bbox) for bbox in rendered_scene.evidence_bboxes]
+            evidence_gt = TypedValue(type=str(rendered_scene.evidence_type), value=evidence_value)
             path_steps_for_complexity = int(answer_value) if str(answer_type) == "integer" else 0
             complexity = build_physics_waves_interference_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1189,7 +1360,7 @@ class _PhysicsWavesInterferenceTankBaseTask:
                 query_id=str(axes.query_id),
                 option_count=len(OPTION_LETTERS) if str(axes.query_id) == "interference_point_choice" else 0,
                 path_difference_steps=int(path_steps_for_complexity),
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                evidence_count=len(evidence_value),
             )
 
             choice_payload: Dict[str, Any] = {}
@@ -1239,6 +1410,7 @@ class _PhysicsWavesInterferenceTankBaseTask:
                         "choice_scenario": dict(choice_payload),
                         "path_difference_scenario": dict(path_payload),
                         "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                        "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
                     },
                 },
                 "query_spec": {
@@ -1272,8 +1444,21 @@ class _PhysicsWavesInterferenceTankBaseTask:
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
                     "half_wavelength_px": int(render_defaults["half_wavelength_px"]),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "wave_interference_tank",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1292,15 +1477,42 @@ class _PhysicsWavesInterferenceTankBaseTask:
                     "choice_scenario": dict(choice_payload),
                     "path_difference_scenario": dict(path_payload),
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
+                    "evidence_key_by_entity_id": dict(rendered_scene.evidence_key_by_entity_id),
                 },
                 "witness_symbolic": {
-                    "type": "object_set",
+                    "type": "object_key_map" if str(rendered_scene.evidence_type) == "keyed_bbox_map" else "object_set",
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    **(
+                        {"keys": dict(rendered_scene.evidence_key_by_entity_id)}
+                        if str(rendered_scene.evidence_type) == "keyed_bbox_map"
+                        else {}
+                    ),
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "type": str(rendered_scene.evidence_type),
+                    **(
+                        {
+                            "point_set": [list(point) for point in rendered_scene.evidence_points],
+                            "pixel_point_set": [list(point) for point in rendered_scene.evidence_points],
+                        }
+                        if str(rendered_scene.evidence_type) == "point_set"
+                        else {
+                            "keyed_bbox_map": {
+                                str(key): list(value) for key, value in rendered_scene.evidence_bbox_map.items()
+                            },
+                            "pixel_keyed_bbox_map": {
+                                str(key): list(value) for key, value in rendered_scene.evidence_bbox_map.items()
+                            },
+                        }
+                        if str(rendered_scene.evidence_type) == "keyed_bbox_map"
+                        else {
+                            "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                            "pixel_bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                        }
+                    ),
                 },
                 "background": background_meta,
+                "technical_diagram_style": dict(diagram_style_meta),
                 "post_image_noise": post_noise_meta,
             }
             return TaskOutput(

@@ -85,6 +85,12 @@ rendering:
       label_stroke_width_px: 2
       pressure_max_kpa: 10
       volume_max_l: 12
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 8
+      layout_jitter_x_px_min: -18
+      layout_jitter_x_px_max: 12
+      layout_jitter_y_px_min: -14
+      layout_jitter_y_px_max: 10
 
 complexity:
   task_overrides:

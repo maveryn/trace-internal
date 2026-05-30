@@ -28,9 +28,9 @@ def test_quadrilateral_completion_has_unique_candidate_answer(query_id: str) -> 
     assert out.query_id == query_id
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.evidence_gt.value == [candidates["C"]["bbox_px"]]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert out.evidence_gt.value == [candidates["C"]["point_px"]]
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert len(execution["known_points_graph"]) == 3
     assert len(candidates) == 6
 

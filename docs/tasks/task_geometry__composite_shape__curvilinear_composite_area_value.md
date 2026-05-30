@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: one of `rectangle_semicircle_cap_area`, `rectangle_semicircle_cutout_area`, or `rectangle_quarter_sector_cutout_area`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_bbox_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_curvilinear_composite_v0`
@@ -17,7 +17,7 @@
 Compute the area of a shaded composite shape by combining a rectangle with a semicircle or subtracting a semicircle/quarter-sector cutout. Answers use the internal pi value and are rounded to one decimal place.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set` over the visible measurement label boxes needed for the computation, such as width, height, radius, and angle labels.
+Prompt-facing evidence is a `keyed_bbox_map` over the visible target shape and curved component/cutout. Width, height, radius, and angle labels remain visible annotations and render metadata, not public evidence.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -43,7 +43,7 @@ rendering:
     label_font_size_max: 25
     measurement_font_size_min: 17
     measurement_font_size_max: 23
-    measurement_label_offset_px: 38
+    measurement_label_offset_px: 54
     point_label_offset_px: 36
 
 visual:
@@ -80,7 +80,7 @@ prompt:
     task_key: circle_theorem_query
     object_description: labeled points and measurement annotations
     answer_hint_integer: set "answer" to the requested value as an integer
-    evidence_hint_measurement_tokens: set "evidence" to a JSON array of bounding boxes [x0,y0,x1,y1] around only the visible measurement labels needed to compute the answer; do not include unrelated measurements, point labels, or the unknown target label
+    evidence_hint_circle_points: 'set "evidence" to a JSON object with exactly these visible point-label keys: {evidence_point_keys}; each value must be that label''s pixel point [x,y]'
 
 complexity:
   shared:

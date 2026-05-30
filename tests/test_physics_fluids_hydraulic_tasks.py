@@ -62,20 +62,21 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
 
-    assert len(out.evidence_gt.value) == 6
-
-    assert out.query_id == "default"
+    assert len(out.evidence_gt.value) == 3
 
     assert out.scene_id == "hydraulic"
 
     assert out.query_id == params["query_id"]
 
-    assert trace["query_spec"]["query_id"] == "default"
-
     assert trace["query_spec"]["query_id"] == params["query_id"]
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_hydraulic_diagram_offset"
 
 
     assert int(execution["output_force_value"]) * int(execution["input_area_value"]) == int(
@@ -98,16 +99,52 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
         assert execution["shown_output_force_value"] is None
 
         assert int(execution["shown_input_force_value"]) == int(execution["input_force_value"])
+
+        assert execution["evidence_entity_ids"] == [
+            "left_force_label",
+            "left_area_label",
+            "right_area_label",
+        ]
+        assert execution["evidence_key_by_entity_id"] == {
+            "left_force_label": "input_force",
+            "left_area_label": "input_area",
+            "right_area_label": "output_area",
+        }
+        assert set(out.evidence_gt.value) == {"input_force", "input_area", "output_area"}
     elif str(params["query_id"]) == "missing_input_force":
 
         assert execution["shown_input_force_value"] is None
 
         assert int(execution["shown_output_force_value"]) == int(execution["output_force_value"])
+
+        assert execution["evidence_entity_ids"] == [
+            "right_force_label",
+            "left_area_label",
+            "right_area_label",
+        ]
+        assert execution["evidence_key_by_entity_id"] == {
+            "right_force_label": "output_force",
+            "left_area_label": "input_area",
+            "right_area_label": "output_area",
+        }
+        assert set(out.evidence_gt.value) == {"output_force", "input_area", "output_area"}
     else:
 
         assert execution["shown_output_area_value"] is None
 
         assert int(execution["shown_output_force_value"]) == int(execution["output_force_value"])
+
+        assert execution["evidence_entity_ids"] == [
+            "left_force_label",
+            "right_force_label",
+            "left_area_label",
+        ]
+        assert execution["evidence_key_by_entity_id"] == {
+            "left_force_label": "input_force",
+            "right_force_label": "output_force",
+            "left_area_label": "input_area",
+        }
+        assert set(out.evidence_gt.value) == {"input_force", "output_force", "input_area"}
 
 
 def test_physics_fluids_hydraulic_task_is_deterministic() -> None:
@@ -141,7 +178,7 @@ def test_physics_fluids_hydraulic_sampling_covers_scene_query_cross_product() ->
         "missing_input_force": set(),
         "missing_piston_area": set(),
     }
-    for sampling_index in range(90):
+    for sampling_index in range(120):
         out = task.generate(
             61100 + sampling_index,
             params={},
@@ -185,6 +222,8 @@ def test_physics_fluids_hydraulic_prompt_bundle_supports_variants() -> None:
     }
 
     assert len(bundle["query_templates"]["missing_output_force"]) == 5
+
+    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5
 
 
 def test_physics_fluids_hydraulic_build_smoke(tmp_path: Path) -> None:

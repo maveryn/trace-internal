@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ...shared.text_legibility import draw_text_traced
 from typing import Any, Sequence, Tuple
 
 Point = Tuple[float, float]
@@ -65,14 +66,14 @@ def draw_label(ctx: Any, text: str, center: Point, *, small: bool = False) -> BB
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
     top = float(center[1]) - (text_h / 2.0)
-    ctx.draw.text(
+    draw_text_traced(ctx.draw,
         (left, top),
         str(text),
         font=font,
         fill=ctx.label_color,
         stroke_width=2,
         stroke_fill=ctx.label_stroke_color,
-    )
+     role="readout", required=False,)
     return pad_bbox((left, top, left + text_w, top + text_h), 4.0, width=ctx.width, height=ctx.height)
 
 

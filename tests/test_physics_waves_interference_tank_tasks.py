@@ -39,16 +39,14 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "point_set"
 
     assert len(out.evidence_gt.value) == 1
-
-    assert out.query_id == "default"
 
     assert out.scene_id == "wave_interference"
 
     assert out.query_id == "interference_point_choice"
-    assert trace["query_spec"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "interference_point_choice"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "interference_point_choice"
 
@@ -68,7 +66,12 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert execution["evidence_entity_ids"] == ["candidate_D"]
 
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["render_map"]["evidence_point_set_px"] == out.evidence_gt.value
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
     assert "candidate points A-E" in out.prompt
 
@@ -91,13 +94,21 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert int(out.answer_gt.value) == 4
 
-    assert out.query_id == "default"
-
     assert out.scene_id == "wave_interference"
 
     assert out.query_id == "path_difference_value"
 
-    assert len(out.evidence_gt.value) == 1
+    assert out.evidence_gt.type == "keyed_bbox_map"
+
+    assert set(out.evidence_gt.value) == {"S1P", "S2P"}
+
+    assert out.trace_payload["query_spec"]["query_id"] == "path_difference_value"
+    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert out.trace_payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert out.trace_payload["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert out.trace_payload["render_map"]["evidence_bbox_map_px"] == out.evidence_gt.value
+    assert out.trace_payload["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert out.trace_payload["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
     assert scenario["phase_relation"] == "opposite_phase"
 
@@ -107,7 +118,12 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert scenario["path_difference_steps"] == 4
 
-    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["path_difference_witness_region"]
+    assert out.trace_payload["execution_trace"]["evidence_entity_ids"] == ["path_S1P", "path_S2P"]
+
+    assert out.trace_payload["execution_trace"]["evidence_key_by_entity_id"] == {
+        "path_S1P": "S1P",
+        "path_S2P": "S2P",
+    }
 
     assert "labeled dashed source-to-P path guides" in out.prompt
     render_map = out.trace_payload["render_map"]
@@ -115,6 +131,10 @@ def test_physics_waves_path_difference_value_contract() -> None:
     assert "path_s1_label_bbox_px" in render_map
 
     assert "path_s2_label_bbox_px" in render_map
+
+    assert "path_s1p_bbox_px" in render_map
+
+    assert "path_s2p_bbox_px" in render_map
 
 
 def test_physics_waves_tasks_are_deterministic() -> None:
@@ -172,7 +192,7 @@ def test_physics_waves_sampling_covers_internal_axes_and_answers() -> None:
 
     assert set(option_letters) == {"A", "B", "C", "D", "E"}
 
-    assert path_answers == {1, 2, 3, 4}
+    assert path_answers == {1, 2, 3, 4, 5}
 
 
 def test_physics_waves_prompt_bundle_supports_variants() -> None:
@@ -188,3 +208,5 @@ def test_physics_waves_prompt_bundle_supports_variants() -> None:
     assert len(bundle["query_templates"]["interference_point_choice"]) == 5
 
     assert len(bundle["query_templates"]["path_difference_value"]) == 5
+
+    assert len(set(bundle["answer_or_evidence_templates"]["answer_and_evidence"])) == 5

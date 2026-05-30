@@ -11,10 +11,7 @@
     ]
   },
   "required_slots_by_key": {
-    "scene:parallelogram_area_partition_scene": [
-      "object_description"
-    ],
-    "scene:triangle_area_partition_scene": [
+    "scene:area_partition_scene": [
       "object_description"
     ],
     "query:total_area_from_shaded_partition": [],
@@ -47,14 +44,7 @@
     ]
   },
   "scene_templates": {
-    "parallelogram_area_partition_scene": [
-      "The diagram shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The image shows {object_description}.",
-      "This geometry diagram shows {object_description}.",
-      "The labeled diagram shows {object_description}."
-    ],
-    "triangle_area_partition_scene": [
+    "area_partition_scene": [
       "The diagram shows {object_description}.",
       "The figure shows {object_description}.",
       "The image shows {object_description}.",

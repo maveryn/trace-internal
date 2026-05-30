@@ -129,7 +129,7 @@ class _ResolvedProblem:
 class _RenderedCuboidViewsScene:
     image: Image.Image
     answer: float
-    evidence_bboxes: Tuple[BBox, ...]
+    evidence_bboxes: Mapping[str, BBox]
     evidence_roles: Tuple[str, ...]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
@@ -341,17 +341,15 @@ def _render_cuboid_views_scene(
     label_bboxes["target"] = _draw_label(ctx, "SA=?", (642.0, 112.0), small=False)
 
     evidence_roles = (
-        "target_cue",
-        "top_view_perimeter_label",
-        "front_view_perimeter_label",
-        "right_view_perimeter_label",
+        "top_view",
+        "front_view",
+        "right_view",
     )
-    evidence_bboxes = (
-        label_bboxes["target"],
-        label_bboxes["top_perimeter"],
-        label_bboxes["front_perimeter"],
-        label_bboxes["right_perimeter"],
-    )
+    evidence_bboxes = {
+        "top_view": top_rect,
+        "front_view": front_rect,
+        "right_view": right_rect,
+    }
     scene_entities = (
         {
             "entity_id": "top_view",
@@ -395,7 +393,7 @@ def _render_cuboid_views_scene(
     return _RenderedCuboidViewsScene(
         image=ctx.image,
         answer=float(problem.answer),
-        evidence_bboxes=tuple(evidence_bboxes),
+        evidence_bboxes=dict(evidence_bboxes),
         evidence_roles=tuple(evidence_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
@@ -515,17 +513,12 @@ class _CuboidOrthographicViewsBaseTask:
         return ctx, render_meta
 
     def _build_complexity(self, rendered: _RenderedCuboidViewsScene) -> TaskComplexity:
-        visual_scan = clamp_unit_interval(
-            0.46
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
-            * 0.18
-        )
+        visual_scan = clamp_unit_interval(0.46 + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5) * 0.18)
         precision = 0.68
         ambiguity = 0.54
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5)
-            * 0.12
+            + normalize_linear(len(rendered.evidence_bboxes), min_value=3, max_value=5) * 0.12
         )
         return build_geometry_measurement_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -619,16 +612,11 @@ class _CuboidOrthographicViewsBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
-            [
-                round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-                round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-            ]
-            for bbox in evidence_bboxes
-        ]
+        evidence_bbox_map = {
+            str(role): _bbox_to_list(bbox) for role, bbox in rendered.evidence_bboxes.items()
+        }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": "three_view_cuboid_projection",
@@ -684,16 +672,14 @@ class _CuboidOrthographicViewsBaseTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
-                "source_witness_type": "bbox_set",
+                "source_witness_type": "keyed_bbox_map",
                 "original_evidence_value": list(rendered.evidence_roles),
                 **dict(rendered.witness),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_bbox_map),
+                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
             },
         }
         return TaskOutput(

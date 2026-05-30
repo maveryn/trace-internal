@@ -56,22 +56,15 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert out.evidence_gt.type == "bbox_set"
 
-    assert out.query_id == "default"
-
     assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_id"] == "default"
-
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id"] == "default"
 
     assert trace["query_spec"]["params"]["query_id"] == expected_query_id
     expected_internal_query = (
         f"{params['torque_side']}_torque" if expected_query_id == "side_torque" else expected_query_id
     )
     assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
-
-    assert execution["query_id"] == "default"
 
     assert execution["query_id"] == expected_query_id
     assert execution["internal_query_id"] == expected_internal_query
@@ -83,13 +76,17 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
     assert int(execution["target_answer"]) == int(expected_answer)
 
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
+    assert trace["render_spec"]["layout_placement"]["mode"] == "whole_lever_diagram_offset"
     if expected_query_id == "missing_weight_to_balance":
 
-        assert out.evidence_gt.value == [trace["render_map"]["missing_weight_marker_bbox_px"]]
+        assert trace["render_map"]["missing_weight_marker_bbox_px"] in out.evidence_gt.value
 
-        assert execution["evidence_entity_ids"] == ["missing_weight_marker"]
+        assert "missing_weight_marker" in execution["evidence_entity_ids"]
 
         assert execution["placeholder_side"] in {"left", "right"}
+        assert len(out.evidence_gt.value) == len(execution["relevant_weight_ids"])
+        assert len(out.evidence_gt.value) >= 2
     else:
 
         assert str(execution["internal_query_id"]) in {"left_torque", "right_torque"}

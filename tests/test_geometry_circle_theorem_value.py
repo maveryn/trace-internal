@@ -73,7 +73,7 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
         (
             {"query_id": "diameter_perpendicular_chord_length", "target_answer": 8},
             8,
-            2,
+            5,
             "BE",
         ),
         (
@@ -83,7 +83,7 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
                 "secant_secant_variable_target_kind": "inside_first",
             },
             24,
-            3,
+            5,
             "AB",
         ),
         (
@@ -93,55 +93,55 @@ def _circle_crosses_bbox(center: list[float], radius: float, bbox: list[float]) 
                 "tangent_secant_target_kind": "outside",
             },
             24,
-            2,
+            4,
             "PA",
         ),
         (
             {"query_id": "secant_secant_length", "target_answer": 10},
             10,
-            3,
+            5,
             "PA",
         ),
         (
             {"query_id": "intersecting_chords_arc_measure", "target_answer": 120},
             120,
-            2,
+            5,
             "arcCD",
         ),
         (
             {"query_id": "multi_step_angle_value", "target_answer": 85},
             85,
-            2,
+            5,
             "angleAEB",
         ),
         (
             {"query_id": "inscribed_angle_from_central", "target_answer": 35},
             35,
-            1,
+            4,
             "angleACB",
         ),
         (
             {"query_id": "central_angle_from_inscribed", "target_answer": 70},
             70,
-            1,
+            4,
             "angleAOB",
         ),
         (
             {"query_id": "inscribed_angle_from_arc", "target_answer": 35},
             35,
-            1,
+            3,
             "angleACB",
         ),
         (
             {"query_id": "tangent_chord_angle_from_arc", "target_answer": 45},
             45,
-            1,
+            3,
             "anglePTA",
         ),
         (
             {"query_id": "tangent_chord_angle_from_inscribed", "target_answer": 45},
             45,
-            1,
+            4,
             "anglePTA",
         ),
     ),
@@ -158,7 +158,7 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_point_map"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
     assert (
         out.trace_payload["execution_trace"]["canonical_answer_segment"]
@@ -170,10 +170,21 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
         == params["query_id"]
     )
     assert len(out.trace_payload["execution_trace"]["distractor_tokens"]) >= 1
-    evidence_tokens = set(out.trace_payload["witness_symbolic"]["evidence_tokens"])
-    assert not (
-        set(out.trace_payload["execution_trace"]["distractor_tokens"]) & evidence_tokens
+    support_measurement_tokens = set(
+        out.trace_payload["witness_symbolic"]["support_measurement_tokens"]
     )
+    evidence_point_labels = set(
+        out.trace_payload["witness_symbolic"]["evidence_point_labels"]
+    )
+    assert not (
+        set(out.trace_payload["execution_trace"]["distractor_tokens"])
+        & support_measurement_tokens
+    )
+    assert set(out.evidence_gt.value) == evidence_point_labels
+    assert evidence_point_labels <= set(out.trace_payload["render_map"]["point_pixels"])
+    assert "exactly these visible point-label keys" in out.prompt
+    for label in evidence_point_labels:
+        assert f'"{label}"' in out.prompt
     all_tokens = set(out.trace_payload["render_map"]["measurement_token_bboxes"])
     assert not any(str(token).startswith("angle") for token in all_tokens)
     assert any(str(token).startswith("∠") for token in all_tokens)
@@ -181,18 +192,18 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
         assert token in out.trace_payload["render_map"]["measurement_token_bboxes"]
 
     projected = out.trace_payload["projected_evidence"]
-    assert projected["type"] == "bbox_set"
-    assert projected["bbox_set"] == out.evidence_gt.value
-    assert projected["pixel_bbox_set"] == out.evidence_gt.value
+    assert projected["type"] == "keyed_point_map"
+    assert projected["keyed_point_map"] == out.evidence_gt.value
+    assert projected["pixel_keyed_point_map"] == out.evidence_gt.value
     assert len(projected["point_set"]) == int(expected_evidence_count)
     assert all(
         isinstance(point, list) and len(point) == 2 for point in projected["point_set"]
     )
-    assert len(projected["pixel_bbox_set"]) == int(expected_evidence_count)
     assert all(
-        isinstance(bbox, list) and len(bbox) == 4 for bbox in out.evidence_gt.value
+        isinstance(point, list) and len(point) == 2
+        for point in out.evidence_gt.value.values()
     )
-    assert all("=" in str(token) for token in evidence_tokens)
+    assert all("=" in str(token) for token in support_measurement_tokens)
 
 
 def test_geometry_circle_theorem_value_is_deterministic() -> None:
@@ -377,7 +388,7 @@ def test_secant_secant_variable_variant_supports_multiple_missing_segments(
     assert int(trace["PA"]) * int(trace["PB"]) == int(trace["PC"]) * int(trace["PD"])
     assert int(trace["PB"]) == int(trace["PA"]) + int(trace["AB"])
     assert int(trace["PD"]) == int(trace["PC"]) + int(trace["CD"])
-    assert len(out.evidence_gt.value) == 3
+    assert len(out.evidence_gt.value) == 5
 
 
 def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
@@ -395,8 +406,8 @@ def test_intersecting_chords_arc_variant_uses_angle_arc_relationship() -> None:
     assert int(trace["arc_CD"]) == int(out.answer_gt.value)
     assert "arc " in out.prompt
     assert "arcCD" not in out.prompt
-    assert len(out.evidence_gt.value) == 2
-    assert len(out.trace_payload["projected_evidence"]["pixel_bbox_set"]) == 2
+    assert len(out.evidence_gt.value) == 5
+    assert len(out.trace_payload["projected_evidence"]["pixel_keyed_point_map"]) == 5
 
 
 def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
@@ -411,8 +422,8 @@ def test_multi_step_angle_variant_uses_intersecting_chord_arc_sum() -> None:
     assert int(trace["angle_AEB"]) == int(out.answer_gt.value)
     assert "∠" in out.prompt
     assert "angleAEB" not in out.prompt
-    assert len(out.evidence_gt.value) == 2
-    assert len(out.trace_payload["projected_evidence"]["pixel_bbox_set"]) == 2
+    assert len(out.evidence_gt.value) == 5
+    assert len(out.trace_payload["projected_evidence"]["pixel_keyed_point_map"]) == 5
 
 
 @pytest.mark.parametrize(
@@ -439,7 +450,8 @@ def test_inscribed_angle_variants_use_half_arc_relationship(
     assert "∠" in out.prompt
     assert "angleAOB" not in out.prompt
     assert "angleACB" not in out.prompt
-    assert len(out.evidence_gt.value) == 1
+    expected_count = 3 if query_id == "inscribed_angle_from_arc" else 4
+    assert len(out.evidence_gt.value) == expected_count
 
 
 @pytest.mark.parametrize(
@@ -461,7 +473,8 @@ def test_tangent_chord_angle_variants_use_matching_angle_or_arc(
     assert int(trace["angle_PTA"]) == int(out.answer_gt.value)
     assert "∠" in out.prompt
     assert "anglePTA" not in out.prompt
-    assert len(out.evidence_gt.value) == 1
+    expected_count = 3 if query_id == "tangent_chord_angle_from_arc" else 4
+    assert len(out.evidence_gt.value) == expected_count
 
 
 def test_circle_theorem_rendered_label_boxes_avoid_lines_and_circle() -> None:

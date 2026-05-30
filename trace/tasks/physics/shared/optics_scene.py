@@ -133,6 +133,7 @@ def render_optics_ray_scene(
     evidence_entity_ids: Sequence[str],
     query_id: str,
     diagram_style: Any | None = None,
+    font_family: str | None = None,
 ) -> RenderedOpticsScene:
     """Render one graph-paper optics scene with hidden full path semantics."""
 
@@ -154,7 +155,7 @@ def render_optics_ray_scene(
     ray_head_length = float(render_defaults["ray_head_length_px"])
     ray_head_width = float(render_defaults["ray_head_width_px"])
     target_radius = max(10.0, float(render_defaults["target_radius_px"]))
-    target_font = load_font(max(16, int(round(cell_size * 0.36))), bold=False)
+    target_font = load_font(max(16, int(round(cell_size * 0.36))), bold=False, font_family=font_family)
     label_stroke_width = max(1, int(render_defaults["label_stroke_width_px"]))
 
     board_bbox = [

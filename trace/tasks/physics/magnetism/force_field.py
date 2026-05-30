@@ -17,10 +17,11 @@ from ...registry import register_task
 from ...shared.bbox_projection import bbox_union_many as _bbox_union
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.render_variation import resolve_render_int
+from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
@@ -155,7 +156,7 @@ class _RenderedScene:
     """Rendered magnetism scene plus prompt-facing evidence metadata."""
 
     image: Image.Image
-    evidence_bboxes: List[List[float]]
+    evidence_bbox_map: Dict[str, List[float]]
     evidence_entity_ids: List[str]
     scene_entities: List[Dict[str, Any]]
     render_map: Dict[str, Any]
@@ -434,7 +435,7 @@ def _sample_scene_spec(rng, *, axes: _ResolvedAxes, params: Mapping[str, Any], i
         direction_scenario=scenario,
         correct_option_letter=str(axes.correct_option_letter),
         target_answer=str(axes.correct_option_letter),
-        evidence_entity_ids=(f"option_{str(axes.correct_option_letter)}",),
+        evidence_entity_ids=("field_orientation_label", "particle", "velocity_vector"),
     )
 
 
@@ -644,16 +645,15 @@ def _draw_option_arrows(
     theme,
     option_font,
     scene_entities: List[Dict[str, Any]],
-) -> Tuple[List[List[float]], Dict[str, List[float]]]:
+) -> Dict[str, List[float]]:
     """Draw the A-H candidate force arrows."""
 
-    left = float(render_defaults["side_left_px"])
-    top = float(render_defaults["side_top_px"])
+    left = float(render_defaults["side_left_px"]) + float(render_defaults.get("layout_offset_x_px", 0))
+    top = float(render_defaults["side_top_px"]) + float(render_defaults.get("layout_offset_y_px", 0))
     cell_w = float(render_defaults["option_cell_width_px"])
     cell_h = float(render_defaults["option_cell_height_px"])
     gap_x = float(render_defaults["option_cell_gap_x_px"])
     gap_y = float(render_defaults["option_cell_gap_y_px"])
-    evidence_bboxes: List[List[float]] = []
     option_bboxes: Dict[str, List[float]] = {}
     for index, letter in enumerate(OPTION_LETTERS):
         col = index % 2
@@ -694,9 +694,99 @@ def _draw_option_arrows(
                 "meta": {"option_letter": str(letter), "direction": direction, "is_correct": str(letter) == str(correct_option_letter)},
             }
         )
-        if str(letter) == str(correct_option_letter):
-            evidence_bboxes.append(option_bbox)
-    return evidence_bboxes, option_bboxes
+    return option_bboxes
+
+
+def _magnetism_content_bbox(*, render_defaults: Mapping[str, Any]) -> List[float]:
+    """Return a conservative bbox for the whole magnetic-force diagram before placement."""
+
+    panel_left = float(render_defaults["panel_left_px"])
+    panel_top = float(render_defaults["panel_top_px"])
+    panel_right = panel_left + float(render_defaults["panel_width_px"])
+    panel_bottom = panel_top + float(render_defaults["panel_height_px"])
+    option_left = float(render_defaults["side_left_px"])
+    option_top = float(render_defaults["side_top_px"])
+    option_right = option_left + (2.0 * float(render_defaults["option_cell_width_px"])) + float(render_defaults["option_cell_gap_x_px"])
+    option_bottom = option_top + (4.0 * float(render_defaults["option_cell_height_px"])) + (3.0 * float(render_defaults["option_cell_gap_y_px"]))
+    return [
+        round(float(min(panel_left, option_left)), 3),
+        round(float(min(panel_top, option_top)), 3),
+        round(float(max(panel_right, option_right)), 3),
+        round(float(max(panel_bottom, option_bottom)), 3),
+    ]
+
+
+def _resolve_magnetism_layout_placement(
+    *,
+    render_defaults: Mapping[str, int],
+    params: Mapping[str, Any],
+    instance_seed: int,
+    canvas_width: int,
+    canvas_height: int,
+) -> Tuple[Dict[str, int], Dict[str, Any]]:
+    """Resolve whole-diagram placement before rendering and evidence projection."""
+
+    content_bbox = _magnetism_content_bbox(render_defaults=render_defaults)
+    content_left, content_top, content_right, content_bottom = [float(value) for value in content_bbox]
+    jitter = resolve_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.magnetic_force_layout",
+    )
+    min_margin = int(jitter.get("min_margin_px", 18))
+    requested_dx = int(jitter.get("requested_dx_px", 0))
+    requested_dy = int(jitter.get("requested_dy_px", 0))
+    min_dx = int(math.ceil(float(min_margin) - float(content_left)))
+    max_dx = int(math.floor(float(canvas_width) - float(min_margin) - float(content_right)))
+    min_dy = int(math.ceil(float(min_margin) - float(content_top)))
+    max_dy = int(math.floor(float(canvas_height) - float(min_margin) - float(content_bottom)))
+    if int(min_dx) > int(max_dx):
+        min_dx = 0
+        max_dx = 0
+    if int(min_dy) > int(max_dy):
+        min_dy = 0
+        max_dy = 0
+    if not bool(jitter.get("enabled", False)):
+        requested_dx = 0
+        requested_dy = 0
+    dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
+    dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
+    adjusted = dict(render_defaults)
+    adjusted["layout_offset_x_px"] = int(dx)
+    adjusted["layout_offset_y_px"] = int(dy)
+
+    content_width = round(float(content_right) - float(content_left), 3)
+    content_height = round(float(content_bottom) - float(content_top), 3)
+    final_bbox = [
+        round(float(content_left) + float(dx), 3),
+        round(float(content_top) + float(dy), 3),
+        round(float(content_right) + float(dx), 3),
+        round(float(content_bottom) + float(dy), 3),
+    ]
+    placement = dict(jitter)
+    placement.update(
+        {
+            "mode": "whole_magnetic_force_diagram_offset",
+            "content_bbox_px": list(content_bbox),
+            "content_size_px": [float(content_width), float(content_height)],
+            "final_content_bbox_px": list(final_bbox),
+            "canvas_size_px": [int(canvas_width), int(canvas_height)],
+            "free_space_px": [
+                round(float(canvas_width) - float(content_width), 3),
+                round(float(canvas_height) - float(content_height), 3),
+            ],
+            "available_offset_x_px": [int(min_dx), int(max_dx)],
+            "available_offset_y_px": [int(min_dy), int(max_dy)],
+            "sampled_offset_px": [int(requested_dx), int(requested_dy)],
+            "final_offset_px": [int(dx), int(dy)],
+            "default_origin_px": [round(float(content_left), 3), round(float(content_top), 3)],
+            "final_origin_px": [round(float(content_left) + float(dx), 3), round(float(content_top) + float(dy), 3)],
+            "dx_px": int(dx),
+            "dy_px": int(dy),
+        }
+    )
+    return adjusted, placement
 
 
 def _render_scene(
@@ -705,6 +795,7 @@ def _render_scene(
     render_defaults: Mapping[str, Any],
     accent_color_name: str,
     scene_spec: _SceneSpec,
+    font_family: str,
     diagram_style: Any | None = None,
 ) -> _RenderedScene:
     """Render one magnetism scene."""
@@ -712,15 +803,17 @@ def _render_scene(
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     theme = build_physics_magnetism_theme(str(accent_color_name), diagram_style=diagram_style)
-    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=False)
-    symbol_font = load_font(int(render_defaults["symbol_font_size_px"]), bold=True)
-    particle_font = load_font(int(render_defaults["particle_font_size_px"]), bold=True)
-    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True)
+    label_font = load_font(int(render_defaults["label_font_size_px"]), bold=False, font_family=str(font_family))
+    symbol_font = load_font(int(render_defaults["symbol_font_size_px"]), bold=True, font_family=str(font_family))
+    particle_font = load_font(int(render_defaults["particle_font_size_px"]), bold=True, font_family=str(font_family))
+    option_font = load_font(int(render_defaults["option_font_size_px"]), bold=True, font_family=str(font_family))
+    dx = float(render_defaults.get("layout_offset_x_px", 0))
+    dy = float(render_defaults.get("layout_offset_y_px", 0))
     panel = [
-        float(render_defaults["panel_left_px"]),
-        float(render_defaults["panel_top_px"]),
-        float(render_defaults["panel_left_px"]) + float(render_defaults["panel_width_px"]),
-        float(render_defaults["panel_top_px"]) + float(render_defaults["panel_height_px"]),
+        float(render_defaults["panel_left_px"]) + dx,
+        float(render_defaults["panel_top_px"]) + dy,
+        float(render_defaults["panel_left_px"]) + dx + float(render_defaults["panel_width_px"]),
+        float(render_defaults["panel_top_px"]) + dy + float(render_defaults["panel_height_px"]),
     ]
     _draw_panel(draw, bbox=panel, scene_variant=str(scene_spec.scene_variant), theme=theme, render_defaults=render_defaults)
     scene_entities: List[Dict[str, Any]] = []
@@ -747,22 +840,12 @@ def _render_scene(
     )
     scene_entities.append({"entity_id": "field_orientation_label", "entity_type": "field_label", "bbox": list(field_tag), "meta": {"field_orientation": str(scene_spec.field_orientation)}})
 
-    evidence_bboxes: List[List[float]] = []
     evidence_ids: List[str] = [str(entity_id) for entity_id in scene_spec.evidence_entity_ids]
 
     if scene_spec.direction_scenario is None:
         raise ValueError("force direction render requires a direction scenario")
     scenario = scene_spec.direction_scenario
     center = ((panel[0] + panel[2]) / 2.0, (panel[1] + panel[3]) / 2.0)
-    particle_bbox = _draw_particle(
-        draw,
-        center=center,
-        charge_sign=int(scenario.charge_sign),
-        theme=theme,
-        render_defaults=render_defaults,
-        particle_font=particle_font,
-        scene_entities=scene_entities,
-    )
     velocity_bbox = _draw_vector_arrow(
         draw,
         center=center,
@@ -774,7 +857,16 @@ def _render_scene(
         label_font=symbol_font,
     )
     scene_entities.append({"entity_id": "velocity_vector", "entity_type": "velocity_arrow", "bbox": list(velocity_bbox), "meta": {"direction": str(scenario.velocity_direction)}})
-    _, option_bboxes = _draw_option_arrows(
+    particle_bbox = _draw_particle(
+        draw,
+        center=center,
+        charge_sign=int(scenario.charge_sign),
+        theme=theme,
+        render_defaults=render_defaults,
+        particle_font=particle_font,
+        scene_entities=scene_entities,
+    )
+    option_bboxes = _draw_option_arrows(
         draw,
         option_directions=scenario.option_directions,
         correct_option_letter=str(scene_spec.correct_option_letter),
@@ -783,12 +875,26 @@ def _render_scene(
         option_font=option_font,
         scene_entities=scene_entities,
     )
-    evidence_bboxes = [list(option_bboxes[str(scene_spec.correct_option_letter)])]
-    render_map.update({"particle_bbox_px": list(particle_bbox), "velocity_vector_bbox_px": list(velocity_bbox), "option_bboxes_px": dict(option_bboxes)})
+    evidence_bbox_map = {
+        "field_orientation": list(field_tag),
+        "charge": list(particle_bbox),
+        "velocity": list(velocity_bbox),
+    }
+    render_map.update(
+        {
+            "field_orientation_label_bbox_px": list(field_tag),
+            "particle_bbox_px": list(particle_bbox),
+            "velocity_vector_bbox_px": list(velocity_bbox),
+            "option_bboxes_px": dict(option_bboxes),
+            "correct_option_bbox_px": list(option_bboxes[str(scene_spec.correct_option_letter)]),
+            "evidence_bbox_map_px": {str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
+            "evidence_entity_ids": list(evidence_ids),
+        }
+    )
 
     return _RenderedScene(
         image=image,
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        evidence_bbox_map={str(key): list(bbox) for key, bbox in evidence_bbox_map.items()},
         evidence_entity_ids=list(evidence_ids),
         scene_entities=[dict(entity) for entity in scene_entities],
         render_map=dict(render_map),
@@ -808,7 +914,14 @@ def _build_prompt_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) != "force_direction_choice":
         raise ValueError(f"unsupported magnetism query id: {query_id}")
-    return build_prompt_json_examples(evidence_value=[[872, 104, 990, 202]], answer_type="option_letter")
+    return build_prompt_json_examples(
+        evidence_value={
+            "field_orientation": [86, 72, 216, 110],
+            "charge": [390, 270, 462, 342],
+            "velocity": [426, 220, 560, 334],
+        },
+        answer_type="option_letter",
+    )
 
 
 class _PhysicsMagnetismForceFieldBaseTask:
@@ -837,6 +950,13 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 instance_seed=int(instance_seed),
                 params=params,
             )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"{TASK_ID}.render.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
             render_defaults = {
                 key: resolve_render_int(
                     params,
@@ -875,11 +995,19 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "equation_font_size_px",
                 )
             }
+            render_defaults, layout_placement_meta = _resolve_magnetism_layout_placement(
+                render_defaults=render_defaults,
+                params=params,
+                instance_seed=int(instance_seed),
+                canvas_width=int(render_defaults["canvas_width"]),
+                canvas_height=int(render_defaults["canvas_height"]),
+            )
             rendered_scene = _render_scene(
                 background=background,
                 render_defaults=render_defaults,
                 accent_color_name=str(axes.accent_color_name),
                 scene_spec=scene_spec,
+                font_family=str(font_family),
                 diagram_style=diagram_style,
             )
             image, post_noise_meta = apply_post_image_noise(
@@ -930,7 +1058,10 @@ class _PhysicsMagnetismForceFieldBaseTask:
             answer_type = _answer_type(str(axes.query_id))
             answer_value: int | str = scene_spec.target_answer
             answer_gt = TypedValue(type=str(answer_type), value=answer_value)
-            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in rendered_scene.evidence_bboxes])
+            evidence_gt = TypedValue(
+                type="keyed_bbox_map",
+                value={str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+            )
             complexity = build_physics_magnetism_force_field_complexity(
                 task_group_defaults=_TASK_GROUP_DEFAULTS,
                 task_id=TASK_ID,
@@ -939,7 +1070,7 @@ class _PhysicsMagnetismForceFieldBaseTask:
                 charge_sign=int(axes.charge_sign),
                 option_count=len(OPTION_LETTERS),
                 target_answer_magnitude=0,
-                evidence_count=len(rendered_scene.evidence_bboxes),
+                evidence_count=len(rendered_scene.evidence_bbox_map),
             )
 
             direction_payload: Dict[str, Any] = {}
@@ -999,8 +1130,21 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "canvas_width": int(image.size[0]),
                     "canvas_height": int(image.size[1]),
                     "accent_color_name": str(axes.accent_color_name),
+                    "font": {
+                        "font_family": str(font_family),
+                        "font_asset_version": font_asset_version(),
+                        "font_asset": font_record.to_trace(),
+                        "scope": "magnetic_force_diagram",
+                        "selection_policy": {
+                            "pool": "global_approved_font_pool",
+                            "include_tags": [],
+                            "exclude_tags": [],
+                            "exclusion_reason": "",
+                        },
+                    },
                     "technical_diagram_style": dict(diagram_style_meta),
                     "background_style": background_meta,
+                    "layout_placement": dict(layout_placement_meta),
                     "post_image_noise": post_noise_meta,
                 },
                 "render_map": dict(rendered_scene.render_map),
@@ -1019,11 +1163,20 @@ class _PhysicsMagnetismForceFieldBaseTask:
                     "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                 },
                 "witness_symbolic": {
-                    "type": "object_set",
+                    "type": "object_map",
                     "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
+                    "key_to_entity_id": {
+                        "field_orientation": "field_orientation_label",
+                        "charge": "particle",
+                        "velocity": "velocity_vector",
+                    },
                 },
                 "projected_evidence": {
-                    "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": {str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()},
+                    "pixel_keyed_bbox_map": {
+                        str(key): list(bbox) for key, bbox in rendered_scene.evidence_bbox_map.items()
+                    },
                 },
                 "background": background_meta,
                 "post_image_noise": post_noise_meta,

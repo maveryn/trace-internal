@@ -13,10 +13,15 @@ The image shows two identical springs with visible, value-labeled extension mark
 
 Evidence is the pair of shown extension-marker bounding boxes. Scene variants affect card layout and texture only; they do not change the difference contract.
 
+Evidence is projected after the final whole-diagram layout offset, so each bbox uses rendered pixel coordinates.
+
 ## Prompt And Trace
 Prompt bundle: `physics_mechanics_v0`; family key: `paired_spring_diagram`; task key: `spring_extension_query`; query id key: `extension_difference`.
 
-Outputs `query_id="extension_difference"`. The trace records both measurements, the query-specific scale-factor support, answer support, and evidence entity ids.
+Outputs `query_id="extension_difference"`. The trace records both measurements, the query-specific scale-factor support, answer support, evidence entity ids, technical diagram style, font family, whole-diagram layout placement, and post-render noise metadata.
+
+## Rendering
+The renderer uses shared `technical_diagram_style` for the outer sheet, card/ruler palette, frame, and post-render noise. It samples one readout font family per diagram and applies whole-diagram layout placement before computing evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized spring layout.

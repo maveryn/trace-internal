@@ -94,6 +94,12 @@ rendering:
       option_arrow_width_px_max: 8
       option_arrow_head_length_px: 20
       option_arrow_head_width_px: 18
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -14
+      layout_jitter_x_px_max: 14
+      layout_jitter_y_px_min: -14
+      layout_jitter_y_px_max: 24
 
 complexity:
   task_overrides:
@@ -114,18 +120,18 @@ prompt:
       object_description_clean_grid: an electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
       object_description_paper_grid: a paper-style electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
       object_description_dense_grid: a dense electrostatics coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels
-      object_description_clean_grid_field_direction_choice: an electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
-      object_description_paper_grid_field_direction_choice: a paper-style electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
-      object_description_dense_grid_field_direction_choice: a dense electrostatics coordinate grid with fixed point charges, point P, and labeled candidate direction arrows
-      object_description_clean_grid_zero_field_point_label: an electrostatics coordinate grid with fixed point charges and labeled candidate points
-      object_description_paper_grid_zero_field_point_label: a paper-style electrostatics coordinate grid with fixed point charges and labeled candidate points
-      object_description_dense_grid_zero_field_point_label: a dense electrostatics coordinate grid with fixed point charges and labeled candidate points
-      object_description_clean_grid_potential_value: an electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
-      object_description_paper_grid_potential_value: a paper-style electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
-      object_description_dense_grid_potential_value: a dense electrostatics coordinate grid with fixed point charges, point P, and visible distance labels
-      evidence_hint_field_direction_choice: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct candidate direction arrow
-      evidence_hint_zero_field_point_label: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct labeled candidate point
-      evidence_hint_potential_value: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the charges, distance labels, and point P used to compute the potential
+      object_description_clean_grid_field_direction_choice: an electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and labeled candidate direction arrows
+      object_description_paper_grid_field_direction_choice: a paper-style electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and labeled candidate direction arrows
+      object_description_dense_grid_field_direction_choice: a dense electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and labeled candidate direction arrows
+      object_description_clean_grid_zero_field_point_label: an electrostatics coordinate grid with fixed point charges labeled Q1 and Q2 and labeled candidate points
+      object_description_paper_grid_zero_field_point_label: a paper-style electrostatics coordinate grid with fixed point charges labeled Q1 and Q2 and labeled candidate points
+      object_description_dense_grid_zero_field_point_label: a dense electrostatics coordinate grid with fixed point charges labeled Q1 and Q2 and labeled candidate points
+      object_description_clean_grid_potential_value: an electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
+      object_description_paper_grid_potential_value: a paper-style electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
+      object_description_dense_grid_potential_value: a dense electrostatics coordinate grid with fixed point charges labeled Q1, Q2, and Q3, point P, and visible distance labels
+      evidence_hint_field_direction_choice: set "evidence" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
+      evidence_hint_zero_field_point_label: set "evidence" to an object with keys "Q1" and "Q2"; each value is the pixel point [x,y] at the center of the corresponding charge marker
+      evidence_hint_potential_value: set "evidence" to an object with keys "Q1", "Q2", "Q3", and "P"; each value is the pixel point [x,y] at the center of the corresponding marker
       answer_hint_field_direction_choice: set "answer" to the option letter of the candidate arrow
       answer_hint_zero_field_point_label: set "answer" to the option letter of the labeled zero-field point
       answer_hint_potential_value: set "answer" to the signed integer electric potential at P

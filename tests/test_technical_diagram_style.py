@@ -7,12 +7,32 @@ from trace.tasks.physics.shared.diagram_style import (
     physics_electrostatics_theme_from_diagram_style,
     resolve_physics_diagram_style,
 )
+from trace.tasks.geometry.shared.diagram_style import resolve_geometry_diagram_style
+from trace.tasks.shared.text_legibility import READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO
 from trace.tasks.shared.visual_style.technical_diagram import (
     TECHNICAL_DIAGRAM_PALETTES,
     TECHNICAL_DIAGRAM_TREATMENTS,
     make_technical_diagram_background,
     resolve_technical_diagram_style,
 )
+
+
+def _relative_luminance(rgb: tuple[int, int, int]) -> float:
+    def channel(value: int) -> float:
+        normalized = max(0.0, min(1.0, float(value) / 255.0))
+        if normalized <= 0.03928:
+            return normalized / 12.92
+        return ((normalized + 0.055) / 1.055) ** 2.4
+
+    return (0.2126 * channel(rgb[0])) + (0.7152 * channel(rgb[1])) + (0.0722 * channel(rgb[2]))
+
+
+def _contrast_ratio(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    lum_a = _relative_luminance(a)
+    lum_b = _relative_luminance(b)
+    lighter = max(lum_a, lum_b)
+    darker = min(lum_a, lum_b)
+    return (lighter + 0.05) / (darker + 0.05)
 
 
 def test_technical_diagram_registry_breadth_and_metadata() -> None:
@@ -65,6 +85,33 @@ def test_technical_diagram_background_is_deterministic() -> None:
     assert image_a.tobytes() == image_b.tobytes()
     assert meta_a["style_spec"]["kind"] == "technical_diagram_style"
     assert meta_a["style_spec"]["frame_mode"] == "matching_outline"
+
+
+def test_geometry_adapter_strengthens_label_contrast_on_light_panels() -> None:
+    style, metadata = resolve_geometry_diagram_style(
+        instance_seed=12004,
+        params={
+            "technical_diagram_treatments": ("exam_problem_box",),
+            "technical_diagram_palettes": ("graphite_blue",),
+        },
+        scene_id="bearing_route",
+        task_group="measurement",
+        allow_dark=False,
+    )
+
+    anchors = (
+        style.canvas_rgb,
+        style.paper_rgb,
+        style.panel_fill_rgb,
+        style.panel_alt_fill_rgb,
+        style.option_fill_rgb,
+    )
+    assert style.label_stroke_rgb == style.label_rgb
+    assert min(_contrast_ratio(style.label_rgb, anchor) for anchor in anchors) >= READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO
+    assert metadata["geometry_label_contrast_guard"]["enabled"] is True
+    assert metadata["geometry_label_contrast_guard"]["shared_text_legibility"]["passes"] is True
+    assert metadata["roles_rgb"]["label"] == list(style.label_rgb)
+    assert metadata["roles_rgb"]["label_stroke"] == list(style.label_stroke_rgb)
 
 
 def test_physics_diagram_adapter_preserves_electrostatics_semantic_colors() -> None:

@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `multi_step_angle_value`
 6. Answer type: `integer`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_point_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_circle_theorem_v0`
@@ -20,7 +20,7 @@ Solve a missing angle measure in an intersecting-chords circle diagram using mul
 The public task is a narrowed wrapper around the shared geometry `circle` implementation. The query name is retained only in `query_id` and trace diagnostics; it is not a public sampling unit.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around each visible arc measurement label needed to compute the angle. It excludes unrelated measurements, point labels, and the unknown target angle label. Verifier evidence is projected from the same generated scene metadata used to compute the answer. Verifiers must not infer answer or evidence from pixels.
+Prompt-facing evidence is a `keyed_point_map`: a JSON object mapping the visible construction point labels that define the crossing chords and the relevant arcs to their pixel points. Visible arc and angle measurement labels remain annotations and render metadata, not public evidence. Verifier evidence is projected from the same generated scene metadata used to compute the answer. Verifiers must not infer answer or evidence from pixels.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Sampling axes, scene/query IDs, prompt bundle IDs, and render choices must be recorded in trace metadata.

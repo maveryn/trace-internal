@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `base_radius_from_sector_angle` or `height_from_sector_angle`
 6. Answer type: `number`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_point_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_cone_sector_net_v0`
@@ -22,9 +22,11 @@ radius, then use the right-triangle relation between height, radius, and slant
 height. Answers are numeric and rounded to one decimal place.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set`: one pixel bounding box around the
-target cue, one around the slant-height label, and one around the sector-angle
-label. It excludes decorative fold arrows and nonnumeric cone labels. Verifier
+Prompt-facing evidence is a `keyed_point_map` over labeled construction
+points. Both queries use the sector points `S`, `P`, and `Q` plus cone base
+center `C`; base-radius queries add cone base-right point `R`, while height
+queries add cone apex point `A`. Slant-height, sector-angle, and target labels
+remain visible annotations and render metadata, not public evidence. Verifier
 evidence is projected from the same generated scene metadata used to compute
 the answer.
 

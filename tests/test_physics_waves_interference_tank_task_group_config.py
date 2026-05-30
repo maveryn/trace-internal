@@ -39,7 +39,7 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert set(generation["option_letter_weights"].keys()) == {"A", "B", "C", "D", "E"}
 
-    assert generation["path_difference_step_support"] == [1, 2, 3, 4]
+    assert generation["path_difference_step_support"] == [1, 2, 3, 4, 5]
 
 
     assert int(rendering["canvas_width"]) == 1180
@@ -49,6 +49,10 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
     assert int(rendering["board_width_px"]) == 790
 
     assert int(rendering["half_wavelength_px"]) == 44
+
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
+    assert int(rendering["layout_jitter_min_margin_px"]) == 18
 
 
     assert str(prompt["bundle_id"]) == "physics_waves_v0"
@@ -63,6 +67,12 @@ def test_physics_waves_defaults_expose_scene_query_axes_and_supports() -> None:
 
     assert "labeled dashed source-to-P path guides" in str(prompt["object_description_grid_tank_path_difference_value"])
 
-    assert "correct labeled candidate point" in str(prompt["evidence_hint_interference_point_choice"])
+    assert "[x,y]" in str(prompt["evidence_hint_interference_point_choice"])
+
+    assert "center of the labeled candidate point" in str(prompt["evidence_hint_interference_point_choice"])
+
+    assert "mapping S1P and S2P" in str(prompt["evidence_hint_path_difference_value"])
+
+    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["evidence_hint_path_difference_value"])
 
     assert "lambda/2 steps" in str(prompt["answer_hint_path_difference_value"])

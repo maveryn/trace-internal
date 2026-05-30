@@ -17,20 +17,19 @@ def test_concentric_circle_chord_task_emits_public_contract() -> None:
     out = task.generate(56001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 2
+    assert out.evidence_gt.type == "keyed_point_map"
+    assert set(out.evidence_gt.value) == {"O", "A", "B", "T"}
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
     assert trace["execution_trace"]["outer_radius"] ** 2 == (
         trace["execution_trace"]["inner_radius"] ** 2
         + trace["execution_trace"]["half_chord"] ** 2
@@ -76,11 +75,32 @@ def test_concentric_circle_chord_evidence_stays_inside_canvas() -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        for x, y in out.evidence_gt.value.values():
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
+
+
+def test_concentric_circle_chord_evidence_uses_construction_points_not_labels() -> None:
+    task = GeometryConcentricCircleChordValueTask()
+    for index, query_id in enumerate(QUERY_IDS):
+        out = task.generate(
+            56061 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        assert out.evidence_gt.type == "keyed_point_map"
+        assert set(out.evidence_gt.value) == {"O", "A", "B", "T"}
+        assert set(out.trace_payload["execution_trace"]["evidence_roles"]) == {
+            "O",
+            "A",
+            "B",
+            "T",
+        }
+        assert all(
+            "label" not in str(role)
+            for role in out.trace_payload["execution_trace"]["evidence_roles"]
+        )
+        assert "label_bboxes" in out.trace_payload["render_map"]
 
 
 def test_concentric_circle_chord_tasks_reject_unknown_query_id() -> None:

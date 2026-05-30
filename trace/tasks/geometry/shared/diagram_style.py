@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Mapping, Sequence
 
+from ...shared.color_distance import color_distance
+from ...shared.text_legibility import READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO, resolve_readable_text_style
 from ...shared.visual_style.technical_diagram import (
     Color,
     TechnicalDiagramStyle,
@@ -16,6 +19,90 @@ from .shape_style import GeometryShapeStyle
 
 
 GeometryDiagramStyle = TechnicalDiagramStyle
+
+_GEOMETRY_LABEL_DARK_RGB: Color = (10, 14, 22)
+_GEOMETRY_LABEL_LIGHT_RGB: Color = (250, 252, 255)
+
+
+def _relative_luminance(color: Color) -> float:
+    """Return WCAG-style relative luminance for one sRGB color."""
+
+    def channel(value: int) -> float:
+        normalized = max(0.0, min(1.0, float(int(value)) / 255.0))
+        if normalized <= 0.03928:
+            return normalized / 12.92
+        return ((normalized + 0.055) / 1.055) ** 2.4
+
+    red = channel(int(color[0]))
+    green = channel(int(color[1]))
+    blue = channel(int(color[2]))
+    return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue)
+
+
+def _contrast_ratio(color_a: Color, color_b: Color) -> float:
+    lum_a = _relative_luminance(color_a)
+    lum_b = _relative_luminance(color_b)
+    lighter = max(float(lum_a), float(lum_b))
+    darker = min(float(lum_a), float(lum_b))
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _resolve_geometry_label_contrast(style: GeometryDiagramStyle) -> tuple[GeometryDiagramStyle, dict[str, Any]]:
+    """Strengthen geometry label ink against the sampled technical surface.
+
+    The shared technical-diagram palettes are used by multiple domains. For
+    geometry, small point labels and measurement text are often drawn directly
+    over pale panels; using a light halo around dark text can make thin glyphs
+    look washed out. Geometry therefore resolves one high-contrast label ink
+    against the sampled surface anchors and uses the same ink for the text
+    stroke so small labels render as thicker glyphs instead of low-contrast
+    haloed text.
+    """
+
+    anchors = (
+        tuple(int(v) for v in style.canvas_rgb),
+        tuple(int(v) for v in style.paper_rgb),
+        tuple(int(v) for v in style.panel_fill_rgb),
+        tuple(int(v) for v in style.panel_alt_fill_rgb),
+        tuple(int(v) for v in style.option_fill_rgb),
+    )
+    preferred = (
+        tuple(int(v) for v in style.label_rgb),
+        tuple(int(v) for v in style.stroke_rgb),
+        tuple(int(v) for v in style.secondary_stroke_rgb),
+        _GEOMETRY_LABEL_DARK_RGB,
+        _GEOMETRY_LABEL_LIGHT_RGB,
+    )
+    label_style = resolve_readable_text_style(
+        instance_seed=sum((index + 1) * int(channel) for index, color in enumerate(anchors) for channel in color),
+        namespace=f"geometry.label_contrast.{style.style_pack}",
+        role="read_required_geometry_label",
+        surface_rgbs=anchors,
+        preferred_rgbs=preferred,
+        min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    label_rgb = tuple(int(v) for v in label_style.fill_rgb)
+    adjusted = replace(
+        style,
+        label_rgb=tuple(int(v) for v in label_rgb),
+        label_stroke_rgb=tuple(int(v) for v in label_rgb),
+        label_stroke_width_px=max(1, int(style.label_stroke_width_px)),
+    )
+    guard_meta = {
+        "enabled": True,
+        "surface_anchor_rgb": [list(anchor) for anchor in anchors],
+        "candidate_label_rgb": [list(candidate) for candidate in preferred],
+        "resolved_label_rgb": list(adjusted.label_rgb),
+        "resolved_label_stroke_rgb": list(adjusted.label_stroke_rgb),
+        "min_surface_contrast_ratio": round(min(_contrast_ratio(adjusted.label_rgb, anchor) for anchor in anchors), 3),
+        "min_surface_lab_distance": round(
+            min(color_distance(adjusted.label_rgb, anchor, distance_space="lab") for anchor in anchors),
+            3,
+        ),
+        "shared_text_legibility": label_style.metadata(),
+    }
+    return adjusted, guard_meta
 
 
 def resolve_geometry_diagram_style(
@@ -32,7 +119,7 @@ def resolve_geometry_diagram_style(
     """Resolve the shared technical style for one geometry scene."""
 
     resolved_params = params or {}
-    return resolve_technical_diagram_style(
+    style, metadata = resolve_technical_diagram_style(
         instance_seed=int(instance_seed),
         namespace=f"geometry.{str(task_group)}.{str(scene_id)}.technical_diagram_style",
         treatments=treatments or resolved_params.get("technical_diagram_treatments"),
@@ -45,6 +132,12 @@ def resolve_geometry_diagram_style(
         require_grid=require_grid,
         protected_colors=protected_colors or (),
     )
+    adjusted_style, guard_meta = _resolve_geometry_label_contrast(style)
+    adjusted_metadata = technical_diagram_style_metadata(adjusted_style)
+    if isinstance(metadata, Mapping) and isinstance(metadata.get("selection"), Mapping):
+        adjusted_metadata["selection"] = dict(metadata["selection"])
+    adjusted_metadata["geometry_label_contrast_guard"] = dict(guard_meta)
+    return adjusted_style, adjusted_metadata
 
 
 def make_geometry_diagram_background(

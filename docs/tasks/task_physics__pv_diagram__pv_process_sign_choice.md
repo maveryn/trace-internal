@@ -16,10 +16,15 @@ The internal `target_sign` is `positive|negative|zero`. The generator constructs
 ## Evidence
 Prompt-facing evidence is one bounding box around the correct labeled candidate process.
 
+Evidence is projected after the final whole-diagram layout offset, so the bbox uses rendered pixel coordinates.
+
 ## Prompt And Trace
 Prompt bundle: `physics_thermodynamics_v0`; scene key: `thermodynamics_pv_diagram`; task key: `pv_diagram_query`; query key: `process_sign_choice`.
 
-Outputs `query_id="process_sign_choice"`. The trace records the target sign, candidate option letters, per-option start/end pressure and volume, per-option sign, the correct option letter, and evidence entity ids.
+Outputs `query_id="process_sign_choice"`. The trace records the target sign, candidate option letters, per-option start/end pressure and volume, per-option sign, the correct option letter, evidence entity ids, technical diagram style, font family, whole-diagram layout placement, and post-render noise metadata.
+
+## Rendering
+The renderer uses shared `technical_diagram_style` for the outer sheet, palette, frame, mini-plot colors, and post-render noise. It samples one readout font family per diagram and applies whole-diagram layout placement before computing evidence.
 
 ## Determinism
 Generation is deterministic from `instance_seed`. Answers and evidence come from the same finalized candidate set.

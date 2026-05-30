@@ -24,20 +24,19 @@ def test_cuboid_orthographic_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(61001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 4
+    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert set(out.evidence_gt.value) == {"top_view", "front_view", "right_view"}
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
 
     length = int(trace["execution_trace"]["length"])
     width = int(trace["execution_trace"]["width"])
@@ -100,7 +99,7 @@ def test_cuboid_orthographic_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        for x0, y0, x1, y1 in out.evidence_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

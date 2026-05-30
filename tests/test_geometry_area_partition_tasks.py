@@ -5,37 +5,28 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks.geometry.measurement.area_partition import (
-    PARALLELOGRAM_SCENE_ID,
-    TRIANGLE_SCENE_ID,
-    GeometryParallelogramAreaPartitionTotalAreaValueTask,
-    GeometryTriangleAreaPartitionTotalAreaValueTask,
+    AREA_PARTITION_SCENE_ID,
+    GeometryAreaPartitionTotalAreaValueTask,
 )
 
 TASK_CLASSES = (
-    GeometryParallelogramAreaPartitionTotalAreaValueTask,
-    GeometryTriangleAreaPartitionTotalAreaValueTask,
+    GeometryAreaPartitionTotalAreaValueTask,
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryParallelogramAreaPartitionTotalAreaValueTask: (
-        "total_area_from_shaded_partition",
-    ),
-    GeometryTriangleAreaPartitionTotalAreaValueTask: (
+    GeometryAreaPartitionTotalAreaValueTask: (
         "total_area_from_shaded_partition",
     ),
 }
 
 SCENE_ID_BY_TASK = {
-    GeometryParallelogramAreaPartitionTotalAreaValueTask: PARALLELOGRAM_SCENE_ID,
-    GeometryTriangleAreaPartitionTotalAreaValueTask: TRIANGLE_SCENE_ID,
+    GeometryAreaPartitionTotalAreaValueTask: AREA_PARTITION_SCENE_ID,
 }
 
 VARIANTS_BY_TASK = {
-    GeometryParallelogramAreaPartitionTotalAreaValueTask: {
+    GeometryAreaPartitionTotalAreaValueTask: {
         "parallelogram_diagonals_quarter",
         "parallelogram_diagonals_midpoint_eighth",
-    },
-    GeometryTriangleAreaPartitionTotalAreaValueTask: {
         "triangle_median_half",
         "triangle_midsegment_quarter",
         "triangle_medians_sixth",
@@ -43,8 +34,7 @@ VARIANTS_BY_TASK = {
 }
 
 DENOMINATORS_BY_TASK = {
-    GeometryParallelogramAreaPartitionTotalAreaValueTask: {4, 8},
-    GeometryTriangleAreaPartitionTotalAreaValueTask: {2, 4, 6},
+    GeometryAreaPartitionTotalAreaValueTask: {2, 4, 6, 8},
 }
 
 
@@ -55,11 +45,11 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     scene_id = SCENE_ID_BY_TASK[task_cls]
 
     assert out.scene_id == scene_id
-    assert out.query_id == "default"
     assert out.query_id == "total_area_from_shaded_partition"
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 4
+    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert len(out.evidence_gt.value) == 2
+    assert set(out.evidence_gt.value) == {"outer_shape", "shaded_region"}
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -67,10 +57,21 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == scene_id
     assert trace["scene_ir"]["scene_id"] == scene_id
     assert trace["witness_symbolic"]["scene_id"] == scene_id
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert set(trace["projected_evidence"]["keyed_bbox_map"]) == {
+        "outer_shape",
+        "shaded_region",
+    }
+    assert trace["execution_trace"]["evidence_roles"] == [
+        "outer_shape",
+        "shaded_region",
+    ]
+    assert "label_bboxes" in trace["render_map"]
+    assert "partition_bbox" in trace["render_map"]
+    assert "given_area" in trace["render_map"]["label_bboxes"]
+    assert "target" in trace["render_map"]["label_bboxes"]
 
     shaded_area = int(trace["execution_trace"]["shaded_area"])
     denominator = int(trace["execution_trace"]["shaded_fraction_denominator"])
@@ -144,7 +145,8 @@ def test_area_partition_evidence_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
+        assert out.evidence_gt.type == "keyed_bbox_map"
+        for x0, y0, x1, y1 in out.evidence_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)
             assert (x1 - x0) > 8.0

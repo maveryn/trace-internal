@@ -39,7 +39,7 @@ generation:
       balanced_target_condition_sampling: true
       balanced_option_letter_sampling: true
       balanced_target_answer_sampling: true
-      path_difference_step_support: [1, 2, 3, 4]
+      path_difference_step_support: [1, 2, 3, 4, 5]
 
 rendering:
   task_overrides:
@@ -62,6 +62,12 @@ rendering:
       source_font_size_px: 21
       candidate_font_size_px: 23
       note_font_size_px: 20
+      layout_jitter_enabled: true
+      layout_jitter_min_margin_px: 18
+      layout_jitter_x_px_min: -22
+      layout_jitter_x_px_max: 26
+      layout_jitter_y_px_min: -18
+      layout_jitter_y_px_max: 20
 
 complexity:
   task_overrides:
@@ -88,7 +94,7 @@ prompt:
       object_description_clean_tank_path_difference_value: a two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
       object_description_grid_tank_path_difference_value: a gridded two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
       object_description_lab_sheet_path_difference_value: a lab-sheet style two-source ripple-tank interference diagram with circular crest and trough wavefronts, source labels, point P, and labeled dashed source-to-P path guides
-      evidence_hint_interference_point_choice: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the correct labeled candidate point
-      evidence_hint_path_difference_value: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] around the two labeled source-to-P path guides and point P
+      evidence_hint_interference_point_choice: set "evidence" to an array containing one pixel point [x,y] at the center of the labeled candidate point matching the requested interference condition
+      evidence_hint_path_difference_value: set "evidence" to an object mapping S1P and S2P to [x0, y0, x1, y1] pixel boxes around the corresponding labeled dashed source-to-P path guide
       answer_hint_interference_point_choice: set "answer" to the option letter of the candidate point
       answer_hint_path_difference_value: set "answer" to the integer absolute path difference counted in lambda/2 steps

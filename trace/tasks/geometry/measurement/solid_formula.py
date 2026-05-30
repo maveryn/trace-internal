@@ -27,6 +27,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_geometry_measurement_complexity,
     clamp_unit_interval,
@@ -214,14 +215,14 @@ def _draw_value_box(ctx: _RenderContext, text: str, center: Point) -> BBox:
         outline=ctx.muted_color,
         width=2,
     )
-    ctx.draw.text(
+    draw_text_traced(ctx.draw,
         (left + 12.0, top + 8.0),
         str(text),
         font=font,
         fill=ctx.label_color,
         stroke_width=1,
         stroke_fill=ctx.label_stroke_color,
-    )
+     role="readout", required=False,)
     return _pad_bbox((left, top, right, bottom), 2.0, width=ctx.width, height=ctx.height)
 
 

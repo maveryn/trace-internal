@@ -6,12 +6,12 @@
 - Task group: `mechanics`
 - Query id: `missing_weight_to_balance`
 - Answer type: `integer`
-- Evidence type: one-box `bbox_set`
+- Evidence type: unordered `bbox_set`
 
 ## Contract
 The image shows one lever with a marked red `?` weight block. The task asks for the missing weight value that balances the lever. The calibrated public mix samples missing weights from `1..6`, uses the textured-beam variant, and caps each side at two shown weights.
 
-Evidence is the bounding box of the marked `?` weight block. Scene variants adjust the lever presentation but keep the same balance equation and evidence contract.
+Evidence is the set of bounding boxes for the known weight blocks and the marked `?` weight block needed to determine the balancing weight. Scene variants adjust the lever presentation but keep the same balance equation and evidence contract.
 
 ## Prompt And Trace
 Prompt bundle: `physics_mechanics_v0`; family key: `lever_balance_diagram`; task key: `lever_balance_query`; query id key: `missing_weight_to_balance`.

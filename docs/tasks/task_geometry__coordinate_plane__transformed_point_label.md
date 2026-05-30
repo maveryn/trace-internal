@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: `translate_point`, `translate_by_reference_vector`, `reflect_over_vertical_line`, `reflect_over_horizontal_line`, or `rotate_90_about_marked_center`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
+7. Evidence type: `point_set`
 
 ## Prompt Bundle
 - Bundle id: `geometry_coordinate_algebra_v0`
@@ -20,7 +20,7 @@ Choose the lettered candidate image point after applying the visible coordinate 
 The scene supports translations by an integer vector, translations by a plotted reference vector, reflections over marked vertical or horizontal lines, and 90-degree rotations about a marked center. The verifier computes the target point from the metadata transformation and keeps exactly one candidate at that coordinate.
 
 ## Evidence
-Verifier evidence is the final-image pixel bounding box around the selected candidate point. Graph coordinates, transformation text, reflection line, candidate points, and target image point are recorded in trace metadata.
+Verifier evidence is one final-image pixel point at the center of the selected candidate marker. Graph coordinates, transformation text, reflection line, candidate points, and target image point are recorded in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version. Query IDs, candidate labels, marker styles/colors, graph frame, transformation parameters, prompt bundle IDs, and render choices are recorded in trace metadata.

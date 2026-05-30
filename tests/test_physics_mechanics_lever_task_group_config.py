@@ -62,6 +62,7 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
     assert list(rendering["distance_support"]) == list(range(1, 9))
 
     assert int(rendering["weight_box_width_px"]) > 0
+    assert bool(rendering["layout_jitter_enabled"]) is True
 
     assert str(prompt["bundle_id"]) == "physics_mechanics_v0"
 
@@ -69,4 +70,6 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
 
     assert "queried side" in str(prompt["evidence_hint_torque"])
 
-    assert "`?` weight" in str(prompt["evidence_hint_missing_weight"])
+    assert "known weight blocks" in str(prompt["evidence_hint_missing_weight"])
+
+    assert "marked `?` weight" in str(prompt["evidence_hint_missing_weight"])

@@ -38,6 +38,7 @@ from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
 from ..shared.quadrilateral_prototypes import classify_quadrilateral_kind
 from ..shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
+from .params import resolve_int_param as _resolve_int_param
 
 
 GraphPoint = Tuple[int, int]
@@ -525,10 +526,6 @@ def _shape_distractor_kinds(target_kind: str, *, rng, count: int) -> List[str]:
     return list(base[: int(count)])
 
 
-def _resolve_int_param(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 def _resolve_label_pool(params: Mapping[str, Any], defaults: Mapping[str, Any], key: str, fallback: Sequence[str]) -> Tuple[str, ...]:
     raw = params.get(str(key), group_default(defaults, str(key), list(fallback)))
     if isinstance(raw, str):
@@ -940,7 +937,7 @@ def _completion_trace_payload(
     rendered: _CompletionScene,
     prompt_defaults: Mapping[str, Any],
     prompt_artifacts: Any,
-    evidence_value: List[List[int]],
+    evidence_value: List[List[float]],
 ) -> Dict[str, Any]:
     candidate_trace = {
         str(label): {
@@ -1039,9 +1036,13 @@ def _completion_trace_payload(
             "missing_point_graph": [int(value) for value in rendered.missing_point],
         },
         "projected_evidence": {
-            "type": "bbox_set",
-            "bbox_set": list(evidence_value),
-            "candidate_bboxes_px_by_label": dict(rendered.candidate_bboxes_by_label),
+            "type": "point_set",
+            "point_set": list(evidence_value),
+            "pixel_point_set": list(evidence_value),
+            "candidate_points_px_by_label": {
+                str(label): [float(value) for value in point]
+                for label, point in rendered.candidate_points_px_by_label.items()
+            },
         },
     }
 
@@ -1065,6 +1066,7 @@ def _panel_trace_payload(
         }
         for label, spec in rendered.panels_by_label.items()
     }
+
     return {
         "scene_ir": {
             "scene_kind": "geometry_coordinate_panels",
@@ -1139,6 +1141,11 @@ def _panel_trace_payload(
     }
 
 
+def _completion_point_evidence(rendered: _CompletionScene, label: str) -> List[List[float]]:
+    point = rendered.candidate_points_px_by_label[str(label)]
+    return [[float(point[0]), float(point[1])]]
+
+
 @register_task
 class GeometryCoordinateQuadrilateralCompletionLabelTask:
     """Choose the candidate point that completes a coordinate quadrilateral."""
@@ -1180,12 +1187,12 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint_candidate_bbox",
+                "evidence_hint_candidate_point",
                 "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_value = [list(rendered.candidate_bboxes_by_label[str(query.winner_label)])]
+        evidence_value = _completion_point_evidence(rendered, str(query.winner_label))
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
             evidence_value=evidence_value,
@@ -1203,7 +1210,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint_candidate_bbox"]),
+                "evidence_hint": str(prompt_defaults["evidence_hint_candidate_point"]),
                 "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1221,7 +1228,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(query.winner_label)),
-            evidence_gt=TypedValue(type="bbox_set", value=evidence_value),
+            evidence_gt=TypedValue(type="point_set", value=evidence_value),
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,

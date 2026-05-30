@@ -54,12 +54,22 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
 
     assert int(rendering["chamber_min_width_px"]) > 0
 
+    assert bool(rendering["layout_jitter_enabled"]) is True
+
     assert str(prompt["bundle_id"]) == "physics_fluids_v0"
 
     assert str(prompt["scene_key"]) == "hydraulic_piston_diagram"
 
     assert "three fluid chambers" in str(prompt["object_description_wide_bench"])
 
-    assert "all force and area labels" in str(prompt["evidence_hint_force"])
+    assert "keys \"input_force\", \"input_area\", and \"output_area\"" in str(prompt["evidence_hint_missing_output_force"])
 
-    assert "all force and area labels" in str(prompt["evidence_hint_area"])
+    assert "keys \"output_force\", \"input_area\", and \"output_area\"" in str(prompt["evidence_hint_missing_input_force"])
+
+    assert "keys \"input_force\", \"output_force\", and \"input_area\"" in str(prompt["evidence_hint_missing_piston_area"])
+
+    assert "red `?`" not in str(prompt["evidence_hint_missing_output_force"])
+
+    assert "red `?`" not in str(prompt["evidence_hint_missing_input_force"])
+
+    assert "red `?`" not in str(prompt["evidence_hint_missing_piston_area"])

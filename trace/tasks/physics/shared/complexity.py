@@ -130,26 +130,26 @@ def build_physics_circuit_resistance_complexity(
     resistor_count: int,
     target_answer: int,
 ) -> TaskComplexity:
-    """Build normalized complexity for resistor-network equivalent-resistance scenes."""
+    """Build normalized complexity for equivalent-circuit scenes."""
 
     weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
     visual_scan = clamp_unit_interval(
         (0.48 * normalize_linear(float(resistor_count), min_value=3.0, max_value=8.0))
         + (0.12 if str(scene_variant) == "parallel" else 0.0)
-        + (0.18 if str(scene_variant) == "simple_series_parallel" else 0.0)
-        + (0.12 if str(query_id) == "missing_resistor_value" else 0.0)
+        + (0.18 if str(scene_variant) == "series_parallel" else 0.0)
+        + (0.08 if str(query_id) == "total_capacitance" else 0.0)
     )
     circuit_reasoning = clamp_unit_interval(
         (0.56 if str(scene_variant) == "parallel" else 0.70)
         + (0.10 * normalize_linear(float(target_answer), min_value=1.0, max_value=18.0))
-        + (0.14 if str(query_id) == "missing_resistor_value" else 0.0)
+        + (0.08 if str(query_id) == "total_capacitance" else 0.0)
     )
     ambiguity = clamp_unit_interval(
         (0.28 if str(scene_variant) == "parallel" else 0.10)
         + (0.10 if int(target_answer) <= 2 else 0.0)
-        + (0.08 if str(query_id) == "missing_resistor_value" else 0.0)
+        + (0.04 if str(query_id) == "total_capacitance" else 0.0)
     )
-    output_burden = normalize_linear(float(1 if str(query_id) == "missing_resistor_value" else resistor_count), min_value=1.0, max_value=8.0)
+    output_burden = normalize_linear(float(resistor_count), min_value=1.0, max_value=8.0)
     return build_physics_complexity(
         weights=weights,
         components={

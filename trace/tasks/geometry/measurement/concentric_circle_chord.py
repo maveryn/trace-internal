@@ -138,6 +138,7 @@ class _RenderedConcentricScene:
     answer: float
     evidence_bboxes: Tuple[BBox, ...]
     evidence_roles: Tuple[str, ...]
+    evidence_keyed_points: Mapping[str, Point]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
@@ -350,14 +351,11 @@ def _render_concentric_scene(
         pad=5.0,
     )
 
-    if problem.query_id == "chord_length_from_radii":
-        evidence_roles = ("outer_radius_label", "inner_radius_label")
-        evidence_bboxes = (label_bboxes["outer_radius"], label_bboxes["inner_radius"])
-    elif problem.query_id == "inner_radius_from_chord":
-        evidence_roles = ("outer_radius_label", "chord_length_label")
-        evidence_bboxes = (label_bboxes["outer_radius"], label_bboxes["chord"])
-    else:
+    if problem.query_id not in {"chord_length_from_radii", "inner_radius_from_chord"}:
         raise ValueError(f"unsupported concentric-circle query_id: {problem.query_id}")
+    evidence_keyed_points = {"O": center, "A": left, "B": right, "T": tangent}
+    evidence_roles = tuple(evidence_keyed_points.keys())
+    evidence_bboxes = tuple()
 
     chord_bbox = _bbox_from_points(
         (left, right), width=ctx.width, height=ctx.height, pad=18.0
@@ -404,6 +402,7 @@ def _render_concentric_scene(
         answer=float(problem.answer),
         evidence_bboxes=tuple(evidence_bboxes),
         evidence_roles=tuple(evidence_roles),
+        evidence_keyed_points=dict(evidence_keyed_points),
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -415,6 +414,10 @@ def _render_concentric_scene(
                 [round(right[0], 3), round(right[1], 3)],
             ],
             "tangent_point": [round(tangent[0], 3), round(tangent[1], 3)],
+            "construction_points": {
+                key: [round(point[0], 3), round(point[1], 3)]
+                for key, point in evidence_keyed_points.items()
+            },
             "label_bboxes": {
                 key: _bbox_to_list(value) for key, value in label_bboxes.items()
             },
@@ -517,9 +520,10 @@ class _ConcentricCircleChordBaseTask:
         return ctx, render_meta
 
     def _build_complexity(self, rendered: _RenderedConcentricScene) -> TaskComplexity:
+        evidence_count = len(rendered.evidence_keyed_points)
         visual_scan = clamp_unit_interval(
             0.36
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4)
+            + normalize_linear(evidence_count, min_value=2, max_value=4)
             * 0.18
         )
         formula_family = str(rendered.witness.get("formula_family", ""))
@@ -528,7 +532,7 @@ class _ConcentricCircleChordBaseTask:
         ambiguity = 0.42 if is_chord_length else 0.48
         output_burden = clamp_unit_interval(
             0.42
-            + normalize_linear(len(rendered.evidence_bboxes), min_value=2, max_value=4)
+            + normalize_linear(evidence_count, min_value=2, max_value=4)
             * 0.12
         )
         return build_geometry_measurement_complexity(
@@ -625,16 +629,14 @@ class _ConcentricCircleChordBaseTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = [_bbox_to_list(bbox) for bbox in rendered.evidence_bboxes]
-        evidence_points = [
-            [
-                round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-                round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-            ]
-            for bbox in evidence_bboxes
-        ]
+        evidence_keyed_points = {
+            str(key): [round(float(point[0]), 3), round(float(point[1]), 3)]
+            for key, point in rendered.evidence_keyed_points.items()
+        }
         answer_gt = TypedValue(type="number", value=float(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type="keyed_point_map", value=dict(evidence_keyed_points)
+        )
         query_params = {
             "scene_id": SCENE_ID,
             "scene_variant": "tangent_chord",
@@ -693,16 +695,14 @@ class _ConcentricCircleChordBaseTask:
                 "scene_id": SCENE_ID,
                 "query_id": str(problem.query_id),
                 "answer_value": float(rendered.answer),
-                "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "source_witness_type": "keyed_point_map",
+                "original_evidence_value": dict(evidence_keyed_points),
                 **dict(rendered.witness),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
             },
         }
         return TaskOutput(

@@ -66,15 +66,19 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
 )
 
 
-def _build_measurement_bbox_prompt_examples(*, evidence_count: int) -> Tuple[str, str]:
-    """Build a clear JSON example for measurement-label bbox evidence."""
-    example_bboxes: List[List[int]] = []
-    for index in range(max(0, int(evidence_count))):
-        x0 = 10 + (80 * int(index))
-        y0 = 20 + (28 * int(index))
-        example_bboxes.append([x0, y0, x0 + 60, y0 + 24])
+def _build_keyed_point_prompt_examples(
+    *, evidence_point_labels: Sequence[str]
+) -> Tuple[str, str]:
+    """Build a clear JSON example for labeled construction-point evidence."""
+    example_points = {
+        str(label): [120 + (37 * index), 180 + (23 * index)]
+        for index, label in enumerate(evidence_point_labels)
+    }
     example_answer = {"answer": 8}
-    example_answer_and_evidence = {"evidence": example_bboxes, "answer": 8}
+    example_answer_and_evidence = {
+        "evidence": example_points,
+        "answer": 8,
+    }
     return (
         json.dumps(
             example_answer_and_evidence,
@@ -217,8 +221,8 @@ class _ResolvedQuery:
 class _RenderedScene:
     image: Image.Image
     answer_value: int
-    evidence_tokens: List[str]
-    evidence_bboxes: List[List[float]]
+    support_measurement_tokens: List[str]
+    evidence_point_labels: List[str]
     token_bboxes: Dict[str, List[float]]
     point_pixels: Dict[str, List[float]]
     point_label_bboxes: Dict[str, List[float]]
@@ -996,7 +1000,8 @@ def _render_base_scene(
     circle_radius: float,
     segments: Mapping[str, Tuple[str, str]],
     measurement_specs: Sequence[Tuple[str, str, float]],
-    evidence_tokens: Sequence[str],
+    support_measurement_tokens: Sequence[str],
+    evidence_point_labels: Sequence[str],
     annotation_values: Mapping[str, int],
     theorem_trace: Mapping[str, Any],
     angle_marker_specs: Sequence[Mapping[str, Any]] | None = None,
@@ -1185,7 +1190,6 @@ def _render_base_scene(
 
     occupied_boxes: List[BBox] = []
     token_bboxes: Dict[str, List[float]] = {}
-    evidence_bboxes: List[List[float]] = []
     for token, segment_id, side in measurement_specs:
         point_pair = segment_pixels[str(segment_id)]
         bbox = _draw_measurement_label(
@@ -1207,10 +1211,7 @@ def _render_base_scene(
         bbox_list = _bbox_to_list(bbox)
         token_bboxes[str(token)] = list(bbox_list)
         occupied_boxes.append(tuple(float(value) for value in bbox))
-        if str(token) in set(str(item) for item in evidence_tokens):
-            evidence_bboxes.append(list(bbox_list))
 
-    evidence_token_set = set(str(item) for item in evidence_tokens)
     for spec in angle_marker_specs or ():
         vertex = str(spec["vertex"])
         arm0 = str(spec["arm0"])
@@ -1238,8 +1239,6 @@ def _render_base_scene(
             bbox_list = _bbox_to_list(bbox)
             token_bboxes[str(token_value)] = list(bbox_list)
             occupied_boxes.append(tuple(float(value) for value in bbox))
-            if str(token_value) in evidence_token_set:
-                evidence_bboxes.append(list(bbox_list))
 
     for spec in circle_arc_specs or ():
         start_label = str(spec["start"])
@@ -1267,8 +1266,6 @@ def _render_base_scene(
             bbox_list = _bbox_to_list(bbox)
             token_bboxes[str(token_value)] = list(bbox_list)
             occupied_boxes.append(tuple(float(value) for value in bbox))
-            if str(token_value) in evidence_token_set:
-                evidence_bboxes.append(list(bbox_list))
 
     point_label_bboxes: Dict[str, List[float]] = {}
     for label, point_px_list in point_pixels.items():
@@ -1350,8 +1347,14 @@ def _render_base_scene(
     return _RenderedScene(
         image=image,
         answer_value=int(theorem_trace["answer_value"]),
-        evidence_tokens=[str(token) for token in evidence_tokens],
-        evidence_bboxes=[list(bbox) for bbox in evidence_bboxes],
+        support_measurement_tokens=[
+            str(token) for token in support_measurement_tokens
+        ],
+        evidence_point_labels=[
+            str(label)
+            for label in dict.fromkeys(str(item) for item in evidence_point_labels)
+            if str(label) in point_pixels
+        ],
         token_bboxes={str(key): list(value) for key, value in token_bboxes.items()},
         point_pixels={
             str(key): [float(round(value[0], 2)), float(round(value[1], 2))]
@@ -1466,7 +1469,14 @@ def _build_diameter_perpendicular_chord_scene(
                 "radius_px": 34.0,
             },
         ),
-        "evidence_tokens": (diameter_token, chord_token),
+        "support_measurement_tokens": (diameter_token, chord_token),
+        "evidence_point_labels": (
+            label_map["D"],
+            label_map["B"],
+            label_map["A"],
+            label_map["C"],
+            label_map["E"],
+        ),
         "annotation_values": {
             str(diameter_segment): int(spec["diameter"]),
             str(chord_segment): int(spec["chord"]),
@@ -1601,7 +1611,13 @@ def _build_tangent_secant_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]
                 "radius_px": 36.0,
             },
         ),
-        "evidence_tokens": tokens,
+        "support_measurement_tokens": tokens,
+        "evidence_point_labels": (
+            label_map["P"],
+            label_map["T"],
+            label_map["A"],
+            label_map["B"],
+        ),
         "annotation_values": {
             str(tangent_segment): int(tangent),
             str(outside_segment): int(outside),
@@ -1719,7 +1735,14 @@ def _build_secant_secant_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any]:
                 "radius_px": 38.0,
             },
         ),
-        "evidence_tokens": tokens,
+        "support_measurement_tokens": tokens,
+        "evidence_point_labels": (
+            label_map["P"],
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+        ),
         "annotation_values": {
             str(outside_segment): int(pa),
             str(inside_segment): int(ab),
@@ -1867,7 +1890,14 @@ def _build_secant_secant_variable_scene(
                 "radius_px": 38.0,
             },
         ),
-        "evidence_tokens": tokens,
+        "support_measurement_tokens": tokens,
+        "evidence_point_labels": (
+            label_map["P"],
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+        ),
         "annotation_values": {
             str(visible_by_canonical[key]): int(value)
             for key, value in value_by_canonical.items()
@@ -2007,7 +2037,14 @@ def _build_intersecting_chords_arc_scene(
             {"token": distractor_token, "start": label_map["B"], "end": label_map["C"]},
             {"token": query_arc_token, "start": label_map["C"], "end": label_map["D"]},
         ),
-        "evidence_tokens": (angle_token, known_arc_token),
+        "support_measurement_tokens": (angle_token, known_arc_token),
+        "evidence_point_labels": (
+            label_map["A"],
+            label_map["E"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+        ),
         "annotation_values": {
             str(angle_name): int(angle_value),
             str(known_arc_name): int(known_arc),
@@ -2142,7 +2179,14 @@ def _build_multi_step_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, An
                 "end": label_map["D"],
             },
         ),
-        "evidence_tokens": (first_arc_token, opposite_arc_token),
+        "support_measurement_tokens": (first_arc_token, opposite_arc_token),
+        "evidence_point_labels": (
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+            label_map["D"],
+            label_map["E"],
+        ),
         "annotation_values": {
             str(angle_name): int(target_angle),
             str(first_arc_name): int(first_arc),
@@ -2228,7 +2272,13 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         "arc": f"{intercepted_arc_name}={int(central_angle)}",
     }
     if query_id == "inscribed_angle_from_central":
-        evidence_tokens = (token_by_kind["central"],)
+        support_measurement_tokens = (token_by_kind["central"],)
+        evidence_point_labels = (
+            label_map["A"],
+            label_map["O"],
+            label_map["B"],
+            label_map["C"],
+        )
         angle_marker_specs = (
             {
                 "token": token_by_kind["central"],
@@ -2253,7 +2303,13 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
             },
         )
     elif query_id == "central_angle_from_inscribed":
-        evidence_tokens = (token_by_kind["inscribed"],)
+        support_measurement_tokens = (token_by_kind["inscribed"],)
+        evidence_point_labels = (
+            label_map["A"],
+            label_map["C"],
+            label_map["B"],
+            label_map["O"],
+        )
         angle_marker_specs = (
             {
                 "token": f"{central_angle_name}=?",
@@ -2278,7 +2334,12 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
             },
         )
     else:
-        evidence_tokens = (token_by_kind["arc"],)
+        support_measurement_tokens = (token_by_kind["arc"],)
+        evidence_point_labels = (
+            label_map["A"],
+            label_map["B"],
+            label_map["C"],
+        )
         angle_marker_specs = (
             {
                 "token": f"{inscribed_angle_name}=?",
@@ -2333,7 +2394,8 @@ def _build_inscribed_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str, Any
         "measurement_specs": tuple(),
         "angle_marker_specs": angle_marker_specs,
         "circle_arc_specs": circle_arc_specs,
-        "evidence_tokens": evidence_tokens,
+        "support_measurement_tokens": support_measurement_tokens,
+        "evidence_point_labels": evidence_point_labels,
         "annotation_values": {
             str(central_angle_name): int(central_angle),
             str(inscribed_angle_name): int(inscribed_angle),
@@ -2410,10 +2472,21 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
     inscribed_token = f"{inscribed_angle_name}={int(tangent_chord_angle)}"
     distractor_token = f"{distractor_arc_name}={int(distractor_arc)}"
     if query_id == "tangent_chord_angle_from_arc":
-        evidence_tokens = (arc_token,)
+        support_measurement_tokens = (arc_token,)
+        evidence_point_labels = (
+            label_map["P"],
+            label_map["T"],
+            label_map["A"],
+        )
         extra_angle_token: str | None = None
     else:
-        evidence_tokens = (inscribed_token,)
+        support_measurement_tokens = (inscribed_token,)
+        evidence_point_labels = (
+            label_map["P"],
+            label_map["T"],
+            label_map["A"],
+            label_map["B"],
+        )
         extra_angle_token = inscribed_token
 
     angle_marker_specs: Tuple[Mapping[str, Any], ...]
@@ -2481,7 +2554,8 @@ def _build_tangent_chord_angle_scene(rng, *, query: _ResolvedQuery) -> Dict[str,
         "measurement_specs": tuple(),
         "angle_marker_specs": angle_marker_specs,
         "circle_arc_specs": circle_arc_specs,
-        "evidence_tokens": evidence_tokens,
+        "support_measurement_tokens": support_measurement_tokens,
+        "evidence_point_labels": evidence_point_labels,
         "annotation_values": {
             str(tangent_chord_angle_name): int(tangent_chord_angle),
             str(inscribed_angle_name): int(tangent_chord_angle),
@@ -2553,7 +2627,10 @@ class GeometryCircleTheoremValueTask:
                     circle_radius=float(scene_payload["circle_radius"]),
                     segments=scene_payload["segments"],
                     measurement_specs=scene_payload["measurement_specs"],
-                    evidence_tokens=scene_payload["evidence_tokens"],
+                    support_measurement_tokens=scene_payload[
+                        "support_measurement_tokens"
+                    ],
+                    evidence_point_labels=scene_payload["evidence_point_labels"],
                     annotation_values=scene_payload["annotation_values"],
                     theorem_trace=scene_payload["theorem_trace"],
                     angle_marker_specs=scene_payload.get("angle_marker_specs"),
@@ -2579,25 +2656,26 @@ class GeometryCircleTheoremValueTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint_integer",
-                "evidence_hint_measurement_tokens",
+                "evidence_hint_circle_points",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_bboxes = [
-            [round(float(coord), 3) for coord in bbox]
-            for bbox in rendered_scene.evidence_bboxes
-        ]
-        evidence_points = [
-            [
-                round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-                round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+        evidence_keyed_points = {
+            str(label): [
+                round(float(rendered_scene.point_pixels[str(label)][0]), 3),
+                round(float(rendered_scene.point_pixels[str(label)][1]), 3),
             ]
-            for bbox in evidence_bboxes
-        ]
-        json_example, json_example_answer_only = (
-            _build_measurement_bbox_prompt_examples(
-                evidence_count=len(evidence_bboxes),
-            )
+            for label in rendered_scene.evidence_point_labels
+        }
+        evidence_points = [list(point) for point in evidence_keyed_points.values()]
+        evidence_point_keys = ", ".join(
+            f'"{label}"' for label in rendered_scene.evidence_point_labels
+        )
+        evidence_hint = str(prompt_defaults["evidence_hint_circle_points"]).format(
+            evidence_point_keys=evidence_point_keys
+        )
+        json_example, json_example_answer_only = _build_keyed_point_prompt_examples(
+            evidence_point_labels=rendered_scene.evidence_point_labels
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -2613,9 +2691,7 @@ class GeometryCircleTheoremValueTask:
                 "json_output_contract_answer_only": str(
                     prompt_defaults["json_output_contract_answer_only"]
                 ),
-                "evidence_hint": str(
-                    prompt_defaults["evidence_hint_measurement_tokens"]
-                ),
+                "evidence_hint": str(evidence_hint),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -2626,7 +2702,9 @@ class GeometryCircleTheoremValueTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(rendered_scene.answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type="keyed_point_map", value=dict(evidence_keyed_points)
+        )
         query_params = {
             "query_id": str(query.query_id),
             "query_id_probabilities": dict(query.query_id_probabilities),
@@ -2697,24 +2775,30 @@ class GeometryCircleTheoremValueTask:
                 "target_answer_probabilities": dict(query.target_answer_probabilities),
                 "answer_type": "integer",
                 "answer_value": int(rendered_scene.answer_value),
-                "evidence_tokens": list(rendered_scene.evidence_tokens),
+                "evidence_point_labels": list(rendered_scene.evidence_point_labels),
+                "support_measurement_tokens": list(
+                    rendered_scene.support_measurement_tokens
+                ),
                 "annotation_values": dict(rendered_scene.annotation_values),
                 **dict(rendered_scene.theorem_trace),
             },
             "witness_symbolic": {
-                "type": "circle_theorem_measurement_tokens",
+                "type": "circle_theorem_construction_points",
                 "query_id": str(query.query_id),
                 "answer_segment": str(rendered_scene.theorem_trace["answer_segment"]),
                 "answer_value": int(rendered_scene.answer_value),
-                "evidence_tokens": list(rendered_scene.evidence_tokens),
-                "source_witness_type": "object_set",
-                "original_evidence_value": list(rendered_scene.evidence_tokens),
+                "evidence_point_labels": list(rendered_scene.evidence_point_labels),
+                "support_measurement_tokens": list(
+                    rendered_scene.support_measurement_tokens
+                ),
+                "source_witness_type": "keyed_point_map",
+                "original_evidence_value": list(rendered_scene.evidence_point_labels),
                 "annotation_values": dict(rendered_scene.annotation_values),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
                 "point_set": list(evidence_points),
                 "pixel_point_set": list(evidence_points),
             },

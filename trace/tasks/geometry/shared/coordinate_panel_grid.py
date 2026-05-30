@@ -8,6 +8,7 @@ from typing import Iterable, Mapping, Tuple
 from PIL import ImageDraw
 
 from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_legibility import draw_text_traced
 
 Point = Tuple[float, float]
 BBox = Tuple[int, int, int, int]
@@ -185,8 +186,8 @@ def draw_coordinate_panel_grid(
         draw.line([(x0, plot_bbox[1]), (x0, plot_bbox[3])], fill=line_fill, width=line_width)
         draw.line([(plot_bbox[0], y0), (plot_bbox[2], y0)], fill=line_fill, width=line_width)
         if value in {-4, -2, 2, 4}:
-            draw.text((x0 - 5, plot_bbox[3] + 3), str(value), font=tick_font, fill=resolved_style.tick_color)
-            draw.text((plot_bbox[0] - 21, y0 - 6), str(value), font=tick_font, fill=resolved_style.tick_color)
+            draw_text_traced(draw,(x0 - 5, plot_bbox[3] + 3), str(value), font=tick_font, fill=resolved_style.tick_color, role="readout", required=False)
+            draw_text_traced(draw,(plot_bbox[0] - 21, y0 - 6), str(value), font=tick_font, fill=resolved_style.tick_color, role="readout", required=False)
 
     x_axis_end = graph_point_to_panel_pixel((grid_max, 0), plot_bbox=plot_bbox, config=config)
     y_axis_end = graph_point_to_panel_pixel((0, grid_max), plot_bbox=plot_bbox, config=config)

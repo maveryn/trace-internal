@@ -1,0 +1,61 @@
+{
+  "bundle_id": "geometry_bearing_route_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "final_displacement_value_query": [
+      "What is the final direct displacement from S to F?",
+      "After following the two bearing legs, what is the straight-line displacement from S to F?",
+      "Find the direct distance from the start point S to the finish point F.",
+      "What is the length of the dashed displacement segment from S to F?",
+      "Compute the final straight-line displacement after the shown bearing route."
+    ],
+    "endpoint_position_label_query": [
+      "Which labeled endpoint is reached by following the route instructions from S?",
+      "Follow the two bearing instructions from S. Which candidate endpoint label is reached?",
+      "Which labeled point is the final position after the shown bearing route?",
+      "Using the route instruction panel, choose the reached endpoint label.",
+      "Starting at S, which candidate label marks the endpoint of the bearing route?"
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:bearing_route_scene": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "bearing_route_scene": [
+      "The diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This geometry diagram shows {object_description}.",
+      "The image shows {object_description}.",
+      "The labeled navigation diagram shows {object_description}."
+    ]
+  }
+}

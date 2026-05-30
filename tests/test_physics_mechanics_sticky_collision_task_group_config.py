@@ -57,6 +57,10 @@ def test_physics_mechanics_sticky_collision_defaults_expose_scene_query_and_answ
 
     assert "six candidate direction arrows" in str(prompt["object_description_wide_table"])
 
-    assert "correct candidate direction arrow" in str(prompt["evidence_hint_direction_choice"])
+    assert "object mapping puck labels A, B, and A+B" in str(prompt["evidence_hint_direction_choice"])
 
-    assert "one bounding box" in str(prompt["evidence_hint_velocity_component"])
+    assert "[x,y]" in str(prompt["evidence_hint_velocity_component"])
+
+    assert "puck centers" in str(prompt["evidence_hint_velocity_component"])
+
+    assert "do not" not in str(prompt["evidence_hint_velocity_component"]).lower()

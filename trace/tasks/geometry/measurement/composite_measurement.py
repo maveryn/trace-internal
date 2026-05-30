@@ -2,9 +2,10 @@
 
 The render helpers in this module are shared by several public scene grammars:
 angle relations, parallel sections, Pythagorean length constructions, triangle
-special segments, and rectilinear composite shapes. Public evidence is
-image-level bbox evidence over the target cue plus the visible supporting
-labels/marks needed for the computation.
+special segments, and rectilinear composite shapes. Public evidence is image
+level evidence over the minimal visible primitives needed for each scene
+contract; visible text annotations stay in render metadata unless the task is
+explicitly a readout task.
 """
 
 from __future__ import annotations
@@ -25,14 +26,21 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_geometry_task_complexity,
     clamp_unit_interval,
     normalize_linear,
     resolve_geometry_complexity_weights,
+)
+from ..shared.diagram_style import (
+    geometry_diagram_style_metadata,
+    geometry_shape_style_from_diagram_style,
+    prepare_geometry_diagram_style_and_background,
 )
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.measurement_rendering import (
@@ -104,6 +112,8 @@ class _RenderContext:
     line_width: int
     font: Any
     small_font: Any
+    layout_offset: Point = (0.0, 0.0)
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -120,6 +130,8 @@ class _RenderedCompositeScene:
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
     reasoning_steps: int
+    evidence_keyed_points: Mapping[str, Point] | None = None
+    evidence_keyed_bboxes: Mapping[str, BBox] | None = None
 
 
 def _combine_bboxes(bboxes: Sequence[Sequence[float]], *, width: int, height: int, pad: float = 0.0) -> BBox:
@@ -157,6 +169,21 @@ def _perp(vector: Point) -> Point:
     return (-float(vector[1]), float(vector[0]))
 
 
+def _offset_point(ctx: _RenderContext, point: Point) -> Point:
+    """Apply the resolved non-semantic scene placement jitter to one point."""
+
+    return (
+        float(point[0]) + float(ctx.layout_offset[0]),
+        float(point[1]) + float(ctx.layout_offset[1]),
+    )
+
+
+def _offset_points(ctx: _RenderContext, points: Sequence[Point]) -> tuple[Point, ...]:
+    """Apply the resolved non-semantic scene placement jitter to several points."""
+
+    return tuple(_offset_point(ctx, point) for point in points)
+
+
 def _draw_text(
     ctx: _RenderContext,
     text: str,
@@ -170,7 +197,7 @@ def _draw_text(
     active_fill = fill if fill is not None else ctx.label_color
     x, y = float(center[0]), float(center[1])
     try:
-        ctx.draw.text(
+        draw_text_traced(ctx.draw,
             (x, y),
             str(text),
             anchor="mm",
@@ -178,7 +205,7 @@ def _draw_text(
             fill=active_fill,
             stroke_width=max(0, int(stroke_width)),
             stroke_fill=ctx.label_stroke_color,
-        )
+         role="readout", required=False,)
         bbox = ctx.draw.textbbox(
             (x, y),
             str(text),
@@ -187,7 +214,7 @@ def _draw_text(
             stroke_width=max(0, int(stroke_width)),
         )
     except Exception:
-        ctx.draw.text((x, y), str(text), font=active_font, fill=active_fill)
+        draw_text_traced(ctx.draw,(x, y), str(text), font=active_font, fill=active_fill, role="readout", required=False)
         bbox = ctx.draw.textbbox((x, y), str(text), font=active_font)
     return _pad_bbox(bbox, 2.0, width=ctx.width, height=ctx.height)
 
@@ -273,6 +300,13 @@ def _draw_angle_label(
     return arc_bbox, text_bbox
 
 
+def _angle_evidence_point(vertex: Point, _arm_a: Point, _arm_b: Point, *, label_radius: float = 62.0) -> Point:
+    """Public angle evidence points to the angle vertex, not the angle mark."""
+
+    _ = label_radius
+    return (float(vertex[0]), float(vertex[1]))
+
+
 def _draw_right_angle_marker(ctx: _RenderContext, vertex: Point, arm_a: Point, arm_b: Point, *, size: float = 26.0) -> BBox:
     va = _unit(_sub(arm_a, vertex))
     vb = _unit(_sub(arm_b, vertex))
@@ -354,14 +388,34 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
-def _prompt_examples(evidence_count: int) -> tuple[str, str]:
+def _prompt_examples(
+    evidence_count: int,
+    *,
+    evidence_type: str = "bbox_set",
+    evidence_keys: Sequence[str] | None = None,
+) -> tuple[str, str]:
     bboxes: list[list[int]] = []
     for idx in range(max(1, int(evidence_count))):
         x0 = 36 + (72 * idx)
         y0 = 48 + (22 * idx)
         bboxes.append([x0, y0, x0 + 48, y0 + 24])
     answer = {"answer": 42}
-    answer_and_evidence = {"evidence": bboxes, "answer": 42}
+    if str(evidence_type) == "keyed_point_map":
+        keys = list(evidence_keys or ("ABC", "BAC"))
+        evidence: dict[str, list[int]] = {}
+        for idx, key in enumerate(keys):
+            evidence[str(key)] = [120 + (58 * idx), 180 + (24 * idx)]
+        answer_and_evidence = {"evidence": evidence, "answer": 42}
+    elif str(evidence_type) == "keyed_bbox_map":
+        keys = list(evidence_keys or ("target_region", "cutout_region"))
+        evidence = {}
+        for idx, key in enumerate(keys):
+            x0 = 36 + (72 * idx)
+            y0 = 48 + (22 * idx)
+            evidence[str(key)] = [x0, y0, x0 + 48, y0 + 24]
+        answer_and_evidence = {"evidence": evidence, "answer": 42}
+    else:
+        answer_and_evidence = {"evidence": bboxes, "answer": 42}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -434,27 +488,38 @@ def _case_triangle_exterior(given_a: int, answer_b: int) -> _MeasurementCase:
             canvas_height=float(ctx.height),
         )
         d = (min(ctx.width - 70.0, c[0] + 95.0), c[1])
+        a, b, c, d = _offset_points(ctx, (a, b, c, d))
         _draw_polygon(ctx, [a, b, c])
         _draw_polyline(ctx, [c, d])
         labels = _draw_point_labels(ctx, {"A": a, "B": b, "C": c, "D": d})
         target_arc, target_label = _draw_angle_label(ctx, "?", b, a, c, radius=66.0)
-        _, label_a = _draw_angle_label(ctx, _format_degrees(given_a), a, c, b, radius=66.0)
-        _, label_ext = _draw_angle_label(ctx, _format_degrees(exterior), c, b, d, radius=72.0)
-        evidence = (target_label, label_a, label_ext)
+        given_arc, label_a = _draw_angle_label(ctx, _format_degrees(given_a), a, c, b, radius=66.0)
+        exterior_arc, label_ext = _draw_angle_label(ctx, _format_degrees(exterior), c, b, d, radius=72.0)
+        evidence = (target_arc, given_arc, exterior_arc)
+        evidence_points = {
+            "ABC": _angle_evidence_point(b, a, c, label_radius=66.0),
+            "BAC": _angle_evidence_point(a, c, b, label_radius=66.0),
+            "BCD": _angle_evidence_point(c, b, d, label_radius=72.0),
+        }
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer_b),
             question_text='What is the measure of angle "ABC"?',
             query_id="triangle_exterior_angle",
             evidence_bboxes=evidence,
-            evidence_roles=("target_angle_ABC", "given_angle_A", "given_exterior_angle_BCD"),
+            evidence_roles=("ABC", "BAC", "BCD"),
             scene_entities=(
                 {"type": "triangle", "points": {"A": a, "B": b, "C": c}},
                 {"type": "extension_ray", "points": {"C": c, "D": d}},
             ),
-            render_map={"point_label_bboxes": labels, "target_arc_bbox": target_arc},
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"ABC": target_arc, "BAC": given_arc, "BCD": exterior_arc},
+                "angle_label_bboxes": {"ABC": target_label, "BAC": label_a, "BCD": label_ext},
+            },
             witness={"given_angle_A": int(given_a), "given_exterior_angle_BCD": int(exterior), "answer_angle_ABC": int(answer_b)},
             reasoning_steps=2,
+            evidence_keyed_points=evidence_points,
         )
 
     return _MeasurementCase(query_id="triangle_exterior_angle", answer=int(answer_b), build=build)
@@ -469,28 +534,39 @@ def _case_parallel_supplement(given: int) -> _MeasurementCase:
         x_top, x_bot = 300.0, 500.0
         p = (x_top, top_l[1])
         q = (x_bot, bot_l[1])
+        top_l, top_r, bot_l, bot_r, p, q = _offset_points(ctx, (top_l, top_r, bot_l, bot_r, p, q))
         _draw_polyline(ctx, [top_l, top_r])
         _draw_polyline(ctx, [bot_l, bot_r])
         _draw_polyline(ctx, [p, q])
         mark_bbox = _draw_parallel_marks(ctx, [(top_l, top_r), (bot_l, bot_r)], count=1)
         labels = _draw_point_labels(ctx, {"A": top_l, "B": top_r, "C": bot_l, "D": bot_r, "E": p, "F": q})
-        _, given_bbox = _draw_angle_label(ctx, _format_degrees(given), p, top_r, q, radius=64.0)
+        given_arc, given_bbox = _draw_angle_label(ctx, _format_degrees(given), p, top_r, q, radius=64.0)
         target_arc, target_bbox = _draw_angle_label(ctx, "?", q, p, bot_l, radius=64.0)
-        evidence = (target_bbox, given_bbox, mark_bbox)
+        evidence = (target_arc, given_arc)
+        evidence_points = {
+            "CFE": _angle_evidence_point(q, p, bot_l, label_radius=64.0),
+            "BEF": _angle_evidence_point(p, top_r, q, label_radius=64.0),
+        }
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer),
             question_text='Lines "AB" and "CD" are parallel. What is the measure of angle "CFE"?',
             query_id="parallel_supplement_angle",
             evidence_bboxes=evidence,
-            evidence_roles=("target_angle_CFE", "given_angle_BEF", "parallel_line_marks"),
+            evidence_roles=("CFE", "BEF"),
             scene_entities=(
                 {"type": "parallel_lines", "segments": {"AB": (top_l, top_r), "CD": (bot_l, bot_r)}},
-                {"type": "transversal", "segment": (p, q)},
+                {"type": "transversal", "segment": (p, q), "points": {"E": p, "F": q}},
             ),
-            render_map={"point_label_bboxes": labels, "target_arc_bbox": target_arc},
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"CFE": target_arc, "BEF": given_arc},
+                "angle_label_bboxes": {"CFE": target_bbox, "BEF": given_bbox},
+                "parallel_marks_bbox": mark_bbox,
+            },
             witness={"given_angle_BEF": int(given), "parallel_lines": ["AB", "CD"], "answer_angle_CFE": int(answer)},
             reasoning_steps=2,
+            evidence_keyed_points=evidence_points,
         )
 
     return _MeasurementCase(query_id="parallel_supplement_angle", answer=int(answer), build=build)
@@ -517,26 +593,36 @@ def _case_algebraic_single_extension(
             canvas_height=float(ctx.height),
         )
         d = (min(ctx.width - 54.0, c[0] + 92.0), c[1])
+        a, b, c, d = _offset_points(ctx, (a, b, c, d))
         _draw_polygon(ctx, [a, b, c])
         _draw_polyline(ctx, [c, d])
         labels = _draw_point_labels(ctx, {"A": a, "B": b, "C": c, "D": d})
         target_expr = _format_angle_expression(target_coeff, target_const)
         exterior_expr = _format_angle_expression(exterior_coeff, exterior_const)
         target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
-        _, given_bbox = _draw_angle_label(ctx, _format_degrees(given_angle_a), a, c, b, radius=64.0)
-        _, exterior_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        given_arc, given_bbox = _draw_angle_label(ctx, _format_degrees(given_angle_a), a, c, b, radius=64.0)
+        exterior_arc, exterior_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        evidence_points = {
+            "ABC": _angle_evidence_point(b, a, c, label_radius=66.0),
+            "BAC": _angle_evidence_point(a, c, b, label_radius=64.0),
+            "BCD": _angle_evidence_point(c, b, d, label_radius=76.0),
+        }
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer_angle_b),
             question_text='Use angle "BAC" and exterior angle "BCD". Solve for x, then substitute it into the expression at angle "ABC". What is the measure of angle "ABC"?',
             query_id="triangle_single_extension_expression",
-            evidence_bboxes=(target_bbox, given_bbox, exterior_bbox),
-            evidence_roles=("target_expression_angle_ABC", "given_angle_BAC", "expression_exterior_angle_BCD"),
+            evidence_bboxes=(target_arc, given_arc, exterior_arc),
+            evidence_roles=("ABC", "BAC", "BCD"),
             scene_entities=(
                 {"type": "triangle", "points": {"A": a, "B": b, "C": c}},
                 {"type": "extension_ray", "points": {"C": c, "D": d}},
             ),
-            render_map={"point_label_bboxes": labels, "target_arc_bbox": target_arc},
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"ABC": target_arc, "BAC": given_arc, "BCD": exterior_arc},
+                "angle_label_bboxes": {"ABC": target_bbox, "BAC": given_bbox, "BCD": exterior_bbox},
+            },
             witness={
                 "equation": "exterior_BCD = angle_BAC + angle_ABC",
                 "angle_BAC": int(given_angle_a),
@@ -546,6 +632,7 @@ def _case_algebraic_single_extension(
                 "answer_angle_ABC": int(answer_angle_b),
             },
             reasoning_steps=3,
+            evidence_keyed_points=evidence_points,
         )
 
     return _MeasurementCase(query_id="triangle_single_extension_expression", answer=int(answer_angle_b), build=build)
@@ -573,6 +660,7 @@ def _case_algebraic_double_extension(
         )
         d = (min(ctx.width - 54.0, c[0] + 92.0), c[1])
         e = (max(54.0, a[0] - 92.0), a[1])
+        a, b, c, d, e = _offset_points(ctx, (a, b, c, d, e))
         _draw_polyline(ctx, [e, a])
         _draw_polygon(ctx, [a, b, c])
         _draw_polyline(ctx, [c, d])
@@ -580,21 +668,30 @@ def _case_algebraic_double_extension(
         target_expr = _format_angle_expression(target_coeff, target_const)
         exterior_expr = _format_angle_expression(exterior_coeff, exterior_const)
         target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
-        _, given_bbox = _draw_angle_label(ctx, _format_degrees(given_angle_a), a, c, b, radius=64.0)
-        _, exterior_c_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        given_arc, given_bbox = _draw_angle_label(ctx, _format_degrees(given_angle_a), a, c, b, radius=64.0)
+        exterior_c_arc, exterior_c_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        evidence_points = {
+            "ABC": _angle_evidence_point(b, a, c, label_radius=66.0),
+            "BAC": _angle_evidence_point(a, c, b, label_radius=64.0),
+            "BCD": _angle_evidence_point(c, b, d, label_radius=76.0),
+        }
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer_angle_b),
             question_text='Use interior angle "BAC" and exterior angle "BCD" in the triangle whose base is extended through "A" and "C". Solve for x, then substitute it into the expression at angle "ABC". What is the measure of angle "ABC"?',
             query_id="triangle_double_extension_expression",
-            evidence_bboxes=(target_bbox, given_bbox, exterior_c_bbox),
-            evidence_roles=("target_expression_angle_ABC", "given_angle_BAC", "expression_exterior_angle_BCD"),
+            evidence_bboxes=(target_arc, given_arc, exterior_c_arc),
+            evidence_roles=("ABC", "BAC", "BCD"),
             scene_entities=(
                 {"type": "triangle", "points": {"A": a, "B": b, "C": c}},
                 {"type": "extension_ray", "points": {"A": a, "E": e}},
                 {"type": "extension_ray", "points": {"C": c, "D": d}},
             ),
-            render_map={"point_label_bboxes": labels, "target_arc_bbox": target_arc},
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"ABC": target_arc, "BAC": given_arc, "BCD": exterior_c_arc},
+                "angle_label_bboxes": {"ABC": target_bbox, "BAC": given_bbox, "BCD": exterior_c_bbox},
+            },
             witness={
                 "equation": "exterior_BCD = angle_BAC + angle_ABC",
                 "angle_BAC": int(given_angle_a),
@@ -604,6 +701,7 @@ def _case_algebraic_double_extension(
                 "answer_angle_ABC": int(answer_angle_b),
             },
             reasoning_steps=3,
+            evidence_keyed_points=evidence_points,
         )
 
     return _MeasurementCase(query_id="triangle_double_extension_expression", answer=int(answer_angle_b), build=build)
@@ -958,17 +1056,28 @@ def _case_rectangle_minus_triangle(width_value: int, height_value: int, cut_base
         cb_bbox = _draw_segment_label(ctx, str(cut_base), tri[1], tri[0], offset=24.0)
         ch_bbox = _draw_segment_label(ctx, str(cut_height), tri[0], tri[2], offset=25.0)
         _draw_text(ctx, "shaded", (left + 175.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=2)
+        cutout_bbox = _bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer),
             question_text="What is the area of the shaded region?",
             query_id="rectangle_minus_triangle_area",
-            evidence_bboxes=(region_bbox, w_bbox, h_bbox, cb_bbox, ch_bbox),
-            evidence_roles=("target_shaded_region", "outer_width", "outer_height", "cutout_base", "cutout_height"),
+            evidence_bboxes=(region_bbox, cutout_bbox),
+            evidence_roles=("target_region", "removed_triangle"),
             scene_entities=({"type": "rectangle_minus_triangle", "outer": rect, "cutout": tri},),
-            render_map={"target_region_bbox": region_bbox},
+            render_map={
+                "target_region_bbox": region_bbox,
+                "cutout_region_bbox": cutout_bbox,
+                "measurement_label_bboxes": {
+                    "outer_width": w_bbox,
+                    "outer_height": h_bbox,
+                    "cutout_base": cb_bbox,
+                    "cutout_height": ch_bbox,
+                },
+            },
             witness={"outer_width": int(width_value), "outer_height": int(height_value), "cutout_base": int(cut_base), "cutout_height": int(cut_height), "answer_area": int(answer)},
             reasoning_steps=3,
+            evidence_keyed_bboxes={"target_region": region_bbox, "removed_triangle": cutout_bbox},
         )
 
     return _MeasurementCase(query_id="rectangle_minus_triangle_area", answer=int(answer), build=build)
@@ -996,19 +1105,31 @@ def _case_l_shape_area(width_value: int, height_value: int, cut_width: int, cut_
         w_bbox = _draw_segment_label(ctx, str(width_value), pts[5], pts[4], offset=26.0)
         h_bbox = _draw_segment_label(ctx, str(height_value), pts[0], pts[5], offset=-26.0)
         cw_bbox = _draw_segment_label(ctx, str(cut_width), pts[3], pts[2], offset=-24.0)
-        ch_bbox = _draw_segment_label(ctx, str(cut_height), pts[2], (pts[1][0], pts[1][1]), offset=25.0)
+        ch_bbox = _draw_segment_label(ctx, str(cut_height), pts[3], pts[4], offset=25.0)
         _draw_text(ctx, "shaded", (left + 170.0, top + 130.0), font=ctx.small_font, fill=ctx.accent_color, stroke_width=2)
+        cutout_rect = [pts[3], pts[2], (pts[2][0], pts[4][1]), pts[4]]
+        cutout_bbox = _bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
         return _RenderedCompositeScene(
             image=ctx.image,
             answer=int(answer),
             question_text="What is the area of the shaded region?",
             query_id="l_shape_area",
-            evidence_bboxes=(region_bbox, w_bbox, h_bbox, cw_bbox, ch_bbox),
-            evidence_roles=("target_shaded_region", "outer_width", "outer_height", "missing_width", "missing_height"),
+            evidence_bboxes=(region_bbox, cutout_bbox),
+            evidence_roles=("target_region", "missing_corner"),
             scene_entities=({"type": "l_shape", "outline": pts},),
-            render_map={"target_region_bbox": region_bbox},
+            render_map={
+                "target_region_bbox": region_bbox,
+                "missing_corner_bbox": cutout_bbox,
+                "measurement_label_bboxes": {
+                    "outer_width": w_bbox,
+                    "outer_height": h_bbox,
+                    "missing_width": cw_bbox,
+                    "missing_height": ch_bbox,
+                },
+            },
             witness={"outer_width": int(width_value), "outer_height": int(height_value), "missing_width": int(cut_width), "missing_height": int(cut_height), "answer_area": int(answer)},
             reasoning_steps=3,
+            evidence_keyed_bboxes={"target_region": region_bbox, "missing_corner": cutout_bbox},
         )
 
     return _MeasurementCase(query_id="l_shape_area", answer=int(answer), build=build)
@@ -1041,12 +1162,21 @@ def _case_house_perimeter(width_value: int, wall_height: int, roof_side: int) ->
             answer=int(answer),
             question_text='What is the perimeter of the outer boundary of pentagon "ABCDE"?',
             query_id="house_outline_perimeter",
-            evidence_bboxes=(target_bbox, base_bbox, height_bbox, roof_bbox),
-            evidence_roles=("target_outer_boundary_ABCDE", "base_length_AB", "wall_height_AE", "roof_side_CD"),
+            evidence_bboxes=(target_bbox,),
+            evidence_roles=("target_boundary",),
             scene_entities=({"type": "house_pentagon", "points": {"A": a, "B": b, "C": c, "D": d, "E": e}},),
-            render_map={"point_label_bboxes": labels, "target_boundary_bbox": target_bbox},
+            render_map={
+                "point_label_bboxes": labels,
+                "target_boundary_bbox": target_bbox,
+                "measurement_label_bboxes": {
+                    "base_length_AB": base_bbox,
+                    "wall_height_AE": height_bbox,
+                    "roof_side_CD": roof_bbox,
+                },
+            },
             witness={"AB": int(width_value), "AE": int(wall_height), "CD_equals_DE": int(roof_side), "BC_equals_AE": True, "answer_perimeter": int(answer)},
             reasoning_steps=2,
+            evidence_keyed_bboxes={"target_boundary": target_bbox},
         )
 
     return _MeasurementCase(query_id="house_outline_perimeter", answer=int(answer), build=build)
@@ -1083,12 +1213,20 @@ def _case_tabbed_perimeter(width_value: int, height_value: int, tab_height: int)
             answer=int(answer),
             question_text="What is the perimeter of the outer boundary of the shaded figure?",
             query_id="tabbed_rectilinear_perimeter",
-            evidence_bboxes=(target_bbox, width_bbox, height_bbox, tab_bbox),
-            evidence_roles=("target_outer_boundary", "overall_width", "main_height", "tab_height"),
+            evidence_bboxes=(target_bbox,),
+            evidence_roles=("target_boundary",),
             scene_entities=({"type": "tabbed_rectilinear_polygon", "outline": pts},),
-            render_map={"target_boundary_bbox": target_bbox},
+            render_map={
+                "target_boundary_bbox": target_bbox,
+                "measurement_label_bboxes": {
+                    "overall_width": width_bbox,
+                    "main_height": height_bbox,
+                    "tab_height": tab_bbox,
+                },
+            },
             witness={"overall_width": int(width_value), "main_height": int(height_value), "tab_height": int(tab_height), "answer_perimeter": int(answer)},
             reasoning_steps=2,
+            evidence_keyed_bboxes={"target_boundary": target_bbox},
         )
 
     return _MeasurementCase(query_id="tabbed_rectilinear_perimeter", answer=int(answer), build=build)
@@ -1278,26 +1416,72 @@ class _CompositeMeasurementBaseTask:
         rng = spawn_rng(int(instance_seed), f"{self.task_id}.render")
         width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 720)))
         height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 560)))
-        image, background_meta = make_background_canvas(
-            canvas_width=int(width),
-            canvas_height=int(height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=_COMPOSITE_MEASUREMENT_BACKGROUND_DEFAULTS,
-            fallback_color=(255, 255, 252),
-        )
-        anchors = extract_background_anchor_colors(background_meta)
-        shape_style = sample_geometry_shape_style(
-            rng,
-            params=params,
-            render_defaults=render_defaults,
-            anchor_colors=anchors,
-        )
+        scene_id = str(self.scene_id or self.public_scene_id)
+        use_technical_diagram_style = scene_id == "angle_relations"
+        technical_style_meta: Dict[str, Any] = {}
+        technical_style_resolution: Dict[str, Any] = {}
+        if bool(use_technical_diagram_style):
+            image, background_meta, diagram_style, diagram_style_resolution = prepare_geometry_diagram_style_and_background(
+                instance_seed=int(instance_seed),
+                params=params,
+                scene_id=scene_id,
+                task_group=TASK_GROUP,
+                canvas_width=int(width),
+                canvas_height=int(height),
+                allow_dark=True,
+            )
+            shape_style = geometry_shape_style_from_diagram_style(diagram_style)
+            technical_style_meta = geometry_diagram_style_metadata(diagram_style)
+            technical_style_resolution = dict(diagram_style_resolution)
+        else:
+            image, background_meta = make_background_canvas(
+                canvas_width=int(width),
+                canvas_height=int(height),
+                instance_seed=int(instance_seed),
+                params=params,
+                default_config=_COMPOSITE_MEASUREMENT_BACKGROUND_DEFAULTS,
+                fallback_color=(255, 255, 252),
+            )
+            anchors = extract_background_anchor_colors(background_meta)
+            shape_style = sample_geometry_shape_style(
+                rng,
+                params=params,
+                render_defaults=render_defaults,
+                anchor_colors=anchors,
+            )
         line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
         font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
         small_font_size = int(params.get("point_label_font_size", group_default(render_defaults, "point_label_font_size", 18)))
-        fill_choices: tuple[Color, ...] = ((222, 235, 255), (230, 244, 231), (255, 236, 214), (242, 230, 255))
-        accent_choices: tuple[Color, ...] = ((30, 92, 168), (31, 119, 80), (165, 85, 24), (116, 72, 172))
+        if bool(use_technical_diagram_style):
+            fill_choices = (
+                tuple(int(value) for value in diagram_style.fill_rgb),
+                tuple(int(value) for value in diagram_style.muted_fill_rgb),
+                tuple(int(value) for value in diagram_style.option_fill_rgb),
+                tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
+            )
+            accent_choices = (
+                tuple(int(value) for value in diagram_style.accent_rgb),
+                tuple(int(value) for value in diagram_style.secondary_accent_rgb),
+                tuple(int(value) for value in diagram_style.highlight_rgb),
+                tuple(int(value) for value in diagram_style.guide_rgb),
+            )
+            font_family = sample_font_family(
+                role="readout",
+                instance_seed=int(instance_seed),
+                namespace=f"geometry.{TASK_GROUP}.{scene_id}.font_family",
+                params=params,
+            )
+            font_record = get_font_family_record(str(font_family))
+            layout_offset = (
+                float(rng.randint(-32, 32)),
+                float(rng.randint(-20, 22)),
+            )
+        else:
+            fill_choices = ((222, 235, 255), (230, 244, 231), (255, 236, 214), (242, 230, 255))
+            accent_choices = ((30, 92, 168), (31, 119, 80), (165, 85, 24), (116, 72, 172))
+            font_family = ""
+            font_record = None
+            layout_offset = (0.0, 0.0)
         color_idx = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{self.task_id}.accent")) % len(fill_choices)
         ctx = _RenderContext(
             rng=rng,
@@ -1311,8 +1495,10 @@ class _CompositeMeasurementBaseTask:
             accent_color=accent_choices[color_idx],
             fill_color=fill_choices[color_idx],
             line_width=max(2, int(line_width)),
-            font=load_font(max(12, int(font_size)), bold=True),
-            small_font=load_font(max(10, int(small_font_size)), bold=True),
+            font=load_font(max(12, int(font_size)), bold=True, font_family=font_family),
+            small_font=load_font(max(10, int(small_font_size)), bold=True, font_family=font_family),
+            layout_offset=(float(layout_offset[0]), float(layout_offset[1])),
+            font_family=str(font_family),
         )
         render_meta = {
             "background_style": dict(background_meta),
@@ -1322,7 +1508,21 @@ class _CompositeMeasurementBaseTask:
             "point_label_font_size": int(small_font_size),
             "accent_color": list(ctx.accent_color),
             "fill_color": list(ctx.fill_color),
+            "layout_jitter": {
+                "offset_px": [round(float(ctx.layout_offset[0]), 3), round(float(ctx.layout_offset[1]), 3)],
+                "offset_range_px": [-32, 32, -20, 22] if bool(use_technical_diagram_style) else [0, 0, 0, 0],
+                "applied_before_evidence_projection": True,
+            },
         }
+        if bool(use_technical_diagram_style):
+            render_meta.update(
+                {
+                    "technical_diagram_style": dict(technical_style_meta),
+                    "technical_diagram_style_resolution": dict(technical_style_resolution),
+                    "font_family": font_record.to_trace() if font_record is not None else {},
+                    "font_asset_version": font_asset_version(),
+                }
+            )
         return ctx, render_meta
 
     def _build_complexity(self, *, rendered: _RenderedCompositeScene, case_count: int) -> TaskComplexity:
@@ -1398,7 +1598,27 @@ class _CompositeMeasurementBaseTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _prompt_examples(len(rendered.evidence_bboxes))
+        if rendered.evidence_keyed_points:
+            evidence_type = "keyed_point_map"
+            evidence_keys = tuple(rendered.evidence_keyed_points.keys())
+        elif rendered.evidence_keyed_bboxes:
+            evidence_type = "keyed_bbox_map"
+            evidence_keys = tuple(rendered.evidence_keyed_bboxes.keys())
+        else:
+            evidence_type = "bbox_set"
+            evidence_keys = tuple()
+        json_example, json_example_answer_only = _prompt_examples(
+            len(rendered.evidence_bboxes),
+            evidence_type=evidence_type,
+            evidence_keys=evidence_keys,
+        )
+        evidence_key_list = ", ".join(f'"{key}"' for key in evidence_keys)
+        evidence_hint_template = str(prompt_defaults["evidence_hint"])
+        evidence_hint = (
+            evidence_hint_template.format(evidence_keys=evidence_key_list)
+            if "{evidence_keys}" in evidence_hint_template
+            else evidence_hint_template
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1412,7 +1632,7 @@ class _CompositeMeasurementBaseTask:
                 "question_text": str(rendered.question_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(evidence_hint),
                 "answer_hint": str(prompt_defaults["answer_hint_integer"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1431,11 +1651,54 @@ class _CompositeMeasurementBaseTask:
             ]
             for bbox in evidence_bboxes
         ]
+        evidence_keyed_points = {
+            str(key): [round(float(point[0]), 3), round(float(point[1]), 3)]
+            for key, point in (rendered.evidence_keyed_points or {}).items()
+        }
+        evidence_keyed_bboxes = {
+            str(key): [round(float(coord), 3) for coord in bbox]
+            for key, bbox in (rendered.evidence_keyed_bboxes or {}).items()
+        }
+        if evidence_type == "keyed_point_map":
+            evidence_value: Any = evidence_keyed_points
+            projected_evidence: Dict[str, Any] = {
+                "type": "keyed_point_map",
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
+            }
+            original_evidence_value: Any = dict(evidence_keyed_points)
+        elif evidence_type == "keyed_bbox_map":
+            evidence_value = evidence_keyed_bboxes
+            evidence_keyed_bbox_points = {
+                str(key): [
+                    round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+                    round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+                ]
+                for key, bbox in evidence_keyed_bboxes.items()
+            }
+            projected_evidence = {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "keyed_point_map": dict(evidence_keyed_bbox_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_bbox_points),
+            }
+            original_evidence_value = dict(evidence_keyed_bboxes)
+        else:
+            evidence_value = evidence_bboxes
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": list(evidence_bboxes),
+                "pixel_bbox_set": list(evidence_bboxes),
+                "point_set": list(evidence_points),
+                "pixel_point_set": list(evidence_points),
+            }
+            original_evidence_value = list(rendered.evidence_roles)
         rendered_entities = _json_ready(rendered.scene_entities)
         rendered_map = _json_ready(rendered.render_map)
         rendered_witness = _json_ready(rendered.witness)
         answer_gt = TypedValue(type="integer", value=int(rendered.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=evidence_bboxes)
+        evidence_gt = TypedValue(type=evidence_type, value=evidence_value)
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
                 "scene_kind": str(self.scene_kind),
@@ -1487,17 +1750,11 @@ class _CompositeMeasurementBaseTask:
                 "query_id": str(rendered.query_id),
                 "answer_value": int(rendered.answer),
                 "evidence_roles": list(rendered.evidence_roles),
-                "source_witness_type": "bbox_set",
-                "original_evidence_value": list(rendered.evidence_roles),
+                "source_witness_type": str(evidence_type),
+                "original_evidence_value": original_evidence_value,
                 **dict(rendered_witness),
             },
-            "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "point_set": list(evidence_points),
-                "pixel_point_set": list(evidence_points),
-            },
+            "projected_evidence": projected_evidence,
         }
         complexity = self._build_complexity(rendered=rendered, case_count=len(tuple(self.cases)))
         return TaskOutput(

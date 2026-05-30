@@ -7,7 +7,7 @@
 - Task id: `task_physics__pulley__pulley_mechanical_advantage`
 - Query id: `force_relation`
 - Answer type: `integer`
-- Evidence type: unordered `bbox_set`
+- Evidence type: `keyed_bbox_map`
 
 ## Visual scaffold
 - The image shows one ideal block-and-tackle pulley setup.
@@ -39,15 +39,15 @@
 
 ## Evidence contract
 - `force_relation` with `solve_for=effort_force`
-  - prompt-facing evidence is the unordered set of:
-    - all full supporting vertical rope-strand bboxes,
-    - the shown load-force label bbox,
-    - the marked `?` effort-force label/arrow bbox
+  - prompt-facing evidence is a keyed map with:
+    - `support_1`, `support_2`, ... for all full supporting vertical rope-strand bboxes,
+    - `known_force` for the shown load-force label bbox,
+    - `target_force` for the marked `?` effort-force label/arrow bbox
 - `force_relation` with `solve_for=load_force`
-  - prompt-facing evidence is the unordered set of:
-    - all full supporting vertical rope-strand bboxes,
-    - the shown effort-force label/arrow bbox,
-    - the marked `?` load-force label bbox
+  - prompt-facing evidence is a keyed map with:
+    - `support_1`, `support_2`, ... for all full supporting vertical rope-strand bboxes,
+    - `known_force` for the shown effort-force label/arrow bbox,
+    - `target_force` for the marked `?` load-force label bbox
 
 ## Sampling notes
 - Each sample draws one system.
@@ -61,4 +61,5 @@
 ## Prompt policy
 - Prompt text should identify the setup as one ideal pulley system.
 - Prompt text should ask only for an integer force value.
-- Prompt-facing evidence should stay on full supporting rope strands and the relevant load/effort labels, not cut strands or decorative frame elements.
+- Prompt-facing evidence should stay on full supporting rope strands and the relevant load/effort labels.
+- The renderer samples one readout font per diagram and applies whole-diagram layout jitter before projecting evidence coordinates.

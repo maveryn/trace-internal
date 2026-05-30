@@ -17,20 +17,22 @@ def test_cone_sector_net_task_emits_public_contract() -> None:
     out = task.generate(59001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id
     assert out.answer_gt.type == "number"
-    assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) == 3
+    assert out.evidence_gt.type == "keyed_point_map"
+    assert set(out.evidence_gt.value) in (
+        {"S", "P", "Q", "C", "R"},
+        {"S", "P", "Q", "C", "A"},
+    )
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "keyed_point_map"
+    assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
     assert trace["execution_trace"]["slant_height"] > 0
     assert 0 < trace["execution_trace"]["theta_degrees"] < 360
 
@@ -89,11 +91,33 @@ def test_cone_sector_net_evidence_stays_inside_canvas() -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.evidence_gt.value:
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        for x, y in out.evidence_gt.value.values():
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
+
+
+def test_cone_sector_net_evidence_uses_labeled_construction_points_not_labels() -> None:
+    task = GeometryConeSectorNetValueTask()
+    expected_keys_by_query = {
+        "base_radius_from_sector_angle": {"S", "P", "Q", "C", "R"},
+        "height_from_sector_angle": {"S", "P", "Q", "C", "A"},
+    }
+    for index, query_id in enumerate(QUERY_IDS):
+        out = task.generate(
+            59061 + index,
+            params={"query_id": query_id},
+            max_attempts=20,
+        )
+        expected_keys = expected_keys_by_query[str(query_id)]
+        assert out.evidence_gt.type == "keyed_point_map"
+        assert set(out.evidence_gt.value) == expected_keys
+        assert set(out.trace_payload["execution_trace"]["evidence_roles"]) == expected_keys
+        assert all(
+            "label" not in str(role)
+            for role in out.trace_payload["execution_trace"]["evidence_roles"]
+        )
+        assert "label_bboxes" in out.trace_payload["render_map"]
+        assert "point_label_bboxes" in out.trace_payload["render_map"]
 
 
 def test_cone_sector_net_tasks_reject_unknown_query_id() -> None:

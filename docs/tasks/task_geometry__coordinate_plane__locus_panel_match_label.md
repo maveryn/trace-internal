@@ -25,8 +25,9 @@ such as shifted strips, opposite half-planes, shifted circles, or rings.
 
 ## Evidence
 Verifier evidence is the final-image pixel bounding box around the selected
-panel. Each panel's semantic region specification and answer flag are recorded
-in trace metadata.
+panel. This is a visual-option witness: the answer is one of the rendered
+mini coordinate panels, and each panel's semantic region specification and
+answer flag are recorded in trace metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt

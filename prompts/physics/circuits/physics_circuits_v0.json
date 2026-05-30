@@ -2,7 +2,7 @@
   "bundle_id": "physics_circuits_v0",
   "schema_version": "v0",
   "task_templates": {
-    "equivalent_resistance_query": [
+    "equivalent_component_query": [
       "",
       "",
       "",
@@ -22,7 +22,7 @@
       "answer_hint",
       "json_example"
     ],
-    "scene:resistor_network_diagram": [
+    "scene:equivalent_circuit_diagram": [
       "object_description"
     ]
   },
@@ -36,14 +36,14 @@
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
-    "resistor_network_diagram": [
+    "equivalent_circuit_diagram": [
       "The image shows {object_description}.",
       "The circuit diagram shows {object_description}.",
       "This circuit diagram shows {object_description}.",
@@ -56,15 +56,15 @@
       "What is the total equivalent resistance between terminals A and B?",
       "Using the resistor values shown, what equivalent resistance is seen between terminals A and B?",
       "Determine the network's total resistance between A and B.",
-      "What integer equivalent resistance does this resistor network have between A and B?",
-      "Read the circuit between terminals A and B. What is its total equivalent resistance?"
+      "What integer equivalent resistance does this resistor circuit have between A and B?",
+      "Read the resistor circuit between terminals A and B. What is its total equivalent resistance?"
     ],
-    "missing_resistor_value": [
-      "The diagram labels the common total resistance and the left known resistance excluding the red `?`. What integer value should replace the red `?` resistor?",
-      "Use the labeled common total resistance and labeled left known resistance. One resistor in the left circuit is marked with a red `?`. What value must replace it?",
-      "The common total resistance is labeled, and the known part of the left circuit is labeled separately. What integer value belongs in the red `?` box?",
-      "Given the labeled common total resistance and the labeled left known resistance excluding the red `?`, what value should replace the red `?` resistor?",
-      "Both circuits have the same labeled total resistance between terminals A and B. The left known resistance without the red `?` is also labeled. What integer value must the red `?` resistor have?"
+    "total_capacitance": [
+      "What is the total equivalent capacitance between terminals A and B?",
+      "Using the capacitor values shown, what equivalent capacitance is seen between terminals A and B?",
+      "Determine the network's total capacitance between A and B.",
+      "What integer equivalent capacitance does this capacitor circuit have between A and B?",
+      "Read the capacitor circuit between terminals A and B. What is its total equivalent capacitance?"
     ]
   },
   "allow_empty_task_templates": true

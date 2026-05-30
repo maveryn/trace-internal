@@ -7,7 +7,7 @@
 4. Public query id: `default`
 5. Query id: one of `house_outline_perimeter` or `tabbed_rectilinear_perimeter`
 6. Answer type: `integer`
-7. Evidence type: `bbox_set`
+7. Evidence type: `keyed_bbox_map`
 
 ## Prompt Bundle
 - Bundle id: `geometry_analytical_measurement_v0`
@@ -17,7 +17,7 @@
 Compute the outer perimeter of a straight-edged composite figure from visible dimensions and implied equal/opposite sides.
 
 ## Evidence
-Prompt-facing evidence is a `bbox_set`: the target boundary first, followed by supporting dimension labels.
+Prompt-facing evidence is a `keyed_bbox_map` over the target outer boundary. Supporting dimension labels remain visible annotations and render metadata, not public evidence.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

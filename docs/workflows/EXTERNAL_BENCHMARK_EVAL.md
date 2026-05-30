@@ -108,7 +108,7 @@ python scripts/analyze_vero_benchmark_failures.py \
 Outputs are written under:
 
 ```text
-plans/external_benchmark_failure_analysis/qwen25vl7b/<run_id>/
+review/external_benchmark_failure_analysis/qwen25vl7b/<run_id>/
 ```
 
 For each benchmark, the analyzer writes:

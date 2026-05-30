@@ -9,6 +9,20 @@ Color = Tuple[int, int, int]
 DEFAULT_COLOR_DISTANCE_SPACE = "lab"
 DEFAULT_MIN_COLOR_DISTANCE = 60.0
 DEFAULT_COLOR_SAMPLING_ATTEMPTS = 256
+VISIBILITY_SAFE_FALLBACK_COLORS: Tuple[Color, ...] = (
+    (255, 255, 255),
+    (0, 0, 0),
+    (0, 114, 178),
+    (213, 94, 0),
+    (0, 158, 115),
+    (204, 121, 167),
+    (230, 159, 0),
+    (86, 180, 233),
+    (240, 228, 66),
+    (180, 40, 80),
+    (60, 70, 180),
+    (30, 170, 210),
+)
 
 
 def _clamp_channel(value: int) -> int:
@@ -81,6 +95,90 @@ def color_distance(color_a: Color, color_b: Color, *, distance_space: str = "lab
     if space == "rgb":
         return float(rgb_euclidean_distance(color_a, color_b))
     raise ValueError(f"unsupported color distance space: {distance_space!r}")
+
+
+def min_color_distance_to_anchors(
+    color: Color,
+    anchor_colors: Iterable[Color],
+    *,
+    distance_space: str = DEFAULT_COLOR_DISTANCE_SPACE,
+) -> float:
+    """Return the nearest distance from one color to any normalized anchor color."""
+
+    anchors = tuple(_normalize_colors(anchor_colors))
+    if not anchors:
+        return float("inf")
+    normalized = _normalize_color(color)
+    return min(float(color_distance(normalized, anchor, distance_space=str(distance_space))) for anchor in anchors)
+
+
+def _unique_colors_in_order(colors: Iterable[Color]) -> Tuple[Color, ...]:
+    """Return normalized unique colors while preserving first-seen order."""
+
+    seen: set[Color] = set()
+    ordered: list[Color] = []
+    for color in colors:
+        normalized = _normalize_color(color)
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return tuple(ordered)
+
+
+def resolve_contrasting_palette(
+    candidate_colors: Sequence[Color],
+    *,
+    anchor_colors: Iterable[Color],
+    min_anchor_distance: float = 40.0,
+    min_pairwise_distance: float = 20.0,
+    distance_space: str = DEFAULT_COLOR_DISTANCE_SPACE,
+    fallback_colors: Sequence[Color] = VISIBILITY_SAFE_FALLBACK_COLORS,
+) -> Tuple[Color, ...]:
+    """Return a palette whose colors avoid known background/anchor colors.
+
+    Candidate colors are preserved when they satisfy the anchor and pairwise
+    thresholds. Unsafe candidates are deterministically replaced from the
+    remaining candidate pool plus a small shared high-contrast fallback palette.
+    If every option misses the threshold, the color with the best minimum anchor
+    distance is selected rather than failing generation.
+    """
+
+    normalized_candidates = tuple(_normalize_color(color) for color in candidate_colors)
+    if not normalized_candidates:
+        return tuple()
+    anchors = tuple(_normalize_colors(anchor_colors))
+    pool = _unique_colors_in_order((*normalized_candidates, *tuple(fallback_colors)))
+    threshold = max(0.0, float(min_anchor_distance))
+    pair_threshold = max(0.0, float(min_pairwise_distance))
+    resolved: list[Color] = []
+
+    def _pairwise_distance(candidate: Color) -> float:
+        if not resolved:
+            return float("inf")
+        return min(float(color_distance(candidate, color, distance_space=str(distance_space))) for color in resolved)
+
+    def _score(candidate: Color, *, preferred: Color) -> tuple[float, float, float, float, float]:
+        anchor_distance = min_color_distance_to_anchors(candidate, anchors, distance_space=str(distance_space))
+        pair_distance = _pairwise_distance(candidate)
+        duplicate_penalty = -1.0 if candidate in resolved else 0.0
+        preferred_bonus = 1.0 if candidate == preferred else 0.0
+        return (
+            1.0 if float(anchor_distance) >= float(threshold) else 0.0,
+            1.0 if float(pair_distance) >= float(pair_threshold) else 0.0,
+            float(anchor_distance),
+            float(pair_distance),
+            float(preferred_bonus + duplicate_penalty),
+        )
+
+    for preferred in normalized_candidates:
+        preferred_score = _score(preferred, preferred=preferred)
+        if preferred_score[0] >= 1.0 and preferred_score[1] >= 1.0:
+            resolved.append(preferred)
+            continue
+        best = max(pool, key=lambda candidate: _score(candidate, preferred=preferred))
+        resolved.append(_normalize_color(best))
+    return tuple(resolved)
 
 
 def _sample_random_color(rng, *, channel_min: int, channel_max: int) -> Color:

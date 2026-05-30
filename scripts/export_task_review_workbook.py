@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export one task-review workbook from an existing RLVR parquet + TRACE dataset root.
 
-This is intended for calibration review sets under plans/task-reviews/, where we
+This is intended for calibration review sets under review/task-reviews/, where we
 want the same workbook-style artifact as task-reviews/ but for one exact probe
 set that already exists on disk.
 """
@@ -9,10 +9,8 @@ set that already exists on disk.
 from __future__ import annotations
 
 import argparse
-import io
 import json
 import os
-import re
 import shutil
 from collections import defaultdict
 from pathlib import Path
@@ -20,62 +18,17 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import pandas as pd
 import zstandard as zstd
-from openpyxl import Workbook
-from openpyxl.drawing.image import Image as XLImage
-from openpyxl.styles import Alignment, Font
-from openpyxl.utils import get_column_letter
-from PIL import Image as PILImage
-from PIL import ImageOps as PILImageOps
 
-from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
+from trace.core.review_overlays import resolve_overlay_evidence
 from trace.core.taxonomy import resolve_task_query_id, resolve_task_taxonomy
-
-
-_PREVIEW_MAX_SIDE = 384
-_EXCEL_HEADERS: List[str] = [
-    "image",
-    "evidence_image",
-    "task",
-    "query_id",
-    "scene_id",
-    "query_id",
-    "prompt_answer",
-    "ground_truth_answer",
-    "prompt_answer_and_evidence",
-    "ground_truth_answer_and_evidence",
-    "answer_type",
-    "evidence_type",
-    "instance_seed",
-    "image_path",
-    "data_path",
-]
-
-_EXCEL_COLUMN_WIDTHS: Dict[str, float] = {
-    "A": 54,
-    "B": 54,
-    "C": 28,
-    "D": 24,
-    "E": 24,
-    "F": 24,
-    "G": 34,
-    "H": 22,
-    "I": 40,
-    "J": 24,
-    "K": 14,
-    "L": 16,
-    "M": 24,
-    "N": 28,
-    "O": 28,
-}
-
-_WRAP_COLUMNS = {"C", "D", "E", "F", "G", "H", "I", "J", "M", "N", "O"}
+from trace.core.task_review_workbooks import write_inspection_excel as _write_inspection_excel
 
 
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export one workbook for an exact task probe set")
     parser.add_argument("--parquet", required=True, help="RLVR parquet for the exact probe set")
     parser.add_argument("--dataset-root", required=True, help="TRACE dataset root that produced the parquet")
-    parser.add_argument("--out-root", default="plans/task-reviews", help="Output root for workbook artifacts")
+    parser.add_argument("--out-root", default="review/task-reviews", help="Output root for workbook artifacts")
     parser.add_argument("--task-id", default="", help="Optional task id override")
     parser.add_argument(
         "--review-label",
@@ -88,43 +41,6 @@ def _parse_cli() -> argparse.Namespace:
         help="Calibration artifact baseline label to write into the review manifest.",
     )
     return parser.parse_args()
-
-
-def _json_cell(value: Any) -> str:
-    if isinstance(value, (dict, list)):
-        return json.dumps(value, ensure_ascii=False, allow_nan=False)
-    return "" if value is None else str(value)
-
-
-def _build_preview_image(source: PILImage.Image, *, max_image_side: int = _PREVIEW_MAX_SIDE) -> PILImage.Image:
-    preview = source.convert("RGB")
-    border_px = 1
-    inner_max_side = max(1, int(max_image_side) - (2 * border_px))
-    preview.thumbnail((inner_max_side, inner_max_side), PILImage.Resampling.LANCZOS)
-    return PILImageOps.expand(preview, border=border_px, fill=(0, 0, 0))
-
-
-def _sanitize_sheet_title(raw: str) -> str:
-    title = re.sub(r"[\\\\/*?:\\[\\]]+", "_", str(raw).strip())
-    if not title:
-        return "default"
-    return title[:31]
-
-
-def _dedupe_sheet_title(base: str, used: set[str]) -> str:
-    candidate = _sanitize_sheet_title(base)
-    if candidate not in used:
-        used.add(candidate)
-        return candidate
-    index = 2
-    while True:
-        suffix = f"_{index}"
-        trimmed = candidate[: max(1, 31 - len(suffix))]
-        attempt = f"{trimmed}{suffix}"
-        if attempt not in used:
-            used.add(attempt)
-            return attempt
-        index += 1
 
 
 def _review_query_id_key(*, query_id: str) -> str:
@@ -202,117 +118,6 @@ def _load_trace_index(dataset_root: Path, selected_refs: Sequence[Mapping[str, A
                     continue
                 out[(str(shard_id), int(line_index))] = json.loads(raw)
     return out
-
-
-def _populate_inspection_sheet(
-    sheet: Any,
-    *,
-    rows: Sequence[Mapping[str, Any]],
-    out_root: Path,
-    image_buffers: List[io.BytesIO],
-) -> None:
-    sheet.append(list(_EXCEL_HEADERS))
-
-    bold = Font(bold=True)
-    for column in range(1, len(_EXCEL_HEADERS) + 1):
-        sheet.cell(row=1, column=column).font = bold
-
-    for letter, width in _EXCEL_COLUMN_WIDTHS.items():
-        sheet.column_dimensions[str(letter)].width = float(width)
-
-    wrap_top = Alignment(wrap_text=True, vertical="top")
-
-    for row_idx, row in enumerate(rows, start=2):
-        image_path = out_root / str(row.get("image_path", ""))
-        if image_path.exists():
-            with PILImage.open(image_path) as source:
-                source_rgb = source.convert("RGB")
-                preview = _build_preview_image(source_rgb)
-                evidence_preview = _build_preview_image(
-                    render_evidence_overlay(
-                        source_rgb,
-                        evidence_type=str(row.get("overlay_evidence_type", row.get("evidence_type", ""))),
-                        evidence_value=row.get("overlay_evidence_value", row.get("answer_evidence")),
-                    )
-                )
-                row_height = max(int(preview.height), int(evidence_preview.height))
-
-                preview_buffer = io.BytesIO()
-                preview.save(preview_buffer, format="PNG")
-                preview_buffer.seek(0)
-                image_buffers.append(preview_buffer)
-
-                evidence_buffer = io.BytesIO()
-                evidence_preview.save(evidence_buffer, format="PNG")
-                evidence_buffer.seek(0)
-                image_buffers.append(evidence_buffer)
-
-            preview_img = XLImage(preview_buffer)
-            preview_img.anchor = f"A{row_idx}"
-            sheet.add_image(preview_img)
-
-            evidence_img = XLImage(evidence_buffer)
-            evidence_img.anchor = f"B{row_idx}"
-            sheet.add_image(evidence_img)
-
-            sheet.row_dimensions[row_idx].height = max(60, float(row_height) * 0.75)
-        else:
-            sheet.row_dimensions[row_idx].height = 60
-
-        values = [
-            row.get("task", ""),
-            row.get("query_id", ""),
-            row.get("scene_id", ""),
-            row.get("query_id", ""),
-            row.get("prompt_answer", row.get("prompt_answer_only", "")),
-            _json_cell(row.get("ground_truth_answer", row.get("answer_only"))),
-            row.get("prompt_answer_and_evidence", row.get("prompt", "")),
-            _json_cell(row.get("ground_truth_answer_and_evidence", row.get("answer"))),
-            row.get("answer_type", ""),
-            row.get("evidence_type", ""),
-            int(row.get("instance_seed", 0)),
-            row.get("image_path", ""),
-            row.get("data_path", ""),
-        ]
-        for offset, value in enumerate(values, start=3):
-            cell = sheet.cell(row=row_idx, column=offset, value=value)
-            if get_column_letter(offset) in _WRAP_COLUMNS:
-                cell.alignment = wrap_top
-
-    sheet.freeze_panes = "C2"
-
-
-def _write_inspection_excel(
-    rows_by_query_id: Mapping[str, Sequence[Mapping[str, Any]]],
-    path: Path,
-    *,
-    out_root: Path,
-) -> Dict[str, str]:
-    workbook = Workbook()
-    image_buffers: List[io.BytesIO] = []
-    used_titles: set[str] = set()
-    query_id_to_sheet: Dict[str, str] = {}
-
-    sorted_query_ids = sorted(str(variant) for variant in rows_by_query_id.keys()) or [""]
-    for index, query_id in enumerate(sorted_query_ids):
-        base_title = str(query_id).strip() or "default"
-        sheet_title = _dedupe_sheet_title(base_title, used_titles)
-        if index == 0:
-            sheet = workbook.active
-            sheet.title = sheet_title
-        else:
-            sheet = workbook.create_sheet(title=sheet_title)
-        query_id_to_sheet[str(query_id)] = str(sheet_title)
-        _populate_inspection_sheet(
-            sheet,
-            rows=list(rows_by_query_id.get(str(query_id), [])),
-            out_root=out_root,
-            image_buffers=image_buffers,
-        )
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    workbook.save(path)
-    return query_id_to_sheet
 
 
 def main() -> int:

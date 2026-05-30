@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
 from ..drawing import draw_rounded_rect
+from ..text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    resolve_readable_text_style,
+    text_legibility_summary,
+)
 from .metadata import color_separation_metadata
 from .palette import PANEL_SCENE_PALETTES, Color, PanelScenePalette
 
@@ -169,7 +174,28 @@ def resolve_panel_scene_style(
     )
     palette = PANEL_SCENE_PALETTES.get(str(palette_id), PANEL_SCENE_PALETTES["plain_neutral"])
     style = _style_from_palette(treatment=str(treatment), palette=palette)
-    return style, panel_scene_style_metadata(style)
+    text_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.text_legibility",
+        role="read_required_panel_text",
+        surface_rgbs=(
+            style.background_rgb,
+            style.panel_fill_rgb,
+            style.option_fill_rgb,
+        ),
+        preferred_rgbs=(style.text_rgb, style.grid_rgb, style.panel_border_rgb),
+        min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    style = replace(
+        style,
+        text_rgb=tuple(text_style.fill_rgb),
+        text_stroke_rgb=tuple(text_style.stroke_rgb),
+    )
+    metadata = panel_scene_style_metadata(style)
+    metadata["text_legibility"] = text_legibility_summary((text_style,))
+    metadata["text_color_policy"] = "read_required_text_uses_random_nonsemantic_readable_ink"
+    return style, metadata
 
 
 def panel_scene_style_metadata(style: PanelSceneStyle) -> dict[str, Any]:
@@ -187,6 +213,7 @@ def panel_scene_style_metadata(style: PanelSceneStyle) -> dict[str, Any]:
         "panel_accent_rgb": list(style.panel_accent_rgb),
         "grid_rgb": list(style.grid_rgb),
         "text_rgb": list(style.text_rgb),
+        "text_stroke_rgb": list(style.text_stroke_rgb),
         "mark_rgb": list(style.mark_rgb),
         "agent_rgb": list(style.agent_rgb),
         "option_fill_rgb": list(style.option_fill_rgb),

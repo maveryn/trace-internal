@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_evidence
+from trace.core.prompt_evidence_contract_audit import _normalize_jsonable, _validate_evidence_value
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,
@@ -25,6 +27,41 @@ REQUIRED_TRACE_KEYS = {
     "projected_evidence",
 }
 
+COUNT_CARDINALITY_SOURCE_KEYS = {
+    "counted_ids",
+    "counted_entity_ids",
+    "counted_object_ids",
+    "counted_item_ids",
+    "counted_cell_ids",
+    "counted_cells",
+    "counted_piece_ids",
+    "counted_box_ids",
+    "counted_edge_ids",
+    "counted_labels",
+    "matching_ids",
+    "matching_entity_ids",
+    "matching_object_ids",
+    "matching_item_ids",
+    "matching_cell_ids",
+    "matching_labels",
+}
+
+EXACT_EVIDENCE_SOURCE_KEYS = {
+    "evidence_entity_ids",
+    "evidence_ids",
+    "evidence_cell_edges",
+    "evidence_state_path_labels",
+    "accepting_path_labels",
+}
+
+SET_EVIDENCE_TYPES = {
+    "bbox_set",
+    "keyed_bbox_map",
+    "keyed_point_map",
+    "point_pair_set",
+    "point_set",
+}
+
 
 def _generate_first_successful_output(task_id: str):
     task = create_task(task_id)
@@ -40,6 +77,131 @@ def _generate_first_successful_output(task_id: str):
         except Exception as exc:  # pragma: no cover - only used for unlucky generated seeds.
             last_exc = exc
     pytest.fail(f"failed to generate active task {task_id}: {last_exc}")
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _unwrap_typed_value(value):
+    if isinstance(value, dict) and "type" in value and "value" in value:
+        return value["value"]
+    return value
+
+
+def _values_equal(left, right) -> bool:
+    left_value = _unwrap_typed_value(left)
+    right_value = _unwrap_typed_value(right)
+    if _is_number(left_value) and _is_number(right_value):
+        return abs(float(left_value) - float(right_value)) < 1e-6
+    return str(left_value) == str(right_value)
+
+
+def _evidence_cardinality(value) -> int:
+    if isinstance(value, dict):
+        return len(value)
+    if isinstance(value, (list, tuple)):
+        return len(value)
+    return 1 if value is not None else 0
+
+
+def _iter_nested_lists(value, *, prefix: str = ""):
+    if not isinstance(value, dict):
+        return
+    for key, item in value.items():
+        full_key = f"{prefix}.{key}" if prefix else str(key)
+        if isinstance(item, list):
+            yield full_key, item
+        elif isinstance(item, dict):
+            yield from _iter_nested_lists(item, prefix=full_key)
+
+
+def _projected_value_for_type(projected: dict, evidence_type: str):
+    value = projected.get(evidence_type)
+    if value is None and evidence_type == "point_set":
+        value = projected.get("pixel_point_set")
+    if value is None and evidence_type == "point_sequence":
+        value = projected.get("pixel_point_sequence")
+    if value is None and evidence_type == "keyed_point_map":
+        value = projected.get("pixel_keyed_point_map")
+    if value is None and evidence_type == "keyed_bbox_map":
+        value = projected.get("pixel_keyed_bbox_map")
+    return value
+
+
+def _assert_answer_evidence_consistency(output, *, task_id: str, query_id: str) -> None:
+    """Check domain-agnostic answer/evidence invariants for one generated output."""
+
+    evidence_type = str(output.evidence_gt.type)
+    evidence_value = _normalize_jsonable(output.evidence_gt.value)
+    evidence_len = _evidence_cardinality(evidence_value)
+    image_size = tuple(output.image.size) if output.image is not None else None
+
+    evidence_errors = _validate_evidence_value(
+        evidence_type,
+        evidence_value,
+        image_size=image_size,
+        field="evidence_gt",
+    )
+    assert evidence_errors == [], (task_id, query_id, evidence_errors)
+
+    sanitized = sanitize_trace_payload_for_public_evidence(
+        output.trace_payload,
+        evidence_gt=output.evidence_gt,
+    )
+    projected = sanitized.get("projected_evidence", {})
+    assert isinstance(projected, dict), (task_id, query_id, projected)
+    assert str(projected.get("type", "")) == evidence_type, (task_id, query_id, projected)
+    projected_value = _projected_value_for_type(projected, evidence_type)
+    assert projected_value is not None, (task_id, query_id, projected)
+    projected_value = _normalize_jsonable(projected_value)
+    assert projected_value == evidence_value, (task_id, query_id, projected_value, evidence_value)
+    projected_errors = _validate_evidence_value(
+        evidence_type,
+        projected_value,
+        image_size=image_size,
+        field="projected_evidence",
+    )
+    assert projected_errors == [], (task_id, query_id, projected_errors)
+
+    execution_trace = output.trace_payload.get("execution_trace", {})
+    assert isinstance(execution_trace, dict), (task_id, query_id, execution_trace)
+    if "answer" in execution_trace:
+        assert _values_equal(output.answer_gt.value, execution_trace["answer"]), (
+            task_id,
+            query_id,
+            output.answer_gt.value,
+            execution_trace["answer"],
+        )
+
+    witness = output.trace_payload.get("witness_symbolic", {})
+    if isinstance(witness, dict) and _is_number(witness.get("count")):
+        assert int(witness["count"]) == evidence_len, (task_id, query_id, witness, evidence_len)
+
+    for source_key, source_value in _iter_nested_lists(execution_trace):
+        leaf_key = source_key.split(".")[-1]
+        if leaf_key in EXACT_EVIDENCE_SOURCE_KEYS:
+            assert len(source_value) == evidence_len, (
+                task_id,
+                query_id,
+                source_key,
+                len(source_value),
+                evidence_len,
+            )
+
+    count_like_query = "count" in str(query_id).lower() or "number" in str(query_id).lower()
+    if str(output.answer_gt.type) == "integer" and evidence_type in SET_EVIDENCE_TYPES and count_like_query:
+        for source_key, source_value in _iter_nested_lists(execution_trace):
+            leaf_key = source_key.split(".")[-1]
+            if leaf_key in COUNT_CARDINALITY_SOURCE_KEYS and len(source_value) == evidence_len:
+                assert int(output.answer_gt.value) == len(source_value), (
+                    task_id,
+                    query_id,
+                    source_key,
+                    output.answer_gt.value,
+                    len(source_value),
+                    evidence_len,
+                )
 
 
 @pytest.mark.parametrize("task_id", list_default_task_ids())
@@ -61,7 +223,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     )
 
     assert taxonomy.domain in ACTIVE_DOMAINS
-    assert str(output.query_id) == "default"
+    assert str(output.query_id) == query_id
     assert query_id
     assert str(output.answer_gt.type)
     assert str(output.evidence_gt.type)
@@ -91,3 +253,4 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     assert trace_taxonomy["source"]["config_task_group"] == str(getattr(task, "task_group", ""))
     assert trace_taxonomy["source"]["prompt_domain"]
     assert trace_taxonomy["source"]["prompt_task_group"]
+    _assert_answer_evidence_consistency(output, task_id=task_id, query_id=query_id)

@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from scripts import audit_prompt_evidence_contracts as audit
+from scripts import audit_prompt_evidence_contracts as cli_audit
+from trace.core import prompt_evidence_contract_audit as audit
+
+
+def test_cli_wrapper_reexports_core_helpers() -> None:
+    assert cli_audit._validate_evidence_value is audit._validate_evidence_value
 
 
 def test_extract_example_json_reads_first_object_after_marker() -> None:
@@ -24,6 +29,19 @@ def test_redundancy_detector_flags_adjacent_overlap() -> None:
     issues = audit._find_redundancy_issues(prompt, mode="answer_only")
 
     assert any(issue["code"] == "adjacent_sentence_overlap" for issue in issues)
+
+
+def test_evidence_prompt_audit_rejects_negative_evidence_format_instructions() -> None:
+    prompt = (
+        "Find the matching objects.\n"
+        "Evidence format: set \"evidence\" to boxes [x0, y0, x1, y1] around the target objects; "
+        "do not include labels.\n"
+        "Example JSON: {\"evidence\":[[1,2,10,12]],\"answer\":2}"
+    )
+
+    issues = audit._audit_evidence_prompt(prompt, evidence_type="bbox_set", mode="answer_and_evidence")
+
+    assert any(issue["code"] == "negative_evidence_format_instruction" for issue in issues)
 
 
 def test_validate_bbox_set_checks_pixel_bounds_and_area() -> None:
@@ -91,3 +109,65 @@ def test_validate_point_pair_set_checks_nested_points() -> None:
     assert valid == []
     assert any("outside image bounds" in message for message in invalid)
     assert any("not a two-point pair" in message for message in invalid)
+
+
+def test_validate_keyed_point_map_checks_keys_points_and_bounds() -> None:
+    valid = audit._validate_evidence_value(
+        "keyed_point_map",
+        {"A": [1, 2], "B": [3, 4]},
+        image_size=(10, 10),
+    )
+    invalid = audit._validate_evidence_value(
+        "keyed_point_map",
+        {"": [1, 2], "B": [30, 4]},
+        image_size=(10, 10),
+    )
+
+    assert valid == []
+    assert any("empty key" in message for message in invalid)
+    assert any("outside image bounds" in message for message in invalid)
+
+
+def test_validate_keyed_bbox_map_checks_keys_boxes_and_bounds() -> None:
+    valid = audit._validate_evidence_value(
+        "keyed_bbox_map",
+        {"source": [1, 2, 5, 6], "target": [6, 2, 9, 6]},
+        image_size=(10, 10),
+    )
+    invalid = audit._validate_evidence_value(
+        "keyed_bbox_map",
+        {"": [1, 2, 5, 6], "target": [6, 2, 20, 6]},
+        image_size=(10, 10),
+    )
+
+    assert valid == []
+    assert any("empty key" in message for message in invalid)
+    assert any("outside image bounds" in message for message in invalid)
+
+
+def test_collect_task_records_uses_explicit_variant_manifest(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_generate_explicit_samples(**kwargs):
+        captured.update(kwargs)
+        return [], {"task": kwargs["task_id"], "sampling_mode": "explicit_manifest"}
+
+    monkeypatch.setitem(
+        audit._EXPLICIT_VARIANT_PARAMS,
+        "task_test__scene__branch",
+        [("branch_a", {"query_id": "branch_a"})],
+    )
+    monkeypatch.setattr(audit, "_generate_explicit_samples", fake_generate_explicit_samples)
+
+    records, coverage = audit._collect_task_records(
+        task_id="task_test__scene__branch",
+        samples_per_query_id=1,
+        seed=123,
+        max_attempts=4,
+        max_total_samples_per_task=8,
+        workers=1,
+    )
+
+    assert records == []
+    assert coverage["sampling_mode"] == "explicit_manifest"
+    assert captured["variants"] == [("branch_a", {"query_id": "branch_a"})]

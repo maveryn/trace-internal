@@ -13,7 +13,9 @@ For the domain being reviewed, inspect:
 2. Active task inventory in `docs/ACTIVE_TASK_INVENTORY.md` and `docs/tasks/README.md`.
 3. Repo-local domain skill in `skills/domain-<domain>/`.
 4. Task modules, domain/task-group configs, prompt bundles, task docs, and tests.
-5. Existing task-review artifacts under `plans/task-reviews/<domain>/<scene_id>/<task_id>/`.
+5. Existing task-review artifacts under `review/task-reviews/<domain>/<scene_id>/<task_id>/`,
+   inspected through the browser review app unless an offline workbook export
+   is explicitly needed.
    Current acceptance artifacts must carry `calibration_baseline: "v0"`;
    otherwise treat them as stale and regenerate them for the audited scope.
 
@@ -34,11 +36,16 @@ For the domain being reviewed, inspect:
 2. Labels do not overlap figures, points, cells, or critical geometry when avoidable.
 3. Non-semantic style variation does not create semantic ambiguity.
 4. Layout size, gutters, and text scale still support the task at the configured max scene density.
-5. Text-bearing elements use shared font assets, with one font family per meaningful text block.
-6. Board, panel, chart, graph, and page styles include safe non-semantic variety where the domain supports it.
-7. Rendered content is not unnecessarily fixed at the same centered location; any layout jitter projects evidence after the final layout.
-8. Charts, graphs, and pages use context or distractor text only when placement and wording cannot be confused with answer-bearing content.
-9. Scenes with named objects use the broadest suitable reusable object/name pools available for that scene.
+5. Backgrounds, palettes, panels, strokes, sizes, marker styles, board/object styles, and other non-semantic visual axes include safe variety where the domain supports it. Prefer shared style registries, but each scene must still map those shared primitives to its own evidence-bearing geometry safely.
+6. Answer-bearing path, marker, option, and highlight colors must be checked against known background/panel/board colors with shared Lab-distance helpers such as `resolve_contrasting_palette(...)` or a documented equivalent; hand-picked palettes are not enough when the background is independently sampled.
+7. Text-bearing elements use the shared role-aware font dispatcher. Required/read-off text must use `role="readout"` and the 100-family readout pool; non-answer context/chrome may use `role="context"`, and purely non-semantic visual dressing may use `role="decorative"`. Record the sampled family, role, pool id, pool size, and asset version in render metadata.
+8. Keep font choice consistent inside one meaningful visual unit, such as a single chart, game board, table, form, panel, or option set, unless mixed typography is itself part of the scene grammar.
+9. Required/read-off text must use the shared text-legibility resolver or a documented equivalent that records role, text/surface colors, contrast thresholds, and pass/fail metadata in render metadata copied into `render_spec`. Resolve separate text roles for separate surfaces, for example chart ticks versus legend labels or graph titles versus node labels. During a scene audit, run `python scripts/audit_text_legibility.py --root . --scan-root trace/tasks/<domain> --strict-renderer-migration --strict-role-metadata --strict-font-routing` and `python scripts/audit_text_legibility.py --root . --runtime-coverage --runtime-domain <domain>`. The runtime audit checks generated trace metadata, including automatically collected drawn-text records under `render_spec.drawn_text.text_legibility`; add `--require-required-roles` or `--fail-unvalidated-required-draws` when ratcheting one scene from compatibility routing to full role-level contrast metadata. Non-answer distractor/context text may use weaker styling, but it must stay outside answer/evidence contracts.
+10. Glyph text color must be non-semantic. Do not make the answer, category, class, or filter depend on the color of the text itself; use marks, swatches, fills, outlines, icons, or panels for semantic color channels.
+11. Rendered content is not unnecessarily fixed at the same centered location; any layout jitter must be sampled before evidence projection, and public evidence must use the final jittered coordinates.
+12. Board, panel, chart, graph, page, and object styles have scene-appropriate variation beyond canvas background alone, such as board skins, piece/token styles, grid/axis strokes, marker glyphs, card/table chrome, or page/control skins where safe. For game scenes, aim for at least five scene-local board/object styles in addition to shared background/panel/font variation unless a documented canonical/readability exception applies.
+13. Charts, graphs, pages, and UI-like scenes use context or distractor text appropriately: distractor text should create realistic visual clutter without being confusable with answer-bearing text or overriding the prompt contract.
+14. Scenes with named objects use the broadest suitable reusable object/name pools available for that scene.
 
 ### D. Sampling and answer-support audit
 1. Scene construction still supports the configured answer range by construction or explicit feasibility checks.
@@ -55,8 +62,43 @@ For the domain being reviewed, inspect:
 2. Evidence is computed after final layout, scaling, style chrome, and image composition.
 3. Prompt-facing evidence remains local, visible, and inside the final canvas.
 4. Evidence identifies the visual witnesses used to derive the answer rather than unrelated context or overly broad fallback regions.
-5. Trace metadata records explicit random choices that affect prompt, rendering, query branch, answer construction, and evidence.
-6. Analytical geometry and other construction-heavy tasks should use the minimal visible givens as evidence. If the only plausible evidence is a `?` marker or broad whole-diagram box, flag the task for evidence-contract cleanup.
+5. Evidence should usually localize object/primitive witnesses rather than
+   standalone numeric labels or selected answer options. Numeric annotations
+   should be trace/render metadata or attributes of nearby objects unless the
+   task is explicitly a text/readout task.
+6. Role-aware evidence must use the active global homogeneous names
+   `keyed_point_map` or `keyed_bbox_map`; flag any
+   domain-specific keyed evidence type names or mixed point/box evidence unless
+   the global contract has been deliberately expanded.
+7. Prefer keyed evidence when witness-role binding matters or when an
+   unordered evidence set would be ambiguous. If the verifier
+   should distinguish roles such as outer versus shaded region, source versus
+   target panel, reference versus candidate item, or input versus output
+   measurement, the task should normally use `keyed_bbox_map` or
+   `keyed_point_map` rather than an unordered set.
+   Unordered sets remain appropriate for counting tasks where evidence
+   cardinality is the answer, or for homogeneous witness sets where role and
+   order are semantically irrelevant.
+8. Line-like witnesses such as segments, rays, paths, route legs, displacement
+   cues, and graph edges should usually be grounded by endpoints or ordered
+   points (`point_pair_set`, `point_sequence`, or keyed point maps) rather than
+   by broad rectangular bboxes. Use bboxes for line-like evidence only when the
+   visible witness is intentionally a thick/extended region or a complete
+   visual option panel.
+9. Selected option bboxes are used only for visual option-image tasks where the
+   option is a complete candidate image/panel and there is a
+   source/reference/original image or region that the option matches,
+   completes, transforms from, or belongs to. Ordinary MCQ choices,
+   numeric/text labels, and lettered candidate objects should ground the
+   source/candidate objects or primitives instead of the option bbox.
+10. Evidence instructions should be clear about witness categories without
+   leaking answers. For counting tasks, do not tell the model a fixed evidence
+   count when that count is the answer.
+11. Evidence-format prompt text is positive-only. It should say what witness
+   category/shape to return and should not list non-witness objects, exclusions,
+   or rejected evidence forms.
+12. Trace metadata records explicit random choices that affect prompt, rendering, query branch, answer construction, and evidence.
+13. Analytical geometry and other construction-heavy tasks should use the minimal visible givens as evidence. If the only plausible evidence is a `?` marker or broad whole-diagram box, flag the task for evidence-contract cleanup.
 
 ### F. Shared-infra audit
 1. Helpers still live at the narrowest reusable layer that fits.
@@ -90,11 +132,25 @@ For the domain being reviewed, inspect:
    - run `python -m py_compile` when shared/task modules changed,
    - run `git diff --check`,
    - run full task review for every touched task:
-     - `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full`
+     - `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --out-root review/task-reviews`
+   - after regenerating review artifacts, use **Reload Index** in the browser
+     review app or call `POST /api/reload` before inspection; restart the app
+     when templates, CSS/JS, server routes, indexer logic, resource indexing,
+     feedback storage, or schema code changed; inspect regenerated task/sample
+     pages there and add sample-level feedback in the app when a visible issue
+     remains; verify the affected page shows the updated local files before
+     handoff
+   - mark manual audit checkboxes only after prompt, image, evidence,
+     distribution, and solve-rate review are acceptable in the app
+   - when fixing reviewer feedback, add a brief agent repair note to the
+     relevant task-level or sample-level feedback item; leave resolution for
+     human verification unless explicitly instructed otherwise
    - if solve-rate calibration is required but no GPU/endpoint is available,
      record the scene as pending solve rate and stop there; do not mark the
      scene accepted or move to the next scene until solve-rate calibration has
      run.
+   - treat a task as complete only when manual audit passes and solve-rate is
+     accepted.
 3. If the audit changes shared infrastructure, expand pytest coverage to the affected sibling tasks.
 
 ## 6) Recommended audit order inside one domain

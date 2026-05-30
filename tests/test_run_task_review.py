@@ -10,6 +10,8 @@ from PIL import Image
 
 from scripts import check_task_answer_distribution as distribution_review
 from scripts import run_task_review as review
+from trace.core import task_review_distribution
+from trace.core.task_review_paths import infer_task_domain, resolve_task_review_dir
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
 
@@ -83,12 +85,22 @@ def test_build_inspection_rows_passes_requested_query_id(
 def test_resolve_task_review_dir_uses_domain_scene_scoped_layout() -> None:
     dummy_task = _DummyVariantTask()
     out_root = Path("/tmp/task-reviews")
-    task_dir = review._resolve_task_review_dir(
+    task_dir = resolve_task_review_dir(
         out_root=out_root,
         task_id="task_dummy__review__query",
         task_obj=dummy_task,
     )
     assert task_dir == out_root / "dummy" / "review" / "task_dummy__review__query"
+
+
+def test_review_path_helpers_parse_public_three_d_task_ids() -> None:
+    out_root = Path("/tmp/task-reviews")
+    task_id = "task_three_d__object_scene_3d__named_object_count"
+
+    assert infer_task_domain(task_id) == "three_d"
+    assert resolve_task_review_dir(out_root=out_root, task_id=task_id) == (
+        out_root / "three_d" / "object_scene_3d" / task_id
+    )
 
 
 def test_review_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:
@@ -103,3 +115,50 @@ def test_distribution_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["check_task_answer_distribution.py"])
     args = distribution_review._parse_cli()
     assert int(args.workers) == 12
+
+
+def test_review_cli_uses_shared_distribution_helpers() -> None:
+    assert review._random_collector is task_review_distribution.random_collector
+    assert review._answer_collector is task_review_distribution.answer_collector
+    assert review._build_random_review_report is task_review_distribution.build_random_review_report
+    assert review._build_distribution_review_report is task_review_distribution.build_distribution_review_report
+
+
+def test_task_review_distribution_collector_records_axes_and_replay_params() -> None:
+    output = TaskOutput(
+        prompt="prompt",
+        answer_gt=TypedValue(type="integer", value=7),
+        evidence_gt=TypedValue(type="point_set", value=[[10, 10]]),
+        image=Image.new("RGB", (32, 32), color=(255, 255, 255)),
+        image_id="img",
+        trace_payload={
+            "execution_trace": {
+                "difficulty": "easy",
+                "difficulty_probabilities": {"easy": 2, "hard": 1},
+                "internal_query_id": "internal_branch",
+            },
+            "query_spec": {
+                "params": {
+                    "scene_variant": "bar",
+                    "query_id_probabilities": {"alpha": 1, "beta": 1},
+                    "scene_variant_support": ["bar", "line"],
+                },
+            },
+        },
+        complexity=TaskComplexity(complexity_score=0.2, complexity_components={}),
+        task_versions={},
+        scene_id="review",
+        query_id="default",
+    )
+
+    row = task_review_distribution.random_collector(output, 123)
+
+    assert row["instance_seed"] == 123
+    assert row["answer_value"] == 7
+    assert row["sampling_axes"]["difficulty"]["observed"] == "easy"
+    assert row["sampling_axes"]["difficulty"]["expected_probabilities"] == {
+        "easy": 2 / 3,
+        "hard": 1 / 3,
+    }
+    assert row["sampling_axes"]["query_id"]["expected_probabilities"] == {"alpha": 0.5, "beta": 0.5}
+    assert row["generation_params"] == {"scene_variant": "bar", "query_id": "internal_branch"}

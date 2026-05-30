@@ -399,6 +399,9 @@ def test_icons_sequence_bundle_supports_missing_count_query() -> None:
     bundle = load_prompt_bundle("icons", "sequence", "icons_sequence_v0")
     assert len(bundle.task_templates["missing_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:missing_count_query"]) == ["question_text"]
+    assert len(bundle.task_templates["run_length_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:run_length_query"]) == ["question_text"]
+    assert "named_strip_run_length" in bundle.scene_templates
 
 
 def test_icons_pattern_bundle_supports_structured_violation_query() -> None:

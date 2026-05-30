@@ -129,9 +129,48 @@ def resolve_layout_jitter(
         False,
     )
     min_margin = max(0, int(params.get("layout_jitter_min_margin_px", group_default(defaults, "layout_jitter_min_margin_px", 24))))
+    mode_raw = str(params.get("layout_jitter_mode", group_default(defaults, "layout_jitter_mode", "pixel")))
+    mode = mode_raw.strip().lower().replace("-", "_")
+    if mode in {"fraction", "fractional", "fraction_of_slack", "slack"}:
+        mode = "slack_fraction"
+    if mode not in {"pixel", "slack_fraction"}:
+        raise ValueError(f"unsupported layout_jitter_mode: {mode_raw!r}")
     if not enabled:
         return {
             "enabled": False,
+            "mode": str(mode),
+            "requested_dx_px": 0,
+            "requested_dy_px": 0,
+            "dx_px": 0,
+            "dy_px": 0,
+            "min_margin_px": int(min_margin),
+        }
+    if mode == "slack_fraction":
+        return {
+            "enabled": True,
+            "mode": "slack_fraction",
+            "requested_x_slack_fraction": float(
+                resolve_render_float(
+                    params,
+                    defaults,
+                    "layout_jitter_x_slack_fraction",
+                    0.0,
+                    instance_seed=instance_seed,
+                    namespace=str(namespace),
+                    steps=1000,
+                )
+            ),
+            "requested_y_slack_fraction": float(
+                resolve_render_float(
+                    params,
+                    defaults,
+                    "layout_jitter_y_slack_fraction",
+                    0.0,
+                    instance_seed=instance_seed,
+                    namespace=str(namespace),
+                    steps=1000,
+                )
+            ),
             "requested_dx_px": 0,
             "requested_dy_px": 0,
             "dx_px": 0,
@@ -140,6 +179,7 @@ def resolve_layout_jitter(
         }
     return {
         "enabled": True,
+        "mode": "pixel",
         "requested_dx_px": int(
             resolve_render_int(
                 params,
@@ -211,18 +251,29 @@ def apply_resolved_layout_jitter_to_margins(
 
     jitter_base = dict(jitter or {})
     min_margin = int(jitter_base.get("min_margin_px", 24))
-    requested_dx = int(jitter_base.get("requested_dx_px", 0))
-    requested_dy = int(jitter_base.get("requested_dy_px", 0))
+    mode = str(jitter_base.get("mode", "pixel")).strip().lower().replace("-", "_")
+    if mode in {"fraction", "fractional", "fraction_of_slack", "slack"}:
+        mode = "slack_fraction"
     max_dx = max(0, int(right_px) - int(min_margin))
     min_dx = -max(0, int(left_px) - int(min_margin))
     max_dy = max(0, int(bottom_px) - int(min_margin))
     min_dy = -max(0, int(top_px) - int(min_margin))
+    if mode == "slack_fraction":
+        x_fraction = max(-1.0, min(1.0, float(jitter_base.get("requested_x_slack_fraction", 0.0))))
+        y_fraction = max(-1.0, min(1.0, float(jitter_base.get("requested_y_slack_fraction", 0.0))))
+        requested_dx = int(round(x_fraction * (float(max_dx) if x_fraction >= 0.0 else float(-min_dx))))
+        requested_dy = int(round(y_fraction * (float(max_dy) if y_fraction >= 0.0 else float(-min_dy))))
+    else:
+        mode = "pixel"
+        requested_dx = int(jitter_base.get("requested_dx_px", 0))
+        requested_dy = int(jitter_base.get("requested_dy_px", 0))
     dx = max(int(min_dx), min(int(max_dx), int(requested_dx)))
     dy = max(int(min_dy), min(int(max_dy), int(requested_dy)))
     resolved = dict(jitter_base)
     resolved.update(
         {
             "enabled": bool(jitter_base.get("enabled", False)),
+            "mode": str(mode),
             "requested_dx_px": int(requested_dx),
             "requested_dy_px": int(requested_dy),
             "dx_px": int(dx),

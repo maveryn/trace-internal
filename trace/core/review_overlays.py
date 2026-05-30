@@ -105,6 +105,19 @@ def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
     return []
 
 
+def _extract_bbox_map(value: Any) -> Dict[str, Tuple[float, float, float, float]]:
+    """Extract labeled bbox payloads from one evidence structure."""
+    if not isinstance(value, Mapping):
+        return {}
+    out: Dict[str, Tuple[float, float, float, float]] = {}
+    for key, item in value.items():
+        parsed = _parse_bbox(item)
+        if parsed is None:
+            continue
+        out[str(key)] = parsed
+    return out
+
+
 def _extract_edge_segments(value: Any) -> List[Tuple[Tuple[float, float], Tuple[float, float]]]:
     """Extract edge-segment payloads from one evidence structure."""
 
@@ -144,6 +157,37 @@ def _draw_bbox_outline(
     draw.rectangle([x0, y0, x1, y1], outline=(color[0], color[1], color[2], 255), width=max(1, int(line_width)))
 
 
+def _draw_point_marker(
+    draw: PILImageDraw.ImageDraw,
+    point: Tuple[float, float],
+    *,
+    color: Tuple[int, int, int],
+    radius: int,
+    line_width: int,
+) -> None:
+    """Draw one high-contrast X marker for point evidence.
+
+    Filled circles are easy to confuse with board pieces, stones, bubbles, and
+    darts, so review overlays use an X-shaped annotation for point witnesses.
+    """
+
+    x, y = point
+    r = float(max(7, int(radius)))
+    stroke = max(2, int(line_width))
+    black_width = max(int(stroke) + 5, 7)
+    white_width = max(int(stroke) + 2, 4)
+    segments = (
+        [(float(x - r), float(y - r)), (float(x + r), float(y + r))],
+        [(float(x - r), float(y + r)), (float(x + r), float(y - r))],
+    )
+    for segment in segments:
+        draw.line(segment, fill=(0, 0, 0, 230), width=black_width)
+    for segment in segments:
+        draw.line(segment, fill=(255, 255, 255, 245), width=white_width)
+    for segment in segments:
+        draw.line(segment, fill=(color[0], color[1], color[2], 255), width=stroke)
+
+
 def resolve_overlay_evidence(
     *,
     evidence_type: str,
@@ -156,7 +200,15 @@ def resolve_overlay_evidence(
         return str(evidence_type), evidence_value
 
     evidence_kind = str(evidence_type)
-    if evidence_kind in {"bbox_sequence", "bbox_set", "point_pair_set", "point_sequence", "point_set"}:
+    if evidence_kind in {
+        "bbox_sequence",
+        "bbox_set",
+        "keyed_bbox_map",
+        "keyed_point_map",
+        "point_pair_set",
+        "point_sequence",
+        "point_set",
+    }:
         if evidence_kind in projected:
             return evidence_kind, projected.get(evidence_kind)
         pixel_key = f"pixel_{evidence_kind}"
@@ -181,18 +233,29 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
     label_offset_y = float(radius) + 3.0
     evidence_kind = str(evidence_type)
 
-    if evidence_kind in {"point_map", "pixel_point_map", "annotation_centers", "pixel_annotation_centers"}:
+    if evidence_kind in {
+        "point_map",
+        "pixel_point_map",
+        "keyed_point_map",
+        "pixel_keyed_point_map",
+        "annotation_centers",
+        "pixel_annotation_centers",
+    }:
         point_map = _extract_point_map(evidence_value)
         for idx, (label, point) in enumerate(point_map.items()):
             x, y = point
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.ellipse(
-                [x - radius, y - radius, x + radius, y + radius],
-                fill=(color[0], color[1], color[2], 255),
-                outline=(0, 0, 0, 255),
-                width=3,
-            )
+            _draw_point_marker(draw, point, color=color, radius=radius, line_width=line_width)
             draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
+        return image
+
+    if evidence_kind in {"keyed_bbox_map", "pixel_keyed_bbox_map"}:
+        bbox_map = _extract_bbox_map(evidence_value)
+        for idx, (label, bbox) in enumerate(bbox_map.items()):
+            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)
+            x0, y0, _x1, _y1 = bbox
+            draw.text((x0 + 4.0, max(0.0, y0 - 16.0)), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
     if evidence_kind in {
@@ -207,12 +270,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
             draw.line(points, fill=(220, 20, 60, 180), width=line_width)
         for idx, (x, y) in enumerate(points):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.ellipse(
-                [x - radius, y - radius, x + radius, y + radius],
-                fill=(color[0], color[1], color[2], 255),
-                outline=(0, 0, 0, 255),
-                width=3,
-            )
+            _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
         return image
 
     if evidence_kind == "point_pair_set":
@@ -221,12 +279,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
             draw.line([left, right], fill=(color[0], color[1], color[2], 220), width=line_width)
             for x, y in (left, right):
-                draw.ellipse(
-                    [x - radius, y - radius, x + radius, y + radius],
-                    fill=(color[0], color[1], color[2], 255),
-                    outline=(0, 0, 0, 255),
-                    width=2,
-                )
+                _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
         return image
 
     if evidence_kind in {"bbox", "bbox_sequence", "bbox_set"}:
@@ -238,12 +291,7 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
 
     for idx, (x, y) in enumerate(_extract_points(evidence_value)):
         color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-        draw.ellipse(
-            [x - radius, y - radius, x + radius, y + radius],
-            fill=(color[0], color[1], color[2], 255),
-            outline=(0, 0, 0, 255),
-            width=3,
-        )
+        _draw_point_marker(draw, (x, y), color=color, radius=radius, line_width=line_width)
     for idx, bbox in enumerate(_extract_bboxes(evidence_value)):
         color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
         _draw_bbox_outline(draw, bbox, color=color, line_width=line_width)

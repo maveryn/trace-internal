@@ -17,7 +17,7 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build scene-level TRACE task-review workbooks")
     parser.add_argument(
         "--out-root",
-        default="plans/task-reviews",
+        default="review/task-reviews",
         help="Task-review root containing <domain>/<scene_id>/<task_id>/ directories",
     )
     parser.add_argument(

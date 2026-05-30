@@ -14,6 +14,11 @@ Use this whenever the task lives under `domain=charts`.
 4. `docs/project/STATUS.md`
 5. `docs/workflows/TASK_AUTHORING.md`
 6. `docs/workflows/SHARED_UTILITIES.md`
+7. `review/docs/CALIBRATION_GUIDE.md` and `docs/workflows/TASK_REVIEW_WEB_APP.md`
+   before any scene review or solve-rate work
+8. `docs/workflows/INFORMATION_SCENE_RENDERING_UPGRADE.md` before renderer/style changes
+9. `docs/workflows/SHARED_FONT_ASSETS.md` before touching text rendering
+10. `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md` before adding distractor/context text
 
 ## Active-contract reminders
 - Keep `task_group` aligned to reasoning family, not chart type.
@@ -22,6 +27,8 @@ Use this whenever the task lives under `domain=charts`.
 - Do not force every chart type onto every task; add scene support only where the task semantics still make sense.
 - Treat `table` as a chart scene for table-like data displays.
 - `docs/domains/CHART_TASK_SETUP.md` owns the active chart contract. If it differs from the long-term plan doc, the setup doc wins.
+- Style, font, context, jitter, and renderer-variant choices are non-semantic axes. Record them in `render_spec`; never let them depend on answer value, correct option, query id, or difficulty bucket.
+- Chart scene visual audits are reviewer-gated. Report proposed visual changes first, then implement only explicitly approved edits.
 
 ## Helper placement
 - Single-series chart helpers belong under `trace/tasks/charts/shared/labeled_chart_common.py`.
@@ -29,13 +36,13 @@ Use this whenever the task lives under `domain=charts`.
 - Distribution-family chart helpers belong under `trace/tasks/charts/shared/distribution_chart_common.py`.
 
 ## Practical review checklist
-- Keep the prompt-facing evidence contract chart-native and simple; follow the active evidence rules in `docs/domains/CHART_TASK_SETUP.md`.
-- Prefer widening `scene_variant` support inside a task before creating a near-duplicate task id.
-- If a chart type changes the underlying scene grammar, split the shared helper path before widening the task surface.
-- Favor explicit visible labels and printed values over geometry-only estimation.
-- For `table`, keep row, column, cell, year, filter, rank, and interval references explicit enough that supporting bbox evidence is unambiguous.
-- For `table`, prefer readable tables over schema complexity: short labels, moderate row/column counts, and style variation through borders, shading, and framing.
-- Tighten mark-count/readability limits before shrinking semantic variety.
+- Use `docs/domains/CHART_TASK_SETUP.md` for active chart contracts, scene/query fit, evidence expectations, and table-specific rules.
+- Use `docs/workflows/INFORMATION_SCENE_RENDERING_UPGRADE.md` for chart visual audits, style/background/palette/context rules, and scene-review handoff.
+- Use `docs/workflows/SHARED_FONT_ASSETS.md` and `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md` for text/font/context implementation details.
+
+## Scene visual audit handoff
+- Follow `docs/workflows/INFORMATION_SCENE_RENDERING_UPGRADE.md` and `review/docs/CALIBRATION_GUIDE.md`.
+- Use the browser review app as the default inspection surface; Excel exports are optional static artifacts.
 
 ## Coverage reference
 For current chart coverage and active task families, use:

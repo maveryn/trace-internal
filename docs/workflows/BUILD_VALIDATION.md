@@ -40,18 +40,19 @@ Operational policy for build lifecycle and pre-finalize validation.
 ## 4) Task-review and distribution policy
 For new or distribution-changing task logic:
 1. Run the task-review workflow on affected tasks:
-   - full review: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full`
-   - distribution only: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode distribution`
-   - inspection only (skip distribution analysis): `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspection`
+   - full review: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --out-root review/task-reviews`
+   - distribution only: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode distribution --out-root review/task-reviews`
+   - inspection only (skip distribution analysis): `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspection --out-root review/task-reviews`
    - by default review scripts use all visible CPUs via `--workers`; override it explicitly when you need a smaller review footprint
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
    - per-query-id distribution review: 100 samples per query id when variants exist (`distribution_review.json`)
      - per-query-id collection uses the same task sampler as dataset generation, with only explicit public variant/query overrides when needed for coverage
-   - manual inspection workbook: 100 random samples per public task in `plans/task-reviews/<domain>/<scene_id>/<task_id>/<task_id>.xlsx`, grouped into one sheet per query id or query id when variants exist
-     - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration workbooks should use the default 100 total task samples
-   - review artifacts live under `plans/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows
+   - browser inspection sidecars: images, JSON data, prompt/answer/evidence payloads, and manifests under `review/task-reviews/<domain>/<scene_id>/<task_id>/`
+     - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration reviews should use the default 100 total task samples
+   - review artifacts live under `review/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows
    - current calibration artifacts must carry `calibration_baseline: "v0"` in manifests or stats files; artifacts without that metadata are stale for current acceptance
+   - after regenerating review artifacts, reload the browser review app index with **Reload Index** or `POST /api/reload` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific feedback there; Excel exports are optional static snapshots, not the required review surface
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 5`
    - `max_answer_frequency < 1/3`
@@ -62,11 +63,11 @@ For new or distribution-changing task logic:
    runs `scripts/check_rlvr_probe_distribution.py` on the realized `100` rows
    first; if the answer-frequency gate fails, it may generate up to four
    additional same-sampler validation shards of 100 rows each and validate the
-   cumulative distribution. Review workbooks and solve-rate runs still use the
+   cumulative distribution. Browser review samples and solve-rate runs still use the
    original 100-row shard. Any remaining validation failure blocks the task until the
    sampler is fixed.
 5. Numeric answer-distribution summaries still report `max_five_bin_frequency` and the 5 equal-width bin counts over the observed numeric range, but these are informational review metrics rather than hard pass/fail gates.
-6. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
+6. For quick distribution-only runs (without inspection sidecar generation), the dedicated checker remains available:
    - `PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>`
    For exact exported RLVR probes, use:
    - `PYTHONPATH=. python scripts/check_rlvr_probe_distribution.py --parquet <probe.parquet> --dataset-root <trace_dataset_root>`

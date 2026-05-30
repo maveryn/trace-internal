@@ -21,10 +21,16 @@ Each generated instance should include:
 - If behavior/contracts change, update the relevant source-of-truth docs above.
 - Use the repo-local skills under `skills/` for workflow-specific guidance; keep `AGENTS.md` focused on repo-wide invariants.
 
+## Review app workflow
+- Generated task-review artifacts belong under `review/task-reviews/<domain>/<scene_id>/<task_id>/`; do not use stale review roots.
+- The browser review app is the default manual inspection surface. Reload its index after generated artifact changes, and restart it after app, template, CSS/JS, indexer, resource, feedback, or schema changes.
+- Reviewer feedback stays open until a human verifies the updated task/sample. When an agent fixes feedback, add a brief repair note to the relevant feedback item describing what changed and whether artifacts were regenerated or the app was refreshed; do not mark the feedback resolved unless explicitly instructed.
+- Task completion requires both browser-app manual audit passing and accepted current solve-rate artifacts.
+
 ## Local vLLM serving
 - This machine has one calibration GPU. The shared qwen25 vLLM endpoint is `http://127.0.0.1:8002/v1` serving `Qwen/Qwen2.5-VL-7B-Instruct`.
 - Do not start additional vLLM servers on other local ports for calibration. Use the calibration runner's server-pool lock at `logs/vllm/locks/qwen25vl7b_8002.lock`; if another agent holds it, wait for the lock instead of bypassing it.
-- Current serving/runbook details live in `plans/CALIBRATION_PLAN.md`.
+- Current serving/runbook details live in `review/docs/CALIBRATION_GUIDE.md`.
 
 ## Core engineering rules
 - Use public taxonomy consistently: `domain -> scene_id -> task_id`; `task_group` remains a module/config grouping layer.

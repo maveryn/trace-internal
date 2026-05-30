@@ -45,3 +45,6 @@ PROMPT_VARIANT_COUNT_MISMATCH = "prompt_variant_count_mismatch"
 PROMPT_VARIANT_INDEX_OUT_OF_RANGE = "prompt_query_id_index_out_of_range"
 PROMPT_REQUIRED_SLOT_MISSING = "prompt_required_slot_missing"
 PROMPT_UNRESOLVED_PLACEHOLDER = "prompt_unresolved_placeholder"
+
+TEXT_LEGIBILITY_INVALID = "text_legibility_invalid"
+TEXT_LEGIBILITY_CONTRAST_FAILED = "text_legibility_contrast_failed"

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="table-panel">
+  <h2>Task Matches</h2>
+  <table>
+    <thead><tr><th>Task</th><th>Scene</th><th>Samples</th></tr></thead>
+    <tbody>
+      {% for task in task_results %}
+        <tr>
+          <td><a href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id) }}">{{ task.task_id }}</a></td>
+          <td>{{ task.domain }}/{{ task.scene_id }}</td>
+          <td>{{ task.sample_count }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">No task matches.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="sample-grid">
+  {% for sample in sample_results %}
+    <a class="sample-card" href="{{ app_path('/samples/' ~ sample.uid) }}">
+      <div class="sample-thumb">
+        {% if sample.image_exists %}<img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">{% endif %}
+      </div>
+      <div class="sample-meta">
+        <strong>{{ sample.task_id }}</strong>
+        <span>{{ sample.query_id }}</span>
+        <span>{{ sample.prompt|excerpt(120) }}</span>
+      </div>
+    </a>
+  {% else %}
+    <p class="muted">No sample matches.</p>
+  {% endfor %}
+</section>
+{% endblock %}

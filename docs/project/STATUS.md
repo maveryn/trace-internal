@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-05-27
+Date: 2026-05-29
 
 ## Active Inventory
 The generated source of truth for active public domains, scenes, and tasks is
@@ -17,10 +17,10 @@ Current generated summary:
 
 | Metric | Value |
 | --- | ---: |
-| Default tasks | 480 |
-| Registered tasks | 480 |
+| Default tasks | 499 |
+| Registered tasks | 499 |
 | Public domains | 10 |
-| Public scenes | 192 |
+| Public scenes | 205 |
 | Missing taxonomy mappings | 0 |
 | Invalid default task id shapes | 0 |
 
@@ -28,16 +28,16 @@ Current generated domain counts:
 
 | Domain | Scenes | Tasks |
 | --- | ---: | ---: |
-| charts | 33 | 93 |
-| games | 36 | 80 |
-| geometry | 23 | 75 |
-| graph | 8 | 39 |
-| icons | 11 | 28 |
-| illustrations | 14 | 24 |
-| pages | 17 | 29 |
-| physics | 12 | 20 |
-| puzzles | 34 | 77 |
-| three_d | 4 | 15 |
+| charts | 34 | 99 |
+| games | 37 | 80 |
+| geometry | 26 | 80 |
+| graph | 8 | 40 |
+| icons | 16 | 30 |
+| illustrations | 13 | 20 |
+| pages | 21 | 30 |
+| physics | 11 | 20 |
+| puzzles | 35 | 80 |
+| three_d | 4 | 20 |
 
 ## Active Contracts
 1. Public taxonomy is `domain -> scene_id -> task_id`.
@@ -60,7 +60,7 @@ PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-
 PYTHONPATH=. python scripts/check_skill_consistency.py
 PYTHONPATH=. python scripts/audit_active_tasks.py --skip-smoke
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_docs_consistency.py
-git diff --check -- docs skills scripts tests trace configs prompts plans assets AGENTS.md README.md
+git diff --check -- docs skills scripts tests trace configs prompts review assets AGENTS.md README.md
 ```
 
 The active registry currently has no blocking taxonomy/domain-surface issues.

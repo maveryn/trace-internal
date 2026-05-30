@@ -18,7 +18,7 @@ def test_domain_post_noise_policy_defaults_are_mild_and_explicit() -> None:
         ("pages", "arithmetic"): 0.50,
         ("pages", "relation"): 0.50,
         ("physics", "mechanics"): 0.50,
-        ("puzzles", "counterfactual"): 0.0,
+        ("puzzles", "counterfactual"): 0.50,
         ("puzzles", "logic"): 0.15,
         ("puzzles", "spatial"): 0.0,
         ("puzzles", "topology"): 0.15,

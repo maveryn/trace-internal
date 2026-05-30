@@ -20,7 +20,7 @@ Use this whenever the task lives under `domain=games`.
 - Prefer fully observable, low-convention questions unless a strategic task keeps rules explicit and answer/evidence support broad enough.
 - Keep prompt-facing evidence on the visible witness pieces themselves.
 - When a wrapped multi-row display has ordered semantics, make the row continuation explicit in both the image and the prompt.
-- Treat the public taxonomy as `domain=games -> scene_id -> task_id`; task-review artifacts live under `plans/task-reviews/games/<scene_id>/<task_id>/`.
+- Treat the public taxonomy as `domain=games -> scene_id -> task_id`; task-review artifacts live under `review/task-reviews/games/<scene_id>/<task_id>/`.
 - Split tasks under the same scene when the reasoning algorithm or answer/evidence contract changes. Keep only mirror knobs such as player color, row/column axis, board size, threshold direction, or style as params/query diagnostics inside one task.
 - `docs/domains/GAMES_TASK_SETUP.md` owns the active games contract.
 

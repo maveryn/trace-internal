@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import math
 from pathlib import Path
 import re
 from typing import Any, Dict, List, Mapping
@@ -707,6 +708,215 @@ def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
     return errors
 
 
+def _finite_float(value: Any) -> float | None:
+    try:
+        out = float(value)
+    except Exception:
+        return None
+    if not math.isfinite(out):
+        return None
+    return out
+
+
+def _iter_text_legibility_blocks(value: Any, *, field_path: str) -> List[tuple[str, Any]]:
+    """Find text_legibility metadata blocks inside render metadata."""
+
+    found: List[tuple[str, Any]] = []
+    if not isinstance(value, Mapping):
+        return found
+    if "text_legibility" in value:
+        found.append((f"{field_path}.text_legibility", value.get("text_legibility")))
+    for key, child in value.items():
+        if key == "text_legibility":
+            continue
+        if isinstance(child, Mapping):
+            found.extend(_iter_text_legibility_blocks(child, field_path=f"{field_path}.{key}"))
+        elif isinstance(child, list):
+            for index, item in enumerate(child):
+                if isinstance(item, Mapping):
+                    found.extend(_iter_text_legibility_blocks(item, field_path=f"{field_path}.{key}[{index}]"))
+    return found
+
+
+def _validate_one_text_legibility_block(
+    text_legibility: Any,
+    *,
+    instance_id: str,
+    field_path_root: str,
+) -> List[_ValidationError]:
+    """Validate one rendered text-legibility metadata block."""
+
+    errors: List[_ValidationError] = []
+    if not isinstance(text_legibility, Mapping):
+        return [
+            _err(
+                error_codes.TEXT_LEGIBILITY_INVALID,
+                "text_legibility metadata must be a mapping when present",
+                instance_id=instance_id,
+                field_path=field_path_root,
+            )
+        ]
+    if not bool(text_legibility.get("enabled", True)):
+        return []
+
+    failure_count = _to_int(text_legibility.get("failure_count"))
+    if failure_count is None or int(failure_count) < 0:
+        errors.append(
+            _err(
+                error_codes.TEXT_LEGIBILITY_INVALID,
+                "text_legibility.failure_count must be a non-negative integer",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.failure_count",
+            )
+        )
+    elif int(failure_count) > 0:
+        errors.append(
+            _err(
+                error_codes.TEXT_LEGIBILITY_CONTRAST_FAILED,
+                "required/read-off text legibility metadata reports failures",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.failure_count",
+                failure_count=int(failure_count),
+            )
+        )
+
+    records = text_legibility.get("records")
+    if records is None:
+        records = []
+    if not isinstance(records, list):
+        errors.append(
+            _err(
+                error_codes.TEXT_LEGIBILITY_INVALID,
+                "text_legibility.records must be an array",
+                instance_id=instance_id,
+                field_path=f"{field_path_root}.records",
+            )
+        )
+        return errors
+
+    for index, record in enumerate(records):
+        field_prefix = f"{field_path_root}.records[{index}]"
+        if not isinstance(record, Mapping):
+            errors.append(
+                _err(
+                    error_codes.TEXT_LEGIBILITY_INVALID,
+                    "text legibility record must be a mapping",
+                    instance_id=instance_id,
+                    field_path=field_prefix,
+                )
+            )
+            continue
+        required = bool(record.get("required", True))
+        if not required:
+            continue
+        passes = record.get("passes")
+        if passes is not True:
+            errors.append(
+                _err(
+                    error_codes.TEXT_LEGIBILITY_CONTRAST_FAILED,
+                    "required/read-off text record does not pass legibility thresholds",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.passes",
+                    role=record.get("role"),
+                )
+            )
+        contrast = _finite_float(record.get("min_contrast_ratio"))
+        contrast_required = _finite_float(record.get("min_contrast_required"))
+        if contrast is None or contrast_required is None or contrast < contrast_required:
+            errors.append(
+                _err(
+                    error_codes.TEXT_LEGIBILITY_CONTRAST_FAILED,
+                    "required/read-off text contrast is below threshold",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.min_contrast_ratio",
+                    role=record.get("role"),
+                    min_contrast_ratio=record.get("min_contrast_ratio"),
+                    min_contrast_required=record.get("min_contrast_required"),
+                )
+            )
+        lab_distance = _finite_float(record.get("min_lab_distance"))
+        lab_distance_required = _finite_float(record.get("min_lab_distance_required"))
+        if lab_distance is None or lab_distance_required is None or lab_distance < lab_distance_required:
+            errors.append(
+                _err(
+                    error_codes.TEXT_LEGIBILITY_CONTRAST_FAILED,
+                    "required/read-off text color distance is below threshold",
+                    instance_id=instance_id,
+                    field_path=f"{field_prefix}.min_lab_distance",
+                    role=record.get("role"),
+                    min_lab_distance=record.get("min_lab_distance"),
+                    min_lab_distance_required=record.get("min_lab_distance_required"),
+                )
+            )
+        bbox = record.get("bbox_px")
+        if bbox is not None:
+            if not isinstance(bbox, list) or len(bbox) != 4:
+                errors.append(
+                    _err(
+                        error_codes.TEXT_LEGIBILITY_INVALID,
+                        "drawn text bbox_px must be an array of four finite numbers",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                    )
+                )
+                continue
+            coords = [_finite_float(value) for value in bbox]
+            if any(value is None for value in coords):
+                errors.append(
+                    _err(
+                        error_codes.TEXT_LEGIBILITY_INVALID,
+                        "drawn text bbox_px must contain only finite numbers",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                    )
+                )
+                continue
+            x0, y0, x1, y1 = [float(value) for value in coords if value is not None]
+            if x1 <= x0 or y1 <= y0:
+                errors.append(
+                    _err(
+                        error_codes.TEXT_LEGIBILITY_INVALID,
+                        "drawn text bbox_px must have positive width and height",
+                        instance_id=instance_id,
+                        field_path=f"{field_prefix}.bbox_px",
+                        role=record.get("role"),
+                        bbox_px=bbox,
+                    )
+                )
+
+    return errors
+
+
+def _validate_text_legibility_contract(
+    trace_record: Mapping[str, Any],
+    *,
+    instance_id: str,
+) -> List[_ValidationError]:
+    """Validate rendered text-legibility metadata when a renderer records it.
+
+    The first rollout is intentionally compatibility-safe: absence of
+    text_legibility metadata is handled by the static migration audit, while
+    malformed or failing metadata on migrated renderers fails dataset
+    validation here.
+    """
+
+    render_spec = trace_record.get("render_spec")
+    if not isinstance(render_spec, Mapping):
+        return []
+    errors: List[_ValidationError] = []
+    for field_path_root, text_legibility in _iter_text_legibility_blocks(render_spec, field_path="trace.render_spec"):
+        errors.extend(
+            _validate_one_text_legibility_block(
+                text_legibility,
+                instance_id=str(instance_id),
+                field_path_root=str(field_path_root),
+            )
+        )
+    return errors
+
+
 def validate_dataset(
     instances: List[Dict[str, Any]],
     *,
@@ -826,6 +1036,7 @@ def validate_dataset(
             )
 
         errors.extend(_validate_prompt_contract(inst, record))
+        errors.extend(_validate_text_legibility_contract(record, instance_id=str(iid)))
 
         trace_reward_contract = record.get("reward_contract")
         if trace_reward_contract is None:

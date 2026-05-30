@@ -12,7 +12,16 @@
 3. `answer_gt.type`:
 4. Default `evidence_gt.type`:
 5. Alternate evidence forms:
-6. Overlap/touch policy (if applicable):
+6. Evidence witness policy:
+   - minimal object/primitive witnesses:
+   - evidence shape choice (`point_set`, `bbox_set`, `point_pair_set`,
+     `keyed_point_map`, `keyed_bbox_map`, etc.):
+   - keyed evidence role names, if used:
+   - numeric/readout annotation handling:
+   - answer-option evidence policy (only allowed for complete visual
+     option-image/panel tasks with a source/reference/original image or
+     region; otherwise ground source/candidate objects or primitives):
+7. Overlap/touch policy (if applicable):
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`:

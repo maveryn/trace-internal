@@ -61,11 +61,32 @@ def test_resolve_overlay_evidence_uses_canonical_point_pair_projection() -> None
     ]
 
 
-def test_render_evidence_overlay_draws_visible_marker_with_expanded_radius() -> None:
+def test_resolve_overlay_evidence_uses_canonical_keyed_point_projection() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="keyed_point_map",
+        evidence_value={"A": [0, 0]},
+        trace_payload={"projected_evidence": {"pixel_keyed_point_map": {"A": [40.0, 50.0]}}},
+    )
+    assert evidence_type == "keyed_point_map"
+    assert evidence_value == {"A": [40.0, 50.0]}
+
+
+def test_resolve_overlay_evidence_uses_canonical_keyed_bbox_projection() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="keyed_bbox_map",
+        evidence_value={},
+        trace_payload={"projected_evidence": {"keyed_bbox_map": {"A": [10.0, 20.0, 30.0, 40.0]}}},
+    )
+    assert evidence_type == "keyed_bbox_map"
+    assert evidence_value == {"A": [10.0, 20.0, 30.0, 40.0]}
+
+
+def test_render_evidence_overlay_draws_visible_x_marker_for_points() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_evidence_overlay(source, evidence_type="point_set", evidence_value=[[50, 50]])
     assert overlay.getpixel((50, 50)) != (255, 255, 255)
-    assert overlay.getpixel((56, 50)) != (255, 255, 255)
+    assert overlay.getpixel((56, 56)) != (255, 255, 255)
+    assert overlay.getpixel((44, 56)) != (255, 255, 255)
 
 
 def test_render_evidence_overlay_draws_visible_point_pair_segments() -> None:
@@ -97,3 +118,20 @@ def test_render_evidence_overlay_draws_all_bbox_set_members_with_shadow() -> Non
     assert overlay.getpixel((70, 10)) != (66, 133, 244)
     assert overlay.getpixel((14, 14)) != (66, 133, 244)
     assert overlay.getpixel((74, 14)) != (66, 133, 244)
+
+
+def test_render_evidence_overlay_draws_keyed_maps() -> None:
+    source = PILImage.new("RGB", (120, 100), color=(255, 255, 255))
+    point_overlay = render_evidence_overlay(
+        source,
+        evidence_type="keyed_point_map",
+        evidence_value={"A": [50, 50]},
+    )
+    bbox_overlay = render_evidence_overlay(
+        source,
+        evidence_type="keyed_bbox_map",
+        evidence_value={"B": [10, 10, 40, 40]},
+    )
+
+    assert point_overlay.getpixel((50, 50)) != (255, 255, 255)
+    assert bbox_overlay.getpixel((10, 10)) != (255, 255, 255)

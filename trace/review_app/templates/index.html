@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>{{ index.domains|length }}</span><label>domains</label></div>
+  <div class="metric"><span>{{ index.scenes|length }}</span><label>scenes</label></div>
+  <div class="metric"><span>{{ index.tasks|length }}</span><label>tasks</label></div>
+  <div class="metric"><span>{{ index.samples|length }}</span><label>samples</label></div>
+</section>
+
+<section class="card-grid">
+  {% for domain_name, domain in index.domains.items() %}
+    {% set feedback = feedback_by_domain.get(domain_name, {}) %}
+    <a class="card" href="{{ app_path('/domains/' ~ domain_name) }}">
+      <div class="thumb">
+        {% if domain.preview_uid %}
+          {% set sample = index.samples[domain.preview_uid] %}
+          {% if sample.image_exists %}
+            <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+          {% endif %}
+        {% endif %}
+      </div>
+      <h2>{{ domain_name }}</h2>
+      <p>{{ domain.scenes|length }} scenes, {{ domain.task_count }} tasks, {{ domain.sample_count }} samples</p>
+      {% if feedback.total %}
+        <span class="badge">{{ feedback.open }} open / {{ feedback.total }} feedback</span>
+      {% endif %}
+    </a>
+  {% endfor %}
+</section>
+{% endblock %}

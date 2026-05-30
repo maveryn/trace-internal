@@ -26,7 +26,7 @@ import requests
 
 DATASET = "zlab-princeton/Vero-600k"
 DATASET_SERVER = "https://datasets-server.huggingface.co"
-DEFAULT_OUTPUT_DIR = Path("plans/vero_coverage_review")
+DEFAULT_OUTPUT_DIR = Path("review/vero_coverage_review")
 
 
 CANDIDATE_BACKLOG: list[dict[str, Any]] = [
@@ -325,9 +325,9 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "chart_ocr-evochart",
         ],
         "tasks": [
-            "task_pages__infographic__column_profile_comparison_value",
-            "task_pages__infographic__section_ranked_total_label",
             "task_pages__infographic__metric_arithmetic_value",
+            "task_pages__infographic__section_rank_label",
+            "task_pages__infographic__fact_lookup_label",
         ],
         "evidence": "card/section bboxes, icon arrays, metric ids",
         "why": (
@@ -967,7 +967,7 @@ def write_manifest(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--active-audit", type=Path, default=Path("plans/active_task_audit.json"))
+    parser.add_argument("--active-audit", type=Path, default=Path("review/active_task_audit.json"))
     parser.add_argument("--sample-per-offset", type=int, default=100)
     parser.add_argument("--max-offsets", type=int, default=3)
     parser.add_argument("--skip-sampling", action="store_true")

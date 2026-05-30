@@ -25,11 +25,14 @@ from trace.core.evidence_sanitization import sanitize_trace_payload_for_public_e
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
 from trace.core.seed import hash64
+from trace.core.task_review_paths import task_review_dir
+from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
 
 
 _FIELD_LABELS: Dict[str, str] = {
     "domain": "domain",
+    "scene_id": "scene_id",
     "task_group": "task_group",
     "task": "task",
     "sample_index": "sample_index",
@@ -54,6 +57,7 @@ _TASK_SHEET_FIELDS: List[str] = [
     "prompt_answer_and_evidence",
     "ground_truth_answer_and_evidence",
     "domain",
+    "scene_id",
     "task_group",
     "sample_index",
     "instance_seed",
@@ -65,6 +69,7 @@ _TASK_SHEET_FIELDS: List[str] = [
 
 _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "domain": 12,
+    "scene_id": 18,
     "task_group": 16,
     "task": 24,
     "sample_index": 12,
@@ -123,6 +128,16 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
     if unknown:
         raise ValueError(f"unknown task ids: {', '.join(sorted(unknown))}")
     return sorted(dict.fromkeys(task_ids))
+
+
+def _task_review_dir(*, out_root: Path, task: Any) -> Path:
+    """Return the current review artifact directory for one task."""
+
+    return task_review_dir(
+        out_root=Path(out_root),
+        task_id=str(task.task_id),
+        task_obj=task,
+    )
 
 
 def _json_cell(value: Any) -> str:
@@ -756,7 +771,12 @@ def _generate_samples_for_task(
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """Generate image/data sample artifacts for one task id."""
     task = create_task(task_id)
-    task_dir = out_root / task.domain / task.task_group / task.task_id
+    taxonomy = resolve_task_taxonomy(
+        str(task.task_id),
+        source_domain=str(getattr(task, "domain", "")),
+        source_task_group=str(getattr(task, "task_group", "")),
+    )
+    task_dir = _task_review_dir(out_root=out_root, task=task)
     image_dir = task_dir / "images"
     data_dir = task_dir / "data"
     image_dir.mkdir(parents=True, exist_ok=True)
@@ -803,7 +823,8 @@ def _generate_samples_for_task(
         )
 
         payload = {
-            "domain": task.domain,
+            "domain": str(taxonomy.domain),
+            "scene_id": str(taxonomy.scene_id),
             "task_group": task.task_group,
             "task": task.task_id,
             "sample_index": int(accepted),
@@ -840,7 +861,8 @@ def _generate_samples_for_task(
         }
         rows.append(
             {
-                "domain": task.domain,
+                "domain": str(taxonomy.domain),
+                "scene_id": str(taxonomy.scene_id),
                 "task_group": task.task_group,
                 "task": task.task_id,
                 "sample_index": int(accepted),
@@ -883,7 +905,8 @@ def _generate_samples_for_task(
     distribution_report = _build_query_id_distribution_report(rows)
 
     summary = {
-        "domain": task.domain,
+        "domain": str(taxonomy.domain),
+        "scene_id": str(taxonomy.scene_id),
         "task_group": task.task_group,
         "task": task.task_id,
         "requested_samples": int(requested_samples),
@@ -910,7 +933,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate TRACE task sample images/data, per-task Excel files, and per-domain combined workbooks"
     )
-    parser.add_argument("--out", default="task-reviews/generated_samples", help="Output root directory")
+    parser.add_argument("--out", default="review/task-reviews", help="Output root directory")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
     parser.add_argument("--count", type=int, default=50, help="Samples per task (default: 50)")
     parser.add_argument(
@@ -970,7 +993,7 @@ def main() -> int:
     elif args.clean and out_root.exists():
         for task_id in task_ids:
             task = create_task(task_id)
-            task_dir = out_root / task.domain / task.task_group / task.task_id
+            task_dir = _task_review_dir(out_root=out_root, task=task)
             if task_dir.exists():
                 shutil.rmtree(task_dir)
 
@@ -996,7 +1019,7 @@ def main() -> int:
         all_rows.extend(rows)
         rows_by_domain_task[str(summary["domain"])][str(summary["task"])] = list(rows)
 
-        task_dir = out_root / str(summary["domain"]) / str(summary["task_group"]) / str(summary["task"])
+        task_dir = out_root / str(summary["domain"]) / str(summary["scene_id"]) / str(summary["task"])
         task_excel_path = task_dir / f"{summary['task']}.xlsx"
         _write_task_excel(rows, task_excel_path, out_root=out_root)
 
@@ -1042,14 +1065,14 @@ def main() -> int:
     if shortfall_tasks:
         print(
             f"[error] sample shortfall for tasks: {', '.join(sorted(shortfall_tasks))}. "
-            "Check task summaries under <out>/<domain>/<task_group>/<task>/summary.json",
+            "Check task summaries under <out>/<domain>/<scene_id>/<task>/summary.json",
             file=sys.stderr,
         )
         return 1
     if args.distribution_check and distribution_check_failures:
         print(
             f"[error] distribution check failed for tasks: {', '.join(sorted(distribution_check_failures))}. "
-            "Inspect distribution_report.json under <out>/<domain>/<task_group>/<task>/",
+            "Inspect distribution_report.json under <out>/<domain>/<scene_id>/<task>/",
             file=sys.stderr,
         )
         return 1

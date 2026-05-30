@@ -46,29 +46,71 @@ Use this as the implementation checklist for new or modified tasks.
    - `execution_trace`,
    - `witness_symbolic`,
    - `projected_evidence`.
-7. Public evidence must be image-level: use `bbox_set`, `point_set`, `point_sequence`, or `point_pair_set`. Semantic labels, ids, and graph/grid coordinates may be used internally during generation, but must not be the persisted public evidence contract.
-8. Do not emit `reward_contract` from task code; builder derives it from the public `answer_gt.type` / `evidence_gt.type` contract.
-9. If a task changes its public answer or evidence type, update `task-reviews/RLVR_EVIDENCE_REWARD_MAPPING.md` in the same patch.
-10. Ensure answer/evidence/witness come from the same execution trace.
-11. Enforce unique final answer by construction.
-12. Use bounded resampling; never auto-relax semantic constraints.
-13. Emit complexity (`complexity_score`, `complexity_components`).
-14. Treat `complexity_score` as within-task normalized difficulty only; do not treat it as a cross-task or cross-domain scale.
-15. Emit normalized `complexity_components` in `[0,1]`; if raw diagnostics are useful, keep them in trace/debug payloads rather than in the primary complexity map.
-16. Keep raw-to-normalized transforms in task/domain code; domain/task-group policy should own criteria weighting and activation.
-17. Domain-level complexity criteria must be applicable to every task in the domain; task-group criteria must be applicable to every task in the group where they are declared.
-18. Task-level complexity criteria or weight overrides are allowed but should be rare; use them only when a task materially breaks the group pattern.
-19. Use `skills/task-complexity/SKILL.md` whenever a patch introduces or revises a complexity policy.
-20. When a domain already has a shared complexity helper/policy layer, keep active criteria and weights in domain/task-group config and emit normalized criterion values through that shared helper instead of embedding new task-local weight constants.
-21. When sibling tasks in one scene differ only by the queried icon attribute (for example type/color/orientation/size counting), keep them on the same group-level complexity weights and vary only the task-local normalized criterion measurements that reflect the distinguishing ambiguity knob.
-22. For icon relation tasks that share one group-level complexity policy, keep the relation weights stable and express task differences through task-local normalized `spatial_reasoning`, `ambiguity`, and `clutter` measurements (for example strip span, occlusion overlap/color separation, or symmetry-query load) instead of forking per-task scoring policies unless a task truly breaks the group pattern.
-23. For icon transformation tasks that share one group-level complexity policy, keep the transformation weights stable and express task difficulty through task-local normalized `rule_inference`, `ambiguity`, and `clutter` measurements (for example transform difficulty, available transform support, distractor similarity, and pair-cell readability) rather than cloning new task-local weight tables.
-24. For icon sequence tasks that share one group-level complexity policy, keep the sequence weights stable and express task difficulty through task-local normalized `rule_inference`, `visual_scan`, `ambiguity`, and `clutter` measurements (for example row length, visible icon count, missing-position difficulty, and inverse step size) rather than falling back to count-only proxies.
-25. For geometry comparison tasks that share one group-level complexity policy, keep the comparison weights stable and express task difficulty through task-local normalized `visual_scan`, `comparison_reasoning`, `ambiguity`, and `output_burden` measurements (for example object count, direct-vs-derived quantity load, winner-gap closeness, and graph-point evidence cardinality) rather than keeping ad hoc `object_count + gap` score formulas in each task.
-26. For geometry counting tasks that share one group-level complexity policy, keep the counting weights stable and express task difficulty through task-local normalized `visual_scan`, `classification_reasoning`, `ambiguity`, and `output_burden` measurements (for example object count, class-subtlety by queried branch, target-density balance, and bbox evidence size) rather than keeping generic `object_count + target_count` proxies in sibling task modules.
-27. For geometry measurement tasks that share one group-level complexity policy, keep the measurement weights stable and express task difficulty through task-local normalized `visual_scan`, `measurement_precision`, `ambiguity`, and `output_burden` measurements (for example source/shape query load, canonical-value closeness, answer-format precision burden, and evidence point cardinality) rather than leaving each task on an unrelated score formula tied only to answer magnitude.
-28. For geometry analytical tasks that share one group-level complexity policy, keep the analytical weights stable and express task difficulty through task-local normalized `visual_scan`, `analytical_reasoning`, `ambiguity`, and `output_burden` measurements (for example required-annotation count, solid/formula difficulty, query confusability, and answer-format plus evidence-map burden) rather than keeping task-local score formulas tied mainly to query constants or answer magnitude.
-29. When one analytical task has multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), fold those axes into the same family-level normalized `analytical_reasoning` and `ambiguity` measurements instead of inventing a parallel task-local weighting scheme for each axis.
+7. Public evidence must be image-level: use active homogeneous types such as
+   `bbox_set`, `bbox_sequence`, `point_set`, `point_sequence`, or
+   `point_pair_set`, plus `keyed_point_map` or `keyed_bbox_map` when witness
+   role identity is part of the evidence contract. Semantic labels, ids, and
+   graph/grid coordinates may be used internally during generation, but must
+   not be the persisted public evidence contract.
+8. Prompt-facing evidence should localize the semantic visual object or
+   primitive used as input evidence, not the answer option and not standalone
+   numeric annotations. Treat labels, measurements, and readout text as
+   attributes of the nearest visual object/primitive unless the task is
+   explicitly a text/readout task. Keep the annotation bboxes in `render_map`
+   or trace metadata when useful, but do not expose them as public evidence by
+   default.
+9. If witness roles matter or an unordered set would make the requested
+   evidence ambiguous, use only the active global homogeneous keyed
+   evidence names `keyed_point_map` or `keyed_bbox_map`; do not invent
+   domain-specific names. Prefer keyed evidence whenever the verifier should
+   check that the model bound each visual witness to a specific semantic role,
+   such as `outer_shape` versus `shaded_region`, `source_panel` versus
+   `target_panel`, `reference_item` versus `candidate_item`, or
+   `input_force` versus `output_force`. The model-facing evidence value is
+   just the inner object, for example
+   `{"A": [123, 245], "B": [310, 240]}`. Avoid mixed point/box evidence;
+   consider changing the task contract first.
+10. Use unordered set evidence (`bbox_set`, `point_set`, `point_pair_set`) only
+   when witness identity or order does not matter for reward. This is usually
+   right for counting tasks where evidence cardinality is the answer, or for
+   homogeneous witness sets where any permutation is semantically equivalent.
+   Do not use an unordered set merely because it is easier to emit when the
+   task actually depends on binding named roles to the correct regions.
+11. Selected option bboxes are allowed only for visual option-image tasks where
+   the chosen option is a complete candidate image/panel and the scene includes
+   a source/reference/original image or region that the option matches,
+   completes, transforms from, or belongs to. Do not use option bboxes for
+   ordinary MCQ choices, numeric/text answer labels, or lettered candidate
+   objects.
+12. Evidence hints should name the witness category clearly without leaking the
+   answer. In particular, for counting tasks do not state a fixed evidence
+   cardinality when that cardinality is the answer; say to return boxes for
+   the matching/countable objects instead. Evidence-format prompt text must be
+   positive-only: specify what evidence to return, not what to omit. Keep
+   exclusions and non-witness policy in task docs, verifier metadata, or audit
+   notes rather than model-facing evidence instructions.
+13. Do not emit `reward_contract` from task code; builder derives it from the public `answer_gt.type` / `evidence_gt.type` contract.
+14. If a task changes its public answer or evidence type, update `task-reviews/RLVR_EVIDENCE_REWARD_MAPPING.md` in the same patch.
+15. Ensure answer/evidence/witness come from the same execution trace.
+16. Enforce unique final answer by construction.
+17. Use bounded resampling; never auto-relax semantic constraints.
+18. Emit complexity (`complexity_score`, `complexity_components`).
+19. Treat `complexity_score` as within-task normalized difficulty only; do not treat it as a cross-task or cross-domain scale.
+20. Emit normalized `complexity_components` in `[0,1]`; if raw diagnostics are useful, keep them in trace/debug payloads rather than in the primary complexity map.
+21. Keep raw-to-normalized transforms in task/domain code; domain/task-group policy should own criteria weighting and activation.
+22. Domain-level complexity criteria must be applicable to every task in the domain; task-group criteria must be applicable to every task in the group where they are declared.
+23. Task-level complexity criteria or weight overrides are allowed but should be rare; use them only when a task materially breaks the group pattern.
+24. Use `skills/task-complexity/SKILL.md` whenever a patch introduces or revises a complexity policy.
+25. When a domain already has a shared complexity helper/policy layer, keep active criteria and weights in domain/task-group config and emit normalized criterion values through that shared helper instead of embedding new task-local weight constants.
+26. When sibling tasks in one scene differ only by the queried icon attribute (for example type/color/orientation/size counting), keep them on the same group-level complexity weights and vary only the task-local normalized criterion measurements that reflect the distinguishing ambiguity knob.
+27. For icon relation tasks that share one group-level complexity policy, keep the relation weights stable and express task differences through task-local normalized `spatial_reasoning`, `ambiguity`, and `clutter` measurements (for example strip span, occlusion overlap/color separation, or symmetry-query load) instead of forking per-task scoring policies unless a task truly breaks the group pattern.
+28. For icon transformation tasks that share one group-level complexity policy, keep the transformation weights stable and express task difficulty through task-local normalized `rule_inference`, `ambiguity`, and `clutter` measurements (for example transform difficulty, available transform support, distractor similarity, and pair-cell readability) rather than cloning new task-local weight tables.
+29. For icon sequence tasks that share one group-level complexity policy, keep the sequence weights stable and express task difficulty through task-local normalized `rule_inference`, `visual_scan`, `ambiguity`, and `clutter` measurements (for example row length, visible icon count, missing-position difficulty, and inverse step size) rather than falling back to count-only proxies.
+30. For geometry comparison tasks that share one group-level complexity policy, keep the comparison weights stable and express task difficulty through task-local normalized `visual_scan`, `comparison_reasoning`, `ambiguity`, and `output_burden` measurements (for example object count, direct-vs-derived quantity load, winner-gap closeness, and graph-point evidence cardinality) rather than keeping ad hoc `object_count + gap` score formulas in each task.
+31. For geometry counting tasks that share one group-level complexity policy, keep the counting weights stable and express task difficulty through task-local normalized `visual_scan`, `classification_reasoning`, `ambiguity`, and `output_burden` measurements (for example object count, class-subtlety by queried branch, target-density balance, and bbox evidence size) rather than keeping generic `object_count + target_count` proxies in sibling task modules.
+32. For geometry measurement tasks that share one group-level complexity policy, keep the measurement weights stable and express task difficulty through task-local normalized `visual_scan`, `measurement_precision`, `ambiguity`, and `output_burden` measurements (for example source/shape query load, canonical-value closeness, answer-format precision burden, and evidence point cardinality) rather than leaving each task on an unrelated score formula tied only to answer magnitude.
+33. For geometry analytical tasks that share one group-level complexity policy, keep the analytical weights stable and express task difficulty through task-local normalized `visual_scan`, `analytical_reasoning`, `ambiguity`, and `output_burden` measurements (for example required-annotation count, solid/formula difficulty, query confusability, and answer-format plus evidence-map burden) rather than keeping task-local score formulas tied mainly to query constants or answer magnitude.
+34. When one analytical task has multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), fold those axes into the same family-level normalized `analytical_reasoning` and `ambiguity` measurements instead of inventing a parallel task-local weighting scheme for each axis.
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.
@@ -112,6 +154,7 @@ Use this as the implementation checklist for new or modified tasks.
 27. Before and after broad prompt edits, run `PYTHONPATH=. python scripts/audit_prompt_concision.py --tasks <task_ids>` to inspect rendered prompt length and repeated scaffolding terms. For all-task coverage, add `--variant-coverage --samples-per-query-id 1 --include-all-prompts --output samples/prompt_concision_audit_all.md`.
 27. When a task prompt refers to a specific color, pass the color to templates as a combined label `<color_name> [#RRGGBB]` so color-name ambiguity is reduced consistently across the repo.
 28. For multi-object counting tasks, label whole objects for readability but ground evidence with whole-object `bbox_set` or object-center `point_set` evidence.
+29. Required/read-off text must be rendered with the shared text-legibility policy: sample nonsemantic text ink from the approved readable pool, check contrast against the actual text surface, and record role/color/contrast metadata under `render_spec.text_legibility` or a nested render/style block copied into `render_spec`. All text draw calls should route through `draw_text_traced(...)`, `draw_traced_text(...)`, a readable-text helper, or a domain wrapper that uses them; the task registry also attaches automatically collected drawn-text records under `render_spec.drawn_text.text_legibility`. If a renderer draws multiple text roles on different surfaces, resolve each role separately; do not reuse panel/title text colors for labels drawn inside colored nodes, cells, markers, or objects. Core validation rejects any recorded required text role whose contrast metadata fails. During review, run `scripts/audit_text_legibility.py --strict-renderer-migration` and the runtime coverage mode for the touched domain. Do not use glyph text color itself as an answer, category, class, or filter; encode semantic colors with separate marks, swatches, object fills, outlines, or panels instead.
 29. For mixed-shape classification/counting tasks, enforce visible separation between visually adjacent classes (for example circles vs ellipses) in the sampler itself instead of leaving borderline cases to human interpretation.
 30. For polygon classification/counting tasks, keep the convex/concave predicate in one shared geometry helper and reject `degenerate` near-flat or self-intersecting polygons instead of encoding one-off visual heuristics inside each task.
 31. For reference-panel icon tasks, keep prompt wording anchored on the reference-vs-scene relationship and use scene-only `bbox_set` evidence in final image coordinates; store the reference box in trace metadata instead of the user-facing evidence payload.
@@ -213,24 +256,53 @@ Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-p
 ## 9) Task review workflow
 For new tasks or distribution-changing changes, run the standardized review workflow:
 ```bash
-PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full
+PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --out-root review/task-reviews
 ```
 
 The review scripts default to all visible CPUs; pass `--workers <n>` when you want to limit parallelism explicitly.
 
-This writes review artifacts under `plans/task-reviews/<domain>/<scene_id>/<task_id>/`:
+This writes review artifacts under `review/task-reviews/<domain>/<scene_id>/<task_id>/`:
 - `random_review_100.json` (100 random samples, includes variant/sampling-axis distributions)
 - `distribution_review.json` (100 answers per query when query ids exist; otherwise single 100-sample check)
-- `<task_id>.xlsx` (100 random manual-inspection samples per public task by default, grouped into one sheet per query id when query ids exist)
+- `images/` and `data/` sidecars for browser inspection
+- `manifest.json` with source dataset, taxonomy, and baseline metadata
+- optional `<task_id>.xlsx` static workbook export when the reviewer needs an offline snapshot
 
 Use `--balanced-inspection-by-query` only when you intentionally need a
-balanced visual inspection sample per query id; calibration workbooks should use
+balanced visual inspection sample per query id; calibration reviews should use
 the default 100 total samples per public task so they match solve-rate sampling.
+
+Manual inspection should happen in the browser review app by default:
+
+```bash
+PYTHONPATH=. python scripts/run_review_app.py --host 127.0.0.1 --port 7860
+```
+
+The app reads the sidecars, shows image/evidence/prompt/answer details by
+domain, scene, task, and query id, and persists sample-level feedback. Excel
+workbooks are optional archival/fallback artifacts and should not be the normal
+handoff for new reviews.
+
+After regenerating anything under `review/task-reviews`, reload the app index
+with **Reload Index** or `POST /api/reload` before inspection or handoff. If
+review-app code, templates, CSS/JS, server routes, indexer logic, resource
+indexing, feedback storage, or schema code changed, restart the app instead of
+reloading. After reload or restart, open the affected
+domain/scene/task/sample page and verify that the image, prompt, evidence,
+distribution status, solve-rate status, manual-audit status, and feedback
+controls reflect the updated local files. Save sample-specific feedback in the
+app rather than Excel notes. If acting on feedback, add a brief agent repair
+note under the relevant feedback item after making the change; do not mark
+feedback resolved unless the user explicitly asks for that verification step. A
+task is complete only when the app shows all manual audit gates passing and
+solve-rate accepted; do not treat a fresh workbook export as completion by
+itself.
 
 Current acceptance calibration uses artifact baseline `v0`. Review manifests
 and solve-rate stats used for acceptance must include `calibration_baseline:
 "v0"`; older files without that metadata are historical and should be deleted
-or regenerated before they appear in scene-review workbooks.
+or regenerated before they appear in the web app as current scene-review
+artifacts.
 
 Prompt wording rule:
 - when the scene stem already establishes the image/diagram context, keep the task-layer line focused on the question itself instead of repeating phrases like `from the image` or `from the diagram`.

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} | TRACE Review</title>
+    <script>
+      (() => {
+        try {
+          const theme = window.localStorage.getItem("trace-review-theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.dataset.theme = theme;
+          }
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="{{ app_path('/static/app.css?v=' ~ static_version) }}">
+  </head>
+  <body>
+    {% set current_domain = '' %}
+    {% if domain_record is defined %}
+      {% set current_domain = domain_record.domain %}
+    {% elif scene is defined %}
+      {% set current_domain = scene.domain %}
+    {% elif task is defined %}
+      {% set current_domain = task.domain %}
+    {% elif sample is defined %}
+      {% set current_domain = sample.domain %}
+    {% endif %}
+    <div class="app-shell">
+      <header class="site-header">
+        <div class="site-header-main">
+          <div class="brand">
+            <a href="{{ app_path('/') }}">TRACE Review</a>
+            <span>{{ index.samples|length if index is defined else 0 }} samples</span>
+          </div>
+          <form class="search global-search" action="{{ app_path('/search') }}" method="get" role="search">
+            <input
+              id="review-search"
+              type="search"
+              name="q"
+              value="{{ q|default('') }}"
+              placeholder="Search domains, scenes, tasks, queries, prompts"
+              autocomplete="off"
+              data-suggest-url="{{ app_path('/api/search-suggest') }}"
+            >
+            <div class="search-suggestions" id="search-suggestions" role="listbox" hidden></div>
+          </form>
+          <div class="top-actions">
+            <div class="theme-switch" role="group" aria-label="Color theme">
+              <button type="button" data-theme-choice="dark" aria-pressed="true" aria-label="Use dark theme" title="Dark theme">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z"></path>
+                </svg>
+              </button>
+              <button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Use light theme" title="Light theme">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+              </button>
+            </div>
+            <a class="button-link" href="{{ app_path('/resources') }}">Resources</a>
+            <a class="button-link" href="{{ app_path('/feedback') }}">Feedback{% if feedback_open_count|default(0) %} {{ feedback_open_count }}{% endif %}</a>
+            <form action="{{ app_path('/api/reload') }}" method="post">
+              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>Reload Index</button>
+            </form>
+            {% if request.app.state.auth_token %}
+              <form action="{{ app_path('/logout') }}" method="post">
+                <button type="submit">Log Out</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+        <nav class="domain-strip" aria-label="Domains">
+          {% for domain_name, domain in index.domains.items() %}
+            <a href="{{ app_path('/domains/' ~ domain_name) }}" class="{% if current_domain == domain_name %}active{% endif %}">
+              <span>{{ domain_name }}</span>
+              <small>{{ domain.task_count }}</small>
+            </a>
+          {% endfor %}
+        </nav>
+      </header>
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1>{{ title }}</h1>
+            <p class="muted">Review root: {{ review_root_display }}</p>
+          </div>
+        </header>
+        {% if review_index_stale %}
+          <section class="notice stale">
+            <strong>Review artifacts changed.</strong>
+            <span>Reload Index before inspecting generated samples.</span>
+            <form action="{{ app_path('/api/reload') }}" method="post">
+              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>Reload Index</button>
+            </form>
+          </section>
+        {% endif %}
+        {% if index.errors %}
+          <section class="notice error">
+            <strong>{{ index.errors|length }} index issue(s)</strong>
+            <details>
+              <summary>Show details</summary>
+              <ul>
+                {% for error in index.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          </section>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    <script>window.TRACE_REVIEW_BASE = "{{ request.app.state.base_url }}";</script>
+    <script src="{{ app_path('/static/app.js?v=' ~ static_version) }}"></script>
+  </body>
+</html>

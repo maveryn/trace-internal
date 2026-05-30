@@ -58,8 +58,8 @@ Charts, pages, and graph use the shared `information_scene_style` family under
   for an option set, one family per page section or context box, etc.
 - For graph scenes, do not add graph-like distractor marks that could be
   mistaken for nodes, edges, labels, or route segments.
-- Upgrade one scene at a time, regenerate that scene review workbook, and
-  inspect output before moving to another scene.
+- Upgrade one scene at a time, regenerate that scene's review artifacts,
+  inspect them in the browser review app, and then move to another scene.
 - Do not run solve-rate jobs unless explicitly requested.
 
 ## Style Ownership
@@ -130,7 +130,7 @@ configuration:
    - Record sampled palette/style ids, RGB roles, font families, context layer
      metadata, semantic protected colors, and final layout bboxes in
      `render_spec`.
-   - Scene review workbooks should make these choices visible enough to inspect
+   - Scene review artifacts should make these choices visible enough to inspect
      variation across 25 samples per task.
 
 ## Required Metadata
@@ -185,7 +185,8 @@ For each scene:
    - labels, legends, value labels, tick labels, highlights, and flow/region
      boundaries remain readable
    - post-image noise remains coordinate-preserving
-8. Regenerate the scene review workbook.
+8. Regenerate the scene review artifacts, reload the browser review app index,
+   and inspect the scene there.
 9. Do not run solve-rate jobs unless explicitly requested.
 
 Example scene-review command:
@@ -194,7 +195,7 @@ Example scene-review command:
 PYTHONPATH=. python scripts/run_task_review.py \
   --tasks task_charts__single_series__value_predicate_count,task_pages__infographic__metric_arithmetic_value,task_graph__node_link__degree_predicate_count \
   --mode inspection \
-  --out-root plans/task-reviews \
+  --out-root review/task-reviews \
   --seed 20260523 \
   --random-count 25 \
   --max-attempts-per-instance 200 \

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Create a domain-by-domain second-pass Vero expansion analysis.
 
-This script consumes the first-pass artifacts in `plans/vero_coverage_review/`
+This script consumes the first-pass artifacts in `review/vero_coverage_review/`
 and writes a domain-scoped candidate analysis. It does not query Hugging Face or
 download images; support estimates come from the sampled non-image rows and the
 config row counts captured by `scripts/review_vero_coverage.py`.
@@ -21,7 +21,7 @@ from typing import Any
 from trace.core.taxonomy import ACTIVE_DOMAINS
 
 
-DEFAULT_REVIEW_DIR = Path("plans/vero_coverage_review")
+DEFAULT_REVIEW_DIR = Path("review/vero_coverage_review")
 ACTIVE_DOMAIN_NAMES = tuple(sorted(str(domain) for domain in ACTIVE_DOMAINS))
 
 
@@ -569,7 +569,7 @@ EXISTING_SCENE_TASK_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "infographic",
         "support_configs": ["chart_ocr-infographic_vqa", "chart_ocr-CoSyn_400k_chart", "chart_ocr-evochart"],
         "pattern": r"\b(infographic|percentage|percent|number of|total|reported|recovered|section)\b",
-        "task_id": "task_pages__infographic__section_ranked_total_label",
+        "task_id": "task_pages__infographic__section_rank_label",
         "answer_type": "label",
         "evidence_type": "bbox_set",
         "difficulty_knobs": "section count, item count, icon-array scale, rank target",

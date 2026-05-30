@@ -7,7 +7,7 @@
 
 ## Next
 1. Close task-review and solve-rate artifact coverage gaps reported by `scripts/audit_active_tasks.py`.
-2. Continue complexity calibration under the current gates in `plans/CALIBRATION_PLAN.md`.
+2. Continue complexity calibration under the current gates in `review/docs/CALIBRATION_GUIDE.md`.
 3. Continue scene-by-scene puzzle/game rendering upgrades for repeated-cell, repeated-token, board, tile, sticker, voxel, and grid renderers.
 4. Apply the same evidence-safe rendering-style and layout-jitter principles to other domains where the main content sits inside a larger canvas.
 5. Continue rolling out domain-owned task complexity policy and replace remaining task-local ad hoc `complexity_score` formulas.
@@ -31,5 +31,5 @@
 2. Validation/reporting baseline and error-code catalog.
 3. External prompt-bundle system for active tasks.
 4. Domain/task-group config loader and deterministic visual-variation infrastructure.
-5. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
+5. Task-review/sample-generation tooling with web-app inspection sidecars and optional static workbook exports.
 6. Generated active task inventory at `docs/ACTIVE_TASK_INVENTORY.md`.

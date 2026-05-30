@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/domains/' ~ scene.domain) }}">{{ scene.domain }}</a>
+  <span>{{ scene.scene_id }}</span>
+</nav>
+
+<section class="table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Preview</th>
+        <th>Task</th>
+        <th>Audit Status</th>
+        <th>Queries</th>
+        <th>Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+        {% set feedback = feedback_by_task.get(task.domain ~ '/' ~ task.scene_id ~ '/' ~ task.task_id, {}) %}
+        {% set task_key = task.domain ~ '/' ~ task.scene_id ~ '/' ~ task.task_id %}
+        {% set audit = audit_by_task.get(task_key) %}
+        {% set task_status = task_status_by_task.get(task_key, {}) %}
+        <tr>
+          <td class="preview-cell">
+            {% if task.preview_uid %}
+              {% set sample = index.samples[task.preview_uid] %}
+              {% if sample.image_exists %}
+                <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id) }}">{{ task.task_id }}</a>
+            {% if task.preview_uid %}
+              {% set sample = index.samples[task.preview_uid] %}
+              <p class="muted">{{ sample.prompt|excerpt(180) }}</p>
+            {% endif %}
+          </td>
+          <td class="audit-cell">
+            <div class="task-state-row">
+              <span class="{% if task_status.complete %}status ok{% else %}status warn{% endif %}">
+                {% if task_status.complete %}completed{% else %}pending{% endif %}
+              </span>
+              <span class="muted">manual {{ task_status.manual_count|default(0) }}/{{ task_status.manual_total|default(4) }}</span>
+              <span class="muted">solve {% if task_status.solve_pass %}pass{% else %}pending{% endif %}</span>
+            </div>
+            <form class="audit-toggle-form" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/audit') }}" method="post">
+              <label><input type="checkbox" name="prompt_pass" value="1" {% if audit.prompt_pass %}checked{% endif %}> Prompt</label>
+              <label><input type="checkbox" name="image_pass" value="1" {% if audit.image_pass %}checked{% endif %}> Image</label>
+              <label><input type="checkbox" name="evidence_pass" value="1" {% if audit.evidence_pass %}checked{% endif %}> Evidence</label>
+              <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
+              <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
+              <button type="submit">Save</button>
+            </form>
+          </td>
+          <td>
+            {% for query_id, count in task.query_counts.items() %}
+              <a class="pill" href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/queries/' ~ (query_id|urlquote)) }}">{{ query_id }}: {{ count }}</a>
+            {% endfor %}
+          </td>
+          <td>{{ feedback.open|default(0) }} open / {{ feedback.total|default(0) }} total</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

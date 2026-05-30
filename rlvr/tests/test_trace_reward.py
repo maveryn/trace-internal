@@ -73,6 +73,18 @@ def test_trace_reward_supports_all_active_evidence_contracts() -> None:
             {"type": "point_pair_set", "value": [[[320, 420], [100, 200]], [[620, 300], [500, 300]]]},
             _reward_contract("point_pair_set_soft_distance_v1", "point_pair_set"),
         ),
+        (
+            {"answer": 2, "evidence": {"A": [100, 200], "B": [320, 420]}},
+            {"type": "integer", "value": 2},
+            {"type": "keyed_point_map", "value": {"B": [320, 420], "A": [100, 200]}},
+            _reward_contract("keyed_point_map_soft_distance_v1", "keyed_point_map"),
+        ),
+        (
+            {"answer": 2, "evidence": {"source": [10, 10, 20, 20], "target": [30, 30, 40, 40]}},
+            {"type": "integer", "value": 2},
+            {"type": "keyed_bbox_map", "value": {"target": [30, 30, 40, 40], "source": [10, 10, 20, 20]}},
+            _reward_contract("keyed_bbox_map_soft_iou_v1", "keyed_bbox_map"),
+        ),
     ]
 
     for payload, answer_gt, evidence_gt, reward_contract in cases:

@@ -22,14 +22,16 @@ Repo-local workflow skills under `skills/` are operational overlays. The canonic
 ## RLVR-specific workflows
 RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
-- `../../plans/README.md` for the active task-review and calibration workspace.
-- `../../plans/CALIBRATION_PLAN.md` for the current per-task acceptance gates,
+- `../../review/docs/README.md` for the active task-review and calibration workspace.
+- `../../review/docs/CALIBRATION_GUIDE.md` for the current per-task acceptance gates,
   model-specific response caps, and split vLLM server commands used by
   calibration agents.
 
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.
 - `DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
+- `TASK_REVIEW_WEB_APP.md` — browser app workflow for inspecting active
+  task-review sidecars and collecting sample-level reviewer feedback.
 - `TASK_UNIT_AUDIT.md` — rubric for auditing whether a task is the right unit for uniform task-level sampling.
 - `VALIDATION_ERROR_CODES.md` — validation error taxonomy.
 

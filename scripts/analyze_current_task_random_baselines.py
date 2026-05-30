@@ -15,6 +15,8 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from openpyxl import load_workbook
 
+from trace.core.taxonomy import resolve_task_taxonomy
+
 
 _LOW_CONFIDENCE = {"low", "unresolved"}
 _CONFIDENCE_RANK = {"high": 3, "medium": 2, "low": 1, "unresolved": 0}
@@ -102,6 +104,7 @@ class ProgressTaskRow:
     band: float | None
     artifacts: str
     notes: str
+    mean: float | None = None
 
 
 @dataclass(frozen=True)
@@ -192,34 +195,47 @@ def _split_markdown_row(line: str) -> list[str]:
     return cells
 
 
-def parse_progress_summary(path: Path) -> list[ProgressTaskRow]:
-    """Return task rows from PROGRESS_SUMMARY.md."""
+def parse_calibration_status(path: Path) -> list[ProgressTaskRow]:
+    """Return task rows from the current calibration sweep status JSON."""
+
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    tasks = data.get("tasks") if isinstance(data, Mapping) else None
+    if not isinstance(tasks, Mapping):
+        return []
+
     rows: list[ProgressTaskRow] = []
-    domain = ""
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if line.startswith("## "):
-            domain = line[3:].strip()
+    for task_id, record in sorted(tasks.items()):
+        if not isinstance(record, Mapping):
             continue
-        if not line.startswith("| `task_"):
-            continue
-        cells = _split_markdown_row(line)
-        if len(cells) < 8:
-            continue
-        task_match = re.search(r"`([^`]+)`", cells[0])
-        if not task_match:
-            continue
+        models = record.get("models") if isinstance(record.get("models"), Mapping) else {}
+        model_record = models.get("qwen25vl7b") if isinstance(models, Mapping) else None
+        if not isinstance(model_record, Mapping) and isinstance(models, Mapping) and models:
+            model_record = next((value for value in models.values() if isinstance(value, Mapping)), {})
+        stats = model_record.get("stats") if isinstance(model_record, Mapping) else {}
+        overall = stats.get("overall") if isinstance(stats, Mapping) and isinstance(stats.get("overall"), Mapping) else {}
+        artifacts: list[str] = []
+        for key in ("parquet", "sample_distribution_report", "review_workbook"):
+            if record.get(key):
+                artifacts.append(str(record[key]))
+        if isinstance(model_record, Mapping) and model_record.get("output_dir"):
+            artifacts.append(str(model_record["output_dir"]))
         rows.append(
             ProgressTaskRow(
-                domain=domain,
-                task_id=str(task_match.group(1)),
-                status=str(cells[1]).strip(),
-                best_config=str(cells[2]).strip(),
-                hard=_parse_float(cells[3]),
-                easy=_parse_float(cells[4]),
-                band=_parse_float(cells[5]),
-                artifacts=str(cells[6]).strip(),
-                notes=str(cells[7]).strip(),
+                domain=str(record.get("domain", "")),
+                task_id=str(task_id),
+                status=str(record.get("status", "")),
+                best_config=str(record.get("calibration_baseline", "")),
+                hard=_parse_float(str(overall.get("hard_frac", ""))),
+                easy=_parse_float(str(overall.get("easy_frac", ""))),
+                band=_parse_float(str(overall.get("band_frac", ""))),
+                artifacts=" ".join(artifacts),
+                notes="",
+                mean=_parse_float(str(overall.get("mean_solve_rate", ""))),
             )
         )
     return rows
@@ -238,6 +254,27 @@ def _resolve_path(repo_root: Path, raw: str) -> Path:
     if path.is_absolute():
         return path
     return repo_root / path
+
+
+def _review_task_dirs(repo_root: Path, row: ProgressTaskRow) -> list[Path]:
+    """Return possible current review directories for one task row."""
+
+    root = repo_root / "review" / "task-reviews"
+    taxonomy = resolve_task_taxonomy(str(row.task_id), source_domain=_domain_slug(row.domain))
+    candidates: list[Path] = [root / str(taxonomy.domain) / str(taxonomy.scene_id) / str(row.task_id)]
+    if root.exists():
+        domain = _domain_slug(row.domain)
+        candidates.extend(sorted(root.glob(f"{domain}/*/{row.task_id}")))
+        candidates.extend(sorted(root.glob(f"*/*/{row.task_id}")))
+
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(path)
+    return deduped
 
 
 def _extract_review_label(row: ProgressTaskRow) -> str:
@@ -296,8 +333,9 @@ def _candidate_solve_workbooks(repo_root: Path, row: ProgressTaskRow) -> list[Pa
     if paths:
         return sorted(dict.fromkeys(paths))
 
-    review_dir = repo_root / "plans" / "task-reviews" / _domain_slug(row.domain) / row.task_id
-    candidates = sorted(review_dir.glob("*solve_rate_distribution.xlsx"))
+    candidates: list[Path] = []
+    for review_dir in _review_task_dirs(repo_root, row):
+        candidates.extend(sorted(review_dir.glob("*solve_rate_distribution.xlsx")))
     if not candidates:
         return []
     review_label = _extract_review_label(row)
@@ -455,15 +493,15 @@ def _solve_stats_from_probe_summary(path: Path, row: ProgressTaskRow) -> SolveSt
     )
 
 
-def _solve_stats_from_progress(row: ProgressTaskRow) -> SolveStats:
+def _solve_stats_from_status_row(row: ProgressTaskRow) -> SolveStats:
     mean_match = re.search(r"mean solve [`']?([0-9.]+)", row.notes)
-    mean = _parse_float(mean_match.group(1)) if mean_match else None
+    mean = row.mean if row.mean is not None else (_parse_float(mean_match.group(1)) if mean_match else None)
     return SolveStats(
         mean_solve_rate=mean,
         hard_frac=row.hard,
         easy_frac=row.easy,
         band_frac=row.band,
-        source="plans/PROGRESS_SUMMARY.md",
+        source="review/calibration_sweep_status.json",
         by_variant={},
     )
 
@@ -485,7 +523,7 @@ def load_solve_stats(repo_root: Path, row: ProgressTaskRow) -> SolveStats:
             return _solve_stats_from_workbook(workbook_path)
         except Exception:
             continue
-    return _solve_stats_from_progress(row)
+    return _solve_stats_from_status_row(row)
 
 
 def _read_manifest_counts(task_dir: Path) -> dict[str, int]:
@@ -558,7 +596,9 @@ def _load_review_payload(path: Path) -> dict[str, Any] | None:
 
 def load_review_samples(repo_root: Path, row: ProgressTaskRow) -> list[ReviewSample]:
     """Load review JSON rows for one current task, respecting manifest query-id counts when present."""
-    task_dir = repo_root / "plans" / "task-reviews" / _domain_slug(row.domain) / row.task_id
+    task_dir = next((path for path in _review_task_dirs(repo_root, row) if (path / "data").exists()), None)
+    if task_dir is None:
+        return []
     data_dir = task_dir / "data"
     if not data_dir.exists():
         return []
@@ -1075,7 +1115,7 @@ def _source_label(path_text: str, repo_root: Path) -> str:
     return str(path_text)
 
 
-def render_markdown(analyses: Sequence[TaskAnalysis], *, repo_root: Path, progress_path: Path) -> str:
+def render_markdown(analyses: Sequence[TaskAnalysis], *, repo_root: Path, source_path: Path) -> str:
     analyses_by_domain: dict[str, list[TaskAnalysis]] = defaultdict(list)
     for analysis in analyses:
         analyses_by_domain[analysis.row.domain].append(analysis)
@@ -1089,7 +1129,7 @@ def render_markdown(analyses: Sequence[TaskAnalysis], *, repo_root: Path, progre
         "",
         f"Generated: {date.today().isoformat()}",
         "",
-        f"Source: `{progress_path.as_posix()}` current active non-counterfactual rows (`accepted` plus `partial`).",
+        f"Source: `{source_path.as_posix()}` current calibration status rows selected by `--include-status`.",
         "",
         "Random baselines are heuristic. MCQ-style tasks use option count; integer tasks prefer explicit answer support and otherwise use empirical generated answer range; label/string tasks prefer visible candidate sets and otherwise use empirical observed answers.",
         "",
@@ -1201,9 +1241,9 @@ def render_markdown(analyses: Sequence[TaskAnalysis], *, repo_root: Path, progre
 
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--progress-summary", default="plans/PROGRESS_SUMMARY.md", type=Path)
-    parser.add_argument("--out", default="plans/current_task_random_baseline_analysis.md", type=Path)
-    parser.add_argument("--include-status", action="append", default=["accepted", "partial"])
+    parser.add_argument("--calibration-status", default="review/calibration_sweep_status.json", type=Path)
+    parser.add_argument("--out", default="review/current_task_random_baseline_analysis.md", type=Path)
+    parser.add_argument("--include-status", action="append", default=["accepted", "needs_manual_tuning"])
     parser.add_argument("--exclude-domain", action="append", default=["Counterfactual"])
     return parser.parse_args()
 
@@ -1211,18 +1251,18 @@ def _parse_cli() -> argparse.Namespace:
 def main() -> int:
     args = _parse_cli()
     repo_root = Path.cwd().resolve()
-    progress_path = args.progress_summary if args.progress_summary.is_absolute() else repo_root / args.progress_summary
+    status_path = args.calibration_status if args.calibration_status.is_absolute() else repo_root / args.calibration_status
     out_path = args.out if args.out.is_absolute() else repo_root / args.out
     include_statuses = {str(status).strip() for status in args.include_status if str(status).strip()}
     exclude_domains = {str(domain).strip().lower() for domain in args.exclude_domain if str(domain).strip()}
 
     rows = [
         row
-        for row in parse_progress_summary(progress_path)
+        for row in parse_calibration_status(status_path)
         if row.status in include_statuses and row.domain.strip().lower() not in exclude_domains
     ]
     analyses = [analyze_task(repo_root, row) for row in rows]
-    markdown = render_markdown(analyses, repo_root=repo_root, progress_path=args.progress_summary)
+    markdown = render_markdown(analyses, repo_root=repo_root, source_path=args.calibration_status)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(markdown, encoding="utf-8")
     print(f"wrote {out_path}")

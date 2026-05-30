@@ -1,0 +1,814 @@
+{
+  "review_id": "2026-05-30-full-codebase-maintenance-review",
+  "date": "2026-05-30",
+  "scope": {
+    "included_roots": [
+      "trace",
+      "scripts",
+      "tests",
+      "docs",
+      "skills",
+      "configs",
+      "prompts",
+      "assets",
+      "eval",
+      "review",
+      "root project metadata"
+    ],
+    "excluded_roots": [
+      "rlvr",
+      "benchmark",
+      "external",
+      "out",
+      "runs",
+      "logs",
+      "samples",
+      "checkpoints",
+      "generated task-review artifacts"
+    ]
+  },
+  "validation": [
+    {
+      "command": "PYTHONPATH=. python scripts/check_skill_consistency.py",
+      "status": "passed",
+      "notes": "skill consistency OK"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_docs_consistency.py",
+      "status": "passed",
+      "notes": "8 passed"
+    },
+    {
+      "command": "python -m py_compile over scripts/ and trace/ Python files excluding generated/external/run folders",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache",
+      "status": "passed",
+      "notes": "active inventory integrity OK"
+    },
+    {
+      "command": "git diff --check -- trace scripts docs configs prompts tests skills assets eval review AGENTS.md README.md pyproject.toml",
+      "status": "passed",
+      "notes": "No whitespace errors reported"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_object_scene_rendering.py tests/test_three_d_street_intersection_rendering.py tests/test_charts_choropleth_shared_helpers.py tests/test_charts_map_tasks.py",
+      "status": "passed",
+      "notes": "20 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_camera_projection.py tests/test_three_d_spatial_camera_distance.py tests/test_three_d_street_intersection_nearest.py tests/test_three_d_street_lane_ahead_object.py tests/test_three_d_street_same_road_arm_reference.py",
+      "status": "passed",
+      "notes": "18 passed"
+    },
+    {
+      "command": "PYTHONPYCACHEPREFIX=/tmp/trace-pycache PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache",
+      "status": "passed",
+      "notes": "active inventory integrity OK"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_graph_edge_source_common_sampling.py tests/test_graph_counting_source_sink_count_tasks.py tests/test_graph_counting_source_sink_count_contracts.py tests/test_graph_relation_common_neighbor_count_tasks.py tests/test_graph_relation_common_neighbor_count_contracts.py",
+      "status": "passed",
+      "notes": "17 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_graph_degree_sampling.py tests/test_graph_sample_types.py tests/test_graph_feasibility.py tests/test_graph_counting_degree_count_tasks.py tests/test_graph_counting_degree_count_contracts.py",
+      "status": "passed",
+      "notes": "18 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_graph_label_color_profile_sampling.py tests/test_graph_counting_node_color_count_tasks.py tests/test_graph_counting_edge_color_count_tasks.py tests/test_graph_counting_edge_text_label_count_tasks.py tests/test_graph_counting_cross_color_edge_count_tasks.py tests/test_graph_relation_edge_attribute_label_tasks.py tests/test_graph_relation_unique_node_label_tasks.py",
+      "status": "passed",
+      "notes": "31 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_graph_*.py",
+      "status": "passed",
+      "notes": "224 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_object_scene_rendering.py tests/test_three_d_spatial_camera_distance.py tests/test_three_d_street_intersection_nearest.py tests/test_three_d_street_lane_ahead_object.py tests/test_three_d_street_same_road_arm_reference.py tests/test_three_d_street_intersection_rendering.py tests/test_three_d_camera_projection.py",
+      "status": "passed",
+      "notes": "22 passed"
+    },
+    {
+      "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_*.py",
+      "status": "passed",
+      "notes": "83 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/charts/map/choropleth_region_label.py trace/tasks/charts/map/choropleth_geometry.py trace/tasks/charts/map/choropleth_geography.py tests/test_charts_choropleth_shared_helpers.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_charts_choropleth_shared_helpers.py tests/test_charts_map_tasks.py",
+      "status": "passed",
+      "notes": "19 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_street_intersection_rendering.py tests/test_three_d_street_intersection_nearest.py tests/test_three_d_street_lane_ahead_object.py tests/test_three_d_street_same_road_arm_reference.py",
+      "status": "passed",
+      "notes": "14 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/three_d/shared/object_scene.py trace/tasks/three_d/shared/object_inventory_preview.py and trace/tasks/three_d/**/*.py plus tests/test_three_d_object_scene_rendering.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_*.py",
+      "status": "passed",
+      "notes": "83 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/graph/shared/graph_sampling.py trace/tasks/graph/shared/graph_*sampling.py trace/tasks/graph/shared/graph_topology_helpers.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_graph_*.py",
+      "status": "passed",
+      "notes": "224 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/charts/shared/chart_scene.py trace/tasks/charts/shared/chart_scene_*.py trace/tasks/charts/map/choropleth_*.py trace/tasks/charts/map/choropleth_region_label.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_chart_scene_primitives.py tests/test_chart_scene_types.py tests/test_charts_distribution_tasks.py tests/test_charts_multiseries_tasks.py tests/test_charts_statistics_tasks.py tests/test_charts_trend_tasks.py tests/test_charts_counting_tasks.py",
+      "status": "passed",
+      "notes": "96 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_three_d_object_scene_rendering.py tests/test_three_d_*.py",
+      "status": "passed",
+      "notes": "85 passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/three_d/shared/object_scene_glyphs_*.py trace/tasks/three_d/shared/object_scene_rendering.py trace/tasks/three_d/shared/object_scene.py tests/test_three_d_object_scene_rendering.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. python -m py_compile trace/tasks/three_d/street/intersection_rendering_common.py trace/tasks/three_d/street/intersection_rendering.py trace/tasks/three_d/street/intersection_*_rendering.py",
+      "status": "passed",
+      "notes": "No compile failures observed"
+    }
+  ],
+  "findings": [
+    {
+      "id": "CR-001",
+      "severity": "High",
+      "category": "repo hygiene",
+      "title": "Dirty source tree needs triage before authoritative review",
+      "file_refs": [],
+      "evidence": [
+        "git status --short over reviewed source roots reported approximately 1033 modified files, 52 deleted files, and 134 untracked files.",
+        "Source-like untracked examples include docs/workflows/TASK_REVIEW_WEB_APP.md, trace/review_app/, scripts/run_review_app.py, and tests/test_review_app.py."
+      ],
+      "impact": "Review, release readiness, and calibration provenance are unreliable while intentional source changes are mixed with untracked files and unrelated dirty state.",
+      "recommendation": "Split the workspace into intentional change sets and either stage or explicitly discard every source-like file before treating the branch as reviewable.",
+      "validation_target": "git status --short over source roots is clean or contains only the intended patch.",
+      "status": "triaged_pending_commit_split",
+      "resolution": "Cache directories, notebook checkpoint directories, and Python bytecode under active source/review roots were removed. Dirty-tree manifest created at review/code-review/2026-05-30-dirty-tree-triage.md and .json, with cleanup action list at review/code-review/2026-05-30-cr001-cleanup-action-list.md. Deleted tracked files were reviewed as retired/inactive surfaces to keep deleted, including deleted illustration code/test paths after checking for active import references; untracked source-like files were reviewed as active additions to keep/stage. Remaining tracked-modified files need commit splitting rather than blind reversion."
+    },
+    {
+      "id": "CR-002",
+      "severity": "High",
+      "category": "benchmark coverage",
+      "title": "Benchmark coverage scripts reference inactive task ids",
+      "file_refs": [
+        {
+          "path": "scripts/analyze_vero_benchmark_failures.py",
+          "lines": [
+            306,
+            323,
+            355
+          ]
+        },
+        {
+          "path": "scripts/review_vero_coverage.py",
+          "lines": [
+            328,
+            329
+          ]
+        },
+        {
+          "path": "scripts/review_vero_round2_expansion.py",
+          "lines": [
+            572
+          ]
+        }
+      ],
+      "evidence": [
+        "Inactive ids found: task_pages__control_board__filter_count, task_physics__resistor__total_resistance_value, task_games__crossing__safe_route_label, task_pages__infographic__column_profile_comparison_value, task_pages__infographic__section_ranked_total_label."
+      ],
+      "impact": "Coverage links can silently disappear or point future task planning at retired task surfaces.",
+      "recommendation": "Replace hard-coded task-id lists with registry-derived lookups where possible, and annotate any retired historical ids with active replacements.",
+      "validation_target": "A registry scan reports zero unannotated inactive task ids in benchmark review scripts.",
+      "status": "resolved",
+      "resolution": "Benchmark/coverage scripts now reference active task ids, and tests/test_docs_consistency.py scans those scripts for inactive task-id references."
+    },
+    {
+      "id": "CR-003",
+      "severity": "Medium",
+      "category": "skills/docs",
+      "title": "Icon complexity skill references removed icon task ids",
+      "file_refs": [
+        {
+          "path": "skills/task-complexity/references/icons.md",
+          "lines": [
+            35,
+            36,
+            48,
+            95,
+            96,
+            133,
+            134
+          ]
+        }
+      ],
+      "evidence": [
+        "Removed task ids remain in icon complexity guidance, including reference_canvas, pair_grid, and pattern_grid task ids."
+      ],
+      "impact": "Agents can calibrate icon difficulty against stale task families.",
+      "recommendation": "Update the skill reference to active icon task ids or mark old ids as historical examples with explicit replacements.",
+      "validation_target": "Skill/document task-id scan reports zero unannotated missing ids.",
+      "status": "resolved",
+      "resolution": "Icon complexity guidance now uses active icon task ids, and scripts/check_skill_consistency.py scans skill Markdown for inactive task-id references."
+    },
+    {
+      "id": "CR-004",
+      "severity": "Medium",
+      "category": "docs",
+      "title": "Code review guideline rule numbering has duplicates",
+      "file_refs": [
+        {
+          "path": "docs/workflows/CODE_REVIEW_GUIDELINES.md",
+          "lines": [
+            43,
+            46,
+            98,
+            105,
+            165,
+            168,
+            215,
+            225
+          ]
+        }
+      ],
+      "evidence": [
+        "Duplicate numbers were found in the same distilled-list sequence: 27, 28, 80-83, 143-144, 191, and 198."
+      ],
+      "impact": "Reviewers cannot cite rules unambiguously and append-only drift is likely to continue.",
+      "recommendation": "Renumber the distilled-list section or convert it to unnumbered bullets plus stable anchors for high-value rules.",
+      "validation_target": "Duplicate-rule-number scan reports no duplicates within one numbered sequence.",
+      "status": "resolved",
+      "resolution": "docs/workflows/CODE_REVIEW_GUIDELINES.md section 2 was renumbered contiguously, and tests/test_docs_consistency.py rejects duplicate or non-contiguous numbering."
+    },
+    {
+      "id": "CR-005",
+      "severity": "Medium",
+      "category": "packaging",
+      "title": "Project metadata under-declares dependencies",
+      "file_refs": [
+        {
+          "path": "pyproject.toml",
+          "lines": [
+            11
+          ]
+        },
+        {
+          "path": "requirements.txt",
+          "lines": [
+            4,
+            27
+          ]
+        }
+      ],
+      "evidence": [
+        "pyproject.toml declares dependencies = [] while requirements.txt lists runtime, rendering, validation, testing, and review-app dependencies."
+      ],
+      "impact": "pip install . can create an environment that cannot run core generation, rendering, tests, or the review app.",
+      "recommendation": "Move runtime dependencies into project metadata with optional extras, or document that TRACE must be installed from requirements.txt.",
+      "validation_target": "A clean virtual environment installed through the documented path can import core modules and run doc consistency tests.",
+      "status": "resolved",
+      "resolution": "Runtime dependencies now live in pyproject.toml under [project].dependencies, while test and review-app tooling are available through [project.optional-dependencies] extras. README.md documents editable installs with pip install -e \".[test,review]\", and requirements.txt remains valid as the all-in-one bootstrap path."
+    },
+    {
+      "id": "CR-006",
+      "severity": "Medium",
+      "category": "maintainability",
+      "title": "Shared/facade monolithic hotspots were split into narrower ownership modules",
+      "file_refs": [
+        {
+          "path": "trace/tasks/graph/shared/graph_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/spatial/camera_distance.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_primitives.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_nearest.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_scene.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_region_label.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_assets.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_style.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_geometry.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_geography.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "scripts/run_task_review.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_edge_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_profile_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_label_color_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_source_sink_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_common_neighbor_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_node_degree_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_isolation_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_path_order_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_component_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_reachability_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_bridge_articulation_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_mst_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/graph/shared/graph_edge_path_label_sampling.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_labeled.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_multiseries.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_stacked.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_histogram.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_boxplot.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/shared/chart_scene_violin.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_config.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_dataset.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_region_dataset.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_world_dataset.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_marker_dataset.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/charts/map/choropleth_marker_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_symbolic.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_household.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_nature_apparel.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_tools_devices.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_misc.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_large.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_large_stage.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_large_appliances.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/shared/object_scene_glyphs_large_furniture.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_rendering_common.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_road_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_vehicle_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_fixture_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_pedestrian_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_building_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_landscape_rendering.py",
+          "lines": [
+            1
+          ]
+        },
+        {
+          "path": "trace/tasks/three_d/street/intersection_object_rendering.py",
+          "lines": [
+            1
+          ]
+        }
+      ],
+      "evidence": [
+        "graph_sampling.py is now a 142-line compatibility facade; graph sampler families are split into graph_node_degree_sampling.py (~848), graph_path_order_sampling.py (~793), graph_reachability_sampling.py (~557), graph_component_sampling.py (~436), graph_bridge_articulation_sampling.py (~397), graph_isolation_sampling.py (~361), graph_mst_sampling.py (~181), graph_edge_path_label_sampling.py (~132), and the previously extracted source/sink/common-neighbor/label-color/degree helpers.",
+        "object_scene_rendering.py is now about 371 lines; named-object glyph rendering is split across object_scene_glyphs_symbolic.py (~835), household (~490), nature/apparel (~489), tools/devices (~484), misc (~682), and large-object family modules all under ~555 lines.",
+        "chart_scene.py is now a 40-line compatibility facade; chart renderers are split into labeled (~983), multiseries (~574), stacked (~469), histogram (~248), boxplot (~622), and violin (~314) modules.",
+        "choropleth_region_label.py is now about 602 lines; config (~351), top-level dataset (~687), region/world/marker dataset helpers (~384/~446/~266), base rendering (~955), and marker rendering (~324) are split into map-local modules.",
+        "camera_distance.py remains about 750 lines after object-scene extraction; intersection_nearest.py remains about 845 lines after street scene extraction; intersection_rendering.py is now about 83 lines after street-renderer-family extraction. Larger domain task files still exist elsewhere, but the repeated shared/facade hotspots from this CR-006 pass have been split.",
+        "scripts/run_task_review.py is about 820 lines after task-review helper extraction.",
+        "intersection_rendering.py is now about 83 lines after splitting street rendering into common (~261), road (~524), vehicle (~398), fixture/signage (~393), pedestrian (~268), building/storefront (~603), landscape/street furniture (~282), and dispatch (~127) modules."
+      ],
+      "impact": "Large files obscure ownership boundaries, increase review cost, and make shared-contract regressions harder to localize.",
+      "recommendation": "Split by stable responsibility such as sampling, contracts, rendering, projection, review export, and app indexing. Keep CLI files thin.",
+      "validation_target": "New helper modules have focused tests and existing smoke checks continue to pass.",
+      "status": "resolved",
+      "progress": [
+        "Extracted review artifact routing helpers into trace/core/task_review_paths.py.",
+        "Updated scripts/run_task_review.py and scripts/generate_task_samples.py to use the shared helper.",
+        "Added focused regression coverage for domain/scene review layout and public three_d task-id parsing.",
+        "Extracted shared inspection workbook rendering into trace/core/task_review_workbooks.py.",
+        "Updated scripts/run_task_review.py and scripts/export_task_review_workbook.py to share query-id sheet and scene workbook helpers.",
+        "Added workbook regression coverage for sheet de-duplication and model-stat sheet generation.",
+        "Extracted calibration status/model-stat row loading into trace/core/task_review_calibration.py.",
+        "Updated scripts/run_task_review.py to use shared calibration status helpers.",
+        "Added calibration regression coverage for status-gate reasons, review-status loading, and latest probe-stat fallback selection.",
+        "Extracted graph sample dataclasses, supported-query/layout constants, and label/edge helper functions into trace/tasks/graph/shared/graph_sample_types.py.",
+        "Kept graph_sampling.py re-export compatibility for existing task/test imports.",
+        "Added graph sample-type regression coverage for re-export identity and edge label helpers.",
+        "Extracted pure graph feasible-support helpers into trace/tasks/graph/shared/graph_feasibility.py.",
+        "Kept graph_sampling.py re-export compatibility for existing feasible-support imports.",
+        "Added graph feasibility regression coverage for support calculations and re-export identity.",
+        "Extracted shared graph-to-label topology payload construction and node-adjacency helpers into trace/tasks/graph/shared/graph_topology_helpers.py.",
+        "Extracted degree-count graph feasibility and construction helpers into trace/tasks/graph/shared/graph_degree_sampling.py.",
+        "Kept graph_sampling.py re-export compatibility for existing graph degree-count imports.",
+        "Added graph degree-sampler regression coverage for re-export identity and direct sampled support construction.",
+        "Aligned graph query-id tests and task docs with the concrete public branch contract.",
+        "Validated the full tests/test_graph_*.py subset after the graph hotspot split.",
+        "Extracted prompt/evidence contract auditing into trace/core/prompt_evidence_contract_audit.py.",
+        "Converted scripts/audit_prompt_evidence_contracts.py into a thin compatibility CLI wrapper.",
+        "Added prompt/evidence audit regression coverage for CLI re-export compatibility and explicit-variant sampling.",
+        "Extracted current calibration sweep orchestration into trace/core/task_calibration_sweep.py.",
+        "Converted scripts/run_task_calibration_sweep.py into a thin compatibility CLI wrapper.",
+        "Added calibration-sweep regression coverage for CLI re-export compatibility and repo-root resolution.",
+        "Extracted task-review random-sample collectors, replay-generation parameter extraction, sampling-axis reports, and distribution report assembly into trace/core/task_review_distribution.py.",
+        "Updated scripts/run_task_review.py to use shared distribution helpers.",
+        "Added task-review distribution regression coverage for CLI helper wiring and sampling-axis/replay extraction.",
+        "Extracted chart render public dataclasses, RGB type aliases, and supported-variant constants into trace/tasks/charts/shared/chart_scene_types.py.",
+        "Kept chart_scene.py re-export compatibility for existing chart construction imports.",
+        "Added chart render type regression coverage for re-export identity and star-export surface parity.",
+        "Extracted low-level chart scene renderer math and drawing helpers into trace/tasks/charts/shared/chart_scene_primitives.py.",
+        "Kept chart_scene.py re-export compatibility for public chart primitive helpers used by chart construction layers.",
+        "Added chart primitive regression coverage for helper re-export identity, render-parameter normalization, and value-axis metadata shape.",
+        "Extracted reusable three_d camera/projection math into trace/tasks/three_d/shared/camera_projection.py.",
+        "Kept camera_distance.py compatibility aliases and updated street intersection rendering to import generic projection helpers from the shared layer.",
+        "Added three_d projection regression coverage and updated stale three_d query-id/dimension assertions to the current public contract.",
+        "Extracted reusable object-scene 3D drawing helpers into trace/tasks/three_d/shared/object_scene_rendering.py and kept camera_distance.py compatibility aliases.",
+        "Extracted low-level object-scene primitive drawing helpers into trace/tasks/three_d/shared/object_scene_primitives.py and kept object_scene_rendering.py compatibility aliases.",
+        "Updated street intersection rendering to import object-scene draw primitives from the shared 3D rendering layer instead of from camera_distance.py.",
+        "Extracted street-intersection road/object rendering helpers into trace/tasks/three_d/street/intersection_rendering.py and kept intersection_nearest.py compatibility aliases for sibling street tasks.",
+        "Updated stale three_d tests to assert concrete public query ids and to derive inventory preview renderer counts from the object registry.",
+        "Updated height-extremum count resolution to derive supported candidate/context counts from SPATIAL_HEIGHT_SUPPORT_PLACEMENTS.",
+        "Restricted room wall side-relation reference-wall sampling away from the unsupported left-wall/right-of-reference pairing.",
+        "Extracted choropleth geographic asset loading into trace/tasks/charts/map/choropleth_assets.py.",
+        "Extracted choropleth palette, world-map style, and marker-style registries/resolvers into trace/tasks/charts/map/choropleth_style.py.",
+        "Added focused regression coverage for object-scene primitive/rendering aliases, street-intersection rendering aliases, and choropleth asset/style helpers.",
+        "Extracted shared graph edge-budget and distractor-edge helpers into trace/tasks/graph/shared/graph_edge_sampling.py.",
+        "Extracted graph source/sink count feasibility and construction into trace/tasks/graph/shared/graph_source_sink_sampling.py.",
+        "Extracted graph common-neighbor relation feasibility and construction into trace/tasks/graph/shared/graph_common_neighbor_sampling.py.",
+        "Kept graph_sampling.py re-export compatibility for existing source/sink, common-neighbor, and edge-helper imports.",
+        "Added graph edge/source-sink/common-neighbor regression coverage for re-export identity and direct sampled support construction.",
+        "Extracted topology-profile tree construction and profile-weighted extra-edge helpers into trace/tasks/graph/shared/graph_profile_sampling.py.",
+        "Extracted unique-node-label, node-color-count, edge-color-count, edge-text-label-count, edge-attribute-label, and cross-color-edge-count construction into trace/tasks/graph/shared/graph_label_color_sampling.py.",
+        "Kept graph_sampling.py re-export compatibility for existing label/color/profile sampler imports.",
+        "Added graph label/color/profile regression coverage for re-export identity and direct sampled support construction.",
+        "Extracted synthetic choropleth grid geometry and connected-cell sampling into trace/tasks/charts/map/choropleth_geometry.py.",
+        "Extracted choropleth geographic centroid, filtered-region, shared-border, and selected-adjacency helpers into trace/tasks/charts/map/choropleth_geography.py.",
+        "Added focused regression coverage for choropleth geometry/geography helper aliases and direct helper behavior.",
+        "Extracted shared street-intersection render params/results, context sampling, visibility checks, spec finalization, and render wrapper into trace/tasks/three_d/street/intersection_scene.py.",
+        "Updated sibling street tasks to import shared scene helpers from intersection_scene.py instead of from intersection_nearest.py.",
+        "Added street-intersection scene alias regression coverage.",
+        "Extracted reusable object-scene render params/results, object spec construction, projection/bbox helpers, sampled object-scene specs, and render wrapper into trace/tasks/three_d/shared/object_scene.py.",
+        "Updated three_d spatial, room, street, warehouse, and inventory-preview modules to import object-scene helpers from the shared object_scene layer instead of from spatial/camera_distance.py.",
+        "Added object-scene assembly alias regression coverage and validated the full tests/test_three_d_*.py subset after the import migration.",
+        "Split graph_sampling.py into family-specific graph sampler modules while keeping graph_sampling.py as a compatibility facade.",
+        "Restored explicit graph_sampling.py private-helper aliases required by migration tests.",
+        "Split object_scene_rendering.py named-object drawing into object_scene_glyphs_* family modules while preserving facade imports.",
+        "Split chart_scene.py into chart-type renderer modules while preserving chart_scene.py public imports.",
+        "Split choropleth_region_label.py into config, dataset, rendering, and marker-rendering modules, then split choropleth dataset construction into region/world/marker helper modules.",
+        "Restored choropleth_region_label.py compatibility aliases for shared asset, geometry, and geography helper tests.",
+        "Fixed an unrelated pages calendar YAML indentation error that blocked task import during chart-map validation.",
+        "Updated docs/workflows/SHARED_UTILITIES.md to describe the new graph, chart, choropleth, and three_d object-glyph module ownership boundaries.",
+        "Split street-intersection rendering into common, road, vehicle, fixture/signage, pedestrian, building/storefront, landscape/street-furniture, and object-dispatch modules while preserving intersection_rendering.py as a compatibility facade.",
+        "Updated docs/workflows/SHARED_UTILITIES.md to describe the new street renderer ownership boundaries."
+      ]
+    },
+    {
+      "id": "CR-007",
+      "severity": "Low",
+      "category": "skills/docs",
+      "title": "Chart skill duplicates docs and one read-first entry",
+      "file_refs": [
+        {
+          "path": "skills/domain-charts/SKILL.md",
+          "lines": [
+            19,
+            22,
+            39,
+            66
+          ]
+        }
+      ],
+      "evidence": [
+        "The same rendering-upgrade workflow doc appears twice in the read-first list.",
+        "The skill carries detailed chart review policy that should remain canonical in workflow/domain docs."
+      ],
+      "impact": "Skill guidance can drift from source-of-truth docs and creates another surface to update during renderer-review changes.",
+      "recommendation": "Deduplicate the read-first list and keep this skill as a thin routing overlay to canonical docs.",
+      "validation_target": "Skill consistency check passes and chart review policy is stated once in canonical docs.",
+      "status": "resolved",
+      "resolution": "skills/domain-charts/SKILL.md no longer repeats the information-scene workflow in the read-first list, and its detailed review/handoff bullets now defer to canonical workflow/domain docs."
+    },
+    {
+      "id": "CR-008",
+      "severity": "Low",
+      "category": "duplication",
+      "title": "Coordinate geometry default resolver helper is duplicated",
+      "file_refs": [
+        {
+          "path": "trace/tasks/geometry/coordinate/algebra.py",
+          "lines": [
+            211,
+            212
+          ]
+        },
+        {
+          "path": "trace/tasks/geometry/coordinate/locus_region.py",
+          "lines": [
+            207,
+            208
+          ]
+        },
+        {
+          "path": "trace/tasks/geometry/coordinate/quadrilateral.py",
+          "lines": [
+            528,
+            529
+          ]
+        }
+      ],
+      "evidence": [
+        "The same _resolve_int_param implementation appears in three coordinate geometry task modules."
+      ],
+      "impact": "Small helper behavior can drift as new coordinate tasks copy local implementations.",
+      "recommendation": "Promote common parameter/default resolvers into a coordinate-domain shared helper.",
+      "validation_target": "Coordinate tasks import the shared helper and existing default/config behavior remains unchanged.",
+      "status": "resolved",
+      "resolution": "trace/tasks/geometry/coordinate/params.py now owns resolve_int_param(...), and coordinate algebra, locus-region, and quadrilateral task modules import it instead of defining local copies."
+    }
+  ]
+}

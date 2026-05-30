@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
 from ..color_distance import color_distance, rgb_euclidean_distance
+from ..text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    resolve_readable_text_style,
+    text_legibility_summary,
+)
 from .metadata import color_separation_metadata
 
 
@@ -869,7 +874,40 @@ DEFAULT_TECHNICAL_DIAGRAM_STYLE = _style_from_treatment_palette(
     palette=TECHNICAL_DIAGRAM_PALETTES["neutral_ink"],
     frame_mode="none",
     protected_colors=(),
-)
+    )
+
+
+def _resolve_technical_text_legibility(
+    style: TechnicalDiagramStyle,
+    *,
+    instance_seed: int,
+    namespace: str,
+) -> tuple[TechnicalDiagramStyle, dict[str, Any]]:
+    """Resolve readable non-semantic label colors for technical diagrams."""
+
+    label_surfaces = (
+        style.canvas_rgb,
+        style.paper_rgb,
+        style.panel_fill_rgb,
+        style.panel_alt_fill_rgb,
+        style.option_fill_rgb,
+    )
+    label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.text_legibility.label",
+        role="read_required_diagram_label",
+        surface_rgbs=label_surfaces,
+        preferred_rgbs=(style.label_rgb, style.stroke_rgb, style.axis_rgb),
+        min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    adjusted = replace(
+        style,
+        label_rgb=tuple(label_style.fill_rgb),
+        label_stroke_rgb=tuple(label_style.stroke_rgb),
+        label_stroke_width_px=max(1, int(style.label_stroke_width_px)),
+    )
+    return adjusted, text_legibility_summary((label_style,))
 
 
 def resolve_technical_diagram_style(
@@ -968,7 +1006,13 @@ def resolve_technical_diagram_style(
         frame_mode=str(frame_mode),
         protected_colors=protected,
     )
+    style, text_legibility = _resolve_technical_text_legibility(
+        style,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
     metadata = technical_diagram_style_metadata(style)
+    metadata["text_legibility"] = dict(text_legibility)
     metadata["selection"] = {
         "namespace": str(namespace),
         "allow_dark": bool(allow_dark),
@@ -1099,6 +1143,7 @@ def technical_diagram_style_metadata(style: TechnicalDiagramStyle) -> dict[str, 
         },
         "available_treatments": list(TECHNICAL_DIAGRAM_TREATMENT_IDS),
         "available_palettes": sorted(TECHNICAL_DIAGRAM_PALETTES.keys()),
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
     }
 
 

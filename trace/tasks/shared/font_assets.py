@@ -7,7 +7,7 @@ import random
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Mapping, Sequence, Tuple
+from typing import Any, Literal, Mapping, Sequence, Tuple
 
 from ...core.seed import spawn_rng
 
@@ -15,6 +15,8 @@ from ...core.seed import spawn_rng
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FONT_ASSET_ROOT = REPO_ROOT / "assets" / "fonts"
 SOURCES_PATH = FONT_ASSET_ROOT / "sources.json"
+READOUT_POOL_PATH = FONT_ASSET_ROOT / "readout_pool_v0.json"
+FontRole = Literal["readout", "context", "decorative"]
 
 
 @dataclass(frozen=True)
@@ -32,14 +34,31 @@ class FontFamilyRecord:
     tags: Tuple[str, ...]
 
     def to_trace(self) -> dict[str, Any]:
-        return {
+        trace = {
             "font_family": str(self.key),
             "family_name": str(self.family_name),
+            "font_asset_version": font_asset_version(),
             "license": str(self.license),
             "source_id": str(self.source_id),
             "source_url": str(self.source_url),
             "tags": [str(tag) for tag in self.tags],
         }
+        memberships: list[dict[str, Any]] = []
+        try:
+            readout_families = set(list_font_families_for_role("readout"))
+            if str(self.key) in readout_families:
+                memberships.append(
+                    {
+                        "font_role": "readout",
+                        "font_pool_id": font_pool_id_for_role("readout"),
+                        "font_pool_size": font_pool_size_for_role("readout"),
+                    }
+                )
+        except Exception:
+            pass
+        if memberships:
+            trace["font_pool_memberships"] = memberships
+        return trace
 
 
 def _normalize_family_key(value: str) -> str:
@@ -56,6 +75,31 @@ def load_font_sources() -> Mapping[str, Any]:
     payload = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise ValueError(f"font source metadata must be a mapping: {SOURCES_PATH}")
+    return payload
+
+
+@lru_cache(maxsize=1)
+def load_readout_font_pool() -> Mapping[str, Any]:
+    """Return the shared readout font-pool payload."""
+
+    payload = json.loads(READOUT_POOL_PATH.read_text(encoding="utf-8"))
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"readout font pool must be a mapping: {READOUT_POOL_PATH}")
+    families = payload.get("font_families", ())
+    if not isinstance(families, Sequence) or isinstance(families, (str, bytes)):
+        raise ValueError(f"readout font pool must contain a font_families list: {READOUT_POOL_PATH}")
+    keys = tuple(_normalize_family_key(str(key)) for key in families)
+    target_count = int(payload.get("target_count", len(keys)))
+    if len(keys) != target_count:
+        raise ValueError(
+            f"readout font pool target_count={target_count} but contains {len(keys)} families"
+        )
+    if len(set(keys)) != len(keys):
+        raise ValueError(f"readout font pool contains duplicate family keys: {READOUT_POOL_PATH}")
+    records = load_font_family_records()
+    missing = [key for key in keys if key not in records]
+    if missing:
+        raise ValueError(f"readout font pool contains unknown family keys: {missing}")
     return payload
 
 
@@ -112,6 +156,51 @@ def list_font_families(
     return tuple(sorted(candidates))
 
 
+def _normalize_font_role(role: FontRole | str) -> FontRole:
+    normalized = str(role).strip().casefold().replace("-", "_")
+    if normalized not in {"readout", "context", "decorative"}:
+        raise ValueError(f"unknown font role: {role!r}")
+    return normalized  # type: ignore[return-value]
+
+
+def list_font_families_for_role(role: FontRole | str) -> Tuple[str, ...]:
+    """Return the candidate family keys for one semantic text role."""
+
+    normalized = _normalize_font_role(role)
+    if normalized == "readout":
+        payload = load_readout_font_pool()
+        return tuple(_normalize_family_key(str(key)) for key in payload.get("font_families", ()))
+    return list_font_families()
+
+
+def font_pool_id_for_role(role: FontRole | str) -> str:
+    """Return the public pool id used for one role."""
+
+    normalized = _normalize_font_role(role)
+    if normalized == "readout":
+        return str(load_readout_font_pool().get("pool_id", "readout_v0"))
+    return f"{font_asset_version()}:full_vendored"
+
+
+def font_pool_size_for_role(role: FontRole | str) -> int:
+    """Return the number of candidate families available to one role."""
+
+    return int(len(list_font_families_for_role(role)))
+
+
+def font_role_trace(font_family: str, *, role: FontRole | str) -> dict[str, Any]:
+    """Return compact trace metadata for a sampled family/role pair."""
+
+    normalized = _normalize_font_role(role)
+    return {
+        "font_family": _normalize_family_key(str(font_family)),
+        "font_role": str(normalized),
+        "font_pool_id": font_pool_id_for_role(normalized),
+        "font_pool_size": font_pool_size_for_role(normalized),
+        "font_asset_version": font_asset_version(),
+    }
+
+
 def get_font_family_record(font_family: str) -> FontFamilyRecord:
     """Return one font family record by normalized key."""
 
@@ -161,6 +250,7 @@ def _weighted_choice(rng: random.Random, weighted: Mapping[str, float], *, fallb
 
 def sample_font_family(
     *,
+    role: FontRole,
     instance_seed: int,
     namespace: str,
     params: Mapping[str, Any] | None = None,
@@ -171,15 +261,24 @@ def sample_font_family(
 ) -> str:
     """Sample one vendored font family deterministically from seed/namespace.
 
-    The selected family is a render-style decision and must be recorded by the
-    caller in trace metadata for any answer-bearing text.
+    The role chooses the candidate pool. Use ``readout`` for answer-bearing or
+    read-required text, ``context`` for non-answer chrome/context text, and
+    ``decorative`` only for non-semantic visual dressing.
     """
 
     resolved_params = params or {}
+    normalized_role = _normalize_font_role(role)
     explicit = resolved_params.get(str(explicit_key))
-    candidates = list_font_families(include_tags=include_tags, exclude_tags=exclude_tags)
+    candidates = tuple(list_font_families_for_role(normalized_role))
+    if include_tags or exclude_tags:
+        role_candidates = set(candidates)
+        candidates = tuple(
+            key
+            for key in list_font_families(include_tags=include_tags, exclude_tags=exclude_tags)
+            if key in role_candidates
+        )
     if not candidates:
-        candidates = list_font_families()
+        candidates = tuple(list_font_families_for_role(normalized_role))
     candidate_set = set(candidates)
     if explicit is not None:
         key = _normalize_family_key(str(explicit))
@@ -209,12 +308,19 @@ def font_asset_version() -> str:
 
 __all__ = [
     "FONT_ASSET_ROOT",
+    "FontRole",
     "FontFamilyRecord",
     "font_asset_version",
+    "font_pool_id_for_role",
+    "font_pool_size_for_role",
+    "font_role_trace",
     "get_font_family_record",
     "list_font_families",
+    "list_font_families_for_role",
     "load_font_family_records",
     "load_font_sources",
+    "load_readout_font_pool",
+    "READOUT_POOL_PATH",
     "resolve_font_paths",
     "sample_font_family",
 ]

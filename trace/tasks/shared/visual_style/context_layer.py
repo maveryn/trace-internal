@@ -10,7 +10,8 @@ from PIL import Image, ImageDraw
 from ....core.seed import spawn_rng
 from ..color_distance import coerce_rgb as _rgb
 from ..context_text_assets import context_text_asset_version, sample_context_text
-from ..font_assets import font_asset_version, sample_font_family
+from ..font_assets import font_asset_version, font_role_trace, sample_font_family
+from ..text_legibility import draw_text_traced
 from ..text_rendering import load_font, resolve_text_stroke_fill
 
 
@@ -31,10 +32,11 @@ class ContextTextElement:
     row_index: int
     layout_mode: str
     font_family: str = ""
+    font_role: str = "context"
     excluded_from_answer: bool = True
 
     def to_trace(self) -> dict[str, Any]:
-        return {
+        trace = {
             "context_id": str(self.context_id),
             "role": str(self.role),
             "text": str(self.text),
@@ -44,8 +46,12 @@ class ContextTextElement:
             "row_index": int(self.row_index),
             "layout_mode": str(self.layout_mode),
             "font_family": str(self.font_family),
+            "font_role": str(self.font_role),
             "excluded_from_answer": bool(self.excluded_from_answer),
         }
+        if self.font_family:
+            trace.update({k: v for k, v in font_role_trace(str(self.font_family), role=str(self.font_role)).items() if k != "font_family"})
+        return trace
 
 
 def _weighted_choice(rng: Any, weights: Mapping[str, Any], *, fallback: Sequence[str]) -> str:
@@ -190,7 +196,8 @@ def _draw_context_text(
     )
     stroke_fill = resolve_text_stroke_fill(tuple(fill))
     bbox = draw.textbbox(tuple(xy), fitted, font=font, anchor=str(anchor), stroke_width=int(stroke_width))
-    draw.text(
+    draw_text_traced(
+        draw,
         tuple(xy),
         fitted,
         font=font,
@@ -198,6 +205,9 @@ def _draw_context_text(
         fill=tuple(fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(stroke_fill),
+        role="non_answer_context_text",
+        required=False,
+        extra_metadata={"answer_excluded": True, "context_layer": True},
     )
     return fitted, _clip_bbox(
         _text_bbox_tuple(bbox),
@@ -519,18 +529,20 @@ def draw_dashboard_reserved_margin_context(
     accent_color = _rgb(accent_rgb, (35, 99, 180))
 
     chrome_font_family = sample_font_family(
+        role="context",
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.context_chrome_font",
         params=resolved_params,
-        exclude_tags=("mono", "display"),
+        exclude_tags=("mono", "display", "script", "handwriting"),
         explicit_key="context_text_chrome_font_family",
         weights_key="context_text_font_family_weights",
     )
     chip_font_family = sample_font_family(
+        role="context",
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.context_chip_font",
         params=resolved_params,
-        exclude_tags=("display",),
+        exclude_tags=("display", "script", "handwriting"),
         explicit_key="context_text_chip_font_family",
         weights_key="context_text_font_family_weights",
     )
@@ -580,7 +592,7 @@ def draw_dashboard_reserved_margin_context(
     add_text(
         "header",
         "phrases/headlines.txt",
-        (float(left_margin), 12.0),
+        (float(left_margin), 18.0),
         "lm",
         header_font,
         text_color,
@@ -590,7 +602,7 @@ def draw_dashboard_reserved_margin_context(
     add_text(
         "source_note",
         "phrases/source_notes.txt",
-        (float(width - right_margin), 12.0),
+        (float(width - right_margin), 18.0),
         "rm",
         small_font,
         muted_color,
@@ -677,10 +689,11 @@ def draw_dashboard_reserved_margin_context(
 
     for box_index, sidebar_bbox in enumerate(context_box_bboxes):
         box_font_family = sample_font_family(
+            role="context",
             instance_seed=int(instance_seed),
             namespace=f"{namespace}.context_box_font.{box_index}",
             params=resolved_params,
-            exclude_tags=("mono", "display"),
+            exclude_tags=("mono", "display", "script", "handwriting"),
             explicit_key="context_text_box_font_family",
             weights_key="context_text_font_family_weights",
         )
@@ -810,7 +823,7 @@ def draw_dashboard_reserved_margin_context(
 
     # Thin separators make the added text read as dashboard chrome rather than
     # extra plotted data.
-    line_y_top = max(34, min(int(top_reserved) - 4, 62))
+    line_y_top = max(42, min(int(top_reserved) - 4, 66))
     line_y_bottom = min(int(height) - int(bottom_reserved), int(height) - 22)
     line_left = int(left_margin + (sidebar_width + sidebar_gap if placement == "left_sidebar" else 0))
     right_line = int(width - right_margin - (sidebar_width + sidebar_gap if placement == "right_sidebar" else 0))

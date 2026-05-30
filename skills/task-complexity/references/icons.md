@@ -32,8 +32,7 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons__reference_canvas__attribute_match_count`
-- `task_icons__reference_canvas__size_relation_count`
+- `task_icons__reference_canvas__reference_predicate_count`
 - `task_icons__icon_field__type_frequency_count`
 - named-field counting tasks on `named_field`
 - paired-panel counting tasks on `paired_canvas`
@@ -45,7 +44,7 @@ What to measure:
 - number of queried attributes.
 
 Specific notes:
-- `task_icons__reference_canvas__attribute_match_count`
+- `task_icons__reference_canvas__reference_predicate_count`
   - `match_type|match_color|match_rotation` should keep `semantic_match` low-to-medium.
   - bound type+color+rotation matching should push `semantic_match` and `ambiguity` high based on near-match distractor mix.
 - `size_relation` should raise `ambiguity` when the minimum size gap is small and clutter rises.
@@ -92,8 +91,7 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons__pair_grid__pair_geometric_transform_count`
-- `task_icons__pair_grid__pair_attribute_rule_count`
+- `task_icons__pair_grid__pair_relation_count`
 - `task_icons__paired_canvas__panel_attribute_change_count`
 - `task_icons__paired_canvas__panel_movement_direction_count`
 
@@ -130,8 +128,7 @@ clutter: 0.10
 ```
 
 Use for:
-- `task_icons__pattern_grid__color_pattern_violation_index`
-- `task_icons__pattern_grid__size_pattern_violation_index`
+- `task_icons__pattern_grid__attribute_pattern_violation_index`
 - `task_icons__sequence_strip__rotation_sequence_violation_index`
 
 What to measure:

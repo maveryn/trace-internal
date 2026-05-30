@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumbs"><a href="{{ app_path('/') }}">domains</a><span>{{ domain_record.domain }}</span></nav>
+
+<section class="table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Preview</th>
+        <th>Scene</th>
+        <th>Tasks</th>
+        <th>Status</th>
+        <th>Samples</th>
+        <th>Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for scene in scenes %}
+        {% set feedback = feedback_by_scene.get(scene.domain ~ '/' ~ scene.scene_id, {}) %}
+        {% set scene_status = status_by_scene.get(scene.domain ~ '/' ~ scene.scene_id, {}) %}
+        <tr>
+          <td class="preview-cell">
+            {% if scene.preview_uid %}
+              {% set sample = index.samples[scene.preview_uid] %}
+              {% if sample.image_exists %}
+                <a href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id) }}" aria-label="Open {{ scene.scene_id }} scene">
+                  <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+                </a>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td><a href="{{ app_path('/domains/' ~ scene.domain ~ '/scenes/' ~ scene.scene_id) }}">{{ scene.scene_id }}</a></td>
+          <td>{{ scene.task_count }}</td>
+          <td class="status-stack">
+            <span>Manual {{ scene_status.manual_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}</span>
+            <span>Solve {{ scene_status.solve_pass|default(0) }}/{{ scene_status.total|default(scene.task_count) }}</span>
+            <span class="{% if scene_status.complete|default(0) == scene_status.total|default(scene.task_count) and scene.task_count %}status ok{% else %}status warn{% endif %}">
+              Completed {{ scene_status.complete|default(0) }}/{{ scene_status.total|default(scene.task_count) }}
+            </span>
+          </td>
+          <td>{{ scene.sample_count }}</td>
+          <td>{{ feedback.open|default(0) }} open / {{ feedback.total|default(0) }} total</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

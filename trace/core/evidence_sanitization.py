@@ -8,7 +8,15 @@ from .types import TypedValue
 
 
 PUBLIC_IMAGE_EVIDENCE_TYPES = frozenset(
-    {"bbox_sequence", "bbox_set", "point_pair_set", "point_sequence", "point_set"}
+    {
+        "bbox_sequence",
+        "bbox_set",
+        "keyed_bbox_map",
+        "keyed_point_map",
+        "point_pair_set",
+        "point_sequence",
+        "point_set",
+    }
 )
 
 _SOURCE_EXECUTION_KEYS = frozenset(
@@ -56,7 +64,15 @@ def _as_list(value: Any) -> list[Any]:
     return []
 
 
+def _as_string_keyed_mapping(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {str(key): item for key, item in value.items()}
+
+
 def _evidence_count(value: Any) -> int:
+    if isinstance(value, Mapping):
+        return len(value)
     if isinstance(value, (list, tuple)):
         return len(value)
     return 1 if value is not None else 0
@@ -77,6 +93,12 @@ def public_projected_evidence(evidence: TypedValue) -> dict[str, Any]:
             "type": "bbox_sequence",
             "bbox_sequence": [list(item) for item in value],
         }
+    if evidence_type == "keyed_bbox_map":
+        keyed_bboxes = {key: list(item) for key, item in _as_string_keyed_mapping(evidence.value).items()}
+        return {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": keyed_bboxes,
+        }
     if evidence_type == "point_set":
         points = [list(item) for item in value]
         return {
@@ -90,6 +112,13 @@ def public_projected_evidence(evidence: TypedValue) -> dict[str, Any]:
             "type": "point_sequence",
             "point_sequence": points,
             "pixel_point_sequence": points,
+        }
+    if evidence_type == "keyed_point_map":
+        keyed_points = {key: list(item) for key, item in _as_string_keyed_mapping(evidence.value).items()}
+        return {
+            "type": "keyed_point_map",
+            "keyed_point_map": keyed_points,
+            "pixel_keyed_point_map": keyed_points,
         }
     if evidence_type == "point_pair_set":
         pairs = [[list(endpoint) for endpoint in item] for item in value]

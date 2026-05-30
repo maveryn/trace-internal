@@ -40,8 +40,16 @@ configs, and prompt bundles live under the puzzles domain paths.
 - Preserve semantic contrast. Do not add palettes or style packs that make
   required classes, pieces, markings, words, paths, pipes, stickers, or cells
   harder to distinguish.
-- Upgrade one scene at a time, regenerate the scene review, and inspect the
-  output before moving to the next scene.
+- Use the shared role-aware font dispatcher. Board labels, option labels,
+  badges, HUD text, and other read-required text use `role="readout"`;
+  non-answer chrome/context text may use `role="context"`; purely decorative
+  visual dressing may use `role="decorative"`. Record the resolved family,
+  role, pool id, pool size, and asset version in render metadata.
+- Keep font choice consistent inside one board, card/tableau group, option
+  set, or puzzle panel unless mixed typography is an intentional part of the
+  scene grammar.
+- Upgrade one scene at a time, regenerate the scene review artifacts, inspect
+  them in the browser review app, and then move to the next scene.
 - Do not run solve-rate jobs unless explicitly requested.
 
 ## Style Variation Ownership
@@ -57,6 +65,15 @@ configs, and prompt bundles live under the puzzles domain paths.
   the shared 20-treatment / 20-palette registry in
   `trace/tasks/shared/visual_style/` instead of creating scene-local treatment
   or palette copies.
+- Game-domain scenes should also aim for at least five scene-local
+  board/object style variants in addition to shared background/panel/font
+  variation. These style variants should affect the game artifact itself,
+  such as board skins, tile palettes, piece/token treatments, grid/line
+  strokes, card/table chrome, lane skins, or HUD/control styling.
+- Fewer than five scene-local game styles is allowed only when the canonical
+  game artifact or readability constraints make extra styles unsafe; document
+  the exception in the game-domain setup doc and record the active style axis
+  in render metadata.
 - Do not add a broad domain-level renderer pass that blindly recolors or moves
   repeated-unit scenes. A style that is safe for one scene can break semantic
   contrast, evidence projection, or readability in another.
@@ -82,6 +99,10 @@ configs, and prompt bundles live under the puzzles domain paths.
 
 - Compute board/content size before choosing the board position.
 - Randomly place the board or main panel inside safe canvas bounds.
+- Prefer fractional slack-based placement jitter: resolve the content size first,
+  compute the safe free space on each side, then sample an offset as a fraction
+  of that available slack. Small fixed pixel offsets are usually not enough to
+  visibly move board-inside-canvas scenes.
 - If the scene nearly fills the canvas and the valid offset range is zero,
   record that explicitly in layout metadata; this is acceptable.
 - Do not translate/crop rendered pixels after drawing unless every entity bbox,
@@ -111,6 +132,10 @@ configs, and prompt bundles live under the puzzles domain paths.
 ### 5. Style Packs
 
 - Add scene-specific style packs, not one-size-fits-all ornamentation.
+- Cover the full visual surface that matters for inspection: backgrounds,
+  palettes, panels/chrome, grid or board strokes, unit sizes, marker styles,
+  piece/token styles, board skins, option cards, and label/badge treatments.
+  A scene is not visually upgraded just because the canvas background changes.
 - Puzzle style examples: contest worksheet, notebook, puzzle magazine, scanned
   puzzle page, option sheet, lab/grid board, paper card.
 - Game style examples: tabletop board, arcade HUD, score strip, move-history
@@ -160,7 +185,7 @@ For each scene:
    - canvas follows content size
    - evidence bboxes remain inside the canvas
    - style variants are visible but non-semantic
-5. Regenerate the scene review workbook.
+5. Regenerate the scene review artifacts and inspect them in the browser app.
 6. Do not run solve-rate jobs unless explicitly requested.
 
 ## Coverage-Extension Notes

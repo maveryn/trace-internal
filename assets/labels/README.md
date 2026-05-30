@@ -30,6 +30,15 @@ spacing, punctuation, and answer-support needs.
 and row count for every manifest. The raw source downloads are intentionally not
 used at runtime; they are only inputs to `scripts/build_label_assets.py`.
 
+## Chart Label Roles
+
+Chart tasks use `trace.tasks.charts.shared.label_assets` as the adapter layer.
+Dense categorical axes and repeated chart marks should use the synthetic compact
+ID resolver exposed through `sample_chart_labels()` rather than these word
+manifests. Semantic legends, series names, panel names, table headers, and map
+categories should use the manifest-backed entity/category resolvers with
+task-local length and spacing filters.
+
 ## Regeneration
 
 Run:

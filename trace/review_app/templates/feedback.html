@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>{{ work_queue_summary.task_count }}</span><label>tasks needing attention</label></div>
+  <div class="metric"><span>{{ work_queue_summary.open_feedback_count }}</span><label>open feedback</label></div>
+  <div class="metric"><span>{{ work_queue_summary.automated_solve_missing_count }}</span><label>solve missing</label></div>
+  <div class="metric"><span>{{ work_queue_summary.automated_solve_not_accepted_count }}</span><label>solve not accepted</label></div>
+</section>
+
+<section class="feedback-queue">
+  {% for domain_group in work_queue %}
+    <section class="queue-domain">
+      <h2>{{ domain_group.domain }}</h2>
+      {% for scene_group in domain_group.scenes %}
+        <section class="queue-scene">
+          <h3>{{ scene_group.scene_id }}</h3>
+          {% for entry in scene_group.tasks %}
+            {% set task = entry.task %}
+            <article class="queue-task">
+              <header class="queue-task-header">
+                <div>
+                  <a href="{{ app_path(entry.task_path) }}">{{ task.task_id }}</a>
+                  <p class="muted">{{ task.sample_count }} samples</p>
+                </div>
+                <div class="queue-flags">
+                  {% for flag in entry.flags %}
+                    <span class="status warn">{{ flag.label }}</span>
+                  {% endfor %}
+                </div>
+              </header>
+              {% if entry.open_feedback %}
+                <div class="queue-feedback-list">
+                  {% for item in entry.open_feedback %}
+                    <article class="queue-feedback-item">
+                      <div>
+                        <a class="queue-feedback-summary" href="{{ app_path('/feedback/' ~ item.id) }}">
+                          <div class="queue-feedback-meta">
+                            <span>{{ item.severity }}</span>
+                            <span>{{ item.category }}</span>
+                            <span>{{ item.updated_at }}</span>
+                          </div>
+                          <p>{{ item.comment|excerpt(320) }}</p>
+                        </a>
+                        <div class="queue-feedback-links">
+                          <a href="{{ app_path('/feedback/' ~ item.id) }}">thread</a>
+                          <a href="{{ app_path(entry.task_path) }}">task</a>
+                          {% if item.sample_uid %}
+                            {% if item.sample_uid in index.samples %}
+                              <a href="{{ app_path('/samples/' ~ item.sample_uid) }}">sample</a>
+                            {% else %}
+                              <span class="muted">sample not in current index</span>
+                            {% endif %}
+                          {% endif %}
+                        </div>
+                      </div>
+                      <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                        <input type="hidden" name="status" value="resolved">
+                        <input type="hidden" name="next" value="/feedback">
+                        <button type="submit" class="feedback-resolve-button">Resolve</button>
+                      </form>
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </section>
+      {% endfor %}
+    </section>
+  {% else %}
+    <section class="empty-panel">
+      <p class="muted">No open feedback or task review blockers.</p>
+    </section>
+  {% endfor %}
+</section>
+{% endblock %}

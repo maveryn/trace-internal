@@ -354,7 +354,7 @@ def render_report(results: Sequence[Mapping[str, Any]], *, target: float) -> str
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=Path, default=Path("plans/task_complexity_correlation_audit.md"))
+    parser.add_argument("--out", type=Path, default=Path("review/task_complexity_correlation_audit.md"))
     parser.add_argument("--target", type=float, default=0.75)
     parser.add_argument("--task", action="append", default=[], help="Optional task id filter; repeatable.")
     parser.add_argument("--no-write", action="store_true")

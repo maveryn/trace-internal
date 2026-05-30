@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% macro reviewer_comments_readonly(item) -%}
+  {% set comments = reviewer_comments_by_feedback.get(item.id, []) %}
+  {% if comments %}
+    <div class="reviewer-comment-list">
+      {% for comment in comments %}
+        <article class="reviewer-comment-item">
+          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
+          <p>{{ comment.comment }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% macro agent_notes_readonly(item) -%}
+  {% set notes = agent_notes_by_feedback.get(item.id, []) %}
+  {% if notes %}
+    <div class="agent-note-panel">
+      <div class="agent-note-heading">Agent repair notes</div>
+      <div class="agent-note-list">
+        {% for note in notes %}
+          <article class="agent-note-item">
+            <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
+            <p>{{ note.note }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/domains/' ~ sample.domain) }}">{{ sample.domain }}</a>
+  <a href="{{ app_path('/domains/' ~ sample.domain ~ '/scenes/' ~ sample.scene_id) }}">{{ sample.scene_id }}</a>
+  <a href="{{ app_path('/domains/' ~ sample.domain ~ '/scenes/' ~ sample.scene_id ~ '/tasks/' ~ sample.task_id) }}">{{ sample.task_id }}</a>
+  <a href="{{ app_path('/domains/' ~ sample.domain ~ '/scenes/' ~ sample.scene_id ~ '/tasks/' ~ sample.task_id ~ '/queries/' ~ (sample.query_id|urlquote)) }}">{{ sample.query_id }}</a>
+  <span>{{ sample.uid }}</span>
+</nav>
+
+<section class="sample-detail">
+  <div class="image-panel">
+    <div class="image-toolbar">
+      {% if previous_uid %}<a class="button-link" href="{{ app_path('/samples/' ~ previous_uid) }}">Previous</a>{% endif %}
+      {% if next_uid %}<a class="button-link" href="{{ app_path('/samples/' ~ next_uid) }}">Next</a>{% endif %}
+    </div>
+    {% if sample.image_exists %}
+      <div class="sample-image-pair">
+        <figure class="sample-image-card">
+          <figcaption>Original</figcaption>
+          <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="original review sample">
+        </figure>
+        <figure class="sample-image-card">
+          <figcaption>Evidence</figcaption>
+          <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="evidence overlay review sample">
+        </figure>
+      </div>
+    {% else %}
+      <div class="missing-image">Image missing: {{ sample.image_rel_path }}</div>
+    {% endif %}
+  </div>
+
+  <aside class="detail-panel">
+    <h2>Answer</h2>
+    <pre>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json }}</pre>
+
+    <h2>Evidence</h2>
+    <pre>{{ {"type": sample.evidence_type, "value": sample.evidence_value}|pretty_json }}</pre>
+
+    <h2>Paths</h2>
+    <dl>
+      <dt>data</dt><dd>{{ sample.data_rel_path }}</dd>
+      <dt>image</dt><dd>{{ sample.image_rel_path }}</dd>
+      <dt>seed</dt><dd>{{ sample.instance_seed }}</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="prompt-panel">
+  <h2>Prompts</h2>
+  <div class="prompt-grid">
+    <article>
+      <h3>Answer only</h3>
+      <pre>{{ sample.prompt_answer_only }}</pre>
+    </article>
+    <article>
+      <h3>Answer + evidence</h3>
+      <pre>{{ sample.prompt_answer_and_evidence }}</pre>
+    </article>
+  </div>
+</section>
+
+<section id="feedback" class="feedback-panel">
+  <h2>Feedback</h2>
+  <form class="feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+    <div class="form-row">
+      <label>Author <input name="author" placeholder="optional"></label>
+      <label>Category
+        <select name="category">
+          <option value="prompt">prompt</option>
+          <option value="evidence">evidence</option>
+          <option value="rendering">rendering</option>
+          <option value="answer">answer</option>
+          <option value="calibration">calibration</option>
+          <option value="other" selected>other</option>
+        </select>
+      </label>
+      <label>Severity
+        <select name="severity">
+          <option value="note">note</option>
+          <option value="issue" selected>issue</option>
+          <option value="blocker">blocker</option>
+        </select>
+      </label>
+    </div>
+    <textarea name="comment" rows="4" placeholder="Write a comment tied to this exact question/image." required></textarea>
+    <button type="submit">Save Feedback</button>
+  </form>
+
+  <div class="feedback-list">
+    {% for item in feedback %}
+      <article class="feedback-item {{ item.status }}">
+        <header>
+          <strong>{{ item.severity }}</strong>
+          <span>{{ item.category }}</span>
+          <span>{{ item.status }}</span>
+          <span>{{ item.updated_at }}</span>
+        </header>
+        <p>{{ item.comment }}</p>
+        <div class="queue-feedback-links">
+          <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Open thread</a>
+        </div>
+        {{ reviewer_comments_readonly(item) }}
+        {{ agent_notes_readonly(item) }}
+        <details>
+          <summary>Edit</summary>
+          <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post" class="feedback-form small">
+            <div class="form-row">
+              <label>Author <input name="author" value="{{ item.author }}"></label>
+              <label>Category <input name="category" value="{{ item.category }}"></label>
+              <label>Severity <input name="severity" value="{{ item.severity }}"></label>
+              <label>Status
+                <select name="status">
+                  <option value="open" {% if item.status == 'open' %}selected{% endif %}>open</option>
+                  <option value="resolved" {% if item.status == 'resolved' %}selected{% endif %}>resolved</option>
+                </select>
+              </label>
+            </div>
+            <textarea name="comment" rows="3">{{ item.comment }}</textarea>
+            <button type="submit">Update Feedback</button>
+          </form>
+        </details>
+      </article>
+    {% else %}
+      <p class="muted">No feedback yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="raw-panel">
+  <details>
+    <summary>Raw sample JSON</summary>
+    <pre>{{ payload|pretty_json }}</pre>
+  </details>
+</section>
+{% endblock %}

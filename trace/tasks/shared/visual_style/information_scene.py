@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
 from ..color_distance import rgb_euclidean_distance
+from ..text_legibility import (
+    LARGE_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    resolve_readable_text_style,
+    text_legibility_summary,
+)
 from .metadata import color_separation_metadata
 
 
@@ -281,6 +287,61 @@ def _style_from_parts(
     )
 
 
+def _resolve_information_text_legibility(
+    style: InformationSceneStyle,
+    *,
+    instance_seed: int,
+    namespace: str,
+) -> tuple[InformationSceneStyle, dict[str, Any]]:
+    """Resolve readable non-semantic text colors for information scenes."""
+
+    main_surfaces = (
+        style.canvas_rgb,
+        style.surface_rgb,
+        style.surface_alt_rgb,
+        style.panel_fill_rgb,
+        style.callout_fill_rgb,
+    )
+    header_surfaces = (style.header_rgb,)
+    main_text = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.text_legibility.main_text",
+        role="read_required_text",
+        surface_rgbs=main_surfaces,
+        preferred_rgbs=(style.text_rgb, style.axis_rgb, style.accent_rgb),
+        min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        required=True,
+    )
+    muted_text = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.text_legibility.muted_text",
+        role="read_required_secondary_text",
+        surface_rgbs=main_surfaces,
+        preferred_rgbs=(style.muted_text_rgb, style.text_rgb),
+        min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+        min_lab_distance=28.0,
+        required=True,
+    )
+    header_text = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.text_legibility.header_text",
+        role="read_required_header_text",
+        surface_rgbs=header_surfaces,
+        preferred_rgbs=(style.header_text_rgb, style.text_rgb),
+        min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
+        min_lab_distance=28.0,
+        required=True,
+    )
+    adjusted = replace(
+        style,
+        header_text_rgb=tuple(header_text.fill_rgb),
+        text_rgb=tuple(main_text.fill_rgb),
+        muted_text_rgb=tuple(muted_text.fill_rgb),
+        text_stroke_rgb=tuple(main_text.stroke_rgb),
+    )
+    return adjusted, text_legibility_summary((main_text, muted_text, header_text))
+
+
 def resolve_information_scene_style(
     *,
     instance_seed: int,
@@ -358,7 +419,13 @@ def resolve_information_scene_style(
         chrome_mode=str(chrome_mode),
         protected_colors=protected,
     )
+    style, text_legibility = _resolve_information_text_legibility(
+        style,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
     metadata = information_scene_style_metadata(style)
+    metadata["text_legibility"] = dict(text_legibility)
     metadata["selection"] = {
         "namespace": str(namespace),
         "allow_dark": bool(allow_dark),
@@ -459,6 +526,7 @@ def information_scene_style_metadata(style: InformationSceneStyle) -> dict[str, 
             else 0.0,
         },
         "semantic_color_policy": "style_nonsemantic_roles_only",
+        "text_color_policy": "read_required_text_uses_random_nonsemantic_readable_ink",
         "context_text_policy": {
             "supported": True,
             "default_enabled": False,

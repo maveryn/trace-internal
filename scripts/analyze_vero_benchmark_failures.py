@@ -13,7 +13,7 @@ from typing import Any
 from run_vero_sampled_benchmark import BENCHMARK_SPECS, DEFAULT_RUN_ROOT, REPO_ROOT, SPEC_BY_KEY, json_default
 
 
-DEFAULT_ANALYSIS_ROOT = REPO_ROOT / "plans/external_benchmark_failure_analysis/qwen25vl7b"
+DEFAULT_ANALYSIS_ROOT = REPO_ROOT / "review/external_benchmark_failure_analysis/qwen25vl7b"
 TRACE_TASK_DOCS = {path.stem for path in (REPO_ROOT / "docs/tasks").glob("task_*.md")}
 
 SAMPLE_RE = re.compile(r".*_samples_(.+)\.jsonl$")
@@ -303,7 +303,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key == "infovqa":
         tasks = existing_tasks(
             [
-                "task_pages__control_board__filter_count",
+                "task_pages__control_board__control_filter_count",
                 "task_pages__paired_forms__reconciliation_value",
                 "task_pages__form_section__section_expression_value",
                 "task_charts__table__value_predicate_count",
@@ -320,7 +320,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
             [
                 "task_geometry__graph_paper__angle_value",
                 "task_geometry__graph_paper__polygon_area_value",
-                "task_physics__resistor__total_resistance_value",
+                "task_physics__circuit_equivalent__total_resistance_value",
                 "task_charts__curve_panels__curve_intersection_count",
                 "task_puzzles__raven_matrix__raven_position_progression_label",
             ]
@@ -352,7 +352,8 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
                 "task_games__snake__safe_direction_count",
                 "task_games__pacman__next_item_label",
                 "task_games__space_shooter__safe_lane_count",
-                "task_games__crossing__safe_route_label",
+                "task_games__crossing__collision_time_value",
+                "task_games__crossing__moving_object_count",
                 "task_puzzles__cell_board__reachability_count",
             ]
         )
@@ -364,7 +365,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key == "countqa":
         tasks = existing_tasks(
             [
-                "task_icons__reference_canvas__attribute_match_count",
+                "task_icons__reference_canvas__reference_predicate_count",
                 "task_icons__named_field__shape_attribute_boolean_count",
                 "task_illustrations__object_field__object_type_count",
                 "task_illustrations__environment__feature_relation_count",

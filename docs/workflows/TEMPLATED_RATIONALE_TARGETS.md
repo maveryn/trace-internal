@@ -200,8 +200,8 @@ Before enabling rationale targets for a domain:
 7. Check that no rationale says the model "looks at" an object that is only in
    private metadata and not visible in the image.
 8. Run a length summary by domain, task, query, mode, and detail level.
-9. Include representative rationales in scene review workbooks before using
-   them for any training experiment.
+9. Include representative rationales in scene review artifacts and inspect them
+   in the browser review app before using them for any training experiment.
 
 ## Domain Adaptation Checklist
 
@@ -303,8 +303,9 @@ Use setup/rule/calculation language:
 2. Add parser tests that prove final JSON remains valid for all four target
    forms.
 3. Add one pilot scene with all active `query_id` values covered.
-4. Add scene-review workbook columns for concise/detailed answer-only and
-   answer+evidence rationale targets.
+4. Add scene-review sidecar fields for concise/detailed answer-only and
+   answer+evidence rationale targets so the browser review app can display
+   them.
 5. Review the pilot manually.
 6. Expand one domain at a time.
 7. Only after all review gates pass, decide whether to expose rationale targets

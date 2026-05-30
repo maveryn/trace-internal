@@ -348,7 +348,7 @@ def main() -> None:
     parser.add_argument("--parquet", required=True, type=Path)
     parser.add_argument("--probe-output-dir", required=True, type=Path)
     parser.add_argument("--dataset-root")
-    parser.add_argument("--out-root", default="plans/task-reviews", type=Path)
+    parser.add_argument("--out-root", default="review/task-reviews", type=Path)
     parser.add_argument("--review-label", default="v0")
     parser.add_argument("--calibration-baseline", default="v0")
     parser.add_argument("--hard-threshold", default=4, type=int)

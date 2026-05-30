@@ -37,10 +37,9 @@ from trace.tasks.illustrations.shared.object_catalog import CatalogEntry, catalo
 from trace.tasks.illustrations.shared import park_playground_rendering as park
 from trace.tasks.illustrations.shared.person_rendering import PERSON_GENDER_IDS, sample_person_gender
 from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
-from trace.tasks.illustrations.shared import urban_market_rendering as market
 
 
-OUT_DIR = Path("plans/illustration_object_spritesheets")
+OUT_DIR = Path("review/task-reviews/assets/illustrations/object_spritesheets")
 SCALE = 2
 TILE_W = 238
 TILE_H = 194
@@ -183,22 +182,11 @@ def _draw_shared_object(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Seq
 
 
 def _draw_market_shop(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    shop_type = str(item["id"])
-    inventory = market.MARKET_SHOP_INVENTORY_TYPES[shop_type][:4]
-    market._draw_shop(
-        draw,
-        rng=rng,
-        shop_id=f"sheet_{shop_type}",
-        spec=market.MarketShopSpec(shop_type=shop_type, item_types=tuple(inventory), role="preview"),
-        shop_bbox=(bounds[0] + 3.0, bounds[1], bounds[2] - 3.0, bounds[3] + 12.0),
-        scale=SCALE,
-        style_id="outlined_cartoon",
-        compact=True,
-    )
+    raise RuntimeError("urban market preview renderer is no longer active")
 
 
 def _draw_market_item(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    market._draw_market_item(draw, rng=rng, item_type=str(item["id"]), bbox=_object_box(bounds, 1.0), scale=SCALE, style_id="outlined_cartoon")
+    raise RuntimeError("urban market preview renderer is no longer active")
 
 
 def _draw_market_customer(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
@@ -219,7 +207,15 @@ def _draw_market_customer(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: S
 
 def _draw_library_section(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
     spec = library.LibrarySectionSpec(section_key=str(item["id"]), book_specs=())
-    library._draw_section_shell(draw, rng=rng, section=spec, bbox=(bounds[0], bounds[1] + 2.0, bounds[2], bounds[3] + 10.0), row_count=2, scale=SCALE)
+    library._draw_section_shell(
+        draw,
+        rng=rng,
+        section=spec,
+        bbox=(bounds[0], bounds[1] + 2.0, bounds[2], bounds[3] + 10.0),
+        row_count=2,
+        scale=SCALE,
+        section_label_font_family="",
+    )
 
 
 def _draw_library_book(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
@@ -421,17 +417,17 @@ def _draw_environment_feature(draw: ImageDraw.ImageDraw, item: SpriteItem, bound
     kind = str(item["id"])
     if kind == "road":
         path = ((x0 - 6, y0 + 0.75 * (y1 - y0)), (x0 + 0.35 * (x1 - x0), y0 + 0.42 * (y1 - y0)), (x1 + 6, y0 + 0.50 * (y1 - y0)))
-        environment._draw_road(draw, path_points=path, width_px=42.0, scale=SCALE)
+        environment._draw_road(draw, path_points=path, width_px=42.0, road_style_id="asphalt_median", scale=SCALE)
     elif kind == "river":
         path = ((x0 - 8, y0 + 0.50 * (y1 - y0)), (x0 + 0.45 * (x1 - x0), y0 + 0.28 * (y1 - y0)), (x1 + 8, y0 + 0.64 * (y1 - y0)))
-        environment._draw_river(draw, path_points=path, width_px=44.0, scale=SCALE)
+        environment._draw_river(draw, path_points=path, width_px=44.0, river_style_id="blue_channel", scale=SCALE)
     elif kind == "bridge":
         path = ((x0 - 8, y0 + 0.50 * (y1 - y0)), (x0 + 0.45 * (x1 - x0), y0 + 0.28 * (y1 - y0)), (x1 + 8, y0 + 0.64 * (y1 - y0)))
-        environment._draw_river(draw, path_points=path, width_px=42.0, scale=SCALE)
-        environment._draw_bridge(draw, bridge_id="sheet_bridge", river_path=path, x=(x0 + x1) * 0.5, river_width=42.0, scale=SCALE)
+        environment._draw_river(draw, path_points=path, width_px=42.0, river_style_id="blue_channel", scale=SCALE)
+        environment._draw_bridge(draw, bridge_id="sheet_bridge", river_path=path, x=(x0 + x1) * 0.5, river_width=42.0, bridge_style_id="wood_plank", scale=SCALE)
     elif kind == "crosswalk":
         path = ((x0 - 8, y0 + 0.72 * (y1 - y0)), (x0 + 0.35 * (x1 - x0), y0 + 0.45 * (y1 - y0)), (x1 + 8, y0 + 0.52 * (y1 - y0)))
-        environment._draw_road(draw, path_points=path, width_px=48.0, scale=SCALE)
+        environment._draw_road(draw, path_points=path, width_px=48.0, road_style_id="asphalt_median", scale=SCALE)
         environment._draw_crosswalk(draw, crosswalk_id="sheet_crosswalk", road_path=path, x=(x0 + x1) * 0.5, road_width=48.0, scale=SCALE)
     else:
         environment._draw_buildings(draw, rng=rng, width=int(x1), horizon_y=y1 - 8.0, scale=SCALE, max_buildings=3, lit_window_count_override=6)

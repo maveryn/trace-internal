@@ -13,6 +13,8 @@ def test_resolve_reward_contract_for_supported_evidence_types() -> None:
     cases = [
         ("bbox_sequence", "bbox_sequence_soft_iou_v0"),
         ("bbox_set", "bbox_set_soft_iou_v0"),
+        ("keyed_bbox_map", "keyed_bbox_map_soft_iou_v0"),
+        ("keyed_point_map", "keyed_point_map_soft_distance_v0"),
         ("point_sequence", "point_sequence_soft_distance_v0"),
         ("point_pair_set", "point_pair_set_soft_distance_v0"),
         ("point_set", "point_set_soft_distance_v0"),

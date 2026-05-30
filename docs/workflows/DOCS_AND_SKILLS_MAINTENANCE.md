@@ -71,7 +71,7 @@ PYTHONPATH=. python scripts/audit_active_domain_surfaces.py
 PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache
 PYTHONPATH=. python scripts/check_skill_consistency.py
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_docs_consistency.py
-git diff --check -- docs skills scripts tests trace configs prompts plans assets AGENTS.md README.md
+git diff --check -- docs skills scripts tests trace configs prompts review assets AGENTS.md README.md
 ```
 
 If a broad prompt edit lands, also run:

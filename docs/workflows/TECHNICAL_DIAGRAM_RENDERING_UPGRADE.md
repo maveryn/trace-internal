@@ -38,8 +38,8 @@ diagrams.
   paper.
 - Use coordinate-preserving post-image noise with default apply probability
   `0.5` unless a task documents a narrower reason.
-- Upgrade one scene at a time, regenerate that scene review workbook, and
-  inspect output before moving to another scene.
+- Upgrade one scene at a time, regenerate that scene's review artifacts,
+  inspect them in the browser review app, and then move to another scene.
 - Do not run solve-rate jobs unless explicitly requested.
 
 ## Style Ownership
@@ -91,7 +91,8 @@ For each scene:
    - semantic colors remain unchanged where required
    - style changes are visible but non-semantic
    - post-image noise remains coordinate-preserving
-7. Regenerate the scene review workbook.
+7. Regenerate the scene review artifacts, reload the browser review app index,
+   and inspect the scene there.
 8. Do not run solve-rate jobs unless explicitly requested.
 
 Example scene-review command:
@@ -100,7 +101,7 @@ Example scene-review command:
 PYTHONPATH=. python scripts/run_task_review.py \
   --tasks task_physics__electrostatic_field__field_direction_choice,task_physics__electrostatic_field__zero_field_point_label,task_physics__electrostatic_field__potential_value \
   --mode inspection \
-  --out-root plans/task-reviews \
+  --out-root review/task-reviews \
   --seed 20260523 \
   --random-count 100 \
   --max-attempts-per-instance 120 \

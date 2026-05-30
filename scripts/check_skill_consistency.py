@@ -5,11 +5,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
 import sys
 
 sys.dont_write_bytecode = True
 
+import trace.tasks  # noqa: F401 - register task classes before registry checks.
 from trace.core.taxonomy import ACTIVE_DOMAINS
+from trace.tasks.registry import list_default_task_ids
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +38,7 @@ REQUIRED_DOMAIN_SECTIONS = (
     "## Practical review checklist",
 )
 NON_DOMAIN_SKILL_DIRS = {"domain-audit"}
+TASK_ID_RE = re.compile(r"\btask_[a-z0-9_]+__[a-z0-9_]+__[a-z0-9_]+\b")
 
 
 @dataclass(frozen=True)
@@ -52,6 +56,7 @@ def collect_skill_consistency_failures() -> list[SkillConsistencyFailure]:
     """Return skill-folder consistency failures."""
 
     failures: list[SkillConsistencyFailure] = []
+    active_task_ids = set(list_default_task_ids())
 
     if not (SKILLS_ROOT / "README.md").is_file():
         failures.append(SkillConsistencyFailure("skills_readme_missing", "skills/README.md is missing"))
@@ -66,6 +71,14 @@ def collect_skill_consistency_failures() -> list[SkillConsistencyFailure]:
                         f"{path.relative_to(REPO_ROOT)} references {stale_ref}",
                     )
                 )
+        missing_task_ids = sorted(set(TASK_ID_RE.findall(text)) - active_task_ids)
+        if missing_task_ids:
+            failures.append(
+                SkillConsistencyFailure(
+                    "skill_inactive_task_id_reference",
+                    f"{path.relative_to(REPO_ROOT)} references inactive task ids: {', '.join(missing_task_ids[:20])}",
+                )
+            )
 
     active_domains = set(ACTIVE_DOMAINS)
     expected_domain_dirs = {f"domain-{domain}" for domain in active_domains}

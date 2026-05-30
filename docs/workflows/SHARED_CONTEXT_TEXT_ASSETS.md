@@ -104,6 +104,15 @@ artifacts:
 Other domains may use the assets when they add document-like framing, but the
 same non-answer and bbox-recording rules still apply.
 
+For pages, the default adapter is intentionally conservative: it draws only
+short safe-margin context text after the page artifact is rendered and skips any
+candidate that would overlap traced scene entities. This keeps structured page
+fields, controls, nodes, rows, routes, and evidence boxes as the only
+answer-bearing text. Page adapters may also use controlled density variants for
+one-sided or rare two-sided side-note blocks, but these blocks should remain
+outside the structured artifact, use non-answer manifests, and stay balanced
+against clean/light cases so the scene is not usually crowded.
+
 ## Regeneration
 
 Use `scripts/build_context_text_assets.py` to refresh the vendored manifests.

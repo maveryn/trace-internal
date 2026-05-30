@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+{% macro reviewer_comments_readonly(item) -%}
+  {% set comments = reviewer_comments_by_feedback.get(item.id, []) %}
+  {% if comments %}
+    <div class="reviewer-comment-list">
+      {% for comment in comments %}
+        <article class="reviewer-comment-item">
+          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
+          <p>{{ comment.comment }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% macro agent_notes_readonly(item) -%}
+  {% set notes = agent_notes_by_feedback.get(item.id, []) %}
+  {% if notes %}
+    <div class="agent-note-panel">
+      <div class="agent-note-heading">Agent repair notes</div>
+      <div class="agent-note-list">
+        {% for note in notes %}
+          <article class="agent-note-item">
+            <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
+            <p>{{ note.note }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{%- endmacro %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/domains/' ~ task.domain) }}">{{ task.domain }}</a>
+  <a href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id) }}">{{ task.scene_id }}</a>
+  <span>{{ task.task_id }}</span>
+</nav>
+
+{% set task_key = task.domain ~ '/' ~ task.scene_id ~ '/' ~ task.task_id %}
+{% set audit = audit_by_task.get(task_key) %}
+{% set task_status = task_status_by_task.get(task_key, {}) %}
+
+<section class="task-header">
+  <div>
+    <h2>{{ task.task_id }}</h2>
+    <p class="muted">{{ task.sample_count }} samples. Manifest: {{ task.manifest_rel_path or 'missing' }}</p>
+  </div>
+  <div class="task-audit-panel">
+    <div class="task-state-row">
+      <span class="{% if task_status.complete %}status ok{% else %}status warn{% endif %}">
+        {% if task_status.complete %}completed{% else %}pending{% endif %}
+      </span>
+      <span class="muted">manual {{ task_status.manual_count|default(0) }}/{{ task_status.manual_total|default(5) }}</span>
+      <span class="muted">solve {% if task_status.solve_pass %}pass{% else %}pending{% endif %}</span>
+      {% if audit.updated_at %}<span class="muted">updated {{ audit.updated_at }}</span>{% endif %}
+    </div>
+    <form class="audit-toggle-form" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/audit') }}" method="post">
+      <label><input type="checkbox" name="prompt_pass" value="1" {% if audit.prompt_pass %}checked{% endif %}> Prompt</label>
+      <label><input type="checkbox" name="image_pass" value="1" {% if audit.image_pass %}checked{% endif %}> Image</label>
+      <label><input type="checkbox" name="evidence_pass" value="1" {% if audit.evidence_pass %}checked{% endif %}> Evidence</label>
+      <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
+      <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
+      <input name="updated_by" placeholder="reviewer">
+      <button type="submit">Save Audit</button>
+    </form>
+  </div>
+  {% set current_view_suffix = '?view=' ~ selected_view %}
+  <div class="query-tabs">
+    <a class="pill {% if not selected_query_id %}active{% endif %}" href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ current_view_suffix) }}">all</a>
+    {% for query_id, count in task.query_counts.items() %}
+      <a class="pill {% if selected_query_id == query_id %}active{% endif %}" href="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/queries/' ~ (query_id|urlquote) ~ current_view_suffix) }}">{{ query_id }} <span>{{ count }}</span></a>
+    {% endfor %}
+  </div>
+  {% if selected_query_id %}
+    {% set current_sample_path = '/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/queries/' ~ (selected_query_id|urlquote) %}
+  {% else %}
+    {% set current_sample_path = '/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id %}
+  {% endif %}
+  <div class="task-preview-controls">
+    <div class="view-tabs" aria-label="Preview mode">
+      <button type="button" class="pill {% if selected_view == 'rows' %}active{% endif %}" data-preview-switch="rows" aria-pressed="{% if selected_view == 'rows' %}true{% else %}false{% endif %}">Rows</button>
+      <button type="button" class="pill {% if selected_view == 'images' %}active{% endif %}" data-preview-switch="images" aria-pressed="{% if selected_view == 'images' %}true{% else %}false{% endif %}">Images</button>
+      <button type="button" class="pill" data-open-feedback-filter aria-pressed="false">Open feedback only</button>
+    </div>
+  </div>
+</section>
+
+<nav class="floating-view-switch" aria-label="Floating preview mode switch">
+  <button type="button" class="{% if selected_view == 'rows' %}active{% endif %}" data-preview-switch="rows" aria-pressed="{% if selected_view == 'rows' %}true{% else %}false{% endif %}" title="Rows view" aria-label="Rows view">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+  </button>
+  <button type="button" class="{% if selected_view == 'images' %}active{% endif %}" data-preview-switch="images" aria-pressed="{% if selected_view == 'images' %}true{% else %}false{% endif %}" title="Images view" aria-label="Images view">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+      <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+      <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+      <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+    </svg>
+  </button>
+  <button type="button" data-task-feedback-toggle aria-expanded="false" title="Task feedback" aria-label="Task feedback">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+    </svg>
+    {% if task_open_feedback|length %}
+      <span class="floating-count">{{ task_open_feedback|length }}</span>
+    {% endif %}
+  </button>
+  <div class="task-floating-feedback-form" data-task-feedback-form hidden>
+    {% if primary_task_open_feedback %}
+      <form class="task-feedback-compose" action="{{ app_path('/feedback/' ~ primary_task_open_feedback.id ~ '/comments') }}" method="post">
+        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+        <label>
+          <span>Continue task feedback</span>
+          <textarea name="comment" rows="5" placeholder="Add a reviewer follow-up to the current task feedback" required></textarea>
+        </label>
+        <div class="task-floating-feedback-actions">
+          <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ primary_task_open_feedback.id) }}">Open thread</a>
+          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
+          <button type="submit" class="task-feedback-save">Save</button>
+        </div>
+      </form>
+    {% else %}
+      <form class="task-feedback-compose" action="{{ app_path('/domains/' ~ task.domain ~ '/scenes/' ~ task.scene_id ~ '/tasks/' ~ task.task_id ~ '/feedback') }}" method="post">
+        <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+        <input type="hidden" name="category" value="other">
+        <input type="hidden" name="severity" value="issue">
+        <label>
+          <span>Task feedback</span>
+          <textarea name="comment" rows="5" placeholder="Feedback for this task as a whole" required></textarea>
+        </label>
+        <div class="task-floating-feedback-actions">
+          <button type="button" class="task-feedback-cancel" data-task-feedback-close>Cancel</button>
+          <button type="submit" class="task-feedback-save">Save</button>
+        </div>
+      </form>
+    {% endif %}
+    {% if task_open_feedback %}
+      <div class="task-feedback-thread">
+        <div class="task-feedback-thread-header">Open feedback</div>
+        <div class="open-feedback-list task-open-feedback-list" tabindex="0">
+          {% for item in task_open_feedback %}
+            <article class="open-feedback-item">
+              <p>{{ item.comment }}</p>
+              <div class="feedback-item-actions">
+                <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
+                <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                  <input type="hidden" name="status" value="resolved">
+                  <button type="submit" class="feedback-resolve-button">Resolve</button>
+                </form>
+              </div>
+              {{ reviewer_comments_readonly(item) }}
+              {{ agent_notes_readonly(item) }}
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</nav>
+
+{% set distribution = task.distribution_summary %}
+<section class="table-panel compact distribution-panel">
+  <h2>Distribution</h2>
+  {% if distribution %}
+    <div class="distribution-summary">
+      <span class="{% if distribution.get('pass') %}status ok{% else %}status warn{% endif %}">
+        {% if distribution.get('pass') %}PASS{% else %}FAIL{% endif %}
+      </span>
+      <span class="muted">mode {{ distribution.mode or 'unknown' }}</span>
+      <span class="muted">samples {{ distribution.sample_count or 'n/a' }}</span>
+      <span class="muted">unique answers {{ distribution.unique_answers or 'n/a' }}</span>
+      <span class="muted">max answer frequency {{ distribution.max_answer_frequency|rate }}</span>
+    </div>
+    {% if distribution.failed_query_ids or distribution.incomplete_query_ids %}
+      <p class="muted">
+        Failed query ids: {{ distribution.failed_query_ids|join(', ') or 'none' }}.
+        Incomplete query ids: {{ distribution.incomplete_query_ids|join(', ') or 'none' }}.
+      </p>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>Observed</th>
+          <th>Threshold</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name, check in distribution.checks.items() %}
+          <tr>
+            <td>{{ name }}</td>
+            <td>{{ check.observed if check.observed is not none else 'n/a' }}</td>
+            <td>{{ check.threshold if check.threshold is not none else check.status|default('n/a') }}</td>
+            <td>{% if check.get('pass') is sameas true %}pass{% elif check.get('pass') is sameas false %}fail{% else %}reported{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if distribution.per_query_id %}
+      <div class="distribution-subpanel">
+        <h3>Per Query</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Query</th>
+              <th>Status</th>
+              <th>Samples</th>
+              <th>Unique</th>
+              <th>Max freq</th>
+              <th>Top answers</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for query_id, query_stats in distribution.per_query_id.items() %}
+              <tr>
+                <td>{{ query_id }}</td>
+                <td>{% if query_stats.get('pass') %}pass{% else %}fail{% endif %}</td>
+                <td>{{ query_stats.sample_count or 'n/a' }}</td>
+                <td>{{ query_stats.unique_answers or 'n/a' }}</td>
+                <td>{{ query_stats.max_answer_frequency|rate }}</td>
+                <td>
+                  {% for answer in query_stats.top_answers %}
+                    <span class="badge">{{ answer.answer_label }}: {{ answer.count }}</span>
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% elif distribution.top_answers %}
+      <div class="distribution-subpanel">
+        <h3>Top Answers</h3>
+        {% for answer in distribution.top_answers %}
+          <span class="badge">{{ answer.answer_label }}: {{ answer.count }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    <p class="muted">Distribution review has not been calculated yet.</p>
+  {% endif %}
+</section>
+
+<section class="table-panel compact">
+  <h2>Solve Rate</h2>
+  {% if task.solve_stats %}
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Status</th>
+        <th>Mean</th>
+        <th>Hard</th>
+        <th>Easy</th>
+        <th>Band</th>
+        <th>Reasons</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stats in task.solve_stats %}
+        <tr>
+          <td>{{ stats.model }}</td>
+          <td>{{ stats.combined_status or stats.status }}</td>
+          <td>{{ stats.mean_solve_rate|rate }}</td>
+          <td>{{ stats.hard_frac|rate }}</td>
+          <td>{{ stats.easy_frac|rate }}</td>
+          <td>{{ stats.band_frac|rate }}</td>
+          <td>{{ stats.reasons }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">Solve rate has not been calculated yet.</p>
+  {% endif %}
+</section>
+
+<div class="task-preview-shell" data-preview-root data-active-view="{{ selected_view }}">
+  <section class="image-only-grid" data-preview-panel="images">
+    {% for sample in samples %}
+      {% set feedback = feedback_by_sample.get(sample.uid, {}) %}
+      {% set sample_feedback = sample_feedback_by_sample.get(sample.uid, []) %}
+      {% set primary_sample_feedback = primary_open_feedback_by_sample.get(sample.uid) %}
+      <article class="image-only-card" data-sample-uid="{{ sample.uid }}" data-open-feedback="{{ feedback.open|default(0) }}">
+        {% if primary_sample_feedback %}
+          <form class="inline-feedback-form" action="{{ app_path('/feedback/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
+            <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+            <textarea name="comment" rows="2" placeholder="Continue existing sample feedback" required></textarea>
+            <button type="submit">Save</button>
+            <a class="badge feedback-thread-badge" href="{{ app_path('/feedback/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
+          </form>
+        {% else %}
+          <form class="inline-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+            <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+            <input type="hidden" name="category" value="other">
+            <input type="hidden" name="severity" value="issue">
+            <textarea name="comment" rows="2" placeholder="Feedback for this sample" required></textarea>
+            <button type="submit">Save</button>
+            {% if feedback.total %}
+              <span class="badge">{{ feedback.open }} open / {{ feedback.total }} total</span>
+            {% endif %}
+          </form>
+        {% endif %}
+        {% if feedback.open|default(0) %}
+          <div class="open-feedback-list">
+            {% for item in sample_feedback %}
+              {% if item.status == 'open' %}
+                <article class="open-feedback-item">
+                  <p>{{ item.comment }}</p>
+                  <div class="feedback-item-actions">
+                    <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
+                    <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                      <input type="hidden" name="status" value="resolved">
+                      <button type="submit" class="feedback-resolve-button">Resolve</button>
+                    </form>
+                  </div>
+                  {{ reviewer_comments_readonly(item) }}
+                  {{ agent_notes_readonly(item) }}
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <a class="image-only-thumb" href="{{ app_path('/samples/' ~ sample.uid) }}">
+          {% if sample.image_exists %}
+            <figure class="image-pair-card">
+              <figcaption>Original</figcaption>
+              <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="original preview">
+            </figure>
+            <figure class="image-pair-card">
+              <figcaption>Evidence</figcaption>
+              <img src="{{ app_path('/overlay/' ~ sample.uid ~ '.png') }}?v={{ sample.image_mtime_ns }}" alt="evidence preview">
+            </figure>
+          {% else %}
+            <span>missing image</span>
+          {% endif %}
+        </a>
+      </article>
+    {% else %}
+      <div class="empty-panel">
+        <p class="muted">No samples for this view.</p>
+      </div>
+    {% endfor %}
+  </section>
+  <section class="sample-row-list" data-preview-panel="rows">
+    {% for sample in samples %}
+      {% set feedback = feedback_by_sample.get(sample.uid, {}) %}
+      {% set sample_feedback = sample_feedback_by_sample.get(sample.uid, []) %}
+      {% set primary_sample_feedback = primary_open_feedback_by_sample.get(sample.uid) %}
+      <article class="sample-row" data-sample-uid="{{ sample.uid }}" data-open-feedback="{{ feedback.open|default(0) }}">
+        {% set prompt_preview = sample.prompt_answer_and_evidence or sample.prompt %}
+        {% if primary_sample_feedback %}
+          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/feedback/' ~ primary_sample_feedback.id ~ '/comments') }}" method="post">
+            <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+            <textarea name="comment" rows="2" placeholder="Continue existing sample feedback" required></textarea>
+            <button type="submit">Save</button>
+            <a class="badge feedback-thread-badge" href="{{ app_path('/feedback/' ~ primary_sample_feedback.id) }}">{{ feedback.open }} open / {{ feedback.total }} total</a>
+          </form>
+        {% else %}
+          <form class="inline-feedback-form row-feedback-form" action="{{ app_path('/samples/' ~ sample.uid ~ '/feedback') }}" method="post">
+            <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+            <input type="hidden" name="category" value="other">
+            <input type="hidden" name="severity" value="issue">
+            <textarea name="comment" rows="2" placeholder="Feedback for this sample" required></textarea>
+            <button type="submit">Save</button>
+            {% if feedback.total %}
+              <span class="badge">{{ feedback.open }} open / {{ feedback.total }} total</span>
+            {% endif %}
+          </form>
+        {% endif %}
+        {% if feedback.open|default(0) %}
+          <div class="open-feedback-list row-open-feedback-list">
+            {% for item in sample_feedback %}
+              {% if item.status == 'open' %}
+                <article class="open-feedback-item">
+                  <p>{{ item.comment }}</p>
+                  <div class="feedback-item-actions">
+                    <a class="button-link feedback-thread-link" href="{{ app_path('/feedback/' ~ item.id) }}">Thread</a>
+                    <form action="{{ app_path('/feedback/' ~ item.id) }}" method="post">
+                      <input type="hidden" name="status" value="resolved">
+                      <button type="submit" class="feedback-resolve-button">Resolve</button>
+                    </form>
+                  </div>
+                  {{ reviewer_comments_readonly(item) }}
+                  {{ agent_notes_readonly(item) }}
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <a class="sample-row-thumb" href="{{ app_path('/samples/' ~ sample.uid) }}">
+          {% if sample.image_exists %}
+            <img src="{{ app_path('/media/' ~ sample.media_id) }}?v={{ sample.image_mtime_ns }}" alt="">
+          {% else %}
+            <span>missing image</span>
+          {% endif %}
+        </a>
+        <a class="sample-row-main" href="{{ app_path('/samples/' ~ sample.uid) }}">
+          <div class="sample-row-title">
+            <strong>{{ sample.query_id }}</strong>
+            <span>seed {{ sample.instance_seed }}</span>
+          </div>
+          <p>{{ prompt_preview }}</p>
+        </a>
+        <a class="sample-row-facts" href="{{ app_path('/samples/' ~ sample.uid) }}">
+          <div>
+            <label>answer</label>
+            <pre>{{ {"type": sample.answer_type, "value": sample.answer_value}|pretty_json|excerpt(160) }}</pre>
+          </div>
+          <div>
+            <label>evidence</label>
+            <pre>{{ {"type": sample.evidence_type, "value": sample.evidence_value}|pretty_json|excerpt(220) }}</pre>
+          </div>
+        </a>
+      </article>
+    {% else %}
+      <div class="empty-panel">
+        <p class="muted">No samples for this view.</p>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

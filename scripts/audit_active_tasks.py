@@ -2,14 +2,13 @@
 """Audit the current default-enabled TRACE task surface.
 
 The audit is intentionally read-only with respect to task/config code. It writes
-only the requested audit reports under ``plans/``.
+only the requested audit reports under ``review/``.
 """
 
 from __future__ import annotations
 
 import argparse
 from collections import Counter, defaultdict
-from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
@@ -55,29 +54,10 @@ CURRENT_CALIBRATION_BASELINE = "v0"
 CURRENT_CALIBRATION_MODEL_SLUG = "qwen25vl7b"
 
 
-@dataclass(frozen=True)
-class ProgressRecord:
-    """One parsed row from ``plans/PROGRESS_SUMMARY.md``."""
-
-    section: str
-    status: str
-    config: str
-    hard: str
-    easy: str
-    band: str
-    artifacts: str
-    notes: str
-
-
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit active default TRACE tasks")
-    parser.add_argument("--output-md", default="plans/active_task_audit.md")
-    parser.add_argument("--output-json", default="plans/active_task_audit.json")
-    parser.add_argument(
-        "--review-status-out",
-        default="",
-        help="Optional path to refresh from current active-task audit results.",
-    )
+    parser.add_argument("--output-md", default="review/active_task_audit.md")
+    parser.add_argument("--output-json", default="review/active_task_audit.json")
     parser.add_argument("--max-attempts", type=int, default=120)
     parser.add_argument("--smoke-seeds", type=int, default=8)
     parser.add_argument(
@@ -96,55 +76,19 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _parse_progress_summary(path: Path) -> dict[str, ProgressRecord]:
-    text = _read_text(path)
-    records: dict[str, ProgressRecord] = {}
-    section = ""
-    for raw_line in text.splitlines():
-        header = re.match(r"^##\s+(.+?)\s*$", raw_line)
-        if header:
-            section = header.group(1).strip()
-            continue
-        if not raw_line.startswith("| `task_"):
-            continue
-        parts = [part.strip() for part in raw_line.strip().strip("|").split("|")]
-        if len(parts) < 8:
-            continue
-        task_id = parts[0].strip("`")
-        records[task_id] = ProgressRecord(
-            section=section,
-            status=parts[1],
-            config=parts[2],
-            hard=parts[3],
-            easy=parts[4],
-            band=parts[5],
-            artifacts=parts[6],
-            notes=parts[7],
-        )
-    return records
+def _parse_calibration_status(path: Path) -> dict[str, dict[str, Any]]:
+    """Return task records from the current calibration status JSON."""
 
-
-def _parse_review_status(path: Path, active_task_ids: set[str]) -> dict[str, Any]:
-    text = _read_text(path)
-    rows: list[str] = []
-    for raw_line in text.splitlines():
-        if not raw_line.startswith("| task_"):
-            continue
-        parts = [part.strip() for part in raw_line.strip().strip("|").split("|")]
-        if parts and parts[0] == "task_id":
-            continue
-        if parts:
-            rows.append(parts[0])
-    row_set = set(rows)
-    return {
-        "path": str(path),
-        "exists": path.exists(),
-        "row_count": len(rows),
-        "rows_not_default_count": len(sorted(row_set - active_task_ids)),
-        "rows_not_default": sorted(row_set - active_task_ids),
-        "missing_default_rows_count": len(sorted(active_task_ids - row_set)),
-        "missing_default_rows": sorted(active_task_ids - row_set),
-    }
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    tasks = data.get("tasks") if isinstance(data, Mapping) else None
+    if not isinstance(tasks, Mapping):
+        return {}
+    return {str(task_id): dict(record) for task_id, record in tasks.items() if isinstance(record, Mapping)}
 
 
 def _load_file_texts(paths: Iterable[Path]) -> dict[str, str]:
@@ -165,6 +109,16 @@ def _index_xlsx(root: Path) -> list[Path]:
     if not root.exists():
         return []
     return sorted(path for path in root.rglob("*.xlsx") if path.is_file())
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def _contains_any(texts: Mapping[str, str], needle: str) -> list[str]:
@@ -362,9 +316,8 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
     )
     config_texts = _load_file_texts(_paths_under(Path("configs/domains"), (".yaml", ".yml")))
     prompt_texts = _load_file_texts(_paths_under(Path("prompts"), (".json", ".txt", ".md")))
-    plans_review_index = _index_xlsx(Path("plans/task-reviews"))
-    progress = _parse_progress_summary(Path("plans/PROGRESS_SUMMARY.md"))
-    review_status = _parse_review_status(Path("plans/task-reviews/REVIEW_STATUS.md"), active_set)
+    review_index = _index_xlsx(Path("review/task-reviews"))
+    calibration_status = _parse_calibration_status(Path("review/calibration_sweep_status.json"))
 
     tasks: list[dict[str, Any]] = []
 
@@ -391,9 +344,18 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
         config_mentions = _contains_any(config_texts, task_id)
         test_mentions = _contains_any(tests_texts, task_id)
         prompt_mentions = _contains_any(prompt_texts, task_id)
-        progress_record = progress.get(task_id)
-        plans_review_workbooks = _artifact_matches(plans_review_index, task_id)
-        plans_solve_workbooks = _artifact_matches(plans_review_index, task_id, solve_only=True)
+        calibration_record = calibration_status.get(task_id, {})
+        review_dir = Path("review") / "task-reviews" / taxonomy.domain / taxonomy.scene_id / task_id
+        review_manifest = _load_json(review_dir / "manifest.json")
+        review_manifest_current = str(review_manifest.get("calibration_baseline", "")) == CURRENT_CALIBRATION_BASELINE
+        review_sidecars_present = review_manifest_current and (review_dir / "data").exists()
+        review_workbooks = _artifact_matches(review_index, task_id)
+        review_solve_workbooks = _artifact_matches(review_index, task_id, solve_only=True)
+        calibration_current = (
+            bool(calibration_record)
+            and str(calibration_record.get("calibration_baseline", "")) == CURRENT_CALIBRATION_BASELINE
+        )
+        calibration_task_status = str(calibration_record.get("status", "")) if calibration_record else ""
 
         should_smoke = not bool(args.skip_smoke)
         if selected_for_smoke is not None and task_id not in selected_for_smoke:
@@ -426,8 +388,6 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 blocking.append("output_scene_id_mismatch")
             if not smoke.get("query_id"):
                 gaps.append("query_id_missing")
-            if smoke.get("query_id") != "default":
-                gaps.append("non_default_query_id")
             if smoke.get("missing_prompt_template_paths"):
                 gaps.append("prompt_template_path_missing")
 
@@ -443,16 +403,14 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
             gaps.append("config_group_missing")
         if (not has_global_contract_test) and not test_mentions:
             gaps.append("test_mention_missing")
-        if not progress_record:
-            gaps.append("progress_summary_row_missing")
-        if not plans_review_workbooks:
-            gaps.append("plans_task_review_workbook_missing")
-        if not plans_solve_workbooks and not (
-            progress_record
-            and "solve" in progress_record.artifacts.lower()
-            and "pending" not in progress_record.artifacts.lower()
-        ):
-            gaps.append("solve_rate_artifact_missing")
+        if not review_sidecars_present:
+            gaps.append("task_review_sidecars_missing")
+        if not calibration_record:
+            gaps.append("calibration_status_missing")
+        elif not calibration_current:
+            gaps.append("calibration_status_not_current")
+        elif calibration_task_status != "accepted":
+            gaps.append("calibration_not_accepted")
         tasks.append(
             {
                 "task_id": task_id,
@@ -489,20 +447,14 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 },
                 "smoke": smoke,
                 "review_artifacts": {
-                    "plans_review_workbooks": plans_review_workbooks,
-                    "plans_solve_workbooks": plans_solve_workbooks,
+                    "task_dir": str(review_dir),
+                    "manifest": str(review_dir / "manifest.json"),
+                    "manifest_current": bool(review_manifest_current),
+                    "sidecars_present": bool(review_sidecars_present),
+                    "review_workbooks": review_workbooks,
+                    "review_solve_workbooks": review_solve_workbooks,
                 },
-                "progress_summary": None
-                if progress_record is None
-                else {
-                    "section": progress_record.section,
-                    "status": progress_record.status,
-                    "hard": progress_record.hard,
-                    "easy": progress_record.easy,
-                    "band": progress_record.band,
-                    "artifacts": progress_record.artifacts,
-                    "notes": progress_record.notes,
-                },
+                "calibration_status": dict(calibration_record),
                 "blocking_issues": sorted(set(blocking)),
                 "audit_gaps": sorted(set(gaps)),
                 "audit_status": _status_from_checks(blocking=blocking, gaps=gaps),
@@ -553,7 +505,7 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
             "gap_counts": dict(sorted(gap_counter.items())),
             "blocking_counts": dict(sorted(blocking_counter.items())),
         },
-        "stale_inventory": {"review_status": review_status},
+        "calibration_status_path": "review/calibration_sweep_status.json",
         "domains": by_domain,
         "tasks": tasks,
     }
@@ -571,7 +523,6 @@ def _markdown_table(headers: list[str], rows: list[list[Any]]) -> list[str]:
 
 def _render_markdown(audit: Mapping[str, Any]) -> str:
     summary = audit["summary"]
-    stale = audit["stale_inventory"]["review_status"]
     lines: list[str] = [
         "# Active Task Audit",
         "",
@@ -586,12 +537,12 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
         f"- Invalid default task id shapes: `{summary['invalid_default_ids_count']}`",
         f"- Audit statuses: `{json.dumps(summary['status_counts'], sort_keys=True)}`",
         "",
-        "A task is `blocked` only when active taxonomy or generation-contract checks fail. Missing task-review or solve-rate artifacts are `audit_gap` findings.",
+        "A task is `blocked` only when active taxonomy or generation-contract checks fail. Missing task-review sidecars or calibration status entries are `audit_gap` findings.",
         "",
         (
-            "`plans/task-reviews/` is the required manual-review artifact root for this audit. "
-            f"Review manifests must carry `calibration_baseline={CURRENT_CALIBRATION_BASELINE}` and solve-rate "
-            f"workbooks must use `{CURRENT_CALIBRATION_MODEL_SLUG}_{CURRENT_CALIBRATION_BASELINE}` to count as current. "
+            "`review/task-reviews/` is the required manual-review artifact root for this audit. "
+            f"Review manifests must carry `calibration_baseline={CURRENT_CALIBRATION_BASELINE}` and calibration "
+            f"status comes from `review/calibration_sweep_status.json` for `{CURRENT_CALIBRATION_MODEL_SLUG}`. "
             "A root-level `task-reviews/` tree is not counted as an active-review requirement."
         ),
         "",
@@ -606,8 +557,8 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                 data["task_count"],
                 data["scene_count"],
                 json.dumps(data["status_counts"], sort_keys=True),
-                data["gap_counts"].get("plans_task_review_workbook_missing", 0),
-                data["gap_counts"].get("solve_rate_artifact_missing", 0),
+                data["gap_counts"].get("task_review_sidecars_missing", 0),
+                data["gap_counts"].get("calibration_status_missing", 0),
                 json.dumps(data["blocking_counts"], sort_keys=True),
             ]
         )
@@ -618,28 +569,13 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                 "Tasks",
                 "Scenes",
                 "Statuses",
-                "Missing review",
-                "Missing solve",
+                "Missing review sidecars",
+                "Missing calibration",
                 "Blocking",
             ],
             domain_rows,
         )
     )
-    lines.extend(
-        [
-            "",
-            "## Stale Inventory Notes",
-            "",
-            f"- `plans/task-reviews/REVIEW_STATUS.md` exists: `{stale['exists']}`",
-            f"- REVIEW_STATUS rows: `{stale['row_count']}`",
-            f"- REVIEW_STATUS rows not in current defaults: `{stale['rows_not_default_count']}`",
-            f"- Current defaults missing from REVIEW_STATUS: `{stale['missing_default_rows_count']}`",
-        ]
-    )
-    if int(stale.get("rows_not_default_count", 0)) or int(stale.get("missing_default_rows_count", 0)):
-        lines.append("- This file is non-authoritative for the current active inventory until refreshed.")
-    else:
-        lines.append("- REVIEW_STATUS matches the current default task ids.")
     lines.extend(["", "## Top Gap Counts", ""])
     gap_rows = [[gap, count] for gap, count in sorted(summary["gap_counts"].items(), key=lambda item: (-item[1], item[0]))]
     if gap_rows:
@@ -662,14 +598,14 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
         lines.extend([f"### {domain}", ""])
         rows: list[list[Any]] = []
         for task in domain_tasks:
-            progress = task.get("progress_summary") or {}
+            calibration = task.get("calibration_status") or {}
             smoke = task.get("smoke") or {}
             rows.append(
                 [
                     f"`{task['task_id']}`",
                     task["scene_id"],
                     task["audit_status"],
-                    progress.get("status", "-"),
+                    calibration.get("status", "-"),
                     smoke.get("query_id", "-"),
                     smoke.get("query_id", "-"),
                     smoke.get("answer_type", "-"),
@@ -684,7 +620,7 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
                     "Task",
                     "Scene",
                     "Audit",
-                    "Progress",
+                    "Calibration",
                     "Variant",
                     "Query",
                     "Answer",
@@ -699,45 +635,6 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _render_review_status(audit: Mapping[str, Any]) -> str:
-    """Render the review-status table from active audit results."""
-
-    lines: list[str] = [
-        "# Task Review Status",
-        "",
-        "Generated from `plans/active_task_audit.json` by `scripts/audit_active_tasks.py`.",
-        "This table intentionally contains only current default-enabled task ids.",
-        "",
-        "| task_id | latest_run_id | status | notes |",
-        "|---|---|---|---|",
-    ]
-    for task in sorted(audit["tasks"], key=lambda item: str(item["task_id"])):
-        task_id = str(task["task_id"])
-        status = str(task["audit_status"])
-        gaps = list(task.get("audit_gaps", []))
-        blocking = list(task.get("blocking_issues", []))
-        progress = task.get("progress_summary") or {}
-        review_artifacts = task.get("review_artifacts") or {}
-        review_count = len(review_artifacts.get("plans_review_workbooks", []))
-        solve_count = len(review_artifacts.get("plans_solve_workbooks", []))
-        note_parts: list[str] = [
-            f"domain={task['domain']}",
-            f"scene={task['scene_id']}",
-            f"progress={progress.get('status', '-')}",
-            f"review_workbooks={review_count}",
-            f"solve_workbooks={solve_count}",
-        ]
-        if blocking:
-            note_parts.append("blocking=" + ",".join(str(item) for item in blocking))
-        if gaps:
-            note_parts.append("gaps=" + ",".join(str(item) for item in gaps))
-        else:
-            note_parts.append("gaps=none")
-        notes = "; ".join(note_parts).replace("|", "\\|")
-        lines.append(f"| {task_id} | {task_id} | {status} | {notes} |")
-    return "\n".join(lines).rstrip() + "\n"
-
-
 def main() -> int:
     args = _parse_args()
     audit = _build_audit(args)
@@ -747,10 +644,6 @@ def main() -> int:
     output_md.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     output_md.write_text(_render_markdown(audit), encoding="utf-8")
-    if str(args.review_status_out or "").strip():
-        review_status_path = Path(args.review_status_out)
-        review_status_path.parent.mkdir(parents=True, exist_ok=True)
-        review_status_path.write_text(_render_review_status(audit), encoding="utf-8")
     blocked = int(audit["summary"]["status_counts"].get("blocked", 0))
     print(f"wrote {output_json}")
     print(f"wrote {output_md}")

@@ -41,12 +41,13 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 8. `trace/core/builder.py` — build orchestration, including deterministic multi-process generation when `BuildConfig.workers > 1`.
 9. `trace/core/build_presets.py` — reusable build recipes, including equal-split all-task configs for training datasets.
 10. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
-11. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
-12. `trace/core/taxonomy.py` — public domain/scene mapping plus implementation/config/prompt routing metadata.
-13. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-14. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
-15. `trace/core/sampling.py` — shared sampling primitives.
-16. `trace/core/json_io.py` — deterministic JSON writing.
+11. `trace/core/reward_scoring.py` — shared TRACE answer/evidence reward scoring used by RLVR adapters.
+12. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
+13. `trace/core/taxonomy.py` — public domain/scene mapping plus implementation/config/prompt routing metadata.
+14. `trace/core/strict_repro.py` — strict reproducibility comparisons.
+15. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+16. `trace/core/sampling.py` — shared sampling primitives.
+17. `trace/core/json_io.py` — deterministic JSON writing.
 
 ### Prompt + visual
 1. `trace/core/prompts/assets.py` — bundle loading/cache.

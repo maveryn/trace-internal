@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TRACE Review Login</title>
+    <link rel="stylesheet" href="{{ app_path('/static/app.css?v=' ~ static_version) }}">
+  </head>
+  <body class="login-body">
+    <main class="login-panel">
+      <h1>TRACE Review</h1>
+      {% if has_token %}
+        <p>Enter the review app token.</p>
+        {% if error %}<p class="form-error">{{ error }}</p>{% endif %}
+        <form action="{{ app_path('/login') }}" method="post">
+          <input type="hidden" name="next" value="{{ next }}">
+          <label>
+            Token
+            <input type="password" name="token" autofocus>
+          </label>
+          <button type="submit">Open Review App</button>
+        </form>
+      {% else %}
+        <p>No token is configured for this local server.</p>
+        <a class="button-link" href="{{ app_path(next) }}">Continue</a>
+      {% endif %}
+    </main>
+  </body>
+</html>

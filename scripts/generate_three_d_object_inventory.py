@@ -22,7 +22,7 @@ from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_o
 from trace.tasks.three_d.shared.object_resources import THREE_D_OBJECT_PROFILES, ThreeDObjectProfile
 
 
-DEFAULT_OUTPUT_DIR = Path("plans/task-reviews/three_d/named_object_inventory")
+DEFAULT_OUTPUT_DIR = Path("review/task-reviews/three_d/named_object_inventory")
 DEFAULT_COLUMNS = 8
 DEFAULT_SHEET_WIDTH = 3026
 

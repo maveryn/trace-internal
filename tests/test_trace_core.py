@@ -472,9 +472,8 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     active_page_time_artifact_tasks = {
         "task_pages__calendar__marked_day_class_count",
         "task_pages__calendar__weekday_occurrence_date",
-        "task_pages__schedule__longer_than_reference_count",
         "task_pages__schedule__maximum_non_overlapping_count",
-        "task_pages__schedule__overlap_count",
+        "task_pages__schedule__reference_interval_count",
         "task_pages__timeline__interval_membership_count",
     }
     active_puzzle_clock_tasks = {
@@ -514,7 +513,7 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     }
     assert resolve_task_taxonomy("task_charts__table__column_rank_label").domain == "charts"
     assert resolve_task_taxonomy("task_puzzles__cell_board__path_distance").domain == "puzzles"
-    assert resolve_task_taxonomy("task_pages__control_board__filter_count").domain == "pages"
+    assert resolve_task_taxonomy("task_pages__control_board__control_filter_count").domain == "pages"
     assert resolve_task_taxonomy("task_pages__calendar__marked_day_class_count").domain == "pages"
     assert resolve_task_taxonomy("task_puzzles__clock_collection__compare").domain == "puzzles"
 

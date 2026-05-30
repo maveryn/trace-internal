@@ -18,12 +18,12 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 3. Contracts: `docs/core/TASK_UNIT_POLICY.md`, `docs/core/RLVR_REWARD_CONTRACTS.md`, and `docs/core/PROMPT_SYSTEM.md`.
 4. Export/eval:
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
-   - active task-review and calibration workspace lives under `../plans/README.md`
+   - active task-review and calibration workspace lives under `../review/docs/README.md`
    - sampled external benchmark failure analysis lives in
      `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`
    - current task-calibration gates and vLLM serving commands live in
-     `../plans/CALIBRATION_PLAN.md`
-5. Review workflow: `docs/workflows/SHARED_UTILITIES.md`, `docs/workflows/SHARED_LABEL_ASSETS.md`, `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md`, `docs/workflows/SHARED_FONT_ASSETS.md`, `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`, `docs/workflows/DOMAIN_AUDIT_REVIEW.md`, `docs/workflows/TASK_UNIT_AUDIT.md`, and `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.
+     `../review/docs/CALIBRATION_GUIDE.md`
+5. Review workflow: `docs/workflows/SHARED_UTILITIES.md`, `docs/workflows/SHARED_LABEL_ASSETS.md`, `docs/workflows/SHARED_CONTEXT_TEXT_ASSETS.md`, `docs/workflows/SHARED_FONT_ASSETS.md`, `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`, `docs/workflows/DOMAIN_AUDIT_REVIEW.md`, `docs/workflows/TASK_REVIEW_WEB_APP.md`, `docs/workflows/TASK_UNIT_AUDIT.md`, and `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.
    For optional metadata-generated rationale targets, use
    `docs/workflows/TEMPLATED_RATIONALE_TARGETS.md`.
    For repeated-unit puzzle/game rendering upgrades, also use
@@ -32,7 +32,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    `docs/workflows/TECHNICAL_DIAGRAM_RENDERING_UPGRADE.md`.
 6. Quality/process: `docs/workflows/CODE_DOCUMENTATION.md` and `docs/workflows/CODE_REVIEW_GUIDELINES.md`.
 7. Project state: `docs/project/STATUS.md` and `docs/TODO.md`.
-8. Task reviews: `../plans/task-reviews/README.md`.
+8. Task reviews: `../review/task-reviews/README.md`; the browser app in
+   `docs/workflows/TASK_REVIEW_WEB_APP.md` is the default inspection surface.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

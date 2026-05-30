@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="breadcrumbs">
+  <a href="{{ app_path('/') }}">domains</a>
+  <a href="{{ app_path('/feedback') }}">feedback</a>
+  <a href="{{ app_path('/domains/' ~ feedback_record.domain) }}">{{ feedback_record.domain }}</a>
+  <a href="{{ app_path('/domains/' ~ feedback_record.domain ~ '/scenes/' ~ feedback_record.scene_id) }}">{{ feedback_record.scene_id }}</a>
+  <a href="{{ app_path(feedback_task_path) }}">{{ feedback_record.task_id }}</a>
+  <span>{{ feedback_record.id }}</span>
+</nav>
+
+<section class="feedback-thread-layout">
+  <article class="feedback-thread-card reviewer-feedback">
+    <header>
+      <div>
+        <h2>Reviewer Feedback</h2>
+        <p class="muted">{{ feedback_record.severity }} / {{ feedback_record.category }} / {{ feedback_record.status }}</p>
+      </div>
+      <form action="{{ app_path('/feedback/' ~ feedback_record.id) }}" method="post">
+        {% if feedback_record.status == 'open' %}
+          <input type="hidden" name="status" value="resolved">
+          <input type="hidden" name="next" value="{{ request.url.path }}">
+          <button type="submit" class="feedback-resolve-button">Resolve</button>
+        {% else %}
+          <input type="hidden" name="status" value="open">
+          <input type="hidden" name="next" value="{{ request.url.path }}">
+          <button type="submit">Reopen</button>
+        {% endif %}
+      </form>
+    </header>
+    <p class="feedback-thread-comment">{{ feedback_record.comment }}</p>
+    <dl class="feedback-thread-meta">
+      <dt>created</dt><dd>{{ feedback_record.created_at }}</dd>
+      <dt>updated</dt><dd>{{ feedback_record.updated_at }}</dd>
+      <dt>author</dt><dd>{{ feedback_record.author or 'not set' }}</dd>
+      <dt>scope</dt><dd>{% if feedback_record.sample_uid %}sample{% else %}task{% endif %}</dd>
+    </dl>
+    <div class="queue-feedback-links">
+      <a href="{{ app_path(feedback_task_path) }}">Open task</a>
+      {% if feedback_sample %}
+        <a href="{{ app_path('/samples/' ~ feedback_sample.uid) }}">Open sample</a>
+      {% elif feedback_record.sample_uid %}
+        <span class="muted">Sample is not in the current index.</span>
+      {% endif %}
+    </div>
+  </article>
+
+  <article class="feedback-thread-card reviewer-feedback">
+    <h2>Reviewer Follow-Ups</h2>
+    <form class="feedback-form small reviewer-comment-form" action="{{ app_path('/feedback/' ~ feedback_record.id ~ '/comments') }}" method="post">
+      <input type="hidden" name="next" value="{{ request.url.path }}">
+      <textarea name="comment" rows="3" placeholder="Add a reviewer follow-up for this feedback thread" required></textarea>
+      <button type="submit">Add Comment</button>
+    </form>
+    <div class="reviewer-comment-list feedback-thread-comments">
+      {% for comment in feedback_comments %}
+        <article class="reviewer-comment-item">
+          <div class="reviewer-comment-meta">Reviewer{% if comment.author %} · {{ comment.author }}{% endif %} · {{ comment.created_at }}</div>
+          <p>{{ comment.comment }}</p>
+        </article>
+      {% else %}
+        <p class="muted">No reviewer follow-up comments yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+
+  <aside class="feedback-thread-card">
+    <h2>Repair Notes</h2>
+    <form class="agent-note-form feedback-thread-note-form" action="{{ app_path('/feedback/' ~ feedback_record.id ~ '/notes') }}" method="post">
+      <input type="hidden" name="next" value="{{ request.url.path }}">
+      <input name="author" placeholder="agent">
+      <textarea name="note" rows="3" placeholder="Brief repair note after changing code or artifacts" required></textarea>
+      <button type="submit">Add note</button>
+    </form>
+    <div class="agent-note-list feedback-thread-notes">
+      {% for note in feedback_notes %}
+        <article class="agent-note-item">
+          <div class="agent-note-meta">Agent note{% if note.author %} · {{ note.author }}{% endif %} · {{ note.created_at }}</div>
+          <p>{{ note.note }}</p>
+        </article>
+      {% else %}
+        <p class="muted">No agent repair notes yet.</p>
+      {% endfor %}
+    </div>
+  </aside>
+</section>
+
+{% if feedback_sample and feedback_sample.image_exists %}
+  <section class="feedback-thread-card feedback-thread-sample">
+    <h2>Linked Sample</h2>
+    <div class="sample-image-pair">
+      <figure class="sample-image-card">
+        <figcaption>Original</figcaption>
+        <img src="{{ app_path('/media/' ~ feedback_sample.media_id) }}?v={{ feedback_sample.image_mtime_ns }}" alt="original review sample">
+      </figure>
+      <figure class="sample-image-card">
+        <figcaption>Evidence</figcaption>
+        <img src="{{ app_path('/overlay/' ~ feedback_sample.uid ~ '.png') }}?v={{ feedback_sample.image_mtime_ns }}" alt="evidence overlay review sample">
+      </figure>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

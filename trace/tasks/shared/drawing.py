@@ -7,6 +7,7 @@ from typing import List, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from .text_legibility import draw_traced_text
 from .text_rendering import resolve_text_stroke_fill
 
 
@@ -47,13 +48,16 @@ def draw_centered_text(
     cx, cy = float(center[0]), float(center[1])
     tx = float(cx - (0.5 * (left + right)))
     ty = float(cy - (0.5 * (top + bottom)))
-    draw.text(
-        (tx, ty),
-        str(text),
-        fill=tuple(int(v) for v in fill),
+    draw_traced_text(
+        draw,
+        xy=(tx, ty),
+        text=str(text),
+        fill_rgb=tuple(int(v) for v in fill),
         font=font,
         stroke_width=max(0, int(stroke_width)),
-        stroke_fill=tuple(int(v) for v in stroke_fill),
+        stroke_rgb=tuple(int(v) for v in stroke_fill),
+        role="visible_text",
+        required=False,
     )
     return [
         round(float(tx + left), 3),

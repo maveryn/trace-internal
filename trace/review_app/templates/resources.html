@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="resources-intro">
+  <p class="muted">
+    Resource review assets are separate from task domains and do not affect task-review counts.
+    Root: {{ resource_root_display }}
+  </p>
+</section>
+
+<section class="resource-collection-list">
+  {% for collection in resources.collections %}
+    <article class="resource-collection">
+      <header>
+        <div>
+          <h2>{{ collection.category }} / {{ collection.title }}</h2>
+          <p class="muted">{{ collection.rel_dir }} · {{ collection.image_assets|length }} image(s), {{ collection.manifest_assets|length }} manifest(s)</p>
+        </div>
+      </header>
+
+      {% if collection.image_assets %}
+        <div class="resource-image-grid">
+          {% for asset in collection.image_assets %}
+            <figure>
+              <a href="{{ app_path('/resources/media/' ~ asset.id) }}">
+                <img src="{{ app_path('/resources/media/' ~ asset.id) }}" alt="{{ asset.file_name }}" loading="lazy">
+              </a>
+              <figcaption>{{ asset.file_name }}</figcaption>
+            </figure>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if collection.manifest_assets %}
+        <div class="resource-manifest-list">
+          {% for asset in collection.manifest_assets %}
+            <a class="pill" href="{{ app_path('/resources/media/' ~ asset.id) }}">{{ asset.file_name }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </article>
+  {% else %}
+    <div class="empty-panel">
+      <p class="muted">No resource assets found under {{ resource_root_display }}.</p>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

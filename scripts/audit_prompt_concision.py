@@ -276,9 +276,10 @@ def _write_markdown(
         ]
     )
     for row in longest:
+        sample_label = row.get("sample_index", row.get("instance_seed", ""))
         lines.extend(
             [
-                f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
+                f"### {row['task']} / {row['mode']} / sample {sample_label}",
                 "",
                 f"- `query_id`: `{row['query_id']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
@@ -294,9 +295,10 @@ def _write_markdown(
 
     lines.extend(["## Repeated Scaffolding Terms", ""])
     for row in repeated:
+        sample_label = row.get("sample_index", row.get("instance_seed", ""))
         lines.extend(
             [
-                f"### {row['task']} / {row['mode']} / sample {row['sample_index']}",
+                f"### {row['task']} / {row['mode']} / sample {sample_label}",
                 "",
                 f"- `query_id`: `{row['query_id']}`",
                 f"- `instance_seed`: `{row.get('instance_seed', '')}`",
@@ -321,9 +323,10 @@ def _write_markdown(
                 int(value.get("sample_index", 0)),
             ),
         ):
+            sample_label = row.get("sample_index", row.get("instance_seed", ""))
             lines.extend(
                 [
-                    f"### {row['task']} / {row['query_id']} / {row['mode']} / sample {row['sample_index']}",
+                    f"### {row['task']} / {row['query_id']} / {row['mode']} / sample {sample_label}",
                     "",
                     f"- `instance_seed`: `{row.get('instance_seed', '')}`",
                     f"- `word_count`: `{row['word_count']}`",

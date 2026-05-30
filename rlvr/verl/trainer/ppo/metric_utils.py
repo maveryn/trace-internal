@@ -26,7 +26,18 @@ import torch
 from verl import DataProto
 from verl.utils.import_utils import deprecated
 
-_TRACE_EVIDENCE_LOG_TYPES = ("bbox_set", "point_pair_set", "point_sequence", "point_set")
+try:
+    from trace.core.reward_scoring import TRACE_EVIDENCE_LOG_TYPES as _TRACE_EVIDENCE_LOG_TYPES
+except Exception:  # pragma: no cover
+    _TRACE_EVIDENCE_LOG_TYPES = (
+        "bbox_sequence",
+        "bbox_set",
+        "keyed_bbox_map",
+        "keyed_point_map",
+        "point_pair_set",
+        "point_sequence",
+        "point_set",
+    )
 
 
 @deprecated("verl.utils.metric.reduce_metrics")

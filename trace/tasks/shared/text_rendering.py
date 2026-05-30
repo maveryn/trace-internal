@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import math
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import lru_cache
-from typing import Sequence, Tuple
+from typing import Iterator, Sequence, Tuple
 
 from PIL import ImageDraw, ImageFont
 
 from .geometry_primitives import Point
+from .text_legibility import draw_traced_text
 
 Color = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
@@ -26,11 +29,38 @@ _FONT_CANDIDATES_REGULAR: Sequence[str] = (
     "DejaVuSans-Bold.ttf",
     "LiberationSans-Bold.ttf",
 )
+_DEFAULT_FONT_FAMILY: ContextVar[str] = ContextVar("trace_default_font_family", default="")
 
 
-@lru_cache(maxsize=512)
+@contextmanager
+def temporary_default_font_family(font_family: str | None) -> Iterator[None]:
+    """Temporarily use one shared font family for calls without an explicit family."""
+
+    family = str(font_family or "").strip()
+    token = _DEFAULT_FONT_FAMILY.set(family)
+    try:
+        yield
+    finally:
+        _DEFAULT_FONT_FAMILY.reset(token)
+
+
+def current_default_font_family() -> str:
+    """Return the current implicit font family, if one has been set."""
+
+    return str(_DEFAULT_FONT_FAMILY.get() or "")
+
+
 def load_font(size_px: int, *, bold: bool = True, font_family: str | None = None) -> ImageFont.ImageFont:
     """Load a cached TrueType font with robust fallback behavior."""
+    size = max(6, int(size_px))
+    effective_family = str(font_family or current_default_font_family()).strip()
+    return _load_font_cached(int(size), bold=bool(bold), font_family=effective_family)
+
+
+@lru_cache(maxsize=2048)
+def _load_font_cached(size_px: int, *, bold: bool = True, font_family: str = "") -> ImageFont.ImageFont:
+    """Load a cached TrueType font for an already-resolved family key."""
+
     size = max(6, int(size_px))
     if font_family:
         try:
@@ -356,11 +386,14 @@ def draw_text_centered(
     center_x, center_y = float(center[0]), float(center[1])
     tx = center_x - (0.5 * float(bbox[0] + bbox[2]))
     ty = center_y - (0.5 * float(bbox[1] + bbox[3]))
-    draw.text(
-        (float(tx), float(ty)),
-        str(text),
-        fill=tuple(int(value) for value in fill),
+    draw_traced_text(
+        draw,
+        xy=(float(tx), float(ty)),
+        text=str(text),
         font=font,
+        fill_rgb=tuple(int(value) for value in fill),
+        stroke_rgb=tuple(int(value) for value in stroke_fill),
         stroke_width=max(0, int(outline_width)),
-        stroke_fill=tuple(int(value) for value in stroke_fill),
+        role="visible_text",
+        required=False,
     )

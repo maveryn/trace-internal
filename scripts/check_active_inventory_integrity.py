@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Check active TRACE inventory integrity across registry, docs, configs, and imports.
 
-This is a read-only guard for the current public task surface. Historical notes
-under ``plans/`` are intentionally out of scope; this script checks source-of-
-truth docs and active runtime surfaces.
+This is a read-only guard for the current public task surface. Generated review
+outputs under ``review/`` are intentionally out of scope; this script checks
+source-of-truth docs and active runtime surfaces.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from trace.tasks.registry import TASK_REGISTRY, list_default_task_ids, list_task
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_ROOTS = ("trace", "configs", "prompts", "assets", "docs", "skills", "scripts", "tests", "plans")
+SOURCE_ROOTS = ("trace", "configs", "prompts", "assets", "docs", "skills", "scripts", "tests", "review")
 CACHE_DIR_NAMES = {"__pycache__", ".ipynb_checkpoints"}
 CACHE_FILE_SUFFIXES = {".pyc", ".pyo"}
 
@@ -241,7 +241,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--include-local-cache",
         action="store_true",
-        help="Also fail on local ignored cache artifacts under active source, docs, scripts, tests, and plans.",
+        help="Also fail on local ignored cache artifacts under active source, docs, scripts, tests, and review.",
     )
     return parser.parse_args()
 

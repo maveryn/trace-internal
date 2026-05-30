@@ -212,12 +212,33 @@ out_*/
 out/
 nohup.out
 checkpoints/
+benchmark/
+external/
+logs/
+runs/
+samples/
+
+# Local scratch artifacts
+/*.pdf
+/*.ipynb
+/kets.txt
 
 # External asset bundles
 assets/external/kenney/raw/
 
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
+rlvr/dataset/validation/*.parquet
+
+# Review workspace generated artifacts
+review/*
+!review/docs/
+!review/docs/**
+!review/code-review/
+!review/code-review/**
+!review/task-reviews/
+review/task-reviews/*
+!review/task-reviews/README.md
 rlvr/val_dataloaders.txt
 rlvr/outputs/
 rlvr/wandb/

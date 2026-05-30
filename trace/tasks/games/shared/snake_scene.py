@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .snake_common import Coord, SnakeState, all_coords, coord_to_cell_id
 
 
@@ -24,6 +25,7 @@ class SnakeRenderParams:
     cell_padding_px: int
     food_radius_px: int
     eye_radius_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -386,6 +388,7 @@ def render_snake_grid_scene(
     background: Image.Image,
     style_variant: str,
     params: SnakeRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSnakeScene:
     """Render one visible Snake board."""
 
@@ -416,6 +419,22 @@ def render_snake_grid_scene(
     board_left = float(board_bbox[0])
     board_top = float(board_bbox[1])
     cell_size = float((float(board_bbox[2]) - float(board_bbox[0])) / float(board_size))
+
+    if panel_style is not None:
+        panel_pad = 22.0
+        panel_bbox = (
+            int(round(max(6.0, float(board_bbox[0]) - panel_pad))),
+            int(round(max(6.0, float(board_bbox[1]) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(board_bbox[2]) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(board_bbox[3]) + panel_pad))),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=24,
+            border_width=2,
+        )
 
     draw.rounded_rectangle(
         board_bbox,
@@ -543,6 +562,9 @@ def render_snake_grid_scene(
         "body_cell_ids": [coord_to_cell_id(coord) for coord in state.body],
         "food_cell_id": coord_to_cell_id(food),
         "wall_cell_ids": [coord_to_cell_id(coord) for coord in sorted(obstacles)],
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedSnakeScene(
         image=image.convert("RGB"),

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .chess_common import (
     BLACK,
     BOARD_SIZE,
@@ -19,6 +20,7 @@ from .chess_common import (
     piece_to_entity_id,
 )
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import ChessTheme, build_games_chess_theme
 
 
@@ -40,6 +42,7 @@ class ChessRenderParams:
     marked_square_outline_width_px: int
     player_badge_font_size_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -152,14 +155,14 @@ def _draw_piece(
         text_height = float(text_bbox[3] - text_bbox[1])
         x = float(left + (0.5 * (width - text_width)) - text_bbox[0])
         y = float(top + (0.5 * (height - text_height)) - text_bbox[1] - (0.02 * height))
-        draw.text(
+        draw_text_traced(draw,
             (x, y),
             glyph,
             font=font,
             fill=glyph_fill,
             stroke_width=stroke_width,
             stroke_fill=glyph_stroke,
-        )
+         role="readout", required=False,)
         return
     draw.ellipse(
         bbox_px,
@@ -182,14 +185,14 @@ def _draw_piece(
     text_height = float(text_bbox[3] - text_bbox[1])
     x = float(left + (0.5 * (width - text_width)) - text_bbox[0])
     y = float(top + (0.5 * (height - text_height)) - text_bbox[1] - (0.02 * height))
-    draw.text(
+    draw_text_traced(draw,
         (x, y),
         glyph,
         font=font,
         fill=glyph_fill,
         stroke_width=1,
         stroke_fill=glyph_stroke,
-    )
+     role="readout", required=False,)
 
 
 def render_chess_board_scene(
@@ -201,6 +204,7 @@ def render_chess_board_scene(
     badge_text: str,
     marked_coord: Coord | None,
     params: ChessRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedChessScene:
     """Render one visible Chess board state."""
 
@@ -241,7 +245,11 @@ def render_chess_board_scene(
         round(float(board_top + board_size_px), 3),
     )
 
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_font = load_font(
+        int(params.player_badge_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     badge_text_bbox = draw.textbbox((0, 0), str(badge_text), font=badge_font, stroke_width=1)
     badge_width = max(
         int(params.player_badge_width_px),
@@ -274,6 +282,23 @@ def render_chess_board_scene(
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
     badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
 
+    scene_panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(18, int(round(float(params.panel_margin_px) * 0.42)))
+        scene_panel_bbox = (
+            max(4, int(round(min(board_bbox[0], badge_bbox[0]))) - panel_pad),
+            max(4, int(round(min(board_bbox[1], badge_bbox[1]))) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(max(board_bbox[2], badge_bbox[2]))) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(max(board_bbox[3], badge_bbox[3]))) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=scene_panel_bbox,
+            style=panel_style,
+            radius=26,
+            border_width=max(2, int(round(float(params.board_frame_width_px) * 0.55))),
+        )
+
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -287,7 +312,7 @@ def render_chess_board_scene(
         width=2,
     )
     badge_text_rgb = tuple(int(value) for value in theme.badge_text_rgb)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(badge_left + 22),
             float(badge_top + 0.5 * (int(params.player_badge_height_px) - (badge_text_bbox[3] - badge_text_bbox[1]))),
@@ -297,7 +322,7 @@ def render_chess_board_scene(
         fill=badge_text_rgb,
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(badge_text_rgb)),
-    )
+     role="readout", required=False,)
 
     cell_specs: List[ChessCellSpec] = []
     scene_entities: List[Dict[str, Any]] = []
@@ -406,11 +431,15 @@ def render_chess_board_scene(
 
     render_map: Dict[str, Any] = {
         "board_bbox_px": list(board_bbox),
+        "scene_panel_bbox_px": None if scene_panel_bbox is None else [int(value) for value in scene_panel_bbox],
         "badge_bbox_px": list(badge_bbox),
         "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
         "piece_bboxes_px": {str(key): list(value) for key, value in piece_bboxes_px.items()},
         "marked_cell_id": None if marked_coord is None else coord_to_cell_id(marked_coord),
+        "effective_cell_size_px": float(cell_size),
         "layout_jitter": dict(layout_jitter),
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
         "board_size": int(BOARD_SIZE),
     }
     return RenderedChessScene(

@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
 from ...shared.text_rendering import fit_font_to_box
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .snakes_ladders_common import (
     BOARD_ROWS,
     SnakesLaddersJump,
@@ -37,6 +38,7 @@ class SnakesLaddersRenderParams:
     token_radius_px: int
     die_size_px: int
     jump_width_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -404,6 +406,7 @@ def render_snakes_ladders_board_scene(
     start_square: int,
     die_value: int | None = None,
     horizon_roll_count: int | None = None,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSnakesLaddersScene:
     """Render one Snakes and Ladders board scene."""
 
@@ -417,6 +420,21 @@ def render_snakes_ladders_board_scene(
     side_top = float(board_bbox[1])
     side_right = min(float(params.canvas_width - 48), float(side_left + params.side_panel_width_px))
     side_bottom = float(board_bbox[3])
+    if panel_style is not None:
+        panel_pad = 18.0
+        panel_bbox = (
+            int(round(max(6.0, float(board_bbox[0]) - panel_pad))),
+            int(round(max(6.0, float(board_bbox[1]) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(side_right) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(board_bbox[3]) + panel_pad))),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=24,
+            border_width=2,
+        )
     draw_rounded_rect(
         draw,
         (side_left, side_top, side_right, side_bottom),
@@ -464,6 +482,7 @@ def render_snakes_ladders_board_scene(
                 max_width=float(bbox[2] - bbox[0]) * 0.54,
                 max_height=float(bbox[3] - bbox[1]) * 0.35,
                 bold=True,
+                font_family=str(params.font_family),
                 min_size_px=10,
                 max_size_px=max_font,
             )
@@ -551,6 +570,7 @@ def render_snakes_ladders_board_scene(
         max_width=float(side_right - side_left - 24),
         max_height=32,
         bold=True,
+        font_family=str(params.font_family),
         min_size_px=16,
         max_size_px=26,
     )
@@ -599,6 +619,7 @@ def render_snakes_ladders_board_scene(
             max_width=float(side_right - side_left - 24),
             max_height=34,
             bold=True,
+            font_family=str(params.font_family),
             min_size_px=14,
             max_size_px=24,
         )
@@ -619,6 +640,9 @@ def render_snakes_ladders_board_scene(
         "last_square": int(last_square),
         "square_centers_px": {str(square): [float(v) for v in centers[int(square)]] for square in centers},
         "layout_jitter": dict(params.layout_jitter_meta or {}),
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedSnakesLaddersScene(image=image, scene_entities=tuple(entities), render_map=render_map)
 

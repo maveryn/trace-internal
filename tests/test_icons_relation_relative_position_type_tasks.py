@@ -80,13 +80,15 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 2
     assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert len(trace["projected_evidence"]["pixel_point_set"]) == len(out.evidence_gt.value)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_anchor_relation_type"
     assert execution["question_format"] == "count_matching_scene_icons_by_reference_and_anchor_relation"
-    assert out.query_id == "default"
     assert out.query_id == "right_of_anchor"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "right_of_anchor"
     assert execution["internal_query_id"] == "right_of_anchor"
     assert execution["direction"] == "right"
@@ -183,7 +185,6 @@ def test_icons_relation_relative_position_type_balanced_sampling_defaults() -> N
         distractor_count = int(execution["distractor_count"])
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) in {"left_of_anchor", "right_of_anchor", "above_anchor", "below_anchor"}
         direction = str(execution["direction"])
         direction_counts[direction] += 1

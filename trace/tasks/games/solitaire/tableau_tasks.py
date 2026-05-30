@@ -15,6 +15,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -23,7 +24,9 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
+from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.visual_defaults import load_games_noise_defaults
@@ -32,7 +35,13 @@ from ..shared.visual_defaults import load_games_noise_defaults
 TASK_GROUP = "solitaire"
 SCENE_ID = "solitaire"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("klondike_tableau", "freecell_tableau")
-SUPPORTED_PANEL_STYLE_VARIANTS: Tuple[str, ...] = ("panel_scene",)
+SUPPORTED_PANEL_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic_cards",
+    "ivory_table",
+    "casino_felt",
+    "slate_cards",
+    "paper_tableau",
+)
 QUERY_MOVE_LEGALITY = "move_legality_label"
 QUERY_FOUNDATION_READY = "foundation_ready_count"
 QUERY_TABLEAU_SEQUENCE = "tableau_sequence_count"
@@ -173,6 +182,23 @@ class _RenderedScene:
     background_meta: Dict[str, Any]
 
 
+@dataclass(frozen=True)
+class _SolitaireVisualStyle:
+    """Scene-local nonsemantic colors for the solitaire table and cards."""
+
+    card_fill_rgb: Tuple[int, int, int]
+    card_border_rgb: Tuple[int, int, int]
+    card_back_rgb: Tuple[int, int, int]
+    card_back_accent_rgb: Tuple[int, int, int]
+    foundation_fill_rgb: Tuple[int, int, int]
+    option_fill_rgb: Tuple[int, int, int]
+    badge_fill_rgb: Tuple[int, int, int]
+    badge_text_rgb: Tuple[int, int, int]
+    red_suit_rgb: Tuple[int, int, int]
+    black_suit_rgb: Tuple[int, int, int]
+    text_rgb: Tuple[int, int, int]
+
+
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("games", TASK_GROUP)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -194,6 +220,10 @@ def _deck() -> List[Tuple[int, str]]:
 
 def _card_color(suit_name: str) -> str:
     return "red" if str(suit_name) in {"hearts", "diamonds"} else "black"
+
+
+def _rgb(values: Sequence[int]) -> Tuple[int, int, int]:
+    return tuple(max(0, min(255, int(value))) for value in values[:3])  # type: ignore[return-value]
 
 
 def _is_legal_tableau_move(source: _Card, target: _Card) -> bool:
@@ -228,14 +258,14 @@ def _draw_text_center(
     height = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = bbox
     origin = (float(x0 + ((x1 - x0) - width) / 2.0), float(y0 + ((y1 - y0) - height) / 2.0))
-    draw.text(
+    draw_text_traced(draw,
         origin,
         str(text),
         font=font,
         fill=tuple(int(value) for value in fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(fill)),
-    )
+     role="readout", required=False,)
 
 
 def _draw_card(
@@ -251,6 +281,8 @@ def _draw_card(
     badge_font,
     badge_fill_rgb: Tuple[int, int, int],
     badge_text_rgb: Tuple[int, int, int],
+    red_suit_rgb: Tuple[int, int, int],
+    black_suit_rgb: Tuple[int, int, int],
 ) -> None:
     x0, y0, x1, y1 = bbox
     draw.rounded_rectangle(
@@ -260,19 +292,19 @@ def _draw_card(
         outline=tuple(int(value) for value in border_rgb),
         width=2,
     )
-    suit_rgb = (172, 35, 45) if _card_color(str(card.suit_name)) == "red" else (34, 40, 50)
+    suit_rgb = tuple(red_suit_rgb) if _card_color(str(card.suit_name)) == "red" else tuple(black_suit_rgb)
     label = str(card.label)
     stroke = tuple(int(value) for value in resolve_text_stroke_fill(suit_rgb))
-    draw.text((float(x0 + 8), float(y0 + 8)), label, font=rank_font, fill=suit_rgb, stroke_width=1, stroke_fill=stroke)
+    draw_text_traced(draw,(float(x0 + 8), float(y0 + 8)), label, font=rank_font, fill=suit_rgb, stroke_width=1, stroke_fill=stroke, role="readout", required=False)
     bottom_bbox = draw.textbbox((0, 0), label, font=rank_font, stroke_width=1)
-    draw.text(
+    draw_text_traced(draw,
         (float(x1 - (bottom_bbox[2] - bottom_bbox[0]) - 8), float(y1 - (bottom_bbox[3] - bottom_bbox[1]) - 8)),
         label,
         font=rank_font,
         fill=suit_rgb,
         stroke_width=1,
         stroke_fill=stroke,
-    )
+     role="readout", required=False,)
     _draw_text_center(draw, (x0 + 6, y0 + 28, x1 - 6, y1 - 20), label, font=center_font, fill=suit_rgb)
     if card.badge_text:
         badge_w = 28
@@ -366,6 +398,84 @@ def _sample_panel_style_variant(*, task_id: str, instance_seed: int, params: Map
         balance_flag_key="balanced_style_variant_sampling",
         supported_variants=SUPPORTED_PANEL_STYLE_VARIANTS,
     )
+
+
+def _resolve_solitaire_visual_style(style_variant: str, panel_style) -> Tuple[_SolitaireVisualStyle, Dict[str, Any]]:
+    """Resolve card/tableau styling separate from the shared canvas treatment."""
+
+    styles: Dict[str, _SolitaireVisualStyle] = {
+        "classic_cards": _SolitaireVisualStyle(
+            card_fill_rgb=(252, 250, 244),
+            card_border_rgb=(82, 88, 101),
+            card_back_rgb=(52, 88, 158),
+            card_back_accent_rgb=(227, 235, 252),
+            foundation_fill_rgb=(240, 245, 247),
+            option_fill_rgb=(240, 246, 255),
+            badge_fill_rgb=(238, 188, 71),
+            badge_text_rgb=(34, 38, 45),
+            red_suit_rgb=(172, 35, 45),
+            black_suit_rgb=(34, 40, 50),
+            text_rgb=_rgb(panel_style.text_rgb),
+        ),
+        "ivory_table": _SolitaireVisualStyle(
+            card_fill_rgb=(255, 250, 235),
+            card_border_rgb=(107, 82, 55),
+            card_back_rgb=(125, 84, 55),
+            card_back_accent_rgb=(241, 211, 154),
+            foundation_fill_rgb=(245, 235, 209),
+            option_fill_rgb=(248, 232, 190),
+            badge_fill_rgb=(214, 163, 79),
+            badge_text_rgb=(48, 38, 28),
+            red_suit_rgb=(161, 47, 45),
+            black_suit_rgb=(44, 39, 35),
+            text_rgb=(59, 47, 36),
+        ),
+        "casino_felt": _SolitaireVisualStyle(
+            card_fill_rgb=(249, 251, 246),
+            card_border_rgb=(30, 77, 56),
+            card_back_rgb=(31, 116, 78),
+            card_back_accent_rgb=(190, 238, 205),
+            foundation_fill_rgb=(215, 235, 220),
+            option_fill_rgb=(223, 242, 225),
+            badge_fill_rgb=(246, 211, 80),
+            badge_text_rgb=(25, 48, 34),
+            red_suit_rgb=(184, 38, 53),
+            black_suit_rgb=(24, 45, 35),
+            text_rgb=(28, 62, 44),
+        ),
+        "slate_cards": _SolitaireVisualStyle(
+            card_fill_rgb=(233, 238, 243),
+            card_border_rgb=(43, 54, 70),
+            card_back_rgb=(75, 91, 111),
+            card_back_accent_rgb=(199, 212, 226),
+            foundation_fill_rgb=(218, 226, 235),
+            option_fill_rgb=(225, 232, 241),
+            badge_fill_rgb=(102, 149, 190),
+            badge_text_rgb=(248, 250, 252),
+            red_suit_rgb=(191, 60, 73),
+            black_suit_rgb=(31, 38, 50),
+            text_rgb=(33, 42, 55),
+        ),
+        "paper_tableau": _SolitaireVisualStyle(
+            card_fill_rgb=(254, 250, 239),
+            card_border_rgb=(136, 111, 78),
+            card_back_rgb=(209, 185, 139),
+            card_back_accent_rgb=(119, 93, 57),
+            foundation_fill_rgb=(244, 235, 211),
+            option_fill_rgb=(250, 238, 205),
+            badge_fill_rgb=(191, 134, 66),
+            badge_text_rgb=(46, 35, 24),
+            red_suit_rgb=(159, 56, 54),
+            black_suit_rgb=(49, 43, 37),
+            text_rgb=(66, 52, 38),
+        ),
+    }
+    resolved_key = str(style_variant) if str(style_variant) in styles else "classic_cards"
+    return styles[resolved_key], {
+        "style_variant": str(resolved_key),
+        "available_styles": list(SUPPORTED_PANEL_STYLE_VARIANTS),
+        "card_style_policy": "scene_local_solitaire_card_tableau_palette",
+    }
 
 
 def _sample_integer_axis(
@@ -651,7 +761,7 @@ def _sample_move_legality(
         ]
         if len(legal_options) != 1 or str(legal_options[0].label) != str(answer_label):
             continue
-        evidence = (f"move_option_{answer_label.lower()}", str(source_card.card_id), str(answer_target_id))
+        evidence = (str(source_card.card_id), str(answer_target_id))
         return _Sample(
             query_id=QUERY_MOVE_LEGALITY,
             scene_variant=str(scene_variant),
@@ -889,6 +999,7 @@ def _render_scene(
     *,
     sample: _Sample,
     task_id: str,
+    style_variant: str,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _RenderedScene:
@@ -901,6 +1012,17 @@ def _render_scene(
     margin = _int_default(params, "panel_margin_px", _DEFAULTS.panel_margin_px)
     foundation_gap = _int_default(params, "foundation_gap_px", _DEFAULTS.foundation_gap_px)
     radius = _int_default(params, "card_corner_radius_px", _DEFAULTS.card_corner_radius_px)
+    if params.get("canvas_height") is None:
+        max_column_len = max((len(column) for column in sample.columns), default=1)
+        tableau_bottom = 194 + (max(0, int(max_column_len) - 1) * column_step_y) + card_height
+        foundation_bottom = 58 + card_height
+        if sample.move_options:
+            option_height = _int_default(params, "option_height_px", _DEFAULTS.option_height_px)
+            needed_height = max(tableau_bottom, foundation_bottom) + 64 + option_height + margin
+            canvas_height = min(int(canvas_height), max(620, int(needed_height)))
+        else:
+            needed_height = max(tableau_bottom, foundation_bottom) + margin + 28
+            canvas_height = min(int(canvas_height), max(560, int(needed_height)))
     style, style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{str(task_id)}.solitaire_panel_style",
@@ -914,32 +1036,51 @@ def _render_scene(
     )
     image = image.convert("RGBA")
     draw = ImageDraw.Draw(image)
-    rank_font = load_font(_int_default(params, "rank_font_size_px", _DEFAULTS.rank_font_size_px), bold=True)
-    center_font = load_font(_int_default(params, "card_center_font_size_px", _DEFAULTS.card_center_font_size_px), bold=True)
-    badge_font = load_font(_int_default(params, "badge_font_size_px", _DEFAULTS.badge_font_size_px), bold=True)
-    label_font = load_font(_int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px), bold=True)
-    option_font = load_font(_int_default(params, "option_font_size_px", _DEFAULTS.option_font_size_px), bold=True)
-    text_rgb = tuple(int(value) for value in style.text_rgb)
-    border_rgb = tuple(int(value) for value in style.panel_border_rgb)
-    card_fill = (252, 250, 244)
-    back_fill = tuple(int(value) for value in style.panel_accent_rgb)
-    badge_fill = tuple(int(value) for value in style.mark_rgb)
-    badge_text = tuple(int(value) for value in style.text_rgb)
-    if sum(badge_fill) < 180:
-        badge_text = (248, 250, 252)
+    layout_jitter = resolve_games_layout_jitter(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.solitaire.layout",
+    )
+    content_bbox = (float(margin), 20.0, float(canvas_width - margin), float(canvas_height - margin))
+    _shifted_content_bbox, dx, dy, resolved_jitter = apply_games_layout_jitter_to_bbox(
+        bbox_px=content_bbox,
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        jitter=layout_jitter,
+    )
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.solitaire.font_family",
+        params=params,
+    )
+    rank_font = load_font(_int_default(params, "rank_font_size_px", _DEFAULTS.rank_font_size_px), bold=True, font_family=str(font_family))
+    center_font = load_font(_int_default(params, "card_center_font_size_px", _DEFAULTS.card_center_font_size_px), bold=True, font_family=str(font_family))
+    badge_font = load_font(_int_default(params, "badge_font_size_px", _DEFAULTS.badge_font_size_px), bold=True, font_family=str(font_family))
+    label_font = load_font(_int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px), bold=True, font_family=str(font_family))
+    option_font = load_font(_int_default(params, "option_font_size_px", _DEFAULTS.option_font_size_px), bold=True, font_family=str(font_family))
+    title_font = load_font(24, bold=True, font_family=str(font_family))
+    solitaire_style, solitaire_style_meta = _resolve_solitaire_visual_style(str(style_variant), style)
+    text_rgb = tuple(int(value) for value in solitaire_style.text_rgb)
+    border_rgb = tuple(int(value) for value in solitaire_style.card_border_rgb)
+    card_fill = tuple(int(value) for value in solitaire_style.card_fill_rgb)
+    back_fill = tuple(int(value) for value in solitaire_style.card_back_rgb)
+    badge_fill = tuple(int(value) for value in solitaire_style.badge_fill_rgb)
+    badge_text = tuple(int(value) for value in solitaire_style.badge_text_rgb)
 
     title = "Solitaire tableau"
-    draw.text(
-        (float(margin), 20.0),
+    draw_text_traced(draw,
+        (float(margin + dx), float(20.0 + dy)),
         title,
-        font=load_font(24, bold=True),
+        font=title_font,
         fill=text_rgb,
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(text_rgb)),
-    )
+     role="readout", required=False,)
 
-    foundation_y = 58
-    foundation_start_x = int(canvas_width - margin - (4 * card_width) - (3 * foundation_gap))
+    foundation_y = 58 + int(round(dy))
+    foundation_start_x = int(canvas_width - margin - (4 * card_width) - (3 * foundation_gap) + round(dx))
     foundation_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     for index, foundation in enumerate(sample.foundations):
@@ -949,7 +1090,7 @@ def _render_scene(
             draw,
             bbox,
             foundation,
-            panel_fill_rgb=tuple(int(value) for value in style.option_fill_rgb),
+            panel_fill_rgb=tuple(int(value) for value in solitaire_style.foundation_fill_rgb),
             border_rgb=border_rgb,
             text_rgb=text_rgb,
             rank_font=rank_font,
@@ -969,13 +1110,14 @@ def _render_scene(
 
     if str(sample.scene_variant) == "freecell_tableau":
         for index in range(4):
-            x0 = margin + index * (card_width + foundation_gap)
+            x0 = margin + int(round(dx)) + index * (card_width + foundation_gap)
             bbox = (float(x0), float(foundation_y), float(x0 + card_width), float(foundation_y + card_height))
             draw.rounded_rectangle(bbox, radius=radius, fill=tuple(style.panel_fill_rgb), outline=border_rgb, width=2)
             _draw_text_center(draw, bbox, f"Free {index + 1}", font=label_font, fill=text_rgb, stroke_width=0)
     else:
-        stock_x = margin
+        stock_x = margin + int(round(dx))
         waste_x = margin + card_width + foundation_gap
+        waste_x += int(round(dx))
         stock_bbox = (float(stock_x), float(foundation_y), float(stock_x + card_width), float(foundation_y + card_height))
         waste_bbox = (float(waste_x), float(foundation_y), float(waste_x + card_width), float(foundation_y + card_height))
         _draw_card_back(
@@ -983,16 +1125,16 @@ def _render_scene(
             stock_bbox,
             fill_rgb=back_fill,
             border_rgb=border_rgb,
-            accent_rgb=tuple(int(value) for value in style.panel_fill_rgb),
+            accent_rgb=tuple(int(value) for value in solitaire_style.card_back_accent_rgb),
             radius_px=radius,
         )
         draw.rounded_rectangle(waste_bbox, radius=radius, fill=tuple(style.panel_fill_rgb), outline=border_rgb, width=2)
         _draw_text_center(draw, waste_bbox, "waste", font=label_font, fill=text_rgb, stroke_width=0)
 
-    tableau_y = 194
+    tableau_y = 194 + int(round(dy))
     column_count = len(sample.columns)
     total_columns_width = (column_count * card_width) + ((column_count - 1) * column_gap)
-    start_x = int((canvas_width - total_columns_width) / 2)
+    start_x = int((canvas_width - total_columns_width) / 2 + round(dx))
     card_bboxes: Dict[str, List[float]] = {}
     for col_index, column in enumerate(sample.columns):
         x0 = start_x + int(col_index) * (card_width + column_gap)
@@ -1005,7 +1147,7 @@ def _render_scene(
                 back_bbox,
                 fill_rgb=back_fill,
                 border_rgb=border_rgb,
-                accent_rgb=tuple(int(value) for value in style.panel_fill_rgb),
+                accent_rgb=tuple(int(value) for value in solitaire_style.card_back_accent_rgb),
                 radius_px=radius,
             )
         for row_index, card in enumerate(column):
@@ -1023,6 +1165,8 @@ def _render_scene(
                 badge_font=badge_font,
                 badge_fill_rgb=badge_fill,
                 badge_text_rgb=badge_text,
+                red_suit_rgb=tuple(int(value) for value in solitaire_style.red_suit_rgb),
+                black_suit_rgb=tuple(int(value) for value in solitaire_style.black_suit_rgb),
             )
             card_bboxes[str(card.card_id)] = [float(value) for value in bbox]
             entities.append(
@@ -1046,15 +1190,15 @@ def _render_scene(
         option_count = len(sample.move_options)
         option_height = _int_default(params, "option_height_px", _DEFAULTS.option_height_px)
         option_gap = _int_default(params, "option_gap_px", _DEFAULTS.option_gap_px)
-        option_area_y = int(canvas_height - margin - option_height)
+        option_area_y = int(canvas_height - margin - option_height + round(dy))
         option_width = int((canvas_width - (2 * margin) - ((option_count - 1) * option_gap)) / option_count)
         for index, option in enumerate(sample.move_options):
-            x0 = margin + int(index) * (option_width + option_gap)
+            x0 = margin + int(round(dx)) + int(index) * (option_width + option_gap)
             bbox = (float(x0), float(option_area_y), float(x0 + option_width), float(option_area_y + option_height))
             draw.rounded_rectangle(
                 bbox,
                 radius=10,
-                fill=tuple(int(value) for value in style.option_fill_rgb),
+                fill=tuple(int(value) for value in solitaire_style.option_fill_rgb),
                 outline=border_rgb,
                 width=2,
             )
@@ -1088,19 +1232,34 @@ def _render_scene(
         "column_count": int(column_count),
         "scene_variant": str(sample.scene_variant),
         "style": dict(style_meta),
+        "panel_scene_style": dict(style_meta),
+        "solitaire_tableau_style": dict(solitaire_style_meta),
+        "font_family": str(font_family),
+        "text_style": {"font_family": str(font_family)},
+        "layout_jitter": dict(resolved_jitter),
     }
     return _RenderedScene(
         image=image.convert("RGB"),
         entities=tuple(entities),
         render_map=render_map,
-        style_meta=dict(style_meta),
+        style_meta={
+            "panel_scene_style": dict(style_meta),
+            "solitaire_tableau_style": dict(solitaire_style_meta),
+            "text_style": {
+                "font_family": str(font_family),
+                "font_asset": get_font_family_record(str(font_family)).to_trace(),
+            },
+        },
         background_meta=dict(background_meta),
     )
 
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) == QUERY_MOVE_LEGALITY:
-        answer_and_evidence = {"evidence": [[42, 730, 198, 776], [250, 220, 324, 324], [342, 220, 416, 324]], "answer": "C"}
+        answer_and_evidence = {
+            "evidence": {"source_card": [250, 220, 324, 324], "target": [342, 220, 416, 324]},
+            "answer": "C",
+        }
         answer_only = {"answer": "C"}
     else:
         answer_and_evidence = {"evidence": [[250, 220, 324, 324], [342, 220, 416, 324]], "answer": 3}
@@ -1219,14 +1378,47 @@ class _SolitaireTableauTask:
         rendered = _render_scene(
             sample=sample,
             task_id=str(self.task_id),
+            style_variant=str(style_variant),
             instance_seed=int(instance_seed),
             params=params,
         )
-        evidence_bboxes = [
-            list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sample.evidence_entity_ids
-            if str(entity_id) in rendered.render_map["entity_bboxes_px"]
-        ]
+        if str(sample.query_id) == QUERY_MOVE_LEGALITY:
+            evidence_value: Any = {
+                "source_card": list(rendered.render_map["entity_bboxes_px"][str(sample.metadata["legal_source_id"])]),
+                "target": list(rendered.render_map["entity_bboxes_px"][str(sample.metadata["legal_target_id"])]),
+            }
+            evidence_type = "keyed_bbox_map"
+            projected_evidence = {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_value),
+                "pixel_keyed_bbox_map": dict(evidence_value),
+            }
+            witness_symbolic = {
+                "type": "object_map",
+                "ids": {
+                    "source_card": str(sample.metadata["legal_source_id"]),
+                    "target": str(sample.metadata["legal_target_id"]),
+                },
+            }
+            evidence_count = len(evidence_value)
+        else:
+            evidence_bboxes = [
+                list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
+                for entity_id in sample.evidence_entity_ids
+                if str(entity_id) in rendered.render_map["entity_bboxes_px"]
+            ]
+            evidence_value = [list(bbox) for bbox in evidence_bboxes]
+            evidence_type = "bbox_set"
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_value],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+            }
+            witness_symbolic = {
+                "type": "object_set",
+                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
+            }
+            evidence_count = len(evidence_value)
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -1235,8 +1427,8 @@ class _SolitaireTableauTask:
         )
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_bboxes))
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=int(evidence_count))
         card_specs = [
             {
                 "card_id": str(card.card_id),
@@ -1296,6 +1488,10 @@ class _SolitaireTableauTask:
                 "canvas_height": int(image.size[1]),
                 "column_count": int(len(sample.columns)),
                 "style": dict(rendered.style_meta),
+                "panel_scene_style": dict(rendered.style_meta.get("panel_scene_style", {})),
+                "solitaire_tableau_style": dict(rendered.style_meta.get("solitaire_tableau_style", {})),
+                "text_style": dict(rendered.style_meta.get("text_style", {})),
+                "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
             },
             "render_map": dict(rendered.render_map),
             "execution_trace": {
@@ -1308,13 +1504,8 @@ class _SolitaireTableauTask:
                 "evidence_entity_ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
                 **dict(sample.metadata),
             },
-            "witness_symbolic": {
-                "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
-            },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "witness_symbolic": dict(witness_symbolic),
+            "projected_evidence": dict(projected_evidence),
             "background": dict(rendered.background_meta),
             "post_image_noise": post_noise_meta,
         }

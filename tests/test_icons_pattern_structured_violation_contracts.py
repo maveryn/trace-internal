@@ -9,15 +9,14 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.pattern.grid_color_violation import IconsPatternGridColorViolationTask
-from trace.tasks.icons.pattern.grid_size_violation import IconsPatternGridSizeViolationTask
+from trace.tasks.icons.pattern.grid_color_violation import IconsPatternGridAttributePatternViolationTask
 from trace.tasks.icons.pattern.sequence_rotation_violation import IconsPatternSequenceRotationViolationTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
     "task_cls",
-    (IconsPatternSequenceRotationViolationTask, IconsPatternGridSizeViolationTask, IconsPatternGridColorViolationTask),
+    (IconsPatternSequenceRotationViolationTask, IconsPatternGridAttributePatternViolationTask),
 )
 def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
     task = task_cls()
@@ -28,7 +27,6 @@ def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.query_id == "default"
     assert out_a.query_id
 
 
@@ -36,8 +34,7 @@ def test_icons_pattern_violation_is_deterministic(task_cls) -> None:
     "task_id",
     (
         "task_icons__sequence_strip__rotation_sequence_violation_index",
-        "task_icons__pattern_grid__size_pattern_violation_index",
-        "task_icons__pattern_grid__color_pattern_violation_index",
+        "task_icons__pattern_grid__attribute_pattern_violation_index",
     ),
 )
 def test_icons_pattern_violation_build_smoke(tmp_path: Path, task_id: str) -> None:

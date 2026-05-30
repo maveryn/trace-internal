@@ -71,17 +71,17 @@ prompt:
       discs
     object_description_classic_board: an 8 by 8 Reversi board with black and white
       discs
-    legal_move_rule_text: A legal move brackets one or more opponent discs in at
-      least one straight line.
+    legal_move_rule_text: A legal move is an empty square that brackets one or
+      more opponent discs in at least one straight line.
     corner_rule_text: The corner squares are the four outermost corners.
-    marked_move_rule_text: The red outlined empty square is the marked move.
+    marked_move_rule_text: The red marked empty square is the marked move.
     flip_rule_text: The marked move flips every bracketed opponent disc.
     evidence_hint_legal_move_count: set "evidence" to bounding boxes [x0, y0, x1,
       y1] for every legal move square
     evidence_hint_corner_move_count: set "evidence" to bounding boxes [x0, y0, x1,
       y1] for every legal corner square
-    evidence_hint_flip_count_for_marked_move: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every disc flipped by the marked move
+    evidence_hint_flip_count_for_marked_move: set "evidence" to one pixel point
+      [x,y] at the center of every disc flipped by the marked move
     answer_hint_legal_move_count: set "answer" to the count of legal moves
     answer_hint_corner_move_count: set "answer" to the count of legal corner moves
     answer_hint_flip_count_for_marked_move: set "answer" to the count of discs flipped

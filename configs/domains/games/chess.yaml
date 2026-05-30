@@ -71,6 +71,11 @@ rendering:
     piece_font_size_px: 78
     marked_square_outline_width_px: 7
     player_badge_font_size_px: 22
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 560
+    canvas_side_padding_px: 132
+    canvas_vertical_padding_px: 92
 complexity:
   shared:
     criteria_weights:
@@ -95,25 +100,27 @@ prompt:
     king_escape_rule_text: The blue outlined square contains the marked king. Count
       only one-step king destinations that are empty or capturable and are not attacked
       after the king moves there.
-    evidence_hint_marked_piece_move_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every destination square the marked piece can move to
+    evidence_hint_marked_piece_move_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every destination square the marked piece can move
+      to
     answer_hint_marked_piece_move_count: set "answer" to the count of destination
       squares for the marked piece
-    evidence_hint_marked_piece_capture_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every destination square occupied by an opponent piece that
-      the marked piece can capture
+    evidence_hint_marked_piece_capture_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every destination square occupied by an opponent
+      piece that the marked piece can capture
     answer_hint_marked_piece_capture_count: set "answer" to the count of capture
       destination squares for the marked piece
-    evidence_hint_player_capture_piece_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every opponent piece that can be captured by a {player_color_name}
+    evidence_hint_player_capture_piece_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every opponent piece that can be captured by a {player_color_name}
       piece in one move
     answer_hint_player_capture_piece_count: set "answer" to the count of {opponent_color_name}
       pieces that can be captured by {player_color_name} in one move
-    evidence_hint_check_attacker_count: set "evidence" to bounding boxes [x0, y0,
-      x1, y1] for every opponent piece attacking the marked king
+    evidence_hint_check_attacker_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every opponent piece attacking the marked king
     answer_hint_check_attacker_count: set "answer" to the count of opponent pieces
       attacking the marked king
-    evidence_hint_king_escape_square_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every safe destination square the marked king can move to
+    evidence_hint_king_escape_square_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every safe destination square the marked king can
+      move to
     answer_hint_king_escape_square_count: set "answer" to the count of safe one-step
       destination squares for the marked king

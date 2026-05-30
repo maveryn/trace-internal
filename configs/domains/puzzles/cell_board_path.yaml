@@ -33,6 +33,13 @@ rendering:
     outer_padding_fraction_max: 0.12
     placement_jitter_fraction_min: 0.02
     placement_jitter_fraction_max: 0.06
+    balanced_cell_board_tile_style_sampling: true
+    cell_board_tile_style_weights:
+      classic_grid: 1.0
+      rounded_tiles: 1.0
+      inset_tiles: 1.0
+      thin_line: 1.0
+      lab_matrix: 1.0
   task_overrides:
     cell_board_shortest_path_internal:
       aspect_ratio_min: 1.0
@@ -134,12 +141,13 @@ prompt:
     cell_board_target_reachability_count_internal:
       task_key: reachable_target_count_query
       answer_hint: set "answer" to the number of reachable target tiles as an integer
-      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the reachable target tiles
+      evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the reachable target tiles,
+        or [] if no target tiles are reachable
       json_example: '{"evidence":[[216,120],[168,216]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       unreachable_task_key: unreachable_target_count_query
       unreachable_answer_hint: set "answer" to the number of unreachable target tiles as an integer
       unreachable_evidence_hint: set "evidence" to an array of image pixel points [x, y] at the centers of the unreachable
-        target tiles
+        target tiles, or [] if no target tiles are unreachable
       unreachable_json_example: '{"evidence":[[216,120],[168,216]],"answer":2}'
       unreachable_json_example_answer_only: '{"answer":2}'

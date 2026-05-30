@@ -14,6 +14,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -26,7 +27,7 @@ from ..shared.complexity import build_games_cards_hand_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
+from ..shared.style import SUPPORTED_CARD_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
 
@@ -311,7 +312,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="style_variant",
         weights_key="style_variant_weights",
         balance_flag_key="balanced_style_variant_sampling",
-        supported=SUPPORTED_GAMES_STYLE_VARIANTS,
+        supported=SUPPORTED_CARD_STYLE_VARIANTS,
     )
 
     target_support_key = _target_support_key(str(query_id))
@@ -880,6 +881,12 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> CardRenderParams:
     """Resolve card-scene rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.cards.font",
+        params=params,
+    )
     return CardRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -946,6 +953,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> CardRend
                 group_default(_RENDER_DEFAULTS, "group_label_font_size_px", 22),
             )
         ),
+        font_family=str(font_family),
     )
 
 
@@ -1209,6 +1217,9 @@ class GamesCardsHandCountTask:
                 "max_cards_per_row": int(rendered_scene.render_map["max_cards_per_row"]),
                 "center_label_mode": str(rendered_scene.render_map["center_label_mode"]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "font_family": str(render_params.font_family),
+                "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+                "suit_symbol_font_family": str(rendered_scene.render_map.get("suit_symbol_font_family", "")),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -1830,7 +1841,7 @@ class _GamesCardsRuleTask:
             explicit_key="style_variant",
             weights_key="style_variant_weights",
             balance_flag_key="balanced_style_variant_sampling",
-            supported=SUPPORTED_GAMES_STYLE_VARIANTS,
+            supported=SUPPORTED_CARD_STYLE_VARIANTS,
         )
         sample: _RuleSample | None = None
         rendered_scene = None
@@ -1976,7 +1987,7 @@ class _GamesCardsRuleTask:
                 "params": {
                     "scene_variant": str(sample.scene_variant),
                     "query_id": str(sample.query_key),
-                    "query_id_probabilities": {"default": 1.0},
+                    "query_id_probabilities": {str(sample.query_key): 1.0},
                     "style_variant": str(style_variant),
                     "style_variant_probabilities": dict(style_variant_probabilities),
                     "option_count": int(sample.option_count),
@@ -1993,6 +2004,9 @@ class _GamesCardsRuleTask:
                 "max_cards_per_row": int(rendered_scene.render_map["max_cards_per_row"]),
                 "center_label_mode": str(rendered_scene.render_map["center_label_mode"]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "font_family": str(render_params.font_family),
+                "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+                "suit_symbol_font_family": str(rendered_scene.render_map.get("suit_symbol_font_family", "")),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

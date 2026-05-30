@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -40,7 +40,8 @@ from ..shared.minecraft_common import (
 )
 from ..shared.minecraft_scene import MinecraftRenderParams, render_minecraft_block_world_scene
 from ..shared.sampling import resolve_games_named_axis
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_GROUP = "minecraft"
@@ -94,7 +95,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=BASE_TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group=TASK_GROUP)
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group=TASK_GROUP, apply_prob=0.5)
 
 
@@ -181,7 +181,47 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any], query_id: st
     )
 
 
-def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> MinecraftRenderParams:
+def _resolve_task_query_id(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    supported_query_ids: Sequence[str],
+) -> tuple[str, Dict[str, float]]:
+    """Resolve the internal Minecraft query branch for a public task."""
+
+    supported = tuple(str(query_id) for query_id in supported_query_ids)
+    if not supported:
+        raise ValueError(f"{task_id} must define at least one supported query_id")
+
+    explicit = params.get("query_id")
+    if explicit is not None and str(explicit) != "default":
+        query_id = str(explicit)
+        if query_id not in supported:
+            raise ValueError(f"{task_id} does not support query_id={query_id!r}")
+        return query_id, {query_id: 1.0}
+
+    if len(supported) == 1:
+        return supported[0], {supported[0]: 1.0}
+
+    raw_cursor = params.get("_sample_cursor")
+    if raw_cursor is not None:
+        query_id = supported[abs(int(raw_cursor)) % len(supported)]
+    else:
+        rng = spawn_rng(int(instance_seed), f"{task_id}.query_id")
+        query_id = str(rng.choice(supported))
+
+    probability = 1.0 / float(len(supported))
+    return str(query_id), {query_id: probability for query_id in supported}
+
+
+def _render_params(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    grid_width: int,
+    grid_depth: int,
+) -> MinecraftRenderParams:
     """Resolve Minecraft-like rendering parameters from config/defaults."""
 
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
@@ -199,14 +239,30 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Minecraf
         ),
         unit_scale_meta,
     )
+    tile_width = scale_games_px(params.get("tile_width_px", group_default(_RENDER_DEFAULTS, "tile_width_px", _DEFAULTS.tile_width_px)), unit_scale, min_px=29)
+    tile_height = scale_games_px(params.get("tile_height_px", group_default(_RENDER_DEFAULTS, "tile_height_px", _DEFAULTS.tile_height_px)), unit_scale, min_px=15)
+    cube_height = scale_games_px(params.get("cube_height_px", group_default(_RENDER_DEFAULTS, "cube_height_px", _DEFAULTS.cube_height_px)), unit_scale, min_px=15)
+    default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    world_width = float((int(grid_width) + int(grid_depth)) * int(tile_width) / 2.0)
+    world_height = float((int(grid_width) + int(grid_depth)) * int(tile_height) / 2.0) + float(cube_height)
+    canvas_width = int(params.get("canvas_width", min(default_canvas_width, max(520, int(round(world_width + 190.0))))))
+    canvas_height = int(params.get("canvas_height", min(default_canvas_height, max(430, int(round(world_height + 165.0))))))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.minecraft.font_family",
+        params=params,
+    )
     return MinecraftRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        tile_width_px=scale_games_px(params.get("tile_width_px", group_default(_RENDER_DEFAULTS, "tile_width_px", _DEFAULTS.tile_width_px)), unit_scale, min_px=29),
-        tile_height_px=scale_games_px(params.get("tile_height_px", group_default(_RENDER_DEFAULTS, "tile_height_px", _DEFAULTS.tile_height_px)), unit_scale, min_px=15),
-        cube_height_px=scale_games_px(params.get("cube_height_px", group_default(_RENDER_DEFAULTS, "cube_height_px", _DEFAULTS.cube_height_px)), unit_scale, min_px=15),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        tile_width_px=int(tile_width),
+        tile_height_px=int(tile_height),
+        cube_height_px=int(cube_height),
         outline_width_px=scale_games_px(params.get("outline_width_px", group_default(_RENDER_DEFAULTS, "outline_width_px", _DEFAULTS.outline_width_px)), unit_scale, min_px=1),
         player_marker_size_px=scale_games_px(params.get("player_marker_size_px", group_default(_RENDER_DEFAULTS, "player_marker_size_px", _DEFAULTS.player_marker_size_px)), unit_scale, min_px=14),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -501,13 +557,11 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         answer_value = 4
         evidence_value = [[352, 245, 410, 304], [381, 274, 439, 333], [410, 303, 468, 362], [439, 332, 497, 391]]
     elif str(query_id) == RESOURCE_ROUTE_QUERY_ID:
-        answer_value = 6
+        answer_value = 4
         evidence_value = [
             [286, 302, 344, 332],
             [315, 273, 373, 303],
             [492, 182, 554, 242],
-            [492, 122, 554, 182],
-            [492, 62, 554, 122],
             [521, 210, 579, 270],
         ]
     else:
@@ -555,10 +609,22 @@ class GamesMinecraftBlockWorldTask:
     domain = "games"
     task_group = TASK_GROUP
     query_id = ORE_BLOCK_QUERY_ID
+    supported_query_ids: Tuple[str, ...] = (ORE_BLOCK_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        axes = _resolve_axes(int(instance_seed), params=params, query_id=str(self.query_id))
-        render_params = _render_params(params, instance_seed=int(instance_seed))
+        query_id, query_id_probabilities = _resolve_task_query_id(
+            task_id=str(self.task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=getattr(self, "supported_query_ids", (str(self.query_id),)),
+        )
+        axes = _resolve_axes(int(instance_seed), params=params, query_id=str(query_id))
+        render_params = _render_params(
+            params,
+            instance_seed=int(instance_seed),
+            grid_width=int(axes.grid_width),
+            grid_depth=int(axes.grid_depth),
+        )
         sampled_scene: MinecraftSceneSample | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{self.task_id}.attempt.{int(attempt_index)}")
@@ -570,12 +636,16 @@ class GamesMinecraftBlockWorldTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.minecraft.panel_scene",
+            treatment_weights=group_default(_GEN_DEFAULTS, "panel_treatment_weights", {}),
+            palette_weights=group_default(_GEN_DEFAULTS, "panel_palette_weights", {}),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         ladder_columns = tuple(sampled_scene.ladder_columns)
         rendered_scene = render_minecraft_block_world_scene(
@@ -708,7 +778,7 @@ class GamesMinecraftBlockWorldTask:
                     "grid_width_probabilities": dict(axes.grid_width_probabilities),
                     "grid_depth_probabilities": dict(axes.grid_depth_probabilities),
                     "answer_probabilities": dict(axes.answer_probabilities),
-                    "query_id_probabilities": {str(sampled_scene.query_id): 1.0},
+                    "query_id_probabilities": dict(query_id_probabilities),
                 },
             },
             "render_spec": {
@@ -716,6 +786,9 @@ class GamesMinecraftBlockWorldTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(rendered_scene.render_map.get("text_style", {})),
+                "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -747,6 +820,7 @@ class GamesMinecraftBlockWorldTask:
                 "bbox_set": [list(bbox) for bbox in evidence_bboxes],
             },
             "background": background_meta,
+            "panel_scene_style": dict(panel_style_meta),
             "post_image_noise": post_noise_meta,
         }
         return TaskOutput(
@@ -770,29 +844,22 @@ class GamesMinecraftOreBlockCountTask(GamesMinecraftBlockWorldTask):
 
     task_id = "task_games__minecraft__ore_block_count"
     query_id = ORE_BLOCK_QUERY_ID
+    supported_query_ids = (ORE_BLOCK_QUERY_ID,)
 
 
 @register_task
-class GamesMinecraftTunnelClearanceCountTask(GamesMinecraftBlockWorldTask):
-    """Count solid blocks that must be cleared from a marked tunnel path."""
+class GamesMinecraftRouteBlockCountTask(GamesMinecraftBlockWorldTask):
+    """Count blocks along a marked tunnel path or named mining route."""
 
-    task_id = "task_games__minecraft__tunnel_clearance_count"
+    task_id = "task_games__minecraft__route_block_count"
     query_id = TUNNEL_CLEARANCE_QUERY_ID
-
-
-@register_task
-class GamesMinecraftResourceRouteCostTask(GamesMinecraftBlockWorldTask):
-    """Count block cost along one named Minecraft-like mining route."""
-
-    task_id = "task_games__minecraft__resource_route_cost_value"
-    query_id = RESOURCE_ROUTE_QUERY_ID
+    supported_query_ids = (TUNNEL_CLEARANCE_QUERY_ID, RESOURCE_ROUTE_QUERY_ID)
 
 
 __all__ = [
     "GamesMinecraftBlockWorldTask",
     "GamesMinecraftOreBlockCountTask",
-    "GamesMinecraftResourceRouteCostTask",
-    "GamesMinecraftTunnelClearanceCountTask",
+    "GamesMinecraftRouteBlockCountTask",
     "ORE_BLOCK_QUERY_ID",
     "RESOURCE_ROUTE_QUERY_ID",
     "TUNNEL_CLEARANCE_QUERY_ID",

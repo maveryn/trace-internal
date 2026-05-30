@@ -63,23 +63,23 @@
   "query_templates": {
     "next_hit_label": [
       "{brick_breaker_motion_rule_text} Which labeled brick will the ball hit first?",
-      "Extrapolate the dashed arrow from the ball. {brick_breaker_motion_rule_text} What is the label of the first brick on that line?",
+      "{brick_breaker_motion_rule_text} What is the label of the first brick on that line?",
       "{brick_breaker_motion_rule_text} Extend that direction and identify the labeled brick reached before any other brick.",
-      "The ball moves along the dashed arrow. Which labeled brick is hit first?",
+      "{brick_breaker_motion_rule_text} Which labeled brick is hit first?",
       "{brick_breaker_motion_rule_text} Report the label on the first brick the ball would reach if that direction continues."
     ],
     "paddle_catch_label": [
       "{brick_breaker_motion_rule_text} Which labeled bottom catch lane should the paddle cover?",
-      "Extrapolate the dashed arrow from the ball to the bottom. Which catch-lane label does it reach?",
+      "{brick_breaker_motion_rule_text} Which catch-lane label does it reach if extended to the bottom?",
       "{brick_breaker_motion_rule_text} If the ball keeps moving that way, what bottom lane label should catch it?",
-      "The ball continues along the dashed arrow. Which labeled bottom lane should the paddle be in?",
+      "{brick_breaker_motion_rule_text} Which labeled bottom lane should the paddle be in?",
       "{brick_breaker_motion_rule_text} Report the label of the bottom catch lane where the ball arrives."
     ],
     "hit_row_remaining_count": [
       "{brick_breaker_motion_rule_text} After the ball hits that brick, how many bricks are left in the same row?",
-      "Extrapolate the dashed arrow to the brick it hits. After removing that hit brick, how many bricks remain in that brick's row?",
+      "{brick_breaker_motion_rule_text} After removing the brick hit by that line, how many bricks remain in that brick's row?",
       "{brick_breaker_motion_rule_text} Count the bricks left in the hit brick's row after the hit brick is removed.",
-      "The ball continues along the dashed arrow and removes one brick. How many bricks remain in that same row?",
+      "{brick_breaker_motion_rule_text} After that hit removes one brick, how many bricks remain in that same row?",
       "{brick_breaker_motion_rule_text} Report the number of bricks still present in the row of the brick that gets hit."
     ]
   },

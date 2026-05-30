@@ -17,6 +17,7 @@
 1. The scene shows an 8 by 8 chess-like board with W/B tokens and a visible rule card.
 2. Internal rule families include straight range, diagonal range, straight-or-diagonal range, and leaper rules.
 3. Prompt bundle: `games_chess_variant_v0`
+4. Rendering uses the shared games/puzzles panel scene layer plus scene-local token-board palettes, sampled text fonts, unit-size jitter, and dynamic canvas sizing.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.

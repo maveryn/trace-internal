@@ -48,9 +48,7 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert len(out.evidence_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "icons_sequence_missing_count"
     assert execution["question_format"] == "infer_missing_sequence_count"
-    assert out.query_id == "default"
     assert out.query_id == "arithmetic_progression"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "arithmetic_progression"
     assert int(execution["sequence_length"]) == 5
     assert int(execution["missing_cell_index"]) == 2
@@ -82,7 +80,15 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert len(scene_colors) == 1
 
     missing_boxes = out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert missing_boxes == trace["projected_evidence"]["bbox_set"]
+    assert missing_boxes == trace["projected_evidence"]["pixel_bbox_set"]
+    assert len(trace["projected_evidence"]["pixel_point_set"]) == 1
+    drawn_text_roles = {
+        str(record.get("role"))
+        for record in trace["render_spec"]["drawn_text"]["text_legibility"]["records"]
+    }
+    assert "icon_missing_mark_text" in drawn_text_roles
     missing_cell = [entity for entity in cell_entities if bool(entity["is_missing"])]
     assert len(missing_cell) == 1
     assert missing_boxes[0] == missing_cell[0]["cell_bbox_xyxy"]

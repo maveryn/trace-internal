@@ -38,12 +38,16 @@ def test_games_tetris_line_clear_contract_and_rule_match() -> None:
     best_clear, _best_outcomes = _best_clear_outcomes(board, piece=str(execution["piece"]))
 
     assert out.scene_id == "tetris"
-    assert out.query_id == "default"
     assert out.query_id == "max_clear_with_next_piece"
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert int(out.answer_gt.value) == int(outcome.clear_count) == int(best_clear) == 4
-    assert len(out.evidence_gt.value) == 2
+    assert set(out.evidence_gt.value) == {"board", "next_piece"}
+    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert set(out.trace_payload["projected_evidence"]["keyed_bbox_map"]) == {"board", "next_piece"}
+    render_spec = out.trace_payload["render_spec"]
+    assert render_spec["tetris_board_style"]["style_variant"]
+    assert render_spec["text_style"]["font_family"]
 
 
 def test_games_tetris_drop_result_contract() -> None:
@@ -58,7 +62,6 @@ def test_games_tetris_drop_result_contract() -> None:
     falling = execution["falling_placement"]
 
     assert out.scene_id == "tetris"
-    assert out.query_id == "default"
     assert out.query_id == "single_clear_result"
     assert out.answer_gt.type == "string"
     assert answer in options
@@ -69,6 +72,7 @@ def test_games_tetris_drop_result_contract() -> None:
     assert all(option["placement"] is None for option in execution["options"])
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
+    assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
 
 
 def test_games_tetris_taxonomy() -> None:

@@ -29,7 +29,8 @@ def test_icons_relation_named_original_attribute_contract_all_queries() -> None:
             params={"query_id": query_id, "answer_label": "C", "distractor_count": 5},
             max_attempts=120,
         )
-        trace = out.trace_payload["execution_trace"]
+        payload = out.trace_payload
+        trace = payload["execution_trace"]
         answer = str(out.answer_gt.value)
         records = list(trace["pair_records"])
         answer_record = next(record for record in records if str(record["label"]) == answer)
@@ -39,8 +40,16 @@ def test_icons_relation_named_original_attribute_contract_all_queries() -> None:
         assert out.query_id == query_id
         assert out.answer_gt.type == "option_letter"
         assert answer == "C"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert len(out.evidence_gt.value) == 2
+        assert set(out.evidence_gt.value) == {"original_icon", "right_icon"}
+        assert payload["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert payload["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+        style = payload["render_spec"]["style"]
+        assert "candidate_label_stroke_rgb" in style
+        assert style["text_legibility"]["required_role_count"] >= 2
+        assert style["text_legibility"]["failure_count"] == 0
         assert int(trace["tracked_count"]) == 6
         assert int(trace["distractor_count"]) == 5
         assert sum(1 for record in records if _matches(record, query_id, target)) == 1

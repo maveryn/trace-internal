@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
 from trace.core.task_group_config import get_task_group_defaults
@@ -39,9 +39,11 @@ from .shared.complexity import (
 from .shared.grid_graph import cell_id
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_evidence import coordinate_set_evidence_artifacts
+from .shared.tile_colors import NamedColor, sample_named_tile_palette
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
 
 
+Coord = Tuple[int, int]
 _DEFAULTS = RectangularColorBoardTaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "cell_board_count")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -54,6 +56,144 @@ _COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
     task_id="cell_board_largest_component_size_internal",
 )
+
+
+def _connected_prefix_coords(
+    *,
+    rows: int,
+    cols: int,
+    blocked_coords: Sequence[Coord],
+    target_size: int,
+) -> List[Coord]:
+    """Return a deterministic connected coordinate set avoiding blocked cells."""
+
+    blocked = {(int(row), int(col)) for row, col in blocked_coords}
+    allowed = {
+        (int(row), int(col))
+        for row in range(int(rows))
+        for col in range(int(cols))
+        if (int(row), int(col)) not in blocked
+    }
+    if int(target_size) > len(allowed):
+        raise RuntimeError("largest-component fallback target does not fit available cells")
+
+    start = (int(rows) - 1, int(cols) - 1)
+    if start not in allowed:
+        start = sorted(allowed)[-1]
+    queue: List[Coord] = [start]
+    seen = {start}
+    ordered: List[Coord] = []
+    while queue and len(ordered) < int(target_size):
+        row, col = queue.pop(0)
+        ordered.append((int(row), int(col)))
+        for neighbor in (
+            (int(row) - 1, int(col)),
+            (int(row), int(col) - 1),
+            (int(row), int(col) + 1),
+            (int(row) + 1, int(col)),
+        ):
+            if neighbor not in allowed or neighbor in seen:
+                continue
+            seen.add(neighbor)
+            queue.append(neighbor)
+    if len(ordered) != int(target_size):
+        raise RuntimeError("largest-component fallback could not build connected component")
+    return ordered
+
+
+def _fallback_largest_component_board(
+    *,
+    task_rng,
+    rows: int,
+    cols: int,
+    palette_size: int,
+    target_largest_component_size: int,
+) -> tuple[List[NamedColor], Dict[Coord, NamedColor]]:
+    """Construct a board with a unique target-size component plus one isolated query tile."""
+
+    if int(rows) < 3 or int(cols) < 3:
+        raise RuntimeError("largest-component fallback requires at least a 3x3 board")
+    resolved_palette_size = max(2, int(palette_size))
+    palette = sample_named_tile_palette(task_rng, palette_size=int(resolved_palette_size))
+    query_color = palette[0]
+    other_colors = list(palette[1:])
+
+    isolated_query_coord = (0, 0)
+    blocker_coords = [(0, 1), (1, 0)]
+    main_component_coords = _connected_prefix_coords(
+        rows=int(rows),
+        cols=int(cols),
+        blocked_coords=[isolated_query_coord, *blocker_coords],
+        target_size=int(target_largest_component_size),
+    )
+    query_coords = {isolated_query_coord, *main_component_coords}
+    all_coords = [
+        (int(row), int(col))
+        for row in range(int(rows))
+        for col in range(int(cols))
+    ]
+    filler_coords = [coord for coord in all_coords if coord not in query_coords]
+    if len(filler_coords) < len(other_colors):
+        raise RuntimeError("largest-component fallback has too few non-query cells for the palette")
+
+    board_colors: Dict[Coord, NamedColor] = {
+        coord: query_color
+        for coord in query_coords
+    }
+    for index, coord in enumerate(filler_coords):
+        color = other_colors[int(index) % len(other_colors)]
+        board_colors[(int(coord[0]), int(coord[1]))] = color
+    return palette, board_colors
+
+
+def _largest_component_options_for_scene(
+    scene: Any,
+    *,
+    target_largest_component_size_min: int,
+    effective_target_largest_component_size_max: int,
+) -> tuple[Dict[int, List[Dict[str, Any]]], Dict[str, int], Dict[str, int]]:
+    """Collect valid largest-component query options keyed by answer size."""
+
+    options_by_answer: Dict[int, List[Dict[str, Any]]] = {}
+    counts_by_color: Dict[str, int] = {}
+    component_counts_by_color: Dict[str, int] = {}
+    for entry in build_color_component_catalog(scene):
+        query_color_name = str(entry["query_color_name"])
+        matching_coords = list(entry["matching_coords"])
+        component_coords = list(entry["component_coords"])
+        component_sizes = [int(value) for value in entry["component_sizes"]]
+        largest_component_size = int(entry["largest_component_size"])
+        largest_component_indices = [int(value) for value in entry["largest_component_indices"]]
+        component_count = int(entry["component_count"])
+
+        counts_by_color[query_color_name] = int(len(matching_coords))
+        component_counts_by_color[query_color_name] = int(component_count)
+
+        if int(component_count) < 2:
+            continue
+        if len(largest_component_indices) != 1:
+            continue
+        if not (
+            int(target_largest_component_size_min)
+            <= int(largest_component_size)
+            <= int(effective_target_largest_component_size_max)
+        ):
+            continue
+
+        largest_component_index = int(largest_component_indices[0])
+        winning_component_coords = list(component_coords[largest_component_index])
+        options_by_answer.setdefault(int(largest_component_size), []).append(
+            {
+                "query_color_name": str(query_color_name),
+                "query_color_rgb": list(entry["query_color_rgb"]),
+                "matching_coords": list(matching_coords),
+                "component_coords": list(component_coords),
+                "component_sizes": [int(value) for value in component_sizes],
+                "largest_component_index": int(largest_component_index),
+                "winning_component_coords": list(winning_component_coords),
+            }
+        )
+    return options_by_answer, counts_by_color, component_counts_by_color
 
 
 class TileLargestComponentSizeTask:
@@ -109,7 +249,7 @@ class TileLargestComponentSizeTask:
             raise ValueError("target_largest_component_size_min must be <= target_largest_component_size_max")
 
         max_board_cells = int(rows_max) * int(cols_max)
-        feasible_target_max = int(max_board_cells) - int(palette_size_min)
+        feasible_target_max = int(max_board_cells) - max(3, int(palette_size_min))
         effective_target_largest_component_size_max = min(
             int(target_largest_component_size_max),
             int(feasible_target_max),
@@ -149,51 +289,47 @@ class TileLargestComponentSizeTask:
                 defaults=_DEFAULTS,
             )
 
-            options_by_answer: Dict[int, List[Dict[str, Any]]] = {}
-            counts_by_color = {}
-            component_counts_by_color = {}
-            for entry in build_color_component_catalog(scene):
-                query_color_name = str(entry["query_color_name"])
-                matching_coords = list(entry["matching_coords"])
-                component_coords = list(entry["component_coords"])
-                component_sizes = [int(value) for value in entry["component_sizes"]]
-                largest_component_size = int(entry["largest_component_size"])
-                largest_component_indices = [int(value) for value in entry["largest_component_indices"]]
-                component_count = int(entry["component_count"])
-
-                counts_by_color[query_color_name] = int(len(matching_coords))
-                component_counts_by_color[query_color_name] = int(component_count)
-
-                if int(component_count) < 2:
-                    continue
-                if len(largest_component_indices) != 1:
-                    continue
-                if not (
-                    int(target_largest_component_size_min)
-                    <= int(largest_component_size)
-                    <= int(effective_target_largest_component_size_max)
-                ):
-                    continue
-
-                largest_component_index = int(largest_component_indices[0])
-                winning_component_coords = list(component_coords[largest_component_index])
-                options_by_answer.setdefault(int(largest_component_size), []).append(
-                    {
-                        "query_color_name": str(query_color_name),
-                        "query_color_rgb": list(entry["query_color_rgb"]),
-                        "matching_coords": list(matching_coords),
-                        "component_coords": list(component_coords),
-                        "component_sizes": [int(value) for value in component_sizes],
-                        "largest_component_index": int(largest_component_index),
-                        "winning_component_coords": list(winning_component_coords),
-                    }
-                )
-
+            options_by_answer, counts_by_color, component_counts_by_color = _largest_component_options_for_scene(
+                scene,
+                target_largest_component_size_min=int(target_largest_component_size_min),
+                effective_target_largest_component_size_max=int(effective_target_largest_component_size_max),
+            )
             available_largest_component_sizes = sorted(int(answer) for answer in options_by_answer.keys())
             if int(target_largest_component_size) not in options_by_answer:
                 continue
             selected_option = task_rng.choice(options_by_answer[int(target_largest_component_size)])
             break
+
+        if selected_option is None:
+            fallback_palette, fallback_board_colors = _fallback_largest_component_board(
+                task_rng=task_rng,
+                rows=int(rows_max),
+                cols=int(cols_max),
+                palette_size=int(palette_size_min),
+                target_largest_component_size=int(target_largest_component_size),
+            )
+            scene = build_rectangular_color_board_scene(
+                instance_seed,
+                task_rng=task_rng,
+                params=params,
+                generation_defaults=_GEN_DEFAULTS,
+                rendering_defaults=_RENDER_DEFAULTS,
+                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+                noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+                defaults=_DEFAULTS,
+                rows=int(rows_max),
+                cols=int(cols_max),
+                palette=list(fallback_palette),
+                board_colors=dict(fallback_board_colors),
+            )
+            options_by_answer, counts_by_color, component_counts_by_color = _largest_component_options_for_scene(
+                scene,
+                target_largest_component_size_min=int(target_largest_component_size_min),
+                effective_target_largest_component_size_max=int(effective_target_largest_component_size_max),
+            )
+            available_largest_component_sizes = sorted(int(answer) for answer in options_by_answer.keys())
+            if int(target_largest_component_size) in options_by_answer:
+                selected_option = task_rng.choice(options_by_answer[int(target_largest_component_size)])
 
         if scene is None or selected_option is None:
             raise RuntimeError("failed to sample rectangular tile board for target largest component size")
@@ -391,6 +527,23 @@ class TileLargestComponentSizeTask:
         matched_cell_count = int(len(matching_coords))
         min_board_cell_count = int(_rows_min) * int(_cols_min)
         max_board_cell_count = int(rows_max) * int(cols_max)
+        configured_target_largest_component_size_min = int(
+            group_default(_GEN_DEFAULTS, "target_largest_component_size_min", 2)
+        )
+        configured_target_largest_component_size_max = int(
+            group_default(_GEN_DEFAULTS, "target_largest_component_size_max", 10)
+        )
+        complexity_target_largest_component_size_min = min(
+            int(configured_target_largest_component_size_min),
+            int(target_largest_component_size_min),
+        )
+        complexity_target_largest_component_size_max = min(
+            int(feasible_target_max),
+            max(
+                int(configured_target_largest_component_size_max),
+                int(effective_target_largest_component_size_max),
+            ),
+        )
         complexity = build_tile_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -416,8 +569,8 @@ class TileLargestComponentSizeTask:
                     * normalize_int_with_bounds(
                         int(answer_value),
                         (
-                            int(target_largest_component_size_min),
-                            int(effective_target_largest_component_size_max),
+                            int(complexity_target_largest_component_size_min),
+                            int(complexity_target_largest_component_size_max),
                         ),
                     )
                     + 0.60

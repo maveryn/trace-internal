@@ -8,8 +8,10 @@ from typing import Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from .icon_grid_scene import centered_square_bbox, resolve_fixed_grid_cell_slots
 from .icon_scene import SingleIconPanelLayout, draw_single_panel, resolve_single_panel_layout
+from .scene_style import IconCanvasStyle
 
 
 BBox = Tuple[int, int, int, int]
@@ -78,6 +80,8 @@ def prepare_single_panel_labeled_grid_scene(
     cell_padding_px: int,
     cell_border_rgb: Tuple[int, int, int],
     cell_label_color_rgb: Tuple[int, int, int],
+    cell_label_stroke_rgb: Tuple[int, int, int] | None = None,
+    cell_label_stroke_width_px: int = 1,
     cell_label_font_size_px: int,
     cell_corner_radius_px: int = 12,
     scene_content_side_padding_px: int = 12,
@@ -85,6 +89,7 @@ def prepare_single_panel_labeled_grid_scene(
     scene_content_top_offset_px: int = 40,
     scene_square_cells: bool = False,
     scene_title: str = "Pattern",
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> PreparedSinglePanelLabeledGridScene:
     """Draw single-panel labeled-grid chrome and return resolved cell geometry."""
 
@@ -114,6 +119,7 @@ def prepare_single_panel_labeled_grid_scene(
         corner_radius_px=int(panel_corner_radius_px),
         title_font_size_px=int(panel_title_font_size_px),
         scene_title=str(scene_title),
+        icon_canvas_style=icon_canvas_style,
     )
 
     draw = ImageDraw.Draw(image)
@@ -136,11 +142,15 @@ def prepare_single_panel_labeled_grid_scene(
             width=2,
             fill=tuple(int(v) for v in panel_fill_rgb),
         )
-        draw.text(
+        draw_text_traced(draw,
             (int(resolved_cell_bbox[0] + 16), int(resolved_cell_bbox[1] + 14)),
             str(label),
             font=label_font,
             fill=tuple(int(v) for v in cell_label_color_rgb),
+            stroke_fill=tuple(int(v) for v in (cell_label_stroke_rgb or panel_fill_rgb)),
+            stroke_width=max(0, int(cell_label_stroke_width_px)),
+            role="icon_cell_label_text",
+            required=False,
         )
         scene_cells.append(
             PreparedSinglePanelGridCell(

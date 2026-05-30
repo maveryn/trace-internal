@@ -19,14 +19,17 @@
 ## Answer And Evidence
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label of the correct option swatch.
-3. `evidence_gt.type = bbox_set`
-4. Evidence contains two boxes: the blank swatch and the correct option swatch.
+3. `evidence_gt.type = keyed_bbox_map`
+4. Evidence contains role-bound boxes:
+   - `blank_swatch`: the blank sequence swatch.
+   - `selected_option`: the answer option swatch.
 
 ## Trace Contract
 1. `scene_ir.entities` includes one `linear_color_gradient_panel`, one `linear_gradient_sequence_cell` per row swatch, and one `linear_gradient_option_swatch` per answer option.
 2. `render_map.item_bboxes_px` contains the blank cell id and all option ids.
 3. `execution_trace.supporting_item_ids` records `[missing_cell_id, correct_option_id]`.
 4. `execution_trace.rule_params` records the sampled color progression parameters.
+5. `projected_evidence.keyed_bbox_map` and `pixel_keyed_bbox_map` store the public role-bound evidence boxes.
 
 ## Prompt Contract
 1. Bundle: `puzzles_visual_v0`
@@ -34,3 +37,8 @@
 3. Task key: `color_gradient_completion_query`
 4. Query key: `linear_gradient_completion_label`
 5. Prompt text should describe the blank swatch and answer options, but should not expose the hidden HSL parameters.
+6. Answer+evidence JSON shape: `{"evidence":{"blank_swatch":[268,188,372,292],"selected_option":[524,420,628,524]},"answer":"C"}`
+
+## Visual Policy
+1. All swatch and option labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.label_style.font`.
+2. Post-image noise is intentionally disabled for this color-semantic task and recorded in `render_spec.post_image_noise_policy`.

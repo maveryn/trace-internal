@@ -66,16 +66,15 @@ def test_games_space_shooter_public_tasks_emit_expected_contract(
     if expected_answer is not None:
         assert int(out.answer_gt.value) == int(expected_answer)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "space_shooter"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["panel_scene_style"]["treatment"]
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["panel_bbox_px"] is not None
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
 

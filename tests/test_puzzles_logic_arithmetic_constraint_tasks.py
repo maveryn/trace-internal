@@ -4,10 +4,19 @@ from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.puzzles.logic.arithmetic_constraint import (
+    CRYPTARITHM_QUERY_IDS,
+    CRYPTARITHM_TASK_ID,
+    NUMBER_WALL_QUERY_IDS,
+    NUMBER_WALL_TASK_ID,
+    OPERATOR_GRID_QUERY_IDS,
+    OPERATOR_GRID_TASK_ID,
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
     PuzzlesLogicArithmeticConstraintValueTask,
+    PuzzlesLogicCryptarithmDigitValueTask,
+    PuzzlesLogicNumberWallValueTask,
+    PuzzlesLogicOperatorGridValueTask,
 )
 
 
@@ -22,19 +31,17 @@ def test_arithmetic_constraint_task_emits_public_contract() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "default"
     assert out.query_id in set(SUPPORTED_QUERY_IDS)
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert len(out.evidence_gt.value) >= 2
+    assert len(out.evidence_gt.value) == 1
     assert sorted(out.prompt_variants) == ["answer_and_evidence", "answer_only"]
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert trace["render_spec"]["scene_id"] == SCENE_ID
+    assert trace["render_spec"]["text_style"]["font"]["font_family"]
     assert trace["render_map"]["evidence_source"] == "item_bboxes_px"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert execution["scene_id"] == SCENE_ID
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == out.query_id
     assert execution["supporting_item_ids"]
     assert len(out.evidence_gt.value) == len(execution["supporting_item_ids"])
@@ -46,6 +53,36 @@ def test_arithmetic_constraint_task_emits_public_contract() -> None:
         assert len(bbox) == 4
         assert 0 <= float(bbox[0]) < float(bbox[2]) <= out.image.size[0]
         assert 0 <= float(bbox[1]) < float(bbox[3]) <= out.image.size[1]
+
+
+def test_arithmetic_constraint_scene_tasks_use_target_only_evidence() -> None:
+    task_specs = (
+        (PuzzlesLogicArithmeticConstraintValueTask(), TASK_ID, SUPPORTED_QUERY_IDS),
+        (PuzzlesLogicCryptarithmDigitValueTask(), CRYPTARITHM_TASK_ID, CRYPTARITHM_QUERY_IDS),
+        (PuzzlesLogicOperatorGridValueTask(), OPERATOR_GRID_TASK_ID, OPERATOR_GRID_QUERY_IDS),
+        (PuzzlesLogicNumberWallValueTask(), NUMBER_WALL_TASK_ID, NUMBER_WALL_QUERY_IDS),
+    )
+    for task, task_id, query_ids in task_specs:
+        assert TASK_REGISTRY[str(task_id)] is task.__class__
+        for index, query_id in enumerate(query_ids):
+            out = task.generate(
+                2026052400 + (101 * len(str(task_id))) + index,
+                params={"query_id": str(query_id)},
+                max_attempts=120,
+            )
+            trace = out.trace_payload
+            execution = trace["execution_trace"]
+            item_bboxes = trace["render_map"]["item_bboxes_px"]
+            supporting_item_ids = [str(item_id) for item_id in execution["supporting_item_ids"]]
+
+            assert out.query_id == str(query_id)
+            assert out.evidence_gt.type == "bbox_set"
+            assert len(out.evidence_gt.value) == 1
+            assert len(supporting_item_ids) == 1
+            assert supporting_item_ids[0] != "diagram_panel"
+            assert supporting_item_ids[0] in item_bboxes
+            assert out.evidence_gt.value[0] == item_bboxes[supporting_item_ids[0]]
+            assert out.evidence_gt.value[0] != item_bboxes["diagram_panel"]
 
 
 def test_forced_arithmetic_constraint_queries_are_valid() -> None:

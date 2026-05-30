@@ -8,6 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .crossing_common import (
     CrossingRouteOption,
     CrossingVehicle,
@@ -16,6 +17,7 @@ from .crossing_common import (
     start_entity_id,
 )
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
 @dataclass(frozen=True)
@@ -33,6 +35,7 @@ class CrossingRenderParams:
     vehicle_height_px: int
     path_width_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -157,6 +160,7 @@ def _fit_text(
     fill: Tuple[int, int, int],
     max_size_px: int,
     bold: bool = True,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -167,6 +171,7 @@ def _fit_text(
         max_width=max(1.0, float(right - left)),
         max_height=max(1.0, float(bottom - top)),
         bold=bool(bold),
+        font_family=str(font_family) or None,
         min_size_px=8,
         max_size_px=int(max_size_px),
         fill_ratio=0.78,
@@ -174,7 +179,7 @@ def _fit_text(
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -182,7 +187,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _union_bbox(boxes: Tuple[Tuple[float, float, float, float], ...]) -> Tuple[float, float, float, float]:
@@ -229,6 +234,7 @@ def render_crossing_scene(
     background: Image.Image,
     style_variant: str,
     params: CrossingRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedCrossingScene:
     """Render one lane-crossing playfield."""
 
@@ -261,6 +267,20 @@ def render_crossing_scene(
     road_bottom = float(bottom - safe_h)
     row_h = float((road_bottom - road_top) / max(1, int(row_count)))
     lane_w = float(width / max(1, int(lane_count)))
+    panel_bbox = (
+        int(max(8, round(left - 24.0))),
+        int(max(8, round(top - 24.0))),
+        int(min(int(params.canvas_width) - 8, round(right + 24.0))),
+        int(min(int(params.canvas_height) - 8, round(bottom + 24.0))),
+    )
+    if panel_style is not None:
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=28,
+            border_width=max(1, int(params.border_width_px)),
+        )
 
     draw.rounded_rectangle(
         playfield_bbox,
@@ -328,6 +348,7 @@ def render_crossing_scene(
             text=str(label),
             fill=theme.text_rgb,
             max_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
         entity_id = start_entity_id(index)
         start_bboxes[str(entity_id)] = bbox
@@ -396,6 +417,7 @@ def render_crossing_scene(
                     text=str(row + 1),
                     fill=theme.text_rgb,
                     max_size_px=max(8, int(params.label_font_size_px * 0.55)),
+                    font_family=str(params.font_family),
                 )
         label_center = points[0]
         label_box = (
@@ -415,7 +437,14 @@ def render_crossing_scene(
                 outline=tuple(int(v) for v in theme.vehicle_outline_rgb) + (210,),
                 width=2,
             )
-            _fit_text(draw, bbox=label_box, text=str(route.label), fill=theme.text_rgb, max_size_px=int(params.label_font_size_px))
+            _fit_text(
+                draw,
+                bbox=label_box,
+                text=str(route.label),
+                fill=theme.text_rgb,
+                max_size_px=int(params.label_font_size_px),
+                font_family=str(params.font_family),
+            )
         if cell_boxes:
             bbox = _union_bbox(tuple(cell_boxes))
             entity_id = route_entity_id(route.label)
@@ -477,9 +506,11 @@ def render_crossing_scene(
         text="GOAL",
         fill=theme.text_rgb,
         max_size_px=max(12, int(params.label_font_size_px)),
+        font_family=str(params.font_family),
     )
 
     render_map = {
+        "scene_panel_bbox_px": [round(float(v), 3) for v in panel_bbox],
         "playfield_bbox_px": [round(float(v), 3) for v in playfield_bbox],
         "road_bbox_px": [round(left, 3), round(road_top, 3), round(right, 3), round(road_bottom, 3)],
         "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes.items()},
@@ -489,6 +520,8 @@ def render_crossing_scene(
         "route_cell_bboxes_px": {str(key): list(value) for key, value in route_cell_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "layout_jitter": dict(layout_jitter),
+        "panel_scene_style": {} if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
     }
     return RenderedCrossingScene(
         image=image.convert("RGB"),

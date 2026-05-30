@@ -42,6 +42,9 @@ def test_games_bingo_completed_line_count_defaults_expose_scene_query_and_target
     assert float(generation["line_sum_distractor_mark_prob"]) == 0.2
     assert int(rendering["card_width_px"]) > 0
     assert int(rendering["card_height_px"]) > 0
+    assert float(rendering["unit_size_scale_min"]) == 0.5
+    assert float(rendering["unit_size_scale_max"]) == 1.0
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
     assert int(rendering["number_font_size_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_bingo_v0"
     assert "5 x 5 bingo card" in str(prompt["object_description_single_card"])

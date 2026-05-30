@@ -14,6 +14,6 @@
 4. Scene variants: `constraint_sheet`, `constraint_card`, `constraint_outline`
 5. The scene shows a compact arithmetic-constraint puzzle with numbered shapes or cells, visible relation/rule text, and one marked question target.
 6. `answer_gt.type`: `integer`
-7. `evidence_gt.type`: `bbox_set` over the puzzle panel and marked target node/cell.
+7. `evidence_gt.type`: `bbox_set` over the marked target node/cell only.
 8. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 9. Answers and evidence are produced from the same metadata execution trace.

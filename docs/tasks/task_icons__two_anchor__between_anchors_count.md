@@ -15,11 +15,11 @@
 5. Evidence type: `evidence_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
 6. Count policy: `target_count` is sampled from `0..5`, `distractor_count` is sampled from `1..10`, and `object_count = target_count + distractor_count` therefore ranges from `1..15`; the two anchors are additional and are not counted in `object_count`.
 7. Anchor policy: the two anchors always share the same icon type, tint, and rotation. For `strip_axis=vertical`, the anchor centers share the same `y`; for `strip_axis=horizontal`, the anchor centers share the same `x`.
-7. Candidate policy: every non-anchor Scene icon uses a different icon type from the anchors, while tint and rotation may vary per icon.
-8. Match policy: candidate membership is computed from icon-center coordinates only. `strip_axis=vertical` counts candidate centers whose `x` lies between the anchor centers; `strip_axis=horizontal` counts candidate centers whose `y` lies between the anchor centers.
-9. Boundary-margin rule: every candidate center must stay at least `strip_boundary_margin_px = 14` away from the strip boundary, so positives and negatives never become near-threshold ambiguous cases.
-10. Placement policy: Scene icons are placed randomly under a `0.08` smaller-area overlap cap, with both anchor highlight boxes treated as occupied regions during placement.
-11. Noise/color policy: each icon instance (both anchors and every Scene icon) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; colors come from one background-safe Lab-separated palette.
+8. Candidate policy: every non-anchor Scene icon uses a different icon type from the anchors, while tint and rotation may vary per icon.
+9. Match policy: candidate membership is computed from icon-center coordinates only. `strip_axis=vertical` counts candidate centers whose `x` lies between the anchor centers; `strip_axis=horizontal` counts candidate centers whose `y` lies between the anchor centers.
+10. Boundary-margin rule: every candidate center must stay at least `strip_boundary_margin_px = 14` away from the strip boundary, so positives and negatives never become near-threshold ambiguous cases.
+11. Placement policy: Scene icons are placed randomly under a `0.08` smaller-area overlap cap, with both anchor highlight boxes treated as occupied regions during placement.
+12. Noise/color policy: each icon instance (both anchors and every Scene icon) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; colors come from one background-safe Lab-separated palette.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_relation_v0`
@@ -40,11 +40,18 @@
 3. Reject/resample conditions: unsupported count config, missing curated assets, anchor-pair layout failures, or strip/overlap-constrained placement failures.
 4. No-auto-relaxation guarantee: generation fails on unmet strip/asset/layout constraints instead of weakening the boundary margin or anchor alignment rule.
 5. Evidence scope: the user-facing `bbox_set` covers matching Scene icons only; both anchor boxes stay in trace metadata.
-6. Trace style metadata records the sampled palette, anchor styling, strip boundary margin, and per-instance subtle-noise edits.
-7. Balanced defaults: seeded sampling first balances the vertical/horizontal strip axis, then the task passes a decoupled index to independent count sampling so each axis cycles through the full target-count support.
+6. Trace style metadata records the sampled palette, anchor styling, strip boundary margin, panel text-legibility metadata, anchor-label text draw records, and per-instance subtle-noise edits.
+7. Balanced defaults: seeded sampling balances the vertical/horizontal strip axis and target-count support using the same generator used for normal dataset generation.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_between_two_anchors_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_between_two_anchors_count_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+
+## Current Review Status
+Current browser-review sidecars live under
+`review/task-reviews/icons/two_anchor/task_icons__two_anchor__between_anchors_count/`.
+Public evidence uses the shared icon `bbox_set` payload over counted non-anchor
+Scene icons only. Solve-rate status is tracked in
+`review/calibration_sweep_status.json`.

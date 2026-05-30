@@ -16,13 +16,14 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
   PROMPT_OUTPUT_MODES,
   build_prompt_trace_artifacts,
   render_task_prompt_variants,
 )
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_rendering import draw_text_centered, load_font, temporary_default_font_family
 from ..shared.clock_scene import (
   ClockRenderParams,
   SUPPORTED_PUZZLE_CLOCK_SCENE_VARIANTS,
@@ -156,7 +157,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 _COMPLEXITY_WEIGHTS = resolve_time_artifact_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="clock")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="clock", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = {
+  **load_puzzle_noise_defaults(task_group="clock", apply_prob=0.5),
+  "apply_prob": 0.5,
+}
 
 
 def _resolve_named_variant(
@@ -628,6 +632,12 @@ class PuzzlesClockCompareTask:
       accent_color_name=str(query.accent_color_name),
       style_variant=str(query.style_variant),
     )
+    font_family = sample_font_family(
+      role="readout",
+      instance_seed=int(instance_seed),
+      namespace="puzzles.clock.compare.font",
+      params={**dict(_RENDER_DEFAULTS), **dict(params)},
+    )
 
     label_font_size_px = int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)))
     label_gap_px = int(params.get("label_gap_px", group_default(_RENDER_DEFAULTS, "label_gap_px", _DEFAULTS.label_gap_px)))
@@ -645,7 +655,6 @@ class PuzzlesClockCompareTask:
     )
     image = background.copy().convert("RGB")
     draw = ImageDraw.Draw(image)
-    label_font = load_font(int(label_font_size_px), bold=True)
     centers = _clock_centers(
       render_params=render_params,
       clock_count=len(query.clock_labels),
@@ -658,45 +667,47 @@ class PuzzlesClockCompareTask:
     scene_entities: List[Dict[str, Any]] = []
     clocks_by_label: Dict[str, Dict[str, Any]] = {}
     scene_bbox_values: List[Tuple[float, float, float, float]] = []
-    for label, center in zip(query.clock_labels, centers):
-      geometry = draw_clock_geometry(
-        image,
-        center_px=center,
-        face_radius_px=float(render_params.face_radius_px),
-        scene_variant=str(query.scene_variant),
-        shown_total_minutes=int(query.shown_total_minutes_by_label[str(label)]),
-        render_params=render_params,
-        visual_theme=clock_theme,
-        entity_prefix=f"clock_{str(label).lower()}",
-        extra_face_attrs={
-          "clock_label": str(label),
+    with temporary_default_font_family(str(font_family)):
+      label_font = load_font(int(label_font_size_px), bold=True)
+      for label, center in zip(query.clock_labels, centers):
+        geometry = draw_clock_geometry(
+          image,
+          center_px=center,
+          face_radius_px=float(render_params.face_radius_px),
+          scene_variant=str(query.scene_variant),
+          shown_total_minutes=int(query.shown_total_minutes_by_label[str(label)]),
+          render_params=render_params,
+          visual_theme=clock_theme,
+          entity_prefix=f"clock_{str(label).lower()}",
+          extra_face_attrs={
+            "clock_label": str(label),
+            "shown_time_text": str(format_clock_hhmm(int(query.shown_total_minutes_by_label[str(label)]))),
+          },
+        )
+        label_center = (
+          float(center[0]),
+          float(center[1] - float(render_params.face_radius_px) - float(label_gap_px)),
+        )
+        draw_text_centered(
+          draw,
+          text=str(label),
+          center=label_center,
+          font=label_font,
+          fill=tuple(int(value) for value in clock_theme.numeral_color_rgb),
+        )
+        scene_entities.extend([dict(entity) for entity in geometry.entities])
+        clocks_by_label[str(label)] = {
+          "face_bbox_px": [round(float(value), 3) for value in geometry.face_bbox_px],
+          "center_px": [round(float(value), 3) for value in geometry.center_px],
+          "hour_hand_bbox_px": [round(float(value), 3) for value in geometry.hour_hand_bbox_px],
+          "minute_hand_bbox_px": [round(float(value), 3) for value in geometry.minute_hand_bbox_px],
+          "hour_hand_tip_px": [round(float(value), 3) for value in geometry.hour_hand_tip_px],
+          "minute_hand_tip_px": [round(float(value), 3) for value in geometry.minute_hand_tip_px],
+          "shown_total_minutes": int(query.shown_total_minutes_by_label[str(label)]),
           "shown_time_text": str(format_clock_hhmm(int(query.shown_total_minutes_by_label[str(label)]))),
-        },
-      )
-      label_center = (
-        float(center[0]),
-        float(center[1] - float(render_params.face_radius_px) - float(label_gap_px)),
-      )
-      draw_text_centered(
-        draw,
-        text=str(label),
-        center=label_center,
-        font=label_font,
-        fill=tuple(int(value) for value in clock_theme.numeral_color_rgb),
-      )
-      scene_entities.extend([dict(entity) for entity in geometry.entities])
-      clocks_by_label[str(label)] = {
-        "face_bbox_px": [round(float(value), 3) for value in geometry.face_bbox_px],
-        "center_px": [round(float(value), 3) for value in geometry.center_px],
-        "hour_hand_bbox_px": [round(float(value), 3) for value in geometry.hour_hand_bbox_px],
-        "minute_hand_bbox_px": [round(float(value), 3) for value in geometry.minute_hand_bbox_px],
-        "hour_hand_tip_px": [round(float(value), 3) for value in geometry.hour_hand_tip_px],
-        "minute_hand_tip_px": [round(float(value), 3) for value in geometry.minute_hand_tip_px],
-        "shown_total_minutes": int(query.shown_total_minutes_by_label[str(label)]),
-        "shown_time_text": str(format_clock_hhmm(int(query.shown_total_minutes_by_label[str(label)]))),
-        "clock_label": str(label),
-      }
-      scene_bbox_values.append(tuple(float(value) for value in geometry.face_bbox_px))
+          "clock_label": str(label),
+        }
+        scene_bbox_values.append(tuple(float(value) for value in geometry.face_bbox_px))
 
     image, post_noise_meta = apply_post_image_noise(
       image,
@@ -818,6 +829,12 @@ class PuzzlesClockCompareTask:
           "minute_hand_width_px": int(render_params.minute_hand_width_px),
           "label_font_size_px": int(label_font_size_px),
           "label_gap_px": int(label_gap_px),
+          "font": {
+            "source": "global_font_pool",
+            "font_family": str(font_family),
+            "font_asset_version": font_asset_version(),
+            "scope": "multi_clock_faces_and_labels",
+          },
           "clock_count": int(query.clock_count),
           "row_lengths": [int(value) for value in _resolve_row_lengths(int(query.clock_count))],
           "grid_col_gap_px": int(grid_col_gap_px),

@@ -70,6 +70,11 @@ rendering:
     shooter_radius_px: 22
     option_radius_px: 17
     option_label_font_size_px: 22
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 500
+    canvas_side_padding_px: 120
+    canvas_vertical_padding_px: 86
 complexity:
   shared:
     criteria_weights:
@@ -85,9 +90,9 @@ prompt:
     object_description_open_pack: a close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
     object_description_dense_pack: a dense close-packed bubble-shooter board with colored bubbles and a marked bullseye landing target
     bubble_shooter_rule_text: A shot bubble attaches at the marked landing target; a same-color connected group pops when the placed bubble makes the group size at least three. After popped bubbles are removed, bubbles not connected to the top drop.
-    evidence_hint_pop_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the existing board bubbles that pop; do not include the shot bubble
+    evidence_hint_pop_count: set "evidence" to center points [x, y] of the existing board bubbles that pop
     answer_hint_pop_count: set "answer" to the number of existing board bubbles that pop, excluding the shot bubble
-    evidence_hint_drop_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the bubbles that drop after the popped group is removed; do not include popped bubbles
+    evidence_hint_drop_count: set "evidence" to center points [x, y] of the bubbles that drop after the popped group is removed
     answer_hint_drop_count: set "answer" to the number of bubbles that drop after the shot, excluding popped bubbles
-    evidence_hint_pop_color_label: set "evidence" to bounding boxes [x0, y0, x1, y1] around the chosen color option, the marked landing target, and the existing board bubbles that would pop
+    evidence_hint_pop_color_label: set "evidence" to center points [x, y] of the existing board bubbles that would pop for the selected option color
     answer_hint_pop_color_label: set "answer" to the single option letter whose color would make bubbles pop

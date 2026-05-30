@@ -9,7 +9,9 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import DominoTheme, build_games_domino_theme
 
 
@@ -79,6 +81,7 @@ class DominoRenderParams:
     reference_tag_gap_px: int
     section_label_font_size_px: int
     section_separator_width_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -211,7 +214,11 @@ def _draw_reference_tag(
 ) -> Tuple[float, float, float, float]:
     """Draw one small REF tag above a marked domino tile."""
 
-    font = load_font(int(params.reference_tag_font_size_px), bold=True)
+    font = load_font(
+        int(params.reference_tag_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     text = "REF"
     text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
     text_width = float(text_bbox[2] - text_bbox[0])
@@ -234,14 +241,14 @@ def _draw_reference_tag(
         radius=int(0.5 * tag_height),
         fill=tuple(int(value) for value in theme.reference_tag_fill_rgb),
     )
-    draw.text(
+    draw_text_traced(draw,
         (float(tag_left + pad_x), float(tag_top + pad_y)),
         text,
         font=font,
         fill=tuple(int(value) for value in theme.reference_tag_text_rgb),
         stroke_width=1,
         stroke_fill=(0, 0, 0),
-    )
+     role="readout", required=False,)
     return tag_bbox
 
 
@@ -255,7 +262,11 @@ def _draw_option_label(
 ) -> Tuple[float, float, float, float]:
     """Draw a compact option label above one loose domino."""
 
-    font = load_font(max(14, int(params.reference_tag_font_size_px)), bold=True)
+    font = load_font(
+        max(14, int(params.reference_tag_font_size_px)),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     text = str(label)
     text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
     text_width = float(text_bbox[2] - text_bbox[0])
@@ -281,7 +292,7 @@ def _draw_option_label(
         outline=tuple(int(value) for value in theme.reference_outline_rgb),
         width=1,
     )
-    draw.text(
+    draw_text_traced(draw,
         (
             float(label_left + (0.5 * (width - text_width)) - text_bbox[0]),
             float(label_top + pad_y - text_bbox[1]),
@@ -291,7 +302,7 @@ def _draw_option_label(
         fill=tuple(int(value) for value in theme.reference_tag_text_rgb),
         stroke_width=1,
         stroke_fill=(0, 0, 0),
-    )
+     role="readout", required=False,)
     return label_bbox
 
 
@@ -395,8 +406,9 @@ def _draw_section_chrome(
     chain_bottom = max(float(bbox[3]) for bbox in chain_bboxes)
     candidate_top = min(float(bbox[1]) for bbox in candidate_bboxes)
     separator_y = round(float(chain_bottom + (0.5 * (candidate_top - chain_bottom))), 3)
-    line_left = float(params.panel_margin_px)
-    line_right = float(params.canvas_width - params.panel_margin_px)
+    all_bboxes = list(chain_bboxes) + list(candidate_bboxes)
+    line_left = max(12.0, min(float(bbox[0]) for bbox in all_bboxes) - 28.0)
+    line_right = min(float(params.canvas_width) - 12.0, max(float(bbox[2]) for bbox in all_bboxes) + 28.0)
     line_width = max(1, int(params.section_separator_width_px))
 
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
@@ -407,7 +419,11 @@ def _draw_section_chrome(
         width=int(line_width),
     )
 
-    font = load_font(int(params.section_label_font_size_px), bold=True)
+    font = load_font(
+        int(params.section_label_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     text_fill = (255, 255, 255)
     text_stroke = resolve_text_stroke_fill(text_fill)
     label_fill = (
@@ -444,14 +460,14 @@ def _draw_section_chrome(
         text_y = float(y + pad_y)
         for line, line_width, line_height in zip(lines, line_widths, line_heights):
             text_x = float(x + pad_x + (0.5 * (text_width - line_width)))
-            draw.text(
+            draw_text_traced(draw,
                 (text_x, text_y),
                 line,
                 font=font,
                 fill=text_fill,
                 stroke_width=1,
                 stroke_fill=text_stroke,
-            )
+             role="readout", required=False,)
             text_y += float(line_height + line_gap)
         label_bboxes[str(key)] = [float(value) for value in label_bbox]
 
@@ -500,6 +516,27 @@ def _centered_row_layout(
     return [float(start_x + (index * (fitted_width + effective_gap))) for index in range(count)], float(fitted_width)
 
 
+def _panel_bbox_for_dominoes(
+    *,
+    chain_bboxes: Sequence[Tuple[float, float, float, float]],
+    candidate_bboxes: Sequence[Tuple[float, float, float, float]],
+    params: DominoRenderParams,
+) -> Tuple[int, int, int, int]:
+    """Return a shared backing-panel bbox around the jittered domino layout."""
+
+    all_bboxes = list(chain_bboxes) + list(candidate_bboxes)
+    x0 = min(float(bbox[0]) for bbox in all_bboxes)
+    y0 = min(float(bbox[1]) for bbox in all_bboxes)
+    x1 = max(float(bbox[2]) for bbox in all_bboxes)
+    y1 = max(float(bbox[3]) for bbox in all_bboxes)
+    return (
+        max(10, int(round(x0 - 46.0))),
+        max(10, int(round(y0 - 70.0))),
+        min(int(params.canvas_width) - 10, int(round(x1 + 46.0))),
+        min(int(params.canvas_height) - 10, int(round(y1 + 50.0))),
+    )
+
+
 def render_domino_chain_scene(
     *,
     chain_tiles: Sequence[DominoTileInstance],
@@ -508,6 +545,7 @@ def render_domino_chain_scene(
     scene_variant: str,
     style_variant: str,
     params: DominoRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDominoScene:
     """Render one domino chain with candidate tableau and return trace metadata."""
 
@@ -594,6 +632,19 @@ def render_domino_chain_scene(
     all_bboxes = [offset_bbox(bbox_px, dx=dx, dy=dy) for bbox_px in all_bboxes]
     chain_bboxes = list(all_bboxes[: len(chain_tiles)])
     candidate_bboxes = list(all_bboxes[len(chain_tiles) :])
+    panel_bbox = _panel_bbox_for_dominoes(
+        chain_bboxes=chain_bboxes,
+        candidate_bboxes=candidate_bboxes,
+        params=params,
+    )
+    if panel_style is not None:
+        draw_panel_scene_chrome(
+            ImageDraw.Draw(image),
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=18,
+            border_width=3,
+        )
 
     section_chrome = _draw_section_chrome(
         image,
@@ -669,6 +720,11 @@ def render_domino_chain_scene(
         "reference_tag_bboxes_px": reference_tag_bboxes,
         "option_label_bboxes_px": option_label_bboxes,
         "layout_jitter": dict(layout_jitter),
+        "scene_panel_bbox_px": [int(value) for value in panel_bbox],
+        "panel_scene_style": {}
+        if panel_style is None
+        else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
     }
     render_map.update(section_chrome)
     return RenderedDominoScene(

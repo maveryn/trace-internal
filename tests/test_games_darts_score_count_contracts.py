@@ -47,9 +47,11 @@ def test_games_darts_score_count_emits_expected_count_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
@@ -79,6 +81,7 @@ def test_games_darts_score_count_total_score_uses_small_board_and_all_darts_as_e
         {"label": answer_label, "score": int(execution["target_answer"]), "is_answer": True}
     ]
     assert len(out.evidence_gt.value) == 1
+    assert out.evidence_gt.type == "point_set"
     assert len(execution["evidence_entity_ids"]) == 1
     assert execution["evidence_entity_ids"][0].startswith("dart_")
     assert execution["target_answer_support"] is None

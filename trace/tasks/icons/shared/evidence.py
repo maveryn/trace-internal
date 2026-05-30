@@ -64,4 +64,47 @@ def matching_scene_cell_bbox_evidence(
     }
 
 
-__all__ = ["matching_scene_cell_bbox_evidence"]
+def bbox_set_evidence(
+    bboxes: Sequence[Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return typed bbox-set evidence for homogeneous icon witnesses."""
+
+    normalized_bboxes: list[list[int]] = []
+    for index, bbox in enumerate(bboxes):
+        if not isinstance(bbox, Sequence) or len(bbox) != 4:
+            raise RuntimeError(f"invalid bbox_set evidence at index {index}: {bbox}")
+        normalized_bboxes.append([int(round(float(value))) for value in bbox])
+    return {
+        "evidence_type": "bbox_set",
+        "evidence_value": [list(bbox) for bbox in normalized_bboxes],
+        "projected_evidence": {
+            "type": "bbox_set",
+            "bbox_set": [list(bbox) for bbox in normalized_bboxes],
+            "pixel_bbox_set": [list(bbox) for bbox in normalized_bboxes],
+            "pixel_point_set": [_bbox_center(bbox) for bbox in normalized_bboxes],
+        },
+    }
+
+
+def keyed_bbox_map_evidence(
+    role_bboxes: Mapping[str, Sequence[int | float]],
+) -> Dict[str, Any]:
+    """Return keyed-bbox evidence for role-bound icon witnesses."""
+
+    keyed_bboxes: dict[str, list[int]] = {}
+    for role, bbox in role_bboxes.items():
+        if not isinstance(bbox, Sequence) or len(bbox) != 4:
+            raise RuntimeError(f"invalid keyed bbox for role {role!r}: {bbox}")
+        keyed_bboxes[str(role)] = [int(round(float(value))) for value in bbox]
+    return {
+        "evidence_type": "keyed_bbox_map",
+        "evidence_value": {str(key): list(value) for key, value in keyed_bboxes.items()},
+        "projected_evidence": {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": {str(key): list(value) for key, value in keyed_bboxes.items()},
+            "pixel_keyed_bbox_map": {str(key): list(value) for key, value in keyed_bboxes.items()},
+        },
+    }
+
+
+__all__ = ["bbox_set_evidence", "keyed_bbox_map_evidence", "matching_scene_cell_bbox_evidence"]

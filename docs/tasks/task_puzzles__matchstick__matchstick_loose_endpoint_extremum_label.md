@@ -14,7 +14,7 @@
 4. The trace records each option edge set, each option loose-endpoint count, the selected extremum query, and grid size.
 
 ## Rendering
-The shared `matchstick` renderer supports wooden matches, colored rods, chalk sticks, neon rods, and metal rods. Each instance shows six labeled arrangements with no Source panel.
+The shared `matchstick` renderer supports wooden matches, colored rods, chalk sticks, neon rods, and metal rods. Each instance shows six labeled arrangements with no Source panel. Option labels sample one global vendored font family per instance and record it in `render_spec.text_style.font`.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, renderer/config versions, and recorded query/scene variants.

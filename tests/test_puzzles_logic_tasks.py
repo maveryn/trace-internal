@@ -67,20 +67,20 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         render = trace["render_spec"]
         render_map = trace["render_map"]
         solver = execution["solver_trace"]
-        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        evidence_bboxes = {
+            str(key): [float(value) for value in bbox]
+            for key, bbox in out.evidence_gt.value.items()
+        }
         board_values = [[str(value) for value in row] for row in execution["board_values"]]
         symbol_pool = [str(value) for value in execution["symbol_pool"]]
 
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == "king_non_touch"
-        assert str(trace["query_spec"]["query_id"]) == "default"
         assert str(trace["query_spec"]["query_id"]) == "king_non_touch"
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == "king_non_touch"
         assert str(execution["internal_query_id"]) == "king_non_touch"
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert len(evidence_bboxes) == 1
+        assert out.evidence_gt.type == "keyed_bbox_map"
+        assert set(evidence_bboxes) == {"source_grid", "selected_option"}
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert str(execution["scene_variant"]) == str(scene_variant)
         assert str(render["scene_variant"]) == str(scene_variant)
@@ -91,7 +91,16 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
         assert int(execution["cell_count"]) == int(execution["board_size"]) ** 2
         assert int(execution["option_count"]) == 6
         assert str(execution["question_format"]) == "logic_grid_mcq"
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == evidence_bboxes
+        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == evidence_bboxes
+        assert execution["evidence_role_item_ids"] == {
+            "source_grid": "source_grid",
+            "selected_option": str(execution["correct_option_panel_id"]),
+        }
+        assert render_map["evidence_source"] == "keyed_source_grid_and_option_bboxes_px"
+        assert render["text_style"]["font"]["source"] == "global_font_pool"
+        assert render["text_style"]["font"]["font_family"]
         assert [str(option_id) for option_id in execution["supporting_option_panel_ids"]] == [
             str(execution["correct_option_panel_id"])
         ]
@@ -102,7 +111,8 @@ def test_puzzle_logic_grid_completion_king_non_touch_contract_matches_winning_op
             float(value)
             for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
         ]
-        assert evidence_bboxes[0] == expected_bbox
+        assert evidence_bboxes["selected_option"] == expected_bbox
+        assert evidence_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
 
         option_specs = execution["option_specs"]
         assert len(option_specs) == 6
@@ -139,7 +149,13 @@ def test_puzzle_logic_grid_king_non_touch_prompt_examples_match_selected_variant
     out = task.generate(24780, params={}, max_attempts=10)
     answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-    assert answer_and_evidence == {"evidence": [[118, 621, 262, 793]], "answer": "A"}
+    assert answer_and_evidence == {
+        "evidence": {
+            "source_grid": [396, 98, 804, 506],
+            "selected_option": [118, 621, 262, 793],
+        },
+        "answer": "A",
+    }
     assert answer_only == {"answer": "A"}
 
 
@@ -194,19 +210,19 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             render = trace["render_spec"]
             render_map = trace["render_map"]
             solver = execution["solver_trace"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            evidence_bboxes = {
+                str(key): [float(value) for value in bbox]
+                for key, bbox in out.evidence_gt.value.items()
+            }
             board_values = [[str(value) for value in row] for row in execution["board_values"]]
             symbol_pool = [str(value) for value in execution["symbol_pool"]]
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == "grid_uniqueness_completion"
-            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == "grid_uniqueness_completion"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == "grid_uniqueness_completion"
             assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"
-            assert out.evidence_gt.type == "bbox_set"
-            assert len(evidence_bboxes) == 1
+            assert out.evidence_gt.type == "keyed_bbox_map"
+            assert set(evidence_bboxes) == {"source_grid", "selected_option"}
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
@@ -217,7 +233,16 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
             assert int(execution["cell_count"]) == int(execution["board_size"]) ** 2
             assert int(execution["option_count"]) == 6
             assert str(execution["question_format"]) == "logic_grid_mcq"
-            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+            assert trace["projected_evidence"]["keyed_bbox_map"] == evidence_bboxes
+            assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == evidence_bboxes
+            assert execution["evidence_role_item_ids"] == {
+                "source_grid": "source_grid",
+                "selected_option": str(execution["correct_option_panel_id"]),
+            }
+            assert render_map["evidence_source"] == "keyed_source_grid_and_option_bboxes_px"
+            assert render["text_style"]["font"]["source"] == "global_font_pool"
+            assert render["text_style"]["font"]["font_family"]
             assert [str(option_id) for option_id in execution["supporting_option_panel_ids"]] == [
                 str(execution["correct_option_panel_id"])
             ]
@@ -228,7 +253,8 @@ def test_puzzle_logic_grid_completion_label_contract_matches_winning_option_pane
                 float(value)
                 for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
             ]
-            assert evidence_bboxes[0] == expected_bbox
+            assert evidence_bboxes["selected_option"] == expected_bbox
+            assert evidence_bboxes["source_grid"] == [float(value) for value in render["board_bbox_px"]]
             assert all(float(bbox[0]) >= 0.0 for bbox in render_map["cell_bboxes_px"].values())
             assert all(float(bbox[1]) >= 0.0 for bbox in render_map["cell_bboxes_px"].values())
             assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["option_panel_bboxes_px"].values())
@@ -276,19 +302,37 @@ def test_puzzle_logic_prompt_examples_match_selected_variants() -> None:
         (
             PuzzlesLogicGridUniquenessCompletionLabelTask(),
             {"uniqueness_query": "axis_uniqueness", "uniqueness_axis": "row"},
-            {"evidence": [[176, 650, 320, 822]], "answer": "C"},
+            {
+                "evidence": {
+                    "source_grid": [330, 92, 870, 632],
+                    "selected_option": [176, 650, 320, 822],
+                },
+                "answer": "C",
+            },
             {"answer": "C"},
         ),
         (
             PuzzlesLogicGridUniquenessCompletionLabelTask(),
             {"uniqueness_query": "row_and_column_uniqueness"},
-            {"evidence": [[504, 650, 648, 822]], "answer": "B"},
+            {
+                "evidence": {
+                    "source_grid": [330, 92, 870, 632],
+                    "selected_option": [504, 650, 648, 822],
+                },
+                "answer": "B",
+            },
             {"answer": "B"},
         ),
         (
             PuzzlesLogicGridKingNonTouchLabelTask(),
             {},
-            {"evidence": [[118, 621, 262, 793]], "answer": "A"},
+            {
+                "evidence": {
+                    "source_grid": [396, 98, 804, 506],
+                    "selected_option": [118, 621, 262, 793],
+                },
+                "answer": "A",
+            },
             {"answer": "A"},
         ),
     )
@@ -375,6 +419,7 @@ def test_puzzle_logic_grid_completion_label_supports_seven_by_seven() -> None:
         params={
             "uniqueness_query": "row_and_column_uniqueness",
             "scene_variant": "logic_outline",
+            "board_size": 7,
         },
         max_attempts=10,
     )
@@ -427,11 +472,8 @@ def test_puzzle_logic_raven_matrix_label_contract_matches_winning_option_panel()
             solver = execution["solver_trace"]
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
-            assert str(trace["query_spec"]["query_id"]) == "default"
             assert str(trace["query_spec"]["query_id"]) == str(query_id)
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
             assert out.answer_gt.type == "option_letter"

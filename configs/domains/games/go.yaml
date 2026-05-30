@@ -62,6 +62,11 @@ rendering:
     stone_radius_fraction: 0.34
     highlight_outline_width_px: 10
     liberty_bbox_fraction: 0.72
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 560
+    canvas_side_padding_px: 110
+    canvas_vertical_padding_px: 110
 complexity:
   shared:
     criteria_weights:
@@ -87,17 +92,18 @@ prompt:
       stone edge to edge.
     marked_group_rule_text: The blue outlined {player_color} stones are the marked
       group.
-    evidence_hint_marked_group_liberty_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every liberty of the marked {player_color} group
+    evidence_hint_marked_group_liberty_count: set "evidence" to a JSON array of
+      pixel-space points [x, y] at every liberty of the marked {player_color}
+      group
     answer_hint_marked_group_liberty_count: set "answer" to the number of liberties
       of the marked {player_color} group
-    evidence_hint_marked_group_adjacent_enemy_count: set "evidence" to bounding boxes
-      [x0, y0, x1, y1] for every opponent stone directly adjacent to the marked
-      {player_color} group
+    evidence_hint_marked_group_adjacent_enemy_count: set "evidence" to a JSON array
+      of pixel-space points [x, y] at every opponent stone directly adjacent to
+      the marked {player_color} group
     answer_hint_marked_group_adjacent_enemy_count: set "answer" to the number of opponent
       stones directly adjacent to the marked {player_color} group
-    evidence_hint_marked_group_shared_liberty_count: set "evidence" to bounding boxes
-      [x0, y0, x1, y1] for every shared liberty of the marked {player_color}
-      group
+    evidence_hint_marked_group_shared_liberty_count: set "evidence" to a JSON
+      array of pixel-space points [x, y] at every shared liberty of the marked
+      {player_color} group
     answer_hint_marked_group_shared_liberty_count: set "answer" to the number of shared
       liberties of the marked {player_color} group

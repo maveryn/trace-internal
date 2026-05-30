@@ -9,11 +9,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -38,8 +38,9 @@ from ..shared.reversi_common import (
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.reversi_scene import ReversiRenderParams, render_reversi_board_scene
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_reversi_move_count_base"
@@ -112,7 +113,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="reversi")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="reversi", apply_prob=0.0)
 
 
@@ -382,6 +382,12 @@ def _resolve_axes(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ReversiRenderParams:
     """Resolve Reversi rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.reversi.font_family",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -460,6 +466,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ReversiR
                 group_default(_RENDER_DEFAULTS, "player_badge_font_size_px", _DEFAULTS.player_badge_font_size_px),
             )
         ),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -656,7 +663,7 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
 
     answer_value = 3 if str(query_id) == "flip_count_for_marked_move" else 2
     evidence_value = (
-        [[112, 184, 176, 248], [184, 184, 248, 248], [256, 184, 320, 248]]
+        [[144, 216], [216, 216], [288, 216]]
         if str(query_id) == "flip_count_for_marked_move"
         else [[112, 184, 176, 248], [184, 184, 248, 248]]
     )
@@ -693,12 +700,22 @@ class GamesReversiMoveCountTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.reversi.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_reversi_board_scene(
             board=sampled_scene.board,
@@ -708,11 +725,20 @@ class GamesReversiMoveCountTask:
             current_player=int(sampled_scene.current_player),
             params=render_params,
             marked_move=sampled_scene.marked_move,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
-        ]
+        if str(axes.query_id) == "flip_count_for_marked_move":
+            evidence_type = "point_set"
+            evidence_value = [
+                list(rendered_scene.render_map["disc_points_px"][str(entity_id)])
+                for entity_id in sampled_scene.evidence_entity_ids
+            ]
+        else:
+            evidence_type = "bbox_set"
+            evidence_value = [
+                list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
+                for entity_id in sampled_scene.evidence_entity_ids
+            ]
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -772,7 +798,11 @@ class GamesReversiMoveCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=[list(item) for item in evidence_value])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_reversi_move_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -836,6 +866,8 @@ class GamesReversiMoveCountTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -867,7 +899,7 @@ class GamesReversiMoveCountTask:
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                str(evidence_type): [list(item) for item in evidence_value],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

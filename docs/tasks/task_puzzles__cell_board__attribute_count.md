@@ -22,3 +22,4 @@ Status: active default cell-board puzzle task.
 2. The selected semantic branch is recorded in `query_id`.
 3. Answers and evidence come from the same sampled color board and rendered cell-center map.
 4. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
+5. Render metadata records the sampled shared panel style, coordinate-label font, and scene-local `cell_board.tile_style`.

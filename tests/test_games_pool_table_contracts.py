@@ -96,17 +96,13 @@ def test_games_pool_table_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "point_set"
     assert out.query_id == str(expected_query)
     assert out.scene_id == "pool"
     assert trace["query_spec"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
-    assert execution["query_id"] == "default"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
 

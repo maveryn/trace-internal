@@ -4,7 +4,11 @@ generation:
       klondike_tableau: 1.0
       freecell_tableau: 1.0
     style_variant_weights:
-      panel_scene: 1.0
+      classic_cards: 1.0
+      ivory_table: 1.0
+      casino_felt: 1.0
+      slate_cards: 1.0
+      paper_tableau: 1.0
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
@@ -58,7 +62,7 @@ prompt:
     object_description_solitaire_tableau: a solitaire tableau with visible columns, foundation piles, and labeled exposed cards
     tableau_rule_text: In tableau moves, a card can be placed on another tableau card only if the target is exactly one rank higher and the opposite color.
     foundation_rule_text: A card can move to a foundation only if it matches that foundation suit and is exactly one rank above the foundation's current top card; an Ace can move to an empty foundation.
-    evidence_hint_move_legality_label: set "evidence" to an array containing the selected move option box, the source card box, and the target card or foundation box
+    evidence_hint_move_legality_label: set "evidence" to an object mapping "source_card" and "target" to their bounding boxes [x0, y0, x1, y1]
     evidence_hint_foundation_ready_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards and the foundation piles used to decide the count
     evidence_hint_tableau_sequence_count: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for the cards that belong to counted adjacent tableau pairs; use an empty array when the count is 0
     answer_hint_move_legality_label: set "answer" to only the visible move option letter, for example "C"

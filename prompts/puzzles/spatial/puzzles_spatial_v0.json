@@ -141,6 +141,8 @@
     "query:final_top_face_label": [],
     "query:final_front_face_label": [],
     "query:final_right_face_label": [],
+    "query:folded_path_endpoint_label": [],
+    "query:folded_path_face_sequence_label": [],
     "query:box_target_manhattan_rank_label": [
       "rank_word"
     ],
@@ -164,7 +166,7 @@
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format for the \"evidence\" field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
@@ -508,6 +510,20 @@
       "After the cube rolls along the shown path, which option is on the right face?",
       "Use the start cube and roll path. Which labeled option ends on the right face?",
       "Track the cube through the arrow path. Choose the option for the final right face."
+    ],
+    "folded_path_endpoint_label": [
+      "Start on the marked face and follow the numbered folded-edge moves as if the net folds into a cube. Which option labels the final face?",
+      "Trace the folded-edge moves from the marked start face on the cube surface. Select the option for the endpoint face.",
+      "Use the cube net as a folded cube, follow the listed edge moves, and choose the final face option.",
+      "Beginning at the marked face, cross the folded-cube edges in order. Which option gives the last face reached?",
+      "Follow the numbered surface path across folded edges. Which labeled option is the endpoint face?"
+    ],
+    "folded_path_face_sequence_label": [
+      "Start on the marked face and follow the numbered folded-edge moves as if the net folds into a cube. Which option lists the visited faces in order?",
+      "Trace the folded-edge moves from the marked start face on the cube surface. Select the option showing the full face sequence.",
+      "Use the cube net as a folded cube, follow the listed edge moves, and choose the option with the visited face labels in order.",
+      "Beginning at the marked face, cross the folded-cube edges in order. Which option gives the start-to-end face sequence?",
+      "Follow the numbered surface path across folded edges. Which labeled option lists the visited faces in order?"
     ],
     "shortest_path_sequence_label": [
       "Treat boxes as blockers. Which labeled option is the shortest move sequence from S to G?",

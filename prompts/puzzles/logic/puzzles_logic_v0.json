@@ -65,6 +65,13 @@
       "",
       ""
     ],
+    "toggle_grid_query": [
+      "Use this toggle rule: pressing a switch flips that cell and its orthogonal neighbors.",
+      "Apply the toggle rule: each pressed switch flips itself and the adjacent up, down, left, and right cells.",
+      "For this grid, a switch press changes the selected cell plus any edge-neighbor cells.",
+      "Use the Lights-Out-style rule that each press flips the switch cell and its orthogonal neighbors.",
+      "Treat each marked switch press as toggling the chosen cell and the cells directly above, below, left, and right when present."
+    ],
     "star_battle_valid_cell_query": [
       "Use these Star Battle rules: each row, column, and colored region must contain exactly one star; stars cannot touch, even diagonally.",
       "In Star Battle, every row, column, and colored region needs exactly one star, and no two stars may touch, even diagonally.",
@@ -100,6 +107,9 @@
       "object_description"
     ],
     "scene:star_battle": [
+      "object_description"
+    ],
+    "scene:toggle_grid": [
       "object_description"
     ],
     "query:axis_uniqueness": [
@@ -183,6 +193,13 @@
       "The image shows {object_description}.",
       "The puzzle diagram shows {object_description}.",
       "This puzzle diagram shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ],
+    "toggle_grid": [
+      "The image shows {object_description}.",
+      "The puzzle diagram shows {object_description}.",
+      "This toggle-grid puzzle shows {object_description}.",
       "The figure shows {object_description}.",
       "The visual shows {object_description}."
     ]
@@ -383,6 +400,20 @@
       "How many cells in the marked column are still valid for a star?",
       "Within the marked column, count every cell where another star could be placed.",
       "How many possible star placements remain in the marked column?"
+    ],
+    "toggle_result_label": [
+      "Press the numbered switches in order on the start grid. Which labeled option shows the result?",
+      "After applying the numbered switch presses to the start grid, choose the matching result grid.",
+      "Use the start grid and the marked press order. Which option is the final grid state?",
+      "Toggle the numbered cells in sequence. Which labeled candidate shows the grid afterward?",
+      "Starting from the shown grid, apply every numbered switch press. Select the resulting option."
+    ],
+    "toggle_repair_switch_label": [
+      "Which lettered switch should be pressed once to change the start grid into the target grid?",
+      "Choose the candidate switch that turns the start grid into the target grid after one press.",
+      "A single lettered switch press produces the target grid. Which label is correct?",
+      "Compare the start and target grids, then select the one switch that makes the change.",
+      "Which marked switch, pressed once, transforms the start state into the target state?"
     ]
   },
   "allow_empty_task_templates": true

@@ -62,6 +62,11 @@ rendering:
     disc_inset_fraction: 0.14
     player_badge_font_size_px: 22
     marked_square_outline_width_px: 6
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 520
+    canvas_side_padding_px: 132
+    canvas_vertical_padding_px: 92
 complexity:
   shared:
     criteria_weights:
@@ -85,10 +90,10 @@ prompt:
     safety_rule_text: For each non-full column, imagine dropping the current player's
       disc into its lowest empty square. A safe drop is one where the opponent then
       has no immediate winning drop on their next single move.
-    evidence_hint_winning_move_count: set "evidence" to [x0, y0, x1, y1] boxes for
-      every immediate-winning landing square
-    evidence_hint_safe_move_count: set "evidence" to [x0, y0, x1, y1] boxes for every
-      safe legal landing square
+    evidence_hint_winning_move_count: set "evidence" to a JSON array of bounding boxes
+      [x0, y0, x1, y1] for every immediate-winning landing square
+    evidence_hint_safe_move_count: set "evidence" to a JSON array of bounding boxes
+      [x0, y0, x1, y1] for every safe legal landing square
     answer_hint_winning_move_count: set "answer" to the number of legal drop columns
       that win immediately
     answer_hint_safe_move_count: set "answer" to the number of legal drop columns

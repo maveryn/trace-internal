@@ -63,10 +63,10 @@
   "scene_templates": {
     "visible_card_hand": [
       "The image shows {object_description}.",
-      "The card hand shows {object_description}.",
-      "This card hand shows {object_description}.",
+      "The visual shows {object_description}.",
+      "You are shown {object_description}.",
       "The figure shows {object_description}.",
-      "The visual shows {object_description}."
+      "The figure contains {object_description}."
     ]
   },
   "query_templates": {

@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -49,7 +49,8 @@ from ..shared.complexity import build_games_bubble_shooter_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_bubble_shooter_board_base"
@@ -79,6 +80,11 @@ class _TaskDefaults:
     shooter_radius_px: int = 22
     option_radius_px: int = 17
     option_label_font_size_px: int = 22
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 500
+    canvas_side_padding_px: int = 120
+    canvas_vertical_padding_px: int = 86
 
 
 @dataclass(frozen=True)
@@ -111,7 +117,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="bubble_shooter")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="bubble_shooter", apply_prob=0.5)
 
 
@@ -387,6 +392,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BubbleShooterRenderParams:
     """Resolve Bubble-shooter rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.bubble_shooter.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -402,12 +413,58 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BubbleSh
         ),
         unit_scale_meta,
     )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    playfield_width_px = scale_games_px(
+        params.get("playfield_width_px", group_default(_RENDER_DEFAULTS, "playfield_width_px", _DEFAULTS.playfield_width_px)),
+        unit_scale,
+        min_px=430,
+    )
+    playfield_height_px = scale_games_px(
+        params.get("playfield_height_px", group_default(_RENDER_DEFAULTS, "playfield_height_px", _DEFAULTS.playfield_height_px)),
+        unit_scale,
+        min_px=360,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_width = base_canvas_width
+    canvas_height = base_canvas_height
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(playfield_width_px)
+                        + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px))))
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(playfield_height_px)
+                        + (2.0 * float(params.get("canvas_vertical_padding_px", group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px))))
+                    )
+                ),
+            ),
+        )
     return BubbleShooterRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        playfield_width_px=scale_games_px(params.get("playfield_width_px", group_default(_RENDER_DEFAULTS, "playfield_width_px", _DEFAULTS.playfield_width_px)), unit_scale, min_px=430),
-        playfield_height_px=scale_games_px(params.get("playfield_height_px", group_default(_RENDER_DEFAULTS, "playfield_height_px", _DEFAULTS.playfield_height_px)), unit_scale, min_px=360),
+        playfield_width_px=int(playfield_width_px),
+        playfield_height_px=int(playfield_height_px),
         playfield_border_width_px=scale_games_px(params.get("playfield_border_width_px", group_default(_RENDER_DEFAULTS, "playfield_border_width_px", _DEFAULTS.playfield_border_width_px)), unit_scale, min_px=2),
         board_top_px=scale_games_px(params.get("board_top_px", group_default(_RENDER_DEFAULTS, "board_top_px", _DEFAULTS.board_top_px)), unit_scale, min_px=19),
         board_height_px=scale_games_px(params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", _DEFAULTS.board_height_px)), unit_scale, min_px=250),
@@ -416,6 +473,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BubbleSh
         shooter_radius_px=scale_games_px(params.get("shooter_radius_px", group_default(_RENDER_DEFAULTS, "shooter_radius_px", _DEFAULTS.shooter_radius_px)), unit_scale, min_px=11),
         option_radius_px=scale_games_px(params.get("option_radius_px", group_default(_RENDER_DEFAULTS, "option_radius_px", _DEFAULTS.option_radius_px)), unit_scale, min_px=8),
         option_label_font_size_px=scale_games_px(params.get("option_label_font_size_px", group_default(_RENDER_DEFAULTS, "option_label_font_size_px", _DEFAULTS.option_label_font_size_px)), unit_scale, min_px=11),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -781,11 +839,7 @@ def _sample_pop_color_scene(*, rng, axes: _ResolvedAxes) -> BubbleShooterSample:
     if len(positive) != 1 or str(positive[0].label) != target_label:
         raise ValueError("constructed color-option board has ambiguous popping option")
     outcome = compute_shot_outcome(board, landing_coord=landing, color_key=target_color)
-    evidence_ids = (
-        landing_slot_entity_id(),
-        option_entity_id(target_label),
-        *(bubble_entity_id(coord) for coord in outcome.popped_coords),
-    )
+    evidence_ids = tuple(bubble_entity_id(coord) for coord in outcome.popped_coords)
     sample = BubbleShooterSample(
         row_count=int(axes.row_count),
         col_count=int(axes.col_count),
@@ -824,13 +878,13 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "pop_color_label":
         answer_value: str | int = "C"
-        evidence_value = [[428, 602, 462, 654], [380, 256, 426, 302], [426, 256, 472, 302]]
+        evidence_value = [[403, 279], [449, 279]]
     elif str(query_id) == "drop_count":
         answer_value = 4
-        evidence_value = [[460, 350, 506, 396], [506, 350, 552, 396]]
+        evidence_value = [[483, 373], [529, 373], [506, 413], [552, 413]]
     else:
         answer_value = 5
-        evidence_value = [[350, 214, 396, 260], [396, 214, 442, 260]]
+        evidence_value = [[373, 237], [419, 237], [396, 277], [442, 277], [488, 277]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -859,12 +913,33 @@ class GamesBubbleShooterBoardTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid Bubble-shooter scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.bubble_shooter.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_bubble_shooter_scene(
             board=sampled_scene.board,
@@ -876,9 +951,10 @@ class GamesBubbleShooterBoardTask:
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+        evidence_points = [
+            list(rendered_scene.render_map["entity_centers_px"][str(entity_id)])
             for entity_id in sampled_scene.evidence_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
@@ -936,7 +1012,11 @@ class GamesBubbleShooterBoardTask:
             if str(axes.query_id) == "pop_color_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_bubble_shooter_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1013,6 +1093,8 @@ class GamesBubbleShooterBoardTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -1039,7 +1121,8 @@ class GamesBubbleShooterBoardTask:
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

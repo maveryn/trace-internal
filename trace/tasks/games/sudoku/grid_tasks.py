@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -25,6 +25,7 @@ from ..shared.complexity import build_games_sudoku_grid_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_SUDOKU_STYLE_VARIANTS
 from ..shared.sudoku_common import (
     DIGITS,
@@ -49,7 +50,7 @@ from ..shared.sudoku_common import (
     visible_cell_count,
 )
 from ..shared.sudoku_scene import SudokuRenderParams, render_sudoku_grid_scene
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_sudoku_grid_base"
@@ -102,8 +103,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="sudoku")
-POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="sudoku", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="sudoku", apply_prob=0.5)
 
 
 def _target_support_key(query_id: str) -> str:
@@ -283,17 +283,32 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SudokuRe
         ),
         unit_scale_meta,
     )
+    max_board_size_px = scale_games_px(
+        params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
+        unit_scale,
+        min_px=380,
+    )
+    default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    canvas_size = int(max(540, min(max(default_canvas_width, default_canvas_height), int(max_board_size_px) + 160)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.sudoku.font_family",
+        params=params,
+    )
     return SudokuRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(params.get("canvas_width", canvas_size)),
+        canvas_height=int(params.get("canvas_height", canvas_size)),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        max_board_size_px=scale_games_px(params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)), unit_scale, min_px=380),
+        max_board_size_px=int(max_board_size_px),
         board_border_width_px=scale_games_px(params.get("board_border_width_px", group_default(_RENDER_DEFAULTS, "board_border_width_px", _DEFAULTS.board_border_width_px)), unit_scale, min_px=2),
         grid_line_width_px=scale_games_px(params.get("grid_line_width_px", group_default(_RENDER_DEFAULTS, "grid_line_width_px", _DEFAULTS.grid_line_width_px)), unit_scale, min_px=1),
         box_line_width_px=scale_games_px(params.get("box_line_width_px", group_default(_RENDER_DEFAULTS, "box_line_width_px", _DEFAULTS.box_line_width_px)), unit_scale, min_px=2),
         cell_padding_px=scale_games_px(params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px)), unit_scale, min_px=3),
         digit_font_size_px=scale_games_px(params.get("digit_font_size_px", group_default(_RENDER_DEFAULTS, "digit_font_size_px", _DEFAULTS.digit_font_size_px)), unit_scale, min_px=18),
         marked_cell_outline_width_px=scale_games_px(params.get("marked_cell_outline_width_px", group_default(_RENDER_DEFAULTS, "marked_cell_outline_width_px", _DEFAULTS.marked_cell_outline_width_px)), unit_scale, min_px=3),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -596,12 +611,22 @@ class GamesSudokuGridTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.sudoku.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_sudoku_grid_scene(
             board=sampled_scene.board,
@@ -612,6 +637,7 @@ class GamesSudokuGridTask:
             highlighted_unit_index=sampled_scene.highlighted_unit_index,
             marked_cell=sampled_scene.marked_cell,
             conflict_coords=sampled_scene.evidence_coords if str(axes.query_id) == "repeated_digit_count" else (),
+            panel_style=panel_style,
         )
         evidence_entity_ids = [coord_to_cell_id(coord) for coord in sampled_scene.evidence_coords]
         evidence_bboxes = [
@@ -680,6 +706,10 @@ class GamesSudokuGridTask:
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_sudoku_grid_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -733,6 +763,8 @@ class GamesSudokuGridTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -774,7 +806,9 @@ class GamesSudokuGridTask:
                 "ids": [str(entity_id) for entity_id in evidence_entity_ids],
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

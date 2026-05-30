@@ -11,15 +11,16 @@ from PIL import Image, ImageDraw
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.chess_common import (
     BLACK,
     BOARD_SIZE,
@@ -42,8 +43,15 @@ from ..shared.complexity import build_games_chess_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import apply_games_layout_jitter_to_bbox, attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_scene_style_metadata,
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
+)
 from ..shared.style import build_games_chess_theme
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_chess_variant_board_base"
@@ -62,7 +70,7 @@ SUPPORTED_RULE_FAMILIES: Tuple[str, ...] = (
     "leaper_3_1",
 )
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("sparse_board", "crowded_board")
-SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("classic", "soft", "outlined", "wood_token")
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("classic", "soft", "outlined", "wood_token", "blue_glyph", "monochrome_glyph")
 
 
 @dataclass(frozen=True)
@@ -90,6 +98,11 @@ class _TaskDefaults:
     marked_square_outline_width_px: int = 7
     rule_badge_font_size_px: int = 22
     token_label_font_size_px: int = 20
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 560
+    canvas_side_padding_px: int = 132
+    canvas_vertical_padding_px: int = 92
 
 
 @dataclass(frozen=True)
@@ -129,6 +142,7 @@ class _RenderParams:
     rule_badge_font_size_px: int
     token_label_font_size_px: int
     layout_jitter_meta: Dict[str, Any]
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -161,7 +175,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group=TASK_GROUP)
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group=TASK_GROUP, apply_prob=0.0)
 
 
@@ -310,6 +323,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 
 
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderParams:
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.chess_variant.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -325,14 +344,94 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         ),
         unit_scale_meta,
     )
+    max_board_size_px = scale_games_px(
+        params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
+        unit_scale,
+        min_px=390,
+    )
+    rule_badge_height_px = scale_games_px(
+        params.get(
+            "rule_badge_height_px",
+            group_default(_RENDER_DEFAULTS, "rule_badge_height_px", _DEFAULTS.rule_badge_height_px),
+        ),
+        unit_scale,
+        min_px=38,
+    )
+    rule_badge_width_px = scale_games_px(
+        params.get(
+            "rule_badge_width_px",
+            group_default(_RENDER_DEFAULTS, "rule_badge_width_px", _DEFAULTS.rule_badge_width_px),
+        ),
+        unit_scale,
+        min_px=260,
+    )
+    header_gap_px = scale_games_px(
+        params.get("header_gap_px", group_default(_RENDER_DEFAULTS, "header_gap_px", _DEFAULTS.header_gap_px)),
+        unit_scale,
+        min_px=10,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(max_board_size_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(max_board_size_px)
+                        + float(rule_badge_height_px)
+                        + float(header_gap_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
     return _RenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        rule_badge_height_px=scale_games_px(params.get("rule_badge_height_px", group_default(_RENDER_DEFAULTS, "rule_badge_height_px", _DEFAULTS.rule_badge_height_px)), unit_scale, min_px=38),
-        rule_badge_width_px=scale_games_px(params.get("rule_badge_width_px", group_default(_RENDER_DEFAULTS, "rule_badge_width_px", _DEFAULTS.rule_badge_width_px)), unit_scale, min_px=260),
-        header_gap_px=scale_games_px(params.get("header_gap_px", group_default(_RENDER_DEFAULTS, "header_gap_px", _DEFAULTS.header_gap_px)), unit_scale, min_px=10),
-        max_board_size_px=scale_games_px(params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)), unit_scale, min_px=390),
+        rule_badge_height_px=int(rule_badge_height_px),
+        rule_badge_width_px=int(rule_badge_width_px),
+        header_gap_px=int(header_gap_px),
+        max_board_size_px=int(max_board_size_px),
         board_corner_radius_px=scale_games_px(params.get("board_corner_radius_px", group_default(_RENDER_DEFAULTS, "board_corner_radius_px", _DEFAULTS.board_corner_radius_px)), unit_scale, min_px=10),
         board_frame_width_px=scale_games_px(params.get("board_frame_width_px", group_default(_RENDER_DEFAULTS, "board_frame_width_px", _DEFAULTS.board_frame_width_px)), unit_scale, min_px=5),
         piece_inset_fraction=float(params.get("piece_inset_fraction", group_default(_RENDER_DEFAULTS, "piece_inset_fraction", _DEFAULTS.piece_inset_fraction))),
@@ -340,6 +439,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         rule_badge_font_size_px=scale_games_px(params.get("rule_badge_font_size_px", group_default(_RENDER_DEFAULTS, "rule_badge_font_size_px", _DEFAULTS.rule_badge_font_size_px)), unit_scale, min_px=16),
         token_label_font_size_px=scale_games_px(params.get("token_label_font_size_px", group_default(_RENDER_DEFAULTS, "token_label_font_size_px", _DEFAULTS.token_label_font_size_px)), unit_scale, min_px=14),
         layout_jitter_meta=layout_jitter,
+        font_family=str(font_family),
     )
 
 
@@ -671,6 +771,7 @@ def _render_scene(
     background: Image.Image,
     params: _RenderParams,
     badge_text: str,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> Tuple[Image.Image, Dict[str, Any], Tuple[Dict[str, Any], ...]]:
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
@@ -716,6 +817,22 @@ def _render_scene(
     board_top = float(board_top + dy)
     badge_bbox = (badge_bbox[0] + dx, badge_bbox[1] + dy, badge_bbox[2] + dx, badge_bbox[3] + dy)
     board_bbox = (board_bbox[0] + dx, board_bbox[1] + dy, board_bbox[2] + dx, board_bbox[3] + dy)
+    scene_panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(18, int(round(float(params.panel_margin_px) * 0.42)))
+        scene_panel_bbox = (
+            max(4, int(round(min(board_bbox[0], badge_bbox[0]))) - panel_pad),
+            max(4, int(round(min(board_bbox[1], badge_bbox[1]))) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(max(board_bbox[2], badge_bbox[2]))) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(max(board_bbox[3], badge_bbox[3]))) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=scene_panel_bbox,
+            style=panel_style,
+            radius=26,
+            border_width=max(2, int(round(float(params.board_frame_width_px) * 0.55))),
+        )
     draw.rounded_rectangle(board_bbox, radius=int(params.board_corner_radius_px), fill=tuple(theme.board_frame_rgb))
     draw.rounded_rectangle(
         badge_bbox,
@@ -730,13 +847,14 @@ def _render_scene(
         max_width=float((badge_bbox[2] - badge_bbox[0]) - 36),
         max_height=float((badge_bbox[3] - badge_bbox[1]) - 12),
         bold=True,
+        font_family=str(params.font_family) or None,
         min_size_px=12,
         max_size_px=int(params.rule_badge_font_size_px),
         fill_ratio=0.98,
     )
     text_bbox = draw.textbbox((0, 0), str(badge_text), font=badge_font, stroke_width=1)
     text_rgb = tuple(theme.badge_text_rgb)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(badge_bbox[0] + ((badge_bbox[2] - badge_bbox[0]) - (text_bbox[2] - text_bbox[0])) / 2.0),
             float(badge_bbox[1] + ((badge_bbox[3] - badge_bbox[1]) - (text_bbox[3] - text_bbox[1])) / 2.0 - text_bbox[1]),
@@ -746,13 +864,17 @@ def _render_scene(
         fill=text_rgb,
         stroke_width=1,
         stroke_fill=tuple(resolve_text_stroke_fill(text_rgb)),
-    )
+     role="readout", required=False,)
 
     inner_inset = float(params.board_frame_width_px)
     cell_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     piece_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     entities: List[Dict[str, Any]] = []
-    label_font = load_font(int(params.token_label_font_size_px), bold=True)
+    label_font = load_font(
+        int(params.token_label_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     for row in range(BOARD_SIZE):
         for col in range(BOARD_SIZE):
             left = float(board_left + (col * cell_size) + inner_inset)
@@ -794,7 +916,7 @@ def _render_scene(
             draw.ellipse(token_bbox, fill=piece_fill, outline=piece_outline, width=max(2, int(round(0.045 * min(token_bbox[2] - token_bbox[0], token_bbox[3] - token_bbox[1])))))
             label_bbox = draw.textbbox((0, 0), label, font=label_font, stroke_width=1)
             label_rgb = piece_outline if str(occupant.color) == WHITE else piece_outline
-            draw.text(
+            draw_text_traced(draw,
                 (
                     token_bbox[0] + ((token_bbox[2] - token_bbox[0]) - (label_bbox[2] - label_bbox[0])) / 2.0,
                     token_bbox[1] + ((token_bbox[3] - token_bbox[1]) - (label_bbox[3] - label_bbox[1])) / 2.0 - label_bbox[1],
@@ -804,7 +926,7 @@ def _render_scene(
                 fill=label_rgb,
                 stroke_width=1,
                 stroke_fill=tuple(resolve_text_stroke_fill(label_rgb)),
-            )
+             role="readout", required=False,)
             piece_id = piece_to_entity_id((row, col), occupant)
             piece_bboxes[piece_id] = token_bbox
             entities.append(
@@ -820,17 +942,21 @@ def _render_scene(
             )
     return image, {
         "board_bbox_px": [round(float(v), 3) for v in board_bbox],
+        "scene_panel_bbox_px": None if scene_panel_bbox is None else [int(v) for v in scene_panel_bbox],
         "badge_bbox_px": [round(float(v), 3) for v in badge_bbox],
         "cell_bboxes_px": {str(k): list(v) for k, v in cell_bboxes.items()},
         "piece_bboxes_px": {str(k): list(v) for k, v in piece_bboxes.items()},
+        "effective_cell_size_px": float(cell_size),
         "layout_jitter": dict(layout_jitter),
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
         "board_size": int(BOARD_SIZE),
     }, tuple(entities)
 
 
 def _draw_marked_outline(image: Image.Image, render_map: Mapping[str, Any], marked_coord: Coord, axes: _ResolvedAxes, params: _RenderParams) -> None:
     draw = ImageDraw.Draw(image)
-    theme = build_games_chess_theme(style_variant=str(axes.style_variant))
+    del axes
     cell_id = coord_to_cell_id(marked_coord)
     bbox = render_map["cell_bboxes_px"][cell_id]
     inset = max(3.0, 0.06 * min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1])))
@@ -840,7 +966,7 @@ def _draw_marked_outline(image: Image.Image, render_map: Mapping[str, Any], mark
     )
     draw.rectangle(
         [float(bbox[0]) + inset, float(bbox[1]) + inset, float(bbox[2]) - inset, float(bbox[3]) - inset],
-        outline=tuple(theme.marked_square_outline_rgb),
+        outline=(43, 101, 204),
         width=int(params.marked_square_outline_width_px),
     )
 
@@ -910,12 +1036,33 @@ class GamesChessVariantBoardTask:
         block_rule_text = str(prompt_defaults["leaper_block_rule_text"] if str(axes.rule_family).startswith("leaper") else prompt_defaults["slider_block_rule_text"])
         badge_text = _rule_badge_text(axes.rule_family, axes.range_k, prompt_defaults)
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.chess_variant_board.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_image, render_map, scene_entities = _render_scene(
             board=sample.board,
@@ -923,6 +1070,7 @@ class GamesChessVariantBoardTask:
             background=background,
             params=render_params,
             badge_text=badge_text,
+            panel_style=panel_style,
         )
         _draw_marked_outline(rendered_image, render_map, sample.evaluation.marked_coord, axes, render_params)
         if sample.evaluation.evidence_kind == "cell":
@@ -974,6 +1122,10 @@ class GamesChessVariantBoardTask:
         )
         answer_gt = TypedValue(type="integer", value=int(sample.evaluation.answer))
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         marked_piece = sample.evaluation.marked_piece
         trace_payload = {
             "scene_ir": {
@@ -1019,6 +1171,9 @@ class GamesChessVariantBoardTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
+                "effective_cell_size_px": render_map.get("effective_cell_size_px"),
             },
             "render_map": dict(render_map),
             "execution_trace": {

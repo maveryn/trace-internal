@@ -7,10 +7,17 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.drawing import draw_arrow, draw_dashed_line
+from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .bowling_common import BowlingPathOption, BowlingPin
 from .layout import apply_games_layout_jitter_to_bbox
-from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
+from .scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_contrast_anchor_colors,
+    game_panel_scene_style_metadata,
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +34,7 @@ class BowlingRenderParams:
     ball_radius_px: int
     path_width_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -156,6 +164,7 @@ def _fit_text(
     text: str,
     fill: Tuple[int, int, int],
     max_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -169,11 +178,12 @@ def _fit_text(
         min_size_px=7,
         max_size_px=int(max_size_px),
         fill_ratio=0.72,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -181,7 +191,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _pin_positions(
@@ -227,6 +237,7 @@ def _draw_pin(
     standing: bool,
     theme: BowlingTheme,
     label_font_size_px: int,
+    font_family: str,
 ) -> Tuple[float, float, float, float]:
     """Draw one standing or fallen pin and return its bbox."""
 
@@ -257,7 +268,14 @@ def _draw_pin(
         band = (cx - (0.58 * r), band_y, cx + (0.58 * r), band_y + (0.23 * r))
         draw.rounded_rectangle(band, radius=max(2, int(r * 0.14)), fill=tuple(int(v) for v in theme.pin_band_rgb))
         text_box = (bbox[0] + (0.28 * r), cy + (0.02 * r), bbox[2] - (0.28 * r), cy + (0.82 * r))
-        _fit_text(draw, bbox=text_box, text=str(label), fill=theme.pin_text_rgb, max_size_px=int(label_font_size_px))
+        _fit_text(
+            draw,
+            bbox=text_box,
+            text=str(label),
+            fill=theme.pin_text_rgb,
+            max_size_px=int(label_font_size_px),
+            font_family=str(font_family),
+        )
     else:
         fallen = (bbox[0], cy - (0.42 * r), bbox[2], cy + (0.42 * r))
         draw.rounded_rectangle(
@@ -316,6 +334,22 @@ def _bbox_for_path(
     )
 
 
+def _path_color_anchor_rgbs(
+    *,
+    theme: BowlingTheme,
+    panel_style: GamePanelSceneStyle | None,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return known background colors that Bowling path colors must avoid."""
+
+    anchors: list[Tuple[int, int, int]] = [
+        tuple(int(v) for v in theme.lane_fill_rgb),
+        tuple(int(v) for v in theme.approach_fill_rgb),
+        tuple(int(v) for v in theme.board_line_rgb),
+        tuple(int(v) for v in theme.path_label_fill_rgb),
+    ]
+    return tuple(game_panel_contrast_anchor_colors(panel_style, extra_colors=anchors))
+
+
 def render_bowling_scene(
     *,
     pins: Tuple[BowlingPin, ...],
@@ -335,6 +369,14 @@ def render_bowling_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_bowling_theme(style_variant=str(style_variant))
+    path_color_anchors = _path_color_anchor_rgbs(theme=theme, panel_style=panel_style)
+    path_palette_rgb = resolve_contrasting_palette(
+        theme.path_palette_rgb,
+        anchor_colors=path_color_anchors,
+        min_anchor_distance=40.0,
+        min_pairwise_distance=24.0,
+        distance_space="lab",
+    )
 
     lane_left = float((int(params.canvas_width) - int(params.lane_width_px)) / 2.0)
     lane_top = float((int(params.canvas_height) - int(params.lane_height_px)) / 2.0)
@@ -390,6 +432,7 @@ def render_bowling_scene(
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     pin_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     path_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    path_point_pairs: Dict[str, Tuple[Tuple[float, float], Tuple[float, float]]] = {}
     scene_entities: list[Dict[str, Any]] = []
     ball_center = _lane_point(lane_bbox, x_norm=float(ball_x_norm), y_norm=0.875)
 
@@ -406,7 +449,7 @@ def render_bowling_scene(
             draw,
             start=ball_center,
             end=visible_end,
-            fill=tuple(int(v) for v in theme.path_palette_rgb[0]),
+            fill=tuple(int(v) for v in path_palette_rgb[0]),
             width=int(params.path_width_px),
             dash_px=18,
             gap_px=10,
@@ -415,7 +458,7 @@ def render_bowling_scene(
             draw,
             start=(ball_center[0] + (0.42 * (visible_end[0] - ball_center[0])), ball_center[1] + (0.42 * (visible_end[1] - ball_center[1]))),
             end=visible_end,
-            fill=tuple(int(v) for v in theme.path_palette_rgb[0]),
+            fill=tuple(int(v) for v in path_palette_rgb[0]),
             width=int(params.path_width_px),
             head_length_px=22,
             head_width_px=18,
@@ -430,7 +473,7 @@ def render_bowling_scene(
     else:
         rendered_paths = {}
         for option in path_options:
-            color = theme.path_palette_rgb[int(option.color_index) % len(theme.path_palette_rgb)]
+            color = path_palette_rgb[int(option.color_index) % len(path_palette_rgb)]
             aim_end = _lane_point(lane_bbox, x_norm=float(option.aim_x_norm), y_norm=0.09)
             visible_fraction = max(0.34, min(0.68, float(path_visible_fraction if path_visible_fraction is not None else 0.50)))
             visible_end = (
@@ -448,17 +491,30 @@ def render_bowling_scene(
                 round(label_center[1] + label_r, 3),
             )
             draw.ellipse(label_bbox, fill=tuple(int(v) for v in theme.path_label_fill_rgb), outline=tuple(int(v) for v in color), width=3)
-            _fit_text(draw, bbox=label_bbox, text=str(option.label), fill=theme.path_label_text_rgb, max_size_px=int(params.label_font_size_px))
+            _fit_text(
+                draw,
+                bbox=label_bbox,
+                text=str(option.label),
+                fill=theme.path_label_text_rgb,
+                max_size_px=int(params.label_font_size_px),
+                font_family=str(params.font_family),
+            )
             path_bbox = _bbox_for_path(start=ball_center, end=aim_end, pad=20.0)
+            path_point_pair = (
+                (round(float(ball_center[0]), 3), round(float(ball_center[1]), 3)),
+                (round(float(visible_end[0]), 3), round(float(visible_end[1]), 3)),
+            )
             path_bboxes[str(option.path_id)] = path_bbox
-            entity_bboxes[str(option.path_id)] = label_bbox
+            path_point_pairs[str(option.path_id)] = path_point_pair
+            entity_bboxes[str(option.path_id)] = path_bbox
             scene_entities.append(
                 {
                     "entity_id": str(option.path_id),
                     "entity_type": "bowling_path_option",
                     "label": str(option.label),
                     "aim_x_norm": float(option.aim_x_norm),
-                    "bbox_px": list(label_bbox),
+                    "bbox_px": list(path_bbox),
+                    "label_bbox_px": list(label_bbox),
                     "path_bbox_px": list(path_bbox),
                 }
             )
@@ -479,6 +535,7 @@ def render_bowling_scene(
             standing=bool(pin.standing),
             theme=theme,
             label_font_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
         pin_bboxes[str(pin.pin_id)] = bbox
         entity_bboxes[str(pin.pin_id)] = bbox
@@ -511,6 +568,7 @@ def render_bowling_scene(
         },
         "pin_bboxes_px": {str(key): list(value) for key, value in pin_bboxes.items()},
         "path_bboxes_px": {str(key): list(value) for key, value in path_bboxes.items()},
+        "path_point_pairs_px": {str(key): [list(point) for point in value] for key, value in path_point_pairs.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "ball_bbox_px": list(ball_bbox),
         "ball_center_px": [round(float(ball_center[0]), 3), round(float(ball_center[1]), 3)],
@@ -518,6 +576,22 @@ def render_bowling_scene(
         "layout_jitter": dict(layout_jitter),
         "path_visible_fraction": None if path_visible_fraction is None else round(float(path_visible_fraction), 3),
         "style_variant": str(style_variant),
+        "font_family": str(params.font_family),
+        "path_palette_rgb": [list(color) for color in path_palette_rgb],
+        "path_color_safety": {
+            "distance_space": "lab",
+            "min_anchor_distance_required": 40.0,
+            "min_pairwise_distance_required": 24.0,
+            "anchor_rgbs": [list(color) for color in path_color_anchors],
+            "path_anchor_lab_distances": [
+                round(float(min_color_distance_to_anchors(color, path_color_anchors, distance_space="lab")), 3)
+                for color in path_palette_rgb
+            ],
+            "min_path_anchor_lab_distance": round(
+                min(float(min_color_distance_to_anchors(color, path_color_anchors, distance_space="lab")) for color in path_palette_rgb),
+                3,
+            ),
+        },
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedBowlingScene(

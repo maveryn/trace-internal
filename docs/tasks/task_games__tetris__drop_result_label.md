@@ -10,4 +10,4 @@ The scene shows a START Tetris board with the falling piece drawn at the top in 
 
 Internal query ids are `no_clear_result`, `single_clear_result`, and `multi_clear_result`.
 
-Current generation samples board sizes from 7..11 columns by 10..15 rows.
+Current generation samples board sizes from 7..11 columns by 10..15 rows. Rendering combines shared games panel backgrounds, layout jitter, sampled fonts, post-image noise, and five scene-local tetromino block styles.

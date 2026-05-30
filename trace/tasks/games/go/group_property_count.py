@@ -9,7 +9,6 @@ from typing import Any, Dict, Mapping, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
@@ -29,15 +28,16 @@ from ..shared.go_common import (
     GoBoardState,
     build_go_board_state,
     color_name,
+    coord_to_point_id,
     liberty_point_ids,
-    stone_ids_for_coords,
     supported_targets_for_query,
 )
 from ..shared.go_scene import GoRenderParams, render_go_board_scene
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_GO_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_go_group_property_count_base"
@@ -72,6 +72,11 @@ class _TaskDefaults:
     stone_radius_fraction: float = 0.34
     highlight_outline_width_px: int = 10
     liberty_bbox_fraction: float = 0.72
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 560
+    canvas_side_padding_px: int = 110
+    canvas_vertical_padding_px: int = 110
 
 
 @dataclass(frozen=True)
@@ -99,7 +104,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="go")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="go", apply_prob=0.0)
 
 _SOURCE_QUERY_ID_PLAYER_COLORS: Dict[str, str] = {
@@ -468,15 +472,68 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> GoRender
         ),
         unit_scale_meta,
     )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    max_board_size_px = scale_games_px(
+        params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
+        unit_scale,
+        min_px=380,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(max_board_size_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(max_board_size_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
     return GoRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        max_board_size_px=scale_games_px(
-            params.get("max_board_size_px", group_default(_RENDER_DEFAULTS, "max_board_size_px", _DEFAULTS.max_board_size_px)),
-            unit_scale,
-            min_px=380,
-        ),
+        max_board_size_px=int(max_board_size_px),
         board_padding_px=scale_games_px(
             params.get("board_padding_px", group_default(_RENDER_DEFAULTS, "board_padding_px", _DEFAULTS.board_padding_px)),
             unit_scale,
@@ -534,8 +591,8 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     json_example = json.dumps(
         {
             "evidence": [
-                [312, 284, 374, 346],
-                [386, 358, 448, 420],
+                [343, 315],
+                [417, 389],
             ],
             "answer": 4,
         },
@@ -554,6 +611,29 @@ class GamesGoGroupPropertyCountTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.go.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
 
         board_state: GoBoardState | None = None
         rendered_scene = None
@@ -568,12 +648,10 @@ class GamesGoGroupPropertyCountTask:
                 target_answer=int(axes.target_answer),
                 board_size=int(axes.board_size),
             )
-            background, background_meta = make_background_canvas(
+            background, background_meta = make_panel_scene_background(
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
-                instance_seed=int(instance_seed),
-                params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+                style=panel_style,
             )
             rendered_scene = render_go_board_scene(
                 board=board_state.board,
@@ -583,6 +661,7 @@ class GamesGoGroupPropertyCountTask:
                 marked_group_coords=board_state.marked_group_coords,
                 liberty_coords=board_state.liberty_coords,
                 params=render_params,
+                panel_style=panel_style,
             )
             break
 
@@ -591,13 +670,13 @@ class GamesGoGroupPropertyCountTask:
 
         if str(axes.query_id) == "marked_group_liberty_count":
             evidence_ids = liberty_point_ids(board_state.liberty_coords)
-            evidence_bboxes = [list(rendered_scene.render_map["point_bboxes_px"][str(point_id)]) for point_id in evidence_ids]
+            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
         elif str(axes.query_id) == "marked_group_adjacent_enemy_count":
-            evidence_ids = stone_ids_for_coords(board_state.adjacent_enemy_coords)
-            evidence_bboxes = [list(rendered_scene.render_map["stone_bboxes_px"][str(stone_id)]) for stone_id in evidence_ids]
+            evidence_ids = tuple(coord_to_point_id(coord) for coord in board_state.adjacent_enemy_coords)
+            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
         elif str(axes.query_id) == "marked_group_shared_liberty_count":
             evidence_ids = liberty_point_ids(board_state.shared_liberty_coords)
-            evidence_bboxes = [list(rendered_scene.render_map["point_bboxes_px"][str(point_id)]) for point_id in evidence_ids]
+            evidence_points = [list(rendered_scene.render_map["point_centers_px"][str(point_id)]) for point_id in evidence_ids]
         else:
             raise ValueError(f"unsupported Go query id: {axes.query_id}")
         image, post_noise_meta = apply_post_image_noise(
@@ -666,7 +745,7 @@ class GamesGoGroupPropertyCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
         occupied_count = sum(
             1
             for row in board_state.board
@@ -727,6 +806,7 @@ class GamesGoGroupPropertyCountTask:
                 "canvas_height": int(image.size[1]),
                 "board_size": int(axes.board_size),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -761,7 +841,9 @@ class GamesGoGroupPropertyCountTask:
                 "ids": [str(value) for value in evidence_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

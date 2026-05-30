@@ -78,7 +78,9 @@ def test_games_dominoes_chain_count_emits_expected_contract(
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
     assert all(str(tile_id).startswith("candidate_") for tile_id in execution["evidence_entity_ids"])
     assert set(trace["render_map"]["section_label_bboxes_px"].keys()) == {"chain", "candidates"}
@@ -157,6 +159,18 @@ def test_games_dominoes_two_step_extension_label_matches_unique_path() -> None:
     assert _can_connect((int(second["left_value"]), int(second["right_value"])), bridge)
     assert not _can_connect((int(second["left_value"]), int(second["right_value"])), open_end)
     assert set(execution["evidence_entity_ids"]) == {first_id, second_id}
+    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert set(out.evidence_gt.value.keys()) == {"first_step_domino", "second_step_domino"}
+    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert out.trace_payload["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert out.trace_payload["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+    assert out.trace_payload["witness_symbolic"] == {
+        "type": "object_map",
+        "ids": {
+            "first_step_domino": first_id,
+            "second_step_domino": second_id,
+        },
+    }
     assert len(out.evidence_gt.value) == 2
 
     valid_second_labels = []

@@ -38,8 +38,8 @@ class _TaskDefaults:
 
     object_count_min: int = 7
     object_count_max: int = 12
-    target_count_min: int = 3
-    target_count_max: int = 5
+    target_count_min: int = 2
+    target_count_max: int = 6
     other_repeated_type_count_max: int = 3
     canvas_width: int = ICON_SHARED_DEFAULTS.canvas_width
     canvas_height: int = ICON_SHARED_DEFAULTS.canvas_height

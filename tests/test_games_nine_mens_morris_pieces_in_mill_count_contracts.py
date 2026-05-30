@@ -36,10 +36,14 @@ def test_games_nine_mens_morris_pieces_in_mill_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "point_set"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert "panel_scene_style" in trace["render_spec"]
+    assert "text_style" in trace["render_spec"]
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
     assert len(execution["all_piece_ids_in_mill"]) == int(expected_answer)
 

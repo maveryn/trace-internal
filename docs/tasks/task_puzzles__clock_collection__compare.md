@@ -51,11 +51,11 @@
    - deterministic bundle selection from `prompts/puzzles/clock/puzzles_clock_v0.json`,
    - variant-conditioned prompt JSON examples generated in task code so the example answer matches the active compare query.
 8. Modes: `answer_only`, `answer_and_evidence`
-9. Prompt-facing evidence always names exactly one winning clock-face bbox.
+9. Prompt-facing evidence always names exactly one selected clock-face bbox.
 
 ## 4) Evidence + trace contract
 1. Prompt-facing evidence is a one-item `bbox_set`:
-   - winning clock-face bbox.
+   - selected clock-face bbox.
 2. `projected_evidence` includes:
    - `bbox_set`
 3. `scene_ir.entities` stores:
@@ -83,10 +83,11 @@
    - the active support ranges and minimum comparison-gap threshold
 
 ## 5) Visual policy
-1. Background and post-image noise use the puzzle-domain clock defaults from `configs/domains/puzzles/base.yaml` and `configs/domains/puzzles/clock.yaml`.
+1. Background uses the shared puzzle panel-style defaults, and post-image noise uses the standard compare-scene default `apply_prob=0.5`.
 2. The three `scene_variant` values change only the visible clock chrome.
 3. The `style_variant` + `accent_color_name` axes add extra non-semantic color and bezel/tick variety while keeping the prompt unchanged.
 4. The face bbox, not the whole row or both hands, is the prompt-facing witness because the answer asks for the winning labeled clock itself.
+5. All clock numerals and visible clock labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.clock_style.font`.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

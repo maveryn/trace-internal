@@ -37,7 +37,9 @@
 3. Reject/resample conditions: unsupported count config, missing curated icon assets, palette-separation failures, or overlap-grid render failures.
 4. No-auto-relaxation guarantee: generation fails on unmet palette/asset/layout constraints instead of weakening the occlusion-order contract.
 5. Semantic-unit rule: user-facing evidence is a pixel-space box around each matching Scene cell because the task asks about pair-level front/back ordering, not about boxing one icon within the overlap; the matching labels remain private trace metadata.
-6. Trace style metadata records the sampled palette, overlap-ratio range, cell-grid styling, and the per-icon subtle-noise edits.
+6. Trace style metadata records the sampled palette, overlap-ratio range,
+   cell-grid styling, text-legibility metadata for panel headers/cell labels,
+   and the per-icon subtle-noise edits.
 7. Balanced defaults: `resolve_counting_target_and_distractor_triplet(...)` balances target counts across `0..5` under the normal seeded sampler, then cycles distractor counts within the feasible support left by the selected target and the `2..9` total-cell cap.
 
 ## 5) Complexity + tests
@@ -45,3 +47,8 @@
 2. Determinism/build tests: `tests/test_icons_relation_occlusion_order_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_occlusion_order_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+
+## 6) Current review status
+Current browser-review sidecars live under
+`review/task-reviews/icons/overlap_grid/task_icons__overlap_grid__occlusion_order_count/`.
+Solve-rate status is tracked in `review/calibration_sweep_status.json`.

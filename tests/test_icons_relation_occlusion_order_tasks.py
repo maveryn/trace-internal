@@ -33,9 +33,7 @@ def test_icons_relation_occlusion_order_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_occlusion_order_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_occlusion_order"
-    assert out.query_id == "default"
     assert out.query_id == "same_front_to_back_order"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "same_front_to_back_order"
     assert int(execution["object_count"]) == 8
     assert int(execution["target_count"]) == 3
@@ -63,6 +61,13 @@ def test_icons_relation_occlusion_order_contract_matches_scene() -> None:
     assert out.evidence_gt.value == expected_evidence
     assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    style = trace["render_spec"]["style"]
+    assert int(style["text_legibility"]["failure_count"]) == 0
+    assert {
+        str(record["role"])
+        for record in style["text_legibility"]["records"]
+    } >= {"icon_panel_header_text", "icon_cell_label_text"}
+    assert "cell_label_stroke_rgb" in style
 
     sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
     assert len(sampled_palette) >= 2

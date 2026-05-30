@@ -9,15 +9,16 @@
 
 ## Answer and Evidence
 1. Answer type: `string`
-2. Evidence type: bbox_set containing the first-step loose domino box and the answer domino box.
+2. Evidence type: `keyed_bbox_map` with `first_step_domino` and `second_step_domino` boxes.
 3. `two_step_extension_label` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
 1. This task uses the shared games domino-chain renderer for its scene id.
 2. Prompt bundle: `games_dominoes_v0`
 3. Generation constructs a unique two-step path: exactly one loose domino can connect to `REF`, and exactly one labeled loose domino can connect to the new open end after that first play.
+4. Rendering uses shared games/puzzles panel backgrounds, sampled text fonts, layout jitter, and six domino tile themes.
 
 ## Determinism
 1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.
-2. Scene layout, visual style, candidate count, target label index, and target-answer support remain explicit params inside the task.
+2. Scene layout, visual style, panel style, font family, candidate count, target label index, and target-answer support remain explicit params or trace metadata inside the task.
 3. Current calibration uses five labeled loose candidate dominoes (`A..E`) for this task, with both one-row and two-row layouts still sampled.

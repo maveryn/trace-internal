@@ -62,7 +62,7 @@ rendering:
     unit_size_scale_max: 1.0
     wall_gap_px: 2
     wall_outline_width_px: 1
-    pellet_radius_px: 10
+    pellet_radius_px: 13
     item_radius_px: 19
     ghost_radius_px: 18
     route_width_px: 8
@@ -81,9 +81,9 @@ prompt:
     task_key: pacman_maze_query
     object_description_compact_maze: a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, and a highlighted route
     object_description_wide_maze: a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, and a highlighted route
-    evidence_hint_path_pellet_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the normal pellets that lie on the highlighted route
+    evidence_hint_path_pellet_count: set "evidence" to [x, y] pixel points at the centers of the normal pellets that lie on the highlighted route
     answer_hint_path_pellet_count: set "answer" to the number of normal pellets on the highlighted route
-    evidence_hint_next_item_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the first labeled bonus item reached along the highlighted route
+    evidence_hint_next_item_label: set "evidence" to one [x, y] pixel point at the center of the first labeled bonus item reached along the highlighted route
     answer_hint_next_item_label: set "answer" to the single option letter of the first labeled bonus item reached along the highlighted route
-    evidence_hint_pellet_count_before_ghost: set "evidence" to bounding boxes [x0, y0, x1, y1] around the counted normal pellets before the first ghost on the highlighted route, plus the first route ghost
+    evidence_hint_pellet_count_before_ghost: set "evidence" to [x, y] pixel points at the centers of the counted normal pellets before the first ghost on the highlighted route, plus the center of that first route ghost
     answer_hint_pellet_count_before_ghost: set "answer" to the number of normal pellets reached before the first ghost on the highlighted route

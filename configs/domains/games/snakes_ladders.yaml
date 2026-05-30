@@ -135,7 +135,7 @@ prompt:
     movement_rule_text: A move advances the token by the selected die value, then immediately follows a ladder upward or a snake downward if the landing square is the start of one. A ladder starts at its lower square and ends at the arrowhead on the higher square; a snake starts at its head and ends at its pointed tail on the lower square.
     overshoot_rule_text: If a die roll would move past the final square, the token stays on its current square for that roll.
     planning_rule_text: Each roll can independently be any die value from 1 to 6.
-    evidence_hint_move_outcome_value: set "evidence" to bounding boxes [x0, y0, x1, y1] around the start square, shown die, direct landing square, and jump endpoint if a snake or ladder is used
+    evidence_hint_move_outcome_value: set "evidence" to a JSON object mapping start_square and end_square to bounding boxes [x0, y0, x1, y1]
     answer_hint_move_outcome_value: set "answer" to the final square number after the shown die roll and any snake or ladder
     evidence_hint_best_roll_value: set "evidence" to one bounding box [x0, y0, x1, y1] around the final square named in the answer
     answer_hint_best_roll_value: set "answer" to the highest final square number reachable after independently choosing each stated roll, not to the die values

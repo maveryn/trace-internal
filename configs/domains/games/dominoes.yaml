@@ -114,16 +114,19 @@ prompt:
     two_step_rule_text: First attach one loose domino to the `REF` tile's open right
       end. Then attach a second loose domino to the new open end created by that
       first play.
-    evidence_hint_matching_end_count: set "evidence" to [x0, y0, x1, y1] boxes for
-      every loose domino that matches the `REF` tile's open right end
-    evidence_hint_higher_sum_than_reference_count: set "evidence" to [x0, y0, x1,
-      y1] boxes for every loose domino with a larger pip sum than `REF`
-    evidence_hint_sum_to_target_count: set "evidence" to [x0, y0, x1, y1] boxes for
-      every loose domino with the target pip sum
-    evidence_hint_double_count: set "evidence" to [x0, y0, x1, y1] boxes for every
-      loose domino that is a double
-    evidence_hint_two_step_extension_label: set "evidence" to [x0, y0, x1, y1]
-      boxes for the first-step loose domino and the labeled second-step domino
+    evidence_hint_matching_end_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's
+      open right end
+    evidence_hint_higher_sum_than_reference_count: set "evidence" to a JSON array
+      of bounding boxes [x0, y0, x1, y1] for every loose domino with a larger pip
+      sum than `REF`
+    evidence_hint_sum_to_target_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every loose domino with the target pip sum
+    evidence_hint_double_count: set "evidence" to a JSON array of bounding boxes
+      [x0, y0, x1, y1] for every loose domino that is a double
+    evidence_hint_two_step_extension_label: set "evidence" to a JSON object with
+      keys "first_step_domino" and "second_step_domino", each mapped to the bounding
+      box [x0, y0, x1, y1] for that loose domino
     answer_hint_matching_end_count: set "answer" to the count of loose dominoes that
       match the `REF` tile's open right end
     answer_hint_higher_sum_than_reference_count: set "answer" to the count of loose

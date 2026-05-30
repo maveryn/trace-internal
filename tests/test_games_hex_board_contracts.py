@@ -39,15 +39,18 @@ def test_games_hex_winning_move_cell_label_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "D"
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "point_set"
     assert out.query_id == "winning_move_cell_label"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "winning_move_cell_label"
-    assert execution["query_id"] == "default"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert execution["query_id"] == "winning_move_cell_label"
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["panel_scene_style"]["treatment"]
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert len(out.evidence_gt.value) == 1
+    assert len(execution["evidence_entity_ids"]) == 1
 
 
 def test_games_hex_winning_move_cell_label_has_unique_immediate_winning_cell() -> None:
@@ -62,18 +65,20 @@ def test_games_hex_winning_move_cell_label_has_unique_immediate_winning_cell() -
     winning_coord = tuple(int(value) for value in execution["winning_move_coord"])
     answer_candidates = [spec for spec in execution["candidate_specs"] if bool(spec["is_answer"])]
     evidence_coords = _coords(execution["evidence_coords"])
+    completed_path_coords = _coords(execution["completed_winning_path_coords"])
 
     assert int(board[winning_coord[0]][winning_coord[1]]) == EMPTY
     assert immediate_winning_moves(board, player_value=player_value) == (winning_coord,)
     assert len(answer_candidates) == 1
     assert answer_candidates[0]["label"] == out.answer_gt.value == "F"
     assert tuple(answer_candidates[0]["coord"]) == winning_coord
-    assert evidence_coords == winning_path_after_move(
+    assert evidence_coords == (winning_coord,)
+    assert completed_path_coords == winning_path_after_move(
         board,
         player_value=player_value,
         move_coord=winning_coord,
     )
-    assert set(execution["evidence_entity_ids"]) == {coord_to_cell_id(coord) for coord in evidence_coords}
+    assert set(execution["evidence_entity_ids"]) == {coord_to_cell_id(winning_coord)}
 
 
 def test_games_hex_connection_gap_count_emits_expected_contract() -> None:
@@ -87,15 +92,14 @@ def test_games_hex_connection_gap_count_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "point_set"
     assert out.query_id == "connection_gap_count"
     assert out.scene_id == "hex"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "connection_gap_count"
     assert execution["query_id"] == "connection_gap_count"
-    assert execution["query_id"] == "default"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
 
 
 def test_games_hex_connection_gap_count_matches_shortest_path_cost() -> None:

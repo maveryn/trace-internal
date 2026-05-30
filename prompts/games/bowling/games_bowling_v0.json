@@ -60,16 +60,16 @@
   "query_templates": {
     "first_pin_hit_label": [
       "{bowling_motion_rule_text} Which labeled pin will the ball hit first?",
-      "Extrapolate the dashed arrow from the ball. {bowling_motion_rule_text} What is the label of the first pin on that path?",
+      "{bowling_motion_rule_text} What is the label of the first pin on that path?",
       "{bowling_motion_rule_text} Extend that path and identify the labeled pin reached before any other pin.",
-      "The ball moves along the dashed arrow. Which labeled pin is hit first?",
+      "{bowling_motion_rule_text} Which labeled pin is hit first?",
       "{bowling_motion_rule_text} Report the label on the first pin the ball would reach if the path continues."
     ],
     "spare_path_label": [
       "{spare_path_rule_text} Which numbered path is the correct spare path?",
       "Compare the numbered dashed paths. {spare_path_rule_text} Which path number should be selected?",
       "{spare_path_rule_text} Report the number of the path that covers the whole spare.",
-      "Which numbered dashed path passes through every remaining standing pin?",
+      "{spare_path_rule_text} Which numbered dashed path should be selected?",
       "{spare_path_rule_text} Identify the numbered path that picks up all remaining pins."
     ]
   },

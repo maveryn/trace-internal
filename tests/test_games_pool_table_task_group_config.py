@@ -37,4 +37,4 @@ def test_games_pool_table_defaults_present() -> None:
     assert str(prompt["bundle_id"]) == "games_pool_v0"
     assert "no-bank" in str(prompt["direct_shot_rule_text"]).lower()
     assert "8-ball" in str(prompt["legal_group_rule_text"])
-    assert "bounding boxes" in str(prompt["evidence_hint_blocking_ball_count"])
+    assert "pixel point" in str(prompt["evidence_hint_blocking_ball_count"])

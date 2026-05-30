@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: `bbox_set` over counted board bubbles.
+2. Evidence type: `point_set` over counted board-bubble centers.
 3. The sampled shot-effect condition is retained as `query_id` and `query_spec.params.query_id` for diagnostics.
 
 ## Implementation

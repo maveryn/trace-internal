@@ -20,6 +20,13 @@ SUPPORTED_DICE_SCENE_VARIANTS: Tuple[str, ...] = (
     "dice_tray_felt",
     "dice_tray_notebook",
 )
+SUPPORTED_DICE_VISUAL_STYLES: Tuple[str, ...] = (
+    "classic_rounded",
+    "flat_print",
+    "beveled_tokens",
+    "inked_pips",
+    "soft_shadow",
+)
 
 
 @dataclass(frozen=True)
@@ -90,39 +97,69 @@ def _draw_die(
     outline: Tuple[int, int, int],
     value: int,
     params: DiceRenderParams,
+    visual_style: str = "classic_rounded",
 ) -> None:
     x0, y0, x1, y1 = [float(v) for v in bbox]
-    shadow = (38, 42, 50, 62)
-    draw_rounded_rect(
-        draw,
-        (x0 + 4.0, y0 + 5.0, x1 + 4.0, y1 + 5.0),
-        radius=int(params.die_corner_radius_px),
-        fill=shadow,
-        outline=shadow,
-        width=1,
-    )
+    style_id = str(visual_style)
+    radius = int(params.die_corner_radius_px)
+    outline_width = int(params.die_outline_width_px)
+    if style_id in {"classic_rounded", "beveled_tokens", "soft_shadow"}:
+        shadow_alpha = 42 if style_id == "classic_rounded" else (72 if style_id == "soft_shadow" else 56)
+        shadow_offset = 6.0 if style_id == "soft_shadow" else 4.0
+        shadow = (38, 42, 50, shadow_alpha)
+        draw_rounded_rect(
+            draw,
+            (x0 + shadow_offset, y0 + shadow_offset + 1.0, x1 + shadow_offset, y1 + shadow_offset + 1.0),
+            radius=radius,
+            fill=shadow,
+            outline=shadow,
+            width=1,
+        )
+    elif style_id == "flat_print":
+        radius = max(5, int(params.die_corner_radius_px * 0.55))
+        outline_width = max(1, int(params.die_outline_width_px) - 1)
+    elif style_id == "inked_pips":
+        radius = max(4, int(params.die_corner_radius_px * 0.45))
+        outline_width = max(2, int(params.die_outline_width_px))
     draw_rounded_rect(
         draw,
         (x0, y0, x1, y1),
-        radius=int(params.die_corner_radius_px),
+        radius=radius,
         fill=fill,
         outline=outline,
-        width=int(params.die_outline_width_px),
+        width=outline_width,
     )
-    highlight = tuple(min(255, int(channel) + 34) for channel in fill)
-    draw.arc(
-        [x0 + 8.0, y0 + 8.0, x1 - 8.0, y1 - 8.0],
-        start=202,
-        end=276,
-        fill=highlight,
-        width=2,
-    )
+    if style_id in {"classic_rounded", "beveled_tokens"}:
+        highlight = tuple(min(255, int(channel) + (48 if style_id == "beveled_tokens" else 34)) for channel in fill)
+        draw.arc(
+            [x0 + 8.0, y0 + 8.0, x1 - 8.0, y1 - 8.0],
+            start=202,
+            end=276,
+            fill=highlight,
+            width=2 if style_id == "classic_rounded" else 3,
+        )
+    if style_id == "beveled_tokens":
+        lowlight = tuple(max(0, int(channel) - 38) for channel in fill)
+        draw.arc([x0 + 7.0, y0 + 7.0, x1 - 7.0, y1 - 7.0], start=28, end=92, fill=lowlight, width=2)
     pip_fill = (255, 255, 255) if _luminance(fill) < 145.0 else (24, 28, 36)
     pip_outline = (24, 28, 36) if _luminance(fill) < 145.0 else (255, 255, 255)
-    radius = float(params.pip_radius_px)
+    pip_radius = float(params.pip_radius_px)
+    if style_id == "flat_print":
+        pip_radius = max(3.0, float(params.pip_radius_px) * 0.82)
+    elif style_id == "inked_pips":
+        pip_radius = max(4.0, float(params.pip_radius_px) * 0.92)
+    elif style_id == "beveled_tokens":
+        pip_radius = float(params.pip_radius_px) * 1.08
     for cx, cy in _pip_centers((x0, y0, x1, y1), int(value)):
+        if style_id == "inked_pips":
+            draw.ellipse(
+                [cx - pip_radius - 2.0, cy - pip_radius - 2.0, cx + pip_radius + 2.0, cy + pip_radius + 2.0],
+                fill=pip_outline,
+                outline=pip_outline,
+                width=1,
+            )
         draw.ellipse(
-            [cx - radius, cy - radius, cx + radius, cy + radius],
+            [cx - pip_radius, cy - pip_radius, cx + pip_radius, cy + pip_radius],
             fill=pip_fill,
             outline=pip_outline,
             width=1,
@@ -210,6 +247,7 @@ def _draw_tray(
     item_bbox_map: Dict[str, List[float]],
     die_bbox_map: Dict[str, List[float]],
     tray_bbox_map: Dict[str, List[float]],
+    visual_style: str = "classic_rounded",
 ) -> None:
     tray_id = str(tray["tray_id"])
     title = str(tray.get("title", "Dice tray"))
@@ -245,6 +283,7 @@ def _draw_tray(
             outline=style["die_outline"],
             value=int(die["value"]),
             params=params,
+            visual_style=str(visual_style),
         )
         die_bbox_map[die_id] = list(bbox)
         item_bbox_map[die_id] = list(bbox)
@@ -277,6 +316,7 @@ def render_dice_probability_scene(
     tray_specs: Sequence[Mapping[str, Any]],
     render_params: DiceRenderParams,
     scene_style: PuzzleSceneStyle | None = None,
+    visual_style: str = "classic_rounded",
 ) -> RenderedDiceScene:
     """Render one single-, pair-, or conditional-dice probability panel."""
 
@@ -312,6 +352,7 @@ def render_dice_probability_scene(
             item_bbox_map=item_bbox_map,
             die_bbox_map=die_bbox_map,
             tray_bbox_map=tray_bbox_map,
+            visual_style=str(visual_style),
         )
     else:
         if len(tray_specs) != 2:
@@ -327,6 +368,7 @@ def render_dice_probability_scene(
                 item_bbox_map=item_bbox_map,
                 die_bbox_map=die_bbox_map,
                 tray_bbox_map=tray_bbox_map,
+                visual_style=str(visual_style),
             )
 
     bboxes = list(tray_bbox_map.values())
@@ -352,5 +394,6 @@ __all__ = [
     "DiceRenderParams",
     "RenderedDiceScene",
     "SUPPORTED_DICE_SCENE_VARIANTS",
+    "SUPPORTED_DICE_VISUAL_STYLES",
     "render_dice_probability_scene",
 ]

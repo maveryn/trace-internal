@@ -14,16 +14,10 @@
     "scene:visible_crossing_lane": [
       "object_description"
     ],
-    "query:safe_start_label": [
-      "crossing_motion_rule_text"
-    ],
     "query:collision_time_value": [
       "crossing_motion_rule_text"
     ],
     "query:moving_object_count": [
-      "crossing_motion_rule_text"
-    ],
-    "query:goal_reachable_label": [
       "crossing_motion_rule_text"
     ],
     "answer_or_evidence:answer_only": [
@@ -64,19 +58,12 @@
     ]
   },
   "query_templates": {
-    "safe_start_label": [
-      "{crossing_motion_rule_text} Which labeled start pad lets a runner go straight upward to the goal without colliding?",
-      "Choose the start-pad label for the straight upward path that stays safe. {crossing_motion_rule_text}",
-      "{crossing_motion_rule_text} Report the label of the only start pad whose straight route reaches the goal safely.",
-      "A safe start has no collision on the straight upward route from that pad to the goal. {crossing_motion_rule_text} Which label is safe?",
-      "{crossing_motion_rule_text} Identify the unique labeled start pad for a collision-free straight crossing."
-    ],
     "collision_time_value": [
-      "{crossing_motion_rule_text} Use the numbered yellow route cells. At which tick does a moving object first reach the matching route cell?",
-      "Follow the marked route upward by tick number. {crossing_motion_rule_text} Report the smallest tick where a moving object reaches that numbered route cell.",
-      "{crossing_motion_rule_text} Determine the earliest tick where a moving object reaches the numbered yellow route cell for that tick.",
-      "Using the tick numbers on the marked route, find the first moving-object collision at the matching tick. {crossing_motion_rule_text}",
-      "{crossing_motion_rule_text} What is the smallest tick at which a moving object reaches the marked route cell with that tick number?"
+      "{crossing_motion_rule_text} The marked route cells are numbered by tick. At which tick does a moving object first reach the route cell with the same tick number?",
+      "Follow the marked route upward by tick number. {crossing_motion_rule_text} Report the smallest tick where a moving object reaches that same numbered route cell.",
+      "{crossing_motion_rule_text} The marked route cells show their tick numbers. Determine the earliest tick where a moving object reaches that route cell.",
+      "Using the numbered cells on the marked route, find the first moving-object collision at the matching tick. {crossing_motion_rule_text}",
+      "{crossing_motion_rule_text} What is the smallest tick at which a moving object reaches the marked route cell for that tick?"
     ],
     "moving_object_count": [
       "{crossing_motion_rule_text} Use the numbered yellow route cells. Count moving objects that reach the same lane cell as the yellow route at the matching tick.",
@@ -84,13 +71,6 @@
       "{crossing_motion_rule_text} Determine how many moving objects reach a numbered yellow route cell at that cell's tick.",
       "For the yellow marked route, count every moving object that lands on the same lane cell at the same tick. {crossing_motion_rule_text}",
       "{crossing_motion_rule_text} Report the count of moving objects that collide with the numbered yellow route cells."
-    ],
-    "goal_reachable_label": [
-      "{crossing_motion_rule_text} Which labeled route reaches the goal without colliding?",
-      "Choose the route label for the only collision-free path to the goal. {crossing_motion_rule_text}",
-      "{crossing_motion_rule_text} Among the labeled route options, report the one that reaches the goal safely.",
-      "A route is safe if it avoids every moving object at its ticked row positions. {crossing_motion_rule_text} Which route label is safe?",
-      "{crossing_motion_rule_text} Identify the unique labeled route option that can cross to the goal."
     ]
   },
   "allow_empty_task_templates": true

@@ -68,11 +68,9 @@ def test_games_chess_board_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
-    assert trace["query_spec"]["params"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == str(expected_query)
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
     assert int(execution["target_answer"]) == int(out.answer_gt.value)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value

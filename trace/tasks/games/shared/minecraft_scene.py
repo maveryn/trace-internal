@@ -7,7 +7,9 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.color_distance import resolve_contrasting_palette
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .minecraft_common import (
     MinecraftBlock,
@@ -34,6 +36,7 @@ class MinecraftRenderParams:
     cube_height_px: int
     outline_width_px: int
     player_marker_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -350,9 +353,18 @@ def _draw_player(
         float(center[1] + size / 2.0),
     )
     draw.rounded_rectangle(bbox, radius=5, fill=tuple(theme.player_rgb), outline=tuple(theme.outline_rgb), width=2)
-    font = fit_font_to_box(draw, text="P", max_width=size, max_height=size, bold=True, min_size_px=10, max_size_px=18)
+    font = fit_font_to_box(
+        draw,
+        text="P",
+        max_width=size,
+        max_height=size,
+        bold=True,
+        min_size_px=10,
+        max_size_px=18,
+        font_family=str(params.font_family) or None,
+    )
     text_bbox = draw.textbbox((0, 0), "P", font=font)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(center[0]) - float(text_bbox[2] - text_bbox[0]) / 2.0 - float(text_bbox[0]),
             float(center[1]) - float(text_bbox[3] - text_bbox[1]) / 2.0 - float(text_bbox[1]),
@@ -360,7 +372,7 @@ def _draw_player(
         "P",
         font=font,
         fill=(255, 255, 255),
-    )
+     role="readout", required=False,)
     return tuple(round(float(v), 3) for v in bbox)  # type: ignore[return-value]
 
 
@@ -446,9 +458,18 @@ def _draw_route_label(
     color = tuple(int(v) for v in route.rgb)
     label_box = (float(lx - 16.0), float(ly - 16.0), float(lx + 16.0), float(ly + 16.0))
     draw.rounded_rectangle(label_box, radius=6, fill=color, outline=tuple(theme.outline_rgb), width=3)
-    font = fit_font_to_box(draw, text=label, max_width=25, max_height=24, bold=True, min_size_px=11, max_size_px=19)
+    font = fit_font_to_box(
+        draw,
+        text=label,
+        max_width=25,
+        max_height=24,
+        bold=True,
+        min_size_px=11,
+        max_size_px=19,
+        font_family=str(params.font_family) or None,
+    )
     text_bbox = draw.textbbox((0, 0), label, font=font)
-    draw.text(
+    draw_text_traced(draw,
         (
             float((label_box[0] + label_box[2]) / 2.0) - float(text_bbox[2] - text_bbox[0]) / 2.0 - float(text_bbox[0]),
             float((label_box[1] + label_box[3]) / 2.0) - float(text_bbox[3] - text_bbox[1]) / 2.0 - float(text_bbox[1]),
@@ -456,7 +477,7 @@ def _draw_route_label(
         label,
         font=font,
         fill=(255, 255, 255),
-    )
+     role="readout", required=False,)
 
 
 def render_minecraft_block_world_scene(
@@ -482,6 +503,25 @@ def render_minecraft_block_world_scene(
     draw = ImageDraw.Draw(image)
     theme = build_games_minecraft_theme(style_variant=str(style_variant))
     origin = _grid_origin(grid_width=int(grid_width), grid_depth=int(grid_depth), params=params)
+    route_overlays = tuple(route_overlays or ())
+    route_anchor_colors = (
+        tuple(theme.ground_rgb),
+        tuple(theme.ground_alt_rgb),
+        tuple(theme.water_rgb),
+        tuple(theme.outline_rgb),
+        tuple(theme.support_rgb),
+        tuple(theme.stone_rgb),
+    )
+    resolved_route_rgbs = resolve_contrasting_palette(
+        tuple(tuple(int(channel) for channel in route.rgb) for route in route_overlays),
+        anchor_colors=route_anchor_colors,
+        min_anchor_distance=42.0,
+        min_pairwise_distance=28.0,
+    )
+    resolved_route_overlays = tuple(
+        MinecraftRouteOverlay(label=str(route.label), cells=tuple(route.cells), rgb=tuple(rgb))
+        for route, rgb in zip(route_overlays, resolved_route_rgbs)
+    )
 
     entity_bboxes: Dict[str, BBox] = {}
     scene_entities: list[Dict[str, Any]] = []
@@ -524,7 +564,7 @@ def render_minecraft_block_world_scene(
                     }
                 )
 
-    for route in route_overlays or ():
+    for route in resolved_route_overlays:
         _draw_route_overlay(draw, route=route, theme=theme, origin=origin, params=params, draw_label=False)
 
     sorted_blocks = sorted(blocks, key=lambda block: (int(block.x) + int(block.y) + int(block.z), int(block.y), int(block.x), int(block.z)))
@@ -586,7 +626,7 @@ def render_minecraft_block_world_scene(
             }
         )
 
-    for route in route_overlays or ():
+    for route in resolved_route_overlays:
         _draw_route_label(draw, route=route, theme=theme, origin=origin, params=params)
 
     return RenderedMinecraftScene(
@@ -603,8 +643,14 @@ def render_minecraft_block_world_scene(
                     "cells": [list(cell) for cell in route.cells],
                     "rgb": list(route.rgb),
                 }
-                for route in (route_overlays or ())
+                for route in resolved_route_overlays
             ],
+            "route_color_policy": {
+                "min_anchor_distance_lab": 42.0,
+                "min_pairwise_distance_lab": 28.0,
+                "anchors_rgb": [list(color) for color in route_anchor_colors],
+            },
+            "text_style": {"font_family": str(params.font_family)},
             "layout_jitter": dict(params.layout_jitter_meta or {}),
         },
     )

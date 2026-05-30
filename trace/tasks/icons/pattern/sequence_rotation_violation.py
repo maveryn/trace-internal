@@ -26,6 +26,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icons_sequence_rotation_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -453,6 +454,7 @@ def _sample_scene(
         cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
         scene_title="Sequence",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     scene_cells: List[Dict[str, Any]] = []
@@ -594,10 +596,14 @@ class IconsPatternSequenceRotationViolationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
+        evidence_payload = bbox_set_evidence(evidence_bboxes)
         taxonomy = resolve_task_taxonomy(str(self.task_id))
         query_id = QUERY_ID
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type=str(evidence_payload["evidence_type"]),
+            value=list(evidence_payload["evidence_value"]),
+        )
         common_ids = {
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
@@ -692,7 +698,7 @@ class IconsPatternSequenceRotationViolationTask:
             "render_map": {
                 "image_id": "img0",
                 "anchors": {
-                    "violating_cell_bbox": list(scene_payload.violating_cell_bbox),
+                    "violating_cell_bbox": list(evidence_payload["evidence_value"][0]),
                 },
             },
             "execution_trace": {
@@ -720,9 +726,7 @@ class IconsPatternSequenceRotationViolationTask:
                 "observed_sequence_rotations_degrees": list(scene_payload.observed_sequence_rotations_degrees),
                 "violation_cell_index": int(scene_payload.violation_cell_index),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         expected_rotation = int(scene_payload.expected_sequence_rotations_degrees[scene_payload.violation_cell_index])
         violation_rotation_difference_degrees = _minimal_rotation_difference_degrees(

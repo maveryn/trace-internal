@@ -19,6 +19,7 @@
 4. The marked route is visually emphasized with larger numbered route cells, and
    the task uses lower non-intersecting traffic clutter than the shared scene
    default.
+5. Rendering uses shared games/puzzles panel-scene treatments, layout jitter, and sampled text fonts.
 
 ## Determinism
 1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.

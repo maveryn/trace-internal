@@ -13,28 +13,28 @@ from trace.tasks.games.minecraft.block_world_tasks import (
     RESOURCE_ROUTE_QUERY_ID,
     TUNNEL_CLEARANCE_QUERY_ID,
     GamesMinecraftOreBlockCountTask,
-    GamesMinecraftResourceRouteCostTask,
-    GamesMinecraftTunnelClearanceCountTask,
+    GamesMinecraftRouteBlockCountTask,
 )
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "target_answer", "expected_query"),
+    ("task_cls", "target_answer", "expected_query", "extra_params"),
     (
-        (GamesMinecraftOreBlockCountTask, 4, ORE_BLOCK_QUERY_ID),
-        (GamesMinecraftTunnelClearanceCountTask, 5, TUNNEL_CLEARANCE_QUERY_ID),
-        (GamesMinecraftResourceRouteCostTask, 5, RESOURCE_ROUTE_QUERY_ID),
+        (GamesMinecraftOreBlockCountTask, 4, ORE_BLOCK_QUERY_ID, {}),
+        (GamesMinecraftRouteBlockCountTask, 5, TUNNEL_CLEARANCE_QUERY_ID, {"query_id": TUNNEL_CLEARANCE_QUERY_ID}),
+        (GamesMinecraftRouteBlockCountTask, 5, RESOURCE_ROUTE_QUERY_ID, {"query_id": RESOURCE_ROUTE_QUERY_ID}),
     ),
 )
 def test_games_minecraft_public_tasks_emit_expected_contract(
     task_cls,
     target_answer: int,
     expected_query: str,
+    extra_params: dict[str, str],
 ) -> None:
     out = task_cls().generate(
         2026052201,
-        params={"target_answer": int(target_answer), "style_variant": "grass"},
+        params={"target_answer": int(target_answer), "style_variant": "grass", **extra_params},
         max_attempts=512,
     )
     trace = out.trace_payload
@@ -42,15 +42,14 @@ def test_games_minecraft_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "minecraft"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) >= 1
+    assert "panel_scene_style" in trace["render_spec"]
+    assert trace["render_spec"]["text_style"]["font_family"]
 
 
 def test_games_minecraft_ore_count_evidence_matches_target_kind() -> None:
@@ -70,9 +69,14 @@ def test_games_minecraft_ore_count_evidence_matches_target_kind() -> None:
 
 
 def test_games_minecraft_tunnel_clearance_evidence_is_on_marked_path() -> None:
-    out = GamesMinecraftTunnelClearanceCountTask().generate(
+    out = GamesMinecraftRouteBlockCountTask().generate(
         2026052203,
-        params={"target_answer": 6, "grid_width": 10, "grid_depth": 10},
+        params={
+            "target_answer": 6,
+            "grid_width": 10,
+            "grid_depth": 10,
+            "query_id": TUNNEL_CLEARANCE_QUERY_ID,
+        },
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -85,9 +89,14 @@ def test_games_minecraft_tunnel_clearance_evidence_is_on_marked_path() -> None:
 
 
 def test_games_minecraft_resource_route_cost_matches_queried_route() -> None:
-    out = GamesMinecraftResourceRouteCostTask().generate(
+    out = GamesMinecraftRouteBlockCountTask().generate(
         2026052204,
-        params={"target_answer": 5, "grid_width": 11, "grid_depth": 10},
+        params={
+            "target_answer": 5,
+            "grid_width": 11,
+            "grid_depth": 10,
+            "query_id": RESOURCE_ROUTE_QUERY_ID,
+        },
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
@@ -113,8 +122,11 @@ def test_games_minecraft_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__minecraft__ore_block_count", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__minecraft__tunnel_clearance_count", count=1, params={}),
-            BuildTaskConfig(task_id="task_games__minecraft__resource_route_cost_value", count=1, params={}),
+            BuildTaskConfig(
+                task_id="task_games__minecraft__route_block_count",
+                count=2,
+                params={},
+            ),
         ],
         max_attempts_per_instance=512,
         workers=1,

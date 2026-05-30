@@ -31,9 +31,9 @@ unlabeled and are not included in the distance-rank candidate set.
   distance rank from the named reference icon
 
 ## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- evidence contains one bbox for the named reference icon and one bbox for the
-  selected labeled candidate icon
+- `evidence_gt.type = keyed_bbox_map`
+- evidence contains `reference_icon` for the named reference icon and
+  `selected_candidate` for the selected labeled candidate icon
 - candidate distance ranks are separated from adjacent ranks by the configured
   `distance_rank_margin_px`
 
@@ -43,8 +43,10 @@ unlabeled and are not included in the distance-rank candidate set.
   `distance_rank`.
 - `execution_trace.sorted_candidate_labels_by_distance` records the verifier
   order used to derive the answer.
-- `projected_evidence.bbox_set` is derived from the same rendered reference and
-  selected candidate bboxes.
+- `projected_evidence.keyed_bbox_map` is derived from the same rendered
+  reference and selected candidate bboxes.
+- `render_spec.style.text_legibility` records validated panel-header and
+  candidate-label text roles for the visible `A`..`F` option labels.
 
 ## Prompt Contract
 - `scene_key = named_reference_distance_relation`
@@ -55,5 +57,7 @@ unlabeled and are not included in the distance-rank candidate set.
   examples
 
 ## Current Review Status
-Current v0 review and solve-rate artifacts are pending. Use
-`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.
+Current v0 review and solve-rate artifacts are pending. Browser-review sidecars
+belong under
+`review/task-reviews/icons/named_field/task_icons__named_field__reference_distance_rank_label/`;
+solve-rate status is tracked in `review/calibration_sweep_status.json`.

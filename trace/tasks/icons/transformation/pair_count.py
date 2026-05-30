@@ -6,6 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
@@ -24,6 +25,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.icon_assets import icon_transform_signature, resolve_icon_pool
 from ..shared.complexity import build_icons_transformation_pair_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
@@ -102,11 +104,20 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
+TASK_ID = "task_icons__pair_grid__pair_relation_count"
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "transformation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons__pair_grid__pair_geometric_transform_count",
+    task_id=TASK_ID,
 )
+_GEN_DEFAULTS = {
+    **_GEN_DEFAULTS,
+    **dict(_GEN_DEFAULTS.get("variant_generation_params", {}).get("same_pair_transform", {})),
+}
+_RENDER_DEFAULTS = {
+    **_RENDER_DEFAULTS,
+    **dict(_RENDER_DEFAULTS.get("variant_render_params", {}).get("same_pair_transform", {})),
+}
 
 
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
@@ -146,6 +157,28 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         key="cell_label_color_rgb",
         fallback=_DEFAULTS.cell_label_color_rgb,
         instance_seed=int(instance_seed),
+    )
+    cell_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace="icons.pair_grid.cell_label_text",
+        role="icon_cell_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["cell_label_color_rgb"]),),
+        required=False,
+    )
+    render_params["cell_label_color_rgb"] = tuple(int(value) for value in cell_label_style.fill_rgb)
+    render_params["cell_label_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
+    cell_label_record = cell_label_style.metadata()
+    cell_label_record["stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, cell_label_record]
     )
     render_params["arrow_color_rgb"] = resolve_icon_rgb_param(
         params=params,
@@ -201,6 +234,12 @@ def _transformation_style_trace(
         "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
         "panel_border_rgb": list(render_params["panel_border_rgb"]),
         "header_text_rgb": list(render_params["header_text_rgb"]),
+        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", render_params["panel_fill_rgb"])),
+        "text_color_policy": str(
+            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
+        ),
+        "text_legibility": dict(render_params.get("text_legibility", {})),
+        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
         "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
         "color_channel_min": int(render_params["color_channel_min"]),
         "color_channel_max": int(render_params["color_channel_max"]),
@@ -223,6 +262,7 @@ def _transformation_style_trace(
         "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
         "cell_border_rgb": list(render_params["cell_border_rgb"]),
         "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
+        "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
         "arrow_color_rgb": list(render_params["arrow_color_rgb"]),
     }
 
@@ -361,7 +401,10 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         arrow_color_rgb=tuple(int(v) for v in render_params["arrow_color_rgb"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     reference_payload = {
@@ -416,11 +459,10 @@ def _sample_scene(
     ), rendered.image
 
 
-@register_task
 class IconsTransformationPairCountTask:
     """Count scene grid cells that match a reference icon-pair transform."""
 
-    task_id = "task_icons__pair_grid__pair_geometric_transform_count"
+    task_id = TASK_ID
     domain = "icons"
     task_group = "transformation"
 
@@ -477,7 +519,7 @@ class IconsTransformationPairCountTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons__pair_grid__pair_geometric_transform_count instance") from last_error
+            raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -631,4 +673,84 @@ class IconsTransformationPairCountTask:
         )
 
 
-__all__ = ["IconsTransformationPairCountTask"]
+QUERY_IDS: Tuple[str, ...] = (
+    "color_only_change",
+    "size_only_change",
+    "color_and_size_change",
+    "same_pair_transform",
+)
+
+
+def _query_probabilities(params: Mapping[str, Any]) -> Dict[str, float]:
+    raw = params.get("query_id_weights", group_default(_GEN_DEFAULTS, "query_id_weights", {}))
+    if raw is None:
+        raw = {}
+    if not isinstance(raw, Mapping):
+        raise ValueError("query_id_weights must be a mapping")
+    return normalize_positive_weights(
+        {str(key): float(value) for key, value in raw.items() if str(key) in set(QUERY_IDS)},
+        default_keys=QUERY_IDS,
+    )
+
+
+def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
+    explicit = params.get("query_id")
+    probabilities = _query_probabilities(params)
+    if explicit is not None:
+        query_id = str(explicit)
+        if query_id not in set(QUERY_IDS):
+            raise ValueError(f"query_id must be one of {QUERY_IDS}")
+        return query_id, {key: (1.0 if key == query_id else 0.0) for key in QUERY_IDS}
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query_id")
+    query_id = str(weighted_choice(rng, probabilities, sort_keys=True))
+    return query_id, dict(probabilities)
+
+
+def _variant_params(query_id: str) -> Dict[str, Any]:
+    merged: Dict[str, Any] = {}
+    for defaults, key in ((_GEN_DEFAULTS, "variant_generation_params"), (_RENDER_DEFAULTS, "variant_render_params")):
+        raw = defaults.get(str(key), {})
+        if not isinstance(raw, Mapping):
+            continue
+        selected = raw.get(str(query_id), {})
+        if isinstance(selected, Mapping):
+            merged.update(dict(selected))
+    return merged
+
+
+@register_task
+class IconsTransformationPairRelationCountTask:
+    """Count Scene pair cells matching the Reference pair relation."""
+
+    task_id = TASK_ID
+    domain = "icons"
+    task_group = "transformation"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        query_id, probabilities = _resolve_query_id(int(instance_seed), params)
+        forced_params = {**_variant_params(str(query_id)), **dict(params)}
+        forced_params["query_id"] = str(query_id)
+        if str(query_id) == "same_pair_transform":
+            output = IconsTransformationPairCountTask().generate(
+                int(instance_seed),
+                params=forced_params,
+                max_attempts=int(max_attempts),
+            )
+        else:
+            from .attribute_rule_count import IconsTransformationPairAttributeRuleCountTask
+
+            output = IconsTransformationPairAttributeRuleCountTask().generate(
+                int(instance_seed),
+                params=forced_params,
+                max_attempts=int(max_attempts),
+            )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(query_id),
+            scene_id="pair_grid",
+            task_id=self.task_id,
+            query_probabilities=dict(probabilities),
+        )
+
+
+__all__ = ["IconsTransformationPairRelationCountTask", "QUERY_IDS"]

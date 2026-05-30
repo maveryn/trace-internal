@@ -68,16 +68,14 @@ def test_games_minesweeper_grid_emits_expected_contract(
 
     assert out.answer_gt.type == str(expected_answer_type)
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == str(expected_query)
     assert trace["query_spec"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == str(expected_query)
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert "panel_scene_style" in trace["render_spec"]
+    assert trace["render_spec"]["text_style"]["font_family"]
 
 
 def test_games_minesweeper_forced_mine_count_matches_basic_rule_supports() -> None:

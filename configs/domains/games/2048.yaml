@@ -66,6 +66,10 @@ rendering:
     canvas_height: 900
     panel_margin_px: 64
     board_size_px: 560
+    dynamic_canvas_size_enabled: true
+    canvas_min_size_px: 520
+    canvas_side_padding_px: 128
+    canvas_side_padding_fraction: 0.2
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     board_radius_px: 18

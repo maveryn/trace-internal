@@ -11,7 +11,6 @@ from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -26,6 +25,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.complexity import (
     build_icon_task_complexity,
     icon_scene_clutter_score,
@@ -125,10 +125,11 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
+TASK_ID = "task_icons__pair_grid__pair_relation_count"
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "transformation")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons__pair_grid__pair_attribute_rule_count",
+    task_id=TASK_ID,
 )
 
 
@@ -173,6 +174,28 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         key="cell_label_color_rgb",
         fallback=_DEFAULTS.cell_label_color_rgb,
         instance_seed=int(instance_seed),
+    )
+    cell_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace="icons.pair_grid.cell_label_text",
+        role="icon_cell_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["cell_label_color_rgb"]),),
+        required=False,
+    )
+    render_params["cell_label_color_rgb"] = tuple(int(value) for value in cell_label_style.fill_rgb)
+    render_params["cell_label_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
+    cell_label_record = cell_label_style.metadata()
+    cell_label_record["stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, cell_label_record]
     )
     render_params["arrow_color_rgb"] = resolve_icon_rgb_param(
         params=params,
@@ -244,6 +267,12 @@ def _attribute_style_trace(
         "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
         "panel_border_rgb": list(render_params["panel_border_rgb"]),
         "header_text_rgb": list(render_params["header_text_rgb"]),
+        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", render_params["panel_fill_rgb"])),
+        "text_color_policy": str(
+            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
+        ),
+        "text_legibility": dict(render_params.get("text_legibility", {})),
+        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
         "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
         "color_channel_min": int(render_params["color_channel_min"]),
         "color_channel_max": int(render_params["color_channel_max"]),
@@ -268,6 +297,7 @@ def _attribute_style_trace(
         "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
         "cell_border_rgb": list(render_params["cell_border_rgb"]),
         "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
+        "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
         "arrow_color_rgb": list(render_params["arrow_color_rgb"]),
     }
 
@@ -487,7 +517,10 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         arrow_color_rgb=tuple(int(v) for v in render_params["arrow_color_rgb"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     reference_payload = _pair_payload(
@@ -581,11 +614,10 @@ def _attribute_rule_complexity(
     )
 
 
-@register_task
 class IconsTransformationPairAttributeRuleCountTask:
     """Count scene cells that match the Reference pair's color/size edit rule."""
 
-    task_id = "task_icons__pair_grid__pair_attribute_rule_count"
+    task_id = TASK_ID
     domain = "icons"
     task_group = "transformation"
 
@@ -646,7 +678,7 @@ class IconsTransformationPairAttributeRuleCountTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons__pair_grid__pair_attribute_rule_count instance") from last_error
+            raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,

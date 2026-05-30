@@ -10,11 +10,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -39,7 +39,8 @@ from ..shared.minigolf_common import (
 )
 from ..shared.minigolf_scene import MinigolfRenderParams, render_minigolf_scene
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_minigolf_course_base"
@@ -98,7 +99,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="minigolf")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="minigolf", apply_prob=0.5)
 
 
@@ -276,6 +276,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> MinigolfRenderParams:
     """Resolve Mini-golf rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.minigolf.font_family",
+        params=params,
+    )
     return MinigolfRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -288,6 +294,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Minigolf
         obstacle_radius_px=int(params.get("obstacle_radius_px", group_default(_RENDER_DEFAULTS, "obstacle_radius_px", _DEFAULTS.obstacle_radius_px))),
         path_width_px=int(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", _DEFAULTS.path_width_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
@@ -747,10 +754,10 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "shot_path_label":
         answer_value = "3"
-        evidence_value = [[642, 594, 680, 632]]
+        evidence_value = [[[486, 562], [592, 520]]]
     else:
         answer_value = "D"
-        evidence_value = [[452, 224, 520, 292]]
+        evidence_value = [[486, 258]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -779,12 +786,33 @@ class GamesMinigolfCourseTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.minigolf.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_minigolf_scene(
             obstacles=sampled_scene.obstacles,
@@ -797,11 +825,30 @@ class GamesMinigolfCourseTask:
             background=background,
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
-        ]
+        if str(axes.query_id) == "shot_path_label":
+            if sampled_scene.target_path_id is None:
+                raise RuntimeError("shot_path_label missing target path id")
+            evidence_type = "point_pair_set"
+            evidence_value = [
+                [list(point) for point in rendered_scene.render_map["path_point_pairs_px"][str(sampled_scene.target_path_id)]]
+            ]
+            projected_evidence = {
+                "type": "point_pair_set",
+                "point_pair_set": [list(pair) for pair in evidence_value],
+            }
+        else:
+            evidence_type = "point_set"
+            evidence_value = [
+                list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
+                for entity_id in sampled_scene.evidence_entity_ids
+            ]
+            projected_evidence = {
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_value],
+                "pixel_point_set": [list(point) for point in evidence_value],
+            }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -852,7 +899,11 @@ class GamesMinigolfCourseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_minigolf_course_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -930,6 +981,8 @@ class GamesMinigolfCourseTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -950,12 +1003,10 @@ class GamesMinigolfCourseTask:
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
-                "type": "object_set",
+                "type": "point_pair_set" if str(evidence_type) == "point_pair_set" else "object_set",
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_evidence": dict(projected_evidence),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }

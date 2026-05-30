@@ -20,9 +20,11 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.named_colors import available_named_colors, named_color
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import BBox, draw_single_panel, resolve_single_panel_layout, single_panel_geometry_to_trace, sort_bboxes_reading_order
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
@@ -462,6 +464,30 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
             fallback=getattr(_DEFAULTS, key),
             instance_seed=int(instance_seed),
         )
+    reference_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:reference_label_text",
+        role="named_field_reference_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["reference_label_background_rgb"]),
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["reference_label_color_rgb"]),),
+    )
+    render_params["reference_label_color_rgb"] = tuple(int(value) for value in reference_label_style.fill_rgb)
+    render_params["reference_label_stroke_rgb"] = tuple(
+        int(value) for value in render_params["reference_label_background_rgb"]
+    )
+    reference_label_record = reference_label_style.metadata()
+    reference_label_record["stroke_rgb"] = list(render_params["reference_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, reference_label_record]
+    )
     return render_params
 
 
@@ -520,7 +546,10 @@ def _draw_reference_label(
         center=bbox_center_float(label_bbox),
         font=label_font,
         fill=tuple(int(value) for value in render_params["reference_label_color_rgb"]),
-        stroke_fill=tuple(int(value) for value in render_params["reference_label_background_rgb"]),
+        stroke_fill=tuple(
+            int(value)
+            for value in render_params.get("reference_label_stroke_rgb", render_params["reference_label_background_rgb"])
+        ),
         stroke_width=1,
     )
     return tuple(int(value) for value in label_bbox)
@@ -708,6 +737,7 @@ def _render_scene(
                 corner_radius_px=int(render_params["panel_corner_radius_px"]),
                 title_font_size_px=int(render_params["panel_title_font_size_px"]),
                 scene_title="Scene",
+                icon_canvas_style=render_params.get("_icon_canvas_style_object"),
             )
             for record, sprite in zip(rendered, sprites):
                 image.alpha_composite(sprite, (int(record.bbox_xyxy[0]), int(record.bbox_xyxy[1])))
@@ -841,6 +871,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order(tuple(icon.bbox_xyxy for icon in counted_icons))
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
         counted_instance_ids = tuple(str(icon.instance_id) for icon in counted_icons)
         reference_by_label = {str(icon.label): icon for icon in reference_icons}
         closer_counts = Counter(str(icon.closer_reference_label) for icon in target_icons)
@@ -912,6 +943,17 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                     **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=sample.sampled_palette_rgb),
                     "reference_axis_degrees": int(scene.reference_axis_degrees),
                     "distance_margin_px": int(render_params["distance_margin_px"]),
+                    "reference_label_font_size_px": int(render_params["reference_label_font_size_px"]),
+                    "reference_label_color_rgb": [int(value) for value in render_params["reference_label_color_rgb"]],
+                    "reference_label_stroke_rgb": [
+                        int(value) for value in render_params["reference_label_stroke_rgb"]
+                    ],
+                    "reference_label_background_rgb": [
+                        int(value) for value in render_params["reference_label_background_rgb"]
+                    ],
+                    "reference_label_border_rgb": [
+                        int(value) for value in render_params["reference_label_border_rgb"]
+                    ],
                     "semantic_color_palette": [
                         {
                             "name": str(name),
@@ -955,13 +997,16 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
                 "closer_count_by_reference": dict(closer_count_by_reference),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            ),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

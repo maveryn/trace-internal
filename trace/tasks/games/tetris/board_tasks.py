@@ -15,10 +15,12 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice
-from ...shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
+from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis
@@ -50,7 +52,13 @@ DROP_RESULT_BRANCHES: Tuple[str, ...] = (
     "multi_clear_result",
 )
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("low_stack", "notched_stack", "high_stack")
-SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("panel_scene",)
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic_blocks",
+    "beveled_blocks",
+    "paper_tiles",
+    "glass_blocks",
+    "neon_blocks",
+)
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E")
 
 EMPTY = "."
@@ -205,6 +213,7 @@ class _RenderParams:
     ghost_outline_width_px: int
     label_font_size_px: int
     small_label_font_size_px: int
+    font_family: str
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -589,6 +598,12 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         instance_seed=int(instance_seed),
         namespace="games.tetris.layout",
     )
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.tetris.font_family",
+        params=params,
+    )
     return _RenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -603,24 +618,117 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
         ghost_outline_width_px=int(params.get("ghost_outline_width_px", group_default(_RENDER_DEFAULTS, "ghost_outline_width_px", _DEFAULTS.ghost_outline_width_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
         small_label_font_size_px=int(params.get("small_label_font_size_px", group_default(_RENDER_DEFAULTS, "small_label_font_size_px", _DEFAULTS.small_label_font_size_px))),
+        font_family=str(font_family),
         layout_jitter_meta=dict(layout_jitter),
     )
 
 
-def _piece_color(piece: str, state_colors: Sequence[Sequence[int]]) -> Tuple[int, int, int]:
-    fallback = {
-        "I": (38, 180, 210),
-        "O": (239, 193, 50),
-        "T": (154, 90, 204),
-        "S": (78, 174, 86),
-        "Z": (220, 72, 82),
-        "J": (65, 112, 210),
-        "L": (230, 145, 52),
+def _piece_color(piece: str, *, style_variant: str, state_colors: Sequence[Sequence[int]]) -> Tuple[int, int, int]:
+    palettes: Dict[str, Dict[str, Tuple[int, int, int]]] = {
+        "classic_blocks": {
+            "I": (38, 180, 210),
+            "O": (239, 193, 50),
+            "T": (154, 90, 204),
+            "S": (78, 174, 86),
+            "Z": (220, 72, 82),
+            "J": (65, 112, 210),
+            "L": (230, 145, 52),
+        },
+        "beveled_blocks": {
+            "I": (33, 166, 196),
+            "O": (226, 177, 42),
+            "T": (142, 82, 190),
+            "S": (64, 156, 78),
+            "Z": (207, 63, 78),
+            "J": (54, 103, 194),
+            "L": (218, 126, 42),
+        },
+        "paper_tiles": {
+            "I": (88, 166, 184),
+            "O": (214, 178, 86),
+            "T": (151, 113, 174),
+            "S": (105, 166, 112),
+            "Z": (195, 102, 107),
+            "J": (95, 128, 188),
+            "L": (206, 142, 82),
+        },
+        "glass_blocks": {
+            "I": (76, 200, 224),
+            "O": (248, 208, 74),
+            "T": (182, 112, 228),
+            "S": (96, 204, 112),
+            "Z": (244, 96, 112),
+            "J": (88, 138, 232),
+            "L": (248, 166, 72),
+        },
+        "neon_blocks": {
+            "I": (42, 230, 244),
+            "O": (255, 228, 78),
+            "T": (210, 96, 255),
+            "S": (86, 242, 126),
+            "Z": (255, 86, 116),
+            "J": (92, 164, 255),
+            "L": (255, 172, 70),
+        },
     }
-    index = PIECE_ORDER.index(str(piece)) if str(piece) in PIECE_ORDER else 0
-    if len(state_colors) >= len(PIECE_ORDER):
-        return tuple(int(v) for v in state_colors[index % len(state_colors)])
-    return fallback.get(str(piece), (110, 130, 155))
+    fallback = palettes["classic_blocks"]
+    palette = palettes.get(str(style_variant), fallback)
+    if str(style_variant) == "panel_state_colors":
+        index = PIECE_ORDER.index(str(piece)) if str(piece) in PIECE_ORDER else 0
+        if len(state_colors) >= len(PIECE_ORDER):
+            return tuple(int(v) for v in state_colors[index % len(state_colors)])
+    return palette.get(str(piece), (110, 130, 155))
+
+
+def _draw_tetris_block(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: Tuple[int, int, int, int],
+    fill: Sequence[int],
+    style,
+    params: _RenderParams,
+    style_variant: str,
+    outline: Sequence[int] | None = None,
+) -> None:
+    """Draw one locked Tetris block with scene-local nonsemantic styling."""
+
+    fill_rgb = tuple(int(v) for v in fill)
+    draw_panel_grid_cell(
+        draw,
+        bbox=bbox,
+        fill=fill_rgb,
+        style=style,
+        outline=outline or style.grid_rgb,
+        width=int(params.cell_outline_width_px),
+    )
+    x0, y0, x1, y1 = [int(v) for v in bbox]
+    inset = max(2, int(round(min(x1 - x0, y1 - y0) * 0.14)))
+    variant = str(style_variant)
+    if variant == "beveled_blocks":
+        highlight = tuple(min(255, int(v) + 54) for v in fill_rgb)
+        shadow = tuple(max(0, int(v) - 64) for v in fill_rgb)
+        draw.line((x0 + inset, y0 + inset, x1 - inset, y0 + inset), fill=highlight, width=2)
+        draw.line((x0 + inset, y0 + inset, x0 + inset, y1 - inset), fill=highlight, width=2)
+        draw.line((x0 + inset, y1 - inset, x1 - inset, y1 - inset), fill=shadow, width=2)
+        draw.line((x1 - inset, y0 + inset, x1 - inset, y1 - inset), fill=shadow, width=2)
+    elif variant == "paper_tiles":
+        accent = tuple(max(0, int(v) - 42) for v in fill_rgb)
+        draw.line((x0 + inset, y1 - inset, x1 - inset, y0 + inset), fill=accent, width=1)
+    elif variant == "glass_blocks":
+        draw.rounded_rectangle(
+            (x0 + inset, y0 + inset, x1 - inset, y0 + max(inset + 2, (y1 - y0) // 2)),
+            radius=max(2, inset),
+            fill=(255, 255, 255, 72),
+            outline=None,
+        )
+    elif variant == "neon_blocks":
+        glow = tuple(min(255, int(v) + 40) for v in fill_rgb)
+        draw.rounded_rectangle(
+            (x0 + 2, y0 + 2, x1 - 2, y1 - 2),
+            radius=max(3, inset),
+            outline=glow + (230,),
+            width=max(2, int(params.cell_outline_width_px) + 1),
+        )
 
 
 def _random_piece_with_min_rows(rng, *, min_rows: int) -> Tuple[str, int]:
@@ -929,7 +1037,15 @@ def _piece_preview_panel_size(params: _RenderParams) -> Tuple[int, int]:
     )
 
 
-def _label_text(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], text: str, *, font_size: int, fill: Sequence[int]) -> None:
+def _label_text(
+    draw: ImageDraw.ImageDraw,
+    bbox: Tuple[int, int, int, int],
+    text: str,
+    *,
+    font_size: int,
+    fill: Sequence[int],
+    font_family: str = "",
+) -> None:
     font = fit_font_to_box(
         draw,
         text=str(text),
@@ -939,10 +1055,11 @@ def _label_text(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], text
         min_size_px=8,
         max_size_px=int(font_size),
         fill_ratio=0.95,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
     fill_rgb = tuple(int(v) for v in fill)
-    draw.text(
+    draw_text_traced(draw,
         (
             bbox[0] + ((bbox[2] - bbox[0]) - (text_bbox[2] - text_bbox[0])) / 2.0,
             bbox[1] + ((bbox[3] - bbox[1]) - (text_bbox[3] - text_bbox[1])) / 2.0 - text_bbox[1],
@@ -952,7 +1069,7 @@ def _label_text(draw: ImageDraw.ImageDraw, bbox: Tuple[int, int, int, int], text
         fill=fill_rgb,
         stroke_width=1,
         stroke_fill=tuple(resolve_text_stroke_fill(fill_rgb)),
-    )
+     role="readout", required=False,)
 
 
 def _draw_board_panel(
@@ -969,6 +1086,7 @@ def _draw_board_panel(
     falling_piece: str | None = None,
     selected_rows: Sequence[int] = (),
     entity_prefix: str,
+    tetris_style_variant: str,
 ) -> Tuple[Dict[str, Any], Tuple[Dict[str, Any], ...]]:
     draw = ImageDraw.Draw(image, "RGBA")
     draw_panel_option_card(draw, bbox=panel_bbox, style=style, radius=12, border_width=2)
@@ -978,7 +1096,14 @@ def _draw_board_panel(
         int(panel_bbox[2] - params.panel_pad_px),
         int(panel_bbox[1] + params.panel_pad_px + params.label_band_height_px),
     )
-    _label_text(draw, label_bbox, str(label), font_size=int(params.label_font_size_px), fill=style.text_rgb)
+    _label_text(
+        draw,
+        label_bbox,
+        str(label),
+        font_size=int(params.label_font_size_px),
+        fill=style.text_rgb,
+        font_family=str(params.font_family),
+    )
 
     board_left = int(panel_bbox[0] + params.panel_pad_px)
     board_top = int(panel_bbox[1] + params.panel_pad_px + params.label_band_height_px)
@@ -1014,18 +1139,35 @@ def _draw_board_panel(
             cell_value = board[row][col]
             if cell_value == EMPTY:
                 fill = tuple(style.panel_fill_rgb)
+                draw_panel_grid_cell(
+                    draw,
+                    bbox=bbox,
+                    fill=fill,
+                    style=style,
+                    outline=style.grid_rgb,
+                    width=int(params.cell_outline_width_px),
+                )
             else:
-                fill = _piece_color(str(cell_value), style.state_colors)
-            draw_panel_grid_cell(
-                draw,
-                bbox=bbox,
-                fill=fill,
-                style=style,
-                outline=style.grid_rgb,
-                width=int(params.cell_outline_width_px),
-            )
+                fill = _piece_color(
+                    str(cell_value),
+                    style_variant=str(tetris_style_variant),
+                    state_colors=style.state_colors,
+                )
+                _draw_tetris_block(
+                    draw,
+                    bbox=bbox,
+                    fill=fill,
+                    style=style,
+                    params=params,
+                    style_variant=str(tetris_style_variant),
+                    outline=style.grid_rgb,
+                )
             if (row, col) in ghost_set:
-                ghost_fill = _piece_color(str(ghost_piece or "I"), style.state_colors)
+                ghost_fill = _piece_color(
+                    str(ghost_piece or "I"),
+                    style_variant=str(tetris_style_variant),
+                    state_colors=style.state_colors,
+                )
                 draw.rounded_rectangle(
                     (bbox[0] + 3, bbox[1] + 3, bbox[2] - 3, bbox[3] - 3),
                     radius=5,
@@ -1034,7 +1176,11 @@ def _draw_board_panel(
                     width=int(params.ghost_outline_width_px),
                 )
             if (row, col) in falling_set:
-                falling_fill = _piece_color(str(falling_piece or "I"), style.state_colors)
+                falling_fill = _piece_color(
+                    str(falling_piece or "I"),
+                    style_variant=str(tetris_style_variant),
+                    state_colors=style.state_colors,
+                )
                 draw.rounded_rectangle(
                     (bbox[0] + 3, bbox[1] + 3, bbox[2] - 3, bbox[3] - 3),
                     radius=5,
@@ -1073,6 +1219,7 @@ def _draw_piece_preview_panel(
     style,
     params: _RenderParams,
     entity_id: str,
+    tetris_style_variant: str,
 ) -> Tuple[Dict[str, Any], Tuple[Dict[str, Any], ...]]:
     draw = ImageDraw.Draw(image, "RGBA")
     draw_panel_option_card(draw, bbox=panel_bbox, style=style, radius=12, border_width=2)
@@ -1082,7 +1229,14 @@ def _draw_piece_preview_panel(
         int(panel_bbox[2] - params.panel_pad_px),
         int(panel_bbox[1] + params.panel_pad_px + params.label_band_height_px),
     )
-    _label_text(draw, label_bbox, str(label), font_size=int(params.label_font_size_px), fill=style.text_rgb)
+    _label_text(
+        draw,
+        label_bbox,
+        str(label),
+        font_size=int(params.label_font_size_px),
+        fill=style.text_rgb,
+        font_family=str(params.font_family),
+    )
 
     cell = int(params.cell_size_px)
     gap = int(params.cell_gap_px)
@@ -1123,14 +1277,19 @@ def _draw_piece_preview_panel(
         left = grid_left + c * (cell + gap)
         top = grid_top + r * (cell + gap)
         bbox = (int(left), int(top), int(left + cell), int(top + cell))
-        fill = _piece_color(str(piece), style.state_colors)
-        draw_panel_grid_cell(
+        fill = _piece_color(
+            str(piece),
+            style_variant=str(tetris_style_variant),
+            state_colors=style.state_colors,
+        )
+        _draw_tetris_block(
             draw,
             bbox=bbox,
             fill=fill,
             style=style,
+            params=params,
+            style_variant=str(tetris_style_variant),
             outline=style.grid_rgb,
-            width=max(1, int(params.cell_outline_width_px)),
         )
         cell_id = f"{entity_id}_cell_{index}"
         cell_bboxes[cell_id] = [float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])]
@@ -1187,7 +1346,7 @@ def _render_scene(
     params: _RenderParams,
     instance_seed: int,
 ) -> _RenderedScene:
-    style, style_meta = resolve_game_panel_scene_style(
+    style, panel_style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace="games.tetris.panel_style",
     )
@@ -1207,6 +1366,14 @@ def _render_scene(
         "row_bboxes_px": {},
         "option_bboxes_px": {},
         "layout_jitter": dict(params.layout_jitter_meta),
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": dict(panel_style_meta),
+        "tetris_board_style": {
+            "style_variant": str(axes.style_variant),
+            "available_styles": list(SUPPORTED_STYLE_VARIANTS),
+            "piece_palette_policy": "scene_local_tetromino_piece_palette",
+        },
     }
 
     if str(axes.public_query) == QUERY_LINE_CLEAR_COUNT:
@@ -1246,6 +1413,7 @@ def _render_scene(
             style=style,
             params=line_params,
             entity_id="next_piece",
+            tetris_style_variant=str(axes.style_variant),
         )
         entities.extend(preview_entities)
         render_map["panels"]["next_piece"] = preview_map["panel_bbox_px"]
@@ -1262,6 +1430,7 @@ def _render_scene(
             ghost_piece=None,
             selected_rows=(),
             entity_prefix="main",
+            tetris_style_variant=str(axes.style_variant),
         )
         entities.extend(panel_entities)
         render_map["panels"]["main"] = panel_map["panel_bbox_px"]
@@ -1290,6 +1459,7 @@ def _render_scene(
             falling_piece=sample.piece,
             selected_rows=(),
             entity_prefix="start",
+            tetris_style_variant=str(axes.style_variant),
         )
         entities.extend(start_entities)
         render_map["panels"]["start"] = list(start_map["panel_bbox_px"])
@@ -1307,6 +1477,7 @@ def _render_scene(
                 ghost_piece=None,
                 selected_rows=(),
                 entity_prefix=f"option_{option.label.lower()}",
+                tetris_style_variant=str(axes.style_variant),
             )
             entities.extend(panel_entities)
             render_map["option_bboxes_px"][option.entity_id] = list(panel_map["panel_bbox_px"])
@@ -1317,7 +1488,10 @@ def _render_scene(
         image=image,
         entities=tuple(entities),
         render_map=render_map,
-        style_meta=dict(style_meta),
+        style_meta={
+            "panel_scene_style": dict(panel_style_meta),
+            "tetris_board_style": dict(render_map["tetris_board_style"]),
+        },
         background_meta=dict(background_meta),
     )
 
@@ -1342,9 +1516,10 @@ def _evidence_bboxes(sample: _Sample, render_map: Mapping[str, Any]) -> List[Lis
 def _build_prompt_json_examples(public_query: str) -> Tuple[str, str]:
     if str(public_query) == QUERY_LINE_CLEAR_COUNT:
         answer: int | str = 2
+        evidence: Any = {"board": [80, 170, 300, 620], "next_piece": [140, 60, 240, 155]}
     else:
         answer = "C"
-    evidence = [[80, 120, 180, 240]]
+        evidence = [[80, 120, 180, 240]]
     return (
         json.dumps({"evidence": evidence, "answer": answer}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer}, separators=(",", ":"), ensure_ascii=False),
@@ -1412,13 +1587,42 @@ class GamesTetrisBoardTask:
             params=render_params,
             instance_seed=int(instance_seed),
         )
-        evidence_bboxes = _evidence_bboxes(sample, rendered.render_map)
+        if str(sample.evidence_kind) == "board_and_next_piece":
+            option_bboxes = rendered.render_map.get("option_bboxes_px", {})
+            evidence_value: Any = {
+                "board": [float(v) for v in option_bboxes["main"]],
+                "next_piece": [float(v) for v in option_bboxes["next_piece"]],
+            }
+            evidence_type = "keyed_bbox_map"
+            projected_evidence = {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_value),
+                "pixel_keyed_bbox_map": dict(evidence_value),
+            }
+            witness_symbolic = {
+                "type": "object_map",
+                "ids": {"board": "main", "next_piece": "next_piece"},
+            }
+        else:
+            evidence_bboxes = _evidence_bboxes(sample, rendered.render_map)
+            evidence_value = [list(bbox) for bbox in evidence_bboxes]
+            evidence_type = "bbox_set"
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_value],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+            }
+            witness_symbolic = {"type": "object_set", "ids": [str(v) for v in sample.evidence_entity_ids]}
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1466,7 +1670,7 @@ class GamesTetrisBoardTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
         complexity = _complexity_for_sample(str(self.task_id), axes, sample)
 
         trace_payload = {
@@ -1514,6 +1718,9 @@ class GamesTetrisBoardTask:
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
                 "style": dict(rendered.style_meta),
+                "panel_scene_style": dict(rendered.style_meta.get("panel_scene_style", {})),
+                "tetris_board_style": dict(rendered.style_meta.get("tetris_board_style", {})),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered.render_map),
             "execution_trace": {
@@ -1563,8 +1770,8 @@ class GamesTetrisBoardTask:
                 "evidence_entity_ids": [str(v) for v in sample.evidence_entity_ids],
                 **dict(sample.metadata),
             },
-            "witness_symbolic": {"type": "object_set", "ids": [str(v) for v in sample.evidence_entity_ids]},
-            "projected_evidence": {"bbox_set": [list(bbox) for bbox in evidence_bboxes]},
+            "witness_symbolic": dict(witness_symbolic),
+            "projected_evidence": dict(projected_evidence),
             "background": dict(rendered.background_meta),
             "post_image_noise": post_noise_meta,
         }

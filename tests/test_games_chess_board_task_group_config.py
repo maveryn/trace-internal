@@ -32,6 +32,9 @@ def test_games_chess_board_defaults_present() -> None:
     assert list(generation["king_escape_square_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert int(rendering["max_board_size_px"]) > 0
     assert int(rendering["marked_square_outline_width_px"]) > 0
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
+    assert int(rendering["canvas_min_width_px"]) > 0
+    assert int(rendering["canvas_min_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_chess_v0"
     assert "chess" in str(prompt["object_description_sparse_board"]).lower()
     assert "bounding boxes" in str(prompt["evidence_hint_marked_piece_move_count"])

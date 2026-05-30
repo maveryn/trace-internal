@@ -73,7 +73,6 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
 
             assert out.scene_id == "venn_field"
             assert out.query_id == query_id
-            assert out.query_id == "default"
             assert out.answer_gt.type == "integer"
             assert out.answer_gt.value == 2
             assert out.evidence_gt.type == "bbox_set"
@@ -86,7 +85,9 @@ def test_icons_counting_named_shape_venn_contract_all_queries_and_target_modes()
                 str(entity["instance_id"]) for entity in counted_entities
             }
             assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
-            assert trace["projected_evidence"]["value"] == out.evidence_gt.value
+            assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+            assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+            assert len(trace["projected_evidence"]["pixel_point_set"]) == 2
             assert '"bell"' in out.prompt
             if mode == "color_shape":
                 assert "red [#E63232]" in out.prompt

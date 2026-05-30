@@ -23,7 +23,7 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     out = task.generate(
         14210,
         params={
-            "object_count": 8,
+            "object_count": 6,
             "target_count": 3,
             "transform_ids": ["rot90", "rot180", "flip_h", "flip_diag_main"],
         },
@@ -41,13 +41,11 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_pair_transformation_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_transform"
-    assert out.query_id == "default"
     assert out.query_id == "same_pair_transform"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "same_pair_transform"
-    assert int(execution["object_count"]) == 8
+    assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 3
-    assert int(execution["distractor_count"]) == 5
+    assert int(execution["distractor_count"]) == 3
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
     assert set(out.complexity.complexity_components.keys()) == {
         "visual_scan",
@@ -56,13 +54,13 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
         "clutter",
     }
     assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-    assert len(scene_entities) == 8
+    assert len(scene_entities) == 6
 
     reference_transform_id = str(execution["reference_transform_id"])
     reference_icon_id = str(execution["reference_icon_id"])
     matching_labels = set(str(value) for value in execution["matching_cell_labels"])
     assert len(matching_labels) == 3
-    assert len(set(str(entity["label"]) for entity in scene_entities)) == 8
+    assert len(set(str(entity["label"]) for entity in scene_entities)) == 6
     assert trace["witness_symbolic"]["matching_cell_labels"] == execution["matching_cell_labels"]
     evidence_by_label = {str(entity["label"]): list(entity["cell_bbox_xyxy"]) for entity in scene_entities}
     expected_evidence = [
@@ -71,6 +69,13 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     assert out.evidence_gt.value == expected_evidence
     assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    style = trace["render_spec"]["style"]
+    assert int(style["text_legibility"]["failure_count"]) == 0
+    assert {
+        str(record["role"])
+        for record in style["text_legibility"]["records"]
+    } >= {"icon_panel_header_text", "icon_cell_label_text"}
+    assert "cell_label_stroke_rgb" in style
     sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
     assert len(sampled_palette) == 1
     assert isinstance(trace["render_map"]["anchors"]["reference_pair"]["left_noise_edits"], list)
@@ -111,7 +116,7 @@ def test_icons_transformation_pair_count_supports_zero_matches() -> None:
 
 def test_icons_transformation_pair_count_prompt_example_matches_contract() -> None:
     task = IconsTransformationPairCountTask()
-    out = task.generate(14212, params={"object_count": 8, "target_count": 3}, max_attempts=200)
+    out = task.generate(14212, params={"object_count": 6, "target_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": 3}
@@ -140,10 +145,10 @@ def test_icons_transformation_pair_count_balanced_sampling_defaults() -> None:
         distractor_counts[distractor_count] += 1
         assert 0 <= target_count <= 4
         assert 1 <= distractor_count <= 9
-        assert 4 <= object_count <= 9
+        assert object_count == 6
     assert object_count == target_count + distractor_count
     assert set(target_counts.keys()) == set(range(0, 5))
-    assert set(object_counts.keys()) == set(range(4, 10))
+    assert set(object_counts.keys()) == {6}
     assert min(distractor_counts.keys()) >= 1
     assert max(distractor_counts.keys()) <= 9
     assert sum(target_counts.values()) == 42

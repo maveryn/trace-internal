@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: bbox_set over the opened number cells being counted.
+2. Evidence type: `bbox_set` over the opened number cells being counted.
 3. `satisfied_clue_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation
@@ -18,6 +18,8 @@
 3. Generation builds flagged-mine satisfied clues plus a separate adjacent pair of hidden unflagged mines, so the scene contains opened number cells whose clue is greater than their adjacent flag count and should not be counted.
 4. Calibrated board size support is `4..8`.
 5. Calibrated answer support is the contiguous range `1..5`.
+6. Rendering uses shared game panel backgrounds, six scene-local board styles,
+   sampled fonts for clue numbers, unit-size jitter, and layout jitter.
 
 ## Determinism
 1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.

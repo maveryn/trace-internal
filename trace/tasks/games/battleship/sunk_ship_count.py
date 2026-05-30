@@ -13,6 +13,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -214,6 +215,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BattleshipRenderParams:
     """Resolve Battleship rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.battleship.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -241,6 +248,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Battlesh
         board_panel_gap_px=int(params.get("board_panel_gap_px", group_default(_RENDER_DEFAULTS, "board_panel_gap_px", _DEFAULTS.board_panel_gap_px))),
         fleet_icon_cell_px=scale_games_px(params.get("fleet_icon_cell_px", group_default(_RENDER_DEFAULTS, "fleet_icon_cell_px", _DEFAULTS.fleet_icon_cell_px)), unit_scale, min_px=9),
         label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=12),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -440,7 +448,13 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for Battleship JSON output."""
 
     answer_value = 2
-    evidence_value = [[120, 190, 180, 250], [180, 190, 240, 250], [240, 190, 300, 250]]
+    evidence_value = [
+        [120, 190, 180, 250],
+        [180, 190, 240, 250],
+        [120, 250, 180, 310],
+        [180, 250, 240, 310],
+        [240, 250, 300, 310],
+    ]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -457,6 +471,10 @@ class GamesBattleshipGridTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
 
         sampled_scene: BattleshipSample | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -637,6 +655,7 @@ class GamesBattleshipGridTask:
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

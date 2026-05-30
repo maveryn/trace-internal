@@ -8,8 +8,10 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .rhythm_common import RhythmNote, lane_entity_id, lane_label
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
 @dataclass(frozen=True)
@@ -26,6 +28,7 @@ class RhythmRenderParams:
     lane_gap_px: int
     note_radius_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -157,6 +160,7 @@ def _draw_centered_text(
     fill: Tuple[int, int, int],
     max_size_px: int,
     bold: bool = True,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -169,12 +173,13 @@ def _draw_centered_text(
         bold=bool(bold),
         min_size_px=8,
         max_size_px=int(max_size_px),
+        font_family=str(font_family),
         fill_ratio=0.76,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -182,7 +187,7 @@ def _draw_centered_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _grid_bbox(params: RhythmRenderParams) -> Tuple[float, float, float, float]:
@@ -247,6 +252,7 @@ def render_rhythm_lanes_scene(
     background: Image.Image,
     style_variant: str,
     params: RhythmRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedRhythmScene:
     """Render one rhythm-lanes playfield."""
 
@@ -275,6 +281,22 @@ def render_rhythm_lanes_scene(
         round(float(grid_bottom - label_band_h), 3),
     )
     play_left, play_top, play_right, play_bottom = play_bbox
+
+    if panel_style is not None:
+        panel_pad = 22.0
+        panel_bbox = (
+            int(round(max(6.0, float(grid_left) - panel_pad))),
+            int(round(max(6.0, float(grid_top) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(grid_right) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(grid_bottom) + panel_pad))),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=24,
+            border_width=2,
+        )
 
     draw.rounded_rectangle(
         grid_bbox,
@@ -313,6 +335,7 @@ def render_rhythm_lanes_scene(
         text="HIT",
         fill=tuple(int(v) for v in theme.hit_line_rgb),
         max_size_px=int(params.label_font_size_px),
+        font_family=str(params.font_family),
     )
 
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
@@ -344,6 +367,7 @@ def render_rhythm_lanes_scene(
             text=lane_label(lane),
             fill=tuple(int(v) for v in theme.label_text_rgb),
             max_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
         scene_entities.append(
             {
@@ -418,6 +442,9 @@ def render_rhythm_lanes_scene(
         "row_count": int(row_count),
         "beat_window": int(beat_window),
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedRhythmScene(
         image=image.convert("RGB"),

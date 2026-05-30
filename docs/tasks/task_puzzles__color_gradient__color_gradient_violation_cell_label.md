@@ -27,6 +27,8 @@
 3. `execution_trace.cells` records each cell label, row/column index, expected HSL/RGB, observed HSL/RGB, and `is_violation`.
 4. `execution_trace.violation_cell_id` and `execution_trace.answer_label` identify the answer cell.
 5. Prompt-facing evidence is projected from the violating cell bbox, not inferred from pixels.
+6. `render_spec.label_style.font` records the sampled readout font family used for all swatch labels.
+7. `render_spec.post_image_noise_policy` records the intentional no-noise override for color-semantic separability.
 
 ## Prompt
 1. Bundle: `puzzles_visual_v0`

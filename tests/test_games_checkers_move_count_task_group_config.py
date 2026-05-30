@@ -36,6 +36,9 @@ def test_games_checkers_move_count_defaults_expose_scene_query_and_answer_axes()
     assert list(generation["max_capture_chain_length_support"]) == [1, 2, 3, 4, 5]
     assert int(rendering["max_board_size_px"]) > 0
     assert int(rendering["player_badge_height_px"]) > 0
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
+    assert int(rendering["canvas_min_width_px"]) > 0
+    assert int(rendering["canvas_min_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_checkers_v0"
     assert "checkers board" in str(prompt["object_description_midgame_board"]).lower()
     assert "capture" in str(prompt["answer_hint_capture_move_count"]).lower()

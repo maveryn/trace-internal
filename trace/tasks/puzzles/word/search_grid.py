@@ -21,6 +21,7 @@ from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
@@ -805,7 +806,7 @@ def _render_scene(
     option_font = load_font(int(render_params.option_font_size_px), bold=True)
     legend_font = load_font(max(12, int(render_params.index_font_size_px) - 3), bold=False)
 
-    draw.text((panel_x0 + 18, panel_y0 + 14), "Word Search", fill=render_params.text_rgb, font=title_font)
+    draw_text_traced(draw,(panel_x0 + 18, panel_y0 + 14), "Word Search", fill=render_params.text_rgb, font=title_font, role="readout", required=False)
     item_bbox_map: Dict[str, BBox] = {}
     cell_bbox_map: Dict[str, BBox] = {}
     entities: List[Dict[str, Any]] = [

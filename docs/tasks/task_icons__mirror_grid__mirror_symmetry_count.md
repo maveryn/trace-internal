@@ -39,7 +39,7 @@
 3. Reject/resample conditions: unsupported count config, empty icon pool, palette-separation failures, or inability to render exact symmetric / exact non-symmetric cell patches under the configured gap and margin constraints.
 4. No-auto-relaxation guarantee: generation fails on unmet symmetry/layout constraints instead of weakening the exact mirror-symmetry contract.
 5. Semantic-unit rule: evidence is a pixel-space box around each matching Scene cell because the task asks about whole-cell mirror symmetry, not about one icon bbox inside a cell; the matching labels remain private trace metadata.
-6. Trace style metadata records the sampled palette, cell-grid styling, patch gap/margin settings, icon-count choices, and the per-seed noise ranges used during patch generation.
+6. Trace style metadata records the sampled palette, cell-grid styling, validated text-legibility metadata, patch gap/margin settings, icon-count choices, and the per-seed noise ranges used during patch generation.
 7. Balanced defaults: seeded sampling first balances the five `mirror_signature` values, then the task passes a decoupled index to the fixed-grid count resolver so each signature cycles through the full feasible `0..4` answer support.
 
 ## 5) Complexity + tests

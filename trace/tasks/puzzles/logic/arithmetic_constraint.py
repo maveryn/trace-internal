@@ -17,9 +17,10 @@ from ...registry import register_task
 from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.config_defaults import required_group_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
@@ -306,7 +307,7 @@ def _build_equal_sum_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", f"side_mid_{hidden_side}"],
+            "supporting_item_ids": [f"side_mid_{hidden_side}"],
         }
     raise RuntimeError("failed to build equal-sum arithmetic constraint")
 
@@ -378,7 +379,7 @@ def _build_cluster_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", f"right_leaf_{hidden_index}"],
+            "supporting_item_ids": [f"right_leaf_{hidden_index}"],
         }
     raise RuntimeError("failed to build paired-cluster arithmetic constraint")
 
@@ -434,7 +435,7 @@ def _build_consecutive_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", f"cell_{hidden_index}"],
+            "supporting_item_ids": [f"cell_{hidden_index}"],
         }
     raise RuntimeError("failed to build consecutive-window arithmetic constraint")
 
@@ -541,7 +542,7 @@ def _sample_hidden_arithmetic_problem(
             "answer_value": int(target_digit),
             "answer_range": [0, 9],
             "target_answer_support": list(range(10)),
-            "supporting_item_ids": ["diagram_panel", f"{hidden_row['row_id']}_digit_{hidden_col_index}"],
+            "supporting_item_ids": [f"{hidden_row['row_id']}_digit_{hidden_col_index}"],
         }
     raise RuntimeError(f"failed to build hidden arithmetic problem for {query_id}")
 
@@ -615,7 +616,7 @@ def _build_letter_digit_dataset(
         "answer_value": int(answer_value),
         "answer_range": [int(min(answer_support)), int(max(answer_support))],
         "target_answer_support": [int(value) for value in answer_support],
-        "supporting_item_ids": ["diagram_panel", f"letter_{target_letter}"],
+        "supporting_item_ids": [f"letter_{target_letter}"],
     }
 
 
@@ -730,7 +731,7 @@ def _build_row_column_total_dataset(
         "answer_value": int(answer_value),
         "answer_range": [int(min(answer_support)), int(max(answer_support))],
         "target_answer_support": [int(value) for value in answer_support],
-        "supporting_item_ids": ["diagram_panel", str(target_cell_id)],
+        "supporting_item_ids": [str(target_cell_id)],
     }
 
 
@@ -841,7 +842,7 @@ def _build_operation_table_dataset(
         "answer_value": int(answer_value),
         "answer_range": [int(min(answer_support)), int(max(answer_support))],
         "target_answer_support": [int(value) for value in answer_support],
-        "supporting_item_ids": ["diagram_panel", str(target_cell_id)],
+        "supporting_item_ids": [str(target_cell_id)],
     }
 
 
@@ -932,7 +933,7 @@ def _build_addition_wall_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", str(target_cell_id)],
+            "supporting_item_ids": [str(target_cell_id)],
         }
     raise RuntimeError("failed to build addition-wall puzzle")
 
@@ -994,7 +995,7 @@ def _build_difference_wall_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", str(target_cell_id)],
+            "supporting_item_ids": [str(target_cell_id)],
         }
     raise RuntimeError("failed to build difference-wall puzzle")
 
@@ -1047,7 +1048,7 @@ def _build_multiplication_pyramid_dataset(
             "answer_value": int(answer_value),
             "answer_range": [int(min(answer_support)), int(max(answer_support))],
             "target_answer_support": [int(value) for value in answer_support],
-            "supporting_item_ids": ["diagram_panel", str(target_cell_id)],
+            "supporting_item_ids": [str(target_cell_id)],
         }
     raise RuntimeError("failed to build multiplication-pyramid puzzle")
 
@@ -1643,7 +1644,7 @@ def _render_cryptarithm(
         x0 = int((panel_bbox[0] + panel_bbox[2] - total_w) / 2.0)
         y0 = int(panel_bbox[1] + 0.31 * (panel_bbox[3] - panel_bbox[1]))
         target_letter = str(dataset["target_letter"])
-        letter_positions: Dict[str, Tuple[float, float]] = {}
+        target_letter_highlighted = False
         for row_index, equation in enumerate(equations):
             y = y0 + (row_index * (row_h + 16))
             left_letters = [str(item) for item in equation["left"]]
@@ -1663,7 +1664,7 @@ def _render_cryptarithm(
                     x += 2 * gap
                     continue
                 bbox = (x, y, x + box_w, y + row_h)
-                is_target = str(token) == target_letter
+                is_target = str(token) == target_letter and not target_letter_highlighted
                 cell_bbox = _draw_boxed_value(
                     draw,
                     bbox=bbox,
@@ -1678,7 +1679,8 @@ def _render_cryptarithm(
                     radius=max(5, int(render_params.panel_corner_radius_px) // 2),
                     line_width=int(render_params.line_width_px),
                 )
-                if is_target and f"letter_{target_letter}" not in item_bbox_map:
+                if is_target:
+                    target_letter_highlighted = True
                     item_bbox_map[f"letter_{target_letter}"] = list(cell_bbox)
                     entities.append(
                         {
@@ -1689,7 +1691,6 @@ def _render_cryptarithm(
                             "value": int(dataset["answer_value"]),
                         }
                     )
-                letter_positions[str(token)] = ((bbox[0] + bbox[2]) / 2.0, (bbox[1] + bbox[3]) / 2.0)
                 x += box_w + gap
         target_note_bbox = _draw_note(
             draw,
@@ -2186,18 +2187,32 @@ class _ArithmeticConstraintSceneTask:
             instance_seed=int(instance_seed),
             namespace=f"{task_id}.scene_style",
         )
+        font_family = sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.font_family",
+            params={**dict(render_defaults), **dict(params)},
+        )
+        font_meta = {
+            **get_font_family_record(str(font_family)).to_trace(),
+            "font_asset_version": font_asset_version(),
+            "selection_scope": "arithmetic_constraint_panel",
+            "include_tags": [],
+            "exclude_tags": [],
+        }
         background, background_meta = make_puzzle_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_arithmetic_scene(
-            background,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            render_params=render_params,
-            scene_style=scene_style,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_arithmetic_scene(
+                background,
+                dataset=dataset,
+                scene_variant=str(scene_variant),
+                render_params=render_params,
+                scene_style=scene_style,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -2264,6 +2279,7 @@ class _ArithmeticConstraintSceneTask:
                 "post_image_noise": dict(post_noise_meta),
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "text_style": {
+                    "font": dict(font_meta),
                     "value_font_size_px": int(render_params.value_font_size_px),
                     "note_font_size_px": int(render_params.note_font_size_px),
                     "symbol_font_size_px": int(render_params.symbol_font_size_px),

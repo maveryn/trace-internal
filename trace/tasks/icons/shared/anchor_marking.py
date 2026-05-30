@@ -6,7 +6,8 @@ from typing import Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_legibility import draw_centered_traced_text
+from ...shared.text_rendering import load_font
 
 
 BBox = Tuple[int, int, int, int]
@@ -35,6 +36,7 @@ def draw_anchor_marker(
     panel_fill_rgb: Tuple[int, int, int],
     label_font_size_px: int,
     label_text: str,
+    label_role: str = "icon_anchor_label_text",
 ) -> BBox:
     """Draw one highlighted anchor box + label and return the expanded highlight bbox."""
 
@@ -53,14 +55,16 @@ def draw_anchor_marker(
     min_y = float(content_bbox[1]) + (0.75 * float(font_size))
     if label_y < min_y:
         label_y = float(anchor_box[3]) + max(14.0, float(font_size) * 0.75)
-    draw_text_centered(
+    draw_centered_traced_text(
         draw,
         text=str(label_text),
         center=(float(label_x), float(label_y)),
         font=load_font(font_size, bold=True),
-        fill=tuple(int(v) for v in label_color_rgb),
-        stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+        fill_rgb=tuple(int(v) for v in label_color_rgb),
+        stroke_rgb=tuple(int(v) for v in panel_fill_rgb),
         stroke_width=2,
+        role=str(label_role),
+        required=False,
     )
     return tuple(int(value) for value in highlight_box)
 

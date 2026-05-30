@@ -9,12 +9,12 @@
 
 ## Answer And Evidence
 1. Answer type: `option_letter`
-2. Evidence type: `bbox_set`
-3. User-facing evidence contains the selected option-panel bbox.
-4. The trace records the Source number, selected answer number, changed digit index, added/removed segment keys, and reachability status for every option.
+2. Evidence type: `keyed_bbox_map`
+3. User-facing evidence contains `source_number` for the Source panel and `selected_option` for the chosen option-panel bbox.
+4. The trace records the Source number, selected answer number, changed digit index, added/removed segment keys, evidence role item ids, and reachability status for every option.
 
 ## Rendering
-The shared `matchstick` renderer supports wooden matches, colored rods, chalk sticks, neon rods, and metal rods. The Source and six labeled options are rendered as two-digit matchstick numbers.
+The shared `matchstick` renderer supports wooden matches, colored rods, chalk sticks, neon rods, and metal rods. The Source and six labeled options are rendered as two-digit matchstick numbers. Option labels and captions sample one global vendored font family per instance and record it in `render_spec.text_style.font`.
 
 ## Determinism
 Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, renderer/config versions, and recorded query/scene variants.

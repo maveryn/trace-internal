@@ -13,6 +13,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -73,6 +74,11 @@ class _TaskDefaults:
     mark_inset_px: int = 12
     mark_shape: str = "ellipse"
     cell_fill_pattern: str = "solid"
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 440
+    canvas_side_padding_px: int = 140
+    canvas_vertical_padding_px: int = 70
 
 
 @dataclass(frozen=True)
@@ -492,6 +498,12 @@ def _render_params(
 ) -> BingoRenderParams:
     """Resolve stable render parameters for one bingo scene."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.bingo.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -507,11 +519,57 @@ def _render_params(
         ),
         unit_scale_meta,
     )
+    card_width_px = scale_games_px(
+        params.get("card_width_px", group_default(_RENDER_DEFAULTS, "card_width_px", _DEFAULTS.card_width_px)),
+        unit_scale,
+        min_px=380,
+    )
+    card_height_px = scale_games_px(
+        params.get("card_height_px", group_default(_RENDER_DEFAULTS, "card_height_px", _DEFAULTS.card_height_px)),
+        unit_scale,
+        min_px=310,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    canvas_width = base_canvas_width
+    canvas_height = base_canvas_height
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(card_width_px)
+                        + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px))))
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(card_height_px)
+                        + (2.0 * float(params.get("canvas_vertical_padding_px", group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px))))
+                    )
+                ),
+            ),
+        )
     return BingoRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        card_width_px=scale_games_px(params.get("card_width_px", group_default(_RENDER_DEFAULTS, "card_width_px", _DEFAULTS.card_width_px)), unit_scale, min_px=380),
-        card_height_px=scale_games_px(params.get("card_height_px", group_default(_RENDER_DEFAULTS, "card_height_px", _DEFAULTS.card_height_px)), unit_scale, min_px=310),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        card_width_px=int(card_width_px),
+        card_height_px=int(card_height_px),
         card_corner_radius_px=scale_games_px(
             params.get(
                 "card_corner_radius_px",
@@ -574,6 +632,7 @@ def _render_params(
                 group_default(_RENDER_DEFAULTS, "cell_fill_pattern", _DEFAULTS.cell_fill_pattern),
             )
         ),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -604,6 +663,14 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
             "evidence": [
                 [120, 220, 220, 320],
                 [230, 220, 330, 320],
+                [340, 220, 440, 320],
+                [450, 220, 550, 320],
+                [560, 220, 660, 320],
+                [120, 330, 220, 430],
+                [230, 330, 330, 430],
+                [340, 330, 440, 430],
+                [450, 330, 550, 430],
+                [560, 330, 660, 430],
             ],
             "answer": int(sample_answer),
         },
@@ -627,6 +694,10 @@ class GamesBingoCompletedLineCountTask:
             mark_shape=str(axes.mark_shape),
             cell_fill_pattern=str(axes.cell_fill_pattern),
         )
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         axis_distractor_mark_prob = float(
             params.get(
                 "axis_distractor_mark_prob",
@@ -895,6 +966,8 @@ class GamesBingoCompletedLineCountTask:
                 "cell_fill_pattern": str(render_params.cell_fill_pattern),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
+                "effective_cell_size_px": rendered_scene.render_map.get("effective_cell_size_px"),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

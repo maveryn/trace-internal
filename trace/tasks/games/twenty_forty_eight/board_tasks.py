@@ -13,6 +13,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -71,6 +72,11 @@ class _TaskDefaults:
     arrow_width_px: int = 9
     label_font_size_px: int = 24
     goal_outline_width_px: int = 7
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_size_px: int = 520
+    canvas_side_padding_px: int = 128
+    canvas_side_padding_fraction: float = 0.20
+    text_font_exclude_tags: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -372,6 +378,22 @@ def _resolve_axes(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> TwentyFortyEightRenderParams:
     """Resolve 2048 rendering parameters from config/defaults."""
 
+    font_exclude_raw = params.get(
+        "text_font_exclude_tags",
+        group_default(_RENDER_DEFAULTS, "text_font_exclude_tags", _DEFAULTS.text_font_exclude_tags),
+    )
+    font_exclude_tags = (
+        (str(font_exclude_raw),)
+        if isinstance(font_exclude_raw, str)
+        else tuple(str(item) for item in (font_exclude_raw or ()))
+    )
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.2048.text_font",
+        params=params,
+        exclude_tags=font_exclude_tags,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -387,11 +409,71 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> TwentyFo
         ),
         unit_scale_meta,
     )
+    board_size_px = scale_games_px(
+        params.get("board_size_px", group_default(_RENDER_DEFAULTS, "board_size_px", _DEFAULTS.board_size_px)),
+        unit_scale,
+        min_px=280,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_min_size_px = int(
+        params.get(
+            "canvas_min_size_px",
+            group_default(_RENDER_DEFAULTS, "canvas_min_size_px", _DEFAULTS.canvas_min_size_px),
+        )
+    )
+    canvas_side_padding_px = int(
+        params.get(
+            "canvas_side_padding_px",
+            group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px),
+        )
+    )
+    canvas_side_padding_fraction = float(
+        params.get(
+            "canvas_side_padding_fraction",
+            group_default(
+                _RENDER_DEFAULTS,
+                "canvas_side_padding_fraction",
+                _DEFAULTS.canvas_side_padding_fraction,
+            ),
+        )
+    )
+    dynamic_canvas_size = max(
+        int(canvas_min_size_px),
+        int(
+            round(
+                float(board_size_px)
+                + (
+                    2.0
+                    * max(
+                        float(canvas_side_padding_px),
+                        float(board_size_px) * float(canvas_side_padding_fraction),
+                    )
+                )
+            )
+        ),
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    canvas_width = (
+        int(base_canvas_width)
+        if params.get("canvas_width") is not None or not dynamic_canvas_enabled
+        else min(int(base_canvas_width), int(dynamic_canvas_size))
+    )
+    canvas_height = (
+        int(base_canvas_height)
+        if params.get("canvas_height") is not None or not dynamic_canvas_enabled
+        else min(int(base_canvas_height), int(dynamic_canvas_size))
+    )
     return TwentyFortyEightRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        board_size_px=scale_games_px(params.get("board_size_px", group_default(_RENDER_DEFAULTS, "board_size_px", _DEFAULTS.board_size_px)), unit_scale, min_px=280),
+        board_size_px=int(board_size_px),
         board_radius_px=scale_games_px(params.get("board_radius_px", group_default(_RENDER_DEFAULTS, "board_radius_px", _DEFAULTS.board_radius_px)), unit_scale, min_px=8),
         cell_gap_px=scale_games_px(params.get("cell_gap_px", group_default(_RENDER_DEFAULTS, "cell_gap_px", _DEFAULTS.cell_gap_px)), unit_scale, min_px=6),
         cell_radius_px=scale_games_px(params.get("cell_radius_px", group_default(_RENDER_DEFAULTS, "cell_radius_px", _DEFAULTS.cell_radius_px)), unit_scale, min_px=5),
@@ -399,6 +481,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> TwentyFo
         arrow_width_px=scale_games_px(params.get("arrow_width_px", group_default(_RENDER_DEFAULTS, "arrow_width_px", _DEFAULTS.arrow_width_px)), unit_scale, min_px=4),
         label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=13),
         goal_outline_width_px=scale_games_px(params.get("goal_outline_width_px", group_default(_RENDER_DEFAULTS, "goal_outline_width_px", _DEFAULTS.goal_outline_width_px)), unit_scale, min_px=3),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -698,10 +781,20 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
     elif str(query_id) == "merge_count":
         answer_value = 2
-        evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
+        evidence_value = [
+            [224, 224, 344, 344],
+            [358, 224, 478, 344],
+            [224, 358, 344, 478],
+            [358, 358, 478, 478],
+        ]
     elif str(query_id) == "score_value":
         answer_value = 24
-        evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
+        evidence_value = [
+            [224, 224, 344, 344],
+            [358, 224, 478, 344],
+            [224, 358, 344, 478],
+            [358, 358, 478, 478],
+        ]
     else:
         answer_value = 128
         evidence_value = [[224, 224, 344, 344], [358, 224, 478, 344]]
@@ -748,6 +841,10 @@ class Games2048BoardTask:
             supported_query_ids=tuple(self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
 
         sampled_scene: Sample2048 | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -920,6 +1017,7 @@ class Games2048BoardTask:
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
                 "effective_cell_size_px": rendered_scene.render_map.get("effective_cell_size_px"),
             },
             "render_map": dict(rendered_scene.render_map),

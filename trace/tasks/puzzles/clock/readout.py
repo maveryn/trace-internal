@@ -15,12 +15,14 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
   PROMPT_OUTPUT_MODES,
   build_prompt_trace_artifacts,
   render_task_prompt_variants,
 )
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.clock_scene import (
   ClockRenderParams,
   SUPPORTED_PUZZLE_CLOCK_SCENE_VARIANTS,
@@ -175,23 +177,22 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="clo
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="clock", apply_prob=0.0)
 
 
-def _canonical_hand_example_bboxes() -> list[list[int]]:
-  """Return one stable two-hand bbox example for prompt examples."""
+def _canonical_hand_example_points() -> dict[str, list[int]]:
+  """Return one stable two-hand point-map example for prompt examples."""
 
-  return [
-    [298, 270, 322, 405],
-    [314, 148, 330, 406],
-  ]
+  return {
+    "clock_center": [320, 320],
+    "hour_hand_tip": [430, 350],
+    "minute_hand_tip": [484, 461],
+  }
 
 
-def _canonical_second_hand_example_bboxes() -> list[list[int]]:
-  """Return one stable three-hand bbox example for prompt examples."""
+def _canonical_second_hand_example_points() -> dict[str, list[int]]:
+  """Return one stable three-hand point-map example for prompt examples."""
 
-  return [
-    [298, 270, 322, 405],
-    [314, 148, 330, 406],
-    [158, 316, 326, 470],
-  ]
+  points = dict(_canonical_hand_example_points())
+  points["second_hand_tip"] = [140, 424]
+  return points
 
 
 def _is_seconds_offset(offset_unit: str) -> bool:
@@ -283,9 +284,9 @@ def _build_prompt_json_examples(
     answer_text = str(format_clock_hhmmss(add_clock_seconds(int(shown_total_seconds), -int(delta_seconds))))
   else:
     raise ValueError(f"unsupported puzzle clock-readout offset: {offset_unit} {offset_direction}")
-  example_bboxes = _canonical_second_hand_example_bboxes() if _is_seconds_offset(str(offset_unit)) else _canonical_hand_example_bboxes()
+  example_points = _canonical_second_hand_example_points() if _is_seconds_offset(str(offset_unit)) else _canonical_hand_example_points()
   answer_and_evidence = {
-    "evidence": example_bboxes,
+    "evidence": example_points,
     "answer": str(answer_text),
   }
   answer_only = {"answer": str(answer_text)}
@@ -692,6 +693,12 @@ class _PuzzlesClockReadoutBase:
       fallback_values=asdict(_DEFAULTS),
       instance_seed=int(instance_seed),
     )
+    font_family = sample_font_family(
+      role="readout",
+      instance_seed=int(instance_seed),
+      namespace="puzzles.clock.readout.font",
+      params={**dict(_RENDER_DEFAULTS), **dict(params)},
+    )
     clock_theme = build_time_artifact_clock_theme(
       accent_color_name=str(query.accent_color_name),
       style_variant=str(query.style_variant),
@@ -706,15 +713,16 @@ class _PuzzlesClockReadoutBase:
       canvas_height=int(render_params.canvas_height),
       style=scene_style,
     )
-    rendered_scene = render_clock_scene(
-      background,
-      scene_variant=str(query.scene_variant),
-      shown_total_minutes=int(query.shown_total_minutes),
-      shown_total_seconds=int(query.shown_total_seconds),
-      show_second_hand=_is_seconds_offset(str(query.offset_unit)),
-      render_params=render_params,
-      visual_theme=clock_theme,
-    )
+    with temporary_default_font_family(str(font_family)):
+      rendered_scene = render_clock_scene(
+        background,
+        scene_variant=str(query.scene_variant),
+        shown_total_minutes=int(query.shown_total_minutes),
+        shown_total_seconds=int(query.shown_total_seconds),
+        show_second_hand=_is_seconds_offset(str(query.offset_unit)),
+        render_params=render_params,
+        visual_theme=clock_theme,
+      )
     image, post_noise_meta = apply_post_image_noise(
       rendered_scene.image,
       instance_seed=int(instance_seed),
@@ -782,16 +790,17 @@ class _PuzzlesClockReadoutBase:
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-    evidence_bboxes = [
-      [round(float(value), 3) for value in rendered_scene.hour_hand_bbox_px],
-      [round(float(value), 3) for value in rendered_scene.minute_hand_bbox_px],
-    ]
+    evidence_points = {
+      "clock_center": [round(float(value), 3) for value in rendered_scene.center_px],
+      "hour_hand_tip": [round(float(value), 3) for value in rendered_scene.hour_hand_tip_px],
+      "minute_hand_tip": [round(float(value), 3) for value in rendered_scene.minute_hand_tip_px],
+    }
     if is_seconds_offset:
-      if rendered_scene.second_hand_bbox_px is None:
-        raise ValueError("seconds variants require a rendered second hand")
-      evidence_bboxes.append([round(float(value), 3) for value in rendered_scene.second_hand_bbox_px])
+      if rendered_scene.second_hand_tip_px is None:
+        raise ValueError("seconds variants require second-hand geometry")
+      evidence_points["second_hand_tip"] = [round(float(value), 3) for value in rendered_scene.second_hand_tip_px]
     answer_gt = TypedValue(type="string", value=str(query.answer_time_text))
-    evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+    evidence_gt = TypedValue(type="keyed_point_map", value=dict(evidence_points))
     shown_time_text = (
       str(format_clock_hhmmss(int(query.shown_total_seconds)))
       if is_seconds_offset
@@ -805,11 +814,7 @@ class _PuzzlesClockReadoutBase:
       "hour": [round(float(value), 3) for value in rendered_scene.hour_hand_tip_px],
       "minute": [round(float(value), 3) for value in rendered_scene.minute_hand_tip_px],
     }
-    pixel_point_map = {
-      "clock_center": [round(float(value), 3) for value in rendered_scene.center_px],
-      "hour_hand_tip": [round(float(value), 3) for value in rendered_scene.hour_hand_tip_px],
-      "minute_hand_tip": [round(float(value), 3) for value in rendered_scene.minute_hand_tip_px],
-    }
+    pixel_point_map = dict(evidence_points)
     supporting_parts = ["hour_hand", "minute_hand"]
     if is_seconds_offset:
       if rendered_scene.second_hand_bbox_px is None or rendered_scene.second_hand_tip_px is None:
@@ -884,6 +889,12 @@ class _PuzzlesClockReadoutBase:
           "minor_tick_dot_radius_px": int(render_params.minor_tick_dot_radius_px),
           "inner_ring_inset_px": int(render_params.inner_ring_inset_px),
           "inner_ring_width_px": int(render_params.inner_ring_width_px),
+          "font": {
+            "source": "global_font_pool",
+            "font_family": str(font_family),
+            "font_asset_version": font_asset_version(),
+            "scope": "single_clock_face",
+          },
           "resolved_colors_rgb": {
             "face_fill": [int(value) for value in clock_theme.face_fill_rgb],
             "face_outline": [int(value) for value in clock_theme.face_outline_rgb],
@@ -909,6 +920,7 @@ class _PuzzlesClockReadoutBase:
         "center_px": [round(float(value), 3) for value in rendered_scene.center_px],
         "hand_bboxes_px": dict(hand_bboxes_px),
         "hand_tips_px": dict(hand_tips_px),
+        "evidence_source": "center_px_and_hand_tips_px",
       },
       "execution_trace": {
         "query_id": str(query.query_id),
@@ -940,14 +952,18 @@ class _PuzzlesClockReadoutBase:
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
         "question_format": str(query.query_id),
         "supporting_parts": list(supporting_parts),
+        "supporting_point_roles": list(evidence_points.keys()),
       },
       "witness_symbolic": {
-        "type": "bbox_set",
-        "value": list(evidence_bboxes),
+        "type": "keyed_point_map",
+        "value": dict(evidence_points),
       },
       "projected_evidence": {
-        "bbox_set": list(evidence_bboxes),
+        "type": "keyed_point_map",
+        "keyed_point_map": dict(evidence_points),
+        "pixel_keyed_point_map": dict(evidence_points),
         "pixel_point_map": dict(pixel_point_map),
+        "value": dict(evidence_points),
       },
     }
 

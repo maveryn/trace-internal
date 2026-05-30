@@ -22,6 +22,13 @@ rendering:
     outer_padding_fraction_max: 0.12
     placement_jitter_fraction_min: 0.02
     placement_jitter_fraction_max: 0.06
+    balanced_cell_board_tile_style_sampling: true
+    cell_board_tile_style_weights:
+      classic_grid: 1.0
+      rounded_tiles: 1.0
+      inset_tiles: 1.0
+      thin_line: 1.0
+      lab_matrix: 1.0
 complexity:
   shared:
     criteria_weights:

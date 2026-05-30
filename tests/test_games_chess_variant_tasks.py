@@ -53,14 +53,15 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_id == "default"
     assert out.query_id == "marked_piece_move_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 4
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)
-    assert trace["query_spec"]["params"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == "marked_piece_move_count"
     assert trace["query_spec"]["params"]["query_id"] == "marked_piece_move_count"
+    assert "panel_scene_style" in trace["render_spec"]
+    assert "text_style" in trace["render_spec"]
 
 
 def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
@@ -84,7 +85,6 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_id == "default"
     assert out.query_id == "marked_piece_capture_count"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 3
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)

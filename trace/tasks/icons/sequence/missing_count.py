@@ -24,6 +24,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -334,6 +335,7 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         missing_mark_color_rgb=tuple(int(v) for v in render_params["missing_mark_color_rgb"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     scene_cells: List[Dict[str, Any]] = []
@@ -472,9 +474,13 @@ class IconsSequenceMissingCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.missing_cell_bbox,))
+        evidence_payload = bbox_set_evidence(evidence_bboxes)
         query_id = "arithmetic_progression"
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type=str(evidence_payload["evidence_type"]),
+            value=list(evidence_payload["evidence_value"]),
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_sequence_missing_count",
@@ -544,7 +550,7 @@ class IconsSequenceMissingCountTask:
             "render_map": {
                 "image_id": "img0",
                 "anchors": {
-                    "missing_cell_bbox": list(scene_payload.missing_cell_bbox),
+                    "missing_cell_bbox": list(evidence_payload["evidence_value"][0]),
                 },
             },
             "execution_trace": {
@@ -569,9 +575,7 @@ class IconsSequenceMissingCountTask:
                 "missing_cell_index": int(scene_payload.missing_cell_index),
                 "step_delta": int(scene_payload.step_delta),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         complexity = build_icons_sequence_missing_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,

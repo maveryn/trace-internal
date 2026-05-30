@@ -16,6 +16,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -24,6 +25,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -45,7 +47,13 @@ QUERY_POP_COUNT = "pop_count_after_marked_shot"
 SUPPORTED_DIRECTION_LABEL_QUERIES: Tuple[str, ...] = (QUERY_MAX_POP_DIRECTION, QUERY_TARGET_POP_DIRECTION)
 SUPPORTED_EFFECT_VALUE_QUERIES: Tuple[str, ...] = (QUERY_POP_COUNT,)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("semicircle_track", "spiral_track", "double_arc_track")
-SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("panel_scene",)
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic_track",
+    "arcade_track",
+    "neon_track",
+    "chalk_track",
+    "copper_track",
+)
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G")
 COLOR_KEYS: Tuple[str, ...] = ("red", "blue", "green", "yellow", "purple", "orange")
 COLOR_RGB: Dict[str, Tuple[int, int, int]] = {
@@ -55,6 +63,39 @@ COLOR_RGB: Dict[str, Tuple[int, int, int]] = {
     "yellow": (238, 190, 52),
     "purple": (144, 92, 205),
     "orange": (230, 126, 51),
+}
+
+MARBLE_CHAIN_STYLE_RGB: Dict[str, Dict[str, Tuple[int, int, int]]] = {
+    "classic_track": {
+        "track": (177, 181, 184),
+        "rail": (83, 91, 101),
+        "arrow": (36, 99, 164),
+        "shooter_body": (242, 244, 248),
+    },
+    "arcade_track": {
+        "track": (75, 91, 125),
+        "rail": (21, 31, 54),
+        "arrow": (242, 198, 56),
+        "shooter_body": (31, 43, 70),
+    },
+    "neon_track": {
+        "track": (64, 53, 102),
+        "rail": (21, 19, 42),
+        "arrow": (71, 215, 205),
+        "shooter_body": (42, 37, 73),
+    },
+    "chalk_track": {
+        "track": (191, 196, 182),
+        "rail": (78, 90, 76),
+        "arrow": (188, 83, 69),
+        "shooter_body": (235, 232, 214),
+    },
+    "copper_track": {
+        "track": (174, 122, 82),
+        "rail": (93, 57, 38),
+        "arrow": (37, 112, 124),
+        "shooter_body": (236, 210, 171),
+    },
 }
 
 
@@ -162,14 +203,14 @@ def _draw_text_center(
     height = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = bbox
     origin = (float(x0 + ((x1 - x0) - width) / 2.0), float(y0 + ((y1 - y0) - height) / 2.0))
-    draw.text(
+    draw_text_traced(draw,
         origin,
         str(text),
         font=font,
         fill=tuple(int(value) for value in fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(fill)),
-    )
+     role="readout", required=False,)
 
 
 def _sample_integer_axis(
@@ -329,12 +370,15 @@ def _evidence_ids_for_outcome(
     chain_colors: Sequence[str],
     outcome: _Outcome,
 ) -> Tuple[str, ...]:
-    ids: List[str] = [str(slot_entity_id)]
-    if outcome.popped_indices:
-        ids.extend(_marble_entity_id(int(index)) for index in outcome.popped_indices)
-    else:
-        ids.extend(_neighbor_entity_ids(chain_colors, int(outcome.slot_index)))
-    return tuple(dict.fromkeys(ids))
+    del chain_colors
+    del outcome
+    return (str(slot_entity_id),)
+
+
+def _popped_marble_evidence_ids(outcome: _Outcome) -> Tuple[str, ...]:
+    """Return public evidence ids for the existing marbles removed by one shot."""
+
+    return tuple(_marble_entity_id(int(index)) for index in outcome.popped_indices)
 
 
 def _answer_label(instance_seed: int, *, params: Mapping[str, Any], option_count: int) -> str:
@@ -575,11 +619,7 @@ def _sample_effect_value(
         marked_slot = int(candidate_slots[int(rng.randrange(len(candidate_slots)))])
         outcome = outcomes[int(marked_slot)]
         answer = int(outcome.pop_count)
-        evidence_ids = _evidence_ids_for_outcome(
-            slot_entity_id="marked_shot_arrow",
-            chain_colors=chain_colors,
-            outcome=outcome,
-        )
+        evidence_ids = _popped_marble_evidence_ids(outcome)
         return _Sample(
             query_id=str(query_id),
             scene_variant=str(scene_variant),
@@ -616,7 +656,7 @@ def _track_point(t: float, *, variant: str, bbox: Tuple[float, float, float, flo
         radius = base_radius * (0.36 + 0.64 * float(t))
     elif str(variant) == "double_arc_track":
         theta = math.radians(140.0 + 430.0 * float(t))
-        radius = base_radius * (0.82 + 0.14 * math.sin(2.0 * math.pi * float(t)))
+        radius = base_radius * (0.78 + 0.24 * math.sin(2.0 * math.pi * float(t)))
     else:
         theta = math.radians(155.0 + 250.0 * float(t))
         radius = base_radius
@@ -784,6 +824,7 @@ def _render_scene(
     task_id: str,
     instance_seed: int,
     params: Mapping[str, Any],
+    style_variant: str,
 ) -> _RenderedScene:
     canvas_width = _int_default(params, "canvas_width", _DEFAULTS.canvas_width)
     canvas_height = _int_default(params, "canvas_height", _DEFAULTS.canvas_height)
@@ -801,6 +842,16 @@ def _render_scene(
     )
     image = image.convert("RGBA")
     draw = ImageDraw.Draw(image)
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.marble_chain.label_font",
+        params=params,
+    )
+    marble_style = MARBLE_CHAIN_STYLE_RGB.get(
+        str(style_variant),
+        MARBLE_CHAIN_STYLE_RGB["classic_track"],
+    )
     layout_jitter = resolve_games_layout_jitter(
         params,
         _RENDER_DEFAULTS,
@@ -828,11 +879,16 @@ def _render_scene(
     track_bbox_i = tuple(int(round(value)) for value in track_bbox)
     draw_panel_scene_chrome(draw, bbox=track_bbox_i, style=style, radius=22, border_width=3)
 
-    label_font = load_font(_int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px), bold=True)
+    label_font = load_font(
+        _int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px),
+        bold=True,
+        font_family=str(font_family),
+    )
     text_rgb = tuple(int(value) for value in style.text_rgb)
-    border_rgb = tuple(int(value) for value in style.panel_border_rgb)
-    accent_rgb = tuple(int(value) for value in style.mark_rgb)
-    track_rgb = (177, 181, 184)
+    border_rgb = tuple(int(value) for value in marble_style["rail"])
+    accent_rgb = tuple(int(value) for value in marble_style["arrow"])
+    track_rgb = tuple(int(value) for value in marble_style["track"])
+    shooter_body_rgb = tuple(int(value) for value in marble_style["shooter_body"])
     guide_rgb = tuple(int(max(80, min(210, value))) for value in style.grid_rgb)
 
     radius_base = _int_default(params, "marble_radius_px", _DEFAULTS.marble_radius_px)
@@ -855,6 +911,7 @@ def _render_scene(
 
     entities: List[Dict[str, Any]] = []
     entity_bboxes: Dict[str, List[float]] = {}
+    entity_points: Dict[str, List[float]] = {}
     chain_specs: List[Dict[str, Any]] = []
     shot_specs: List[Dict[str, Any]] = []
 
@@ -891,12 +948,14 @@ def _render_scene(
             width=2,
         )
         entity_bboxes[str(entity_id)] = [float(value) for value in bbox]
+        entity_points[str(entity_id)] = [round(float(center[0]), 3), round(float(center[1]), 3)]
         spec = {
             "entity_id": str(entity_id),
             "entity_type": "chain_marble",
             "index": int(index),
             "color_key": str(color_key),
             "bbox_px": [float(value) for value in bbox],
+            "center_px": [round(float(center[0]), 3), round(float(center[1]), 3)],
         }
         chain_specs.append(dict(spec))
         entities.append(dict(spec))
@@ -907,7 +966,7 @@ def _render_scene(
         (shooter_center[0] - shooter_body_radius * 0.88, shooter_center[1] + shooter_body_radius * 0.66),
         (shooter_center[0] + shooter_body_radius * 0.88, shooter_center[1] + shooter_body_radius * 0.66),
     )
-    draw.polygon(shooter_body, fill=tuple(style.option_fill_rgb), outline=tuple(border_rgb))
+    draw.polygon(shooter_body, fill=tuple(shooter_body_rgb), outline=tuple(border_rgb))
     shooter_bbox = _circle_bbox(shooter_center, max(13.0, float(radius) * 0.72))
     _draw_marble(
         draw,
@@ -918,12 +977,14 @@ def _render_scene(
         width=3,
     )
     entity_bboxes["shooter_marble"] = [float(value) for value in shooter_bbox]
+    entity_points["shooter_marble"] = [round(float(shooter_center[0]), 3), round(float(shooter_center[1]), 3)]
     entities.append(
         {
             "entity_id": "shooter_marble",
             "entity_type": "shooter_marble",
             "color_key": str(sample.shooter_color),
             "bbox_px": [float(value) for value in shooter_bbox],
+            "center_px": [round(float(shooter_center[0]), 3), round(float(shooter_center[1]), 3)],
         }
     )
 
@@ -943,6 +1004,7 @@ def _render_scene(
             emphasize=False,
         )
         entity_bboxes[str(option.entity_id)] = [float(value) for value in bbox]
+        entity_points[str(option.entity_id)] = [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)]
         spec = {
             "entity_id": str(option.entity_id),
             "entity_type": "shot_direction_arrow",
@@ -953,6 +1015,7 @@ def _render_scene(
             "popped_indices": [int(index) for index in option.outcome.popped_indices],
             "is_answer": bool(option.is_answer),
             "bbox_px": [float(value) for value in bbox],
+            "insertion_point_px": [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)],
         }
         shot_specs.append(dict(spec))
         entities.append(dict(spec))
@@ -974,6 +1037,7 @@ def _render_scene(
             emphasize=True,
         )
         entity_bboxes["marked_shot_arrow"] = [float(value) for value in bbox]
+        entity_points["marked_shot_arrow"] = [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)]
         marked_shot_spec = {
             "entity_id": "marked_shot_arrow",
             "entity_type": "marked_shot_arrow",
@@ -982,39 +1046,60 @@ def _render_scene(
             "remaining_count": int(sample.marked_outcome.remaining_count if sample.marked_outcome else len(sample.chain_colors)),
             "popped_indices": [int(index) for index in (sample.marked_outcome.popped_indices if sample.marked_outcome else ())],
             "bbox_px": [float(value) for value in bbox],
+            "insertion_point_px": [round(float(arrow_end[0]), 3), round(float(arrow_end[1]), 3)],
         }
         entities.append(dict(marked_shot_spec))
 
     render_map = {
         "entity_bboxes_px": dict(entity_bboxes),
+        "entity_points_px": dict(entity_points),
         "chain_marble_bboxes_px": {
             str(spec["entity_id"]): [float(value) for value in spec["bbox_px"]]
+            for spec in chain_specs
+        },
+        "chain_marble_centers_px": {
+            str(spec["entity_id"]): [float(value) for value in spec["center_px"]]
             for spec in chain_specs
         },
         "shot_arrow_bboxes_px": {
             str(spec["entity_id"]): [float(value) for value in spec["bbox_px"]]
             for spec in shot_specs
         },
+        "shot_arrow_insertion_points_px": {
+            str(spec["entity_id"]): [float(value) for value in spec["insertion_point_px"]]
+            for spec in shot_specs
+        },
         "marked_shot_arrow_bbox_px": None if marked_shot_spec is None else [float(value) for value in marked_shot_spec["bbox_px"]],
+        "marked_shot_arrow_insertion_point_px": None
+        if marked_shot_spec is None
+        else [float(value) for value in marked_shot_spec["insertion_point_px"]],
         "scene_variant": str(sample.scene_variant),
-        "style": dict(style_meta),
+        "panel_scene_style": {key: value for key, value in dict(style_meta).items() if key not in {"text_legibility", "text_color_policy"}},
+        "marble_chain_style": {
+            "style_variant": str(style_variant),
+            **{str(key): [int(value) for value in rgb] for key, rgb in marble_style.items()},
+        },
+        "text_style": {
+            "font_family": str(font_family),
+            "font_asset": get_font_family_record(str(font_family)).to_trace(),
+        },
         "layout_jitter": attach_games_unit_size_jitter(resolved_jitter, unit_meta),
     }
     return _RenderedScene(
         image=image.convert("RGB"),
         entities=tuple(entities),
         render_map=dict(render_map),
-        style_meta=dict(style_meta),
+        style_meta={key: value for key, value in dict(style_meta).items() if key not in {"text_legibility", "text_color_policy"}},
         background_meta=dict(background_meta),
     )
 
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in SUPPORTED_DIRECTION_LABEL_QUERIES:
-        answer_and_evidence = {"evidence": [[410, 240, 520, 330], [448, 224, 502, 278]], "answer": "C"}
+        answer_and_evidence = {"evidence": [[465, 286]], "answer": "C"}
         answer_only = {"answer": "C"}
     else:
-        answer_and_evidence = {"evidence": [[410, 240, 520, 330], [448, 224, 502, 278]], "answer": 4}
+        answer_and_evidence = {"evidence": [[448, 224], [502, 242], [551, 276], [590, 322]], "answer": 4}
         answer_only = {"answer": 4}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
@@ -1158,11 +1243,12 @@ class _MarbleChainTask:
             task_id=str(self.task_id),
             instance_seed=int(instance_seed),
             params=params,
+            style_variant=str(style_variant),
         )
-        evidence_bboxes = [
-            list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
+        evidence_points = [
+            list(rendered.render_map["entity_points_px"][str(entity_id)])
             for entity_id in sample.evidence_entity_ids
-            if str(entity_id) in rendered.render_map["entity_bboxes_px"]
+            if str(entity_id) in rendered.render_map["entity_points_px"]
         ]
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
         image, post_noise_meta = apply_post_image_noise(
@@ -1172,8 +1258,8 @@ class _MarbleChainTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_bboxes))
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_points))
         option_trace = [
             {
                 "label": str(option.label),
@@ -1229,6 +1315,9 @@ class _MarbleChainTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(rendered.style_meta),
+                "marble_chain_style": dict(rendered.render_map.get("marble_chain_style", {})),
+                "text_style": dict(rendered.render_map.get("text_style", {})),
             },
             "render_map": dict(rendered.render_map),
             "execution_trace": {
@@ -1248,7 +1337,9 @@ class _MarbleChainTask:
                 "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),

@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 
 from .go_common import BLACK, WHITE, Board, Coord, color_name, coord_to_point_id, coord_to_stone_id
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import GoTheme, build_games_go_theme
 
 
@@ -126,6 +127,7 @@ def render_go_board_scene(
     marked_group_coords: Sequence[Coord],
     liberty_coords: Sequence[Coord],
     params: GoRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedGoScene:
     """Render one visible Go board with a highlighted connected group."""
 
@@ -155,6 +157,22 @@ def render_go_board_scene(
         jitter=params.layout_jitter_meta,
     )
     board_left, board_top = float(board_bbox[0]), float(board_bbox[1])
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(16, int(round(float(params.panel_margin_px) * 0.62)))
+        panel_bbox = (
+            max(4, int(round(board_bbox[0])) - panel_pad),
+            max(4, int(round(board_bbox[1])) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(board_bbox[2])) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(board_bbox[3])) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=max(18, int(params.board_corner_radius_px) + 10),
+            border_width=max(2, int(round(float(params.board_frame_width_px) * 0.45))),
+        )
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -256,6 +274,8 @@ def render_go_board_scene(
         "point_bboxes_px": {str(key): list(value) for key, value in point_bboxes_px.items()},
         "stone_bboxes_px": {str(key): list(value) for key, value in stone_bboxes_px.items()},
         "layout_jitter": dict(layout_jitter),
+        "scene_panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedGoScene(
         image=image,

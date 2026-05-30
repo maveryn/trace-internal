@@ -42,6 +42,8 @@ than to the other reference.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
   and `projected_evidence.bbox_set` are derived from the same rendered target
   entities.
+- `render_spec.style.text_legibility` records validated panel-header and
+  reference-label text roles, including the visible `A`/`B` label styling.
 
 ## Prompt Contract
 - `scene_key = single_scene_counting`
@@ -51,5 +53,7 @@ than to the other reference.
   examples
 
 ## Current Review Status
-Current v0 review and solve-rate artifacts are pending. Use
-`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.
+Current v0 review and solve-rate artifacts are pending. Browser-review sidecars
+belong under
+`review/task-reviews/icons/named_field/task_icons__named_field__closer_to_reference_count/`;
+solve-rate status is tracked in `review/calibration_sweep_status.json`.

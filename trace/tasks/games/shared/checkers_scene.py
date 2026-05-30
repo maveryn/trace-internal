@@ -8,8 +8,10 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .checkers_common import BLACK, BOARD_SIZE, RED, Coord, coord_to_cell_id, piece_to_entity_id, player_name
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import CheckersTheme, build_games_checkers_theme
 
 
@@ -42,6 +44,7 @@ class CheckersRenderParams:
     piece_inset_fraction: float
     player_badge_font_size_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -91,6 +94,7 @@ def _draw_piece(
     theme: CheckersTheme,
     player: int,
     is_king: bool = False,
+    font_family: str = "",
 ) -> None:
     """Draw one ordinary checker piece with simple inner-ring chrome."""
 
@@ -153,13 +157,17 @@ def _draw_piece(
                 width=max(1, int(0.04 * (right - left))),
             )
     if bool(is_king):
-        font = load_font(max(14, int(0.42 * min(right - left, bottom - top))), bold=True)
+        font = load_font(
+            max(14, int(0.42 * min(right - left, bottom - top))),
+            bold=True,
+            font_family=str(font_family) or None,
+        )
         text = "K"
         text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
         text_width = float(text_bbox[2] - text_bbox[0])
         text_height = float(text_bbox[3] - text_bbox[1])
         text_rgb = tuple(int(value) for value in shine_rgb)
-        draw.text(
+        draw_text_traced(draw,
             (
                 float(left + (0.5 * ((right - left) - text_width)) - text_bbox[0]),
                 float(top + (0.5 * ((bottom - top) - text_height)) - text_bbox[1]),
@@ -169,7 +177,7 @@ def _draw_piece(
             fill=text_rgb,
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in outline_rgb),
-        )
+         role="readout", required=False,)
 
 
 def render_checkers_board_scene(
@@ -182,6 +190,7 @@ def render_checkers_board_scene(
     params: CheckersRenderParams,
     marked_coord: Coord | None = None,
     king_coords: Sequence[Coord] = (),
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedCheckersScene:
     """Render one visible Checkers board state."""
 
@@ -224,7 +233,11 @@ def render_checkers_board_scene(
         round(float(board_top + board_size_px), 3),
     )
 
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_font = load_font(
+        int(params.player_badge_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     badge_text = f"{player_name(int(current_player))} to move"
     badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
     badge_width = max(
@@ -258,6 +271,23 @@ def render_checkers_board_scene(
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
     badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
 
+    scene_panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(18, int(round(float(params.panel_margin_px) * 0.42)))
+        scene_panel_bbox = (
+            max(4, int(round(min(board_bbox[0], badge_bbox[0]))) - panel_pad),
+            max(4, int(round(min(board_bbox[1], badge_bbox[1]))) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(max(board_bbox[2], badge_bbox[2]))) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(max(board_bbox[3], badge_bbox[3]))) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=scene_panel_bbox,
+            style=panel_style,
+            radius=26,
+            border_width=max(2, int(round(float(params.board_frame_width_px) * 0.55))),
+        )
+
     draw.rounded_rectangle(
         board_bbox,
         radius=int(params.board_corner_radius_px),
@@ -283,9 +313,10 @@ def render_checkers_board_scene(
         ),
         theme=theme,
         player=int(current_player),
+        font_family=str(params.font_family),
     )
     badge_text_rgb = tuple(int(value) for value in theme.badge_text_rgb)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(sample_piece_left + sample_piece_d + 12),
             float(badge_top + 0.5 * (int(params.player_badge_height_px) - (badge_text_bbox[3] - badge_text_bbox[1]))),
@@ -295,7 +326,7 @@ def render_checkers_board_scene(
         fill=badge_text_rgb,
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(badge_text_rgb)),
-    )
+     role="readout", required=False,)
 
     cell_specs: List[CheckersCellSpec] = []
     scene_entities: List[Dict[str, Any]] = []
@@ -338,7 +369,14 @@ def render_checkers_board_scene(
             if occupant_value != 0:
                 piece_bbox_px = _piece_bbox(cell_bbox, inset_fraction=float(params.piece_inset_fraction))
                 is_king = (int(row), int(col)) in king_coord_set
-                _draw_piece(draw, bbox_px=piece_bbox_px, theme=theme, player=occupant_value, is_king=bool(is_king))
+                _draw_piece(
+                    draw,
+                    bbox_px=piece_bbox_px,
+                    theme=theme,
+                    player=occupant_value,
+                    is_king=bool(is_king),
+                    font_family=str(params.font_family),
+                )
                 piece_entity_id = piece_to_entity_id((int(row), int(col)), player=occupant_value)
                 piece_bboxes_px[str(piece_entity_id)] = piece_bbox_px
                 scene_entities.append(
@@ -396,6 +434,7 @@ def render_checkers_board_scene(
 
     render_map = {
         "board_bbox_px": list(board_bbox),
+        "scene_panel_bbox_px": None if scene_panel_bbox is None else [int(value) for value in scene_panel_bbox],
         "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
         "piece_bboxes_px": {str(key): list(value) for key, value in piece_bboxes_px.items()},
         "marked_cell_id": None if marked_cell is None else coord_to_cell_id(marked_cell),
@@ -406,7 +445,10 @@ def render_checkers_board_scene(
         ],
         "player_badge_bbox_px": list(badge_bbox),
         "playable_square_count": int(playable_square_count),
+        "effective_cell_size_px": float(cell_size),
         "layout_jitter": dict(layout_jitter),
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
     }
     return RenderedCheckersScene(
         image=image,

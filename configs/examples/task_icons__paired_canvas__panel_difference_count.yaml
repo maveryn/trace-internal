@@ -1,5 +1,0 @@
-task_id: task_icons__paired_canvas__panel_difference_count
-params:
-  query_id: added_in_right_count
-  target_count: 2
-  distractor_count: 2

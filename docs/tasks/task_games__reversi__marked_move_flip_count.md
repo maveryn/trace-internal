@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: bbox_set over flipped discs.
+2. Evidence type: `point_set` over the centers of flipped discs.
 3. `flip_count_for_marked_move` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation

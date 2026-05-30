@@ -354,10 +354,7 @@ def validate_bubble_shooter_sample(sample: BubbleShooterSample) -> None:
         ]
         if len(pop_positive) != 1 or str(pop_positive[0].label) != str(sample.answer):
             raise ValueError("pop_color_label must have exactly one displayed popping color")
-        expected = (
-            {landing_slot_entity_id(), option_entity_id(str(sample.answer))}
-            | {bubble_entity_id(coord) for coord in sample.outcome.popped_coords}
-        )
+        expected = {bubble_entity_id(coord) for coord in sample.outcome.popped_coords}
     else:
         raise ValueError(f"unsupported bubble shooter query_id: {sample.query_id}")
 

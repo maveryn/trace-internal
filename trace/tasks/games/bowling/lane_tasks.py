@@ -14,6 +14,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -273,6 +274,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BowlingRenderParams:
     """Resolve Bowling rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.bowling.text_font",
+        params=params,
+    )
     return BowlingRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -284,6 +291,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BowlingR
         ball_radius_px=int(params.get("ball_radius_px", group_default(_RENDER_DEFAULTS, "ball_radius_px", _DEFAULTS.ball_radius_px))),
         path_width_px=int(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", _DEFAULTS.path_width_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
@@ -612,7 +620,7 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "spare_path_label":
         answer_value = "4"
-        evidence_value = [[624, 642, 660, 678]]
+        evidence_value = [[[430, 610], [620, 250]]]
     else:
         answer_value = "G"
         evidence_value = [[510, 164, 554, 224]]
@@ -685,10 +693,27 @@ class GamesBowlingLaneTask:
             params=render_params,
             panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
-        ]
+        if str(axes.query_id) == "spare_path_label":
+            if sampled_scene.target_path_id is None:
+                raise RuntimeError("spare_path_label missing target path id")
+            evidence_type = "point_pair_set"
+            evidence_value = [
+                [list(point) for point in rendered_scene.render_map["path_point_pairs_px"][str(sampled_scene.target_path_id)]]
+            ]
+            projected_evidence = {
+                "type": "point_pair_set",
+                "point_pair_set": [list(pair) for pair in evidence_value],
+            }
+        else:
+            evidence_type = "bbox_set"
+            evidence_value = [
+                list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+                for entity_id in sampled_scene.evidence_entity_ids
+            ]
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_value],
+            }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -739,8 +764,12 @@ class GamesBowlingLaneTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type=str(evidence_type), value=evidence_value)
         standing_pin_count = sum(1 for pin in sampled_scene.pins if bool(pin.standing))
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_bowling_lane_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -821,6 +850,7 @@ class GamesBowlingLaneTask:
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -842,12 +872,10 @@ class GamesBowlingLaneTask:
                 "construction_mode": str(sampled_scene.construction_mode),
             },
             "witness_symbolic": {
-                "type": "object_set",
+                "type": "point_pair_set" if str(evidence_type) == "point_pair_set" else "object_set",
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_evidence": dict(projected_evidence),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }

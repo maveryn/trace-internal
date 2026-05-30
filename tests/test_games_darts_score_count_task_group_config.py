@@ -24,7 +24,14 @@ def test_games_darts_score_count_defaults_expose_scene_query_and_score_axes() ->
         "ring_count",
         "threshold_score_count",
     }
-    assert set(generation["style_variant_weights"].keys()) == {"classic", "soft", "outlined"}
+    assert set(generation["style_variant_weights"].keys()) == {
+        "classic",
+        "soft",
+        "outlined",
+        "league_blue",
+        "parchment",
+        "neon",
+    }
     assert list(generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["total_score_dart_count_support"]) == [1]
     assert list(generation["count_query_dart_count_support"]) == [5, 6, 7, 8]
@@ -35,5 +42,5 @@ def test_games_darts_score_count_defaults_expose_scene_query_and_score_axes() ->
     assert "dartboard" in str(prompt["object_description_single_board"])
     assert "double ring" in str(prompt["scoring_rule_text"])
     assert "outer bull scores 25" in str(prompt["scoring_rule_text"])
-    assert "bounding boxes" in str(prompt["evidence_hint_total_score"])
-    assert "bounding boxes" in str(prompt["evidence_hint_ring_count"])
+    assert "pixel points" in str(prompt["evidence_hint_total_score"])
+    assert "pixel points" in str(prompt["evidence_hint_ring_count"])

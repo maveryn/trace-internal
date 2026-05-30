@@ -8,10 +8,12 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from .icon_assets import render_icon_rgba
 from .icon_grid_scene import resolve_grid_cell_slots
 from .icon_noise import NoiseEdit, serialize_icon_noise_edits
 from .icon_scene import IconInstanceSpec, IconPanelLayout, draw_two_panel_panels, resolve_two_panel_layout
+from .scene_style import IconCanvasStyle
 
 
 BBox = Tuple[int, int, int, int]
@@ -170,6 +172,9 @@ def render_two_panel_icon_overlap_grid_scene(
     title_color_rgb: Tuple[int, int, int],
     cell_border_rgb: Tuple[int, int, int],
     cell_label_color_rgb: Tuple[int, int, int],
+    cell_label_stroke_rgb: Tuple[int, int, int] | None = None,
+    cell_label_stroke_width_px: int = 1,
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> RenderedIconOverlapGridScene:
     """Render one reference-overlap plus labeled scene-grid image."""
 
@@ -199,6 +204,7 @@ def render_two_panel_icon_overlap_grid_scene(
         title_font_size_px=int(panel_title_font_size_px),
         reference_title="Reference",
         scene_title="Scene",
+        icon_canvas_style=icon_canvas_style,
     )
 
     reference_a_box, reference_b_box = _draw_overlap_pair_in_box(
@@ -226,11 +232,15 @@ def render_two_panel_icon_overlap_grid_scene(
             width=2,
             fill=tuple(int(v) for v in panel_fill_rgb),
         )
-        draw.text(
+        draw_text_traced(draw,
             (int(cell_bbox[0] + 16), int(cell_bbox[1] + 14)),
             str(label),
             font=label_font,
             fill=tuple(int(v) for v in cell_label_color_rgb),
+            stroke_fill=tuple(int(v) for v in (cell_label_stroke_rgb or panel_fill_rgb)),
+            stroke_width=max(0, int(cell_label_stroke_width_px)),
+            role="icon_cell_label_text",
+            required=False,
         )
         pair_bbox = (
             int(cell_bbox[0] + 12),

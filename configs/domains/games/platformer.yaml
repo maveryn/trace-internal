@@ -86,5 +86,5 @@ prompt:
     platformer_full_arc_rule_text: The dashed arc shows the jump path to follow.
     evidence_hint_jump_landing_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the labeled platform where the jump lands
     answer_hint_jump_landing_label: set "answer" to the selected platform label as a string
-    evidence_hint_collectible_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around each coin lying on the dashed jump arc
+    evidence_hint_collectible_count: set "evidence" to one pixel point [x,y] at the center of each coin lying on the dashed jump arc
     answer_hint_collectible_count: set "answer" to the number of coins lying on the dashed jump arc as an integer

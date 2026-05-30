@@ -11,7 +11,9 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
 3. Prompt-facing evidence should stay on the semantic visual unit:
    - icon instances use `bbox_set`,
    - labeled cells/pairs use `bbox_set` over the cell,
-   - missing or violating slots use one local `bbox_set`.
+   - missing or violating slots use one local `bbox_set`,
+   - role-bound witnesses use `keyed_bbox_map` with global keyed evidence
+     names rather than unordered two-box sets.
 4. Active icons tasks expose one public sampling unit per `task_id` and put the
    meaningful branch in `query_id`. Legacy/internal `query_id` params may
    still be accepted as targeted-generation aliases, but prompt-facing and
@@ -55,25 +57,38 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    can, teapot, knife, soccer ball, rugby ball, dumbbell,
    calculator, plug, broccoli, cactus, guitar, and acorn.
 
-## 3) Active families
+## 3) Rendering and style policy
+1. Icon scenes use the shared icon canvas-style adapter in
+   `trace/tasks/icons/shared/scene_style.py`, backed by the cross-domain
+   panel-style renderer.
+2. The default treatment pool is restricted to light, low-saturation styles:
+   `bare_canvas`, `plain_sheet`, `matte_sheet`, `thin_frame`, `soft_panel`,
+   `margin_sheet`, `dot_sheet`, `worksheet_panel`, `index_card`, and
+   `printout_panel`.
+3. Dark, game-table, corkboard, and other high-contrast/heavy treatments are
+   excluded by default because icon color, fill style, labels, rows, columns,
+   regions, and paths can be answer-bearing.
+4. Canvas style is non-semantic render metadata. It must not change task ids,
+   query ids, answers, or evidence; evidence remains projected from the final
+   composed image.
+5. Task-local chrome overrides are allowed for concrete readability reasons;
+   otherwise use the domain-level `icon_canvas_*` defaults from
+   `configs/domains/icons/base.yaml`.
+
+## 4) Active families
 ### `counting`
 1. `task_icons__icon_field__type_frequency_count`
    - scaffold: single-panel free-placed icon scene
    - query_id: `singleton_type_count|most_frequent_type_count`
    - answer type: `integer`
    - evidence: scene-only `bbox_set` over icon instances satisfying the selected frequency predicate
-2. `task_icons__reference_canvas__attribute_match_count`
+   - answer support: singleton-type count `0..4`; most-frequent type count `2..6`
+2. `task_icons__reference_canvas__reference_predicate_count`
    - scaffold: two-panel `Reference` + `Scene`
-   - query_id: `match_type|match_color|match_rotation|match_type_color_rotation`
+   - query_id: `match_type|match_color|match_rotation|match_type_color_rotation|size_smaller|size_larger`
    - answer type: `integer`
-   - evidence: scene-only `bbox_set` over matching icon instances
-3. `task_icons__reference_canvas__size_relation_count`
-   - scaffold: two-panel `Reference` + `Scene`
-   - query_id: `size_smaller|size_larger`
-   - internal axis: `size_relation=smaller|larger`
-   - answer type: `integer`
-   - evidence: scene-only `bbox_set` over size-qualified icon instances
-4. `task_icons__named_field__shape_count`
+   - evidence: scene-only `bbox_set` over icon instances satisfying the selected reference predicate
+3. `task_icons__named_field__shape_count`
    - scene_id: `named_field`
    - scaffold: single-panel field of procedural named shape icons with grid,
      scatter, cluster, and stack arrangement modes
@@ -83,7 +98,58 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - target support: all procedural named glyphs listed in the asset policy
    - target answer support: layout-dependent, with non-stack layouts capped at
      lower counts and stack layouts capped at moderate row/column counts
-5. `task_icons__named_field__shape_attribute_boolean_count`
+4. `task_icons__named_grid__row_column_shape_count`
+   - scene_id: `named_grid`
+   - scaffold: single-panel numbered grid with one procedural named icon per
+     cell, numbered rows, and numbered columns
+   - query_id: `row_shape_count|column_shape_count`
+   - answer type: `integer`
+   - evidence: `bbox_set` over named icons matching the prompt-named shape in
+     the addressed row or column
+   - answer support: `1..5`
+   - grid support: every row/column combination in `4..6`
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
+5. `task_icons__named_grid__row_column_shape_extreme_number`
+   - scene_id: `named_grid`
+   - scaffold: single-panel numbered grid with one procedural named icon per
+     cell, numbered rows, and numbered columns
+   - query_id:
+     `row_most_shape_number|row_fewest_shape_number|column_most_shape_number|column_fewest_shape_number`
+   - answer type: `integer` row or column number
+   - evidence: `bbox_set` over target-shape icons in the uniquely selected
+     row or column
+   - answer-line support: `1..6`
+   - grid support: every row/column combination in `4..6`
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
+6. `task_icons__named_grid__line_condition_count`
+   - scene_id: `named_grid`
+   - scaffold: single-panel numbered grid with one procedural named icon per
+     cell, numbered rows, and numbered columns
+   - query_id:
+     `row_at_least_shape_count|column_at_least_shape_count|row_exactly_shape_count|column_exactly_shape_count|row_no_shape_count|column_no_shape_count`
+   - answer type: `integer` count of qualifying rows or columns
+   - evidence: `bbox_set` with one row/column region box per qualifying line
+   - answer support: `0..5`
+   - threshold support: at-least `2..3`, exactly `1..3`, no-target `0`
+   - grid support: every row/column combination in `4..6`
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
+7. `task_icons__named_ring__arc_shape_count`
+   - scene_id: `named_ring`
+   - scaffold: single-panel ring with procedural named icons arranged in
+     clockwise order and two endpoint markers labeled `A` and `B`
+   - query_id: `clockwise_arc_shape_count|counterclockwise_arc_shape_count`
+   - answer type: `integer`
+   - evidence: `bbox_set` over counted target-shape icons strictly between
+     `A` and `B` along the queried directed arc
+   - answer support: `0..6`
+   - ring size support: `12..22`
+   - arc span support: `3..12` icons strictly between markers
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
+8. `task_icons__named_field__shape_attribute_boolean_count`
    - scene_id: `named_field`
    - scaffold: single-panel field of procedural named shape icons with
      semantic shared named colors and semantic fill styles
@@ -98,25 +164,18 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
      shape/attribute condition
    - target answer support: `1..5`, weighted toward lower counts
    - arrangement support: non-stack named-icon layouts only
-6. `task_icons__named_field__shape_pair_total_count`
+9. `task_icons__named_field__shape_pair_arithmetic_count`
    - scene_id: `named_field`
    - scaffold: single-panel field of procedural named shape icons with
      semantic shared named colors and non-semantic fill-style variation
-   - query_id: `two_shape_total_count|two_bound_color_total_count`
+   - query_id: `two_shape_total_count|two_bound_color_total_count|two_shape_difference_count|two_bound_color_difference_count`
    - answer type: `integer`
-   - evidence: scene-only `bbox_set` over every icon in either operand group
+   - evidence: `keyed_bbox_map` with `left_operand_*` and `right_operand_*`
+     keys over every icon in either operand group
    - total answer support: `2..10`
-   - arrangement support: non-stack named-icon layouts only
-7. `task_icons__named_field__shape_pair_difference_count`
-   - scene_id: `named_field`
-   - scaffold: single-panel field of procedural named shape icons with
-     semantic shared named colors and non-semantic fill-style variation
-   - query_id: `two_shape_difference_count|two_bound_color_difference_count`
-   - answer type: `integer`
-   - evidence: scene-only `bbox_set` over every icon in either operand group
    - absolute-difference answer support: `0..5`
    - arrangement support: non-stack named-icon layouts only
-8. `task_icons__named_field__closer_to_reference_count`
+10. `task_icons__named_field__closer_to_reference_count`
    - scene_id: `named_field`
    - scaffold: single-panel field with two labeled reference icons `A` and
      `B`, plus repeated icons of one prompt-named target shape
@@ -127,7 +186,7 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
      queried reference
    - target answer support: `0..4`
    - target icon count support: `4..8`; no unrelated distractor icon types
-9. `task_icons__named_field__region_shape_count`
+11. `task_icons__named_field__region_shape_count`
    - scene_id: `named_field`
    - scaffold: single-panel field of procedural named shape icons with a
      visible marked rectangle/ellipse, band, quadrant, or shelf
@@ -139,7 +198,7 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
      active region predicate
    - target answer support: `1..5`, weighted toward lower counts
    - fill style is non-semantic visual variation
-10. `task_icons__venn_field__venn_region_shape_count`
+12. `task_icons__venn_field__venn_region_shape_count`
    - scene_id: `venn_field`
    - scaffold: single-panel field of procedural named shape icons with two
      overlapping marked circles
@@ -152,7 +211,7 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
      the active Venn predicate
    - target answer support: `1..5`, weighted toward lower counts
    - target descriptions quote the named icon, e.g. `"bell"` icons
-11. `task_icons__named_field__shape_counterfactual_count`
+13. `task_icons__named_field__shape_counterfactual_count`
    - scene_id: `named_field`
    - scaffold: single-panel field of procedural named shape icons
    - query_id: one of `target_count_after_shape_replacement`,
@@ -163,18 +222,12 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
      hypothetical edit
    - target answer support: `1..8`
    - fill style is non-semantic visual variation
-12. `task_icons__paired_canvas__panel_exact_match_count`
+14. `task_icons__paired_canvas__panel_set_relation_count`
    - scene_id: `paired_canvas`
    - scaffold: two large panels labeled `Left` and `Right`
-   - query_id: `right_exact_match_count`
+   - query_id: `right_exact_match_count|added_in_right_count|missing_from_right_count`
    - answer type: `integer`
-   - evidence: Right-panel `bbox_set` over icons exactly matching a Left-panel icon by type, color, size, and rotation
-13. `task_icons__paired_canvas__panel_difference_count`
-   - scene_id: `paired_canvas`
-   - scaffold: two large panels labeled `Left` and `Right`
-   - query_id: `added_in_right_count|missing_from_right_count`
-   - answer type: `integer`
-   - evidence: Right-panel boxes for added icons, Left-panel boxes for missing icons
+   - evidence: Right-panel boxes for exact matches or added icons; Left-panel boxes for missing icons
 
 ### `relation`
 1. `task_icons__reference_canvas__anchor_position_count`
@@ -199,29 +252,50 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - evidence: `bbox_set` around matching Scene cells
 4. `task_icons__mirror_grid__reflection_match_label`
    - scene_id: `mirror_grid`
-   - scaffold: `Reference` cell + labeled 5-option `Scene` grid
+   - scaffold: `Reference` cell + labeled 6-option `Scene` grid
    - query_id: `vertical_reflection_match|horizontal_reflection_match|diagonal_main_reflection_match|diagonal_anti_reflection_match`
    - answer type: `option_letter`
-   - evidence: one-box `bbox_set` around the matching Scene cell
-5. `task_icons__named_field__reference_distance_rank_label`
+   - evidence: `keyed_bbox_map` with `reference_cell` and `selected_option`
+5. `task_icons__icon_cutout__partial_match_label`
+   - scene_id: `icon_cutout`
+   - scaffold: left partial icon fragment plus six labeled full-icon options
+     `A`..`F`
+   - query_id: `partial_icon_match_label`
+   - answer type: `option_letter`
+   - evidence: `keyed_bbox_map` with `source_fragment` and
+     `selected_option`
+   - visual variants: rectangular, rounded, and elliptical fragment windows;
+     these are render metadata rather than separate query ids
+6. `task_icons__named_field__reference_distance_rank_label`
    - scene_id: `named_field`
    - scaffold: single-panel scene with one unique named reference icon, six labeled candidate icons `A`..`F`, and `4..8` unlabeled distractors
    - query_id: `closest_to_named_reference_label|second_closest_to_named_reference_label|farthest_from_named_reference_label`
    - answer type: `option_letter`
-   - evidence: two-box `bbox_set` around the named reference and selected labeled candidate
-6. `task_icons__paired_canvas__original_attribute_label`
+   - evidence: `keyed_bbox_map` with `reference_icon` and `selected_candidate`
+7. `task_icons__named_path__path_neighbor_label`
+   - scene_id: `named_path`
+   - scaffold: single-panel scene with a continuous path from `START` to
+     `END`, procedural named icons on path stops, six labeled option icons
+     `A`..`F`, and `4..8` unlabeled non-target distractors
+   - query_id:
+     `after_first_shape_label|before_first_shape_label|after_last_shape_label|before_last_shape_label|after_second_shape_label|before_second_shape_label`
+   - answer type: `option_letter`
+   - evidence: `keyed_bbox_map` with `queried_icon` and `selected_neighbor`
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
+8. `task_icons__paired_canvas__original_attribute_label`
    - scene_id: `paired_canvas`
    - scaffold: two open panels labeled `Original` and `Right`; Right has six labeled tracked icons plus `4..8` unlabeled distractors
    - query_id: `original_shape_label|original_color_shape_label|original_fill_shape_label`
    - answer type: `option_letter`
-   - evidence: two-box `bbox_set` around the original icon and its corresponding labeled Right-panel icon
-7. `task_icons__overlap_grid__occlusion_order_count`
+   - evidence: `keyed_bbox_map` with `original_icon` and `right_icon`
+9. `task_icons__overlap_grid__occlusion_order_count`
    - scene_id: `overlap_grid`
    - scaffold: `Reference` cell + labeled `Scene` grid of overlapping icon-pair cells
    - query_id: `same_front_to_back_order`
    - answer type: `integer`
    - evidence: `bbox_set` around matching Scene cells
-8. `task_icons__paired_canvas__panel_movement_direction_count`
+10. `task_icons__paired_canvas__panel_movement_direction_count`
    - scene_id: `paired_canvas`
    - scaffold: two large panels labeled `Left` and `Right` with the same icons moved between panels
    - query_id: `moved_left_count|moved_right_count|moved_up_count|moved_down_count`
@@ -229,19 +303,13 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - evidence: Right-panel destination `bbox_set` over icons moved in the queried direction
 
 ### `transformation`
-1. `task_icons__pair_grid__pair_attribute_rule_count`
+1. `task_icons__pair_grid__pair_relation_count`
    - scaffold: `Reference` pair + labeled `Scene` grid of icon pairs
-   - query_id: `color_only_change|size_only_change|color_and_size_change`
+   - query_id: `color_only_change|size_only_change|color_and_size_change|same_pair_transform`
    - answer type: `integer`
    - evidence: `bbox_set` around matching Scene cells
-   - rule vocabulary: non-geometric color/size attribute edits only
-2. `task_icons__pair_grid__pair_geometric_transform_count`
-   - scaffold: `Reference` pair + labeled `Scene` grid of icon pairs
-   - query_id: `same_pair_transform`
-   - transform vocabulary: `rot90|rot180|rot270|flip_h|flip_v|flip_diag_main|flip_diag_anti`
-   - answer type: `integer`
-   - evidence: `bbox_set` around matching Scene cells
-3. `task_icons__paired_canvas__panel_attribute_change_count`
+   - rule vocabulary: color/size attribute edits plus geometric transforms
+2. `task_icons__paired_canvas__panel_attribute_change_count`
    - scene_id: `paired_canvas`
    - scaffold: two large panels labeled `Left` and `Right` with corresponding icons at matching positions
    - query_id: `color_changed_count|size_changed_count|rotation_changed_count`
@@ -254,36 +322,39 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - query_id: `arithmetic_progression`
    - answer type: `integer`
    - evidence: one-box `bbox_set` over the missing cell
+2. `task_icons__named_strip__shape_run_length`
+   - scaffold: one horizontal row of boxed named icons
+   - query_id: `longest_shape_run_length|shortest_shape_run_length`
+   - answer type: `integer`
+   - evidence: `bbox_set` over the icons in the selected target-shape run
+   - answer support: longest `2..6`, shortest `1..5`
+   - target support: all procedural named glyphs listed in the asset policy;
+     target names are quoted in prompts
 
 ### `pattern`
-1. `task_icons__pattern_grid__color_pattern_violation_index`
+1. `task_icons__pattern_grid__attribute_pattern_violation_index`
    - scene_id: `pattern_grid`
    - scaffold: numbered `3 x 3` grid
-   - query_id: `grid_color_violation`
+   - query_id: `grid_color_violation|grid_size_violation`
    - answer type: integer numbered-box index
    - evidence: one-box `bbox_set` over the violating numbered box
-   - rule vocabulary: discrete hue ladder with row/column color-level offsets
+   - rule vocabulary: discrete hue ladder or icon-size ladder with row/column offsets
 2. `task_icons__sequence_strip__rotation_sequence_violation_index`
    - scene_id: `sequence_strip`
    - scaffold: numbered 10-cell sequence row
    - query_id: `row_rotation_violation`
    - answer type: integer numbered-box index
    - evidence: one-box `bbox_set` over the violating numbered box
-3. `task_icons__pattern_grid__size_pattern_violation_index`
-   - scene_id: `pattern_grid`
-   - scaffold: numbered `3 x 3` grid
-   - query_id: `grid_size_violation`
-   - answer type: integer numbered-box index
-   - evidence: one-box `bbox_set` over the violating numbered box
-   - calibrated public mix uses a minimum two-level size violation and no icon-level noise so the size rule remains legible
-
-## 4) Evidence policy
+## 5) Evidence policy
 1. Use `bbox_set` when the witness is one or more visible icon instances.
 2. Use `bbox_set` around the full cell when the witness is one or more labeled scene cells/pairs; keep labels only in private trace metadata.
 3. Use a single local `bbox_set` when the witness is a missing or violating slot.
-4. Keep hidden asset ids, sampled transforms, nominal sizes, and ambiguity checks in trace metadata; prompt-facing evidence should stay visual and compact.
+4. Use `keyed_bbox_map` when distinct witness roles must be verified, such as
+   reference versus selected candidate, queried icon versus selected neighbor,
+   original versus right-panel icon, or left versus right arithmetic operands.
+5. Keep hidden asset ids, sampled transforms, nominal sizes, and ambiguity checks in trace metadata; prompt-facing evidence should stay visual and compact.
 
-## 5) Ambiguity policy
+## 6) Ambiguity policy
 1. Use explicit target/distractor sampling rather than hoping random placement realizes the target count.
 2. Enforce minimum size gaps for size-relation tasks.
 3. For anchored relation tasks, mix distractor types so the task cannot be solved by occupancy alone.
@@ -291,7 +362,7 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
 5. For pattern-violation tasks, reject any instance where another supported rule hypothesis would make a different violating cell plausible.
 6. For singleton-type tasks, define grouping over `icon_id` only; colors and rotations may vary independently.
 
-## 6) Shared helper placement
+## 7) Shared helper placement
 1. Icon asset loading belongs in `trace/tasks/icons/shared/icon_assets.py`.
 2. Shared icon scene/rendering helpers belong under `trace/tasks/icons/shared/`.
 3. Reuse the existing grid, sequence, pair-grid, overlap-grid, transform, style, and anchor-marking helpers before adding task-local layout/rendering utilities.

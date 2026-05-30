@@ -15,3 +15,4 @@
 ## Implementation
 1. Prompt bundle: `games_connect_four_v0`
 2. The generator samples immediate-winning and safe-drop count queries inside one public task.
+3. Rendering uses the shared games/puzzles panel scene layer plus scene-local board/disc styles, sampled badge fonts, unit-size jitter, and dynamic canvas sizing.

@@ -11,7 +11,11 @@ generation:
       max_clear_swap_label: 1.0
       target_clear_swap_label: 1.0
     style_variant_weights:
-      panel_scene: 1.0
+      faceted_jewels: 1.0
+      round_candies: 1.0
+      beveled_tiles: 1.0
+      diamond_gems: 1.0
+      orb_tokens: 1.0
     balanced_scene_variant_sampling: true
     balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
@@ -72,13 +76,13 @@ prompt:
     task_key: match3_query
     object_description_match3_grid: a match-3 jewel grid with row and column numbers, colored gems, and marked or labeled adjacent-swap arrows
     match3_rule_text: Swap only the two adjacent gems connected by the arrow. After the swap, immediately clear every horizontal or vertical run of three or more matching gems. Count only this immediate clear; do not apply falling, refill, special effects, or cascades.
-    evidence_hint_cleared_count_after_marked_swap: set "evidence" to an array containing the marked swap-arrow box and the boxes for the gems cleared by the swap; if no gems clear, include the marked arrow and the two swapped gem boxes
+    evidence_hint_cleared_count_after_marked_swap: set "evidence" to a JSON array of [x,y] pixel points, one at the center of each gem cleared by the marked swap; use [] if no gems are cleared
     answer_hint_cleared_count_after_marked_swap: set "answer" to the number of gems cleared by the marked swap
-    evidence_hint_created_run_count_after_marked_swap: set "evidence" to an array containing the marked swap-arrow box and the boxes for the gems in the runs created by the swap; if no run is created, include the marked arrow and the two swapped gem boxes
+    evidence_hint_created_run_count_after_marked_swap: set "evidence" to a JSON array of [x,y] pixel points, one near the center of each horizontal or vertical run created by the marked swap; use [] if no run is created
     answer_hint_created_run_count_after_marked_swap: set "answer" to the number of horizontal or vertical matching runs created by the marked swap
-    evidence_hint_max_clear_swap_label: set "evidence" to an array containing the selected swap-arrow box and the boxes for the gems cleared by that swap
+    evidence_hint_max_clear_swap_label: set "evidence" to a JSON array containing one [x,y] pixel point on the selected swap arrow
     answer_hint_max_clear_swap_label: set "answer" to only the selected swap-arrow letter
-    evidence_hint_target_clear_swap_label: set "evidence" to an array containing the selected swap-arrow box and the boxes for the gems cleared by that swap; if the target is 0, include the selected arrow and the two swapped gem boxes
+    evidence_hint_target_clear_swap_label: set "evidence" to a JSON array containing one [x,y] pixel point on the selected swap arrow
     answer_hint_target_clear_swap_label: set "answer" to only the selected swap-arrow letter
 visual:
   noise:

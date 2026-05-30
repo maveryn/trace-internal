@@ -27,3 +27,36 @@ visual:
       solid_offwhite: 0.5
       solid_cool: 0.25
       solid_warm: 0.25
+
+rendering:
+  shared:
+    icon_canvas_style_enabled: true
+    icon_canvas_treatments:
+      - bare_canvas
+      - plain_sheet
+      - matte_sheet
+      - thin_frame
+      - soft_panel
+      - margin_sheet
+      - dot_sheet
+      - worksheet_panel
+      - index_card
+      - printout_panel
+    icon_canvas_treatment_weights:
+      bare_canvas: 0.12
+      plain_sheet: 0.18
+      matte_sheet: 0.12
+      thin_frame: 0.10
+      soft_panel: 0.12
+      margin_sheet: 0.09
+      dot_sheet: 0.09
+      worksheet_panel: 0.08
+      index_card: 0.05
+      printout_panel: 0.05
+    icon_canvas_palette_weights:
+      plain_neutral: 0.28
+      cool_blue: 0.18
+      mint_green: 0.16
+      cyan_lab: 0.14
+      warm_paper: 0.14
+      teal_card: 0.10

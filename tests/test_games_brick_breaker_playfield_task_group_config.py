@@ -28,12 +28,14 @@ def test_games_brick_breaker_defaults_present() -> None:
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_SCENE_VARIANTS)
     assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS)
+    assert len(SUPPORTED_BRICK_BREAKER_STYLE_VARIANTS) >= 5
     assert list(generation["brick_row_count_support"]) == [4, 5]
     assert list(generation["brick_col_count_support"]) == [5, 6]
     assert list(generation["catch_lane_count_support"]) == [5, 6, 7, 8]
     assert list(generation["row_remaining_count_support"]) == [1, 2, 3, 4, 5]
     assert int(rendering["canvas_width"]) == 980
     assert int(rendering["canvas_height"]) == 740
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
     assert int(rendering["ball_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_brick_breaker_v0"
     assert "dashed arrow" in str(prompt["brick_breaker_motion_rule_text"]).lower()

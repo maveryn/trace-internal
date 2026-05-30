@@ -30,7 +30,7 @@ def test_puzzles_clock_readout_deterministic() -> None:
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
     assert out_a.answer_gt.type == "string"
-    assert out_a.evidence_gt.type == "bbox_set"
+    assert out_a.evidence_gt.type == "keyed_point_map"
 
 
 def test_puzzles_clock_offset_readout_build_smoke(tmp_path: Path) -> None:

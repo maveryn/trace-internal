@@ -8,7 +8,7 @@ generation:
     distractor_count_max: 10
     balanced_sampling: true
   task_overrides:
-    task_icons__reference_canvas__attribute_match_count:
+    task_icons__reference_canvas__reference_predicate_count:
       object_count_min: 1
       object_count_max: 16
       target_count_min: 0
@@ -18,6 +18,8 @@ generation:
         match_color: 1.0
         match_rotation: 1.0
         match_type_color_rotation: 1.0
+        size_smaller: 1.0
+        size_larger: 1.0
       variant_generation_params:
         match_type:
           pool_manifest: all_icons.txt
@@ -29,6 +31,24 @@ generation:
         match_type_color_rotation:
           pool_manifest: non_symmetry.txt
           rotation_candidates_degrees: [0, 90, 180, 270]
+        size_smaller:
+          object_count_max: 14
+          target_count_min: 1
+          target_count_max: 5
+          distractor_count_max: 6
+          pool_manifest: all_icons.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
+          size_relation_candidates: [smaller, larger]
+          size_relation_min_delta_px: 18
+        size_larger:
+          object_count_max: 14
+          target_count_min: 1
+          target_count_max: 5
+          distractor_count_max: 6
+          pool_manifest: all_icons.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
+          size_relation_candidates: [smaller, larger]
+          size_relation_min_delta_px: 18
     task_icons__icon_field__type_frequency_count:
       pool_manifest: all_icons.txt
       query_id_weights:
@@ -49,20 +69,10 @@ generation:
           pool_manifest: all_icons.txt
           object_count_min: 7
           object_count_max: 12
-          target_count_min: 3
-          target_count_max: 5
+          target_count_min: 2
+          target_count_max: 6
           other_repeated_type_count_max: 3
-    task_icons__paired_canvas__panel_exact_match_count:
-      pool_manifest: all_icons.txt
-      object_count_min: 5
-      object_count_max: 10
-      target_count_min: 1
-      target_count_max: 5
-      distractor_count_min: 2
-      distractor_count_max: 5
-      distractor_margin_over_target: 0
-      rotation_candidates_degrees: [0, 90, 180, 270]
-    task_icons__paired_canvas__panel_difference_count:
+    task_icons__paired_canvas__panel_set_relation_count:
       pool_manifest: all_icons.txt
       object_count_min: 4
       object_count_max: 10
@@ -73,19 +83,36 @@ generation:
       distractor_margin_over_target: 0
       common_count_min: 3
       common_count_max: 6
+      query_id_weights:
+        right_exact_match_count: 1.0
+        added_in_right_count: 1.0
+        missing_from_right_count: 1.0
       change_query_weights:
         added_in_right_count: 1.0
         missing_from_right_count: 1.0
+      variant_generation_params:
+        right_exact_match_count:
+          object_count_min: 5
+          object_count_max: 10
+          target_count_min: 1
+          target_count_max: 5
+          distractor_count_min: 2
+          distractor_count_max: 5
+        added_in_right_count:
+          object_count_min: 4
+          object_count_max: 10
+          target_count_min: 1
+          target_count_max: 5
+          distractor_count_min: 1
+          distractor_count_max: 5
+        missing_from_right_count:
+          object_count_min: 4
+          object_count_max: 10
+          target_count_min: 1
+          target_count_max: 5
+          distractor_count_min: 1
+          distractor_count_max: 5
       rotation_candidates_degrees: [0, 90, 180, 270]
-    task_icons__reference_canvas__size_relation_count:
-      object_count_max: 14
-      target_count_min: 1
-      target_count_max: 5
-      distractor_count_max: 6
-      pool_manifest: all_icons.txt
-      rotation_candidates_degrees: [0, 90, 180, 270]
-      size_relation_candidates: [smaller, larger]
-      size_relation_min_delta_px: 18
     task_icons__named_field__shape_count:
       object_count_min: 12
       object_count_max: 36
@@ -146,6 +173,122 @@ generation:
           target_count_max: 12
           object_count_min: 18
           object_count_max: 34
+    task_icons__named_grid__row_column_shape_count:
+      target_count_min: 1
+      target_count_max: 5
+      off_line_target_count_min: 1
+      off_line_target_count_max: 4
+      query_id_weights:
+        row_shape_count: 1.0
+        column_shape_count: 1.0
+      grid_size_support:
+        - [4, 4]
+        - [4, 5]
+        - [4, 6]
+        - [5, 4]
+        - [5, 5]
+        - [5, 6]
+        - [6, 4]
+        - [6, 5]
+        - [6, 6]
+      named_icon_fill_style_support:
+        - solid
+        - striped
+        - dotted
+        - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+    task_icons__named_grid__row_column_shape_extreme_number:
+      answer_line_number_min: 1
+      answer_line_number_max: 6
+      most_winning_count_min: 2
+      most_winning_count_max: 5
+      fewest_winning_count_min: 1
+      fewest_winning_count_max: 3
+      query_id_weights:
+        row_most_shape_number: 1.0
+        row_fewest_shape_number: 1.0
+        column_most_shape_number: 1.0
+        column_fewest_shape_number: 1.0
+      grid_size_support:
+        - [4, 4]
+        - [4, 5]
+        - [4, 6]
+        - [5, 4]
+        - [5, 5]
+        - [5, 6]
+        - [6, 4]
+        - [6, 5]
+        - [6, 6]
+      named_icon_fill_style_support:
+        - solid
+        - striped
+        - dotted
+        - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+    task_icons__named_grid__line_condition_count:
+      answer_count_min: 0
+      answer_count_max: 5
+      at_least_threshold_min: 2
+      at_least_threshold_max: 3
+      exactly_threshold_min: 1
+      exactly_threshold_max: 3
+      query_id_weights:
+        row_at_least_shape_count: 1.0
+        column_at_least_shape_count: 1.0
+        row_exactly_shape_count: 1.0
+        column_exactly_shape_count: 1.0
+        row_no_shape_count: 1.0
+        column_no_shape_count: 1.0
+      grid_size_support:
+        - [4, 4]
+        - [4, 5]
+        - [4, 6]
+        - [5, 4]
+        - [5, 5]
+        - [5, 6]
+        - [6, 4]
+        - [6, 5]
+        - [6, 6]
+      named_icon_fill_style_support:
+        - solid
+        - striped
+        - dotted
+        - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
+    task_icons__named_ring__arc_shape_count:
+      ring_icon_count_min: 12
+      ring_icon_count_max: 22
+      answer_count_min: 0
+      answer_count_max: 6
+      arc_span_min: 3
+      arc_span_max: 12
+      off_arc_target_count_min: 1
+      off_arc_target_count_max: 4
+      query_id_weights:
+        clockwise_arc_shape_count: 1.0
+        counterclockwise_arc_shape_count: 1.0
+      named_icon_fill_style_support:
+        - solid
+        - striped
+        - dotted
+        - half_filled
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+        half_filled: 0.0833
     task_icons__named_field__shape_attribute_boolean_count:
       object_count_min: 4
       object_count_max: 10
@@ -193,7 +336,7 @@ generation:
       attribute_axis_probabilities:
         color: 0.5
         fill_style: 0.5
-    task_icons__named_field__shape_pair_total_count:
+    task_icons__named_field__shape_pair_arithmetic_count:
       operand_count_min: 1
       operand_count_max: 6
       total_answer_min: 2
@@ -205,43 +348,11 @@ generation:
       query_weights:
         two_shape_total_count: 1.0
         two_bound_color_total_count: 1.0
-      pair_arithmetic_query_ids:
-        - two_shape_total_count
-        - two_bound_color_total_count
-      named_color_support:
-        - red
-        - blue
-        - green
-        - yellow
-        - orange
-        - purple
-        - brown
-        - cyan
-        - magenta
-        - maroon
-      named_icon_fill_style_support:
-        - solid
-        - striped
-        - dotted
-        - half_filled
-      named_icon_fill_style_weights:
-        solid: 0.75
-        striped: 0.0834
-        dotted: 0.0833
-        half_filled: 0.0833
-    task_icons__named_field__shape_pair_difference_count:
-      operand_count_min: 1
-      operand_count_max: 6
-      total_answer_min: 2
-      total_answer_max: 10
-      difference_answer_min: 0
-      difference_answer_max: 5
-      distractor_count_min: 4
-      distractor_count_max: 8
-      query_weights:
         two_shape_difference_count: 1.0
         two_bound_color_difference_count: 1.0
       pair_arithmetic_query_ids:
+        - two_shape_total_count
+        - two_bound_color_total_count
         - two_shape_difference_count
         - two_bound_color_difference_count
       named_color_support:
@@ -476,7 +587,7 @@ rendering:
       noise:
         alpha: [0.03, 0.08]
   task_overrides:
-    task_icons__reference_canvas__attribute_match_count:
+    task_icons__reference_canvas__reference_predicate_count:
       variant_render_params:
         match_color:
           min_color_distance: 60.0
@@ -486,23 +597,20 @@ rendering:
           min_color_distance: 40.0
           palette_size_min: 3
           palette_size_max: 4
-    task_icons__reference_canvas__size_relation_count:
-      scene_icon_size_max_px: 120
-      reference_icon_size_px: 80
-      reference_icon_size_min_px: 64
-      reference_icon_size_max_px: 96
-    task_icons__paired_canvas__panel_exact_match_count:
-      canvas_width: 1104
-      canvas_height: 640
-      reference_panel_width_px: 516
-      scene_icon_size_min_px: 42
-      scene_icon_size_max_px: 78
-      reference_icon_size_px: 78
-      reference_icon_size_min_px: 42
-      reference_icon_size_max_px: 78
-      scene_max_overlap_fraction: 0.04
-      min_center_gap_frac: 0.135
-    task_icons__paired_canvas__panel_difference_count:
+        size_smaller:
+          scene_icon_size_max_px: 120
+          reference_icon_size_px: 80
+          reference_icon_size_min_px: 64
+          reference_icon_size_max_px: 96
+        size_larger:
+          scene_icon_size_max_px: 120
+          reference_icon_size_px: 80
+          reference_icon_size_min_px: 64
+          reference_icon_size_max_px: 96
+    task_icons__icon_field__type_frequency_count:
+      scene_icon_size_min_px: 64
+      scene_icon_size_max_px: 96
+    task_icons__paired_canvas__panel_set_relation_count:
       canvas_width: 1104
       canvas_height: 640
       reference_panel_width_px: 516
@@ -528,6 +636,78 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
+    task_icons__named_grid__row_column_shape_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb: [176, 187, 205]
+      cell_fill_rgb: [255, 255, 255]
+      alternate_cell_fill_rgb: [248, 250, 253]
+      axis_label_rgb: [50, 60, 78]
+    task_icons__named_grid__row_column_shape_extreme_number:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb: [176, 187, 205]
+      cell_fill_rgb: [255, 255, 255]
+      alternate_cell_fill_rgb: [248, 250, 253]
+      axis_label_rgb: [50, 60, 78]
+    task_icons__named_grid__line_condition_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 76
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb: [176, 187, 205]
+      cell_fill_rgb: [255, 255, 255]
+      alternate_cell_fill_rgb: [248, 250, 253]
+      axis_label_rgb: [50, 60, 78]
+    task_icons__named_ring__arc_shape_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 44
+      scene_icon_size_max_px: 62
+      scene_max_overlap_fraction: 0.0
+      ring_margin_px: 86
+      ring_stroke_width_px: 4
+      ring_outline_rgb: [142, 154, 178]
+      ring_stop_radius_px: 4
+      ring_stop_fill_rgb: [255, 255, 255]
+      ring_stop_outline_rgb: [122, 136, 164]
+      marker_label_font_size_px: 24
+      marker_label_radius_px: 18
+      marker_label_gap_px: 8
+      marker_label_background_rgb: [255, 255, 255]
+      marker_label_border_rgb: [56, 70, 98]
+      marker_label_color_rgb: [39, 50, 72]
     task_icons__named_field__shape_attribute_boolean_count:
       canvas_width: 800
       canvas_height: 480
@@ -542,21 +722,7 @@ rendering:
       named_icon_slot_padding_px: 6
       named_icon_slot_jitter_px: 8
       named_icon_stack_gap_px: 1
-    task_icons__named_field__shape_pair_total_count:
-      canvas_width: 800
-      canvas_height: 480
-      scene_icon_size_min_px: 48
-      scene_icon_size_max_px: 96
-      scene_max_overlap_fraction: 0.0
-      named_icon_layout_modes:
-        - jittered_grid
-        - ordered_grid
-        - shelf_rows
-        - free_scatter
-      named_icon_slot_padding_px: 6
-      named_icon_slot_jitter_px: 8
-      named_icon_stack_gap_px: 1
-    task_icons__named_field__shape_pair_difference_count:
+    task_icons__named_field__shape_pair_arithmetic_count:
       canvas_width: 800
       canvas_height: 480
       scene_icon_size_min_px: 48
@@ -635,13 +801,17 @@ prompt:
     scene_key: reference_scene_counting
     task_key: counting_query
   task_overrides:
-    task_icons__reference_canvas__attribute_match_count:
+    task_icons__reference_canvas__reference_predicate_count:
       object_description: a Reference icon on the left and a Scene panel on the right
       question_text_by_variant:
         match_type: How many Scene icons have the same type as the Reference?
         match_color: How many Scene icons have the same color as the Reference?
         match_rotation: How many Scene icons have the same rotation as the Reference?
         match_type_color_rotation: How many Scene icons match the Reference in type, color, and rotation?
+        size_smaller: How many Scene icons are smaller than the Reference?
+        size_larger: How many Scene icons are larger than the Reference?
+      question_text_smaller: How many Scene icons are smaller than the Reference?
+      question_text_larger: How many Scene icons are larger than the Reference?
       evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted Scene icons
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[322,152,377,207],[756,318,820,382]],"answer":2}'
@@ -658,30 +828,15 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[116,128,176,188],[634,302,704,372]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__panel_exact_match_count:
+    task_icons__paired_canvas__panel_set_relation_count:
       scene_key: paired_canvas_counting
       object_description: two icon panels labeled Left and Right
       question_text: How many Right-panel icons exactly match an icon in the Left panel by type, color, size, and rotation?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted Right-panel icon
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[620,156,684,220],[834,338,902,406]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__panel_difference_count:
-      scene_key: paired_canvas_counting
-      object_description: two icon panels labeled Left and Right
       question_text_added_in_right_count: How many Right-panel icons are new, meaning they do not exactly match any icon in the Left panel?
       question_text_missing_from_right_count: How many Left-panel icons are missing from the Right panel?
       evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted icon in the relevant panel
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[620,156,684,220],[834,338,902,406]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-    task_icons__reference_canvas__size_relation_count:
-      object_description: a Reference icon on the left and a Scene panel on the right
-      question_text_smaller: How many Scene icons are smaller than the Reference?
-      question_text_larger: How many Scene icons are larger than the Reference?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for all counted Scene icons
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[318,148,370,200],[572,322,632,382]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__named_field__shape_count:
       scene_key: single_scene_counting
@@ -690,6 +845,48 @@ prompt:
       evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted {shape_name} icon
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[116,128,168,180],[634,302,686,354]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_icons__named_grid__row_column_shape_count:
+      scene_key: single_scene_counting
+      object_description: one panel labeled Grid with numbered rows, numbered columns, and one named icon in each grid cell
+      question_text_row_shape_count: How many "{target_shape_name}" icons are in row {line_number}?
+      question_text_column_shape_count: How many "{target_shape_name}" icons are in column {line_number}?
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted "{target_shape_name}" icon in {line_kind} {line_number}
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_icons__named_grid__row_column_shape_extreme_number:
+      scene_key: single_scene_counting
+      object_description: one panel labeled Grid with numbered rows, numbered columns, and one named icon in each grid cell
+      question_text_row_most_shape_number: Which row has the most "{target_shape_name}" icons?
+      question_text_row_fewest_shape_number: Which row has the fewest "{target_shape_name}" icons?
+      question_text_column_most_shape_number: Which column has the most "{target_shape_name}" icons?
+      question_text_column_fewest_shape_number: Which column has the fewest "{target_shape_name}" icons?
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for the "{target_shape_name}" icons in the selected {line_kind}
+      answer_hint: set "answer" to the selected {line_kind} number as an integer
+      json_example: '{"evidence":[[180,172,232,224],[388,172,440,224],[596,172,648,224]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_icons__named_grid__line_condition_count:
+      scene_key: single_scene_counting
+      object_description: one panel labeled Grid with numbered rows, numbered columns, and one named icon in each grid cell
+      question_text_row_at_least_shape_count: How many rows contain at least {threshold} "{target_shape_name}" icons?
+      question_text_column_at_least_shape_count: How many columns contain at least {threshold} "{target_shape_name}" icons?
+      question_text_row_exactly_shape_count: How many rows contain exactly {threshold} "{target_shape_name}" icons?
+      question_text_column_exactly_shape_count: How many columns contain exactly {threshold} "{target_shape_name}" icons?
+      question_text_row_no_shape_count: How many rows contain no "{target_shape_name}" icons?
+      question_text_column_no_shape_count: How many columns contain no "{target_shape_name}" icons?
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around every qualifying {line_kind} region
+      answer_hint: set "answer" to the number of qualifying {line_kind_plural} as an integer
+      json_example: '{"evidence":[[150,176,566,260],[150,344,566,428]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_icons__named_ring__arc_shape_count:
+      scene_key: single_scene_counting
+      object_description: one panel labeled Ring with named icons arranged around a ring and two endpoint markers labeled A and B
+      question_text_clockwise_arc_shape_count: Starting at marker A and moving clockwise to marker B, how many "{target_shape_name}" icons are strictly between A and B?
+      question_text_counterclockwise_arc_shape_count: Starting at marker A and moving counterclockwise to marker B, how many "{target_shape_name}" icons are strictly between A and B?
+      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every counted "{target_shape_name}" icon strictly between A and B along the {direction} arc
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[180,172,232,224],[388,302,440,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_icons__named_field__shape_attribute_boolean_count:
       scene_key: single_scene_counting
@@ -704,24 +901,17 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[116,128,168,180],[634,302,686,354]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons__named_field__shape_pair_total_count:
+    task_icons__named_field__shape_pair_arithmetic_count:
       scene_key: single_scene_counting
       object_description: one panel labeled Scene with many simple named shape icons in named colors and fill styles
       question_text_two_shape_total_count: How many {left_shape_name} icons and {right_shape_name} icons are there in total?
       question_text_two_bound_color_total_count: How many {left_operand_label} icons and {right_operand_label} icons are there in total?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every icon included in either the {left_operand_label} group or the {right_operand_label} group
-      answer_hint: set "answer" to the requested count as an integer
-      json_example: '{"evidence":[[116,128,168,180],[238,128,290,180],[634,302,686,354]],"answer":3}'
-      json_example_answer_only: '{"answer":3}'
-    task_icons__named_field__shape_pair_difference_count:
-      scene_key: single_scene_counting
-      object_description: one panel labeled Scene with many simple named shape icons in named colors and fill styles
       question_text_two_shape_difference_count: What is the difference between the number of {left_shape_name} icons and {right_shape_name} icons?
       question_text_two_bound_color_difference_count: What is the difference between the number of {left_operand_label} icons and {right_operand_label} icons?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for every icon included in either the {left_operand_label} group or the {right_operand_label} group
+      evidence_hint: set "evidence" to a JSON object mapping role keys like "left_operand_1" and "right_operand_1" to [x0, y0, x1, y1] boxes in image pixel coordinates for every icon included in either the {left_operand_label} group or the {right_operand_label} group
       answer_hint: set "answer" to the requested count as an integer
-      json_example: '{"evidence":[[116,128,168,180],[238,128,290,180],[634,302,686,354]],"answer":1}'
-      json_example_answer_only: '{"answer":1}'
+      json_example: '{"evidence":{"left_operand_1":[116,128,168,180],"left_operand_2":[238,128,290,180],"right_operand_1":[634,302,686,354]},"answer":3}'
+      json_example_answer_only: '{"answer":3}'
     task_icons__named_field__closer_to_reference_count:
       scene_key: single_scene_counting
       object_description: one panel labeled Scene with reference icons A and B plus several repeated named shape icons

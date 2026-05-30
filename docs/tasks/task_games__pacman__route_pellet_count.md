@@ -7,11 +7,11 @@
 4. Query ids: `path_pellet_count`, `pellet_count_before_ghost`
 5. Objective: follow the highlighted route from Pac-Man and count the requested normal pellets.
 6. Answer type: `integer`.
-7. Evidence type: `bbox_set`.
+7. Evidence type: `point_set`.
 
 ## Query Notes
-1. `path_pellet_count` counts all normal pellets lying on the highlighted route; evidence is the counted pellet boxes.
-2. `pellet_count_before_ghost` counts only normal pellets before the first ghost on the highlighted route; evidence is the counted pellet boxes plus the first route ghost.
+1. `path_pellet_count` counts all normal pellets lying on the highlighted route; evidence is the counted pellet center points.
+2. `pellet_count_before_ghost` counts only normal pellets before the first ghost on the highlighted route; evidence is the counted pellet center points plus the first route ghost center point.
 3. Current calibration samples both count queries from answer support `1..5`.
 
 ## Generation Notes

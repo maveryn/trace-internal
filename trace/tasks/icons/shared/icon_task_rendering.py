@@ -9,7 +9,16 @@ from ....core.seed import hash64, spawn_rng
 from ....core.visual.noise import TRACE_DEFAULT_NOISE_VALUE_RANGES
 from ...shared.config_defaults import group_default
 from ...shared.render_variation import resolve_render_rgb
+from ...shared.text_legibility import (
+    resolve_readable_text_style,
+    text_legibility_summary_from_records,
+)
 from .icon_noise import NoiseEdit, sample_icon_noise_edits
+from .scene_style import (
+    icon_canvas_style_trace,
+    icon_canvas_style_with_chrome,
+    resolve_icon_canvas_style,
+)
 
 
 def _normalize_noise_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, Tuple[float, float]]]) -> Dict[str, Dict[str, Tuple[float, float]]]:
@@ -63,7 +72,27 @@ def resolve_icon_render_params(
 ) -> Dict[str, Any]:
     """Resolve common rendering params for icon task groups."""
 
-    return {
+    canvas_style, canvas_style_metadata = resolve_icon_canvas_style(
+        params=params,
+        render_defaults=render_defaults,
+        instance_seed=instance_seed,
+    )
+
+    def has_local_rgb_override(key: str) -> bool:
+        return params.get(str(key)) is not None or params.get(f"{str(key)}_options") is not None
+
+    def resolve_chrome_rgb(key: str, style_attr: str, fallback: Sequence[int]) -> Tuple[int, int, int]:
+        if canvas_style is not None and not has_local_rgb_override(str(key)):
+            return tuple(int(value) for value in getattr(canvas_style, str(style_attr)))
+        return resolve_icon_rgb_param(
+            params=params,
+            render_defaults=render_defaults,
+            key=str(key),
+            fallback=fallback,
+            instance_seed=instance_seed,
+        )
+
+    render_params: Dict[str, Any] = {
         "canvas_width": int(params.get("canvas_width", group_default(render_defaults, "canvas_width", fallback_defaults.canvas_width))),
         "canvas_height": int(
             params.get("canvas_height", group_default(render_defaults, "canvas_height", fallback_defaults.canvas_height))
@@ -213,33 +242,25 @@ def resolve_icon_render_params(
                 group_default(render_defaults, "panel_title_font_size_px", fallback_defaults.panel_title_font_size_px),
             )
         ),
-        "background_color_rgb": resolve_icon_rgb_param(
-            params=params,
-            render_defaults=render_defaults,
-            key="background_color_rgb",
-            fallback=fallback_defaults.background_color_rgb,
-            instance_seed=instance_seed,
+        "background_color_rgb": resolve_chrome_rgb(
+            "background_color_rgb",
+            "background_rgb",
+            fallback_defaults.background_color_rgb,
         ),
-        "panel_fill_rgb": resolve_icon_rgb_param(
-            params=params,
-            render_defaults=render_defaults,
-            key="panel_fill_rgb",
-            fallback=fallback_defaults.panel_fill_rgb,
-            instance_seed=instance_seed,
+        "panel_fill_rgb": resolve_chrome_rgb(
+            "panel_fill_rgb",
+            "panel_fill_rgb",
+            fallback_defaults.panel_fill_rgb,
         ),
-        "panel_border_rgb": resolve_icon_rgb_param(
-            params=params,
-            render_defaults=render_defaults,
-            key="panel_border_rgb",
-            fallback=fallback_defaults.panel_border_rgb,
-            instance_seed=instance_seed,
+        "panel_border_rgb": resolve_chrome_rgb(
+            "panel_border_rgb",
+            "panel_border_rgb",
+            fallback_defaults.panel_border_rgb,
         ),
-        "header_text_rgb": resolve_icon_rgb_param(
-            params=params,
-            render_defaults=render_defaults,
-            key="header_text_rgb",
-            fallback=fallback_defaults.header_text_rgb,
-            instance_seed=instance_seed,
+        "header_text_rgb": resolve_chrome_rgb(
+            "header_text_rgb",
+            "text_rgb",
+            fallback_defaults.header_text_rgb,
         ),
         "icon_noise_edit_types": tuple(
             str(value).strip().lower()
@@ -288,6 +309,36 @@ def resolve_icon_render_params(
             ),
         ),
     }
+    header_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed or 0),
+        namespace="icons.panel_header_text",
+        role="icon_panel_header_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["header_text_rgb"]),),
+    )
+    render_params["header_text_rgb"] = tuple(int(value) for value in header_style.fill_rgb)
+    render_params["header_text_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
+    header_record = header_style.metadata()
+    header_record["stroke_rgb"] = list(render_params["header_text_stroke_rgb"])
+    render_params["text_legibility"] = text_legibility_summary_from_records([header_record])
+    render_params["text_color_policy"] = "read_required_text_uses_random_nonsemantic_readable_ink"
+    resolved_canvas_style = icon_canvas_style_with_chrome(
+        canvas_style,
+        background_rgb=render_params["background_color_rgb"],
+        panel_fill_rgb=render_params["panel_fill_rgb"],
+        panel_border_rgb=render_params["panel_border_rgb"],
+        header_text_rgb=render_params["header_text_rgb"],
+        header_text_stroke_rgb=render_params["header_text_stroke_rgb"],
+    )
+    render_params["_icon_canvas_style_object"] = resolved_canvas_style
+    render_params["icon_canvas_style"] = icon_canvas_style_trace(
+        resolved_canvas_style,
+        canvas_style_metadata,
+    )
+    return render_params
 
 
 def resolve_icon_cell_render_params(
@@ -395,6 +446,27 @@ def resolve_icon_cell_render_params(
         fallback=getattr(fallback_defaults, "cell_label_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
         instance_seed=instance_seed,
     )
+    cell_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed or 0),
+        namespace="icons.cell_label_text",
+        role="icon_cell_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["cell_label_color_rgb"]),),
+    )
+    render_params["cell_label_color_rgb"] = tuple(int(value) for value in cell_label_style.fill_rgb)
+    render_params["cell_label_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
+    cell_label_record = cell_label_style.metadata()
+    cell_label_record["stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, cell_label_record]
+    )
     render_params["scene_content_side_padding_px"] = int(
         params.get(
             "scene_content_side_padding_px",
@@ -452,11 +524,17 @@ def icon_render_style_trace(
 ) -> Dict[str, Any]:
     """Return the canonical render-style trace block for icon tasks."""
 
-    return {
+    style_trace = {
         "background_color_rgb": list(render_params["background_color_rgb"]),
         "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
         "panel_border_rgb": list(render_params["panel_border_rgb"]),
         "header_text_rgb": list(render_params["header_text_rgb"]),
+        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", (255, 255, 255))),
+        "text_color_policy": str(
+            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
+        ),
+        "text_legibility": dict(render_params.get("text_legibility", {})),
+        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
         "palette_size_min": int(render_params["palette_size_min"]),
         "palette_size_max": int(render_params["palette_size_max"]),
         "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
@@ -486,6 +564,11 @@ def icon_render_style_trace(
             for edit_type, params in render_params["icon_noise_value_ranges"].items()
         },
     }
+    if "cell_label_color_rgb" in render_params:
+        style_trace["cell_label_color_rgb"] = list(render_params["cell_label_color_rgb"])
+    if "cell_label_stroke_rgb" in render_params:
+        style_trace["cell_label_stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
+    return style_trace
 
 
 def sample_icon_instance_noise(

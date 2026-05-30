@@ -7,7 +7,7 @@
 4. Query id: `next_item_label`
 5. Objective: identify the first labeled bonus item reached when following the highlighted route from Pac-Man.
 6. Answer type: `string`.
-7. Evidence type: `bbox_set` over the selected bonus item.
+7. Evidence type: `point_set` with one point at the selected bonus item center.
 
 ## Generation Notes
 1. Labeled bonus items use labels `A..F`, with `5..6` items shown.

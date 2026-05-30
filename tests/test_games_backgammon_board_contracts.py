@@ -14,8 +14,10 @@ from trace.tasks.games.backgammon.board_tasks import (
 )
 from trace.tasks.games.shared.backgammon_common import (
     BACKGAMMON_STYLE_VARIANTS,
+    PLAYER_BLACK,
+    PLAYER_WHITE,
     BackgammonPoint,
-    compute_black_single_die_destinations,
+    compute_single_die_destinations,
     point_entity_id,
     target_destinations_for_query,
 )
@@ -51,41 +53,51 @@ def test_games_backgammon_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "backgammon"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
+    assert execution["active_player"] in {PLAYER_BLACK, PLAYER_WHITE}
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) == int(out.answer_gt.value)
+    assert trace["render_spec"]["canvas_width"] <= 1000
+    assert trace["render_spec"]["canvas_height"] <= 720
+    assert float(trace["render_spec"]["effective_point_width_px"]) >= 28.0
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
+    for x0, y0, x1, y1 in out.evidence_gt.value:
+        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "target_answer", "expected_query"),
+    ("task_cls", "target_answer", "expected_query", "active_player"),
     (
-        (GamesBackgammonDestinationCountTask, 4, "legal_move_count"),
-        (GamesBackgammonDestinationCountTask, 5, "hit_move_count"),
-        (GamesBackgammonDestinationCountTask, 4, "blocked_destination_count"),
+        (GamesBackgammonDestinationCountTask, 4, "legal_move_count", PLAYER_BLACK),
+        (GamesBackgammonDestinationCountTask, 5, "hit_move_count", PLAYER_WHITE),
+        (GamesBackgammonDestinationCountTask, 4, "blocked_destination_count", PLAYER_WHITE),
     ),
 )
 def test_games_backgammon_answers_match_recomputed_destination_sets(
     task_cls: type[GamesBackgammonBoardTask],
     target_answer: int,
     expected_query: str,
+    active_player: str,
 ) -> None:
     out = task_cls().generate(
         820100 + target_answer,
-        params={"target_answer": int(target_answer), "query_id": str(expected_query)},
+        params={"target_answer": int(target_answer), "query_id": str(expected_query), "active_player": str(active_player)},
         max_attempts=512,
     )
     execution = out.trace_payload["execution_trace"]
     points = _points_from_trace(execution)
     dice = tuple(int(value) for value in execution["dice"])
-    outcome = compute_black_single_die_destinations(points, dice=(dice[0], dice[1]))
+    outcome = compute_single_die_destinations(
+        points,
+        dice=(dice[0], dice[1]),
+        active_player=str(execution["active_player"]),
+    )
     expected_destinations = target_destinations_for_query(outcome, query_id=expected_query)
     expected_entity_ids = {point_entity_id(point) for point in expected_destinations}
 
@@ -99,8 +111,9 @@ def test_games_backgammon_query_cycle_covers_support_and_styles() -> None:
     queries: set[str] = set()
     counts: set[int] = set()
     styles: set[str] = set()
+    active_players: set[str] = set()
 
-    for sampling_index in range(210):
+    for sampling_index in range(240):
         out = task.generate(
             820300 + sampling_index,
             params={},
@@ -110,10 +123,12 @@ def test_games_backgammon_query_cycle_covers_support_and_styles() -> None:
         queries.add(str(out.query_id))
         counts.add(int(out.answer_gt.value))
         styles.add(str(execution["style_variant"]))
+        active_players.add(str(execution["active_player"]))
 
     assert queries == {"legal_move_count", "hit_move_count", "blocked_destination_count"}
     assert counts >= {0, 1, 2, 3, 4, 5}
     assert styles == set(BACKGAMMON_STYLE_VARIANTS)
+    assert active_players == {PLAYER_BLACK, PLAYER_WHITE}
 
 
 def test_games_backgammon_build_smoke(tmp_path: Path) -> None:

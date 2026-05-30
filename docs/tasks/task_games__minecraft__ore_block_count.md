@@ -12,4 +12,4 @@ The answer is an integer: the number of visible blocks of that ore type.
 
 Evidence is `bbox_set`: one bounding box for every counted ore block.
 
-Generation samples grid size, visual style, target ore kind, counted ore positions, and distractor blocks. The answer support is `1..6`, with balanced answer sampling by default.
+Generation samples grid size, visual style, target ore kind, counted ore positions, distractor blocks, shared canvas treatment, font family, unit scale, and layout jitter. The answer support is `1..6`, with balanced answer sampling by default.

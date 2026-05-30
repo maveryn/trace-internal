@@ -17,9 +17,10 @@ from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -29,6 +30,7 @@ from ..shared.visual_defaults import load_puzzle_noise_defaults
 INTERNAL_TASK_ID = "puzzles_spatial_cube_surface_net_internal"
 FACE_RELATION_TASK_ID = "task_puzzles__cube_net__cube_net_face_relation_label"
 ROLLING_RESULT_TASK_ID = "task_puzzles__cube_net__cube_rolling_result_label"
+SURFACE_PATH_TASK_ID = "task_puzzles__cube_net__surface_net_path_label"
 SCENE_ID = "cube_net"
 
 FACE_RELATION_QUERY_IDS: Tuple[str, ...] = (
@@ -40,7 +42,11 @@ ROLLING_QUERY_IDS: Tuple[str, ...] = (
     "final_front_face_label",
     "final_right_face_label",
 )
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = FACE_RELATION_QUERY_IDS + ROLLING_QUERY_IDS
+SURFACE_PATH_QUERY_IDS: Tuple[str, ...] = (
+    "folded_path_endpoint_label",
+    "folded_path_face_sequence_label",
+)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = FACE_RELATION_QUERY_IDS + ROLLING_QUERY_IDS + SURFACE_PATH_QUERY_IDS
 SCENE_VARIANTS: Tuple[str, ...] = ("clean_net", "paper_model", "game_mat")
 
 FACE_IDS: Tuple[str, ...] = ("U", "D", "F", "B", "L", "R")
@@ -92,6 +98,8 @@ class _TaskDefaults:
     rolling_grid_cols_max: int = 6
     rolling_path_length_min: int = 4
     rolling_path_length_max: int = 7
+    surface_path_step_count_min: int = 3
+    surface_path_step_count_max: int = 5
     line_width_px: int = 3
     title_font_size_px: int = 22
     face_font_size_px: int = 31
@@ -105,6 +113,15 @@ class FaceOption:
     option_label: str
     face_id: str
     face_label: str
+
+
+@dataclass(frozen=True)
+class PathSequenceOption:
+    """One answer option for a folded surface path."""
+
+    option_label: str
+    face_ids: Tuple[str, ...]
+    face_labels: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -138,6 +155,21 @@ class RollingDataset:
     correct_option_label: str
 
 
+@dataclass(frozen=True)
+class SurfacePathDataset:
+    """Trace-ready folded surface path instance."""
+
+    query_id: str
+    face_labels: Dict[str, str]
+    start_face: str
+    path_sides: Tuple[str, ...]
+    face_sequence: Tuple[str, ...]
+    endpoint_face: str
+    endpoint_options: Tuple[FaceOption, ...]
+    sequence_options: Tuple[PathSequenceOption, ...]
+    correct_option_label: str
+
+
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "spatial")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -145,7 +177,54 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=INTERNAL_TASK_ID,
 )
 _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=INTERNAL_TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = {
+    **load_puzzle_noise_defaults(task_group="spatial", apply_prob=0.5),
+    "apply_prob": 0.5,
+    "edit_types": ["blur", "downsample", "jpeg", "noise"],
+    "edit_count_range": [1, 1],
+    "value_ranges": {
+        "blur": {"radius": [0.08, 0.24]},
+        "downsample": {"scale": [0.94, 0.98]},
+        "jpeg": {"quality": [86.0, 95.0]},
+        "noise": {"alpha": [0.006, 0.022]},
+    },
+}
+
+
+def _sample_cube_surface_font(*, task_id: str, instance_seed: int, params: Mapping[str, Any]) -> str:
+    """Sample one role-aware font family for all labels in a cube-net puzzle."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.cube_surface_net.label_font",
+        params={**dict(_RENDER_DEFAULTS), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for the sampled cube-net label font."""
+
+    return {
+        "source": "global_font_pool",
+        "font_family": str(font_family),
+        "font_asset_version": font_asset_version(),
+        "scope": "cube_net_panel_face_option_labels",
+    }
+
+
+def _round_evidence_bbox(bbox: Sequence[float]) -> List[float]:
+    return [round(float(value), 3) for value in bbox]
+
+
+def _projected_keyed_bbox_map(evidence: Mapping[str, Sequence[float]]) -> Dict[str, Any]:
+    value = {str(key): _round_evidence_bbox(bbox) for key, bbox in evidence.items()}
+    return {
+        "type": "keyed_bbox_map",
+        "keyed_bbox_map": dict(value),
+        "pixel_keyed_bbox_map": dict(value),
+        "value": dict(value),
+    }
 
 
 def _task_params_for_query_id(params: Mapping[str, Any]) -> Dict[str, Any]:
@@ -276,6 +355,65 @@ def _option_order(
     return options, str(labels[int(correct_index)])
 
 
+def _mutated_face_sequence(
+    *,
+    base_sequence: Sequence[str],
+    rng: Any,
+    protected_first: bool = True,
+) -> Tuple[str, ...]:
+    """Return one plausible distractor sequence with one mutated face."""
+
+    sequence = [str(face) for face in base_sequence]
+    if not sequence:
+        return tuple(sequence)
+    start_index = 1 if bool(protected_first) and len(sequence) > 1 else 0
+    index = int(rng.randrange(start_index, len(sequence)))
+    choices = [face for face in FACE_IDS if str(face) != sequence[index]]
+    sequence[index] = str(choices[int(rng.randrange(len(choices)))])
+    return tuple(sequence)
+
+
+def _surface_sequence_options(
+    *,
+    face_labels: Mapping[str, str],
+    correct_sequence: Sequence[str],
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[Tuple[PathSequenceOption, ...], str]:
+    correct_index = resolve_selection_index(
+        params={},
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.correct_option_index",
+    ) % len(FACE_IDS)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.sequence_option_order")
+    sequences: List[Tuple[str, ...]] = [tuple(str(face) for face in correct_sequence)]
+    attempts = 0
+    while len(sequences) < len(FACE_IDS) and attempts < 200:
+        attempts += 1
+        candidate = _mutated_face_sequence(base_sequence=correct_sequence, rng=rng)
+        if candidate not in sequences:
+            sequences.append(tuple(candidate))
+    while len(sequences) < len(FACE_IDS):
+        shuffled = list(str(face) for face in correct_sequence)
+        rng.shuffle(shuffled)
+        candidate = tuple(shuffled)
+        if candidate not in sequences:
+            sequences.append(candidate)
+    correct = sequences.pop(0)
+    rng.shuffle(sequences)
+    sequences.insert(int(correct_index), correct)
+    labels = tuple(ascii_uppercase[index] for index in range(len(sequences)))
+    options = tuple(
+        PathSequenceOption(
+            option_label=str(label),
+            face_ids=tuple(str(face) for face in sequence),
+            face_labels=tuple(str(face_labels[str(face)]) for face in sequence),
+        )
+        for label, sequence in zip(labels, sequences)
+    )
+    return options, str(labels[int(correct_index)])
+
+
 def _sample_face_relation_dataset(*, query_id: str, params: Mapping[str, Any], instance_seed: int) -> FaceRelationDataset:
     del params
     rng = spawn_rng(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}.face_relation")
@@ -303,6 +441,61 @@ def _sample_face_relation_dataset(*, query_id: str, params: Mapping[str, Any], i
         marked_side=marked_side,
         correct_face=str(correct_face),
         options=tuple(options),
+        correct_option_label=str(correct_label),
+    )
+
+
+def _sample_surface_path_dataset(*, query_id: str, params: Mapping[str, Any], instance_seed: int) -> SurfacePathDataset:
+    rng = spawn_rng(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}.surface_path")
+    step_min = _get_int(params, "surface_path_step_count_min", _DEFAULTS.surface_path_step_count_min)
+    step_max = _get_int(params, "surface_path_step_count_max", _DEFAULTS.surface_path_step_count_max)
+    step_count = int(step_min + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_TASK_ID}.step_count") % max(1, step_max - step_min + 1)))
+    face_labels = _sample_face_labels(int(instance_seed), f"{INTERNAL_TASK_ID}.{query_id}")
+
+    sides = tuple(SIDE_OFFSETS.keys())
+    for attempt in range(80):
+        start_face = str(FACE_IDS[int(rng.randrange(len(FACE_IDS)))])
+        current = str(start_face)
+        sequence = [str(current)]
+        path_sides: List[str] = []
+        previous_side: str | None = None
+        for _ in range(int(step_count)):
+            candidates = list(sides)
+            if previous_side is not None and len(candidates) > 1:
+                opposite = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}[str(previous_side)]
+                candidates = [side for side in candidates if side != opposite]
+            side = str(candidates[int(rng.randrange(len(candidates)))])
+            current = _face_across_display_side(str(current), str(side))
+            path_sides.append(str(side))
+            sequence.append(str(current))
+            previous_side = str(side)
+        if len(set(sequence)) >= min(3, len(sequence)) or attempt >= 12:
+            break
+
+    endpoint_options, endpoint_label = _option_order(
+        face_labels=face_labels,
+        correct_face=str(sequence[-1]),
+        instance_seed=int(instance_seed),
+        namespace=f"{SURFACE_PATH_TASK_ID}.{query_id}.endpoint",
+    )
+    sequence_options, sequence_label = _surface_sequence_options(
+        face_labels=face_labels,
+        correct_sequence=tuple(sequence),
+        instance_seed=int(instance_seed),
+        namespace=f"{SURFACE_PATH_TASK_ID}.{query_id}.sequence",
+    )
+    correct_label = str(endpoint_label if str(query_id) == "folded_path_endpoint_label" else sequence_label)
+    if str(query_id) not in SURFACE_PATH_QUERY_IDS:
+        raise ValueError(f"unsupported surface-path query_id: {query_id}")
+    return SurfacePathDataset(
+        query_id=str(query_id),
+        face_labels=dict(face_labels),
+        start_face=str(sequence[0]),
+        path_sides=tuple(path_sides),
+        face_sequence=tuple(sequence),
+        endpoint_face=str(sequence[-1]),
+        endpoint_options=tuple(endpoint_options),
+        sequence_options=tuple(sequence_options),
         correct_option_label=str(correct_label),
     )
 
@@ -452,6 +645,115 @@ def _draw_face_label(draw: ImageDraw.ImageDraw, *, text: str, bbox: Sequence[flo
     )
 
 
+def _draw_dashed_line(
+    draw: ImageDraw.ImageDraw,
+    *,
+    start: Tuple[float, float],
+    end: Tuple[float, float],
+    fill: Tuple[int, int, int],
+    width: int,
+    dash_px: int = 10,
+    gap_px: int = 7,
+) -> None:
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    length = max(1.0, ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5)
+    step = max(1, int(dash_px) + int(gap_px))
+    cursor = 0.0
+    while cursor < length:
+        dash_end = min(length, cursor + max(1, int(dash_px)))
+        sx = x0 + (x1 - x0) * (cursor / length)
+        sy = y0 + (y1 - y0) * (cursor / length)
+        ex = x0 + (x1 - x0) * (dash_end / length)
+        ey = y0 + (y1 - y0) * (dash_end / length)
+        draw.line([(sx, sy), (ex, ey)], fill=tuple(fill), width=max(1, int(width)))
+        cursor += float(step)
+
+
+def _draw_variant_panel_trim(
+    draw: ImageDraw.ImageDraw,
+    *,
+    panel_bbox: Sequence[float],
+    scene_variant: str,
+    style: Any,
+) -> None:
+    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
+    variant = str(scene_variant)
+    if variant == "paper_model":
+        inner = (x0 + 10, y0 + 10, x1 - 10, y1 - 10)
+        segments = [
+            ((inner[0], inner[1]), (inner[2], inner[1])),
+            ((inner[2], inner[1]), (inner[2], inner[3])),
+            ((inner[2], inner[3]), (inner[0], inner[3])),
+            ((inner[0], inner[3]), (inner[0], inner[1])),
+        ]
+        for start, end in segments:
+            _draw_dashed_line(draw, start=start, end=end, fill=tuple(style.panel_accent_rgb), width=1, dash_px=12, gap_px=8)
+    elif variant == "game_mat":
+        draw.rounded_rectangle((x0 + 6, y0 + 6, x1 - 6, y1 - 6), radius=14, outline=tuple(style.panel_accent_rgb), width=3)
+        for cx, cy in ((x0 + 20, y0 + 20), (x1 - 20, y0 + 20), (x0 + 20, y1 - 20), (x1 - 20, y1 - 20)):
+            draw.ellipse((cx - 4, cy - 4, cx + 4, cy + 4), fill=tuple(style.panel_accent_rgb))
+
+
+def _draw_net_fold_seams(
+    draw: ImageDraw.ImageDraw,
+    *,
+    face_bboxes: Mapping[str, Sequence[float]],
+    scene_variant: str,
+    style: Any,
+) -> None:
+    if str(scene_variant) != "paper_model":
+        return
+    seen: set[Tuple[str, str]] = set()
+    for face, (x, y) in NET_COORDS.items():
+        for dx, dy in SIDE_OFFSETS.values():
+            neighbor = next((other for other, coord in NET_COORDS.items() if coord == (x + dx, y + dy)), None)
+            if neighbor is None:
+                continue
+            key = tuple(sorted((str(face), str(neighbor))))
+            if key in seen:
+                continue
+            seen.add(key)
+            ax0, ay0, ax1, ay1 = [float(value) for value in face_bboxes[str(face)]]
+            bx0, by0, bx1, by1 = [float(value) for value in face_bboxes[str(neighbor)]]
+            if abs(ax1 - bx0) <= 1.0 or abs(bx1 - ax0) <= 1.0:
+                seam_x = ax1 if abs(ax1 - bx0) <= 1.0 else ax0
+                _draw_dashed_line(
+                    draw,
+                    start=(seam_x, max(ay0, by0) + 4),
+                    end=(seam_x, min(ay1, by1) - 4),
+                    fill=tuple(style.panel_accent_rgb),
+                    width=2,
+                    dash_px=8,
+                    gap_px=6,
+                )
+            elif abs(ay1 - by0) <= 1.0 or abs(by1 - ay0) <= 1.0:
+                seam_y = ay1 if abs(ay1 - by0) <= 1.0 else ay0
+                _draw_dashed_line(
+                    draw,
+                    start=(max(ax0, bx0) + 4, seam_y),
+                    end=(min(ax1, bx1) - 4, seam_y),
+                    fill=tuple(style.panel_accent_rgb),
+                    width=2,
+                    dash_px=8,
+                    gap_px=6,
+                )
+
+
+def _scene_variant_style_metadata(scene_variant: str) -> Dict[str, Any]:
+    variant = str(scene_variant)
+    features = {
+        "clean_net": ["standard panel borders"],
+        "paper_model": ["dashed paper trim", "dashed fold seams"],
+        "game_mat": ["accent inset panel frames", "corner pin markers"],
+    }.get(variant, ["standard panel borders"])
+    return {
+        "scene_variant": variant,
+        "visual_features": list(features),
+        "semantic_policy": "non_semantic_chrome_only_no_layout_or_answer_change",
+    }
+
+
 def _draw_net_panel(
     draw: ImageDraw.ImageDraw,
     *,
@@ -583,6 +885,190 @@ def _draw_options(
             bbox=(bx0 + 88, by0 + 12, bx1 - 10, by1 - 10),
             style=style,
             font_size=_DEFAULTS.option_font_size_px,
+        )
+        bboxes[f"option_{option.option_label}"] = [float(bx0), float(by0), float(bx1), float(by1)]
+    return bboxes
+
+
+def _draw_surface_path_net_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    panel_bbox: Sequence[float],
+    dataset: SurfacePathDataset,
+    style: Any,
+    font_size: int,
+    cell_size_px: int,
+) -> Tuple[Dict[str, List[float]], List[float]]:
+    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
+    draw_rounded_rect(
+        draw,
+        (x0, y0, x1, y1),
+        radius=18,
+        fill=tuple(style.panel_fill_rgb),
+        outline=tuple(style.panel_border_rgb),
+        width=2,
+    )
+    _draw_title(draw, "Folded cube net", 0.5 * (x0 + x1), y0 + 30, style, _DEFAULTS.title_font_size_px)
+    min_x = min(coord[0] for coord in NET_COORDS.values())
+    max_x = max(coord[0] for coord in NET_COORDS.values())
+    min_y = min(coord[1] for coord in NET_COORDS.values())
+    max_y = max(coord[1] for coord in NET_COORDS.values())
+    net_w = (int(max_x - min_x + 1)) * int(cell_size_px)
+    net_h = (int(max_y - min_y + 1)) * int(cell_size_px)
+    origin_x = int(round(0.5 * (x0 + x1 - net_w)))
+    origin_y = int(round(y0 + 70 + max(0, (y1 - y0 - 110 - net_h) * 0.5)))
+    face_colors = _style_face_colors(style)
+    face_bboxes: Dict[str, List[float]] = {}
+    for face_id in sorted(FACE_IDS, key=lambda face: (NET_COORDS[face][1], NET_COORDS[face][0])):
+        gx, gy = NET_COORDS[str(face_id)]
+        fx0 = origin_x + int(gx - min_x) * int(cell_size_px)
+        fy0 = origin_y + int(gy - min_y) * int(cell_size_px)
+        fx1 = fx0 + int(cell_size_px)
+        fy1 = fy0 + int(cell_size_px)
+        draw.rectangle((fx0, fy0, fx1, fy1), fill=tuple(face_colors[str(face_id)]), outline=tuple(style.grid_rgb), width=2)
+        _draw_face_label(
+            draw,
+            text=str(dataset.face_labels[str(face_id)]),
+            bbox=(fx0, fy0, fx1, fy1),
+            style=style,
+            font_size=int(font_size),
+        )
+        face_bboxes[str(face_id)] = [float(fx0), float(fy0), float(fx1), float(fy1)]
+    start_bbox = face_bboxes[str(dataset.start_face)]
+    draw.rectangle(tuple(start_bbox), outline=tuple(style.mark_rgb), width=6)
+    draw_centered_text(
+        draw,
+        text="START",
+        center=(0.5 * (start_bbox[0] + start_bbox[2]), start_bbox[1] - 14),
+        font=load_font(13, bold=True),
+        fill=tuple(style.mark_rgb),
+        stroke_fill=tuple(style.text_stroke_rgb),
+        stroke_width=2,
+    )
+    return face_bboxes, [float(x0), float(y0), float(x1), float(y1)]
+
+
+def _draw_surface_instruction_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    panel_bbox: Sequence[float],
+    dataset: SurfacePathDataset,
+    style: Any,
+) -> List[float]:
+    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
+    draw_rounded_rect(
+        draw,
+        (x0, y0, x1, y1),
+        radius=18,
+        fill=tuple(style.panel_fill_rgb),
+        outline=tuple(style.panel_border_rgb),
+        width=2,
+    )
+    _draw_title(draw, "Folded-edge moves", 0.5 * (x0 + x1), y0 + 28, style, 20)
+    side_words = {"top": "top edge", "right": "right edge", "bottom": "bottom edge", "left": "left edge"}
+    row_h = max(34, int((y1 - y0 - 74) / max(1, len(dataset.path_sides))))
+    for index, side in enumerate(dataset.path_sides):
+        cy = y0 + 66 + index * row_h + 0.5 * row_h
+        badge = (x0 + 28, cy - 15, x0 + 60, cy + 17)
+        draw_rounded_rect(
+            draw,
+            badge,
+            radius=8,
+            fill=tuple(style.option_marker_fill_rgb),
+            outline=tuple(style.panel_border_rgb),
+            width=1,
+        )
+        draw_centered_text(
+            draw,
+            text=str(index + 1),
+            center=(0.5 * (badge[0] + badge[2]), 0.5 * (badge[1] + badge[3])),
+            font=load_font(15, bold=True),
+            fill=tuple(style.text_rgb),
+            stroke_fill=tuple(style.text_stroke_rgb),
+            stroke_width=1,
+        )
+        draw_centered_text(
+            draw,
+            text=str(side_words[str(side)]),
+            center=(x0 + 185, cy),
+            font=load_font(19, bold=True),
+            fill=tuple(style.text_rgb),
+            stroke_fill=tuple(style.text_stroke_rgb),
+            stroke_width=1,
+        )
+    return [float(x0), float(y0), float(x1), float(y1)]
+
+
+def _draw_sequence_options(
+    draw: ImageDraw.ImageDraw,
+    *,
+    options: Sequence[PathSequenceOption],
+    panel_bbox: Sequence[float],
+    title: str,
+    style: Any,
+    columns: int,
+) -> Dict[str, List[float]]:
+    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
+    draw_rounded_rect(
+        draw,
+        (x0, y0, x1, y1),
+        radius=18,
+        fill=tuple(style.panel_fill_rgb),
+        outline=tuple(style.panel_border_rgb),
+        width=2,
+    )
+    _draw_title(draw, str(title), 0.5 * (x0 + x1), y0 + 28, style, 20)
+    columns = max(1, int(columns))
+    rows = int((len(options) + columns - 1) // columns)
+    pad = 20
+    gap = 14
+    top = y0 + 58
+    usable_w = x1 - x0 - 2 * pad - (columns - 1) * gap
+    usable_h = y1 - top - pad - (rows - 1) * gap
+    card_w = max(120, int(usable_w / columns))
+    card_h = max(54, int(usable_h / rows))
+    bboxes: Dict[str, List[float]] = {}
+    for index, option in enumerate(options):
+        row = int(index // columns)
+        col = int(index % columns)
+        bx0 = x0 + pad + col * (card_w + gap)
+        by0 = top + row * (card_h + gap)
+        bx1 = bx0 + card_w
+        by1 = by0 + card_h
+        draw_rounded_rect(
+            draw,
+            (bx0, by0, bx1, by1),
+            radius=10,
+            fill=tuple(style.option_fill_rgb),
+            outline=tuple(style.panel_border_rgb),
+            width=2,
+        )
+        draw_rounded_rect(
+            draw,
+            (bx0 + 8, by0 + 8, bx0 + 34, by0 + 34),
+            radius=6,
+            fill=tuple(style.option_marker_fill_rgb),
+            outline=tuple(style.panel_border_rgb),
+            width=1,
+        )
+        draw_centered_text(
+            draw,
+            text=str(option.option_label),
+            center=(bx0 + 21, by0 + 21),
+            font=load_font(15, bold=True),
+            fill=tuple(style.text_rgb),
+            stroke_fill=tuple(style.text_stroke_rgb),
+            stroke_width=1,
+        )
+        sequence_text = " -> ".join(str(label) for label in option.face_labels)
+        draw_centered_text(
+            draw,
+            text=sequence_text,
+            center=(0.5 * (bx0 + 54 + bx1), 0.5 * (by0 + by1)),
+            font=load_font(17, bold=True),
+            fill=tuple(style.text_rgb),
+            stroke_fill=tuple(style.text_stroke_rgb),
+            stroke_width=1,
         )
         bboxes[f"option_{option.option_label}"] = [float(bx0), float(by0), float(bx1), float(by1)]
     return bboxes
@@ -731,15 +1217,16 @@ def _render_face_relation_scene(
     instance_seed: int,
     scene_variant: str,
 ) -> Tuple[Image.Image, Dict[str, Any]]:
-    del scene_variant
     width = _get_int(params, "canvas_width", _DEFAULTS.canvas_width)
     height = _get_int(params, "face_relation_canvas_height", _DEFAULTS.face_relation_canvas_height)
     style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{FACE_RELATION_TASK_ID}.cube_surface_net")
     image, background_meta = make_puzzle_scene_background(canvas_width=int(width), canvas_height=int(height), style=style)
     draw = ImageDraw.Draw(image)
+    net_panel = (54, 54, 686, int(height) - 54)
+    option_panel = (724, 82, int(width) - 54, int(height) - 82)
     net_bboxes, net_panel_bbox = _draw_net_panel(
         draw,
-        panel_bbox=(54, 54, 686, int(height) - 54),
+        panel_bbox=net_panel,
         dataset=dataset,
         style=style,
         font_size=_get_int(params, "face_font_size_px", _DEFAULTS.face_font_size_px),
@@ -748,14 +1235,18 @@ def _render_face_relation_scene(
     option_bboxes = _draw_options(
         draw,
         options=dataset.options,
-        panel_bbox=(724, 82, int(width) - 54, int(height) - 82),
+        panel_bbox=option_panel,
         title="Face options",
         style=style,
         columns=2,
     )
+    _draw_net_fold_seams(draw, face_bboxes=net_bboxes, scene_variant=str(scene_variant), style=style)
+    _draw_variant_panel_trim(draw, panel_bbox=net_panel_bbox, scene_variant=str(scene_variant), style=style)
+    _draw_variant_panel_trim(draw, panel_bbox=option_panel, scene_variant=str(scene_variant), style=style)
     return image, {
         "background_style": dict(background_meta),
         "scene_style": dict(style_meta),
+        "scene_variant_style": _scene_variant_style_metadata(str(scene_variant)),
         "net_panel_bbox_px": list(net_panel_bbox),
         "face_bboxes_px": dict(net_bboxes),
         "option_panel_bboxes_px": dict(option_bboxes),
@@ -769,36 +1260,41 @@ def _render_rolling_scene(
     instance_seed: int,
     scene_variant: str,
 ) -> Tuple[Image.Image, Dict[str, Any]]:
-    del scene_variant
     width = _get_int(params, "canvas_width", _DEFAULTS.canvas_width)
     height = _get_int(params, "rolling_canvas_height", _DEFAULTS.rolling_canvas_height)
     style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{ROLLING_RESULT_TASK_ID}.cube_surface_net")
     image, background_meta = make_puzzle_scene_background(canvas_width=int(width), canvas_height=int(height), style=style)
     draw = ImageDraw.Draw(image)
+    cube_panel = (54, 54, 384, 438)
+    path_panel = (420, 54, int(width) - 54, 438)
+    option_panel = (76, 488, int(width) - 76, int(height) - 54)
     cube_bbox, cube_face_bboxes = _draw_cube_panel(
         draw,
-        panel_bbox=(54, 54, 384, 438),
+        panel_bbox=cube_panel,
         orientation=dataset.start_orientation,
         face_labels=dataset.face_labels,
         style=style,
     )
     path_bbox, path_cell_bboxes = _draw_path_panel(
         draw,
-        panel_bbox=(420, 54, int(width) - 54, 438),
+        panel_bbox=path_panel,
         dataset=dataset,
         style=style,
     )
     option_bboxes = _draw_options(
         draw,
         options=dataset.options,
-        panel_bbox=(76, 488, int(width) - 76, int(height) - 54),
+        panel_bbox=option_panel,
         title="Face options",
         style=style,
         columns=3,
     )
+    for panel in (cube_bbox, path_bbox, option_panel):
+        _draw_variant_panel_trim(draw, panel_bbox=panel, scene_variant=str(scene_variant), style=style)
     return image, {
         "background_style": dict(background_meta),
         "scene_style": dict(style_meta),
+        "scene_variant_style": _scene_variant_style_metadata(str(scene_variant)),
         "start_cube_bbox_px": list(cube_bbox),
         "start_cube_face_bboxes_px": dict(cube_face_bboxes),
         "path_panel_bbox_px": list(path_bbox),
@@ -807,9 +1303,81 @@ def _render_rolling_scene(
     }
 
 
+def _render_surface_path_scene(
+    *,
+    dataset: SurfacePathDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    scene_variant: str,
+) -> Tuple[Image.Image, Dict[str, Any]]:
+    width = _get_int(params, "canvas_width", _DEFAULTS.canvas_width)
+    height = _get_int(params, "rolling_canvas_height", _DEFAULTS.rolling_canvas_height)
+    style, style_meta = resolve_puzzle_scene_style(instance_seed=int(instance_seed), namespace=f"{SURFACE_PATH_TASK_ID}.cube_surface_net")
+    image, background_meta = make_puzzle_scene_background(canvas_width=int(width), canvas_height=int(height), style=style)
+    draw = ImageDraw.Draw(image)
+    net_panel = (54, 54, 520, 482)
+    instruction_panel = (558, 54, int(width) - 54, 482)
+    option_panel = (76, 532, int(width) - 76, int(height) - 54)
+    face_bboxes, net_panel_bbox = _draw_surface_path_net_panel(
+        draw,
+        panel_bbox=net_panel,
+        dataset=dataset,
+        style=style,
+        font_size=_get_int(params, "face_font_size_px", _DEFAULTS.face_font_size_px),
+        cell_size_px=_get_int(params, "net_cell_size_px", _DEFAULTS.net_cell_size_px),
+    )
+    instruction_bbox = _draw_surface_instruction_panel(
+        draw,
+        panel_bbox=instruction_panel,
+        dataset=dataset,
+        style=style,
+    )
+    if str(dataset.query_id) == "folded_path_endpoint_label":
+        option_bboxes = _draw_options(
+            draw,
+            options=dataset.endpoint_options,
+            panel_bbox=option_panel,
+            title="Endpoint options",
+            style=style,
+            columns=3,
+        )
+    else:
+        option_bboxes = _draw_sequence_options(
+            draw,
+            options=dataset.sequence_options,
+            panel_bbox=option_panel,
+            title="Sequence options",
+            style=style,
+            columns=2,
+        )
+    _draw_net_fold_seams(draw, face_bboxes=face_bboxes, scene_variant=str(scene_variant), style=style)
+    for panel in (net_panel_bbox, instruction_bbox, option_panel):
+        _draw_variant_panel_trim(draw, panel_bbox=panel, scene_variant=str(scene_variant), style=style)
+    return image, {
+        "background_style": dict(background_meta),
+        "scene_style": dict(style_meta),
+        "scene_variant_style": _scene_variant_style_metadata(str(scene_variant)),
+        "net_panel_bbox_px": list(net_panel_bbox),
+        "instruction_panel_bbox_px": list(instruction_bbox),
+        "face_bboxes_px": dict(face_bboxes),
+        "option_panel_bboxes_px": dict(option_bboxes),
+    }
+
+
 def _option_specs_for_trace(options: Sequence[FaceOption]) -> List[Dict[str, str]]:
     return [
         {"option_label": str(option.option_label), "face_id": str(option.face_id), "face_label": str(option.face_label)}
+        for option in options
+    ]
+
+
+def _sequence_option_specs_for_trace(options: Sequence[PathSequenceOption]) -> List[Dict[str, Any]]:
+    return [
+        {
+            "option_label": str(option.option_label),
+            "face_ids": [str(face) for face in option.face_ids],
+            "face_labels": [str(label) for label in option.face_labels],
+        }
         for option in options
     ]
 
@@ -823,13 +1391,16 @@ def _prompt_defaults() -> Mapping[str, Any]:
             "task_key",
             "object_description_face_relation_label",
             "object_description_rolling_result_label",
+            "object_description_surface_path_label",
             "json_output_contract",
             "json_output_contract_answer_only",
             "answer_hint_option_letter",
             "evidence_hint_face_relation",
             "evidence_hint_rolling_result",
+            "evidence_hint_surface_path",
             "json_example_face_relation",
             "json_example_rolling_result",
+            "json_example_surface_path",
             "json_example_answer_only_option_label",
         ),
         context=f"prompt defaults for {INTERNAL_TASK_ID}",
@@ -873,12 +1444,18 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
         query_id, query_probs = self._resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_probs = self._resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = _sample_face_relation_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
-        image, render_meta = _render_face_relation_scene(
-            dataset=dataset,
-            params=params,
+        font_family = _sample_cube_surface_font(
+            task_id=self.task_id,
             instance_seed=int(instance_seed),
-            scene_variant=str(scene_variant),
+            params=params,
         )
+        with temporary_default_font_family(str(font_family)):
+            image, render_meta = _render_face_relation_scene(
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_variant=str(scene_variant),
+            )
         image, post_noise_meta = apply_post_image_noise(
             image,
             instance_seed=int(instance_seed),
@@ -908,12 +1485,12 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         ref_bbox = render_meta["face_bboxes_px"][str(dataset.reference_face)]
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = [
-            [round(float(value), 3) for value in ref_bbox],
-            [round(float(value), 3) for value in option_bbox],
-        ]
+        evidence_bboxes = {
+            "marked_face": _round_evidence_bbox(ref_bbox),
+            "selected_option": _round_evidence_bbox(option_bbox),
+        }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
@@ -964,6 +1541,9 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "post_image_noise": dict(post_noise_meta),
+                "label_style": {
+                    "font": _font_trace_record(str(font_family)),
+                },
                 **dict(render_meta),
             },
             "render_map": {
@@ -993,7 +1573,7 @@ class PuzzlesSpatialCubeNetFaceRelationLabelTask(_CubeSurfaceBaseTask):
                     "correct_option_label": str(dataset.correct_option_label),
                 },
             },
-            "projected_evidence": {"bbox_set": list(evidence_bboxes)},
+            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
             "answer_gt": answer_gt.to_dict(),
             "evidence_gt": evidence_gt.to_dict(),
             "complexity": complexity.to_dict(),
@@ -1025,12 +1605,18 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         query_id, query_probs = self._resolve_query_id(params, instance_seed=int(instance_seed))
         scene_variant, scene_probs = self._resolve_scene_variant(params, instance_seed=int(instance_seed))
         dataset = _sample_rolling_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
-        image, render_meta = _render_rolling_scene(
-            dataset=dataset,
-            params=params,
+        font_family = _sample_cube_surface_font(
+            task_id=self.task_id,
             instance_seed=int(instance_seed),
-            scene_variant=str(scene_variant),
+            params=params,
         )
+        with temporary_default_font_family(str(font_family)):
+            image, render_meta = _render_rolling_scene(
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_variant=str(scene_variant),
+            )
         image, post_noise_meta = apply_post_image_noise(
             image,
             instance_seed=int(instance_seed),
@@ -1059,13 +1645,13 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
-        evidence_bboxes = [
-            [round(float(value), 3) for value in render_meta["start_cube_bbox_px"]],
-            [round(float(value), 3) for value in render_meta["path_panel_bbox_px"]],
-            [round(float(value), 3) for value in option_bbox],
-        ]
+        evidence_bboxes = {
+            "start_cube": _round_evidence_bbox(render_meta["start_cube_bbox_px"]),
+            "roll_path": _round_evidence_bbox(render_meta["path_panel_bbox_px"]),
+            "selected_option": _round_evidence_bbox(option_bbox),
+        }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
         path_norm = normalize_int_with_bounds(len(dataset.path_directions), (_DEFAULTS.rolling_path_length_min, _DEFAULTS.rolling_path_length_max))
         grid_norm = normalize_int_with_bounds(dataset.grid_rows * dataset.grid_cols, (25, 36))
         complexity = build_puzzle_complexity(
@@ -1118,6 +1704,9 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                 "query_id": str(query_id),
                 "scene_variant": str(scene_variant),
                 "post_image_noise": dict(post_noise_meta),
+                "label_style": {
+                    "font": _font_trace_record(str(font_family)),
+                },
                 **dict(render_meta),
             },
             "render_map": {
@@ -1153,7 +1742,180 @@ class PuzzlesSpatialCubeRollingResultLabelTask(_CubeSurfaceBaseTask):
                     "correct_option_label": str(dataset.correct_option_label),
                 },
             },
-            "projected_evidence": {"bbox_set": list(evidence_bboxes)},
+            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
+            "answer_gt": answer_gt.to_dict(),
+            "evidence_gt": evidence_gt.to_dict(),
+            "complexity": complexity.to_dict(),
+        }
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=answer_gt,
+            evidence_gt=evidence_gt,
+            image=image,
+            image_id="img0",
+            trace_payload=trace_payload,
+            complexity=complexity,
+            task_versions=default_task_versions(),
+            scene_id=SCENE_ID,
+            query_id=str(query_id),
+            prompt_variants=dict(prompt_artifacts.prompt_variants),
+        )
+
+
+@register_task
+class PuzzlesSpatialCubeSurfaceNetPathLabelTask(_CubeSurfaceBaseTask):
+    """Select a folded cube-net path endpoint or visited-face sequence."""
+
+    task_id = SURFACE_PATH_TASK_ID
+    supported_query_ids = SURFACE_PATH_QUERY_IDS
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        del max_attempts
+        query_id, query_probs = self._resolve_query_id(params, instance_seed=int(instance_seed))
+        scene_variant, scene_probs = self._resolve_scene_variant(params, instance_seed=int(instance_seed))
+        dataset = _sample_surface_path_dataset(query_id=str(query_id), params=params, instance_seed=int(instance_seed))
+        font_family = _sample_cube_surface_font(
+            task_id=self.task_id,
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+        with temporary_default_font_family(str(font_family)):
+            image, render_meta = _render_surface_path_scene(
+                dataset=dataset,
+                params=params,
+                instance_seed=int(instance_seed),
+                scene_variant=str(scene_variant),
+            )
+        image, post_noise_meta = apply_post_image_noise(
+            image,
+            instance_seed=int(instance_seed),
+            params=params,
+            default_config=POST_IMAGE_NOISE_DEFAULTS,
+        )
+        prompt_defaults = _prompt_defaults()
+        prompt_selection = render_task_prompt_variants(
+            domain=self.domain,
+            task_group=self.task_group,
+            bundle_id=str(prompt_defaults["bundle_id"]),
+            scene_key=str(prompt_defaults["scene_key"]),
+            task_key=str(prompt_defaults["task_key"]),
+            query_key=str(query_id),
+            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
+            slots={
+                "object_description": str(prompt_defaults["object_description_surface_path_label"]),
+                "json_output_contract": str(prompt_defaults["json_output_contract"]),
+                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+                "evidence_hint": str(prompt_defaults["evidence_hint_surface_path"]),
+                "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
+                "json_example": str(prompt_defaults["json_example_surface_path"]),
+                "json_example_answer_only": str(prompt_defaults["json_example_answer_only_option_label"]),
+            },
+            instance_seed=int(instance_seed),
+        )
+        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        option_bbox = render_meta["option_panel_bboxes_px"][f"option_{dataset.correct_option_label}"]
+        evidence_bboxes = {
+            "start_face": _round_evidence_bbox(render_meta["face_bboxes_px"][str(dataset.start_face)]),
+            "move_instructions": _round_evidence_bbox(render_meta["instruction_panel_bbox_px"]),
+            "selected_option": _round_evidence_bbox(option_bbox),
+        }
+        answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_option_label))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
+        path_norm = normalize_int_with_bounds(len(dataset.path_sides), (_DEFAULTS.surface_path_step_count_min, _DEFAULTS.surface_path_step_count_max))
+        complexity = build_puzzle_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": clamp_unit_interval(0.50 + 0.20 * path_norm),
+                "reasoning_load": clamp_unit_interval(0.55 + 0.28 * path_norm + (0.08 if str(query_id) == "folded_path_face_sequence_label" else 0.0)),
+                "scene_variant_load": {"clean_net": 0.18, "paper_model": 0.24, "game_mat": 0.26}.get(str(scene_variant), 0.2),
+            },
+        )
+        option_specs: List[Dict[str, Any]]
+        if str(query_id) == "folded_path_endpoint_label":
+            option_specs = [dict(item) for item in _option_specs_for_trace(dataset.endpoint_options)]
+        else:
+            option_specs = [dict(item) for item in _sequence_option_specs_for_trace(dataset.sequence_options)]
+        trace_payload = {
+            "scene_ir": {
+                "scene_kind": "puzzle_cube_surface_net",
+                "scene_id": SCENE_ID,
+                "task_id": self.task_id,
+                "entities": [
+                    {"entity_id": f"face_{face}", "kind": "cube_net_face", "face_id": str(face), "face_label": str(label)}
+                    for face, label in sorted(dataset.face_labels.items())
+                ],
+                "relations": {
+                    "query_id": str(query_id),
+                    "scene_variant": str(scene_variant),
+                    "start_face": str(dataset.start_face),
+                    "path_sides": [str(side) for side in dataset.path_sides],
+                    "face_sequence": [str(face) for face in dataset.face_sequence],
+                    "endpoint_face": str(dataset.endpoint_face),
+                    "correct_option_label": str(dataset.correct_option_label),
+                },
+            },
+            "query_spec": {
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
+                "template_id": str(prompt_defaults["bundle_id"]),
+                "prompt_variant": dict(prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
+                "params": {
+                    "query_id": str(query_id),
+                    "query_id_probabilities": dict(query_probs),
+                    "scene_variant": str(scene_variant),
+                    "scene_variant_probabilities": dict(scene_probs),
+                    "path_step_count": int(len(dataset.path_sides)),
+                    "option_labels": [str(option["option_label"]) for option in option_specs],
+                    "answer_support": [str(option["option_label"]) for option in option_specs],
+                },
+            },
+            "render_spec": {
+                "canvas_width": int(image.width),
+                "canvas_height": int(image.height),
+                "coord_space": "pixel",
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
+                "scene_variant": str(scene_variant),
+                "post_image_noise": dict(post_noise_meta),
+                "label_style": {
+                    "font": _font_trace_record(str(font_family)),
+                },
+                **dict(render_meta),
+            },
+            "render_map": {
+                "image_id": "img0",
+                "face_bboxes_px": dict(render_meta["face_bboxes_px"]),
+                "instruction_panel_bbox_px": list(render_meta["instruction_panel_bbox_px"]),
+                "option_panel_bboxes_px": dict(render_meta["option_panel_bboxes_px"]),
+                "evidence_source": "face_bboxes_px+instruction_panel_bbox_px+option_panel_bboxes_px",
+            },
+            "execution_trace": {
+                "scene_id": SCENE_ID,
+                "query_id": str(query_id),
+                "scene_variant": str(scene_variant),
+                "face_labels": dict(dataset.face_labels),
+                "net_coords": {str(face): [int(coord[0]), int(coord[1])] for face, coord in NET_COORDS.items()},
+                "start_face": str(dataset.start_face),
+                "path_sides": [str(side) for side in dataset.path_sides],
+                "face_sequence": [str(face) for face in dataset.face_sequence],
+                "face_label_sequence": [str(dataset.face_labels[str(face)]) for face in dataset.face_sequence],
+                "endpoint_face": str(dataset.endpoint_face),
+                "endpoint_face_label": str(dataset.face_labels[str(dataset.endpoint_face)]),
+                "option_specs": option_specs,
+                "answer_value": str(dataset.correct_option_label),
+            },
+            "witness_symbolic": {
+                "type": "folded_surface_net_path",
+                "value": {
+                    "path_sides": [str(side) for side in dataset.path_sides],
+                    "face_sequence": [str(face) for face in dataset.face_sequence],
+                    "endpoint_face": str(dataset.endpoint_face),
+                    "correct_option_label": str(dataset.correct_option_label),
+                },
+            },
+            "projected_evidence": _projected_keyed_bbox_map(evidence_bboxes),
             "answer_gt": answer_gt.to_dict(),
             "evidence_gt": evidence_gt.to_dict(),
             "complexity": complexity.to_dict(),

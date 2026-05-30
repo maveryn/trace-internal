@@ -11,11 +11,11 @@ from PIL import ImageDraw
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -24,10 +24,12 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_snake_grid_complexity
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.snake_common import (
     DIRECTION_NAMES,
     PLANNED_MOVE_OUTCOMES,
@@ -51,7 +53,7 @@ from ..shared.snake_common import (
     visible_snake_trace,
 )
 from ..shared.snake_scene import SnakeRenderParams, render_snake_grid_scene
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_snake_grid_base"
@@ -108,7 +110,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="snake")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="snake", apply_prob=0.5)
 
 
@@ -409,6 +410,12 @@ def _resolve_axes(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SnakeRenderParams:
     """Resolve Snake rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.snake.font_family",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -434,6 +441,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SnakeRen
         cell_padding_px=scale_games_px(params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px)), unit_scale, min_px=3),
         food_radius_px=scale_games_px(params.get("food_radius_px", group_default(_RENDER_DEFAULTS, "food_radius_px", _DEFAULTS.food_radius_px)), unit_scale, min_px=8),
         eye_radius_px=scale_games_px(params.get("eye_radius_px", group_default(_RENDER_DEFAULTS, "eye_radius_px", _DEFAULTS.eye_radius_px)), unit_scale, min_px=2),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -722,14 +730,14 @@ def _draw_centered_text(
         width, height = draw.textsize(str(text), font=font)
         x = float(center[0]) - (float(width) / 2.0)
         y = float(center[1]) - (float(height) / 2.0)
-    draw.text(
+    draw_text_traced(draw,
         (x, y),
         str(text),
         font=font,
         fill=fill,
         stroke_width=max(0, int(stroke_width)),
         stroke_fill=stroke_fill,
-    )
+     role="readout", required=False,)
 
 
 def _draw_path_result_options(
@@ -737,6 +745,7 @@ def _draw_path_result_options(
     image: Any,
     render_map: Mapping[str, Any],
     sample: SnakeSample,
+    font_family: str = "",
 ) -> Tuple[Any, Dict[str, list[float]]]:
     """Draw image-visible A-D result options for the path-result task."""
 
@@ -746,8 +755,8 @@ def _draw_path_result_options(
     board_bbox = tuple(float(v) for v in render_map.get("board_bbox_px", (54, 54, 846, 846)))
     option_bboxes: Dict[str, list[float]] = {}
     cell_width = (float(board_bbox[2]) - float(board_bbox[0])) / max(1.0, float(sample.state.board_size))
-    point_font = load_font(max(18, int(round(cell_width * 0.34))), bold=True)
-    card_font = load_font(max(18, int(round(cell_width * 0.24))), bold=True)
+    point_font = load_font(max(18, int(round(cell_width * 0.34))), bold=True, font_family=str(font_family))
+    card_font = load_font(max(18, int(round(cell_width * 0.24))), bold=True, font_family=str(font_family))
     label_fill = (17, 24, 39)
     option_fill = (255, 255, 255, 235)
     option_outline = (16, 24, 40, 255)
@@ -905,18 +914,29 @@ class GamesSnakeGridTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.snake.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_snake_grid_scene(
             state=sampled_scene.state,
             background=background,
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
         render_map = dict(rendered_scene.render_map)
         base_image = rendered_scene.image
@@ -925,6 +945,7 @@ class GamesSnakeGridTask:
                 image=base_image,
                 render_map=render_map,
                 sample=sampled_scene,
+                font_family=str(render_params.font_family),
             )
             render_map["result_option_bboxes_px"] = dict(option_bboxes)
         evidence_bboxes = [
@@ -988,6 +1009,10 @@ class GamesSnakeGridTask:
         else:
             answer_gt = TypedValue(type="integer", value=int(public_answer))
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_snake_grid_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1065,6 +1090,8 @@ class GamesSnakeGridTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(render_map),
             "execution_trace": {

@@ -67,7 +67,7 @@ prompt:
     bundle_id: games_minecraft_v0
     scene_key: visible_block_world
     task_key: minecraft_query
-    object_description_block_world: a Minecraft-like isometric block world with cube terrain, ore blocks, marked paths, and visible mining routes when relevant
+    object_description_block_world: a Minecraft-like isometric block world with cube terrain, visible resource blocks, and any marked paths or mining routes needed for the question
     minecraft_tunnel_rule_text: Only solid blocks sitting on the marked tunnel path must be mined; empty marked path cells and off-path blocks do not count.
     minecraft_route_cost_rule_text: For the named labeled route only, each raised stone or dirt block sitting on that route costs 1, and empty route cells cost 0. Ignore all other routes.
     evidence_hint_ore_block_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around every counted ore block
@@ -77,30 +77,6 @@ prompt:
     evidence_hint_resource_route_cost: set "evidence" to bounding boxes [x0, y0, x1, y1] around the raised stone or dirt blocks on the named route only
     answer_hint_resource_route_cost: set "answer" to the integer cost of the named route
 visual:
-  background:
-    enabled: true
-    styles:
-      grass_sky:
-        kind: solid
-        color: [180, 211, 232]
-      desert_sky:
-        kind: solid
-        color: [221, 202, 161]
-      snow_sky:
-        kind: solid
-        color: [215, 230, 238]
-      cave_wall:
-        kind: solid
-        color: [54, 57, 61]
-      mesa_sky:
-        kind: solid
-        color: [206, 169, 132]
-    weights:
-      grass_sky: 1.0
-      desert_sky: 1.0
-      snow_sky: 1.0
-      cave_wall: 1.0
-      mesa_sky: 1.0
   noise:
     apply_prob: 0.5
     edit_count_range: [1, 1]

@@ -18,3 +18,4 @@ Status: accepted active default cell-board puzzle task.
 ## Notes
 1. Symmetry axes and paired cells are recorded in private trace metadata.
 2. Internal trace metadata keeps `internal_query_id=symmetry_violation_count`.
+3. Render metadata records the sampled shared panel style, coordinate-label font, and scene-local `cell_board.tile_style`.

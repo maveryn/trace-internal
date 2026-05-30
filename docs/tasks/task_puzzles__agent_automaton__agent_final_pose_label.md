@@ -11,6 +11,7 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `binary_rule_final_pose|three_state_rule_final_pose`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence target: starting-agent bbox followed by selected option bbox
+4. Evidence type: `keyed_bbox_map`
+5. Evidence target: role-keyed bboxes for `start_marker` and `selected_option`
 6. Scene variants: `clean_grid|lab_panel|notebook_grid`
+7. Render metadata records the shared panel style, sampled readout font, and scene-local `agent_board.board_style`.

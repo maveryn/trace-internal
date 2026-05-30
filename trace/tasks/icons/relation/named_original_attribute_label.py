@@ -18,8 +18,10 @@ from ...shared.labeling import LABEL_POOL_A_L
 from ...shared.named_colors import available_named_colors, named_color
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.text_rendering import draw_text_centered, load_font
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import keyed_bbox_map_evidence
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     BBox,
@@ -27,7 +29,6 @@ from ..shared.icon_scene import (
     max_overlap_with_existing,
     panel_geometry_to_trace,
     resolve_two_panel_layout,
-    sort_bboxes_reading_order,
 )
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -303,6 +304,30 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str
     for key in ("candidate_label_color_rgb", "candidate_label_background_rgb", "candidate_label_border_rgb"):
         raw = params.get(key, group_default(_RENDER_DEFAULTS, key, getattr(_DEFAULTS, key)))
         render_params[key] = tuple(int(value) for value in raw)
+    candidate_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}:candidate_label_text",
+        role="paired_canvas_candidate_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["candidate_label_background_rgb"]),
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["candidate_label_color_rgb"]),),
+    )
+    render_params["candidate_label_color_rgb"] = tuple(int(value) for value in candidate_label_style.fill_rgb)
+    render_params["candidate_label_stroke_rgb"] = tuple(
+        int(value) for value in render_params["candidate_label_background_rgb"]
+    )
+    candidate_label_record = candidate_label_style.metadata()
+    candidate_label_record["stroke_rgb"] = list(render_params["candidate_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, candidate_label_record]
+    )
     return render_params
 
 
@@ -781,7 +806,7 @@ def _draw_label_badge(
         center=((float(x0 + x1) / 2.0), (float(y0 + y1) / 2.0) - 1.0),
         font=font,
         fill=tuple(int(value) for value in render_params["candidate_label_color_rgb"]),
-        stroke_fill=tuple(int(value) for value in render_params["candidate_label_background_rgb"]),
+        stroke_fill=tuple(int(value) for value in render_params["candidate_label_stroke_rgb"]),
         stroke_width=1,
     )
 
@@ -877,6 +902,7 @@ def _render_scene(
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         reference_title="Original",
         scene_title="Right",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     original_icons: List[_RenderedPanelIcon] = []
@@ -1091,7 +1117,12 @@ class IconsRelationNamedOriginalAttributeLabelTask:
         right_by_pair = {str(icon.pair_id): icon for icon in scene_payload.right_icons}
         answer_original = original_by_pair[str(scene_payload.answer_pair_id)]
         answer_right = right_by_pair[str(scene_payload.answer_pair_id)]
-        evidence_bboxes = sort_bboxes_reading_order((answer_original.bbox_xyxy, answer_right.bbox_xyxy))
+        evidence_artifacts = keyed_bbox_map_evidence(
+            {
+                "original_icon": answer_original.bbox_xyxy,
+                "right_icon": answer_right.bbox_xyxy,
+            }
+        )
 
         serialized_originals = [_serialize_rendered_icon(icon) for icon in scene_payload.original_icons]
         serialized_rights = [_serialize_rendered_icon(icon) for icon in scene_payload.right_icons]
@@ -1162,8 +1193,11 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                     ),
                     "candidate_label_font_size_px": int(render_params["candidate_label_font_size_px"]),
                     "candidate_label_color_rgb": [int(value) for value in render_params["candidate_label_color_rgb"]],
+                    "candidate_label_stroke_rgb": [int(value) for value in render_params["candidate_label_stroke_rgb"]],
                     "candidate_label_background_rgb": [int(value) for value in render_params["candidate_label_background_rgb"]],
                     "candidate_label_border_rgb": [int(value) for value in render_params["candidate_label_border_rgb"]],
+                    "candidate_label_padding_px": int(render_params["candidate_label_padding_px"]),
+                    "candidate_label_gap_px": int(render_params["candidate_label_gap_px"]),
                     "paired_position_jitter_px": int(render_params["paired_position_jitter_px"]),
                 },
             },
@@ -1198,14 +1232,16 @@ class IconsRelationNamedOriginalAttributeLabelTask:
                 "target_description": str(scene_payload.target_description),
                 "answer_label": str(scene_payload.answer_label),
                 "answer_pair_id": str(scene_payload.answer_pair_id),
-                "evidence_instance_ids": [str(answer_original.instance_id), str(answer_right.instance_id)],
+                "evidence_roles": {
+                    "original_icon": str(answer_original.instance_id),
+                    "right_icon": str(answer_right.instance_id),
+                },
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
                 "items": [
-                    {"instance_id": str(answer_original.instance_id), "bbox_xyxy": list(answer_original.bbox_xyxy)},
-                    {"instance_id": str(answer_right.instance_id), "bbox_xyxy": list(answer_right.bbox_xyxy)},
+                    {"role": "original_icon", "instance_id": str(answer_original.instance_id), "bbox_xyxy": list(answer_original.bbox_xyxy)},
+                    {"role": "right_icon", "instance_id": str(answer_right.instance_id), "bbox_xyxy": list(answer_right.bbox_xyxy)},
                 ],
             },
         }
@@ -1213,7 +1249,10 @@ class IconsRelationNamedOriginalAttributeLabelTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=TypedValue(type="option_letter", value=str(scene_payload.answer_label)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=dict(evidence_artifacts["evidence_value"]),
+            ),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

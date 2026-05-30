@@ -23,3 +23,4 @@ Status: active default cell-board puzzle task pending fresh merged calibration.
 2. `shortest_path` delegates to the internal tile path generator.
 3. `min_distance` delegates to the internal tile relation generator and avoids ties or ambiguous nearest pairs by construction.
 4. Internal trace metadata keeps the selected branch in `query_id` and `internal_query_id`.
+5. Render metadata records the sampled shared panel style, coordinate-label font, and scene-local `cell_board.tile_style`.

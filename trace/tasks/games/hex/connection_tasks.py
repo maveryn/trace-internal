@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -50,8 +50,9 @@ from ..shared.hex_common import (
 from ..shared.hex_scene import HexRenderParams, render_hex_board_scene
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_HEX_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_hex_board_base"
@@ -78,6 +79,11 @@ class _TaskDefaults:
     stone_radius_fraction: float = 0.46
     candidate_label_font_size_px: int = 30
     side_band_width_px: int = 8
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 600
+    canvas_min_height_px: int = 560
+    canvas_side_padding_px: int = 110
+    canvas_vertical_padding_px: int = 110
 
 
 @dataclass(frozen=True)
@@ -110,7 +116,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="hex")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="hex", apply_prob=0.0)
 
 
@@ -359,6 +364,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> HexRenderParams:
     """Resolve Hex rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.hex.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -374,17 +385,80 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> HexRende
         ),
         unit_scale_meta,
     )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    max_board_width_px = scale_games_px(
+        params.get("max_board_width_px", group_default(_RENDER_DEFAULTS, "max_board_width_px", _DEFAULTS.max_board_width_px)),
+        unit_scale,
+        min_px=410,
+    )
+    max_board_height_px = scale_games_px(
+        params.get("max_board_height_px", group_default(_RENDER_DEFAULTS, "max_board_height_px", _DEFAULTS.max_board_height_px)),
+        unit_scale,
+        min_px=380,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(max_board_width_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(max_board_height_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
     return HexRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        max_board_width_px=scale_games_px(params.get("max_board_width_px", group_default(_RENDER_DEFAULTS, "max_board_width_px", _DEFAULTS.max_board_width_px)), unit_scale, min_px=410),
-        max_board_height_px=scale_games_px(params.get("max_board_height_px", group_default(_RENDER_DEFAULTS, "max_board_height_px", _DEFAULTS.max_board_height_px)), unit_scale, min_px=380),
+        max_board_width_px=int(max_board_width_px),
+        max_board_height_px=int(max_board_height_px),
         hex_border_width_px=scale_games_px(params.get("hex_border_width_px", group_default(_RENDER_DEFAULTS, "hex_border_width_px", _DEFAULTS.hex_border_width_px)), unit_scale, min_px=1),
         stone_radius_fraction=float(params.get("stone_radius_fraction", group_default(_RENDER_DEFAULTS, "stone_radius_fraction", _DEFAULTS.stone_radius_fraction))),
         candidate_label_font_size_px=scale_games_px(params.get("candidate_label_font_size_px", group_default(_RENDER_DEFAULTS, "candidate_label_font_size_px", _DEFAULTS.candidate_label_font_size_px)), unit_scale, min_px=15),
         side_band_width_px=scale_games_px(params.get("side_band_width_px", group_default(_RENDER_DEFAULTS, "side_band_width_px", _DEFAULTS.side_band_width_px)), unit_scale, min_px=4),
         layout_jitter_meta=layout_jitter,
+        font_family=str(font_family),
     )
 
 
@@ -578,9 +652,10 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "winning_move_cell_label":
         answer_value: str | int = "C"
+        evidence_value = [[210, 250]]
     else:
         answer_value = 3
-    evidence_value = [[120, 190, 180, 250], [180, 220, 240, 280], [240, 250, 300, 310]]
+        evidence_value = [[150, 220], [210, 250], [270, 280]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -597,6 +672,32 @@ class GamesHexBoardTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.hex.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        panel_render_meta = dict(panel_style_meta)
+        panel_render_meta.pop("text_legibility", None)
+        panel_render_meta.pop("text_color_policy", None)
 
         sampled_scene: HexSample | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -609,12 +710,10 @@ class GamesHexBoardTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid Hex scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_hex_board_scene(
             board=sampled_scene.board,
@@ -627,10 +726,17 @@ class GamesHexBoardTask:
                 for spec in sampled_scene.candidate_specs
             },
             params=render_params,
+            panel_style=panel_style,
         )
-        evidence_entity_ids = [coord_to_cell_id(coord) for coord in sampled_scene.evidence_coords]
-        evidence_bboxes = [
-            list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
+        if str(axes.query_id) == "winning_move_cell_label":
+            if sampled_scene.winning_move_coord is None:
+                raise RuntimeError("Hex winning-move scene is missing winning_move_coord")
+            public_evidence_coords = (tuple(sampled_scene.winning_move_coord),)
+        else:
+            public_evidence_coords = tuple(sampled_scene.evidence_coords)
+        evidence_entity_ids = [coord_to_cell_id(coord) for coord in public_evidence_coords]
+        evidence_points = [
+            list(rendered_scene.render_map["cell_centers_px"][str(entity_id)])
             for entity_id in evidence_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
@@ -694,7 +800,11 @@ class GamesHexBoardTask:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         occupied_count = sum(1 for coord in all_coords(sampled_scene.board_size) if sampled_scene.board[coord[0]][coord[1]] != EMPTY)
         complexity = build_games_hex_board_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -763,6 +873,8 @@ class GamesHexBoardTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_render_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -779,9 +891,12 @@ class GamesHexBoardTask:
                 "target_label_support": [str(value) for value in axes.target_label_support],
                 "candidate_specs": candidate_trace,
                 "winning_move_coord": None if sampled_scene.winning_move_coord is None else [int(sampled_scene.winning_move_coord[0]), int(sampled_scene.winning_move_coord[1])],
+                "completed_winning_path_coords": [[int(row), int(col)] for row, col in sampled_scene.evidence_coords]
+                if str(axes.query_id) == "winning_move_cell_label"
+                else [],
                 "min_gap_path": [[int(row), int(col)] for row, col in sampled_scene.min_gap_path],
                 "min_gap_empty_coords": [[int(row), int(col)] for row, col in sampled_scene.min_gap_empty_coords],
-                "evidence_coords": [[int(row), int(col)] for row, col in sampled_scene.evidence_coords],
+                "evidence_coords": [[int(row), int(col)] for row, col in public_evidence_coords],
                 "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
                 "construction_mode": str(sampled_scene.construction_mode),
             },
@@ -790,7 +905,9 @@ class GamesHexBoardTask:
                 "ids": [str(entity_id) for entity_id in evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

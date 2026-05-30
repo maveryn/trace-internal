@@ -9,7 +9,6 @@ from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -24,6 +23,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_icons_counting_size_relation_complexity
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -106,10 +106,19 @@ class _ScenePayload:
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
+_SIZE_RELATION_TASK_ID = "task_icons__reference_canvas__reference_predicate_count"
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons__reference_canvas__size_relation_count",
+    task_id=_SIZE_RELATION_TASK_ID,
 )
+_GEN_DEFAULTS = {
+    **_GEN_DEFAULTS,
+    **dict(_GEN_DEFAULTS.get("variant_generation_params", {}).get("size_smaller", {})),
+}
+_RENDER_DEFAULTS = {
+    **_RENDER_DEFAULTS,
+    **dict(_RENDER_DEFAULTS.get("variant_render_params", {}).get("size_smaller", {})),
+}
 _PUBLIC_QUERY_ID = "size_relation_count"
 
 
@@ -358,6 +367,7 @@ def _sample_scene(
         panel_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     match_bboxes = tuple(
         tuple(int(value) for value in rendered.scene_instances[int(index)].bbox_xyxy)
@@ -412,11 +422,10 @@ def _sample_scene(
     ), rendered.image
 
 
-@register_task
 class IconsCountingSizeRelationTask:
     """Count scene icons that are smaller or larger than the reference icon."""
 
-    task_id = "task_icons__reference_canvas__size_relation_count"
+    task_id = _SIZE_RELATION_TASK_ID
     domain = "icons"
     task_group = "counting"
 
@@ -486,7 +495,7 @@ class IconsCountingSizeRelationTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons__reference_canvas__size_relation_count instance") from last_error
+            raise RuntimeError(f"failed to generate {self.task_id} instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -528,10 +537,14 @@ class IconsCountingSizeRelationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
+        evidence_payload = bbox_set_evidence(evidence_bboxes)
         query_id = str(_PUBLIC_QUERY_ID)
         query_id_probabilities = {str(_PUBLIC_QUERY_ID): 1.0}
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type=str(evidence_payload["evidence_type"]),
+            value=list(evidence_payload["evidence_value"]),
+        )
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "icons_reference_counting_size_relation",
@@ -584,7 +597,7 @@ class IconsCountingSizeRelationTask:
                 "image_id": "img0",
                 "anchors": {
                     "reference_icon": dict(scene_payload.reference_instance),
-                    "matching_scene_boxes": list(evidence_bboxes),
+                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
                 },
             },
             "execution_trace": {
@@ -615,9 +628,7 @@ class IconsCountingSizeRelationTask:
                 "size_relation": str(size_relation),
                 "matching_scene_indices": list(scene_payload.match_indices),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         complexity = build_icons_counting_size_relation_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,

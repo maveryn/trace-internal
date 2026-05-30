@@ -130,7 +130,7 @@
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format for the \"evidence\" field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
@@ -189,36 +189,36 @@
       "What probability corresponds to selecting one shown die that {event_description}?"
     ],
     "pair_sum_probability": [
-      "One die is selected uniformly at random from Tray A and one die is selected uniformly at random from Tray B. What is the probability that {event_description}?",
-      "Choose one shown die from Tray A and one shown die from Tray B, each uniformly at random. What is the probability that {event_description}?",
+      "Select one die uniformly from each tray. What is the probability that {event_description}?",
+      "Choose uniformly from Tray A and independently from Tray B. What is the probability that {event_description}?",
       "For independent uniform selections from Tray A and Tray B, what is the probability that {event_description}?",
       "If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that {event_description}?",
       "What probability corresponds to the event that {event_description} after selecting one die from each tray?"
     ],
     "pair_sum_threshold_probability": [
-      "One die is selected uniformly at random from Tray A and one die is selected uniformly at random from Tray B. What is the probability that {event_description}?",
-      "Choose one shown die from Tray A and one shown die from Tray B, each uniformly at random. What is the probability that {event_description}?",
+      "Select one die uniformly from each tray. What is the probability that {event_description}?",
+      "Choose uniformly from Tray A and independently from Tray B. What is the probability that {event_description}?",
       "For independent uniform selections from Tray A and Tray B, what is the probability that {event_description}?",
       "If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that {event_description}?",
       "What probability corresponds to the event that {event_description} after selecting one die from each tray?"
     ],
     "pair_difference_probability": [
-      "One die is selected uniformly at random from Tray A and one die is selected uniformly at random from Tray B. What is the probability that {event_description}?",
-      "Choose one shown die from Tray A and one shown die from Tray B, each uniformly at random. What is the probability that {event_description}?",
+      "Select one die uniformly from each tray. What is the probability that {event_description}?",
+      "Choose uniformly from Tray A and independently from Tray B. What is the probability that {event_description}?",
       "For independent uniform selections from Tray A and Tray B, what is the probability that {event_description}?",
       "If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that {event_description}?",
       "What probability corresponds to the event that {event_description} after selecting one die from each tray?"
     ],
     "pair_parity_combo_probability": [
-      "One die is selected uniformly at random from Tray A and one die is selected uniformly at random from Tray B. What is the probability that {event_description}?",
-      "Choose one shown die from Tray A and one shown die from Tray B, each uniformly at random. What is the probability that {event_description}?",
+      "Select one die uniformly from each tray. What is the probability that {event_description}?",
+      "Choose uniformly from Tray A and independently from Tray B. What is the probability that {event_description}?",
       "For independent uniform selections from Tray A and Tray B, what is the probability that {event_description}?",
       "If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that {event_description}?",
       "What probability corresponds to the event that {event_description} after selecting one die from each tray?"
     ],
     "pair_color_value_combo_probability": [
-      "One die is selected uniformly at random from Tray A and one die is selected uniformly at random from Tray B. What is the probability that {event_description}?",
-      "Choose one shown die from Tray A and one shown die from Tray B, each uniformly at random. What is the probability that {event_description}?",
+      "Select one die uniformly from each tray. What is the probability that {event_description}?",
+      "Choose uniformly from Tray A and independently from Tray B. What is the probability that {event_description}?",
       "For independent uniform selections from Tray A and Tray B, what is the probability that {event_description}?",
       "If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that {event_description}?",
       "What probability corresponds to the event that {event_description} after selecting one die from each tray?"

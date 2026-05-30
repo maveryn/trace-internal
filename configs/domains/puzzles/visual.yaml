@@ -106,9 +106,9 @@ prompt:
       object_description_swatch_clean: a linear row of color swatches with one blank swatch and labeled color options
       object_description_swatch_card: a card-style linear row of color swatches with one blank swatch and labeled color options
       object_description_swatch_notebook: a notebook-style linear row of color swatches with one blank swatch and labeled color options
-      evidence_hint: set "evidence" to an array containing the bounding boxes of the blank swatch and the correct option swatch, each as [x0,y0,x1,y1] in pixels
+      evidence_hint: set "evidence" to an object/dictionary with keys "blank_swatch" and "selected_option"; each value is a bounding box [x0,y0,x1,y1] in pixels
       answer_hint: set "answer" to the single capital-letter label of the option that completes the color gradient
-      json_example: '{"evidence":[[268,188,372,292],[524,420,628,524]],"answer":"C"}'
+      json_example: '{"evidence":{"blank_swatch":[268,188,372,292],"selected_option":[524,420,628,524]},"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
 
 visual:

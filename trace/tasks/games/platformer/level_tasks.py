@@ -10,11 +10,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -40,7 +40,8 @@ from ..shared.platformer_common import (
 )
 from ..shared.platformer_scene import PlatformerRenderParams, render_platformer_scene
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_platformer_level_base"
@@ -100,7 +101,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="platformer")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="platformer", apply_prob=0.5)
 
 
@@ -303,11 +303,31 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Platform
         ),
         unit_scale_meta,
     )
+    level_width_px = scale_games_px(
+        params.get("level_width_px", group_default(_RENDER_DEFAULTS, "level_width_px", _DEFAULTS.level_width_px)),
+        unit_scale,
+        min_px=430,
+    )
+    level_height_px = scale_games_px(
+        params.get("level_height_px", group_default(_RENDER_DEFAULTS, "level_height_px", _DEFAULTS.level_height_px)),
+        unit_scale,
+        min_px=305,
+    )
+    default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    canvas_width = int(max(640, min(default_canvas_width, int(level_width_px) + 190)))
+    canvas_height = int(max(500, min(default_canvas_height, int(level_height_px) + 160)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.platformer.font_family",
+        params=params,
+    )
     return PlatformerRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        level_width_px=scale_games_px(params.get("level_width_px", group_default(_RENDER_DEFAULTS, "level_width_px", _DEFAULTS.level_width_px)), unit_scale, min_px=430),
-        level_height_px=scale_games_px(params.get("level_height_px", group_default(_RENDER_DEFAULTS, "level_height_px", _DEFAULTS.level_height_px)), unit_scale, min_px=305),
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        level_width_px=int(level_width_px),
+        level_height_px=int(level_height_px),
         level_border_width_px=scale_games_px(params.get("level_border_width_px", group_default(_RENDER_DEFAULTS, "level_border_width_px", _DEFAULTS.level_border_width_px)), unit_scale, min_px=2),
         platform_height_px=scale_games_px(params.get("platform_height_px", group_default(_RENDER_DEFAULTS, "platform_height_px", _DEFAULTS.platform_height_px)), unit_scale, min_px=17),
         player_width_px=scale_games_px(params.get("player_width_px", group_default(_RENDER_DEFAULTS, "player_width_px", _DEFAULTS.player_width_px)), unit_scale, min_px=19),
@@ -317,6 +337,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Platform
         collectible_radius_px=scale_games_px(params.get("collectible_radius_px", group_default(_RENDER_DEFAULTS, "collectible_radius_px", _DEFAULTS.collectible_radius_px)), unit_scale, min_px=9),
         path_width_px=scale_games_px(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", _DEFAULTS.path_width_px)), unit_scale, min_px=3),
         label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=12),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -325,6 +346,22 @@ def _distance(a: Tuple[float, float], b: Tuple[float, float]) -> float:
     """Return Euclidean distance in normalized level coordinates."""
 
     return math.hypot(float(a[0]) - float(b[0]), float(a[1]) - float(b[1]))
+
+
+def _point_inside_expanded_rect(
+    point: Tuple[float, float],
+    rect: Tuple[float, float, float, float],
+    *,
+    margin: float,
+) -> bool:
+    """Return true when a normalized point is inside one expanded center-size rect."""
+
+    px, py = float(point[0]), float(point[1])
+    cx, cy, width, height = (float(value) for value in rect)
+    return (
+        abs(px - cx) <= (0.5 * float(width)) + float(margin)
+        and abs(py - cy) <= (0.5 * float(height)) + float(margin)
+    )
 
 
 def _curve_point(
@@ -395,6 +432,8 @@ def _safe_center(
     y_range: Tuple[float, float],
     min_existing_distance: float,
     min_path_distance: float,
+    avoid_rects: Sequence[Tuple[float, float, float, float]] = (),
+    avoid_rect_margin: float = 0.0,
 ) -> Tuple[float, float] | None:
     """Sample a center away from occupied points and the operative path."""
 
@@ -403,6 +442,11 @@ def _safe_center(
         if any(_distance(point, other) < float(min_existing_distance) for other in existing):
             continue
         if any(_distance(point, other) < float(min_existing_distance) for other in avoid_points):
+            continue
+        if any(
+            _point_inside_expanded_rect(point, rect, margin=float(avoid_rect_margin))
+            for rect in avoid_rects
+        ):
             continue
         if avoid_path and _point_path_distance(point, avoid_path) < float(min_path_distance):
             continue
@@ -459,6 +503,7 @@ def _decorative_hazards(
     count: int,
     avoid_path: Sequence[Tuple[float, float]],
     avoid_points: Sequence[Tuple[float, float]],
+    avoid_rects: Sequence[Tuple[float, float, float, float]] = (),
 ) -> Tuple[PlatformerHazard, ...]:
     """Create unlabeled decorative hazards away from the operative path."""
 
@@ -474,12 +519,51 @@ def _decorative_hazards(
             y_range=(0.62, 0.84),
             min_existing_distance=0.13,
             min_path_distance=0.11,
+            avoid_rects=avoid_rects,
+            avoid_rect_margin=0.075,
         )
         if maybe is None:
             break
         centers.append(maybe)
         hazards.append(_make_hazard(index=index, label="", center=maybe, rng=rng))
     return tuple(hazards)
+
+
+def _decorative_platforms(
+    *,
+    rng: Any,
+    count: int,
+    avoid_path: Sequence[Tuple[float, float]],
+    avoid_points: Sequence[Tuple[float, float]],
+) -> Tuple[PlatformerPlatform, ...]:
+    """Create decorative platforms away from the active arc and important objects."""
+
+    platforms: list[PlatformerPlatform] = []
+    centers: list[Tuple[float, float]] = []
+    for index in range(int(count)):
+        maybe = _safe_center(
+            rng=rng,
+            existing=centers,
+            avoid_path=avoid_path,
+            avoid_points=avoid_points,
+            x_range=(0.26, 0.90),
+            y_range=(0.46, 0.78),
+            min_existing_distance=0.15,
+            min_path_distance=0.11,
+        )
+        if maybe is None:
+            break
+        centers.append(maybe)
+        platforms.append(
+            _make_platform(
+                index=index,
+                label="",
+                center=maybe,
+                rng=rng,
+                width_norm=float(rng.uniform(0.14, 0.21)),
+            )
+        )
+    return tuple(platforms)
 
 
 def _decorative_collectibles(
@@ -489,6 +573,9 @@ def _decorative_collectibles(
     count: int,
     avoid_path: Sequence[Tuple[float, float]],
     avoid_points: Sequence[Tuple[float, float]],
+    min_existing_distance: float = 0.075,
+    avoid_rects: Sequence[Tuple[float, float, float, float]] = (),
+    avoid_rect_margin: float = 0.0,
 ) -> Tuple[PlatformerCollectible, ...]:
     """Create decorative collectibles away from the operative path."""
 
@@ -502,8 +589,10 @@ def _decorative_collectibles(
             avoid_points=avoid_points,
             x_range=(0.18, 0.88),
             y_range=(0.22, 0.78),
-            min_existing_distance=0.075,
+            min_existing_distance=float(min_existing_distance),
             min_path_distance=0.085,
+            avoid_rects=avoid_rects,
+            avoid_rect_margin=float(avoid_rect_margin),
         )
         if maybe is None:
             break
@@ -556,12 +645,46 @@ def _sample_landing(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
                     break
                 center = maybe
             centers.append(center)
-            platforms.append(_make_platform(index=index, label=str(label), center=center, rng=rng, width_norm=0.20 if int(index) == int(target_index) else None))
+            platforms.append(
+                _make_platform(
+                    index=index,
+                    label=str(label),
+                    center=center,
+                    rng=rng,
+                    width_norm=0.20 if int(index) == int(target_index) else None,
+                )
+            )
         if len(platforms) != len(labels):
             continue
         target_platform = platforms[target_index]
-        hazards = _decorative_hazards(rng=rng, count=max(2, int(axes.hazard_count) - 3), avoid_path=path, avoid_points=(player, target_center))
-        coins = _decorative_collectibles(rng=rng, start_index=0, count=4, avoid_path=path, avoid_points=(player, target_center))
+        platform_centers = tuple((float(platform.x_norm), float(platform.y_norm)) for platform in platforms)
+        platform_rects = tuple(
+            (
+                float(platform.x_norm),
+                float(platform.y_norm),
+                float(platform.width_norm),
+                float(platform.height_norm),
+            )
+            for platform in platforms
+        )
+        avoid_objects = (player, target_center) + tuple(platform_centers)
+        hazards = _decorative_hazards(
+            rng=rng,
+            count=max(2, int(axes.hazard_count) - 3),
+            avoid_path=path,
+            avoid_points=avoid_objects,
+            avoid_rects=platform_rects,
+        )
+        coins = _decorative_collectibles(
+            rng=rng,
+            start_index=0,
+            count=4,
+            avoid_path=path,
+            avoid_points=avoid_objects,
+            min_existing_distance=0.13,
+            avoid_rects=platform_rects,
+            avoid_rect_margin=0.055,
+        )
         sample = PlatformerSample(
             query_id=str(axes.query_id),
             scene_variant=str(axes.scene_variant),
@@ -593,10 +716,18 @@ def _sample_collectibles(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
         player = (float(rng.uniform(0.12, 0.20)), float(rng.uniform(0.76, 0.83)))
         end = (float(rng.uniform(0.78, 0.90)), float(rng.uniform(0.54, 0.70)))
         path = _jump_arc(start=player, end=end, rng=rng, lift=float(rng.uniform(0.24, 0.35)))
-        t_values = [0.20 + ((0.64 * (idx + 0.5)) / float(target_count)) for idx in range(int(target_count))]
+        t_values = [
+            0.20 + ((0.64 * (idx + 0.5)) / float(target_count))
+            for idx in range(int(target_count))
+        ]
         target_collectibles: list[PlatformerCollectible] = []
         for index, t in enumerate(t_values):
-            point = tuple(float(value) for value in path[max(1, min(len(path) - 2, int(round(float(t) * (len(path) - 1)))))])
+            point = tuple(
+                float(value)
+                for value in path[
+                    max(1, min(len(path) - 2, int(round(float(t) * (len(path) - 1)))))
+                ]
+            )
             target_collectibles.append(
                 PlatformerCollectible(
                     collectible_id=collectible_entity_id(index),
@@ -614,17 +745,34 @@ def _sample_collectibles(*, rng: Any, axes: _ResolvedAxes) -> PlatformerSample:
             avoid_path=path,
             avoid_points=(player, end) + tuple((coin.x_norm, coin.y_norm) for coin in target_collectibles),
         )
-        platforms = tuple(
-            _make_platform(
-                index=index,
-                label="",
-                center=(float(rng.uniform(0.28, 0.88)), float(rng.uniform(0.48, 0.78))),
-                rng=rng,
-                width_norm=float(rng.uniform(0.14, 0.21)),
-            )
-            for index in range(max(3, int(axes.platform_count) - 1))
+        coin_points = tuple(
+            (float(coin.x_norm), float(coin.y_norm))
+            for coin in tuple(target_collectibles) + tuple(distractors)
         )
-        hazards = _decorative_hazards(rng=rng, count=max(2, int(axes.hazard_count) - 3), avoid_path=path, avoid_points=(player, end))
+        platform_target = max(3, int(axes.platform_count) - 1)
+        platforms = _decorative_platforms(
+            rng=rng,
+            count=platform_target,
+            avoid_path=path,
+            avoid_points=(player, end) + tuple(coin_points),
+        )
+        platform_centers = tuple((float(platform.x_norm), float(platform.y_norm)) for platform in platforms)
+        platform_rects = tuple(
+            (
+                float(platform.x_norm),
+                float(platform.y_norm),
+                float(platform.width_norm),
+                float(platform.height_norm),
+            )
+            for platform in platforms
+        )
+        hazards = _decorative_hazards(
+            rng=rng,
+            count=max(2, int(axes.hazard_count) - 3),
+            avoid_path=path,
+            avoid_points=(player, end) + tuple(coin_points) + tuple(platform_centers),
+            avoid_rects=platform_rects,
+        )
         target_ids = tuple(str(coin.collectible_id) for coin in target_collectibles)
         sample = PlatformerSample(
             query_id=str(axes.query_id),
@@ -665,7 +813,7 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "collectible_count":
         answer_value: str | int = 4
-        evidence_value = [[328, 210, 364, 246], [430, 182, 466, 218], [536, 198, 572, 234], [641, 254, 677, 290]]
+        evidence_value = [[346, 228], [448, 200], [554, 216], [659, 272]]
     else:
         answer_value = "D"
         evidence_value = [[604, 398, 784, 442]]
@@ -697,12 +845,22 @@ class GamesPlatformerLevelTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.platformer.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_platformer_scene(
             platforms=sampled_scene.platforms,
@@ -715,9 +873,14 @@ class GamesPlatformerLevelTask:
             background=background,
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
         evidence_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+            for entity_id in sampled_scene.evidence_entity_ids
+        ]
+        evidence_points = [
+            list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
             for entity_id in sampled_scene.evidence_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
@@ -771,9 +934,24 @@ class GamesPlatformerLevelTask:
 
         if str(axes.query_id) == "collectible_count":
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
+            evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+            projected_evidence = {
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
+            }
         else:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+            }
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_platformer_level_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -872,6 +1050,8 @@ class GamesPlatformerLevelTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -894,9 +1074,7 @@ class GamesPlatformerLevelTask:
                 "type": "object_set",
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_evidence": dict(projected_evidence),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }

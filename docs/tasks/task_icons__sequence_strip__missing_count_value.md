@@ -2,9 +2,10 @@
 
 ## 1) Identity
 1. Domain: `icons`
-2. Task group: `sequence`
-3. Task id: `task_icons__sequence_strip__missing_count_value`
-4. Objective: infer how many icons should appear in one missing Scene box so the visible count sequence continues.
+2. Scene id: `sequence_strip`
+3. Task group: `sequence`
+4. Task id: `task_icons__sequence_strip__missing_count_value`
+5. Objective: infer how many icons should appear in one missing Scene box so the visible count sequence continues.
 
 ## 2) Scene + task contract
 1. Entities/relations: one single-panel image with a horizontal row of `4..6` boxes; one box is missing and marked with `?`.
@@ -40,11 +41,18 @@
 3. Reject/resample conditions: unsupported count/length/step config, missing curated assets, or per-cell placement failures under the overlap cap.
 4. No-auto-relaxation guarantee: generation fails on unmet sequence/placement constraints instead of weakening the arithmetic rule or overlap threshold.
 5. Evidence scope: the user-facing `bbox_set` contains only the missing box; the full sequence counts and visible per-cell icon placements stay in trace metadata.
-6. Trace style metadata records the sampled single-tint palette, icon-noise config, sampled row box width/height, sequence-cell styling, and final per-instance nominal sizes/rotations/noise edits.
-7. Balanced defaults: seeded sampling cycles evenly over the missing answer support `0..10` and the row length support `4..6`, then cycles over feasible missing positions before selecting a feasible arithmetic step.
+6. Trace style metadata records the sampled single-tint palette, icon-noise config, sampled row box width/height, sequence-cell styling, panel text-legibility metadata, and final per-instance nominal sizes/rotations/noise edits.
+7. Balanced defaults: seeded sampling balances the missing answer support `0..10`, row length support `4..6`, feasible missing positions, and arithmetic-step support.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: sequence length + missing answer + absolute step size.
 2. Determinism/build tests: `tests/test_icons_sequence_missing_count_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_sequence_missing_count_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+
+## Current Review Status
+Current browser-review sidecars live under
+`review/task-reviews/icons/sequence_strip/task_icons__sequence_strip__missing_count_value/`.
+Public evidence uses the shared icon `bbox_set` payload over the missing
+sequence cell only. Solve-rate status is tracked in
+`review/calibration_sweep_status.json`.

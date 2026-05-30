@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 import trace.tasks  # noqa: F401 - ensures task modules register on import
+from trace.tasks.puzzles.cell_board.shared.rectangular_board import SUPPORTED_CELL_BOARD_TILE_STYLES
 from trace.tasks.registry import TASK_REGISTRY
 
 
@@ -46,6 +47,14 @@ def test_cell_board_public_tasks_emit_query_id(
     for payload_key in ("query_spec", "execution_trace", "render_spec"):
         payload = output.trace_payload[payload_key]
         assert payload["query_id"] == query_id
+
+    render_spec = output.trace_payload["render_spec"]
+    assert render_spec["label_style"]["font"]["font_family"]
+    assert render_spec["background_style"]["scene_style"]["board_label_font"]["font_family"] == render_spec["label_style"]["font"]["font_family"]
+    board_style = render_spec["background_style"]["scene_style"]["cell_board"]
+    assert board_style["tile_style"] in set(SUPPORTED_CELL_BOARD_TILE_STYLES)
+    assert board_style["semantic_color_policy"]["tile_fill_colors_preserved"] is True
+    assert board_style["semantic_color_policy"]["tile_geometry_preserved"] is True
 
     if "internal_query_id" in output.trace_payload["query_spec"]:
         assert output.trace_payload["query_spec"]["internal_query_id"] == query_id

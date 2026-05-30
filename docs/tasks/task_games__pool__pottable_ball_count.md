@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: bbox_set over qualifying object balls.
+2. Evidence type: `point_set` over the centers of qualifying object balls.
 3. The sampled condition is retained as `query_id`.
 
 ## Implementation

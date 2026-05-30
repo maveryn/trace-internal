@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.drawing import draw_centered_text, draw_rounded_rect
 from ..shared.scene_style import PuzzleSceneStyle
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
@@ -348,7 +349,7 @@ def _draw_text_bbox(
     stroke_width: int = 1,
 ) -> Tuple[int, int, int, int]:
     x, y = int(xy[0]), int(xy[1])
-    draw.text((x, y), str(text), fill=fill, font=font, stroke_width=int(stroke_width), stroke_fill=stroke_fill)
+    draw_text_traced(draw,(x, y), str(text), fill=fill, font=font, stroke_width=int(stroke_width), stroke_fill=stroke_fill, role="readout", required=False)
     bbox = draw.textbbox((x, y), str(text), font=font, stroke_width=int(stroke_width))
     return (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
 

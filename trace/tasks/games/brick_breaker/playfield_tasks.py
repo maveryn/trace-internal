@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -37,7 +37,8 @@ from ..shared.complexity import build_games_brick_breaker_complexity
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_brick_breaker_playfield_base"
@@ -65,6 +66,11 @@ class _TaskDefaults:
     ball_radius_px: int = 16
     path_width_px: int = 5
     label_font_size_px: int = 24
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 440
+    canvas_side_padding_px: int = 120
+    canvas_vertical_padding_px: int = 78
 
 
 @dataclass(frozen=True)
@@ -93,7 +99,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="brick_breaker")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="brick_breaker", apply_prob=0.5)
 
 
@@ -238,6 +243,12 @@ def _resolve_axes(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BrickBreakerRenderParams:
     """Resolve Brick-breaker rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.brick_breaker.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -253,12 +264,58 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BrickBre
         ),
         unit_scale_meta,
     )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    playfield_width_px = scale_games_px(
+        params.get("playfield_width_px", group_default(_RENDER_DEFAULTS, "playfield_width_px", _DEFAULTS.playfield_width_px)),
+        unit_scale,
+        min_px=430,
+    )
+    playfield_height_px = scale_games_px(
+        params.get("playfield_height_px", group_default(_RENDER_DEFAULTS, "playfield_height_px", _DEFAULTS.playfield_height_px)),
+        unit_scale,
+        min_px=320,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    canvas_width = base_canvas_width
+    canvas_height = base_canvas_height
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(playfield_width_px)
+                        + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px))))
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(playfield_height_px)
+                        + (2.0 * float(params.get("canvas_vertical_padding_px", group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px))))
+                    )
+                ),
+            ),
+        )
     return BrickBreakerRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        playfield_width_px=scale_games_px(params.get("playfield_width_px", group_default(_RENDER_DEFAULTS, "playfield_width_px", _DEFAULTS.playfield_width_px)), unit_scale, min_px=430),
-        playfield_height_px=scale_games_px(params.get("playfield_height_px", group_default(_RENDER_DEFAULTS, "playfield_height_px", _DEFAULTS.playfield_height_px)), unit_scale, min_px=320),
+        playfield_width_px=int(playfield_width_px),
+        playfield_height_px=int(playfield_height_px),
         playfield_border_width_px=scale_games_px(params.get("playfield_border_width_px", group_default(_RENDER_DEFAULTS, "playfield_border_width_px", _DEFAULTS.playfield_border_width_px)), unit_scale, min_px=2),
         brick_wall_top_px=scale_games_px(params.get("brick_wall_top_px", group_default(_RENDER_DEFAULTS, "brick_wall_top_px", _DEFAULTS.brick_wall_top_px)), unit_scale, min_px=23),
         brick_wall_height_px=scale_games_px(params.get("brick_wall_height_px", group_default(_RENDER_DEFAULTS, "brick_wall_height_px", _DEFAULTS.brick_wall_height_px)), unit_scale, min_px=135),
@@ -268,6 +325,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BrickBre
         ball_radius_px=scale_games_px(params.get("ball_radius_px", group_default(_RENDER_DEFAULTS, "ball_radius_px", _DEFAULTS.ball_radius_px)), unit_scale, min_px=8),
         path_width_px=scale_games_px(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", _DEFAULTS.path_width_px)), unit_scale, min_px=2),
         label_font_size_px=scale_games_px(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px)), unit_scale, min_px=12),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -505,7 +563,7 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "paddle_catch_label":
         answer_value = "C"
-        evidence_value = [[375, 650, 475, 692]]
+        evidence_value = [[245, 382, 345, 424]]
     elif str(query_id) == "hit_row_remaining_count":
         answer_value = 4
         evidence_value = [[120, 255, 220, 302], [230, 255, 330, 302], [340, 255, 440, 302], [450, 255, 550, 302]]
@@ -545,12 +603,33 @@ class GamesBrickBreakerPlayfieldTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.brick_breaker.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_brick_breaker_scene(
             brick_rows=int(sampled_scene.brick_rows),
@@ -564,6 +643,7 @@ class GamesBrickBreakerPlayfieldTask:
             background=background,
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
         evidence_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
@@ -623,6 +703,10 @@ class GamesBrickBreakerPlayfieldTask:
             value=int(sampled_scene.answer) if isinstance(sampled_scene.answer, int) else str(sampled_scene.answer),
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_brick_breaker_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -690,6 +774,8 @@ class GamesBrickBreakerPlayfieldTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

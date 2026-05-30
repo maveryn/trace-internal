@@ -7,7 +7,7 @@
 4. Query ids: `max_clear_swap_label`, `target_clear_swap_label`
 5. Objective: choose the labeled adjacent-swap arrow whose immediate match-3 clear effect satisfies the requested condition.
 6. Answer type: `string`.
-7. Evidence type: `bbox_set` over the selected arrow and the affected gems.
+7. Evidence type: `point_set` with one point on the selected swap arrow.
 
 ## Generation Notes
 1. The scene shows a match-3 board with row/column numbers, colored gems, and labeled adjacent-swap arrows.
@@ -16,3 +16,4 @@
 4. The task does not apply gravity, refill, special effects, or cascades.
 5. `max_clear_swap_label` samples a unique displayed arrow with the largest immediate clear count.
 6. `target_clear_swap_label` samples a unique displayed arrow with the requested clear count.
+7. Rendering uses shared game panel styles, sampled fonts, and five scene-local gem/board styles.

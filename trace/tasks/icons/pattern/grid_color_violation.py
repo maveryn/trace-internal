@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
@@ -26,6 +27,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icons_pattern_grid_color_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -48,8 +50,9 @@ from ..shared.icon_task_rendering import (
 from ..shared.public_query_task import rewrite_icons_query_output
 
 
-TASK_ID = "task_icons__pattern_grid__color_pattern_violation_index"
+TASK_ID = "task_icons__pattern_grid__attribute_pattern_violation_index"
 QUERY_ID = "grid_color_violation"
+QUERY_IDS: Tuple[str, ...] = ("grid_color_violation", "grid_size_violation")
 
 _DEFAULT_COLOR_NAMES: Tuple[str, ...] = (
     "red",
@@ -192,6 +195,14 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
+_GEN_DEFAULTS = {
+    **_GEN_DEFAULTS,
+    **dict(_GEN_DEFAULTS.get("variant_generation_params", {}).get(QUERY_ID, {})),
+}
+_RENDER_DEFAULTS = {
+    **_RENDER_DEFAULTS,
+    **dict(_RENDER_DEFAULTS.get("variant_render_params", {}).get(QUERY_ID, {})),
+}
 
 
 def _int_sequence_param(
@@ -597,6 +608,8 @@ def _sample_scene(
         cell_padding_px=int(render_params["cell_padding_px"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
         cell_corner_radius_px=int(render_params["cell_corner_radius_px"]),
         scene_content_side_padding_px=int(render_params["scene_content_side_padding_px"]),
@@ -604,6 +617,7 @@ def _sample_scene(
         scene_content_top_offset_px=int(render_params["scene_content_top_offset_px"]),
         scene_square_cells=False,
         scene_title="Pattern",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     if not prepared.scene_cells:
@@ -744,7 +758,6 @@ def _sample_scene(
     ), image
 
 
-@register_task
 class IconsPatternGridColorViolationTask:
     """Identify the numbered cell that breaks a 3x3 icon-color grid pattern."""
 
@@ -829,8 +842,12 @@ class IconsPatternGridColorViolationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type=str(evidence_artifacts["evidence_type"]),
+            value=list(evidence_artifacts["evidence_value"]),
+        )
         color_ladder_rgb = [list(color) for color in scene_payload.color_ladder_rgb]
         color_level_names = [str(name) for name in scene_payload.color_level_names]
         trace_payload = {
@@ -971,9 +988,7 @@ class IconsPatternGridColorViolationTask:
                 "violation_cell_index": int(scene_payload.violation_cell_index),
                 "plausible_rule_count": int(scene_payload.plausible_rule_count),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }
         expected_color_level = int(scene_payload.expected_grid_color_levels[scene_payload.violation_cell_index])
         violation_level_delta = abs(int(expected_color_level) - int(scene_payload.violation_color_level))
@@ -1013,4 +1028,76 @@ class IconsPatternGridColorViolationTask:
         )
 
 
-__all__ = ["IconsPatternGridColorViolationTask"]
+def _query_probabilities(params: Mapping[str, Any]) -> Dict[str, float]:
+    raw = params.get("query_id_weights", group_default(_GEN_DEFAULTS, "query_id_weights", {}))
+    if raw is None:
+        raw = {}
+    if not isinstance(raw, Mapping):
+        raise ValueError("query_id_weights must be a mapping")
+    return normalize_positive_weights(
+        {str(key): float(value) for key, value in raw.items() if str(key) in set(QUERY_IDS)},
+        default_keys=QUERY_IDS,
+    )
+
+
+def _resolve_query_id(instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Dict[str, float]]:
+    explicit = params.get("query_id")
+    probabilities = _query_probabilities(params)
+    if explicit is not None:
+        query_id = str(explicit)
+        if query_id not in set(QUERY_IDS):
+            raise ValueError(f"query_id must be one of {QUERY_IDS}")
+        return query_id, {key: (1.0 if key == query_id else 0.0) for key in QUERY_IDS}
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query_id")
+    query_id = str(weighted_choice(rng, probabilities, sort_keys=True))
+    return query_id, dict(probabilities)
+
+
+def _variant_params(query_id: str) -> Dict[str, Any]:
+    merged: Dict[str, Any] = {}
+    for defaults, key in ((_GEN_DEFAULTS, "variant_generation_params"), (_RENDER_DEFAULTS, "variant_render_params")):
+        raw = defaults.get(str(key), {})
+        if not isinstance(raw, Mapping):
+            continue
+        selected = raw.get(str(query_id), {})
+        if isinstance(selected, Mapping):
+            merged.update(dict(selected))
+    return merged
+
+
+@register_task
+class IconsPatternGridAttributePatternViolationTask:
+    """Identify the numbered cell breaking a color or size pattern."""
+
+    task_id = TASK_ID
+    domain = "icons"
+    task_group = "pattern"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        query_id, probabilities = _resolve_query_id(int(instance_seed), params)
+        forced_params = {**_variant_params(str(query_id)), **dict(params)}
+        forced_params["query_id"] = str(query_id)
+        if str(query_id) == "grid_color_violation":
+            output = IconsPatternGridColorViolationTask().generate(
+                int(instance_seed),
+                params=forced_params,
+                max_attempts=int(max_attempts),
+            )
+        else:
+            from .grid_size_violation import IconsPatternGridSizeViolationTask
+
+            output = IconsPatternGridSizeViolationTask().generate(
+                int(instance_seed),
+                params=forced_params,
+                max_attempts=int(max_attempts),
+            )
+        return rewrite_icons_query_output(
+            output,
+            query_id=str(query_id),
+            scene_id="pattern_grid",
+            task_id=self.task_id,
+            query_probabilities=dict(probabilities),
+        )
+
+
+__all__ = ["IconsPatternGridAttributePatternViolationTask", "QUERY_IDS"]

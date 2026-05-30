@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -47,7 +47,8 @@ from ..shared.pacman_common import (
 )
 from ..shared.pacman_scene import PacmanRenderParams, render_pacman_scene
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_pacman_maze_base"
@@ -74,7 +75,7 @@ class _TaskDefaults:
     maze_height_px: int = 620
     wall_gap_px: int = 2
     wall_outline_width_px: int = 1
-    pellet_radius_px: int = 10
+    pellet_radius_px: int = 13
     item_radius_px: int = 19
     ghost_radius_px: int = 18
     route_width_px: int = 8
@@ -111,7 +112,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="pacman")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="pacman", apply_prob=0.5)
 
 
@@ -416,19 +416,44 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> PacmanRe
         ),
         unit_scale_meta,
     )
+    maze_width_px = scale_games_px(
+        params.get("maze_width_px", group_default(_RENDER_DEFAULTS, "maze_width_px", _DEFAULTS.maze_width_px)),
+        unit_scale,
+        min_px=420,
+    )
+    maze_height_px = scale_games_px(
+        params.get("maze_height_px", group_default(_RENDER_DEFAULTS, "maze_height_px", _DEFAULTS.maze_height_px)),
+        unit_scale,
+        min_px=310,
+    )
+    default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    canvas_width = int(max(620, min(default_canvas_width, int(maze_width_px) + 220)))
+    canvas_height = int(max(500, min(default_canvas_height, int(maze_height_px) + 180)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.pacman.font_family",
+        params=params,
+    )
     return PacmanRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        maze_width_px=scale_games_px(params.get("maze_width_px", group_default(_RENDER_DEFAULTS, "maze_width_px", _DEFAULTS.maze_width_px)), unit_scale, min_px=420),
-        maze_height_px=scale_games_px(params.get("maze_height_px", group_default(_RENDER_DEFAULTS, "maze_height_px", _DEFAULTS.maze_height_px)), unit_scale, min_px=310),
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        panel_margin_px=scale_games_px(
+            params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px)),
+            unit_scale,
+            min_px=18,
+        ),
+        maze_width_px=int(maze_width_px),
+        maze_height_px=int(maze_height_px),
         wall_gap_px=scale_games_px(params.get("wall_gap_px", group_default(_RENDER_DEFAULTS, "wall_gap_px", _DEFAULTS.wall_gap_px)), unit_scale, min_px=1),
         wall_outline_width_px=scale_games_px(params.get("wall_outline_width_px", group_default(_RENDER_DEFAULTS, "wall_outline_width_px", _DEFAULTS.wall_outline_width_px)), unit_scale, min_px=1),
-        pellet_radius_px=scale_games_px(params.get("pellet_radius_px", group_default(_RENDER_DEFAULTS, "pellet_radius_px", _DEFAULTS.pellet_radius_px)), unit_scale, min_px=5),
+        pellet_radius_px=scale_games_px(params.get("pellet_radius_px", group_default(_RENDER_DEFAULTS, "pellet_radius_px", _DEFAULTS.pellet_radius_px)), unit_scale, min_px=7),
         item_radius_px=scale_games_px(params.get("item_radius_px", group_default(_RENDER_DEFAULTS, "item_radius_px", _DEFAULTS.item_radius_px)), unit_scale, min_px=9),
         ghost_radius_px=scale_games_px(params.get("ghost_radius_px", group_default(_RENDER_DEFAULTS, "ghost_radius_px", _DEFAULTS.ghost_radius_px)), unit_scale, min_px=9),
         route_width_px=scale_games_px(params.get("route_width_px", group_default(_RENDER_DEFAULTS, "route_width_px", _DEFAULTS.route_width_px)), unit_scale, min_px=4),
         item_label_font_size_px=scale_games_px(params.get("item_label_font_size_px", group_default(_RENDER_DEFAULTS, "item_label_font_size_px", _DEFAULTS.item_label_font_size_px)), unit_scale, min_px=12),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -744,13 +769,13 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "next_item_label":
         answer_value: str | int = "D"
-        evidence_value = [[490, 286, 528, 324]]
+        evidence_value = [[509, 305]]
     elif str(query_id) == "pellet_count_before_ghost":
         answer_value = 4
-        evidence_value = [[350, 212, 360, 222], [410, 272, 420, 282], [530, 260, 566, 296]]
+        evidence_value = [[355, 217], [415, 277], [548, 278]]
     else:
         answer_value = 5
-        evidence_value = [[310, 204, 320, 214], [364, 204, 374, 214]]
+        evidence_value = [[315, 209], [369, 209]]
     return (
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
@@ -784,12 +809,22 @@ class GamesPacmanMazeTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid Pac-Man maze after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.pacman.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_pacman_scene(
             row_count=int(sampled_scene.row_count),
@@ -805,9 +840,10 @@ class GamesPacmanMazeTask:
             scene_variant=str(axes.scene_variant),
             style_variant=str(axes.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+        evidence_points = [
+            list(rendered_scene.render_map["entity_points_px"][str(entity_id)])
             for entity_id in sampled_scene.evidence_entity_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
@@ -863,7 +899,11 @@ class GamesPacmanMazeTask:
             if str(axes.query_id) == "next_item_label"
             else TypedValue(type="integer", value=int(sampled_scene.answer))
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_pacman_maze_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -938,6 +978,8 @@ class GamesPacmanMazeTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -961,7 +1003,9 @@ class GamesPacmanMazeTask:
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

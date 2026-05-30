@@ -7,9 +7,11 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .morris_common import NineMensMorrisBoardState, NineMensMorrisPieceInstance, POSITION_LAYOUT
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import NineMensMorrisTheme, build_games_nine_mens_morris_theme
 
 
@@ -28,6 +30,7 @@ class NineMensMorrisRenderParams:
     board_padding_px: int
     piece_radius_px: int
     node_radius_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -101,6 +104,7 @@ def render_nine_mens_morris_scene(
     scene_variant: str,
     style_variant: str,
     params: NineMensMorrisRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedNineMensMorrisScene:
     """Render one visible nine-men's-morris board."""
 
@@ -110,7 +114,7 @@ def render_nine_mens_morris_scene(
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     theme = build_games_nine_mens_morris_theme(style_variant=str(style_variant))
-    title_font = load_font(int(params.title_font_size_px), bold=True)
+    title_font = load_font(int(params.title_font_size_px), bold=True, font_family=str(params.font_family))
 
     board_left = float((int(params.canvas_width) - int(params.board_width_px)) / 2)
     board_top = float((int(params.canvas_height) - int(params.board_height_px)) / 2)
@@ -123,6 +127,23 @@ def render_nine_mens_morris_scene(
         jitter=params.layout_jitter_meta,
     )
     board_left, board_top, board_right, board_bottom = [float(value) for value in panel_bbox]
+
+    if panel_style is not None:
+        chrome_pad_x = max(14, int(round(float(params.panel_margin_px) * 0.34)))
+        chrome_pad_y = max(14, int(round(float(params.panel_margin_px) * 0.28)))
+        chrome_bbox = (
+            max(4, int(round(board_left)) - chrome_pad_x),
+            max(4, int(round(board_top)) - chrome_pad_y),
+            min(int(params.canvas_width) - 4, int(round(board_right)) + chrome_pad_x),
+            min(int(params.canvas_height) - 4, int(round(board_bottom)) + chrome_pad_y),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=chrome_bbox,
+            style=panel_style,
+            radius=int(params.board_corner_radius_px) + 8,
+            border_width=max(1, min(3, int(theme.board_border_width_px))),
+        )
 
     _draw_shadow(
         image,
@@ -144,14 +165,14 @@ def render_nine_mens_morris_scene(
     title_height = float(title_bbox[3] - title_bbox[1])
     title_x = float(board_left + ((int(params.board_width_px) - title_width) / 2.0))
     title_y = float(board_top + ((int(params.title_band_height_px) - title_height) / 2.0))
-    draw.text(
+    draw_text_traced(draw,
         (title_x, title_y),
         title_text,
         font=title_font,
         fill=tuple(int(value) for value in theme.title_rgb),
         stroke_width=1,
-        stroke_fill=(255, 255, 255),
-    )
+        stroke_fill=resolve_text_stroke_fill(tuple(int(value) for value in theme.title_rgb)),
+     role="readout", required=False,)
 
     inner_left = float(board_left + int(params.board_padding_px))
     inner_top = float(board_top + int(params.title_band_height_px) + int(params.board_padding_px))
@@ -187,6 +208,7 @@ def render_nine_mens_morris_scene(
 
     piece_specs: List[RenderedNineMensMorrisPieceSpec] = []
     piece_bboxes_px: Dict[str, List[float]] = {}
+    piece_centers_px: Dict[str, List[float]] = {}
     scene_entities: List[Dict[str, Any]] = []
     for piece in board_state.piece_specs:
         cx, cy = p(int(piece.node_index))
@@ -214,11 +236,13 @@ def render_nine_mens_morris_scene(
             )
         )
         piece_bboxes_px[str(piece.piece_id)] = [float(value) for value in bbox]
+        piece_centers_px[str(piece.piece_id)] = [round(float(cx), 3), round(float(cy), 3)]
         scene_entities.append(
             {
                 "entity_id": str(piece.piece_id),
                 "kind": "nine_mens_morris_piece",
                 "bbox": [float(value) for value in bbox],
+                "point": list(piece_centers_px[str(piece.piece_id)]),
                 "node_index": int(piece.node_index),
                 "node_label": str(piece.node_label),
                 "color": str(piece.color),
@@ -232,8 +256,15 @@ def render_nine_mens_morris_scene(
         render_map={
             "board_bbox_px": [float(value) for value in panel_bbox],
             "piece_bboxes_px": piece_bboxes_px,
+            "piece_centers_px": piece_centers_px,
             "node_centers_px": node_centers_px,
             "layout_jitter": dict(layout_jitter),
+            "style_variant": str(style_variant),
+            "font_family": str(params.font_family),
+            "text_style": {
+                "font_family": str(params.font_family),
+            },
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         },
     )
 

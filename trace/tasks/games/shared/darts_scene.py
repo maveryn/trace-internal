@@ -10,6 +10,8 @@ from PIL import Image, ImageDraw
 
 from ...shared.color_distance import color_distance
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
 STANDARD_DART_SECTORS: Tuple[int, ...] = (
@@ -89,6 +91,7 @@ class DartboardRenderParams:
     marker_radius_px: int
     number_font_size_px: int
     title_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -151,6 +154,42 @@ _STYLE_PALETTES: Mapping[str, Mapping[str, Tuple[int, int, int]]] = {
         "dart": (250, 218, 93),
         "dart_outline": (13, 22, 30),
         "evidence": (234, 98, 76),
+    },
+    "league_blue": {
+        "board_frame": (24, 48, 83),
+        "light_sector": (239, 231, 210),
+        "dark_sector": (31, 60, 96),
+        "red": (202, 58, 70),
+        "green": (38, 151, 130),
+        "wire": (226, 233, 240),
+        "number": (250, 252, 255),
+        "dart": (247, 197, 72),
+        "dart_outline": (9, 24, 44),
+        "evidence": (247, 126, 90),
+    },
+    "parchment": {
+        "board_frame": (76, 55, 38),
+        "light_sector": (247, 227, 184),
+        "dark_sector": (78, 63, 49),
+        "red": (174, 57, 55),
+        "green": (75, 138, 85),
+        "wire": (238, 217, 178),
+        "number": (255, 244, 218),
+        "dart": (73, 142, 191),
+        "dart_outline": (40, 28, 21),
+        "evidence": (231, 112, 76),
+    },
+    "neon": {
+        "board_frame": (17, 24, 39),
+        "light_sector": (225, 236, 230),
+        "dark_sector": (24, 34, 55),
+        "red": (224, 61, 104),
+        "green": (34, 197, 154),
+        "wire": (178, 220, 238),
+        "number": (242, 250, 255),
+        "dart": (250, 204, 21),
+        "dart_outline": (4, 12, 24),
+        "evidence": (255, 121, 91),
     },
 }
 
@@ -273,14 +312,14 @@ def _draw_centered_text(
     bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
     width = float(bbox[2] - bbox[0])
     height = float(bbox[3] - bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (float(xy[0]) - (0.5 * width), float(xy[1]) - (0.5 * height)),
         str(text),
         font=font,
         fill=fill,
         stroke_width=int(stroke_width),
         stroke_fill=stroke_fill,
-    )
+     role="readout", required=False,)
 
 
 def _draw_board(
@@ -362,7 +401,11 @@ def _draw_board(
         width=3,
     )
 
-    number_font = load_font(int(params.number_font_size_px), bold=True)
+    number_font = load_font(
+        int(params.number_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     for sector_index, sector_value in enumerate(STANDARD_DART_SECTORS):
         angle = float(sector_index * 18.0)
         x_text, y_text = polar_to_xy(cx=cx, cy=cy, radius=radius * 1.055, angle_deg=angle)
@@ -376,10 +419,15 @@ def _draw_board(
             stroke_width=2,
         )
 
-    title_font = load_font(int(params.title_font_size_px), bold=True)
+    title_font = load_font(
+        int(params.title_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
+    title_y = max(38.0, float(cy - radius - 78.0))
     _draw_centered_text(
         draw,
-        (cx, 44.0),
+        (cx, title_y),
         "DARTBOARD",
         font=title_font,
         fill=tuple(int(v) for v in palette["number"]),
@@ -513,7 +561,7 @@ def _draw_score_options(
         return {}
     draw = ImageDraw.Draw(image)
     palette = _palette(str(style_variant))
-    option_font = load_font(30, bold=True)
+    option_font = load_font(30, bold=True, font_family=str(params.font_family) or None)
     panel_y0 = float(params.canvas_height - 114)
     panel_y1 = float(params.canvas_height - 34)
     left = 82.0
@@ -547,6 +595,27 @@ def _draw_score_options(
     return {"score_option_bboxes_px": option_bboxes, "score_option_values": option_scores}
 
 
+def _panel_bbox(
+    *,
+    params: DartboardRenderParams,
+    has_score_options: bool,
+) -> Tuple[int, int, int, int]:
+    """Return a backing panel bbox that follows the jittered dartboard."""
+
+    cx = float(params.board_center_x_px)
+    cy = float(params.board_center_y_px)
+    radius = float(params.board_radius_px)
+    title_y = max(38.0, float(cy - radius - 78.0))
+    x0 = max(10, int(round(cx - radius - 62.0)))
+    y0 = max(10, int(round(title_y - 34.0)))
+    x1 = min(int(params.canvas_width) - 10, int(round(cx + radius + 62.0)))
+    if has_score_options:
+        y1 = int(params.canvas_height) - 18
+    else:
+        y1 = min(int(params.canvas_height) - 10, int(round(cy + radius + 48.0)))
+    return (int(x0), int(y0), int(x1), int(max(y0 + 80, y1)))
+
+
 def render_darts_scene(
     *,
     darts: Sequence[DartInstance],
@@ -558,10 +627,20 @@ def render_darts_scene(
     dart_fill_color: Tuple[int, int, int] | None = None,
     dart_fill_min_lab_distance: float | None = None,
     score_options: Sequence[DartScoreOption] = (),
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDartsScene:
     """Render one dartboard scene."""
 
     image = background.convert("RGBA")
+    panel_bbox = _panel_bbox(params=params, has_score_options=bool(score_options))
+    if panel_style is not None:
+        draw_panel_scene_chrome(
+            ImageDraw.Draw(image),
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=24,
+            border_width=3,
+        )
     board_meta = _draw_board(image, params=params, style_variant=str(style_variant))
     _draw_target_highlight(
         image,
@@ -647,6 +726,11 @@ def render_darts_scene(
             if dart_fill_min_lab_distance is None
             else round(float(dart_fill_min_lab_distance), 3),
             "layout_jitter": dict(params.layout_jitter_meta or {}),
+            "scene_panel_bbox_px": [int(value) for value in panel_bbox],
+            "panel_scene_style": {}
+            if panel_style is None
+            else game_panel_scene_style_metadata(panel_style),
+            "font_family": str(params.font_family),
             **dict(option_map),
         },
     )

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .battleship_common import Coord, FLEET_SHAPES, all_coords, coord_to_cell_id, shape_orientations
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -29,6 +30,7 @@ class BattleshipRenderParams:
     board_panel_gap_px: int
     fleet_icon_cell_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -79,6 +81,7 @@ def _draw_centered_label(
     fill: Tuple[int, int, int],
     max_size_px: int,
     bold: bool = False,
+    font_family: str | None = None,
 ) -> None:
     """Draw text centered inside one bounding box."""
 
@@ -92,13 +95,14 @@ def _draw_centered_label(
         min_size_px=10,
         max_size_px=int(max_size_px),
         fill_ratio=0.82,
+        font_family=font_family,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
     text_x = float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0]))
     text_y = float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1]))
-    draw.text((text_x, text_y), str(text), fill=tuple(int(v) for v in fill), font=font)
+    draw_text_traced(draw,(text_x, text_y), str(text), fill=tuple(int(v) for v in fill), font=font, role="readout", required=False)
 
 
 def _draw_hit_marker(
@@ -239,6 +243,7 @@ def _draw_fleet_panel(
         fill=tuple(int(v) for v in theme.panel_text_rgb),
         max_size_px=int(params.label_font_size_px) + 4,
         bold=True,
+        font_family=str(params.font_family) or None,
     )
 
     icon_bboxes: Dict[str, List[float]] = {}
@@ -268,6 +273,7 @@ def _draw_fleet_panel(
             fill=tuple(int(v) for v in theme.panel_text_rgb),
             max_size_px=int(params.label_font_size_px),
             bold=False,
+            font_family=str(params.font_family) or None,
         )
     return icon_bboxes
 
@@ -481,6 +487,7 @@ def render_battleship_grid_scene(
         },
         "style_variant": str(style_variant),
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
     }
     return RenderedBattleshipScene(
         image=image,

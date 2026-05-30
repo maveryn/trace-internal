@@ -57,10 +57,10 @@
   "scene_templates": {
     "visible_connect_four_board": [
       "The image shows {object_description}.",
-      "The game board shows {object_description}.",
-      "This game board shows {object_description}.",
+      "The visual shows {object_description}.",
+      "You are shown {object_description}.",
       "The figure shows {object_description}.",
-      "The visual shows {object_description}."
+      "The scene contains {object_description}."
     ]
   },
   "query_templates": {

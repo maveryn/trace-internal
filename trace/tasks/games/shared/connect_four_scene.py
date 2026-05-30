@@ -8,8 +8,10 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .connect_four_common import RED, YELLOW, Coord, board_dimensions, coord_to_cell_id, player_name
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import ConnectFourTheme, build_games_connect_four_theme
 
 
@@ -30,6 +32,7 @@ class ConnectFourRenderParams:
     player_badge_font_size_px: int
     marked_square_outline_width_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -211,6 +214,7 @@ def render_connect_four_board_scene(
     current_player: int,
     params: ConnectFourRenderParams,
     marked_square: Coord | None,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedConnectFourScene:
     """Render one visible Connect Four board with an optional marked move square."""
 
@@ -252,7 +256,11 @@ def render_connect_four_board_scene(
         round(float(board_top + board_height), 3),
     )
 
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_font = load_font(
+        int(params.player_badge_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
     badge_text = f"{player_name(int(current_player))} to move"
     badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
     badge_width = max(
@@ -285,6 +293,23 @@ def render_connect_four_board_scene(
     badge_top = float(badge_top + dy)
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
     badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
+
+    scene_panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(18, int(round(float(params.panel_margin_px) * 0.42)))
+        scene_panel_bbox = (
+            max(4, int(round(min(board_bbox[0], badge_bbox[0]))) - panel_pad),
+            max(4, int(round(min(board_bbox[1], badge_bbox[1]))) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(max(board_bbox[2], badge_bbox[2]))) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(max(board_bbox[3], badge_bbox[3]))) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=scene_panel_bbox,
+            style=panel_style,
+            radius=28,
+            border_width=max(2, int(round(float(params.board_frame_width_px) * 0.45))),
+        )
 
     if int(theme.board_shadow_alpha) > 0:
         shadow_dx, shadow_dy = theme.board_shadow_offset_px
@@ -344,7 +369,7 @@ def render_connect_four_board_scene(
         player=int(current_player),
     )
     badge_text_rgb = tuple(int(value) for value in theme.badge_text_rgb)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(disc_left + disc_d + 12),
             float(badge_top + 0.5 * (int(params.player_badge_height_px) - (badge_text_bbox[3] - badge_text_bbox[1]))),
@@ -354,7 +379,7 @@ def render_connect_four_board_scene(
         fill=badge_text_rgb,
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(badge_text_rgb)),
-    )
+     role="readout", required=False,)
 
     cell_specs: List[ConnectFourCellSpec] = []
     scene_entities: List[Dict[str, Any]] = []
@@ -423,15 +448,19 @@ def render_connect_four_board_scene(
         scene_entities=tuple(scene_entities),
         render_map={
             "board_bbox_px": list(board_bbox),
+            "scene_panel_bbox_px": None if scene_panel_bbox is None else [int(value) for value in scene_panel_bbox],
             "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
             "disc_bboxes_px": {str(key): list(value) for key, value in disc_bboxes_px.items()},
             "player_badge_bbox_px": list(badge_bbox),
             "marked_square_bbox_px": None if marked_square_bbox_px is None else list(marked_square_bbox_px),
             "rows": int(rows),
             "columns": int(columns),
+            "effective_cell_size_px": float(cell_size),
             "scene_variant": str(scene_variant),
             "style_variant": str(style_variant),
             "layout_jitter": dict(layout_jitter),
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+            "font_family": str(params.font_family),
         },
     )
 

@@ -8,8 +8,10 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox, offset_bbox
 from .reversi_common import BLACK, WHITE, Coord, coord_to_cell_id, player_name
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import ReversiTheme, build_games_reversi_theme
 
 
@@ -30,6 +32,7 @@ class ReversiRenderParams:
     marked_square_outline_width_px: int
     disc_inset_fraction: float
     player_badge_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -114,12 +117,13 @@ def render_reversi_board_scene(
     current_player: int,
     params: ReversiRenderParams,
     marked_move: Coord | None,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedReversiScene:
     """Render one visible Reversi board with an optional marked legal move."""
 
     board_size = int(len(board))
     image = background.convert("RGBA")
-    draw = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_reversi_theme(style_variant=str(style_variant))
 
     cell_size = min(
@@ -155,7 +159,7 @@ def render_reversi_board_scene(
         round(float(board_top + board_height), 3),
     )
 
-    badge_font = load_font(int(params.player_badge_font_size_px), bold=True)
+    badge_font = load_font(int(params.player_badge_font_size_px), bold=True, font_family=str(params.font_family))
     badge_text = f"{player_name(int(current_player))} to move"
     badge_text_bbox = draw.textbbox((0, 0), badge_text, font=badge_font, stroke_width=1)
     badge_width = max(
@@ -176,7 +180,7 @@ def render_reversi_board_scene(
         max(float(board_bbox[2]), float(badge_bbox[2])),
         max(float(board_bbox[3]), float(badge_bbox[3])),
     )
-    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+    group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
         bbox_px=group_bbox,
         canvas_width=int(params.canvas_width),
         canvas_height=int(params.canvas_height),
@@ -188,6 +192,22 @@ def render_reversi_board_scene(
     badge_top = float(badge_top + dy)
     board_bbox = offset_bbox(board_bbox, dx=dx, dy=dy)
     badge_bbox = offset_bbox(badge_bbox, dx=dx, dy=dy)
+
+    if panel_style is not None:
+        panel_pad = 24.0
+        panel_bbox = (
+            int(round(max(6.0, float(group_bbox[0]) - panel_pad))),
+            int(round(max(6.0, float(group_bbox[1]) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(group_bbox[2]) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(group_bbox[3]) + panel_pad))),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=max(18, int(params.board_corner_radius_px)),
+            border_width=2,
+        )
 
     draw.rounded_rectangle(
         board_bbox,
@@ -223,7 +243,7 @@ def render_reversi_board_scene(
         player=int(current_player),
     )
     badge_text_rgb = tuple(int(value) for value in theme.badge_text_rgb)
-    draw.text(
+    draw_text_traced(draw,
         (
             float(disc_left + disc_d + 12),
             float(badge_top + 0.5 * (int(params.player_badge_height_px) - (badge_text_bbox[3] - badge_text_bbox[1]))),
@@ -233,12 +253,13 @@ def render_reversi_board_scene(
         fill=badge_text_rgb,
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(badge_text_rgb)),
-    )
+     role="readout", required=False,)
 
     cell_specs: List[ReversiCellSpec] = []
     scene_entities: List[Dict[str, Any]] = []
     cell_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
     disc_bboxes_px: Dict[str, Tuple[float, float, float, float]] = {}
+    disc_points_px: Dict[str, Tuple[float, float]] = {}
 
     for index in range(1, board_size):
         x = float(board_left + (index * cell_size))
@@ -277,7 +298,7 @@ def render_reversi_board_scene(
                     radius=max(8, int(0.18 * cell_size)),
                     outline=tuple(int(value) for value in theme.marked_square_outline_rgb),
                     width=int(params.marked_square_outline_width_px),
-                    fill=tuple(int(value) for value in theme.marked_square_fill_rgba),
+                    fill=None,
                 )
             occupant_value = int(board[row][col])
             occupant_name = "empty" if int(occupant_value) == 0 else "black" if int(occupant_value) == int(BLACK) else "white"
@@ -285,6 +306,10 @@ def render_reversi_board_scene(
             if int(occupant_value) in {int(BLACK), int(WHITE)}:
                 disc_bbox_px = _disc_bbox(cell_bbox, inset_fraction=float(params.disc_inset_fraction))
                 disc_bboxes_px[str(cell_id)] = disc_bbox_px
+                disc_points_px[str(cell_id)] = (
+                    round(float((disc_bbox_px[0] + disc_bbox_px[2]) / 2.0), 3),
+                    round(float((disc_bbox_px[1] + disc_bbox_px[3]) / 2.0), 3),
+                )
                 _draw_disc(draw, bbox_px=disc_bbox_px, theme=theme, player=int(occupant_value))
             cell_specs.append(
                 ReversiCellSpec(
@@ -317,12 +342,16 @@ def render_reversi_board_scene(
             "board_bbox_px": list(board_bbox),
             "cell_bboxes_px": {str(key): list(value) for key, value in cell_bboxes_px.items()},
             "disc_bboxes_px": {str(key): list(value) for key, value in disc_bboxes_px.items()},
+            "disc_points_px": {str(key): list(value) for key, value in disc_points_px.items()},
             "player_badge_bbox_px": list(badge_bbox),
             "marked_square_bbox_px": None if marked_square_bbox_px is None else list(marked_square_bbox_px),
             "board_size": int(board_size),
             "scene_variant": str(scene_variant),
             "style_variant": str(style_variant),
             "layout_jitter": dict(layout_jitter),
+            "font_family": str(params.font_family),
+            "text_style": {"font_family": str(params.font_family)},
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         },
     )
 

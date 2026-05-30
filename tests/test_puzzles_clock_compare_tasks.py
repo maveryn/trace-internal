@@ -43,9 +43,8 @@ def test_puzzles_clock_compare_contract_matches_trace() -> None:
             assert out.evidence_gt.type == "bbox_set"
             assert len(out.evidence_gt.value) == 1
             expected_direction = "earliest" if str(query_id) == "earliest_time" else "latest"
-            assert out.query_id == "default"
             assert out.query_id == f"{expected_direction}_time_label"
-            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == f"{expected_direction}_time_label"
             assert str(execution["source_query_id"]) == "time_extremum_label"
             assert str(execution["extremum_direction"]) == expected_direction
             assert str(execution["scene_variant"]) == str(scene_variant)
@@ -65,6 +64,9 @@ def test_puzzles_clock_compare_contract_matches_trace() -> None:
             assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
             assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
             assert str(trace["render_map"]["winning_label"]) == str(out.answer_gt.value)
+            assert trace["render_spec"]["post_image_noise"]["apply_prob"] == 0.5
+            assert trace["render_spec"]["clock_style"]["font"]["source"] == "global_font_pool"
+            assert trace["render_spec"]["clock_style"]["font"]["font_family"]
 
             expected_winner = (
                 min(shown_total_minutes_by_label.items(), key=lambda item: item[1])[0]
@@ -137,7 +139,7 @@ def test_puzzles_clock_compare_balanced_sampling_defaults_cover_axes() -> None:
         clock_counts[int(execution["clock_count"])] += 1
         winner_labels[str(execution["winner_label"])] += 1
 
-    assert set(query_ids.keys()) == {"default"}
+    assert set(query_ids.keys()) == {"earliest_time_label", "latest_time_label"}
     assert set(extremum_directions.keys()) == {"earliest", "latest"}
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_CLOCK_STYLE_VARIANTS)

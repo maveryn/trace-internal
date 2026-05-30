@@ -31,6 +31,7 @@ from ..shared.complexity import (
     build_icons_counting_type_complexity,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -44,9 +45,11 @@ from ..shared.icon_task_rendering import (
     resolve_icon_render_params,
     sample_icon_instance_noise,
 )
+from ..shared.public_query_task import rewrite_icons_query_output
 
 
-ATTRIBUTE_MATCH_TASK_ID = "task_icons__reference_canvas__attribute_match_count"
+REFERENCE_PREDICATE_TASK_ID = "task_icons__reference_canvas__reference_predicate_count"
+ATTRIBUTE_MATCH_TASK_ID = REFERENCE_PREDICATE_TASK_ID
 
 _SINGLE_ATTRIBUTE_VARIANTS: Tuple[str, ...] = (
     "match_type",
@@ -69,6 +72,16 @@ _ATTRIBUTE_MATCH_VARIANTS: Tuple[str, ...] = (*_SINGLE_ATTRIBUTE_VARIANTS, *_MUL
 _ATTRIBUTE_MATCH_ALIASES: Dict[str, str] = {
     **_SINGLE_VARIANT_ALIASES,
     **_MULTI_VARIANT_ALIASES,
+}
+_SIZE_RELATION_VARIANTS: Tuple[str, ...] = ("size_smaller", "size_larger")
+_SIZE_RELATION_ALIASES: Dict[str, str] = {
+    "smaller": "size_smaller",
+    "larger": "size_larger",
+}
+_REFERENCE_PREDICATE_VARIANTS: Tuple[str, ...] = (*_ATTRIBUTE_MATCH_VARIANTS, *_SIZE_RELATION_VARIANTS)
+_REFERENCE_PREDICATE_ALIASES: Dict[str, str] = {
+    **_ATTRIBUTE_MATCH_ALIASES,
+    **_SIZE_RELATION_ALIASES,
 }
 
 _ATTRIBUTE_BINDING_CATEGORY = "attribute_binding"
@@ -565,6 +578,7 @@ def _sample_scene(
         panel_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     match_bboxes = tuple(
         tuple(int(value) for value in rendered.scene_instances[int(index)].bbox_xyxy)
@@ -780,7 +794,11 @@ class _ReferenceAttributeMatchCountTaskBase:
         taxonomy = resolve_task_taxonomy(str(self.task_id))
         evidence_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_payload = bbox_set_evidence(evidence_bboxes)
+        evidence_gt = TypedValue(
+            type=str(evidence_payload["evidence_type"]),
+            value=list(evidence_payload["evidence_value"]),
+        )
         common_ids = {
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
@@ -842,7 +860,7 @@ class _ReferenceAttributeMatchCountTaskBase:
                 "image_id": "img0",
                 "anchors": {
                     "reference_icon": dict(scene_payload.reference_instance),
-                    "matching_scene_boxes": list(evidence_bboxes),
+                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
                 },
             },
             "execution_trace": {
@@ -873,9 +891,7 @@ class _ReferenceAttributeMatchCountTaskBase:
                 "reference_rotation_degrees": int(scene_payload.reference_rotation_degrees),
                 "matching_scene_indices": list(scene_payload.match_indices),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         complexity = _build_complexity(
             task_id=str(self.task_id),
@@ -901,15 +917,54 @@ class _ReferenceAttributeMatchCountTaskBase:
 
 
 @register_task
-class IconsReferenceCanvasAttributeMatchCountTask(_ReferenceAttributeMatchCountTaskBase):
-    """Count scene icons matching the reference by one or more attributes."""
+class IconsReferenceCanvasReferencePredicateCountTask(_ReferenceAttributeMatchCountTaskBase):
+    """Count scene icons satisfying a predicate relative to the reference."""
 
-    task_id = ATTRIBUTE_MATCH_TASK_ID
-    supported_variants = _ATTRIBUTE_MATCH_VARIANTS
-    variant_aliases = _ATTRIBUTE_MATCH_ALIASES
-    scene_kind = "icons_reference_attribute_match_count"
+    task_id = REFERENCE_PREDICATE_TASK_ID
+    supported_variants = _REFERENCE_PREDICATE_VARIANTS
+    variant_aliases = _REFERENCE_PREDICATE_ALIASES
+    scene_kind = "icons_reference_predicate_count"
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        gen_defaults, _render_defaults, _prompt_defaults = _task_defaults(str(self.task_id))
+        query_id, query_probabilities = _resolve_query_id(
+            task_id=str(self.task_id),
+            gen_defaults=gen_defaults,
+            supported_variants=tuple(self.supported_variants),
+            aliases=self.variant_aliases,
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+        forced_params = dict(params)
+        forced_params["query_id"] = str(query_id)
+        if str(query_id) in set(_SIZE_RELATION_VARIANTS):
+            forced_params = {
+                **_variant_mapping(gen_defaults, "variant_generation_params", variant=str(query_id)),
+                **_variant_mapping(_render_defaults, "variant_render_params", variant=str(query_id)),
+                **forced_params,
+            }
+            forced_params["query_id"] = str(query_id)
+            from .size_relation import IconsCountingSizeRelationTask
+
+            output = IconsCountingSizeRelationTask().generate(
+                int(instance_seed),
+                params=forced_params,
+                max_attempts=int(max_attempts),
+            )
+            return rewrite_icons_query_output(
+                output,
+                query_id=str(query_id),
+                scene_id="reference_canvas",
+                task_id=str(self.task_id),
+                query_probabilities=dict(query_probabilities),
+            )
+        return super().generate(
+            int(instance_seed),
+            params=forced_params,
+            max_attempts=int(max_attempts),
+        )
 
 
 __all__ = [
-    "IconsReferenceCanvasAttributeMatchCountTask",
+    "IconsReferenceCanvasReferencePredicateCountTask",
 ]

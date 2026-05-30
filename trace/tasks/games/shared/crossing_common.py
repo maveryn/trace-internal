@@ -7,10 +7,8 @@ from typing import Tuple
 
 
 SUPPORTED_CROSSING_QUERY_IDS: Tuple[str, ...] = (
-    "safe_start_label",
     "collision_time_value",
     "moving_object_count",
-    "goal_reachable_label",
 )
 SUPPORTED_CROSSING_SCENE_VARIANTS: Tuple[str, ...] = ("traffic_crossing",)
 SUPPORTED_CROSSING_STYLE_VARIANTS: Tuple[str, ...] = (
@@ -181,13 +179,7 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         raise ValueError("crossing evidence references unknown entities")
 
     query = str(sample.query_id)
-    if query == "safe_start_label":
-        if sample.target_start_label is None:
-            raise ValueError("safe_start_label requires target_start_label")
-        expected_answer: int | str = str(sample.target_start_label)
-        target_index = sample.start_labels.index(str(sample.target_start_label))
-        expected_evidence = {start_entity_id(target_index)}
-    elif query == "collision_time_value":
+    if query == "collision_time_value":
         if sample.first_collision_tick is None:
             raise ValueError("collision_time_value requires a collision")
         expected_answer = int(sample.first_collision_tick)
@@ -210,11 +202,6 @@ def validate_crossing_sample(sample: CrossingSample) -> None:
         expected_hit_ids = route_collision_vehicle_ids(marked, sample.vehicles, lane_count=lane_count)
         expected_answer = len(expected_hit_ids)
         expected_evidence = set(expected_hit_ids)
-    elif query == "goal_reachable_label":
-        if sample.target_route_label is None:
-            raise ValueError("goal_reachable_label requires target_route_label")
-        expected_answer = str(sample.target_route_label)
-        expected_evidence = {route_entity_id(str(sample.target_route_label))}
     else:
         raise ValueError(f"unsupported crossing query_id: {query}")
 

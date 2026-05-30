@@ -9,12 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -34,21 +33,20 @@ from ..shared.crossing_common import (
     route_collision_vehicle_ids,
     route_entity_id,
     route_first_collision_tick,
-    start_entity_id,
     validate_crossing_sample,
     vehicle_col_at_tick,
     vehicle_entity_id,
 )
 from ..shared.crossing_scene import CrossingRenderParams, render_crossing_scene
-from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, forced_query_params, rewrite_public_query_output
+from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_crossing_lane_base"
 _LABELS: Tuple[str, ...] = tuple(chr(ord("A") + index) for index in range(8))
-SAFE_ROUTE_QUERY_IDS: Tuple[str, ...] = ("safe_start_label", "goal_reachable_label")
 
 
 @dataclass(frozen=True)
@@ -57,12 +55,10 @@ class _TaskDefaults:
 
     lane_count_support: Tuple[int, ...] = (5, 6, 7, 8)
     row_count_support: Tuple[int, ...] = (5, 6, 7)
-    route_option_count_support: Tuple[int, ...] = (4, 5, 6)
     collision_time_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     collision_time_max_extra_per_row: int = 1
     moving_object_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     moving_object_max_extra_per_row: int = 1
-    target_label_index_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     canvas_width: int = 1000
     canvas_height: int = 780
     playfield_width_px: int = 860
@@ -85,7 +81,6 @@ class _ResolvedAxes:
     style_variant: str
     lane_count: int
     row_count: int
-    route_option_count: int
     target_answer: int | None
     target_answer_support: Tuple[int, ...] | None
     target_label_index: int | None
@@ -95,7 +90,6 @@ class _ResolvedAxes:
     style_variant_probabilities: Dict[str, float]
     lane_count_probabilities: Dict[str, float]
     row_count_probabilities: Dict[str, float]
-    route_option_count_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float] | None
     target_label_index_probabilities: Dict[str, float] | None
 
@@ -106,7 +100,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="crossing")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="crossing", apply_prob=0.5)
 
 
@@ -117,12 +110,6 @@ def _target_support_key(query_id: str) -> str | None:
         "collision_time_value": "collision_time_support",
         "moving_object_count": "moving_object_count_support",
     }.get(str(query_id))
-
-
-def _is_label_query(query_id: str) -> bool:
-    """Return true when the query answer is a route/start label."""
-
-    return str(query_id) in {"safe_start_label", "goal_reachable_label"}
 
 
 def _resolve_query_id(*, instance_seed: int, params: Mapping[str, Any]) -> Tuple[str, Dict[str, float]]:
@@ -206,17 +193,6 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balanced_flag_key="balanced_row_count_sampling",
         namespace_support_permutation=True,
     )
-    route_option_count, route_option_count_probabilities = resolve_integer_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        support_key="route_option_count_support",
-        explicit_key="route_option_count",
-        fallback_support=_DEFAULTS.route_option_count_support,
-        namespace=f"{TASK_ID}.route_option_count",
-        balanced_flag_key="balanced_route_option_count_sampling",
-        namespace_support_permutation=True,
-    )
     target_answer: int | None = None
     target_answer_support: Tuple[int, ...] | None = None
     target_answer_probabilities: Dict[str, float] | None = None
@@ -246,57 +222,35 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         if str(query_id) == "moving_object_count" and int(target_answer) > int(row_count):
             row_count = int(target_answer)
 
-    target_label_index: int | None = None
-    target_label_index_support: Tuple[int, ...] | None = None
-    target_label_index_probabilities: Dict[str, float] | None = None
-    if _is_label_query(str(query_id)):
-        target_label_index, target_label_index_probabilities = resolve_integer_choice(
-            instance_seed=int(instance_seed),
-            params=params,
-            gen_defaults=_GEN_DEFAULTS,
-            support_key="target_label_index_support",
-            explicit_key="target_label_index",
-            fallback_support=_DEFAULTS.target_label_index_support,
-            namespace=f"{TASK_ID}.target_label_index.{str(query_id)}",
-            balanced_flag_key="balanced_target_label_sampling",
-            namespace_support_permutation=True,
-        )
-        target_label_index_support = resolve_integer_support(
-            params,
-            gen_defaults=_GEN_DEFAULTS,
-            key="target_label_index_support",
-            fallback=_DEFAULTS.target_label_index_support,
-        )
-        lane_count = max(int(lane_count), int(target_label_index) + 1)
-        if str(query_id) == "goal_reachable_label":
-            route_option_count = max(int(route_option_count), int(target_label_index) + 1)
-            lane_count = max(int(lane_count), int(route_option_count))
-
     return _ResolvedAxes(
         query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
         lane_count=int(lane_count),
         row_count=int(row_count),
-        route_option_count=int(route_option_count),
         target_answer=None if target_answer is None else int(target_answer),
         target_answer_support=target_answer_support,
-        target_label_index=None if target_label_index is None else int(target_label_index),
-        target_label_index_support=target_label_index_support,
+        target_label_index=None,
+        target_label_index_support=None,
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
         lane_count_probabilities=dict(lane_count_probabilities),
         row_count_probabilities=dict(row_count_probabilities),
-        route_option_count_probabilities=dict(route_option_count_probabilities),
         target_answer_probabilities=None if target_answer_probabilities is None else dict(target_answer_probabilities),
-        target_label_index_probabilities=None if target_label_index_probabilities is None else dict(target_label_index_probabilities),
+        target_label_index_probabilities=None,
     )
 
 
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> CrossingRenderParams:
     """Resolve crossing rendering parameters."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.crossing.font_family",
+        params=params,
+    )
     return CrossingRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -309,6 +263,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Crossing
         vehicle_height_px=int(params.get("vehicle_height_px", group_default(_RENDER_DEFAULTS, "vehicle_height_px", _DEFAULTS.vehicle_height_px))),
         path_width_px=int(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", _DEFAULTS.path_width_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
@@ -405,17 +360,6 @@ def _random_route_path(
     return tuple(path)
 
 
-def _straight_route(*, lane_count: int, row_count: int, col: int, label: str, color_index: int) -> CrossingRouteOption:
-    """Return a straight vertical route option."""
-
-    return CrossingRouteOption(
-        route_id=route_entity_id(str(label)),
-        label=str(label),
-        path_cols=tuple(int(col) for _row in range(int(row_count))),
-        color_index=int(color_index),
-    )
-
-
 def _add_vehicle(
     vehicles: list[CrossingVehicle],
     *,
@@ -478,77 +422,6 @@ def _add_clutter(
                 color_index=int(rng.randrange(5)),
             )
             occupied.add((int(row), int(col)))
-
-
-def _sample_safe_start(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
-    """Construct a sample with exactly one safe straight start pad."""
-
-    lane_count = int(axes.lane_count)
-    row_count = int(axes.row_count)
-    target_index = int(axes.target_label_index or 0)
-    row_directions = _row_directions(rng, row_count)
-    vehicles: list[CrossingVehicle] = []
-    for col in range(lane_count):
-        if int(col) == int(target_index):
-            continue
-        rows = list(range(row_count))
-        rng.shuffle(rows)
-        placed = False
-        for row in rows:
-            hit = _collision_start_for_col(rng, lane_count=lane_count, col=int(col), tick=int(row + 1))
-            if hit is None:
-                continue
-            direction, start_col = hit
-            row_directions[int(row)] = int(direction)
-            _add_vehicle(vehicles, row=int(row), start_col=int(start_col), direction=int(direction), color_index=int(rng.randrange(5)))
-            placed = True
-            break
-        if not placed:
-            return None
-    _add_clutter(
-        rng,
-        vehicles=vehicles,
-        lane_count=lane_count,
-        row_count=row_count,
-        row_directions=row_directions,
-        avoid_cols_by_row={row: {int(target_index)} for row in range(row_count)},
-    )
-    start_labels = tuple(_LABELS[:lane_count])
-    routes = tuple(
-        _straight_route(lane_count=lane_count, row_count=row_count, col=col, label=start_labels[col], color_index=col)
-        for col in range(lane_count)
-    )
-    safe_labels = [
-        route.label
-        for route in routes
-        if not route_collision_vehicle_ids(route, tuple(vehicles), lane_count=lane_count)
-    ]
-    target_label = str(start_labels[target_index])
-    if safe_labels != [target_label]:
-        return None
-    sample = CrossingSample(
-        lane_count=lane_count,
-        row_count=row_count,
-        query_id=str(axes.query_id),
-        scene_variant=str(axes.scene_variant),
-        style_variant=str(axes.style_variant),
-        answer=str(target_label),
-        row_directions=tuple(int(value) for value in row_directions),
-        vehicles=tuple(vehicles),
-        start_labels=start_labels,
-        route_options=tuple(),
-        marked_route_label=None,
-        target_start_label=str(target_label),
-        target_route_label=None,
-        first_collision_tick=None,
-        intersecting_vehicle_ids=tuple(),
-        evidence_entity_ids=(start_entity_id(target_index),),
-        target_answer=None,
-        target_label_index=int(target_index),
-        construction_mode="unique_safe_straight_start",
-    )
-    validate_crossing_sample(sample)
-    return sample
 
 
 def _sample_collision_time(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
@@ -693,117 +566,13 @@ def _sample_moving_object_count(rng: Any, *, axes: _ResolvedAxes) -> CrossingSam
     return sample
 
 
-def _sample_goal_reachable(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample | None:
-    """Construct route options with exactly one safe route."""
-
-    lane_count = int(axes.lane_count)
-    row_count = int(axes.row_count)
-    option_count = int(axes.route_option_count)
-    target_index = int(axes.target_label_index or 0)
-    labels = tuple(_LABELS[:option_count])
-    target_label = str(labels[target_index])
-    route_options: list[CrossingRouteOption] = []
-    used_paths: set[Tuple[int, ...]] = set()
-    for index, label in enumerate(labels):
-        for _attempt in range(80):
-            path = _random_route_path(
-                rng,
-                lane_count=lane_count,
-                row_count=row_count,
-                required_cols_by_row={0: {int(index)}},
-            )
-            if path is None:
-                continue
-            if path in used_paths:
-                continue
-            used_paths.add(tuple(path))
-            route_options.append(
-                CrossingRouteOption(
-                    route_id=route_entity_id(str(label)),
-                    label=str(label),
-                    path_cols=tuple(path),
-                    color_index=int(index),
-                )
-            )
-            break
-        else:
-            return None
-    target_route = route_options[target_index]
-    row_directions = _row_directions(rng, row_count)
-    vehicles: list[CrossingVehicle] = []
-    for route in route_options:
-        if route.label == target_label:
-            continue
-        candidate_rows = [row for row in range(row_count) if int(route.path_cols[row]) != int(target_route.path_cols[row])]
-        rng.shuffle(candidate_rows)
-        placed = False
-        for row in candidate_rows:
-            hit = _collision_start_for_col(rng, lane_count=lane_count, col=int(route.path_cols[row]), tick=int(row + 1))
-            if hit is None:
-                continue
-            direction, start_col = hit
-            row_directions[int(row)] = int(direction)
-            if vehicle_col_at_tick(
-                CrossingVehicle("_tmp", int(row), int(start_col), int(direction), 0),
-                tick=int(row + 1),
-                lane_count=lane_count,
-            ) == int(target_route.path_cols[row]):
-                continue
-            _add_vehicle(vehicles, row=int(row), start_col=int(start_col), direction=int(direction), color_index=int(rng.randrange(5)))
-            placed = True
-            break
-        if not placed:
-            return None
-    _add_clutter(
-        rng,
-        vehicles=vehicles,
-        lane_count=lane_count,
-        row_count=row_count,
-        row_directions=row_directions,
-        avoid_cols_by_row={row: {int(target_route.path_cols[row])} for row in range(row_count)},
-        max_extra_per_row=1,
-    )
-    safe_labels = [
-        route.label
-        for route in route_options
-        if not route_collision_vehicle_ids(route, tuple(vehicles), lane_count=lane_count)
-    ]
-    if safe_labels != [target_label]:
-        return None
-    sample = CrossingSample(
-        lane_count=lane_count,
-        row_count=row_count,
-        query_id=str(axes.query_id),
-        scene_variant=str(axes.scene_variant),
-        style_variant=str(axes.style_variant),
-        answer=str(target_label),
-        row_directions=tuple(int(value) for value in row_directions),
-        vehicles=tuple(vehicles),
-        start_labels=labels,
-        route_options=tuple(route_options),
-        marked_route_label=None,
-        target_start_label=None,
-        target_route_label=str(target_label),
-        first_collision_tick=None,
-        intersecting_vehicle_ids=tuple(),
-        evidence_entity_ids=(route_entity_id(str(target_label)),),
-        target_answer=None,
-        target_label_index=int(target_index),
-        construction_mode="unique_safe_route_option",
-    )
-    validate_crossing_sample(sample)
-    return sample
-
-
 def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> CrossingSample:
     """Construct one exact-answer crossing scene."""
 
     query = str(axes.query_id)
     builders = {
-        "safe_start_label": _sample_safe_start,
         "collision_time_value": _sample_collision_time,
         "moving_object_count": _sample_moving_object_count,
-        "goal_reachable_label": _sample_goal_reachable,
     }
     builder = builders.get(query)
     if builder is None:
@@ -819,12 +588,12 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
     """Return deterministic prompt examples for crossing JSON output."""
 
     query = str(query_id)
-    if query in {"safe_start_label", "goal_reachable_label"}:
-        answer_value: int | str = "C"
-        evidence_value = [[226, 612, 312, 664]]
-    elif query == "collision_time_value":
+    if query == "collision_time_value":
         answer_value = 4
-        evidence_value = [[421, 316, 497, 364], [408, 300, 516, 380]]
+        evidence_value = {
+            "colliding_object": [421, 316, 497, 364],
+            "route_cell": [408, 300, 516, 380],
+        }
     else:
         answer_value = 3
         evidence_value = [[186, 282, 262, 330], [516, 404, 592, 452], [628, 528, 704, 576]]
@@ -832,36 +601,6 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
         json.dumps({"evidence": evidence_value, "answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
         json.dumps({"answer": answer_value}, separators=(",", ":"), ensure_ascii=False),
     )
-
-
-def _safe_route_query_params(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[Dict[str, Any], str, Dict[str, float]]:
-    """Return params that select one safe-route label query inside the merged task."""
-
-    explicit_query = params.get("query_id")
-    supported = set(SAFE_ROUTE_QUERY_IDS)
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="games_crossing_safe_route_label.query_id",
-    )
-    if explicit_query is not None:
-        query = str(explicit_query)
-        if query not in supported:
-            raise ValueError(f"unsupported safe-route query_id: {query}")
-    else:
-        query = SAFE_ROUTE_QUERY_IDS[abs(int(selection_index)) % len(SAFE_ROUTE_QUERY_IDS)]
-    probabilities = {str(value): 1.0 / float(len(SAFE_ROUTE_QUERY_IDS)) for value in SAFE_ROUTE_QUERY_IDS}
-    forced = forced_query_params(params, query_id=str(query))
-    if "target_label_index" not in forced:
-        label_support = resolve_integer_support(
-            forced,
-            gen_defaults=_GEN_DEFAULTS,
-            key="target_label_index_support",
-            fallback=_DEFAULTS.target_label_index_support,
-        )
-        label_selection_index = int(selection_index) // len(SAFE_ROUTE_QUERY_IDS) if explicit_query is None else int(selection_index)
-        forced["target_label_index"] = int(label_support[abs(int(label_selection_index)) % len(label_support)])
-    return forced, str(query), probabilities
 
 
 class GamesCrossingLaneTask:
@@ -885,12 +624,14 @@ class GamesCrossingLaneTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid crossing scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.crossing.panel_scene_style",
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_crossing_scene(
             lane_count=int(sampled_scene.lane_count),
@@ -903,11 +644,18 @@ class GamesCrossingLaneTask:
             background=background,
             style_variant=str(sampled_scene.style_variant),
             params=render_params,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
-        ]
+        entity_bboxes = rendered_scene.render_map["entity_bboxes_px"]
+        evidence_bboxes = [list(entity_bboxes[str(entity_id)]) for entity_id in sampled_scene.evidence_entity_ids]
+        evidence_keyed_bboxes: Dict[str, list[float]] = {}
+        if str(axes.query_id) == "collision_time_value":
+            colliding_object_id = str(sampled_scene.evidence_entity_ids[0])
+            route_cell_id = str(sampled_scene.evidence_entity_ids[1])
+            evidence_keyed_bboxes = {
+                "colliding_object": list(entity_bboxes[colliding_object_id]),
+                "route_cell": list(entity_bboxes[route_cell_id]),
+            }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -925,14 +673,10 @@ class GamesCrossingLaneTask:
                 "json_output_contract_answer_only",
                 "object_description_traffic_crossing",
                 "crossing_motion_rule_text",
-                "answer_hint_safe_start_label",
-                "evidence_hint_safe_start_label",
                 "answer_hint_collision_time_value",
                 "evidence_hint_collision_time_value",
                 "answer_hint_moving_object_count",
                 "evidence_hint_moving_object_count",
-                "answer_hint_goal_reachable_label",
-                "evidence_hint_goal_reachable_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -963,7 +707,10 @@ class GamesCrossingLaneTask:
             answer_gt = TypedValue(type="string", value=str(sampled_scene.answer))
         else:
             answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        if evidence_keyed_bboxes:
+            evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
+        else:
+            evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
         complexity = build_games_crossing_lane_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -995,6 +742,10 @@ class GamesCrossingLaneTask:
             }
             for route in sampled_scene.route_options
         ]
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"games_crossing_{str(axes.scene_variant)}",
@@ -1021,7 +772,6 @@ class GamesCrossingLaneTask:
                     "style_variant": str(axes.style_variant),
                     "lane_count": int(sampled_scene.lane_count),
                     "row_count": int(sampled_scene.row_count),
-                    "route_option_count": int(axes.route_option_count),
                     "target_answer": None if sampled_scene.target_answer is None else int(sampled_scene.target_answer),
                     "target_answer_support": None if axes.target_answer_support is None else [int(value) for value in axes.target_answer_support],
                     "target_label_index": None if sampled_scene.target_label_index is None else int(sampled_scene.target_label_index),
@@ -1031,7 +781,6 @@ class GamesCrossingLaneTask:
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
                     "lane_count_probabilities": dict(axes.lane_count_probabilities),
                     "row_count_probabilities": dict(axes.row_count_probabilities),
-                    "route_option_count_probabilities": dict(axes.route_option_count_probabilities),
                     "target_answer_probabilities": None if axes.target_answer_probabilities is None else dict(axes.target_answer_probabilities),
                     "target_label_index_probabilities": None if axes.target_label_index_probabilities is None else dict(axes.target_label_index_probabilities),
                 },
@@ -1042,6 +791,8 @@ class GamesCrossingLaneTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -1065,10 +816,31 @@ class GamesCrossingLaneTask:
             "witness_symbolic": {
                 "type": "object_set",
                 "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                **(
+                    {
+                        "roles": {
+                            "colliding_object": str(sampled_scene.evidence_entity_ids[0]),
+                            "route_cell": str(sampled_scene.evidence_entity_ids[1]),
+                        }
+                    }
+                    if evidence_keyed_bboxes
+                    else {}
+                ),
             },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "projected_evidence": (
+                {
+                    "type": "keyed_bbox_map",
+                    "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                    "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
+                    "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                }
+                if evidence_keyed_bboxes
+                else {
+                    "type": "bbox_set",
+                    "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                    "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                }
+            ),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }
@@ -1103,25 +875,8 @@ class GamesCrossingMovingObjectCountTask(FixedQueryVariantTaskMixin, GamesCrossi
     fixed_query_id = "moving_object_count"
 
 
-@register_task
-class GamesCrossingSafeRouteLabelTask(GamesCrossingLaneTask):
-    """Choose the unique safe start pad or route option."""
-
-    task_id = "task_games__crossing__safe_route_label"
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        forced_params, query_id, query_probabilities = _safe_route_query_params(params, instance_seed=int(instance_seed))
-        output = super().generate(int(instance_seed), params=forced_params, max_attempts=int(max_attempts))
-        return rewrite_public_query_output(
-            output,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-        )
-
-
 __all__ = [
     "GamesCrossingCollisionTimeValueTask",
     "GamesCrossingLaneTask",
     "GamesCrossingMovingObjectCountTask",
-    "GamesCrossingSafeRouteLabelTask",
 ]

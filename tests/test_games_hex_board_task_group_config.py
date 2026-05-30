@@ -31,8 +31,10 @@ def test_games_hex_board_defaults_expose_scene_query_target_board_and_style_axes
     assert list(generation["winning_move_label_support"]) == list("ABCDEFGH")
     assert int(rendering["canvas_width"]) == 980
     assert int(rendering["max_board_width_px"]) > 0
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
+    assert int(rendering["canvas_min_width_px"]) >= 560
     assert str(prompt["bundle_id"]) == "games_hex_v0"
     assert "Hex board" in str(prompt["object_description_open_board"])
     assert "Red connects" in str(prompt["red_goal_text"])
     assert "Blue connects" in str(prompt["blue_goal_text"])
-    assert "bounding boxes" in str(prompt["evidence_hint_winning_move_cell_label"])
+    assert "pixel-space point" in str(prompt["evidence_hint_winning_move_cell_label"])

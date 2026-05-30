@@ -8,9 +8,10 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.drawing import draw_centered_text
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
 from .backgammon_common import (
     PLAYER_BLACK,
+    PLAYER_WHITE,
     POINT_IDS,
     BackgammonPoint,
     checker_entity_id,
@@ -36,6 +37,7 @@ class BackgammonRenderParams:
     header_font_size_px: int
     checker_radius_px: int
     die_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -257,6 +259,7 @@ def render_backgammon_scene(
     dice: Tuple[int, int],
     background: Image.Image,
     style_variant: str,
+    active_player: str,
     params: BackgammonRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBackgammonScene:
@@ -286,7 +289,7 @@ def render_backgammon_scene(
     panel_bbox: Tuple[int, int, int, int] | None = None
     if panel_style is not None:
         panel_pad_x = max(22, int(round(float(params.board_margin_px) * 0.42)))
-        panel_pad_top = max(40, int(params.header_font_size_px) + 26)
+        panel_pad_top = max(52, int(round(float(params.header_font_size_px) * 2.0)) + 22)
         panel_pad_bottom = max(22, int(round(float(params.board_margin_px) * 0.36)))
         panel_bbox = (
             max(4, int(round(board_bbox[0])) - panel_pad_x),
@@ -332,7 +335,18 @@ def render_backgammon_scene(
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     scene_entities: list[Dict[str, Any]] = []
 
-    label_font = load_font(max(10, int(params.point_label_font_size_px)), bold=True)
+    min_point_width = min(float(value["bbox"][2] - value["bbox"][0]) for value in point_geometry.values())
+    label_font = fit_font_to_box(
+        draw,
+        text="24",
+        max_width=max(12.0, float(min_point_width) * 0.72),
+        max_height=max(10.0, float(params.point_label_font_size_px) * 1.45),
+        bold=True,
+        min_size_px=8,
+        max_size_px=max(8, int(params.point_label_font_size_px)),
+        fill_ratio=0.96,
+        font_family=str(params.font_family) or None,
+    )
     for point in POINT_IDS:
         geom = point_geometry[int(point)]
         fill = theme.triangle_dark_rgb if int(point) % 2 else theme.triangle_light_rgb
@@ -364,7 +378,17 @@ def render_backgammon_scene(
 
     radius = float(params.checker_radius_px)
     stack_step = float(radius * 1.34)
-    checker_font = load_font(max(9, int(radius * 0.72)), bold=True)
+    checker_font = fit_font_to_box(
+        draw,
+        text="4",
+        max_width=max(8.0, float(radius) * 1.12),
+        max_height=max(8.0, float(radius) * 1.12),
+        bold=True,
+        min_size_px=7,
+        max_size_px=max(8, int(radius * 0.72)),
+        fill_ratio=0.92,
+        font_family=str(params.font_family) or None,
+    )
     for point in POINT_IDS:
         stack = stack_at(points, int(point))
         if stack.owner is None or int(stack.count) <= 0:
@@ -425,14 +449,45 @@ def render_backgammon_scene(
             }
         )
 
-    header_font = load_font(max(11, int(params.header_font_size_px)), bold=True)
+    player_text = "White" if str(active_player) == PLAYER_WHITE else "Black"
+    direction_text = "1 to 24" if str(active_player) == PLAYER_WHITE else "24 to 1"
+    header_text = f"{player_text.upper()} moves {direction_text} | use either die"
+    header_height = max(28.0, float(params.header_font_size_px) * 1.85)
+    header_y1 = round(float(top_b - 8.0), 3)
+    header_y0 = round(max(4.0, float(header_y1 - header_height)), 3)
+    header_pad_x = max(18.0, float(right_b - left_b) * 0.09)
+    header_bbox = (
+        round(float(left_b + header_pad_x), 3),
+        header_y0,
+        round(float(right_b - header_pad_x), 3),
+        header_y1,
+    )
+    draw.rounded_rectangle(
+        header_bbox,
+        radius=max(8, int(round(float(header_height) * 0.32))),
+        fill=tuple(int(v) for v in theme.board_fill_rgb) + (232,),
+        outline=tuple(int(v) for v in theme.board_outline_rgb) + (245,),
+        width=max(2, int(round(float(params.board_border_width_px) * 0.62))),
+    )
+    header_font = fit_font_to_box(
+        draw,
+        text=header_text,
+        max_width=max(80.0, float(header_bbox[2] - header_bbox[0]) * 0.94),
+        max_height=max(12.0, float(header_bbox[3] - header_bbox[1]) * 0.74),
+        bold=True,
+        min_size_px=10,
+        max_size_px=max(9, int(params.header_font_size_px)),
+        fill_ratio=0.98,
+        font_family=str(params.font_family) or None,
+    )
+    header_fill = tuple(int(v) for v in theme.header_rgb)
     draw_centered_text(
         draw,
-        text="Black to move: use either die; black moves 24 to 1",
-        center=(float((left_b + right_b) / 2.0), round(top_b - 23.0, 3)),
+        text=header_text,
+        center=(float((header_bbox[0] + header_bbox[2]) / 2.0), float((header_bbox[1] + header_bbox[3]) / 2.0)),
         font=header_font,
-        fill=tuple(int(v) for v in theme.header_rgb),
-        stroke_fill=(0, 0, 0),
+        fill=header_fill,
+        stroke_fill=resolve_text_stroke_fill(header_fill),
         stroke_width=1,
     )
 
@@ -440,12 +495,17 @@ def render_backgammon_scene(
         "board_bbox_px": [round(float(v), 3) for v in board_bbox],
         "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
         "bar_bbox_px": list(bar_bbox),
+        "header_bbox_px": [round(float(v), 3) for v in header_bbox],
         "point_bboxes_px": {str(key): list(value) for key, value in point_bboxes.items()},
         "checker_bboxes_px": {str(key): list(value) for key, value in checker_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "layout_jitter": dict(layout_jitter),
         "style_variant": str(style_variant),
+        "active_player": str(active_player),
+        "movement_direction_text": str(direction_text),
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "effective_point_width_px": round(float(min_point_width), 3),
+        "font_family": str(params.font_family),
     }
     return RenderedBackgammonScene(
         image=image.convert("RGB"),

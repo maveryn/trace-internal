@@ -6,7 +6,6 @@ from typing import Any, Dict, Mapping
 
 from ....core.seed import hash64
 from ....core.task_group_config import get_task_group_defaults
-from ...registry import register_task
 from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
 from ..shared.icon_task_rendering import resolve_icon_render_params
 from ..shared.paired_canvas_common import (
@@ -29,7 +28,7 @@ from ..shared.paired_canvas_common import (
 )
 
 
-TASK_ID = "task_icons__paired_canvas__panel_difference_count"
+TASK_ID = "task_icons__paired_canvas__panel_set_relation_count"
 QUERY_IDS = ("added_in_right_count", "missing_from_right_count")
 _DEFAULTS = PairedCanvasDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
@@ -173,7 +172,6 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
     )
 
 
-@register_task
 class IconsCountingPanelAddedRemovedCountTask:
     """Count icons added to Right or missing from Right."""
 

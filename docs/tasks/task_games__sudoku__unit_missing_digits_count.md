@@ -16,6 +16,7 @@
 1. This task uses the shared games Sudoku-grid renderer for its scene id.
 2. Prompt bundle: `games_sudoku_v0`
 3. Generation samples highlighted rows, columns, and 3 by 3 boxes and enforces the requested missing-digit count by construction.
+4. Rendering samples shared games-domain panel backgrounds, digit fonts, layout jitter, post-image noise, and Sudoku board palettes.
 
 ## Determinism
 1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.

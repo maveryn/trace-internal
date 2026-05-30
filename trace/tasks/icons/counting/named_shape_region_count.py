@@ -20,6 +20,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     BBox,
@@ -826,6 +827,7 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         scene_title="Scene",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     _draw_region_underlay(image, region=region, content_bbox=content_bbox, render_params=render_params)
 
@@ -1026,6 +1028,7 @@ class IconsCountingNamedShapeRegionCountTask:
         evidence_bboxes = sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted))
         if len(evidence_bboxes) != int(scene.target_count):
             raise RuntimeError("projected region evidence did not match target answer")
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1164,15 +1167,17 @@ class IconsCountingNamedShapeRegionCountTask:
                 "region": dict(region_payload),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
                 "counted_instance_ids": list(counted_instance_ids),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(scene.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            ),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -10,6 +10,9 @@ generation:
       classic: 1.0
       soft: 1.0
       outlined: 1.0
+      league_blue: 1.0
+      parchment: 1.0
+      neon: 1.0
     target_ring_weights:
       single: 1.0
       double: 1.0
@@ -71,13 +74,13 @@ prompt:
     ring_rule_text: The double and triple rings are the wide colored rings. The bull
       is the center area. The single area is any numbered area outside the double
       and triple rings.
-    evidence_hint_total_score: set "evidence" to an array of bounding boxes [x0, y0,
-      x1, y1] for the marked dart
-    evidence_hint_ring_count: set "evidence" to an array of bounding boxes [x0, y0,
-      x1, y1] for every marked dart in the requested ring or area
-    evidence_hint_threshold_score_count: set "evidence" to an array of bounding boxes
-      [x0, y0, x1, y1] for every marked dart whose score is at least the requested
-      threshold
+    evidence_hint_total_score: set "evidence" to a JSON array of pixel points [x,
+      y] at the center of the marked dart
+    evidence_hint_ring_count: set "evidence" to a JSON array of pixel points [x,
+      y] at the center of every marked dart in the requested ring or area
+    evidence_hint_threshold_score_count: set "evidence" to a JSON array of pixel
+      points [x, y] at the center of every marked dart whose score is at least the
+      requested threshold
     answer_hint_total_score: set "answer" to the option letter shown in the image
       for the total score
     answer_hint_ring_count: set "answer" to the number of marked darts in the requested

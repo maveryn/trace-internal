@@ -40,17 +40,17 @@
   "answer_or_evidence_templates": {
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   },
   "scene_templates": {
@@ -64,17 +64,17 @@
   },
   "query_templates": {
     "move_outcome_value": [
-      "{movement_rule_text} {overshoot_rule_text} The die shows {die_value}. What square does the token finish on?",
-      "{movement_rule_text} {overshoot_rule_text} Using the shown die value {die_value}, report the token's final square.",
-      "{movement_rule_text} {overshoot_rule_text} After one roll of {die_value}, which numbered square is reached?",
-      "{movement_rule_text} {overshoot_rule_text} Apply the die value {die_value}. What is the final square number?",
-      "{movement_rule_text} {overshoot_rule_text} Move once using the shown die value {die_value}; what square is the token on afterward?"
+      "{movement_rule_text} {overshoot_rule_text} Using the shown die, what square does the token finish on?",
+      "{movement_rule_text} {overshoot_rule_text} Read the die in the side panel. What is the token's final square?",
+      "{movement_rule_text} {overshoot_rule_text} After one shown roll, which numbered square is reached?",
+      "{movement_rule_text} {overshoot_rule_text} Apply the visible die value. What is the final square number?",
+      "{movement_rule_text} {overshoot_rule_text} Move once using the shown die; what square is the token on afterward?"
     ],
     "best_roll_value": [
       "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} What is the highest numbered square the token can finish on after exactly {horizon_roll_label}?",
-      "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} After exactly {horizon_roll_label}, report the best possible final square number.",
+      "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} After exactly {horizon_roll_label}, what is the best possible final square number?",
       "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} If you can choose the result of every roll, what highest square can the token reach after {horizon_roll_label}?",
-      "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} For {horizon_roll_label} total, report the highest possible board position.",
+      "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} For {horizon_roll_label} total, what is the highest possible board position?",
       "{movement_rule_text} {overshoot_rule_text} {planning_rule_text} What final square number is best after exactly {horizon_roll_label}?"
     ]
   },

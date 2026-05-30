@@ -9,8 +9,7 @@ from trace.tasks import create_task
 from trace.tasks.icons.counting.named_shape_pair_arithmetic_count import DIFFERENCE_QUERY_IDS, TOTAL_QUERY_IDS
 
 
-TOTAL_TASK_ID = "task_icons__named_field__shape_pair_total_count"
-DIFFERENCE_TASK_ID = "task_icons__named_field__shape_pair_difference_count"
+TASK_ID = "task_icons__named_field__shape_pair_arithmetic_count"
 
 
 def _matches(entity: dict[str, object], operand: dict[str, object], *, uses_color_binding: bool) -> bool:
@@ -21,10 +20,27 @@ def _matches(entity: dict[str, object], operand: dict[str, object], *, uses_colo
     return True
 
 
+def _bbox_sort_key(entity: dict[str, object]) -> tuple[int, int, int, int]:
+    box = [int(value) for value in entity["bbox_xyxy"]]  # type: ignore[index]
+    return (box[1], box[0], box[3], box[2])
+
+
+def _expected_operand_evidence(
+    left_entities: list[dict[str, object]],
+    right_entities: list[dict[str, object]],
+) -> dict[str, list[int]]:
+    expected: dict[str, list[int]] = {}
+    for index, entity in enumerate(sorted(left_entities, key=_bbox_sort_key), start=1):
+        expected[f"left_operand_{index}"] = list(entity["bbox_xyxy"])  # type: ignore[arg-type]
+    for index, entity in enumerate(sorted(right_entities, key=_bbox_sort_key), start=1):
+        expected[f"right_operand_{index}"] = list(entity["bbox_xyxy"])  # type: ignore[arg-type]
+    return expected
+
+
 def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> None:
     query_cases = [
-        *((TOTAL_TASK_ID, query_id) for query_id in TOTAL_QUERY_IDS),
-        *((DIFFERENCE_TASK_ID, query_id) for query_id in DIFFERENCE_QUERY_IDS),
+        *((TASK_ID, query_id) for query_id in TOTAL_QUERY_IDS),
+        *((TASK_ID, query_id) for query_id in DIFFERENCE_QUERY_IDS),
     ]
     for index, (task_id, query_id) in enumerate(query_cases):
         task = create_task(task_id)
@@ -60,11 +76,10 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
 
         assert out.scene_id == "named_field"
         assert out.query_id == query_id
-        assert out.query_id == "default"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == target_answer
         assert out.answer_gt.value == answer
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert len(left_entities) == 2
         assert len(right_entities) == 3
         assert len(out.evidence_gt.value) == 5
@@ -73,8 +88,11 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
         assert set(trace["render_map"]["counted_instance_ids"]) == {
             str(entity["instance_id"]) for entity in left_entities + right_entities
         }
-        assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in left_entities + right_entities)
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        expected_evidence = _expected_operand_evidence(left_entities, right_entities)
+        assert out.evidence_gt.value == expected_evidence
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == expected_evidence
+        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == expected_evidence
         assert str(left_operand["shape_name"]) in out.prompt
         assert str(right_operand["shape_name"]) in out.prompt
         if uses_color_binding:
@@ -83,7 +101,7 @@ def test_icons_counting_named_shape_pair_arithmetic_contract_all_queries() -> No
 
 
 def test_icons_counting_named_shape_pair_arithmetic_supports_zero_difference() -> None:
-    task = create_task(DIFFERENCE_TASK_ID)
+    task = create_task(TASK_ID)
     out = task.generate(
         hash64(20260524, "named-shape-pair-arithmetic-zero-diff", 0),
         params={
@@ -105,6 +123,7 @@ def test_icons_counting_named_shape_pair_arithmetic_supports_zero_difference() -
     assert trace["execution_trace"]["left_count"] == 3
     assert trace["execution_trace"]["right_count"] == 3
     assert len(out.evidence_gt.value) == 6
+    assert out.evidence_gt.type == "keyed_bbox_map"
 
 
 def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> None:
@@ -112,8 +131,7 @@ def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> N
     answer_counts: Counter[int] = Counter()
     layouts: set[str] = set()
     for index in range(120):
-        task_id = TOTAL_TASK_ID if index % 2 == 0 else DIFFERENCE_TASK_ID
-        task = create_task(task_id)
+        task = create_task(TASK_ID)
         out = task.generate(
             hash64(20260524, "named-shape-pair-arithmetic-sampling", index),
             params={},
@@ -129,6 +147,7 @@ def test_icons_counting_named_shape_pair_arithmetic_sampling_distribution() -> N
         assert out.answer_gt.value == expected
         assert 6 <= int(execution["object_count"]) <= 20
         assert len(out.evidence_gt.value) == int(execution["left_count"]) + int(execution["right_count"])
+        assert out.evidence_gt.type == "keyed_bbox_map"
 
     assert set(query_counts) == set(TOTAL_QUERY_IDS + DIFFERENCE_QUERY_IDS)
     assert set(answer_counts).issubset(set(range(0, 11)))

@@ -434,6 +434,7 @@ def _sample_scene(
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         scene_title="Scene",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     scene_content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
 

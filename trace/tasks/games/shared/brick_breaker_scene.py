@@ -7,10 +7,18 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.drawing import draw_arrow, draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .brick_breaker_common import BrickBreakerBrick, brick_entity_id, lane_entity_id, lane_label
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_contrast_anchor_colors,
+    game_panel_scene_style_metadata,
+)
 
 
 @dataclass(frozen=True)
@@ -31,6 +39,7 @@ class BrickBreakerRenderParams:
     ball_radius_px: int
     path_width_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -160,6 +169,7 @@ def _fit_text(
     text: str,
     fill: Tuple[int, int, int],
     max_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -173,11 +183,12 @@ def _fit_text(
         min_size_px=7,
         max_size_px=int(max_size_px),
         fill_ratio=0.74,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -185,7 +196,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _brick_bbox(
@@ -223,6 +234,7 @@ def _draw_brick(
     bbox: Tuple[float, float, float, float],
     theme: BrickBreakerTheme,
     label_font_size_px: int,
+    font_family: str,
 ) -> None:
     """Draw one labeled brick."""
 
@@ -247,6 +259,7 @@ def _draw_brick(
         text=str(brick.label),
         fill=tuple(int(v) for v in theme.brick_text_rgb),
         max_size_px=int(label_font_size_px),
+        font_family=str(font_family),
     )
 
 
@@ -257,6 +270,7 @@ def _draw_lane(
     label: str,
     theme: BrickBreakerTheme,
     label_font_size_px: int,
+    font_family: str,
 ) -> None:
     """Draw one bottom catch lane pad."""
 
@@ -273,6 +287,7 @@ def _draw_lane(
         text=str(label),
         fill=tuple(int(v) for v in theme.lane_text_rgb),
         max_size_px=int(label_font_size_px),
+        font_family=str(font_family),
     )
 
 
@@ -299,6 +314,24 @@ def _draw_ball(
     return bbox
 
 
+def _guide_color_anchor_rgbs(
+    *,
+    theme: BrickBreakerTheme,
+    panel_style: GamePanelSceneStyle | None,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return known background/object colors the trajectory cue must avoid."""
+
+    anchors: list[Tuple[int, int, int]] = [
+        tuple(int(v) for v in theme.playfield_fill_rgb),
+        tuple(int(v) for v in theme.playfield_outline_rgb),
+        tuple(int(v) for v in theme.lane_fill_rgb),
+        tuple(int(v) for v in theme.lane_outline_rgb),
+        tuple(int(v) for v in theme.paddle_fill_rgb),
+        tuple(int(v) for v in theme.paddle_outline_rgb),
+    ]
+    return tuple(game_panel_contrast_anchor_colors(panel_style, extra_colors=anchors))
+
+
 def render_brick_breaker_scene(
     *,
     brick_rows: int,
@@ -312,12 +345,21 @@ def render_brick_breaker_scene(
     background: Image.Image,
     style_variant: str,
     params: BrickBreakerRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBrickBreakerScene:
     """Render one Brick-breaker playfield."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_brick_breaker_theme(style_variant=str(style_variant))
+    guide_color_anchors = _guide_color_anchor_rgbs(theme=theme, panel_style=panel_style)
+    guide_line_rgb = resolve_contrasting_palette(
+        (theme.guide_line_rgb,),
+        anchor_colors=guide_color_anchors,
+        min_anchor_distance=40.0,
+        min_pairwise_distance=0.0,
+        distance_space="lab",
+    )[0]
 
     left = float((int(params.canvas_width) - int(params.playfield_width_px)) / 2.0)
     top = float((int(params.canvas_height) - int(params.playfield_height_px)) / 2.0)
@@ -338,6 +380,23 @@ def render_brick_breaker_scene(
         layout_jitter = {}
 
     clip_left, clip_top, clip_right, clip_bottom = playfield_bbox
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(16, int(round(float(params.panel_margin_px) * 0.56)))
+        panel_bbox = (
+            max(4, int(round(clip_left)) - panel_pad),
+            max(4, int(round(clip_top)) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(clip_right)) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(clip_bottom)) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=30,
+            border_width=max(2, int(round(float(params.playfield_border_width_px) * 0.45))),
+        )
+
     draw.rounded_rectangle(
         playfield_bbox,
         radius=22,
@@ -364,6 +423,7 @@ def render_brick_breaker_scene(
             bbox=bbox,
             theme=theme,
             label_font_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
         brick_bboxes[str(brick.brick_id)] = bbox
         entity_bboxes[str(brick.brick_id)] = bbox
@@ -399,6 +459,7 @@ def render_brick_breaker_scene(
             label=lane_label(lane),
             theme=theme,
             label_font_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
         scene_entities.append(
             {
@@ -471,7 +532,7 @@ def render_brick_breaker_scene(
         draw,
         start=path_start,
         end=visible_end,
-        fill=tuple(int(v) for v in theme.guide_line_rgb),
+        fill=tuple(int(v) for v in guide_line_rgb),
         width=int(params.path_width_px),
         dash_px=18,
         gap_px=10,
@@ -483,7 +544,7 @@ def render_brick_breaker_scene(
             float(path_start[1] + (0.56 * (visible_end[1] - path_start[1]))),
         ),
         end=visible_end,
-        fill=tuple(int(v) for v in theme.guide_line_rgb),
+        fill=tuple(int(v) for v in guide_line_rgb),
         width=int(params.path_width_px),
         head_length_px=22,
         head_width_px=18,
@@ -499,6 +560,7 @@ def render_brick_breaker_scene(
 
     render_map = {
         "playfield_bbox_px": [round(float(v), 3) for v in playfield_bbox],
+        "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
         "brick_bboxes_px": {str(key): list(value) for key, value in brick_bboxes.items()},
         "lane_bboxes_px": {str(key): list(value) for key, value in lane_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
@@ -514,6 +576,18 @@ def render_brick_breaker_scene(
             "fraction_of_full_path": float(visible_fraction),
         },
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "guide_line_rgb": list(guide_line_rgb),
+        "guide_color_safety": {
+            "distance_space": "lab",
+            "min_anchor_distance_required": 40.0,
+            "anchor_rgbs": [list(color) for color in guide_color_anchors],
+            "guide_anchor_lab_distance": round(
+                float(min_color_distance_to_anchors(guide_line_rgb, guide_color_anchors, distance_space="lab")),
+                3,
+            ),
+        },
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedBrickBreakerScene(
         image=image.convert("RGB"),

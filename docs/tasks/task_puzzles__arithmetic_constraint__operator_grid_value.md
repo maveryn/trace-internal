@@ -18,6 +18,6 @@
    - operation tables vary row-header and column-header counts.
 7. Operation-table rules are not printed in the prompt or image; the table operation is inferred from the filled cells.
 8. `answer_gt.type`: `integer`
-9. `evidence_gt.type`: `bbox_set` over the puzzle panel and the marked grid/table cell.
+9. `evidence_gt.type`: `bbox_set` over the marked grid/table cell only.
 10. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 11. Answers and evidence are produced from the same metadata execution trace.

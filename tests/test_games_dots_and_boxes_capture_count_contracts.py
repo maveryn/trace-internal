@@ -39,7 +39,13 @@ def test_games_dots_and_boxes_capture_count_emits_expected_contract(query_id: st
     assert out.evidence_gt.type == "bbox_set"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(target_answer)
+    assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["panel_scene_style"]
+    assert trace["render_spec"]["text_style"]["font_asset"]["font_family"]
+    assert trace["render_map"]["panel_scene_style"]
+    assert trace["render_map"]["font_family"]
     assert len(out.evidence_gt.value) == int(target_answer)
     assert execution["branching_edge_ids"] == []
     assert execution["captured_box_ids"] == []
@@ -112,10 +118,8 @@ def test_games_dots_and_boxes_capture_move_public_task_merges_candidate_query() 
         query_ids[str(out.query_id)] += 1
         answers_by_query.setdefault(str(out.query_id), set()).add(int(out.answer_gt.value))
 
-        assert out.query_id == "default"
         assert str(out.query_id) in {"capture_move_count", "highlighted_candidate_capture_count"}
         assert execution["query_id"] == out.query_id
-        assert execution["query_id"] == "default"
         assert out.evidence_gt.type == "bbox_set"
         assert len(out.evidence_gt.value) == int(out.answer_gt.value)
         if str(out.query_id) == "capture_move_count":

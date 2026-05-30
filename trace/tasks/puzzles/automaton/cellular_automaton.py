@@ -14,17 +14,21 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults
+from ...shared.color_distance import color_distance
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.mcq import option_label_for_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import load_font
+from ...shared.text_legibility import contrast_ratio
+from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
     projected_puzzle_bbox_evidence,
+    projected_puzzle_keyed_bbox_evidence,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
@@ -85,6 +89,87 @@ _OPTION_FILL_RGB = (250, 251, 254)
 _OPTION_SELECTED_RGB = (239, 246, 255)
 
 _AGENT_STYLE_TREATMENTS: Tuple[str, ...] = tuple(PUZZLE_SCENE_TREATMENTS)
+_AGENT_BOARD_STYLES: Tuple[str, ...] = (
+    "classic_grid",
+    "rounded_tiles",
+    "inset_cells",
+    "lab_matrix",
+    "notebook_cells",
+)
+_LIFE_BOARD_STYLES: Tuple[str, ...] = (
+    "classic_grid",
+    "rounded_tiles",
+    "inset_tiles",
+    "lab_matrix",
+    "notebook_cells",
+    "terminal_cells",
+)
+_LIFE_CELL_PALETTES: Dict[str, Dict[str, Tuple[int, int, int]]] = {
+    "mono_ink": {
+        "dead": (247, 248, 250),
+        "alive": (35, 42, 54),
+        "grid": (90, 101, 116),
+        "edge": (68, 79, 94),
+        "mark": (230, 73, 82),
+        "accent": (188, 201, 218),
+    },
+    "blueprint_cells": {
+        "dead": (239, 247, 254),
+        "alive": (19, 55, 96),
+        "grid": (73, 111, 150),
+        "edge": (36, 82, 126),
+        "mark": (230, 94, 55),
+        "accent": (171, 203, 232),
+    },
+    "forest_cells": {
+        "dead": (240, 249, 243),
+        "alive": (20, 76, 58),
+        "grid": (82, 129, 105),
+        "edge": (44, 97, 77),
+        "mark": (205, 69, 88),
+        "accent": (180, 216, 194),
+    },
+    "plum_cells": {
+        "dead": (250, 244, 251),
+        "alive": (72, 35, 88),
+        "grid": (126, 94, 141),
+        "edge": (94, 63, 110),
+        "mark": (35, 135, 168),
+        "accent": (218, 193, 226),
+    },
+    "sepia_cells": {
+        "dead": (252, 247, 236),
+        "alive": (78, 51, 34),
+        "grid": (142, 114, 82),
+        "edge": (105, 82, 58),
+        "mark": (202, 70, 61),
+        "accent": (224, 204, 170),
+    },
+    "teal_cells": {
+        "dead": (238, 250, 248),
+        "alive": (16, 78, 85),
+        "grid": (72, 132, 136),
+        "edge": (36, 100, 106),
+        "mark": (211, 70, 92),
+        "accent": (172, 219, 218),
+    },
+    "burgundy_cells": {
+        "dead": (252, 243, 245),
+        "alive": (96, 30, 48),
+        "grid": (145, 85, 100),
+        "edge": (113, 55, 71),
+        "mark": (0, 128, 158),
+        "accent": (228, 192, 201),
+    },
+    "carbon_cells": {
+        "dead": (246, 246, 242),
+        "alive": (19, 22, 26),
+        "grid": (92, 96, 101),
+        "edge": (61, 66, 73),
+        "mark": (226, 78, 66),
+        "accent": (199, 202, 202),
+    },
+}
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "automaton")
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="automaton")
@@ -110,6 +195,7 @@ class _RenderParams:
     arrow_width_px: int
     unit_size_jitter: Dict[str, Any]
     layout_seed: int
+    font_family: str
 
 
 @dataclass(frozen=True)
@@ -158,6 +244,20 @@ class _LifeDataset:
     answer_label: str
     target_cells: Tuple[Tuple[int, int], ...]
     live_count: int
+
+
+@dataclass(frozen=True)
+class _LifeBoardVisual:
+    board_style: str
+    cell_palette_id: str
+    dead_rgb: Tuple[int, int, int]
+    alive_rgb: Tuple[int, int, int]
+    grid_rgb: Tuple[int, int, int]
+    edge_rgb: Tuple[int, int, int]
+    mark_rgb: Tuple[int, int, int]
+    accent_rgb: Tuple[int, int, int]
+    board_style_probabilities: Dict[str, float]
+    cell_palette_probabilities: Dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -224,6 +324,13 @@ def _resolve_render_params(
         instance_seed=int(instance_seed),
         namespace="puzzles.automaton.unit_size",
     )
+    font_params = {**dict(render_defaults), **dict(params)}
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="puzzles.automaton.font",
+        params=font_params,
+    )
     return _RenderParams(
         canvas_width=int(group_default(render_defaults, "canvas_width", 1040)),
         canvas_height=int(group_default(render_defaults, "canvas_height", 880)),
@@ -242,7 +349,157 @@ def _resolve_render_params(
         arrow_width_px=scale_puzzle_px(group_default(render_defaults, "arrow_width_px", 6), unit_scale, min_px=2),
         unit_size_jitter=dict(unit_meta),
         layout_seed=int(hash64(int(instance_seed), "puzzles.automaton.layout", 0)),
+        font_family=str(font_family),
     )
+
+
+def _style_meta_with_font(style_meta: Mapping[str, Any], render_params: _RenderParams) -> Dict[str, Any]:
+    """Attach the sampled readout font metadata used by rendered scene text."""
+
+    return {
+        **dict(style_meta),
+        "font_family": str(render_params.font_family),
+        "font": {
+            "source": "global_font_pool",
+            "font_family": str(render_params.font_family),
+            "font_asset_version": font_asset_version(),
+            "scope": "single_automaton_panel",
+        },
+    }
+
+
+def _resolve_life_board_visual(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    task_id: str,
+) -> _LifeBoardVisual:
+    board_style, board_probs = _resolve_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        supported_variants=_LIFE_BOARD_STYLES,
+        explicit_key="life_board_style",
+        weights_key="life_board_style_weights",
+        balance_flag_key="balanced_life_board_style_sampling",
+        axis_namespace="life_board_style",
+    )
+    palette_id, palette_probs = _resolve_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        supported_variants=tuple(_LIFE_CELL_PALETTES),
+        explicit_key="life_cell_palette",
+        weights_key="life_cell_palette_weights",
+        balance_flag_key="balanced_life_cell_palette_sampling",
+        axis_namespace="life_cell_palette",
+    )
+    palette = _LIFE_CELL_PALETTES[str(palette_id)]
+    return _LifeBoardVisual(
+        board_style=str(board_style),
+        cell_palette_id=str(palette_id),
+        dead_rgb=tuple(int(value) for value in palette["dead"]),
+        alive_rgb=tuple(int(value) for value in palette["alive"]),
+        grid_rgb=tuple(int(value) for value in palette["grid"]),
+        edge_rgb=tuple(int(value) for value in palette["edge"]),
+        mark_rgb=tuple(int(value) for value in palette["mark"]),
+        accent_rgb=tuple(int(value) for value in palette["accent"]),
+        board_style_probabilities={str(key): float(value) for key, value in board_probs.items()},
+        cell_palette_probabilities={str(key): float(value) for key, value in palette_probs.items()},
+    )
+
+
+def _resolve_agent_board_style(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    task_id: str,
+) -> Tuple[str, Dict[str, float]]:
+    return _resolve_axis(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        supported_variants=_AGENT_BOARD_STYLES,
+        explicit_key="agent_board_style",
+        weights_key="agent_board_style_weights",
+        balance_flag_key="balanced_agent_board_style_sampling",
+        axis_namespace="agent_board_style",
+    )
+
+
+def _style_meta_with_agent_board(
+    style_meta: Mapping[str, Any],
+    *,
+    board_style: str,
+    board_style_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    return {
+        **dict(style_meta),
+        "agent_board": {
+            "board_style": str(board_style),
+            "board_style_probabilities": {str(key): float(value) for key, value in board_style_probabilities.items()},
+            "semantic_color_policy": {
+                "state_colors_preserved_from_scene_style": True,
+                "same_board_style_for_source_and_options": True,
+            },
+        },
+    }
+
+
+def _life_board_visual_metadata(life_visual: _LifeBoardVisual) -> Dict[str, Any]:
+    alive_dead_lab = float(color_distance(life_visual.alive_rgb, life_visual.dead_rgb, distance_space="lab"))
+    alive_dead_contrast = float(contrast_ratio(life_visual.alive_rgb, life_visual.dead_rgb))
+    mark_contrast = min(
+        float(contrast_ratio(life_visual.mark_rgb, life_visual.dead_rgb)),
+        float(contrast_ratio(life_visual.mark_rgb, life_visual.alive_rgb)),
+    )
+    mark_lab = min(
+        float(color_distance(life_visual.mark_rgb, life_visual.dead_rgb, distance_space="lab")),
+        float(color_distance(life_visual.mark_rgb, life_visual.alive_rgb, distance_space="lab")),
+    )
+    return {
+        "board_style": str(life_visual.board_style),
+        "board_style_probabilities": dict(life_visual.board_style_probabilities),
+        "cell_palette_id": str(life_visual.cell_palette_id),
+        "cell_palette_probabilities": dict(life_visual.cell_palette_probabilities),
+        "resolved_rgb": {
+            "dead": list(life_visual.dead_rgb),
+            "alive": list(life_visual.alive_rgb),
+            "grid": list(life_visual.grid_rgb),
+            "edge": list(life_visual.edge_rgb),
+            "mark": list(life_visual.mark_rgb),
+            "accent": list(life_visual.accent_rgb),
+        },
+        "semantic_color_policy": {
+            "alive_cells_remain_dark": True,
+            "empty_cells_remain_light": True,
+            "same_style_and_palette_for_source_and_options": True,
+        },
+        "contrast_checks": {
+            "alive_dead_contrast_ratio": round(alive_dead_contrast, 3),
+            "alive_dead_lab_distance": round(alive_dead_lab, 3),
+            "alive_dead_pass": bool(alive_dead_contrast >= 4.5 and alive_dead_lab >= 45.0),
+            "mark_min_cell_contrast_ratio": round(mark_contrast, 3),
+            "mark_min_cell_lab_distance": round(mark_lab, 3),
+            "mark_pass": bool(mark_contrast >= 2.0 and mark_lab >= 30.0),
+        },
+    }
+
+
+def _style_meta_with_life_board(
+    style_meta: Mapping[str, Any],
+    *,
+    life_visual: _LifeBoardVisual,
+) -> Dict[str, Any]:
+    return {
+        **dict(style_meta),
+        "life_board": _life_board_visual_metadata(life_visual),
+    }
 
 
 def _agent_option_vertical_gap(render_params: _RenderParams) -> int:
@@ -288,6 +545,71 @@ def _agent_content_metrics(
     }
 
 
+def _life_option_vertical_gap(render_params: _RenderParams) -> int:
+    unit_scale = float(render_params.unit_size_jitter.get("scale", 1.0))
+    return scale_puzzle_px(50, unit_scale, min_px=28)
+
+
+def _life_option_grid_gap(render_params: _RenderParams) -> int:
+    return max(1, int(render_params.grid_gap_px))
+
+
+def _life_option_card_size(
+    *,
+    rows: int,
+    cols: int,
+    render_params: _RenderParams,
+) -> Tuple[int, int]:
+    cell = int(render_params.option_grid_cell_px)
+    gap = _life_option_grid_gap(render_params)
+    grid_w = int(cols * cell + max(0, cols - 1) * gap)
+    grid_h = int(rows * cell + max(0, rows - 1) * gap)
+    pad_x = max(10, int(round(render_params.panel_padding_px * 0.45)))
+    header_h = max(30, int(round(render_params.label_font_size_px * 1.45)))
+    pad_bottom = max(10, int(round(render_params.panel_padding_px * 0.40)))
+    return (
+        max(int(render_params.option_card_width_px), int(grid_w + 2 * pad_x)),
+        max(int(render_params.option_card_height_px) + 38, int(header_h + grid_h + pad_bottom)),
+    )
+
+
+def _life_content_metrics(
+    *,
+    dataset: _LifeDataset,
+    render_params: _RenderParams,
+) -> Dict[str, int]:
+    rows, cols = int(dataset.rows), int(dataset.cols)
+    cell = int(render_params.cell_size_px)
+    gap = int(render_params.grid_gap_px)
+    grid_bbox = _grid_bbox(left=0, top=0, rows=rows, cols=cols, cell_size=cell, gap=gap)
+    grid_w = int(grid_bbox[2] - grid_bbox[0])
+    grid_h = int(grid_bbox[3] - grid_bbox[1])
+    panel_w = int(grid_w + 2 * int(render_params.panel_padding_px))
+    panel_h = int(grid_h + 2 * int(render_params.panel_padding_px))
+    option_w = 0
+    option_h = 0
+    option_gap_y = 0
+    if dataset.option_specs:
+        card_w, card_h = _life_option_card_size(rows=rows, cols=cols, render_params=render_params)
+        gap_x = int(render_params.option_gap_px)
+        option_w = int(len(dataset.option_specs) * card_w + max(0, len(dataset.option_specs) - 1) * gap_x)
+        option_h = int(card_h)
+        option_gap_y = int(_life_option_vertical_gap(render_params))
+    content_w = int(max(panel_w, option_w))
+    content_h = int(panel_h + (option_gap_y + option_h if option_h else 0))
+    return {
+        "grid_width_px": grid_w,
+        "grid_height_px": grid_h,
+        "panel_width_px": panel_w,
+        "panel_height_px": panel_h,
+        "option_width_px": option_w,
+        "option_height_px": option_h,
+        "option_vertical_gap_px": option_gap_y,
+        "content_width_px": content_w,
+        "content_height_px": content_h,
+    }
+
+
 def _fit_agent_render_params(
     *,
     dataset: _AgentDataset,
@@ -297,6 +619,42 @@ def _fit_agent_render_params(
     rng = spawn_rng(instance_seed=int(render_params.layout_seed), namespace="agent_automaton_canvas")
     min_margin = max(28, int(round(render_params.panel_padding_px * 1.15)))
     max_margin = max(min_margin, int(round(render_params.panel_padding_px * 2.45)))
+    left_margin = rng.randint(min_margin, max_margin)
+    right_margin = rng.randint(min_margin, max_margin)
+    top_margin = rng.randint(min_margin, max_margin)
+    bottom_margin = rng.randint(min_margin, max_margin)
+    min_canvas_w = 520 if dataset.option_specs else 420
+    min_canvas_h = 420 if dataset.option_specs else 360
+    target_w = int(metrics["content_width_px"] + left_margin + right_margin)
+    target_h = int(metrics["content_height_px"] + top_margin + bottom_margin)
+    canvas_w = min(int(render_params.canvas_width), max(int(min_canvas_w), target_w))
+    canvas_h = min(int(render_params.canvas_height), max(int(min_canvas_h), target_h))
+    return replace(render_params, canvas_width=int(canvas_w), canvas_height=int(canvas_h))
+
+
+def _fit_life_render_params(
+    *,
+    dataset: _LifeDataset,
+    render_params: _RenderParams,
+) -> _RenderParams:
+    if dataset.option_specs:
+        safe_margin = max(18, int(round(render_params.panel_padding_px * 0.85)))
+        min_cell = max(18, min(int(render_params.cell_size_px), 22))
+        for cell in range(int(render_params.cell_size_px), min_cell - 1, -1):
+            candidate = replace(render_params, cell_size_px=int(cell), option_grid_cell_px=int(cell))
+            candidate_metrics = _life_content_metrics(dataset=dataset, render_params=candidate)
+            if (
+                int(candidate_metrics["content_width_px"]) <= int(render_params.canvas_width - 2 * safe_margin)
+                and int(candidate_metrics["content_height_px"]) <= int(render_params.canvas_height - 2 * safe_margin)
+            ):
+                render_params = candidate
+                break
+        else:
+            render_params = replace(render_params, cell_size_px=int(min_cell), option_grid_cell_px=int(min_cell))
+    metrics = _life_content_metrics(dataset=dataset, render_params=render_params)
+    rng = spawn_rng(instance_seed=int(render_params.layout_seed), namespace="life_automaton_canvas")
+    min_margin = max(24, int(round(render_params.panel_padding_px * 1.05)))
+    max_margin = max(min_margin, int(round(render_params.panel_padding_px * 2.25)))
     left_margin = rng.randint(min_margin, max_margin)
     right_margin = rng.randint(min_margin, max_margin)
     top_margin = rng.randint(min_margin, max_margin)
@@ -1098,6 +1456,25 @@ def _cell_bbox(
     return (x0, y0, int(x0 + cell_size), int(y0 + cell_size))
 
 
+def _inset_bbox(bbox: Sequence[int], inset: int) -> Tuple[int, int, int, int]:
+    x0, y0, x1, y1 = [int(value) for value in bbox]
+    inset_px = max(0, int(inset))
+    return (
+        min(x1, x0 + inset_px),
+        min(y1, y0 + inset_px),
+        max(x0, x1 - inset_px),
+        max(y0, y1 - inset_px),
+    )
+
+
+def _blend_rgb(color_a: Sequence[int], color_b: Sequence[int], alpha_b: float) -> Tuple[int, int, int]:
+    alpha = max(0.0, min(1.0, float(alpha_b)))
+    return tuple(
+        int(round((float(color_a[index]) * (1.0 - alpha)) + (float(color_b[index]) * alpha)))
+        for index in range(3)
+    )
+
+
 def _draw_cell_grid(
     draw: ImageDraw.ImageDraw,
     *,
@@ -1112,6 +1489,7 @@ def _draw_cell_grid(
     target_cells: Sequence[Tuple[int, int]] = tuple(),
     draw_labels: bool = False,
     style: PuzzleSceneStyle = DEFAULT_PUZZLE_SCENE_STYLE,
+    cell_render_style: str = "classic_grid",
 ) -> None:
     target_set = {(int(row), int(col)) for row, col in target_cells}
     rows = len(grid)
@@ -1124,16 +1502,56 @@ def _draw_cell_grid(
             fill = tuple(int(value) for value in state_colors[state % len(state_colors)])
             cell_id = f"{item_prefix}_cell_{row}_{col}"
             item_bboxes[cell_id] = bbox
-            draw_puzzle_grid_cell(
-                draw,
-                bbox=bbox,
-                fill=fill,
-                style=style,
-                outline=style.grid_rgb,
-                width=1,
-                selected=(row, col) in target_set,
-                selected_width=max(3, int(cell_size * 0.10)),
-            )
+            selected = (row, col) in target_set
+            render_style = str(cell_render_style)
+            if render_style == "rounded_tiles":
+                draw_rounded_rect(
+                    draw,
+                    bbox=bbox,
+                    radius=max(3, int(round(cell_size * 0.10))),
+                    fill=fill,
+                    outline=style.grid_rgb,
+                    width=max(1, int(round(cell_size * 0.035))),
+                )
+            elif render_style == "inset_cells":
+                draw.rectangle(bbox, fill=style.grid_rgb)
+                inner = _inset_bbox(bbox, max(1, int(round(cell_size * 0.08))))
+                draw_rounded_rect(
+                    draw,
+                    bbox=inner,
+                    radius=max(3, int(round(cell_size * 0.10))),
+                    fill=fill,
+                    outline=style.panel_border_rgb,
+                    width=1,
+                )
+            elif render_style == "lab_matrix":
+                draw.rectangle(bbox, fill=fill, outline=style.panel_border_rgb, width=max(1, int(round(cell_size * 0.04))))
+                highlight = _blend_rgb(fill, (255, 255, 255), 0.32)
+                draw.line((bbox[0] + 2, bbox[1] + 2, bbox[2] - 3, bbox[1] + 2), fill=highlight, width=1)
+                draw.line((bbox[0] + 2, bbox[1] + 2, bbox[0] + 2, bbox[3] - 3), fill=highlight, width=1)
+            elif render_style == "notebook_cells":
+                draw.rectangle(bbox, fill=fill, outline=style.grid_rgb, width=1)
+                draw.line(
+                    (bbox[0] + 4, bbox[1] + max(4, int(cell_size * 0.28)), bbox[2] - 4, bbox[1] + max(4, int(cell_size * 0.28))),
+                    fill=style.notebook_line_rgb,
+                    width=1,
+                )
+            else:
+                draw_puzzle_grid_cell(
+                    draw,
+                    bbox=bbox,
+                    fill=fill,
+                    style=style,
+                    outline=style.grid_rgb,
+                    width=1,
+                    selected=False,
+                )
+            if selected:
+                draw.rectangle(
+                    bbox,
+                    outline=style.mark_rgb,
+                    width=max(3, int(cell_size * 0.10)),
+                )
             if draw_labels:
                 draw_centered_text(
                     draw,
@@ -1143,6 +1561,109 @@ def _draw_cell_grid(
                     fill=style.text_rgb if state == 0 else style.text_stroke_rgb,
                     stroke_fill=style.text_stroke_rgb if state == 0 else style.text_rgb,
                     stroke_width=1,
+                )
+
+
+def _draw_life_cell_grid(
+    draw: ImageDraw.ImageDraw,
+    *,
+    grid: Sequence[Sequence[int]],
+    left: int,
+    top: int,
+    cell_size: int,
+    gap: int,
+    item_bboxes: Dict[str, Tuple[int, int, int, int]],
+    item_prefix: str,
+    target_cells: Sequence[Tuple[int, int]] = tuple(),
+    style: PuzzleSceneStyle = DEFAULT_PUZZLE_SCENE_STYLE,
+    life_visual: _LifeBoardVisual,
+) -> None:
+    target_set = {(int(row), int(col)) for row, col in target_cells}
+    rows = len(grid)
+    cols = len(grid[0])
+    board_bbox = _grid_bbox(left=left, top=top, rows=rows, cols=cols, cell_size=cell_size, gap=gap)
+    board_style = str(life_visual.board_style)
+    if board_style in {"inset_tiles", "terminal_cells"}:
+        draw_rounded_rect(
+            draw,
+            bbox=board_bbox,
+            radius=max(4, int(cell_size * 0.14)),
+            fill=life_visual.grid_rgb,
+            outline=life_visual.edge_rgb,
+            width=max(1, int(round(cell_size * 0.04))),
+        )
+    for row in range(rows):
+        for col in range(cols):
+            bbox = _cell_bbox(left=left, top=top, row=row, col=col, cell_size=cell_size, gap=gap)
+            state = int(grid[row][col])
+            fill = life_visual.alive_rgb if state else life_visual.dead_rgb
+            cell_id = f"{item_prefix}_cell_{row}_{col}"
+            item_bboxes[cell_id] = bbox
+            if board_style == "classic_grid":
+                draw.rectangle(
+                    bbox,
+                    fill=fill,
+                    outline=life_visual.grid_rgb,
+                    width=max(1, int(round(cell_size * 0.035))),
+                )
+            elif board_style == "rounded_tiles":
+                draw_rounded_rect(
+                    draw,
+                    bbox=bbox,
+                    radius=max(3, int(cell_size * 0.10)),
+                    fill=fill,
+                    outline=life_visual.grid_rgb,
+                    width=max(1, int(round(cell_size * 0.035))),
+                )
+            elif board_style == "inset_tiles":
+                inner = _inset_bbox(bbox, max(1, int(round(cell_size * 0.08))))
+                draw_rounded_rect(
+                    draw,
+                    bbox=inner,
+                    radius=max(3, int(cell_size * 0.12)),
+                    fill=fill,
+                    outline=life_visual.edge_rgb,
+                    width=1,
+                )
+            elif board_style == "lab_matrix":
+                draw.rectangle(
+                    bbox,
+                    fill=fill,
+                    outline=life_visual.edge_rgb,
+                    width=max(1, int(round(cell_size * 0.04))),
+                )
+                highlight = _blend_rgb(fill, (255, 255, 255), 0.24 if state else 0.42)
+                draw.line((bbox[0] + 2, bbox[1] + 2, bbox[2] - 3, bbox[1] + 2), fill=highlight, width=1)
+                draw.line((bbox[0] + 2, bbox[1] + 2, bbox[0] + 2, bbox[3] - 3), fill=highlight, width=1)
+            elif board_style == "notebook_cells":
+                draw.rectangle(bbox, fill=fill, outline=life_visual.grid_rgb, width=1)
+                if not state:
+                    line_y = int(round((bbox[1] + bbox[3]) / 2.0))
+                    draw.line((bbox[0] + 4, line_y, bbox[2] - 4, line_y), fill=life_visual.accent_rgb, width=1)
+                else:
+                    draw.line((bbox[0] + 3, bbox[1] + 3, bbox[2] - 4, bbox[1] + 3), fill=life_visual.accent_rgb, width=1)
+            elif board_style == "terminal_cells":
+                draw.rectangle(bbox, fill=life_visual.grid_rgb)
+                inner = _inset_bbox(bbox, max(1, int(round(cell_size * 0.06))))
+                draw.rectangle(inner, fill=fill, outline=life_visual.edge_rgb, width=1)
+                if state:
+                    glow = _blend_rgb(fill, life_visual.accent_rgb, 0.20)
+                    draw.rectangle(_inset_bbox(inner, max(2, int(round(cell_size * 0.22)))), fill=glow)
+            else:
+                draw_puzzle_grid_cell(
+                    draw,
+                    bbox=bbox,
+                    fill=fill,
+                    style=style,
+                    outline=life_visual.grid_rgb,
+                    width=1,
+                    selected=False,
+                )
+            if (row, col) in target_set:
+                draw.rectangle(
+                    bbox,
+                    outline=life_visual.mark_rgb,
+                    width=max(3, int(cell_size * 0.10)),
                 )
 
 
@@ -1207,6 +1728,7 @@ def _draw_agent_pose_options(
     top: int,
     item_bboxes: Dict[str, Tuple[int, int, int, int]],
     style: PuzzleSceneStyle = DEFAULT_PUZZLE_SCENE_STYLE,
+    cell_render_style: str = "classic_grid",
 ) -> Tuple[int, int, int, int]:
     card_w = int(render_params.option_card_width_px)
     card_h = int(render_params.option_card_height_px)
@@ -1229,13 +1751,18 @@ def _draw_agent_pose_options(
             int(marker_left + marker_side),
             int(marker_top + marker_side),
         )
-        draw_puzzle_grid_cell(
+        _draw_cell_grid(
             draw,
-            bbox=marker_bbox,
-            fill=style.option_marker_fill_rgb,
+            grid=((0,),),
+            left=int(marker_bbox[0]),
+            top=int(marker_bbox[1]),
+            cell_size=int(marker_side),
+            gap=1,
+            state_colors=(style.option_marker_fill_rgb,),
+            item_bboxes={},
+            item_prefix="agent_option_marker",
             style=style,
-            outline=style.grid_rgb,
-            width=1,
+            cell_render_style=str(cell_render_style),
         )
         _draw_agent_marker(
             draw,
@@ -1265,28 +1792,30 @@ def _draw_life_option_grid(
     label: str,
     render_params: _RenderParams,
     style: PuzzleSceneStyle = DEFAULT_PUZZLE_SCENE_STYLE,
+    life_visual: _LifeBoardVisual,
 ) -> None:
     _draw_option_card(draw, bbox=bbox, label=label, fill=style.option_fill_rgb, style=style)
     rows = len(option_grid)
     cols = len(option_grid[0])
     cell = int(render_params.option_grid_cell_px)
-    gap = 1
+    gap = _life_option_grid_gap(render_params)
     grid_w = cols * cell + max(0, cols - 1) * gap
     grid_h = rows * cell + max(0, rows - 1) * gap
+    header_h = max(30, int(round(render_params.label_font_size_px * 1.45)))
     left = int(bbox[0] + (bbox[2] - bbox[0] - grid_w) / 2)
-    top = int(bbox[1] + 34 + (bbox[3] - bbox[1] - 42 - grid_h) / 2)
+    top = int(bbox[1] + header_h + max(0, (bbox[3] - bbox[1] - header_h - grid_h) / 2))
     dummy: Dict[str, Tuple[int, int, int, int]] = {}
-    _draw_cell_grid(
+    _draw_life_cell_grid(
         draw,
         grid=option_grid,
         left=left,
         top=top,
         cell_size=cell,
         gap=gap,
-        state_colors=(_LIFE_DEAD_RGB, _LIFE_ALIVE_RGB),
         item_bboxes=dummy,
         item_prefix="option_preview",
         style=style,
+        life_visual=life_visual,
     )
 
 
@@ -1298,13 +1827,19 @@ def _draw_life_options(
     top: int,
     item_bboxes: Dict[str, Tuple[int, int, int, int]],
     style: PuzzleSceneStyle = DEFAULT_PUZZLE_SCENE_STYLE,
+    life_visual: _LifeBoardVisual,
+    left: int | None = None,
 ) -> Tuple[int, int, int, int]:
-    card_w = int(render_params.option_card_width_px)
-    card_h = int(render_params.option_card_height_px) + 38
+    rows = len(option_specs[0]["grid"]) if option_specs else 0
+    cols = len(option_specs[0]["grid"][0]) if option_specs else 0
+    card_w, card_h = _life_option_card_size(rows=rows, cols=cols, render_params=render_params)
     gap = int(render_params.option_gap_px)
     count = len(option_specs)
     total_w = count * card_w + max(0, count - 1) * gap
-    left = int((render_params.canvas_width - total_w) // 2)
+    if left is None:
+        left = int((render_params.canvas_width - total_w) // 2)
+    else:
+        left = int(left)
     for index, option in enumerate(option_specs):
         x0 = int(left + index * (card_w + gap))
         bbox = (x0, int(top), int(x0 + card_w), int(top + card_h))
@@ -1315,6 +1850,7 @@ def _draw_life_options(
             label=str(option["label"]),
             render_params=render_params,
             style=style,
+            life_visual=life_visual,
         )
         item_bboxes[str(option["option_id"])] = bbox
     return (left, int(top), int(left + total_w), int(top + card_h))
@@ -1368,6 +1904,7 @@ def _render_agent_scene(
     render_params: _RenderParams,
     style: PuzzleSceneStyle | None = None,
     style_meta: Mapping[str, Any] | None = None,
+    board_style: str = "classic_grid",
 ) -> _RenderedScene:
     image = background.copy()
     draw = ImageDraw.Draw(image)
@@ -1436,6 +1973,7 @@ def _render_agent_scene(
         target_cells=dataset.target_cells,
         draw_labels=bool(dataset.state_count == 3),
         style=style,
+        cell_render_style=str(board_style),
     )
     item_bboxes["source_grid"] = _grid_bbox(left=grid_left, top=grid_top, rows=rows, cols=cols, cell_size=cell, gap=gap)
     start_bbox = _cell_bbox(left=grid_left, top=grid_top, row=dataset.start_row, col=dataset.start_col, cell_size=cell, gap=gap)
@@ -1487,6 +2025,7 @@ def _render_agent_scene(
             top=int(panel_bbox[3] + _agent_option_vertical_gap(render_params)),
             item_bboxes=item_bboxes,
             style=style,
+            cell_render_style=str(board_style),
         )
     scene_bbox = (
         min(panel_bbox[0], option_bbox[0]) if option_bbox[2] else panel_bbox[0],
@@ -1534,12 +2073,26 @@ def _render_life_scene(
     render_params: _RenderParams,
     style: PuzzleSceneStyle | None = None,
     style_meta: Mapping[str, Any] | None = None,
+    life_visual: _LifeBoardVisual | None = None,
 ) -> _RenderedScene:
     image = background.copy()
     draw = ImageDraw.Draw(image)
     item_bboxes: Dict[str, Tuple[int, int, int, int]] = {}
     if style is None or style_meta is None:
         style, style_meta = _resolve_agent_style(scene_variant=str(scene_variant), render_params=render_params)
+    if life_visual is None:
+        life_visual = _LifeBoardVisual(
+            board_style="classic_grid",
+            cell_palette_id="mono_ink",
+            dead_rgb=_LIFE_DEAD_RGB,
+            alive_rgb=_LIFE_ALIVE_RGB,
+            grid_rgb=style.grid_rgb,
+            edge_rgb=style.grid_rgb,
+            mark_rgb=style.mark_rgb,
+            accent_rgb=style.panel_accent_rgb,
+            board_style_probabilities={"classic_grid": 1.0},
+            cell_palette_probabilities={"mono_ink": 1.0},
+        )
     rows, cols = int(dataset.rows), int(dataset.cols)
     cell = int(render_params.cell_size_px)
     gap = int(render_params.grid_gap_px)
@@ -1547,9 +2100,38 @@ def _render_life_scene(
     grid_w = grid_bbox[2] - grid_bbox[0]
     grid_h = grid_bbox[3] - grid_bbox[1]
     is_population_count = not bool(dataset.option_specs)
-    grid_left = int((render_params.canvas_width - grid_w) // 2)
+    metrics = _life_content_metrics(dataset=dataset, render_params=render_params)
+    layout_rng = spawn_rng(instance_seed=int(render_params.layout_seed), namespace="life_automaton_panel_origin")
+    safe_margin = max(18, int(round(render_params.panel_padding_px * 0.85)))
+    content_w = int(metrics["content_width_px"])
+    content_h = int(metrics["content_height_px"])
+    panel_w = int(metrics["panel_width_px"])
+    panel_h = int(metrics["panel_height_px"])
+    min_content_left = int(safe_margin)
+    max_content_left = int(render_params.canvas_width - content_w - safe_margin)
+    if max_content_left >= min_content_left:
+        available_x = int(max_content_left - min_content_left)
+        offset_x = layout_rng.randint(0, available_x) if available_x > 0 else 0
+        content_left = int(min_content_left + offset_x)
+    else:
+        available_x = 0
+        offset_x = 0
+        content_left = max(0, int((render_params.canvas_width - content_w) // 2))
+    min_content_top = int(safe_margin)
+    max_content_top = int(render_params.canvas_height - content_h - safe_margin)
+    if max_content_top >= min_content_top:
+        available_y = int(max_content_top - min_content_top)
+        offset_y = layout_rng.randint(0, available_y) if available_y > 0 else 0
+        content_top = int(min_content_top + offset_y)
+    else:
+        available_y = 0
+        offset_y = 0
+        content_top = max(0, int((render_params.canvas_height - content_h) // 2))
+    panel_left = int(content_left + max(0, content_w - panel_w) // 2)
+    panel_top = int(content_top)
+    grid_left = int(panel_left + int(render_params.panel_padding_px))
     future_left = grid_left
-    grid_top = 70
+    grid_top = int(panel_top + int(render_params.panel_padding_px))
     panel_bbox = (
         grid_left - int(render_params.panel_padding_px),
         grid_top - int(render_params.panel_padding_px),
@@ -1565,33 +2147,33 @@ def _render_life_scene(
     )
     target_cells = dataset.target_cells if str(dataset.query_id) in {"marked_line_live_count", "marked_region_live_count"} else tuple()
     if is_population_count:
-        _draw_cell_grid(
+        _draw_life_cell_grid(
             draw,
             grid=dataset.future_grid,
             left=future_left,
             top=grid_top,
             cell_size=cell,
             gap=gap,
-            state_colors=(_LIFE_DEAD_RGB, _LIFE_ALIVE_RGB),
             item_bboxes=item_bboxes,
             item_prefix="future",
             target_cells=target_cells,
             style=style,
+            life_visual=life_visual,
         )
         item_bboxes["future_grid"] = _grid_bbox(left=future_left, top=grid_top, rows=rows, cols=cols, cell_size=cell, gap=gap)
     else:
-        _draw_cell_grid(
+        _draw_life_cell_grid(
             draw,
             grid=dataset.initial_grid,
             left=grid_left,
             top=grid_top,
             cell_size=cell,
             gap=gap,
-            state_colors=(_LIFE_DEAD_RGB, _LIFE_ALIVE_RGB),
             item_bboxes=item_bboxes,
             item_prefix="source",
             target_cells=tuple(),
             style=style,
+            life_visual=life_visual,
         )
         item_bboxes["source_grid"] = _grid_bbox(left=grid_left, top=grid_top, rows=rows, cols=cols, cell_size=cell, gap=gap)
     if target_cells:
@@ -1604,13 +2186,16 @@ def _render_life_scene(
         )
     option_bbox = (0, 0, 0, 0)
     if dataset.option_specs:
+        option_left = int(content_left + max(0, content_w - int(metrics["option_width_px"])) // 2)
         option_bbox = _draw_life_options(
             draw,
             option_specs=dataset.option_specs,
             render_params=render_params,
-            top=int(panel_bbox[3] + 50),
+            top=int(panel_bbox[3] + int(metrics["option_vertical_gap_px"])),
             item_bboxes=item_bboxes,
             style=style,
+            life_visual=life_visual,
+            left=option_left,
         )
     scene_bbox = (
         min(panel_bbox[0], option_bbox[0]) if option_bbox[2] else panel_bbox[0],
@@ -1632,9 +2217,35 @@ def _render_life_scene(
         item_bboxes=item_bboxes,
         entities=entities,
         layout_jitter={
-            "enabled": False,
-            "reason": "fixed_layout_not_part_of_agent_automaton_pass",
+            "enabled": True,
+            "mode": "safe_margin_free_area",
             "canvas_size_px": [int(render_params.canvas_width), int(render_params.canvas_height)],
+            "content_size_px": [int(content_w), int(content_h)],
+            "panel_size_px": [int(panel_w), int(panel_h)],
+            "panel_origin_px": [int(panel_bbox[0]), int(panel_bbox[1])],
+            "grid_bbox_px": [int(value) for value in (item_bboxes["future_grid"] if is_population_count else item_bboxes["source_grid"])],
+            "option_bbox_px": [int(value) for value in option_bbox] if option_bbox[2] else [],
+            "free_space_px": [
+                int(render_params.canvas_width - content_w),
+                int(render_params.canvas_height - content_h),
+            ],
+            "available_offset_px": [int(available_x), int(available_y)],
+            "sampled_offset_px": [int(offset_x), int(offset_y)],
+            "sampled_fraction": [
+                round(float(offset_x) / float(available_x), 6) if available_x > 0 else 0.5,
+                round(float(offset_y) / float(available_y), 6) if available_y > 0 else 0.5,
+            ],
+            "content_origin_px": [int(content_left), int(content_top)],
+            "centered_content_origin_px": [
+                int((render_params.canvas_width - content_w) // 2),
+                int((render_params.canvas_height - content_h) // 2),
+            ],
+            "dx_dy_from_center_px": [
+                int(content_left - int((render_params.canvas_width - content_w) // 2)),
+                int(content_top - int((render_params.canvas_height - content_h) // 2)),
+            ],
+            "safe_margin_px": int(safe_margin),
+            "option_vertical_gap_px": int(metrics["option_vertical_gap_px"]),
         },
         style_metadata=dict(style_meta),
     )
@@ -1998,7 +2609,8 @@ def _common_trace(
     rendered_scene: _RenderedScene,
     background_meta: Mapping[str, Any],
     post_noise_meta: Mapping[str, Any],
-    evidence_bboxes: Sequence[Sequence[float]],
+    evidence_type: str,
+    evidence_value: Any,
     answer_value: Any,
     execution_trace: Mapping[str, Any],
 ) -> Dict[str, Any]:
@@ -2009,6 +2621,10 @@ def _common_trace(
         "scene_variant": str(scene_variant),
         "scene_variant_probabilities": {str(key): float(value) for key, value in scene_variant_probabilities.items()},
     }
+    witness_symbolic, projected_evidence = _evidence_trace_payload(
+        evidence_type=str(evidence_type),
+        evidence_value=evidence_value,
+    )
     return {
         "scene_ir": {
             "scene_kind": str(scene_id),
@@ -2037,6 +2653,7 @@ def _common_trace(
                 "grid_gap_px": int(render_params.grid_gap_px),
                 "option_card_width_px": int(render_params.option_card_width_px),
                 "option_card_height_px": int(render_params.option_card_height_px),
+                "option_grid_cell_px": int(render_params.option_grid_cell_px),
             },
             "unit_size_jitter": dict(render_params.unit_size_jitter),
             "layout_jitter": dict(rendered_scene.layout_jitter),
@@ -2057,20 +2674,47 @@ def _common_trace(
             "answer_value": answer_value,
             **dict(execution_trace),
         },
-        "witness_symbolic": {
-            "type": "bbox_set",
-            "value": [list(bbox) for bbox in evidence_bboxes],
-        },
-        "projected_evidence": {
-            "type": "bbox_set",
-            "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            "value": [list(bbox) for bbox in evidence_bboxes],
-        },
+        "witness_symbolic": dict(witness_symbolic),
+        "projected_evidence": dict(projected_evidence),
     }
 
 
 def _round_bboxes(evidence_projection: Mapping[str, Any]) -> List[List[float]]:
     return [[round(float(value), 3) for value in bbox] for bbox in evidence_projection.get("bbox_set", [])]
+
+
+def _round_keyed_bboxes(evidence_projection: Mapping[str, Any]) -> Dict[str, List[float]]:
+    return {
+        str(key): [round(float(value), 3) for value in bbox]
+        for key, bbox in dict(evidence_projection.get("keyed_bbox_map", {})).items()
+    }
+
+
+def _evidence_trace_payload(*, evidence_type: str, evidence_value: Any) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    if str(evidence_type) == "keyed_bbox_map":
+        keyed = {
+            str(key): [round(float(value), 3) for value in bbox]
+            for key, bbox in dict(evidence_value).items()
+        }
+        return (
+            {"type": "keyed_bbox_map", "value": dict(keyed)},
+            {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(keyed),
+                "pixel_keyed_bbox_map": dict(keyed),
+                "value": dict(keyed),
+            },
+        )
+    bbox_set = [[round(float(value), 3) for value in bbox] for bbox in list(evidence_value)]
+    return (
+        {"type": "bbox_set", "value": [list(bbox) for bbox in bbox_set]},
+        {
+            "type": "bbox_set",
+            "bbox_set": [list(bbox) for bbox in bbox_set],
+            "pixel_bbox_set": [list(bbox) for bbox in bbox_set],
+            "value": [list(bbox) for bbox in bbox_set],
+        },
+    )
 
 
 class _BaseAutomatonTask:
@@ -2118,19 +2762,24 @@ class PuzzlesAutomatonAgentFinalPoseLabelTask(_BaseAutomatonTask):
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
         render_params = _fit_agent_render_params(dataset=dataset, render_params=render_params)
         style, style_meta = _resolve_agent_style(scene_variant=str(scene_variant), render_params=render_params)
+        agent_board_style, agent_board_probs = _resolve_agent_board_style(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id)
+        style_meta = _style_meta_with_font(style_meta, render_params)
+        style_meta = _style_meta_with_agent_board(style_meta, board_style=agent_board_style, board_style_probabilities=agent_board_probs)
         background, background_meta = make_puzzle_scene_background(
             canvas_width=render_params.canvas_width,
             canvas_height=render_params.canvas_height,
             style=style,
         )
-        rendered = _render_agent_scene(
-            background=background,
-            dataset=dataset,
-            scene_variant=scene_variant,
-            render_params=render_params,
-            style=style,
-            style_meta=style_meta,
-        )
+        with temporary_default_font_family(render_params.font_family):
+            rendered = _render_agent_scene(
+                background=background,
+                dataset=dataset,
+                scene_variant=scene_variant,
+                render_params=render_params,
+                style=style,
+                style_meta=style_meta,
+                board_style=agent_board_style,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -2146,10 +2795,15 @@ class PuzzlesAutomatonAgentFinalPoseLabelTask(_BaseAutomatonTask):
             task_id=self.task_id,
         )
         correct_option = next(option for option in dataset.option_specs if bool(option["is_correct"]))
-        evidence_ids = ["initial_agent", str(correct_option["option_id"])]
-        evidence_bboxes = _round_bboxes(projected_puzzle_bbox_evidence(rendered.item_bboxes, evidence_ids))
+        evidence_role_item_ids = {
+            "start_marker": "initial_agent",
+            "selected_option": str(correct_option["option_id"]),
+        }
+        evidence_keyed_bboxes = _round_keyed_bboxes(
+            projected_puzzle_keyed_bbox_evidence(rendered.item_bboxes, evidence_role_item_ids)
+        )
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
         execution_trace = {
             "rule_variant": str(dataset.rule_variant),
             "state_count": int(dataset.state_count),
@@ -2161,7 +2815,8 @@ class PuzzlesAutomatonAgentFinalPoseLabelTask(_BaseAutomatonTask):
             "start_pose": {"row": int(dataset.start_row), "col": int(dataset.start_col), "direction": _DIRECTIONS[dataset.start_direction]},
             "final_pose": {"row": int(dataset.final_row), "col": int(dataset.final_col), "direction": _DIRECTIONS[dataset.final_direction]},
             "option_specs": [dict(option) for option in dataset.option_specs],
-            "supporting_item_ids": list(evidence_ids),
+            "supporting_item_ids": list(evidence_role_item_ids.values()),
+            "supporting_item_ids_by_role": dict(evidence_role_item_ids),
         }
         trace_payload = _common_trace(
             scene_id=AGENT_SCENE_ID,
@@ -2175,7 +2830,8 @@ class PuzzlesAutomatonAgentFinalPoseLabelTask(_BaseAutomatonTask):
             rendered_scene=rendered,
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
-            evidence_bboxes=evidence_bboxes,
+            evidence_type="keyed_bbox_map",
+            evidence_value=evidence_keyed_bboxes,
             answer_value=str(dataset.answer_label),
             execution_trace=execution_trace,
         )
@@ -2240,19 +2896,24 @@ class PuzzlesAutomatonAgentCellFlipCountTask(_BaseAutomatonTask):
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
         render_params = _fit_agent_render_params(dataset=dataset, render_params=render_params)
         style, style_meta = _resolve_agent_style(scene_variant=str(scene_variant), render_params=render_params)
+        agent_board_style, agent_board_probs = _resolve_agent_board_style(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id)
+        style_meta = _style_meta_with_font(style_meta, render_params)
+        style_meta = _style_meta_with_agent_board(style_meta, board_style=agent_board_style, board_style_probabilities=agent_board_probs)
         background, background_meta = make_puzzle_scene_background(
             canvas_width=render_params.canvas_width,
             canvas_height=render_params.canvas_height,
             style=style,
         )
-        rendered = _render_agent_scene(
-            background=background,
-            dataset=dataset,
-            scene_variant=scene_variant,
-            render_params=render_params,
-            style=style,
-            style_meta=style_meta,
-        )
+        with temporary_default_font_family(render_params.font_family):
+            rendered = _render_agent_scene(
+                background=background,
+                dataset=dataset,
+                scene_variant=scene_variant,
+                render_params=render_params,
+                style=style,
+                style_meta=style_meta,
+                board_style=agent_board_style,
+            )
         image, post_noise_meta = apply_post_image_noise(rendered.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(
             prompt_defaults=prompt_defaults,
@@ -2268,7 +2929,7 @@ class PuzzlesAutomatonAgentCellFlipCountTask(_BaseAutomatonTask):
             if query_id == "target_state_flip_count"
             else None,
         )
-        evidence_ids = ["initial_agent", "source_grid"] if query_id == "target_state_flip_count" else ["initial_agent", "marked_region"]
+        evidence_ids = ["marked_region"]
         evidence_bboxes = _round_bboxes(projected_puzzle_bbox_evidence(rendered.item_bboxes, evidence_ids))
         answer_gt = TypedValue(type="integer", value=int(dataset.flip_count))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
@@ -2306,7 +2967,8 @@ class PuzzlesAutomatonAgentCellFlipCountTask(_BaseAutomatonTask):
             rendered_scene=rendered,
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
-            evidence_bboxes=evidence_bboxes,
+            evidence_type="bbox_set",
+            evidence_value=evidence_bboxes,
             answer_value=int(dataset.flip_count),
             execution_trace=execution_trace,
         )
@@ -2345,16 +3007,26 @@ class PuzzlesAutomatonLifeFutureGridLabelTask(_BaseAutomatonTask):
         scene_variant, scene_probs = self._scene_variant(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed))
         dataset = _build_life_dataset(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id, query_id=query_id)
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
+        render_params = _fit_life_render_params(dataset=dataset, render_params=render_params)
         style, style_meta = _resolve_agent_style(scene_variant=str(scene_variant), render_params=render_params)
+        life_visual = _resolve_life_board_visual(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id)
+        style_meta = _style_meta_with_font(style_meta, render_params)
+        style_meta = _style_meta_with_life_board(style_meta, life_visual=life_visual)
         background, background_meta = make_puzzle_scene_background(canvas_width=render_params.canvas_width, canvas_height=render_params.canvas_height, style=style)
-        rendered = _render_life_scene(background=background, dataset=dataset, scene_variant=scene_variant, render_params=render_params, style=style, style_meta=style_meta)
+        with temporary_default_font_family(render_params.font_family):
+            rendered = _render_life_scene(background=background, dataset=dataset, scene_variant=scene_variant, render_params=render_params, style=style, style_meta=style_meta, life_visual=life_visual)
         image, post_noise_meta = apply_post_image_noise(rendered.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(prompt_defaults=prompt_defaults, scene_variant=scene_variant, query_id=query_id, steps=dataset.steps, instance_seed=int(instance_seed), task_id=self.task_id)
         correct_option = next(option for option in dataset.option_specs if bool(option["is_correct"]))
-        evidence_ids = ["source_grid", str(correct_option["option_id"])]
-        evidence_bboxes = _round_bboxes(projected_puzzle_bbox_evidence(rendered.item_bboxes, evidence_ids))
+        evidence_role_item_ids = {
+            "source_grid": "source_grid",
+            "selected_option": str(correct_option["option_id"]),
+        }
+        evidence_keyed_bboxes = _round_keyed_bboxes(
+            projected_puzzle_keyed_bbox_evidence(rendered.item_bboxes, evidence_role_item_ids)
+        )
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
         execution_trace = {
             "steps": int(dataset.steps),
             "grid_rows": int(dataset.rows),
@@ -2362,9 +3034,10 @@ class PuzzlesAutomatonLifeFutureGridLabelTask(_BaseAutomatonTask):
             "initial_grid": [list(row) for row in dataset.initial_grid],
             "future_grid": [list(row) for row in dataset.future_grid],
             "option_specs": [dict(option) for option in dataset.option_specs],
-            "supporting_item_ids": list(evidence_ids),
+            "supporting_item_ids": list(evidence_role_item_ids.values()),
+            "supporting_item_ids_by_role": dict(evidence_role_item_ids),
         }
-        trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_bboxes=evidence_bboxes, answer_value=str(dataset.answer_label), execution_trace=execution_trace)
+        trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_type="keyed_bbox_map", evidence_value=evidence_keyed_bboxes, answer_value=str(dataset.answer_label), execution_trace=execution_trace)
         complexity = build_puzzle_complexity(weights=complexity_weights, components={"visual_scan": normalize_int_with_bounds(dataset.rows * dataset.cols, [25, 64]), "reasoning_load": normalize_int_with_bounds(dataset.steps, [1, 3]), "scene_variant_load": 0.20 if scene_variant == "clean_grid" else 0.30})
         return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
 
@@ -2381,9 +3054,14 @@ class PuzzlesAutomatonLifePopulationCountTask(_BaseAutomatonTask):
         scene_variant, scene_probs = self._scene_variant(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed))
         dataset = _build_life_dataset(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id, query_id=query_id)
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
+        render_params = _fit_life_render_params(dataset=dataset, render_params=render_params)
         style, style_meta = _resolve_agent_style(scene_variant=str(scene_variant), render_params=render_params)
+        life_visual = _resolve_life_board_visual(params=params, gen_defaults=gen_defaults, instance_seed=int(instance_seed), task_id=self.task_id)
+        style_meta = _style_meta_with_font(style_meta, render_params)
+        style_meta = _style_meta_with_life_board(style_meta, life_visual=life_visual)
         background, background_meta = make_puzzle_scene_background(canvas_width=render_params.canvas_width, canvas_height=render_params.canvas_height, style=style)
-        rendered = _render_life_scene(background=background, dataset=dataset, scene_variant=scene_variant, render_params=render_params, style=style, style_meta=style_meta)
+        with temporary_default_font_family(render_params.font_family):
+            rendered = _render_life_scene(background=background, dataset=dataset, scene_variant=scene_variant, render_params=render_params, style=style, style_meta=style_meta, life_visual=life_visual)
         image, post_noise_meta = apply_post_image_noise(rendered.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(prompt_defaults=prompt_defaults, scene_variant=scene_variant, query_id=query_id, steps=dataset.steps, instance_seed=int(instance_seed), task_id=self.task_id)
         evidence_ids = ["marked_region"] if query_id in {"marked_line_live_count", "marked_region_live_count"} else ["source_grid"]
@@ -2400,7 +3078,7 @@ class PuzzlesAutomatonLifePopulationCountTask(_BaseAutomatonTask):
             "live_count": int(dataset.live_count),
             "supporting_item_ids": list(evidence_ids),
         }
-        trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_bboxes=evidence_bboxes, answer_value=int(dataset.live_count), execution_trace=execution_trace)
+        trace_payload = _common_trace(scene_id=LIFE_SCENE_ID, task_id=self.task_id, query_id=query_id, query_probabilities=query_probabilities, scene_variant=scene_variant, scene_variant_probabilities=scene_probs, prompt_meta=prompt_meta, render_params=render_params, rendered_scene=rendered, background_meta=background_meta, post_noise_meta=post_noise_meta, evidence_type="bbox_set", evidence_value=evidence_bboxes, answer_value=int(dataset.live_count), execution_trace=execution_trace)
         complexity = build_puzzle_complexity(weights=complexity_weights, components={"visual_scan": normalize_int_with_bounds(dataset.rows * dataset.cols, [25, 64]), "reasoning_load": normalize_int_with_bounds(dataset.steps + len(dataset.target_cells), [2, 20]), "scene_variant_load": 0.20 if scene_variant == "clean_grid" else 0.30})
         return TaskOutput(prompt=prompt, answer_gt=answer_gt, evidence_gt=evidence_gt, image=image, image_id="img0", trace_payload=trace_payload, complexity=complexity, task_versions=default_task_versions(), scene_id=LIFE_SCENE_ID, query_id=query_id, prompt_variants=prompt_variants)
 
@@ -2512,7 +3190,8 @@ class PuzzlesAutomatonTuringWrittenSymbolCountTask(_BaseAutomatonTask):
             rendered_scene=rendered,
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
-            evidence_bboxes=evidence_bboxes,
+            evidence_type="bbox_set",
+            evidence_value=evidence_bboxes,
             answer_value=int(dataset.answer_count),
             execution_trace=execution_trace,
         )

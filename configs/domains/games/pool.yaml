@@ -76,13 +76,13 @@ prompt:
       The 8 ball does not belong to either group.
     marked_shot_rule_text: The marked shot lane goes from the cue ball to the
       marked object ball and then from that ball to the marked pocket.
-    evidence_hint_pottable_ball_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every directly pottable object ball
-    evidence_hint_legal_group_pottable_count: set "evidence" to bounding boxes
-      [x0, y0, x1, y1] for every directly pottable ball in the current player's
+    evidence_hint_pottable_ball_count: set "evidence" to one pixel point [x,y]
+      at the center of every directly pottable object ball
+    evidence_hint_legal_group_pottable_count: set "evidence" to one pixel point
+      [x,y] at the center of every directly pottable ball in the current player's
       group
-    evidence_hint_blocking_ball_count: set "evidence" to bounding boxes [x0,
-      y0, x1, y1] for every ball that blocks the marked shot lane
+    evidence_hint_blocking_ball_count: set "evidence" to one pixel point [x,y]
+      at the center of every ball that blocks the marked shot lane
     answer_hint_pottable_ball_count: set "answer" to the number of object balls
       that can be potted by a direct shot
     answer_hint_legal_group_pottable_count: set "answer" to the number of directly

@@ -8,8 +8,15 @@ generation:
     distractor_count_max: 9
     balanced_sampling: true
   task_overrides:
-    task_icons__pair_grid__pair_attribute_rule_count:
+    task_icons__pair_grid__pair_relation_count:
       pool_manifest: all_icons.txt
+      object_count_min: 6
+      object_count_max: 6
+      query_id_weights:
+        color_only_change: 1.0
+        size_only_change: 1.0
+        color_and_size_change: 1.0
+        same_pair_transform: 1.0
       attribute_rule_weights:
         color_only_change: 1.0
         size_only_change: 1.0
@@ -17,6 +24,19 @@ generation:
       balanced_attribute_rule_sampling: true
       size_scale_small: 0.76
       size_scale_large: 1.16
+      transform_ids: [rot90, rot180, rot270, flip_h, flip_v, flip_diag_main, flip_diag_anti]
+      transform_check_size_px: 72
+      variant_generation_params:
+        color_only_change:
+          pool_manifest: all_icons.txt
+        size_only_change:
+          pool_manifest: all_icons.txt
+        color_and_size_change:
+          pool_manifest: all_icons.txt
+        same_pair_transform:
+          pool_manifest: non_symmetry.txt
+          transform_ids: [rot90, rot180, rot270, flip_h, flip_v, flip_diag_main, flip_diag_anti]
+          transform_check_size_px: 72
     task_icons__paired_canvas__panel_attribute_change_count:
       pool_manifest: all_icons.txt
       object_count_min: 5
@@ -33,10 +53,6 @@ generation:
       size_scale_small: 0.74
       size_scale_large: 1.18
       rotation_candidates_degrees: [0, 90, 180, 270]
-    task_icons__pair_grid__pair_geometric_transform_count:
-      pool_manifest: non_symmetry.txt
-      transform_ids: [rot90, rot180, rot270, flip_h, flip_v, flip_diag_main, flip_diag_anti]
-      transform_check_size_px: 72
 
 rendering:
   shared:
@@ -115,12 +131,36 @@ rendering:
       noise:
         alpha: [0.03, 0.08]
   task_overrides:
-    task_icons__pair_grid__pair_attribute_rule_count:
+    task_icons__pair_grid__pair_relation_count:
       scene_icon_size_max_px: 88
       reference_icon_size_px: 96
       palette_size_min: 5
       palette_size_max: 5
       min_color_distance: 42.0
+      variant_render_params:
+        color_only_change:
+          scene_icon_size_max_px: 88
+          reference_icon_size_px: 96
+          palette_size_min: 5
+          palette_size_max: 5
+          min_color_distance: 42.0
+        size_only_change:
+          scene_icon_size_max_px: 88
+          reference_icon_size_px: 96
+          palette_size_min: 5
+          palette_size_max: 5
+          min_color_distance: 42.0
+        color_and_size_change:
+          scene_icon_size_max_px: 88
+          reference_icon_size_px: 96
+          palette_size_min: 5
+          palette_size_max: 5
+          min_color_distance: 42.0
+        same_pair_transform:
+          scene_icon_size_max_px: 96
+          reference_icon_size_px: 110
+          palette_size_min: 1
+          palette_size_max: 1
     task_icons__paired_canvas__panel_attribute_change_count:
       canvas_width: 1104
       canvas_height: 640
@@ -141,16 +181,9 @@ prompt:
     scene_key: reference_pair_grid_transformation
     task_key: transformation_query
   task_overrides:
-    task_icons__pair_grid__pair_geometric_transform_count:
+    task_icons__pair_grid__pair_relation_count:
       object_description: a Reference pair on the left and a labeled Scene grid on the right
-      question_text: How many labeled Scene cells show the same before-to-after transformation as the Reference pair?
-      evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'
-      json_example_answer_only: '{"answer":3}'
-    task_icons__pair_grid__pair_attribute_rule_count:
-      object_description: a Reference pair on the left and a labeled Scene grid on the right
-      question_text: "How many labeled Scene cells change the same attributes as the Reference pair (color only, size only, or both)?"
+      question_text: How many labeled Scene cells show the same before-to-after relation as the Reference pair?
       evidence_hint: set "evidence" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around all matching Scene cells
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[336,104,506,274],[532,104,702,274],[728,104,898,274]],"answer":3}'

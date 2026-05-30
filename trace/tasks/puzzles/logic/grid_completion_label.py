@@ -12,13 +12,15 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ...shared.text_rendering import temporary_default_font_family
+from ..shared.common import decouple_axis_sampling, projected_puzzle_keyed_bbox_evidence, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import FixedPuzzleQueryVariantTaskMixin, forced_puzzle_query_params, rewrite_fixed_puzzle_query_output
 from ..shared.logic_common import (
@@ -77,6 +79,44 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="logic")
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="logic", apply_prob=0.0)
+
+
+def _sample_logic_grid_font(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> str:
+    """Sample one role-aware font family for option labels and the missing-cell marker."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.logic_grid.label_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for the sampled logic-grid font."""
+
+    return {
+        **get_font_family_record(str(font_family)).to_trace(),
+        "source": "global_font_pool",
+        "font_asset_version": font_asset_version(),
+        "scope": "logic_grid_missing_marker_and_option_labels",
+    }
+
+
+def _round_keyed_bbox_map(projected: Mapping[str, Any]) -> Dict[str, list[float]]:
+    keyed = projected.get("keyed_bbox_map", {})
+    if not isinstance(keyed, Mapping):
+        raise ValueError("logic-grid keyed evidence projection missing keyed_bbox_map")
+    return {
+        str(role): [round(float(value), 3) for value in bbox]
+        for role, bbox in keyed.items()
+    }
 
 
 def _resolve_query_id(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -256,18 +296,25 @@ class _PuzzlesLogicGridCompletionBaseTask:
             text_stroke_rgb=tuple(int(value) for value in scene_style.text_stroke_rgb),
             accent_color_rgb=tuple(int(value) for value in scene_style.mark_rgb),
         )
+        font_family = _sample_logic_grid_font(
+            task_id=str(self.task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+        )
         background, background_meta = make_puzzle_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = render_puzzle_logic_scene(
-            background,
-            scene_variant=str(scene_variant),
-            grid_rows=list(dataset["grid_rows"]),
-            option_specs=list(dataset["option_specs"]),
-            render_params=render_params,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = render_puzzle_logic_scene(
+                background,
+                scene_variant=str(scene_variant),
+                grid_rows=list(dataset["grid_rows"]),
+                option_specs=list(dataset["option_specs"]),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -327,17 +374,31 @@ class _PuzzlesLogicGridCompletionBaseTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         correct_option_panel_id = str(dataset["correct_option_panel_id"])
-        evidence_projection = projected_puzzle_bbox_evidence(
-            rendered_scene.option_panel_bbox_map,
-            [str(correct_option_panel_id)],
+        evidence_bbox_map = {
+            "source_grid": list(rendered_scene.board_bbox_px),
+            **{
+                str(option_id): list(bbox)
+                for option_id, bbox in rendered_scene.option_panel_bbox_map.items()
+            },
+        }
+        evidence_role_item_ids = {
+            "source_grid": "source_grid",
+            "selected_option": str(correct_option_panel_id),
+        }
+        evidence_projection = projected_puzzle_keyed_bbox_evidence(
+            evidence_bbox_map,
+            evidence_role_item_ids,
         )
-        evidence_bboxes = [
-            [round(float(value), 3) for value in bbox]
-            for bbox in evidence_projection["bbox_set"]
-        ]
+        evidence_bboxes = _round_keyed_bbox_map(evidence_projection)
+        evidence_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_bboxes),
+            "pixel_keyed_bbox_map": dict(evidence_bboxes),
+            "value": dict(evidence_bboxes),
+        }
         answer_value = str(dataset["answer_option_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
 
         trace_payload = {
             "scene_ir": {
@@ -383,19 +444,30 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "scene_style": dict(scene_style_meta),
                 "post_image_noise": dict(post_noise_meta),
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
+                "board_bbox_px": list(rendered_scene.board_bbox_px),
                 "text_style": {
                     "value_font_size_px": int(render_params.value_font_size_px),
                     "option_label_font_size_px": int(render_params.option_label_font_size_px),
+                    "font": _font_trace_record(str(font_family)),
                 },
                 "unit_size_jitter": dict(render_params.unit_size_jitter),
             },
             "render_map": with_puzzle_unit_size_jitter({
                 "image_id": "img0",
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
+                "board_bbox_px": list(rendered_scene.board_bbox_px),
                 "cell_bboxes_px": {str(key): list(value) for key, value in rendered_scene.cell_bbox_map.items()},
                 "option_panel_bboxes_px": {
                     str(key): list(value) for key, value in rendered_scene.option_panel_bbox_map.items()
                 },
+                "item_bboxes_px": {
+                    "source_grid": list(rendered_scene.board_bbox_px),
+                    **{
+                        str(key): list(value)
+                        for key, value in rendered_scene.option_panel_bbox_map.items()
+                    },
+                },
+                "evidence_source": "keyed_source_grid_and_option_bboxes_px",
             }, render_params.unit_size_jitter),
             "execution_trace": {
                 "query_id": str(query_id),
@@ -423,15 +495,14 @@ class _PuzzlesLogicGridCompletionBaseTask:
                 "uniqueness_axis_probabilities": dict(uniqueness_axis_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_option_panel_ids": [str(correct_option_panel_id)],
+                "evidence_role_item_ids": dict(evidence_role_item_ids),
                 "question_format": "logic_grid_mcq",
             },
             "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "value": dict(evidence_bboxes),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_projection),
         }
         if str(internal_query_id) == "king_non_touch":
             trace_payload["query_spec"]["params"]["query_neighbor_count"] = int(len(dataset["neighbor_coords"]))

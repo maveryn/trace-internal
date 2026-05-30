@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_rendering import load_font, resolve_text_stroke_fill, temporary_default_font_family
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .style import CardTheme, build_games_card_theme, suit_color
 
@@ -83,6 +84,7 @@ class CardRenderParams:
     center_label_mode: str = "suit_symbol"
     layout_jitter_meta: Dict[str, Any] | None = None
     group_label_font_size_px: int = 22
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -157,14 +159,14 @@ def _draw_card_face(
             float(left + (0.5 * ((right - left) - banner_width))),
             float(top + (0.5 * (params.reference_banner_height_px - banner_height))),
         )
-        draw.text(
+        draw_text_traced(draw,
             banner_origin,
             banner_text,
             font=banner_font,
             fill=tuple(int(value) for value in theme.reference_text_rgb),
             stroke_width=1,
             stroke_fill=(0, 0, 0),
-        )
+         role="readout", required=False,)
 
     suit_symbol = SUIT_SYMBOLS[str(card.suit_name)]
     pip_rgb = suit_color(theme, suit_name=str(card.suit_name))
@@ -174,64 +176,110 @@ def _draw_card_face(
         else tuple(int(value) for value in theme.rank_rgb_black)
     )
     small_font = load_font(int(params.rank_font_size_px), bold=True)
-    label = f"{card.rank_label}{suit_symbol}"
+    small_suit_font = _load_suit_symbol_font(int(params.rank_font_size_px))
+    rank_text = str(card.rank_label)
     label_stroke = resolve_text_stroke_fill(rank_rgb)
+
+    def _rank_suit_size(*, rank_font, suit_font, stroke_width: int) -> Tuple[float, float]:
+        rank_bbox = draw.textbbox((0, 0), rank_text, font=rank_font, stroke_width=int(stroke_width))
+        suit_bbox = draw.textbbox((0, 0), suit_symbol, font=suit_font, stroke_width=int(stroke_width))
+        rank_width = float(rank_bbox[2] - rank_bbox[0])
+        rank_height = float(rank_bbox[3] - rank_bbox[1])
+        suit_width = float(suit_bbox[2] - suit_bbox[0])
+        suit_height = float(suit_bbox[3] - suit_bbox[1])
+        gap_px = float(max(2, int(0.12 * float(params.rank_font_size_px))))
+        return (
+            float(rank_width + gap_px + suit_width),
+            float(max(rank_height, suit_height)),
+        )
+
+    def _draw_rank_suit(
+        origin: Tuple[float, float],
+        *,
+        rank_font,
+        suit_font,
+        stroke_width: int,
+    ) -> None:
+        rank_bbox = draw.textbbox((0, 0), rank_text, font=rank_font, stroke_width=int(stroke_width))
+        suit_bbox = draw.textbbox((0, 0), suit_symbol, font=suit_font, stroke_width=int(stroke_width))
+        rank_width = float(rank_bbox[2] - rank_bbox[0])
+        rank_height = float(rank_bbox[3] - rank_bbox[1])
+        suit_height = float(suit_bbox[3] - suit_bbox[1])
+        total_height = max(float(rank_height), float(suit_height))
+        gap_px = float(max(2, int(0.12 * float(params.rank_font_size_px))))
+        rank_origin = (float(origin[0]), float(origin[1] + (0.5 * (total_height - rank_height))))
+        suit_origin = (
+            float(origin[0] + rank_width + gap_px),
+            float(origin[1] + (0.5 * (total_height - suit_height))),
+        )
+        draw_text_traced(draw,
+            rank_origin,
+            rank_text,
+            font=rank_font,
+            fill=rank_rgb,
+            stroke_width=int(stroke_width),
+            stroke_fill=tuple(int(value) for value in label_stroke),
+         role="readout", required=False,)
+        draw_text_traced(draw,
+            suit_origin,
+            suit_symbol,
+            font=suit_font,
+            fill=rank_rgb,
+            stroke_width=int(stroke_width),
+            stroke_fill=tuple(int(value) for value in label_stroke),
+         role="readout", required=False,)
+
     top_label_inset_px = 10
     top_label_origin = (
         float(left + 10),
         float(top + banner_height_px + top_label_inset_px),
     )
-    draw.text(
-        top_label_origin,
-        label,
-        font=small_font,
-        fill=rank_rgb,
-        stroke_width=1,
-        stroke_fill=tuple(int(value) for value in label_stroke),
-    )
+    _draw_rank_suit(top_label_origin, rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
 
-    bottom_bbox = draw.textbbox((0, 0), label, font=small_font, stroke_width=1)
+    bottom_width, bottom_height = _rank_suit_size(rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
     bottom_origin = (
-        float(right - (bottom_bbox[2] - bottom_bbox[0]) - 10),
-        float(bottom - (bottom_bbox[3] - bottom_bbox[1]) - 10),
+        float(right - bottom_width - 10),
+        float(bottom - bottom_height - 10),
     )
-    draw.text(
-        bottom_origin,
-        label,
-        font=small_font,
-        fill=rank_rgb,
-        stroke_width=1,
-        stroke_fill=tuple(int(value) for value in label_stroke),
-    )
+    _draw_rank_suit(bottom_origin, rank_font=small_font, suit_font=small_suit_font, stroke_width=1)
 
-    center_text = suit_symbol
-    center_rgb = pip_rgb
     center_font_size_px = int(params.center_symbol_font_size_px)
     if str(params.center_label_mode) == "rank_suit":
-        center_text = str(label)
-        center_rgb = rank_rgb
         center_font_size_px = max(int(params.rank_font_size_px) + 8, int(0.78 * float(params.center_symbol_font_size_px)))
-    center_font = load_font(int(center_font_size_px), bold=True)
-    center_bbox = draw.textbbox((0, 0), center_text, font=center_font, stroke_width=1)
+        center_rank_font = load_font(int(center_font_size_px), bold=True)
+        center_suit_font = _load_suit_symbol_font(int(center_font_size_px))
+        center_width, center_height = _rank_suit_size(
+            rank_font=center_rank_font,
+            suit_font=center_suit_font,
+            stroke_width=1,
+        )
+    else:
+        center_font = _load_suit_symbol_font(int(center_font_size_px))
+        center_bbox = draw.textbbox((0, 0), suit_symbol, font=center_font, stroke_width=1)
+        center_width = float(center_bbox[2] - center_bbox[0])
+        center_height = float(center_bbox[3] - center_bbox[1])
     center_vertical_nudge_px = float(max(6, int(0.05 * float(bottom - top))))
     center_origin = (
-        float(left + (0.5 * ((right - left) - (center_bbox[2] - center_bbox[0])))),
+        float(left + (0.5 * ((right - left) - center_width))),
         float(
             top
             + banner_height_px
             + 20
-            + (0.5 * ((bottom - top - banner_height_px - 40) - (center_bbox[3] - center_bbox[1])))
+            + (0.5 * ((bottom - top - banner_height_px - 40) - center_height))
             - center_vertical_nudge_px
         ),
     )
-    draw.text(
-        center_origin,
-        center_text,
-        font=center_font,
-        fill=center_rgb,
-        stroke_width=1,
-        stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(center_rgb)),
-    )
+    if str(params.center_label_mode) == "rank_suit":
+        _draw_rank_suit(center_origin, rank_font=center_rank_font, suit_font=center_suit_font, stroke_width=1)
+    else:
+        draw_text_traced(draw,
+            center_origin,
+            suit_symbol,
+            font=center_font,
+            fill=pip_rgb,
+            stroke_width=1,
+            stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(pip_rgb)),
+         role="readout", required=False,)
 
 
 def _row_card_positions(
@@ -351,14 +399,21 @@ def _draw_centered_text(
     bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
     width = float(bbox[2] - bbox[0])
     height = float(bbox[3] - bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (float(xy[0]) - (0.5 * width), float(xy[1]) - (0.5 * height)),
         str(text),
         font=font,
         fill=fill,
         stroke_width=int(stroke_width),
         stroke_fill=stroke_fill,
-    )
+     role="readout", required=False,)
+
+
+def _load_suit_symbol_font(size_px: int):
+    """Load a stable fallback font for suit symbols, independent of sampled text font."""
+
+    with temporary_default_font_family(""):
+        return load_font(int(size_px), bold=True)
 
 
 def _draw_move_options(
@@ -435,138 +490,139 @@ def render_cards_hand_scene(
     theme = build_games_card_theme(style_variant=str(style_variant))
     draw = ImageDraw.Draw(image)
 
-    row_groups = _row_groups_for_cards(
-        cards=cards,
-        max_cards_per_row=int(params.max_cards_per_row),
-    )
+    with temporary_default_font_family(str(params.font_family)):
+        row_groups = _row_groups_for_cards(
+            cards=cards,
+            max_cards_per_row=int(params.max_cards_per_row),
+        )
 
-    row_left_positions = [
-        _row_card_positions(
-            row_card_count=len(row_cards),
+        row_left_positions = [
+            _row_card_positions(
+                row_card_count=len(row_cards),
+                canvas_width=int(params.canvas_width),
+                card_width_px=int(params.card_width_px),
+                card_gap_px=int(params.card_gap_px),
+            )
+            for row_cards in row_groups
+        ]
+
+        card_specs: List[RenderedCardSpec] = []
+        row_ys = _row_y_positions(
+            row_count=len(row_groups),
+            canvas_height=int(params.canvas_height),
+            card_height_px=int(params.card_height_px),
+            panel_margin_px=int(params.panel_margin_px),
+            row_gap_px=int(params.row_gap_px),
+        )
+        group_left = min(float(left) for row_lefts in row_left_positions for left in row_lefts)
+        group_right = max(float(left + params.card_width_px) for row_lefts in row_left_positions for left in row_lefts)
+        group_top = min(float(row_y) for row_y in row_ys)
+        group_bottom = max(float(row_y + params.card_height_px) for row_y in row_ys)
+        _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
+            bbox_px=(group_left, group_top, group_right, group_bottom),
             canvas_width=int(params.canvas_width),
-            card_width_px=int(params.card_width_px),
-            card_gap_px=int(params.card_gap_px),
+            canvas_height=int(params.canvas_height),
+            jitter=params.layout_jitter_meta,
         )
-        for row_cards in row_groups
-    ]
+        row_left_positions = [
+            [float(left + dx) for left in row_lefts]
+            for row_lefts in row_left_positions
+        ]
+        row_ys = [float(row_y + dy) for row_y in row_ys]
 
-    card_specs: List[RenderedCardSpec] = []
-    row_ys = _row_y_positions(
-        row_count=len(row_groups),
-        canvas_height=int(params.canvas_height),
-        card_height_px=int(params.card_height_px),
-        panel_margin_px=int(params.panel_margin_px),
-        row_gap_px=int(params.row_gap_px),
-    )
-    group_left = min(float(left) for row_lefts in row_left_positions for left in row_lefts)
-    group_right = max(float(left + params.card_width_px) for row_lefts in row_left_positions for left in row_lefts)
-    group_top = min(float(row_y) for row_y in row_ys)
-    group_bottom = max(float(row_y + params.card_height_px) for row_y in row_ys)
-    _group_bbox, dx, dy, layout_jitter = apply_games_layout_jitter_to_bbox(
-        bbox_px=(group_left, group_top, group_right, group_bottom),
-        canvas_width=int(params.canvas_width),
-        canvas_height=int(params.canvas_height),
-        jitter=params.layout_jitter_meta,
-    )
-    row_left_positions = [
-        [float(left + dx) for left in row_lefts]
-        for row_lefts in row_left_positions
-    ]
-    row_ys = [float(row_y + dy) for row_y in row_ys]
-
-    order_index = 0
-    for row_index, row_cards in enumerate(row_groups):
-        row_y = float(row_ys[row_index])
-        row_group_label = next(
-            (str(card.group_label) for card in row_cards if card.group_label is not None and str(card.group_label).strip()),
-            "",
-        )
-        if row_group_label:
-            label_font = load_font(int(params.group_label_font_size_px), bold=True)
-            label_bbox = draw.textbbox((0, 0), row_group_label, font=label_font, stroke_width=1)
-            label_width = float(label_bbox[2] - label_bbox[0])
-            label_height = float(label_bbox[3] - label_bbox[1])
-            first_left = float(row_left_positions[row_index][0])
-            label_origin = (
-                max(8.0, float(first_left - label_width - 18.0)),
-                float(row_y + (0.5 * (float(params.card_height_px) - label_height))),
+        order_index = 0
+        for row_index, row_cards in enumerate(row_groups):
+            row_y = float(row_ys[row_index])
+            row_group_label = next(
+                (str(card.group_label) for card in row_cards if card.group_label is not None and str(card.group_label).strip()),
+                "",
             )
-            draw.text(
-                label_origin,
-                row_group_label,
-                font=label_font,
-                fill=tuple(int(value) for value in theme.continuation_rgb),
-                stroke_width=1,
-                stroke_fill=(255, 255, 255),
-            )
-        for local_index, card in enumerate(row_cards):
-            left = float(row_left_positions[row_index][local_index])
-            bbox_px = (
-                round(float(left), 3),
-                round(float(row_y), 3),
-                round(float(left + params.card_width_px), 3),
-                round(float(row_y + params.card_height_px), 3),
-            )
-            _draw_shadow(
-                image,
-                bbox_px=bbox_px,
-                radius_px=int(params.card_corner_radius_px),
-                shadow_rgb=tuple(int(value) for value in theme.shadow_rgb),
-                shadow_alpha=int(theme.shadow_alpha),
-                shadow_offset_px=tuple(int(value) for value in theme.shadow_offset_px),
-            )
-            _draw_card_face(
-                image,
-                bbox_px=bbox_px,
-                card=card,
-                theme=theme,
-                params=params,
-            )
-            card_specs.append(
-                RenderedCardSpec(
-                    card_id=str(card.card_id),
-                    rank_label=str(card.rank_label),
-                    rank_value=int(card.rank_value),
-                    suit_name=str(card.suit_name),
-                    suit_symbol=str(SUIT_SYMBOLS[str(card.suit_name)]),
-                    is_reference=bool(card.is_reference),
-                    badge_text=None if card.badge_text is None else str(card.badge_text),
-                    group_label=None if card.group_label is None else str(card.group_label),
-                    bbox_px=bbox_px,
-                    row_index=int(row_index),
-                    order_index=int(order_index),
+            if row_group_label:
+                label_font = load_font(int(params.group_label_font_size_px), bold=True)
+                label_bbox = draw.textbbox((0, 0), row_group_label, font=label_font, stroke_width=1)
+                label_width = float(label_bbox[2] - label_bbox[0])
+                label_height = float(label_bbox[3] - label_bbox[1])
+                first_left = float(row_left_positions[row_index][0])
+                label_origin = (
+                    max(8.0, float(first_left - label_width - 18.0)),
+                    float(row_y + (0.5 * (float(params.card_height_px) - label_height))),
                 )
-            )
-            order_index += 1
+                draw_text_traced(draw,
+                    label_origin,
+                    row_group_label,
+                    font=label_font,
+                    fill=tuple(int(value) for value in theme.continuation_rgb),
+                    stroke_width=1,
+                    stroke_fill=(255, 255, 255),
+                 role="readout", required=False,)
+            for local_index, card in enumerate(row_cards):
+                left = float(row_left_positions[row_index][local_index])
+                bbox_px = (
+                    round(float(left), 3),
+                    round(float(row_y), 3),
+                    round(float(left + params.card_width_px), 3),
+                    round(float(row_y + params.card_height_px), 3),
+                )
+                _draw_shadow(
+                    image,
+                    bbox_px=bbox_px,
+                    radius_px=int(params.card_corner_radius_px),
+                    shadow_rgb=tuple(int(value) for value in theme.shadow_rgb),
+                    shadow_alpha=int(theme.shadow_alpha),
+                    shadow_offset_px=tuple(int(value) for value in theme.shadow_offset_px),
+                )
+                _draw_card_face(
+                    image,
+                    bbox_px=bbox_px,
+                    card=card,
+                    theme=theme,
+                    params=params,
+                )
+                card_specs.append(
+                    RenderedCardSpec(
+                        card_id=str(card.card_id),
+                        rank_label=str(card.rank_label),
+                        rank_value=int(card.rank_value),
+                        suit_name=str(card.suit_name),
+                        suit_symbol=str(SUIT_SYMBOLS[str(card.suit_name)]),
+                        is_reference=bool(card.is_reference),
+                        badge_text=None if card.badge_text is None else str(card.badge_text),
+                        group_label=None if card.group_label is None else str(card.group_label),
+                        bbox_px=bbox_px,
+                        row_index=int(row_index),
+                        order_index=int(order_index),
+                    )
+                )
+                order_index += 1
 
-    continuation_bboxes_px: List[List[float]] = []
-    if bool(show_continuation_cue) and len(row_groups) > 1:
-        continuation_text = "continue"
-        for row_index in range(len(row_groups) - 1):
-            gap_center_y = float(
-                row_ys[row_index]
-                + params.card_height_px
-                + (0.5 * (row_ys[row_index + 1] - row_ys[row_index] - params.card_height_px))
-            )
-            cue_anchor = (
-                float(params.canvas_width - params.panel_margin_px - 92 + dx),
-                float(gap_center_y),
-            )
-            cue_origin, cue_bbox_px, cue_font = _continuation_bbox(
-                draw,
-                text=continuation_text,
-                font_size_px=int(params.continuation_font_size_px),
-                anchor_xy=cue_anchor,
-            )
-            draw.text(
-                cue_origin,
-                continuation_text,
-                font=cue_font,
-                fill=tuple(int(value) for value in theme.continuation_rgb),
-                stroke_width=1,
-                stroke_fill=(255, 255, 255),
-            )
-            continuation_bboxes_px.append([float(value) for value in cue_bbox_px])
+        continuation_bboxes_px: List[List[float]] = []
+        if bool(show_continuation_cue) and len(row_groups) > 1:
+            continuation_text = "continue"
+            for row_index in range(len(row_groups) - 1):
+                gap_center_y = float(
+                    row_ys[row_index]
+                    + params.card_height_px
+                    + (0.5 * (row_ys[row_index + 1] - row_ys[row_index] - params.card_height_px))
+                )
+                cue_anchor = (
+                    float(params.canvas_width - params.panel_margin_px - 92 + dx),
+                    float(gap_center_y),
+                )
+                cue_origin, cue_bbox_px, cue_font = _continuation_bbox(
+                    draw,
+                    text=continuation_text,
+                    font_size_px=int(params.continuation_font_size_px),
+                    anchor_xy=cue_anchor,
+                )
+                draw_text_traced(draw,
+                    cue_origin,
+                    continuation_text,
+                    font=cue_font,
+                    fill=tuple(int(value) for value in theme.continuation_rgb),
+                    stroke_width=1,
+                    stroke_fill=(255, 255, 255),
+                 role="readout", required=False,)
+                continuation_bboxes_px.append([float(value) for value in cue_bbox_px])
 
     scene_entities_list: List[Dict[str, Any]] = [
         {
@@ -586,12 +642,13 @@ def render_cards_hand_scene(
         }
         for spec in card_specs
     ]
-    option_map = _draw_move_options(
-        image,
-        move_options=tuple(move_options),
-        params=params,
-        theme=theme,
-    )
+    with temporary_default_font_family(str(params.font_family)):
+        option_map = _draw_move_options(
+            image,
+            move_options=tuple(move_options),
+            params=params,
+            theme=theme,
+        )
     for option in move_options:
         option_bbox = option_map.get("move_option_bboxes_px", {}).get(str(option.label))
         if option_bbox is None:
@@ -636,6 +693,8 @@ def render_cards_hand_scene(
         "continuation_cue_bboxes_px": [list(bbox_px) for bbox_px in continuation_bboxes_px],
         "center_label_mode": str(params.center_label_mode),
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "suit_symbol_font_family": "system_fallback",
         **dict(option_map),
     }
     return RenderedCardHandScene(

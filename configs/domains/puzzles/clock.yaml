@@ -165,8 +165,8 @@ prompt:
       object_description_classic_seconds: one analog clock with all hour numerals, minute ticks, and three visible hands including a thin seconds hand
       object_description_minimal_seconds: one clean analog clock with hour numerals and three visible hands including a thin seconds hand
       object_description_outline_seconds: one outline-style analog clock with hour numerals and three visible hands including a thin seconds hand
-      evidence_hint: set "evidence" to an array containing exactly two bounding boxes [x0, y0, x1, y1] for the clock hands
-      evidence_hint_seconds: set "evidence" to an array containing exactly three bounding boxes [x0, y0, x1, y1] for the hour, minute, and seconds hands
+      evidence_hint: set "evidence" to an object/dictionary keyed by witness role with pixel points [x,y] for "clock_center", "hour_hand_tip", and "minute_hand_tip"
+      evidence_hint_seconds: set "evidence" to an object/dictionary keyed by witness role with pixel points [x,y] for "clock_center", "hour_hand_tip", "minute_hand_tip", and "second_hand_tip"
       answer_hint: set "answer" to the exact time in HH:MM 12-hour format with leading zeros
       answer_hint_seconds: set "answer" to the exact time in HH:MM:SS 12-hour format with leading zeros
     task_puzzles__clock_collection__compare:
@@ -175,5 +175,5 @@ prompt:
       object_description_classic: six to twelve labeled analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals, minute ticks, and two visible hands
       object_description_minimal: six to twelve labeled analog clocks arranged in a clean centered grid with at most four clocks per row, each with hour numerals and two visible hands
       object_description_outline: six to twelve labeled outline-style analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals and two visible hands
-      evidence_hint: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the winning clock face
+      evidence_hint: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the selected clock face
       answer_hint: set "answer" to the single winning clock label as a string

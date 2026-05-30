@@ -35,17 +35,15 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == "sunk_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "sunk_ship_count"
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "sunk_ship_count"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == "sunk_ship_count"
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
 
 
 def test_games_battleship_sunk_ship_count_places_each_ship_once_and_counts_sunk_ships() -> None:
@@ -94,17 +92,15 @@ def test_games_battleship_partial_ship_count_emits_expected_contract() -> None:
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == "partial_ship_count"
     assert out.scene_id == "battleship"
     assert trace["query_spec"]["query_id"] == "partial_ship_count"
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == "partial_ship_count"
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == "partial_ship_count"
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
 
 
 def test_games_battleship_partial_ship_count_places_each_ship_once_and_counts_partial_ships() -> None:

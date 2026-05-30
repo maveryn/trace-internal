@@ -6,25 +6,38 @@ generation:
     answer_index_max: 9
     balanced_sampling: true
   task_overrides:
-    task_icons__pattern_grid__color_pattern_violation_index:
+    task_icons__pattern_grid__attribute_pattern_violation_index:
       answer_index_min: 1
       answer_index_max: 9
-      pool_manifest: all_icons.txt
-      color_levels: [0, 1, 2, 3, 4, 5, 6, 7]
-      color_level_names: [red, orange, yellow, green, cyan, blue, purple, magenta]
-      color_ladder_rgb:
-        - [210, 54, 64]
-        - [224, 120, 28]
-        - [198, 164, 28]
-        - [48, 156, 72]
-        - [22, 160, 178]
-        - [58, 104, 210]
-        - [132, 74, 200]
-        - [204, 70, 156]
-      base_color_level_candidates: [0, 1, 2, 3, 4, 5, 6, 7]
-      row_step_color_candidates: [-2, -1, 0, 1, 2]
-      col_step_color_candidates: [-2, -1, 0, 1, 2]
-      shared_rotation_candidates_degrees: [0, 90, 180, 270]
+      query_id_weights:
+        grid_color_violation: 1.0
+        grid_size_violation: 1.0
+      variant_generation_params:
+        grid_color_violation:
+          pool_manifest: all_icons.txt
+          color_levels: [0, 1, 2, 3, 4, 5, 6, 7]
+          color_level_names: [red, orange, yellow, green, cyan, blue, purple, magenta]
+          color_ladder_rgb:
+            - [210, 54, 64]
+            - [224, 120, 28]
+            - [198, 164, 28]
+            - [48, 156, 72]
+            - [22, 160, 178]
+            - [58, 104, 210]
+            - [132, 74, 200]
+            - [204, 70, 156]
+          base_color_level_candidates: [0, 1, 2, 3, 4, 5, 6, 7]
+          row_step_color_candidates: [-2, -1, 0, 1, 2]
+          col_step_color_candidates: [-2, -1, 0, 1, 2]
+          shared_rotation_candidates_degrees: [0, 90, 180, 270]
+        grid_size_violation:
+          pool_manifest: all_icons.txt
+          size_levels: [1, 2, 3, 4, 5]
+          base_level_candidates: [1, 2, 3, 4, 5]
+          row_step_candidates: [-1, 0, 1]
+          col_step_candidates: [-1, 0, 1]
+          min_violation_level_delta: 2
+          shared_rotation_candidates_degrees: [0, 90, 180, 270]
     task_icons__sequence_strip__rotation_sequence_violation_index:
       sequence_length_min: 10
       sequence_length_max: 10
@@ -33,16 +46,6 @@ generation:
       pool_manifest: non_symmetry.txt
       rotation_candidates_degrees: [0, 90, 180, 270]
       step_candidates_degrees: [90, 180]
-    task_icons__pattern_grid__size_pattern_violation_index:
-      answer_index_min: 1
-      answer_index_max: 9
-      pool_manifest: all_icons.txt
-      size_levels: [1, 2, 3, 4, 5]
-      base_level_candidates: [1, 2, 3, 4, 5]
-      row_step_candidates: [-1, 0, 1]
-      col_step_candidates: [-1, 0, 1]
-      min_violation_level_delta: 2
-      shared_rotation_candidates_degrees: [0, 90, 180, 270]
 
 rendering:
   shared:
@@ -122,16 +125,27 @@ rendering:
     scene_content_bottom_padding_px: 10
     scene_content_top_offset_px: 40
   task_overrides:
-    task_icons__pattern_grid__color_pattern_violation_index:
-      scene_icon_size_min_px: 66
-      scene_icon_size_max_px: 84
-      cell_box_width_min_px: 116
-      cell_box_width_max_px: 152
-      cell_box_height_min_px: 116
-      cell_box_height_max_px: 152
-      palette_size_min: 8
-      palette_size_max: 8
-      icon_noise_edit_count_range: [0, 0]
+    task_icons__pattern_grid__attribute_pattern_violation_index:
+      variant_render_params:
+        grid_color_violation:
+          scene_icon_size_min_px: 66
+          scene_icon_size_max_px: 84
+          cell_box_width_min_px: 116
+          cell_box_width_max_px: 152
+          cell_box_height_min_px: 116
+          cell_box_height_max_px: 152
+          palette_size_min: 8
+          palette_size_max: 8
+          icon_noise_edit_count_range: [0, 0]
+        grid_size_violation:
+          scene_icon_size_min_px: 34
+          scene_icon_size_max_px: 82
+          cell_box_width_min_px: 116
+          cell_box_width_max_px: 152
+          cell_box_height_min_px: 116
+          cell_box_height_max_px: 152
+          size_level_gap_px: 10
+          icon_noise_edit_count_range: [0, 0]
     task_icons__sequence_strip__rotation_sequence_violation_index:
       scene_icon_size_min_px: 72
       scene_icon_size_max_px: 92
@@ -140,15 +154,6 @@ rendering:
       cell_box_height_min_px: 112
       cell_box_height_max_px: 144
       icon_noise_edit_count_range: [0, 0]
-    task_icons__pattern_grid__size_pattern_violation_index:
-      scene_icon_size_min_px: 34
-      scene_icon_size_max_px: 82
-      cell_box_width_min_px: 116
-      cell_box_width_max_px: 152
-      cell_box_height_min_px: 116
-      cell_box_height_max_px: 152
-      size_level_gap_px: 10
-      icon_noise_edit_count_range: [0, 0]
 
 prompt:
   shared:
@@ -156,9 +161,9 @@ prompt:
     scene_key: structured_violation_scene
     task_key: structured_violation_query
   task_overrides:
-    task_icons__pattern_grid__color_pattern_violation_index:
+    task_icons__pattern_grid__attribute_pattern_violation_index:
       object_description: a 3 by 3 numbered grid, one icon per box
-      question_text: Which numbered box breaks the color pattern?
+      question_text: Which numbered box breaks the visible pattern?
       evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating grid box
       answer_hint: set "answer" to the violating box index as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
@@ -167,13 +172,6 @@ prompt:
       object_description: a horizontal row of numbered boxes, one icon per box
       question_text: Which numbered box breaks the rotation sequence?
       evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating numbered box
-      answer_hint: set "answer" to the violating box index as an integer
-      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
-      json_example_answer_only: '{"answer":5}'
-    task_icons__pattern_grid__size_pattern_violation_index:
-      object_description: a 3 by 3 numbered grid, one icon per box
-      question_text: Which numbered box breaks the size pattern?
-      evidence_hint: set "evidence" to a JSON array containing exactly one [x0, y0, x1, y1] box in image pixel coordinates for the violating grid box
       answer_hint: set "answer" to the violating box index as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'

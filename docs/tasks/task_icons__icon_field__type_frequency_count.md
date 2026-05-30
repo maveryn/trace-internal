@@ -17,6 +17,9 @@ Query ids:
 
 Answer schema: integer.
 Evidence schema: `bbox_set` over every counted icon instance.
+Answer support:
+- `singleton_type_count`: `0..4`
+- `most_frequent_type_count`: `2..6`
 
 ## Notes
 The two frequency predicates share the same single-panel icon-field view and

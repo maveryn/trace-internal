@@ -15,10 +15,12 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -54,7 +56,13 @@ TACTIC_QUERIES: Tuple[str, ...] = (
     QUERY_X_BLOCK_MOVE,
     QUERY_O_BLOCK_MOVE,
 )
-SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("panel_scene",)
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic_grid",
+    "soft_marker",
+    "paper_grid",
+    "neon_board",
+    "tournament_board",
+)
 LOCAL_LINES: Tuple[Tuple[int, int, int], ...] = (
     (0, 1, 2),
     (3, 4, 5),
@@ -130,6 +138,22 @@ class _RenderedScene:
     render_map: Dict[str, Any]
     style_meta: Dict[str, Any]
     background_meta: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class _BoardVisualStyle:
+    """Resolved nonsemantic board styling for one Ultimate Tic-Tac-Toe render."""
+
+    cell_fill_rgb: Tuple[int, int, int]
+    board_fill_rgb: Tuple[int, int, int]
+    grid_rgb: Tuple[int, int, int]
+    border_rgb: Tuple[int, int, int]
+    highlight_rgb: Tuple[int, int, int]
+    x_rgb: Tuple[int, int, int]
+    o_rgb: Tuple[int, int, int]
+    option_fill_rgb: Tuple[int, int, int]
+    option_outline_rgb: Tuple[int, int, int]
+    option_text_rgb: Tuple[int, int, int]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -517,38 +541,118 @@ def _draw_centered_text(
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = [float(value) for value in bbox]
-    draw.text(
+    draw_text_traced(draw,
         (float(x0 + ((x1 - x0) - text_w) / 2.0), float(y0 + ((y1 - y0) - text_h) / 2.0)),
         str(text),
         font=font,
         fill=tuple(fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(fill)),
-    )
+     role="readout", required=False,)
+
+
+def _rgb(values: Sequence[int]) -> Tuple[int, int, int]:
+    return tuple(max(0, min(255, int(value))) for value in values[:3])  # type: ignore[return-value]
+
+
+def _blend_rgb(a: Sequence[int], b: Sequence[int], alpha: float) -> Tuple[int, int, int]:
+    t = max(0.0, min(1.0, float(alpha)))
+    return tuple(int(round((float(a[index]) * (1.0 - t)) + (float(b[index]) * t))) for index in range(3))
+
+
+def _resolve_board_visual_style(style_variant: str, panel_style) -> Tuple[_BoardVisualStyle, Dict[str, Any]]:
+    """Resolve scene-local board colors independent of the shared panel background."""
+
+    panel_fill = _rgb(panel_style.panel_fill_rgb)
+    panel_background = _rgb(panel_style.background_rgb)
+    default_board = _blend_rgb(panel_fill, panel_background, 0.12)
+    styles: Dict[str, _BoardVisualStyle] = {
+        "classic_grid": _BoardVisualStyle(
+            cell_fill_rgb=_blend_rgb(panel_fill, (255, 255, 255), 0.22),
+            board_fill_rgb=default_board,
+            grid_rgb=(116, 132, 158),
+            border_rgb=(46, 61, 92),
+            highlight_rgb=(232, 162, 42),
+            x_rgb=(42, 92, 205),
+            o_rgb=(203, 58, 68),
+            option_fill_rgb=(255, 232, 102),
+            option_outline_rgb=(48, 63, 95),
+            option_text_rgb=(32, 36, 45),
+        ),
+        "soft_marker": _BoardVisualStyle(
+            cell_fill_rgb=(238, 244, 247),
+            board_fill_rgb=(226, 235, 239),
+            grid_rgb=(133, 152, 158),
+            border_rgb=(86, 103, 112),
+            highlight_rgb=(78, 158, 151),
+            x_rgb=(44, 118, 172),
+            o_rgb=(190, 91, 101),
+            option_fill_rgb=(239, 220, 143),
+            option_outline_rgb=(65, 101, 109),
+            option_text_rgb=(36, 45, 48),
+        ),
+        "paper_grid": _BoardVisualStyle(
+            cell_fill_rgb=(248, 241, 222),
+            board_fill_rgb=(237, 226, 202),
+            grid_rgb=(166, 133, 94),
+            border_rgb=(95, 68, 48),
+            highlight_rgb=(185, 108, 54),
+            x_rgb=(45, 82, 130),
+            o_rgb=(157, 64, 62),
+            option_fill_rgb=(252, 218, 128),
+            option_outline_rgb=(113, 79, 45),
+            option_text_rgb=(52, 40, 31),
+        ),
+        "neon_board": _BoardVisualStyle(
+            cell_fill_rgb=(28, 34, 56),
+            board_fill_rgb=(18, 23, 42),
+            grid_rgb=(87, 119, 169),
+            border_rgb=(73, 232, 237),
+            highlight_rgb=(252, 211, 64),
+            x_rgb=(87, 229, 244),
+            o_rgb=(255, 99, 182),
+            option_fill_rgb=(255, 224, 76),
+            option_outline_rgb=(255, 255, 255),
+            option_text_rgb=(28, 31, 39),
+        ),
+        "tournament_board": _BoardVisualStyle(
+            cell_fill_rgb=(224, 235, 227),
+            board_fill_rgb=(207, 224, 211),
+            grid_rgb=(94, 128, 104),
+            border_rgb=(40, 91, 64),
+            highlight_rgb=(216, 158, 59),
+            x_rgb=(32, 93, 164),
+            o_rgb=(181, 58, 55),
+            option_fill_rgb=(247, 230, 134),
+            option_outline_rgb=(36, 92, 67),
+            option_text_rgb=(26, 44, 35),
+        ),
+    }
+    resolved_variant = str(style_variant) if str(style_variant) in styles else "classic_grid"
+    resolved = styles[resolved_variant]
+    return resolved, {
+        "style_variant": str(resolved_variant),
+        "available_styles": list(SUPPORTED_STYLE_VARIANTS),
+        "board_style_policy": "scene_local_ultimate_tictactoe_board_palette",
+    }
 
 
 def _render_scene(
     *,
     sample: _Sample,
     task_id: str,
+    style_variant: str,
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _RenderedScene:
-    canvas_width = _int_default(params, "canvas_width", _DEFAULTS.canvas_width)
-    canvas_height = _int_default(params, "canvas_height", _DEFAULTS.canvas_height)
+    base_canvas_width = _int_default(params, "canvas_width", _DEFAULTS.canvas_width)
+    base_canvas_height = _int_default(params, "canvas_height", _DEFAULTS.canvas_height)
     style, style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{str(task_id)}.ultimate_tictactoe_panel_style",
         treatment_weights=group_default(_GEN_DEFAULTS, "panel_treatment_weights", {}),
         palette_weights=group_default(_GEN_DEFAULTS, "panel_palette_weights", {}),
     )
-    image, background_meta = make_panel_scene_background(
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
-        style=style,
-    )
-    image = image.convert("RGBA")
-    draw = ImageDraw.Draw(image)
     layout_jitter = resolve_games_layout_jitter(
         params,
         _RENDER_DEFAULTS,
@@ -567,11 +671,39 @@ def _render_scene(
     inner_margin = scale_games_px(_int_default(params, "board_inner_margin_px", _DEFAULTS.board_inner_margin_px), unit_scale, min_px=28)
     local_size = int(3 * local_cell + 2 * local_gap)
     grid_size = int(3 * local_size + 2 * macro_gap)
-    panel_size = int(grid_size + 2 * inner_margin)
+    raw_panel_size = int(grid_size + 2 * inner_margin)
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", True),
+        )
+    )
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        side_padding = _int_default(params, "canvas_side_padding_px", 72)
+        canvas_width = min(
+            int(base_canvas_width),
+            max(_int_default(params, "canvas_min_width_px", 560), int(raw_panel_size + (2 * side_padding))),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        side_padding = _int_default(params, "canvas_side_padding_px", 72)
+        canvas_height = min(
+            int(base_canvas_height),
+            max(_int_default(params, "canvas_min_height_px", 560), int(raw_panel_size + (2 * side_padding))),
+        )
+    panel_size = int(raw_panel_size)
     panel_size = min(
         int(panel_size),
         int(min(canvas_width, canvas_height) - 2 * _int_default(params, "panel_margin_px", _DEFAULTS.panel_margin_px)),
     )
+    image, background_meta = make_panel_scene_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        style=style,
+    )
+    image = image.convert("RGBA")
+    draw = ImageDraw.Draw(image)
     base_panel = (
         float((canvas_width - panel_size) / 2.0),
         float((canvas_height - panel_size) / 2.0),
@@ -589,17 +721,31 @@ def _render_scene(
     grid_left = int(round(panel_bbox[0])) + inner_margin
     grid_top = int(round(panel_bbox[1])) + inner_margin
 
-    symbol_font = load_font(scale_games_px(_int_default(params, "symbol_font_size_px", _DEFAULTS.symbol_font_size_px), unit_scale, min_px=18), bold=True)
-    option_font = load_font(scale_games_px(_int_default(params, "option_font_size_px", _DEFAULTS.option_font_size_px), unit_scale, min_px=13), bold=True)
-    text_rgb = tuple(int(value) for value in style.text_rgb)
-    grid_rgb = tuple(int(value) for value in style.grid_rgb)
-    border_rgb = tuple(int(value) for value in style.panel_border_rgb)
-    mark_rgb = tuple(int(value) for value in style.mark_rgb)
-    cell_fill = tuple(int(round((int(style.panel_fill_rgb[i]) * 0.82) + (int(style.background_rgb[i]) * 0.18))) for i in range(3))
-    x_rgb = (45, 96, 210)
-    o_rgb = (205, 66, 70)
-    open_rgb = tuple(int(round((int(cell_fill[i]) * 0.82) + (255 * 0.18))) for i in range(3))
-    highlight_rgb = tuple(int(value) for value in style.mark_rgb)
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.ultimate_tictactoe.font_family",
+        params=params,
+    )
+    symbol_font = load_font(
+        scale_games_px(_int_default(params, "symbol_font_size_px", _DEFAULTS.symbol_font_size_px), unit_scale, min_px=18),
+        bold=True,
+        font_family=str(font_family),
+    )
+    option_font = load_font(
+        scale_games_px(_int_default(params, "option_font_size_px", _DEFAULTS.option_font_size_px), unit_scale, min_px=13),
+        bold=True,
+        font_family=str(font_family),
+    )
+    board_style, board_style_meta = _resolve_board_visual_style(str(style_variant), style)
+    grid_rgb = tuple(int(value) for value in board_style.grid_rgb)
+    border_rgb = tuple(int(value) for value in board_style.border_rgb)
+    mark_rgb = tuple(int(value) for value in board_style.option_outline_rgb)
+    open_rgb = tuple(int(value) for value in board_style.cell_fill_rgb)
+    board_fill_rgb = tuple(int(value) for value in board_style.board_fill_rgb)
+    x_rgb = tuple(int(value) for value in board_style.x_rgb)
+    o_rgb = tuple(int(value) for value in board_style.o_rgb)
+    highlight_rgb = tuple(int(value) for value in board_style.highlight_rgb)
     small_board_border_width = scale_games_px(
         _int_default(params, "small_board_border_width_px", _DEFAULTS.small_board_border_width_px),
         unit_scale,
@@ -619,7 +765,7 @@ def _render_scene(
         by0 = int(grid_top + macro_row * (local_size + macro_gap))
         board_bbox = (float(bx0), float(by0), float(bx0 + local_size), float(by0 + local_size))
         board_id = _board_entity_id(int(board_index))
-        fill = open_rgb
+        fill = board_fill_rgb
         draw.rounded_rectangle(board_bbox, radius=6, fill=fill, outline=None)
         board_bbox_list = [round(float(value), 3) for value in board_bbox]
         entity_bboxes[board_id] = list(board_bbox_list)
@@ -640,7 +786,7 @@ def _render_scene(
             x0 = int(bx0 + col * (local_cell + local_gap))
             y0 = int(by0 + row * (local_cell + local_gap))
             cell_bbox = (float(x0), float(y0), float(x0 + local_cell), float(y0 + local_cell))
-            draw_panel_grid_cell(draw, bbox=tuple(int(round(v)) for v in cell_bbox), fill=fill, style=style, outline=grid_rgb, width=1)
+            draw_panel_grid_cell(draw, bbox=tuple(int(round(v)) for v in cell_bbox), fill=open_rgb, style=style, outline=grid_rgb, width=1)
             cell_id = _cell_entity_id(int(board_index), int(cell_index))
             board_cell_bboxes[int(board_index)][int(cell_index)] = tuple(cell_bbox)
             cell_bbox_list = [round(float(v), 3) for v in cell_bbox]
@@ -680,8 +826,8 @@ def _render_scene(
             bbox = board_cell_bboxes[int(sample.highlighted_board_index)][int(cell_index)]
             radius = max(9.0, local_cell * 0.23)
             label_bbox = (bbox[2] - 2 * radius - 3, bbox[1] + 3, bbox[2] - 3, bbox[1] + 2 * radius + 3)
-            draw.ellipse(label_bbox, fill=tuple(style.option_marker_fill_rgb), outline=mark_rgb, width=2)
-            _draw_centered_text(draw, label_bbox, label, font=option_font, fill=text_rgb, stroke_width=0)
+            draw.ellipse(label_bbox, fill=tuple(board_style.option_fill_rgb), outline=mark_rgb, width=2)
+            _draw_centered_text(draw, label_bbox, label, font=option_font, fill=tuple(board_style.option_text_rgb), stroke_width=0)
 
     render_map = {
         "entity_bboxes_px": dict(entity_bboxes),
@@ -689,22 +835,44 @@ def _render_scene(
         "cell_bboxes_px": dict(cell_bboxes_all),
         "grid_bbox_px": [float(grid_left), float(grid_top), float(grid_left + grid_size), float(grid_top + grid_size)],
         "style": dict(style_meta),
+        "panel_scene_style": dict(style_meta),
+        "ultimate_tictactoe_board_style": dict(board_style_meta),
+        "font_family": str(font_family),
+        "text_style": {"font_family": str(font_family)},
         "layout_jitter": attach_games_unit_size_jitter(resolved_jitter, unit_meta),
         "effective_local_cell_size_px": int(local_cell),
         "effective_local_gap_px": int(local_gap),
+        "dynamic_canvas": {
+            "enabled": bool(dynamic_canvas_enabled),
+            "base_canvas_width": int(base_canvas_width),
+            "base_canvas_height": int(base_canvas_height),
+            "raw_panel_size_px": int(raw_panel_size),
+            "resolved_canvas_width": int(canvas_width),
+            "resolved_canvas_height": int(canvas_height),
+        },
     }
     return _RenderedScene(
         image=image.convert("RGB"),
         entities=tuple(entities),
         render_map=dict(render_map),
-        style_meta=dict(style_meta),
+        style_meta={
+            "panel_scene_style": dict(style_meta),
+            "ultimate_tictactoe_board_style": dict(board_style_meta),
+            "text_style": {
+                "font_family": str(font_family),
+                "font_asset": get_font_family_record(str(font_family)).to_trace(),
+            },
+        },
         background_meta=dict(background_meta),
     )
 
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in TACTIC_QUERIES:
-        answer_and_evidence = {"evidence": [[410, 240, 470, 300], [350, 240, 410, 300]], "answer": "C"}
+        answer_and_evidence = {
+            "evidence": [[410, 240, 470, 300], [350, 240, 410, 300], [470, 240, 530, 300]],
+            "answer": "C",
+        }
         answer_only = {"answer": "C"}
     else:
         answer_and_evidence = {"evidence": [[110, 110, 260, 260], [450, 280, 600, 430]], "answer": 2}
@@ -845,6 +1013,7 @@ class _UltimateTicTacToeTask:
         rendered = _render_scene(
             sample=sample,
             task_id=str(self.task_id),
+            style_variant=str(style_variant),
             instance_seed=int(instance_seed),
             params=params,
         )
@@ -905,7 +1074,9 @@ class _UltimateTicTacToeTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
-                "panel_scene_style": dict(rendered.style_meta),
+                "panel_scene_style": dict(rendered.style_meta.get("panel_scene_style", {})),
+                "ultimate_tictactoe_board_style": dict(rendered.style_meta.get("ultimate_tictactoe_board_style", {})),
+                "text_style": dict(rendered.style_meta.get("text_style", {})),
                 "effective_local_cell_size_px": rendered.render_map.get("effective_local_cell_size_px"),
             },
             "render_map": dict(rendered.render_map),
@@ -928,7 +1099,9 @@ class _UltimateTicTacToeTask:
                 "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
             },
             "projected_evidence": {
+                "type": "bbox_set",
                 "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),

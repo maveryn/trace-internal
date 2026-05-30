@@ -9,8 +9,10 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .hex_common import BLUE, EMPTY, RED, Board, Coord, color_name, coord_to_cell_id
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import HexTheme, build_games_hex_theme
 
 
@@ -28,6 +30,7 @@ class HexRenderParams:
     candidate_label_font_size_px: int
     side_band_width_px: int
     layout_jitter_meta: Dict[str, Any] | None = None
+    font_family: str = ""
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,7 @@ def _draw_centered_text(
     fill: Tuple[int, int, int],
     max_size_px: int,
     bold: bool = False,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -82,6 +86,7 @@ def _draw_centered_text(
         bold=bool(bold),
         min_size_px=9,
         max_size_px=int(max_size_px),
+        font_family=str(font_family) or None,
         fill_ratio=0.80,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
@@ -89,7 +94,7 @@ def _draw_centered_text(
     text_h = float(text_bbox[3] - text_bbox[1])
     x = float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0]))
     y = float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1]))
-    draw.text((x, y), str(text), fill=tuple(int(v) for v in fill), font=font)
+    draw_text_traced(draw,(x, y), str(text), fill=tuple(int(v) for v in fill), font=font, role="readout", required=False)
 
 
 def _draw_stone(
@@ -145,6 +150,7 @@ def render_hex_board_scene(
     player_color: str,
     candidate_labels_by_coord: Mapping[Coord, str],
     params: HexRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedHexScene:
     """Render one Hex board with colored goal sides and optional candidate labels."""
 
@@ -180,6 +186,22 @@ def render_hex_board_scene(
     )
     left = float(board_bbox[0])
     top = float(board_bbox[1])
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(16, int(round(float(params.panel_margin_px) * 0.62)))
+        panel_bbox = (
+            max(4, int(round(board_bbox[0])) - panel_pad),
+            max(4, int(round(board_bbox[1])) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(board_bbox[2])) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(board_bbox[3])) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=26,
+            border_width=max(2, int(round(float(params.hex_border_width_px) * 0.8))),
+        )
 
     centers_px: Dict[str, Tuple[float, float]] = {}
     cell_bboxes_px: Dict[str, List[float]] = {}
@@ -232,6 +254,7 @@ def render_hex_board_scene(
                     fill=tuple(int(v) for v in theme.candidate_badge_text_rgb),
                     max_size_px=int(params.candidate_label_font_size_px),
                     bold=True,
+                    font_family=str(params.font_family),
                 )
             stone_bbox = None
             if int(value) in {int(RED), int(BLUE)}:
@@ -322,6 +345,9 @@ def render_hex_board_scene(
         },
         "player_color": str(player_color),
         "layout_jitter": {**dict(layout_jitter), "board_dx_px": float(dx), "board_dy_px": float(dy)},
+        "scene_panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+        "font_family": str(params.font_family),
     }
     return RenderedHexScene(
         image=image,

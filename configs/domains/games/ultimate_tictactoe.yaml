@@ -11,7 +11,11 @@ generation:
       x_blocking_move_label: 1.0
       o_blocking_move_label: 1.0
     style_variant_weights:
-      panel_scene: 1.0
+      classic_grid: 1.0
+      soft_marker: 1.0
+      paper_grid: 1.0
+      neon_board: 1.0
+      tournament_board: 1.0
     balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
@@ -36,6 +40,10 @@ rendering:
     highlight_width_px: 6
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 560
+    canvas_side_padding_px: 72
 complexity:
   shared:
     criteria_weights:
@@ -51,21 +59,21 @@ prompt:
     object_description_ultimate_tictactoe_board: an Ultimate Tic-Tac-Toe board made of nine small Tic-Tac-Toe boards
     ultimate_tictactoe_status_rule_text: A small board is won by X or O when that player has three marks in a row inside that small board. A drawn small board is full and has no winner.
     ultimate_tictactoe_tactic_rule_text: Use only the highlighted small board. A winning move places the requested mark to make three in a row; a blocking move places a mark on the only cell that stops the opponent's immediate three-in-a-row threat.
-    evidence_hint_x_won_board_count: set "evidence" to an array containing the boxes of all small boards won by X
+    evidence_hint_x_won_board_count: set "evidence" to an array containing the [x0, y0, x1, y1] boxes of all small boards won by X
     answer_hint_x_won_board_count: set "answer" to the number of small boards won by X
-    evidence_hint_o_won_board_count: set "evidence" to an array containing the boxes of all small boards won by O
+    evidence_hint_o_won_board_count: set "evidence" to an array containing the [x0, y0, x1, y1] boxes of all small boards won by O
     answer_hint_o_won_board_count: set "answer" to the number of small boards won by O
-    evidence_hint_neither_won_board_count: set "evidence" to an array containing the boxes of all small boards that neither player has won
+    evidence_hint_neither_won_board_count: set "evidence" to an array containing the [x0, y0, x1, y1] boxes of all small boards that neither player has won
     answer_hint_neither_won_board_count: set "answer" to the number of small boards that neither player has won
-    evidence_hint_drawn_board_count: set "evidence" to an array containing the boxes of all drawn small boards
+    evidence_hint_drawn_board_count: set "evidence" to an array containing the [x0, y0, x1, y1] boxes of all drawn small boards
     answer_hint_drawn_board_count: set "answer" to the number of drawn small boards
-    evidence_hint_x_winning_move_label: set "evidence" to an array containing the selected empty-cell option box and the two X cells that support the winning line
+    evidence_hint_x_winning_move_label: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two X cells that support the winning line
     answer_hint_x_winning_move_label: set "answer" to only the selected option letter
-    evidence_hint_o_winning_move_label: set "evidence" to an array containing the selected empty-cell option box and the two O cells that support the winning line
+    evidence_hint_o_winning_move_label: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two O cells that support the winning line
     answer_hint_o_winning_move_label: set "answer" to only the selected option letter
-    evidence_hint_x_blocking_move_label: set "evidence" to an array containing the selected empty-cell option box and the two O threat cells being blocked
+    evidence_hint_x_blocking_move_label: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two O threat cells being blocked
     answer_hint_x_blocking_move_label: set "answer" to only the selected option letter
-    evidence_hint_o_blocking_move_label: set "evidence" to an array containing the selected empty-cell option box and the two X threat cells being blocked
+    evidence_hint_o_blocking_move_label: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the selected empty-cell option and the two X threat cells being blocked
     answer_hint_o_blocking_move_label: set "answer" to only the selected option letter
 visual:
   noise:

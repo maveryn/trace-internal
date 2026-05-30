@@ -14,9 +14,10 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, temporary_default_font_family
 from ..shared.common import decouple_axis_sampling, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.fixed_query_task import rewrite_fixed_puzzle_query_output
@@ -69,7 +70,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="topology")
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.5)
 
 Color = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
@@ -249,6 +250,52 @@ def _resolve_render_params(
         unit_size_scale=float(unit_scale),
         unit_size_jitter=dict(unit_meta),
     )
+
+
+def _sample_maze_font(*, instance_seed: int, params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> str:
+    """Sample one role-aware font family for all visible maze text."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.label_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for the sampled maze label font."""
+
+    return {
+        **get_font_family_record(str(font_family)).to_trace(),
+        "source": "global_font_pool",
+        "font_asset_version": font_asset_version(),
+        "selection_scope": "maze_start_and_exit_labels",
+        "include_tags": [],
+        "exclude_tags": [],
+    }
+
+
+def _maze_style_trace(render_params: _MazeExitRenderParams) -> Dict[str, Any]:
+    """Record resolved non-semantic maze style parameters."""
+
+    return {
+        "panel_fill_rgb": [int(value) for value in render_params.panel_fill_rgb],
+        "floor_fill_rgb": [int(value) for value in render_params.floor_fill_rgb],
+        "wall_color_rgb": [int(value) for value in render_params.wall_color_rgb],
+        "border_color_rgb": [int(value) for value in render_params.border_color_rgb],
+        "text_color_rgb": [int(value) for value in render_params.text_color_rgb],
+        "text_stroke_rgb": [int(value) for value in render_params.text_stroke_rgb],
+        "start_fill_rgb": [int(value) for value in render_params.start_fill_rgb],
+        "start_outline_rgb": [int(value) for value in render_params.start_outline_rgb],
+        "exit_outline_rgb": [int(value) for value in render_params.exit_outline_rgb],
+        "exit_palette_rgb": [[int(value) for value in color] for color in render_params.exit_palette],
+        "subtle_grid_rgb": [int(value) for value in render_params.subtle_grid_rgb],
+        "wall_stroke_width_px": int(render_params.wall_stroke_width_px),
+        "outer_wall_stroke_width_px": int(render_params.outer_wall_stroke_width_px),
+        "exit_marker_radius_px": int(render_params.exit_marker_radius_px),
+        "exit_marker_shape": str(render_params.exit_marker_shape),
+    }
 
 
 def _resolve_int_bounds(
@@ -1193,17 +1240,24 @@ class _PuzzlesTopologyMazeExitBaseTask:
             text_stroke_rgb=tuple(int(value) for value in scene_style.text_stroke_rgb),
             subtle_grid_rgb=tuple(int(value) for value in scene_style.notebook_line_rgb),
         )
+        font_family = _sample_maze_font(
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+        )
+        font_meta = _font_trace_record(str(font_family))
         background, background_meta = make_puzzle_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_maze_exit_scene(
-            background,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            render_params=render_params,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_maze_exit_scene(
+                background,
+                dataset=dataset,
+                scene_variant=str(scene_variant),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1353,7 +1407,11 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "coord_space": "pixel",
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
-                "scene_style": dict(scene_style_meta),
+                "scene_style": {
+                    **dict(scene_style_meta),
+                    "maze": _maze_style_trace(render_params),
+                    "font": dict(font_meta),
+                },
                 "post_image_noise": dict(post_noise_meta),
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "layout": "orthogonal_wall_maze_with_boundary_exit_labels",
@@ -1361,6 +1419,9 @@ class _PuzzlesTopologyMazeExitBaseTask:
                 "outer_wall_stroke_width_px": int(render_params.outer_wall_stroke_width_px),
                 "exit_marker_radius_px": int(render_params.exit_marker_radius_px),
                 "exit_marker_shape": str(render_params.exit_marker_shape),
+                "text_style": {
+                    "font": dict(font_meta),
+                },
                 "unit_size_jitter": dict(render_params.unit_size_jitter),
             },
             "render_map": with_puzzle_unit_size_jitter({

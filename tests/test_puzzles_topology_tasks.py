@@ -19,8 +19,8 @@ from trace.tasks.puzzles.topology.string_component_count import (
     PuzzlesTopologyStringComponentCountTask,
 )
 from trace.tasks.puzzles.topology.voxel_ladder_maze import (
-    PuzzlesTopologyVoxelLadderRouteCountTask,
-    PuzzlesTopologyVoxelLadderRouteLabelTask,
+    PuzzlesTopologyVoxelLadderCheckpointReachabilityTask,
+    PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask,
 )
 from tests.helpers import assert_counter_support_within, extract_prompt_json_example
 
@@ -560,19 +560,22 @@ def test_puzzle_topology_maze_exit_label_contract_matches_maze_trace() -> None:
             reachable_labels = [str(value) for value in execution["reachable_exit_labels"]]
             unreachable_labels = [str(value) for value in execution["unreachable_exit_labels"]]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "maze"
             assert out.answer_gt.type == ("integer" if str(query_id) == "reachable_exit_count" else "string")
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
             assert execution["target_reachability"] == target_reachability
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+            assert render["text_style"]["font"]["source"] == "global_font_pool"
+            assert render["text_style"]["font"]["font_family"]
+            assert render["scene_style"]["font"]["font_family"] == render["text_style"]["font"]["font_family"]
+            assert render["scene_style"]["maze"]["wall_color_rgb"]
+            assert render["scene_style"]["maze"]["exit_palette_rgb"]
             assert str(execution["view_family"]) == "topology_orthogonal_maze_exit_label"
             assert str(execution["topology_rule"]) == "move_through_open_corridors_from_start_walls_block_motion"
             assert 6 <= int(execution["maze_rows"]) <= 8
@@ -725,19 +728,16 @@ def test_puzzle_topology_maze_exit_reachability_label_samples_target_reachabilit
             max_attempts=10,
         )
         trace = out.trace_payload["execution_trace"]
-        assert out.query_id == "default"
         assert out.query_id == "exit_reachability_label"
-        assert trace["query_id"] == "default"
         assert trace["query_id"] == "exit_reachability_label"
         assert trace["target_reachability"] == expected
 
 
 def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
     task_cases = (
-        (PuzzlesTopologyVoxelLadderRouteLabelTask(), "checkpoint_sequence_label"),
-        (PuzzlesTopologyVoxelLadderRouteLabelTask(), "unreachable_checkpoint_label"),
-        (PuzzlesTopologyVoxelLadderRouteCountTask(), "reachable_checkpoint_count"),
-        (PuzzlesTopologyVoxelLadderRouteCountTask(), "shortest_ladder_count"),
+        (PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(), "checkpoint_sequence_label"),
+        (PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(), "unreachable_checkpoint_label"),
+        (PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(), "reachable_checkpoint_count"),
     )
     scene_variants = (
         "clean_isometric_voxels",
@@ -760,10 +760,8 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
             supporting_ids = [str(value) for value in execution["supporting_item_ids"]]
 
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
             assert str(out.scene_id) == "voxel_ladder"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
             assert str(execution["internal_query_id"]) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
@@ -780,7 +778,6 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
             ]
 
             checkpoint_specs = [dict(item) for item in execution["checkpoints"]]
-            ladder_specs = [dict(item) for item in execution["ladders"]]
             route_checkpoint_labels = [str(value) for value in execution["route_checkpoint_sequence"]]
             reachable_labels = [
                 str(item["label"])
@@ -828,11 +825,7 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
                 assert 2 <= int(out.answer_gt.value) <= 5
                 assert supporting_ids == [f"checkpoint_{label}" for label in reachable_labels]
             else:
-                assert str(query_id) == "shortest_ladder_count"
-                assert out.answer_gt.type == "integer"
-                assert int(out.answer_gt.value) == len(ladder_specs)
-                assert 1 <= int(out.answer_gt.value) <= 3
-                assert supporting_ids == [str(ladder["ladder_id"]) for ladder in ladder_specs]
+                raise AssertionError(f"unhandled voxel-ladder query {query_id}")
 
             for bbox in evidence_bboxes:
                 x1, y1, x2, y2 = bbox
@@ -843,7 +836,7 @@ def test_puzzle_topology_voxel_ladder_contract_matches_trace() -> None:
 def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -> None:
     expected = {
         "checkpoint_sequence_label": (
-            PuzzlesTopologyVoxelLadderRouteLabelTask(),
+            PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(),
             {
                 "evidence": [
                     [128, 522, 206, 590],
@@ -856,8 +849,13 @@ def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -
             },
             {"answer": "B"},
         ),
+        "unreachable_checkpoint_label": (
+            PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(),
+            {"evidence": [[758, 318, 830, 388]], "answer": "purple"},
+            {"answer": "purple"},
+        ),
         "reachable_checkpoint_count": (
-            PuzzlesTopologyVoxelLadderRouteCountTask(),
+            PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(),
             {"evidence": [[318, 404, 390, 474], [472, 276, 544, 346], [664, 128, 736, 198]], "answer": 3},
             {"answer": 3},
         ),
@@ -872,38 +870,37 @@ def test_puzzle_topology_voxel_ladder_prompt_examples_match_selected_queries() -
 
 
 def test_puzzle_topology_voxel_ladder_sampling_balances_public_queries_and_scenes() -> None:
-    label_task = PuzzlesTopologyVoxelLadderRouteLabelTask()
-    count_task = PuzzlesTopologyVoxelLadderRouteCountTask()
-    label_combos = Counter()
-    count_combos = Counter()
-    count_answers: dict[str, set[int]] = {}
+    sequence_task = PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask()
+    reachability_task = PuzzlesTopologyVoxelLadderCheckpointReachabilityTask()
+    sequence_combos = Counter()
+    reachability_combos = Counter()
+    reachability_answers: dict[str, set[int]] = {}
 
     for sampling_index in range(120):
-        label_out = label_task.generate(30120 + sampling_index, params={}, max_attempts=10)
-        label_trace = label_out.trace_payload["execution_trace"]
-        label_combos[(str(label_trace["query_id"]), str(label_trace["scene_variant"]))] += 1
+        sequence_out = sequence_task.generate(30120 + sampling_index, params={}, max_attempts=10)
+        sequence_trace = sequence_out.trace_payload["execution_trace"]
+        sequence_combos[(str(sequence_trace["query_id"]), str(sequence_trace["scene_variant"]))] += 1
 
-        count_out = count_task.generate(30320 + sampling_index, params={}, max_attempts=10)
-        count_trace = count_out.trace_payload["execution_trace"]
-        count_query = str(count_trace["query_id"])
-        count_combos[(count_query, str(count_trace["scene_variant"]))] += 1
-        count_answers.setdefault(count_query, set()).add(int(count_out.answer_gt.value))
+        reachability_out = reachability_task.generate(30320 + sampling_index, params={}, max_attempts=10)
+        reachability_trace = reachability_out.trace_payload["execution_trace"]
+        reachability_query = str(reachability_trace["query_id"])
+        reachability_combos[(reachability_query, str(reachability_trace["scene_variant"]))] += 1
+        if reachability_query == "reachable_checkpoint_count":
+            reachability_answers.setdefault(reachability_query, set()).add(int(reachability_out.answer_gt.value))
 
-    expected_label_combos = {
-        (query_id, scene_variant)
-        for query_id in ("checkpoint_sequence_label", "unreachable_checkpoint_label")
+    expected_sequence_combos = {
+        ("checkpoint_sequence_label", scene_variant)
         for scene_variant in ("clean_isometric_voxels", "worksheet_voxel_maze", "game_board_voxel_maze")
     }
-    expected_count_combos = {
+    expected_reachability_combos = {
         (query_id, scene_variant)
-        for query_id in ("reachable_checkpoint_count", "shortest_ladder_count")
+        for query_id in ("unreachable_checkpoint_label", "reachable_checkpoint_count")
         for scene_variant in ("clean_isometric_voxels", "worksheet_voxel_maze", "game_board_voxel_maze")
     }
-    assert set(label_combos) == expected_label_combos
-    assert set(count_combos) == expected_count_combos
-    assert min(label_combos.values()) >= 19
-    assert max(label_combos.values()) <= 21
-    assert min(count_combos.values()) >= 19
-    assert max(count_combos.values()) <= 21
-    assert count_answers["reachable_checkpoint_count"] == {2, 3, 4, 5}
-    assert count_answers["shortest_ladder_count"] == {1, 2, 3}
+    assert set(sequence_combos) == expected_sequence_combos
+    assert set(reachability_combos) == expected_reachability_combos
+    assert min(sequence_combos.values()) >= 39
+    assert max(sequence_combos.values()) <= 41
+    assert min(reachability_combos.values()) >= 19
+    assert max(reachability_combos.values()) <= 21
+    assert reachability_answers["reachable_checkpoint_count"] == {2, 3, 4, 5}

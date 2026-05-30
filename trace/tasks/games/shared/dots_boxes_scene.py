@@ -9,8 +9,10 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from .dots_boxes_common import DotsAndBoxesBoardState, DotsAndBoxesBoxInstance, DotsAndBoxesEdgeInstance
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import DotsAndBoxesTheme, build_games_dots_and_boxes_theme
 
 
@@ -30,6 +32,7 @@ class DotsAndBoxesRenderParams:
     dot_radius_px: int
     dash_length_px: int
     dash_gap_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -194,6 +197,7 @@ def render_dots_and_boxes_scene(
     scene_variant: str,
     style_variant: str,
     params: DotsAndBoxesRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedDotsAndBoxesScene:
     """Render one dots-and-boxes board with a highlighted starting edge."""
 
@@ -203,7 +207,11 @@ def render_dots_and_boxes_scene(
     image = background.convert("RGBA")
     theme = build_games_dots_and_boxes_theme(style_variant=str(style_variant))
     draw = ImageDraw.Draw(image)
-    title_font = load_font(int(params.title_font_size_px), bold=True)
+    title_font = load_font(
+        int(params.title_font_size_px),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
 
     board_left = float((int(params.canvas_width) - int(params.board_width_px)) / 2)
     board_top = float((int(params.canvas_height) - int(params.board_height_px)) / 2)
@@ -216,6 +224,23 @@ def render_dots_and_boxes_scene(
         jitter=params.layout_jitter_meta,
     )
     board_left, board_top, board_right, board_bottom = [float(value) for value in board_bbox]
+
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(16, int(round(float(params.panel_margin_px) * 0.55)))
+        panel_bbox = (
+            max(4, int(round(board_left)) - panel_pad),
+            max(4, int(round(board_top)) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(board_right)) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(board_bottom)) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=max(18, int(params.board_corner_radius_px) + 8),
+            border_width=max(2, int(round(float(theme.board_border_width_px) * 0.55))),
+        )
 
     _draw_shadow(
         image,
@@ -243,14 +268,14 @@ def render_dots_and_boxes_scene(
     title_height = float(title_bbox[3] - title_bbox[1])
     title_x = float(board_left + ((int(params.board_width_px) - title_width) / 2.0))
     title_y = float(board_top + ((int(params.title_band_height_px) - title_height) / 2.0))
-    draw.text(
+    draw_text_traced(draw,
         (title_x, title_y),
         title_text,
         font=title_font,
         fill=tuple(int(value) for value in theme.title_rgb),
         stroke_width=1,
         stroke_fill=(255, 255, 255),
-    )
+     role="readout", required=False,)
 
     inner_left = float(board_left + int(params.board_padding_px))
     inner_top = float(board_top + int(params.title_band_height_px) + int(params.board_padding_px))
@@ -382,6 +407,9 @@ def render_dots_and_boxes_scene(
             "highlighted_edge_id": str(board_state.highlighted_edge_id),
             "highlighted_edge_ids": [str(edge_id) for edge_id in highlighted_edge_ids],
             "layout_jitter": dict(layout_jitter),
+            "scene_panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
+            "font_family": str(params.font_family),
         },
     )
 

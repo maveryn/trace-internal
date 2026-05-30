@@ -19,9 +19,10 @@ from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.drawing import draw_centered_text
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px, with_puzzle_unit_size_jitter
@@ -77,7 +78,7 @@ _STYLE_SPECS: Dict[str, Dict[str, Any]] = {
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "counterfactual")
 _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
-POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="counterfactual", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="counterfactual", apply_prob=0.5)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="counterfactual")
 
 
@@ -103,6 +104,33 @@ class _RenderedBoard:
     counted_elements: List[_GridElementSpec]
     board_bbox: List[float]
     render_map: Dict[str, Any]
+
+
+def _sample_counterfactual_font(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> str:
+    """Sample one role-aware font family for decorative board text."""
+
+    return sample_font_family(
+        role="decorative",
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.decorative_board_text_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for sampled board text font."""
+
+    return {
+        "source": "global_font_pool",
+        "font_family": str(font_family),
+        "font_asset_version": font_asset_version(),
+        "scope": "counterfactual_board_decorative_text",
+    }
 
 
 def _scale_bbox(bbox: Sequence[float], scale: int) -> List[float]:
@@ -914,7 +942,7 @@ def _build_prompt(
 
 @register_task
 class PuzzlesCounterfactualBoardGridCountTask:
-    """Count rows, columns, cells, or board lines when a familiar board size changes."""
+    """Count rows, columns, or board lines when a familiar board size changes."""
 
     task_id = TASK_ID
     domain = "puzzles"
@@ -934,15 +962,21 @@ class PuzzlesCounterfactualBoardGridCountTask:
         )
         answer = _target_answer(str(query_id), int(rows), int(cols))
         canonical_answer = _canonical_answer(str(query_id), str(style))
-        rendered, render_meta = _render_scene(
-            query_id=str(query_id),
-            style=str(style),
-            rows=int(rows),
-            cols=int(cols),
+        font_family = _sample_counterfactual_font(
+            instance_seed=int(instance_seed),
             params=params,
             render_defaults=render_defaults,
-            instance_seed=int(instance_seed),
         )
+        with temporary_default_font_family(str(font_family)):
+            rendered, render_meta = _render_scene(
+                query_id=str(query_id),
+                style=str(style),
+                rows=int(rows),
+                cols=int(cols),
+                params=params,
+                render_defaults=render_defaults,
+                instance_seed=int(instance_seed),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
             instance_seed=int(instance_seed),
@@ -954,7 +988,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
             query_id=str(query_id),
             instance_seed=int(instance_seed),
         )
-        evidence_bboxes = [list(rendered.board_bbox)]
+        evidence_bboxes = [list(element.bbox) for element in rendered.counted_elements]
         answer_gt = TypedValue(type="integer", value=int(answer))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         counterfactual_delta = int(answer) - int(canonical_answer)
@@ -1003,11 +1037,14 @@ class PuzzlesCounterfactualBoardGridCountTask:
                 "coord_space": "pixel",
                 "post_image_noise": dict(post_noise_meta),
                 "scene_bbox_px": list(rendered.board_bbox),
+                "label_style": {
+                    "font": _font_trace_record(str(font_family)),
+                },
             },
             "render_map": {
                 "image_id": "img0",
                 **with_puzzle_unit_size_jitter(rendered.render_map, rendered.render_map.get("unit_size_jitter", {})),
-                "evidence_source": "board_bbox_px",
+                "evidence_source": "counted_element_bboxes_px",
             },
             "execution_trace": {
                 **dict(query_params),
@@ -1018,7 +1055,7 @@ class PuzzlesCounterfactualBoardGridCountTask:
                 "counted_element_bboxes_px": [list(element.bbox) for element in rendered.counted_elements],
                 "decorative_item_ids": list(rendered.render_map.get("decorative_item_ids", [])),
                 "decorative_item_bboxes_px": dict(rendered.render_map.get("decorative_item_bboxes_px", {})),
-                "supporting_item_ids": ["board_0"],
+                "supporting_item_ids": [str(element.element_id) for element in rendered.counted_elements],
                 "is_counterfactual": bool(counterfactual_delta != 0),
             },
             "witness_symbolic": {

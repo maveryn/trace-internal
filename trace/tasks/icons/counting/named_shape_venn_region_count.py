@@ -33,6 +33,7 @@ from ..shared.icon_scene import (
     sort_bboxes_reading_order,
 )
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
+from ..shared.evidence import bbox_set_evidence
 from ..shared.procedural_named_icons import (
     PROCEDURAL_NAMED_ICON_FILL_STYLES,
     PROCEDURAL_NAMED_ICON_SHAPES,
@@ -797,6 +798,7 @@ def _make_scene(*, instance_seed: int, params: Mapping[str, Any], render_params:
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         scene_title="Scene",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     _draw_venn_underlay(image, venn=venn, render_params=render_params)
 
@@ -1012,6 +1014,7 @@ class IconsCountingNamedShapeVennRegionCountTask:
         evidence_bboxes = sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in scene.instances if instance.counted))
         if len(evidence_bboxes) != int(scene.target_count):
             raise RuntimeError("projected Venn evidence did not match target answer")
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1182,15 +1185,17 @@ class IconsCountingNamedShapeVennRegionCountTask:
                 "venn": dict(venn_payload),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
                 "counted_instance_ids": list(counted_instance_ids),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(scene.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            ),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

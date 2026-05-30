@@ -10,6 +10,7 @@ from PIL import Image, ImageColor, ImageDraw
 from ...shared.text_rendering import draw_text_centered, load_font
 from .icon_noise import NoiseEdit, serialize_icon_noise_edits
 from .icon_assets import render_icon_rgba
+from .scene_style import IconCanvasStyle, draw_icon_panel_chrome, make_icon_canvas_background
 
 
 BBox = Tuple[int, int, int, int]
@@ -182,21 +183,33 @@ def draw_two_panel_panels(
     title_font_size_px: int,
     reference_title: str = "Reference",
     scene_title: str = "Scene",
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> None:
     """Draw panel chrome and titles on one icon scene image."""
 
+    background = make_icon_canvas_background(
+        canvas_width=int(image.size[0]),
+        canvas_height=int(image.size[1]),
+        style=icon_canvas_style,
+        fallback_rgb=background_rgb,
+    )
+    if image.mode == "RGBA":
+        image.alpha_composite(background)
+    else:
+        image.paste(background.convert(image.mode))
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, image.size[0], image.size[1]), fill=tuple(int(v) for v in background_rgb))
     for panel_bbox, title in (
         (layout.reference_panel_xyxy, str(reference_title)),
         (layout.scene_panel_xyxy, str(scene_title)),
     ):
-        draw.rounded_rectangle(
-            panel_bbox,
+        draw_icon_panel_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=icon_canvas_style,
+            fallback_fill_rgb=panel_fill_rgb,
+            fallback_border_rgb=panel_border_rgb,
             radius=max(0, int(corner_radius_px)),
-            fill=tuple(int(v) for v in panel_fill_rgb),
-            outline=tuple(int(v) for v in panel_border_rgb),
-            width=2,
+            border_width=2,
         )
         draw_text_centered(
             draw,
@@ -220,17 +233,29 @@ def draw_single_panel(
     corner_radius_px: int,
     title_font_size_px: int,
     scene_title: str = "Scene",
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> None:
     """Draw single-panel chrome and title on one icon scene image."""
 
+    background = make_icon_canvas_background(
+        canvas_width=int(image.size[0]),
+        canvas_height=int(image.size[1]),
+        style=icon_canvas_style,
+        fallback_rgb=background_rgb,
+    )
+    if image.mode == "RGBA":
+        image.alpha_composite(background)
+    else:
+        image.paste(background.convert(image.mode))
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, image.size[0], image.size[1]), fill=tuple(int(v) for v in background_rgb))
-    draw.rounded_rectangle(
-        layout.scene_panel_xyxy,
+    draw_icon_panel_chrome(
+        draw,
+        bbox=layout.scene_panel_xyxy,
+        style=icon_canvas_style,
+        fallback_fill_rgb=panel_fill_rgb,
+        fallback_border_rgb=panel_border_rgb,
         radius=max(0, int(corner_radius_px)),
-        fill=tuple(int(v) for v in panel_fill_rgb),
-        outline=tuple(int(v) for v in panel_border_rgb),
-        width=2,
+        border_width=2,
     )
     draw_text_centered(
         draw,
@@ -413,6 +438,7 @@ def render_two_panel_icon_scene(
     panel_border_rgb: Tuple[int, int, int],
     title_color_rgb: Tuple[int, int, int],
     title_font_size_px: int,
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> RenderedIconScene:
     """Render one reference+scene icon image with random overlap-capped placement."""
 
@@ -438,6 +464,7 @@ def render_two_panel_icon_scene(
         title_color_rgb=title_color_rgb,
         corner_radius_px=int(panel_corner_radius_px),
         title_font_size_px=int(title_font_size_px),
+        icon_canvas_style=icon_canvas_style,
     )
 
     reference_rgba = render_icon_rgba(

@@ -19,6 +19,7 @@ from ...shared.named_colors import named_color, sample_named_color_palette
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.common import projected_puzzle_bbox_evidence
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -26,11 +27,11 @@ from ..shared.unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzz
 from ..shared.visual_defaults import load_puzzle_noise_defaults
 
 
-ROUTE_LABEL_TASK_ID = "task_puzzles__voxel_ladder__voxel_ladder_route_label"
-ROUTE_COUNT_TASK_ID = "task_puzzles__voxel_ladder__voxel_ladder_route_count"
+CHECKPOINT_SEQUENCE_TASK_ID = "task_puzzles__voxel_ladder__checkpoint_sequence_label"
+CHECKPOINT_REACHABILITY_TASK_ID = "task_puzzles__voxel_ladder__checkpoint_reachability"
 SCENE_ID = "voxel_ladder"
-LABEL_QUERY_IDS: Tuple[str, ...] = ("checkpoint_sequence_label", "unreachable_checkpoint_label")
-COUNT_QUERY_IDS: Tuple[str, ...] = ("reachable_checkpoint_count", "shortest_ladder_count")
+SEQUENCE_QUERY_IDS: Tuple[str, ...] = ("checkpoint_sequence_label",)
+REACHABILITY_QUERY_IDS: Tuple[str, ...] = ("unreachable_checkpoint_label", "reachable_checkpoint_count")
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "clean_isometric_voxels",
     "worksheet_voxel_maze",
@@ -43,7 +44,6 @@ Node = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("puzzles", "topology")
-_COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=ROUTE_LABEL_TASK_ID)
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="topology", apply_prob=0.0)
 
 
@@ -82,7 +82,7 @@ class _VoxelMazeDataset:
     supporting_item_ids: Tuple[str, ...]
     option_specs: Tuple[Dict[str, Any], ...]
     reachable_checkpoint_count: int
-    shortest_ladder_count: int
+    route_ladder_count: int
     route_checkpoint_sequence: Tuple[str, ...]
 
 
@@ -371,28 +371,15 @@ def _build_dataset(
 ) -> _VoxelMazeDataset:
     rng = spawn_rng(int(instance_seed), f"{task_id}.{query_id}.voxel_ladder")
     answer_axis_seed = int(instance_seed) // 2
-    if str(query_id) == "shortest_ladder_count":
-        ladder_count, _ = _balanced_int(
-            seed=answer_axis_seed,
-            params=params,
-            defaults=gen_defaults,
-            key="shortest_ladder_count",
-            min_key="shortest_ladder_count_min",
-            max_key="shortest_ladder_count_max",
-            fallback_min=1,
-            fallback_max=3,
-            namespace=f"{task_id}.ladder_count",
-        )
-    else:
-        ladder_min, ladder_max = _get_int_range(
-            params,
-            gen_defaults,
-            min_key="shortest_ladder_count_min",
-            max_key="shortest_ladder_count_max",
-            fallback_min=1,
-            fallback_max=3,
-        )
-        ladder_count = int(rng.randint(ladder_min, ladder_max))
+    ladder_min, ladder_max = _get_int_range(
+        params,
+        gen_defaults,
+        min_key="route_ladder_count_min",
+        max_key="route_ladder_count_max",
+        fallback_min=1,
+        fallback_max=3,
+    )
+    ladder_count = int(rng.randint(ladder_min, ladder_max))
     route_nodes = _build_route_path(rng, ladder_count=int(ladder_count))
     route_edges = _route_edges(route_nodes)
     ladder_edges = [edge for edge in route_edges if _is_ladder_edge(edge)]
@@ -457,7 +444,7 @@ def _build_dataset(
                     break
 
     unreachable_nodes: List[Node] = []
-    if str(query_id) in {"unreachable_checkpoint_label", "reachable_checkpoint_count", "shortest_ladder_count"}:
+    if str(query_id) in {"unreachable_checkpoint_label", "reachable_checkpoint_count"}:
         unreachable_count = 1 if str(query_id) == "unreachable_checkpoint_label" else int(rng.randint(1, 2))
         max_x = max(node[0] for node in cubes)
         max_y = max(node[1] for node in cubes)
@@ -527,10 +514,6 @@ def _build_dataset(
         answer_value = int(reachable_checkpoint_count)
         answer_type = "integer"
         supporting_item_ids = tuple(_checkpoint_item_id(cp.color_name) for cp in checkpoints if cp.reachable)
-    elif str(query_id) == "shortest_ladder_count":
-        answer_value = int(len(ladders))
-        answer_type = "integer"
-        supporting_item_ids = tuple(ladder.ladder_id for ladder in ladders if ladder.on_goal_route)
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
 
@@ -539,7 +522,7 @@ def _build_dataset(
     for cp in checkpoints:
         if bool(cp.reachable) != bool(cp.node in reachable):
             raise RuntimeError("voxel-ladder checkpoint reachability drift")
-    if str(query_id) in {"reachable_checkpoint_count", "shortest_ladder_count"} and int(answer_value) == 0:
+    if str(query_id) == "reachable_checkpoint_count" and int(answer_value) == 0:
         raise RuntimeError("voxel-ladder generated zero-count query unexpectedly")
 
     return _VoxelMazeDataset(
@@ -558,7 +541,7 @@ def _build_dataset(
         supporting_item_ids=tuple(str(item) for item in supporting_item_ids),
         option_specs=tuple(option_specs),
         reachable_checkpoint_count=int(reachable_checkpoint_count),
-        shortest_ladder_count=int(len(ladders)),
+        route_ladder_count=int(len(ladders)),
         route_checkpoint_sequence=tuple(route_checkpoint_labels),
     )
 
@@ -808,7 +791,7 @@ def _render_voxel_maze(background: Image.Image, *, dataset: _VoxelMazeDataset, r
             y0 = panel_y0 + 58 + (index * 54)
             card_bbox = (panel_x0 + 18, y0, panel_x1 - 18, y0 + 42)
             draw.rounded_rectangle(card_bbox, radius=10, fill=(255, 255, 255), outline=_blend(render_params.panel_border_rgb, (255, 255, 255), 0.18), width=2)
-            draw.text((card_bbox[0] + 14, card_bbox[1] + 8), f"{option['option_label']}.", fill=render_params.text_rgb, font=option_font)
+            draw_text_traced(draw,(card_bbox[0] + 14, card_bbox[1] + 8), f"{option['option_label']}.", fill=render_params.text_rgb, font=option_font, role="readout", required=False)
             sequence_items = [str(item) for item in option.get("sequence_items", [])]
             dot_radius = 10.0
             dot_step = 34.0
@@ -957,8 +940,12 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
         visual_scan = normalize_int_with_bounds(len(dataset.cubes), [8, 20])
         route_load = normalize_int_with_bounds(len(dataset.route_nodes), [5, 14])
         evidence_load = min(1.0, len(evidence_bboxes) / 8.0)
+        complexity_weights = resolve_puzzle_complexity_weights(
+            _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+            task_id=str(self.task_id),
+        )
         complexity = build_puzzle_complexity(
-            weights=_COMPLEXITY_WEIGHTS,
+            weights=complexity_weights,
             components={
                 "visual_scan": float(visual_scan),
                 "reasoning_load": min(1.0, 0.35 + (0.35 * float(route_load)) + (0.20 * float(evidence_load))),
@@ -1059,7 +1046,7 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
                 "option_specs": [dict(option) for option in dataset.option_specs],
                 "route_checkpoint_sequence": list(dataset.route_checkpoint_sequence),
                 "reachable_checkpoint_count": int(dataset.reachable_checkpoint_count),
-                "shortest_ladder_count": int(dataset.shortest_ladder_count),
+                "route_ladder_count": int(dataset.route_ladder_count),
                 "answer_value": dataset.answer_value,
                 "supporting_item_ids": list(dataset.supporting_item_ids),
                 "supporting_evidence_source": "item_bboxes_px",
@@ -1096,24 +1083,24 @@ class _PuzzlesTopologyVoxelLadderMazeBaseTask:
 
 
 @register_task
-class PuzzlesTopologyVoxelLadderRouteLabelTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
-    """Label query over a voxel ladder route."""
+class PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
+    """Select the checkpoint color sequence on the shortest voxel-ladder route."""
 
-    task_id = ROUTE_LABEL_TASK_ID
-    supported_query_ids = LABEL_QUERY_IDS
-    task_key = "voxel_ladder_route_label_query"
+    task_id = CHECKPOINT_SEQUENCE_TASK_ID
+    supported_query_ids = SEQUENCE_QUERY_IDS
+    task_key = "voxel_ladder_checkpoint_sequence_query"
 
 
 @register_task
-class PuzzlesTopologyVoxelLadderRouteCountTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
-    """Count query over a voxel ladder route."""
+class PuzzlesTopologyVoxelLadderCheckpointReachabilityTask(_PuzzlesTopologyVoxelLadderMazeBaseTask):
+    """Answer checkpoint reachability queries over a voxel-ladder maze."""
 
-    task_id = ROUTE_COUNT_TASK_ID
-    supported_query_ids = COUNT_QUERY_IDS
-    task_key = "voxel_ladder_route_count_query"
+    task_id = CHECKPOINT_REACHABILITY_TASK_ID
+    supported_query_ids = REACHABILITY_QUERY_IDS
+    task_key = "voxel_ladder_checkpoint_reachability_query"
 
 
 __all__ = [
-    "PuzzlesTopologyVoxelLadderRouteCountTask",
-    "PuzzlesTopologyVoxelLadderRouteLabelTask",
+    "PuzzlesTopologyVoxelLadderCheckpointReachabilityTask",
+    "PuzzlesTopologyVoxelLadderCheckpointSequenceLabelTask",
 ]

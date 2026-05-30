@@ -60,7 +60,6 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
 
         assert out.scene_id == "named_field"
         assert out.query_id == query_id
-        assert out.query_id == "default"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 4
         assert out.evidence_gt.type == "bbox_set"
@@ -70,6 +69,8 @@ def test_icons_counting_named_shape_color_boolean_contract_all_queries() -> None
         assert "red [#E63232]" in out.prompt
         assert all("color_name" in entity for entity in entities)
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["type"] == "bbox_set"
+        assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted_entities}
         assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted_entities)
 

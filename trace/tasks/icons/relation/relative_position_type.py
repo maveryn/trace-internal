@@ -26,10 +26,11 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.anchor_marking import draw_anchor_marker, expand_bbox
+from ..shared.anchor_marking import draw_anchor_marker
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.complexity import build_icons_relation_relative_position_type_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     draw_two_panel_panels,
@@ -538,6 +539,7 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     reference_instance = _render_reference_icon(
@@ -871,6 +873,7 @@ class IconsRelationRelativePositionTypeTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         evidence_value = sort_bboxes_reading_order(scene_payload.matching_bboxes)
+        evidence_payload = bbox_set_evidence(evidence_value)
         answer_value = int(scene_payload.target_count)
 
         scene_entities = [
@@ -958,7 +961,7 @@ class IconsRelationRelativePositionTypeTask:
                 "anchors": {
                     "reference_icon": dict(scene_payload.reference_instance),
                     "anchor_icon": dict(scene_payload.anchor_instance),
-                    "matching_scene_boxes": list(evidence_value),
+                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
                 },
             },
             "execution_trace": {
@@ -1000,9 +1003,7 @@ class IconsRelationRelativePositionTypeTask:
                 "spatial_relation": str(query_id),
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_value),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         scene_content_bbox = scene_payload.panel_geometry["scene_content_xyxy"]
         anchor_bbox = scene_payload.anchor_instance["bbox_xyxy"]
@@ -1059,7 +1060,10 @@ class IconsRelationRelativePositionTypeTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            evidence_gt=TypedValue(
+                type=str(evidence_payload["evidence_type"]),
+                value=list(evidence_payload["evidence_value"]),
+            ),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

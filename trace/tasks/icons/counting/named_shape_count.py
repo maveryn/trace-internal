@@ -16,6 +16,7 @@ from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_style import sample_icon_palette
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
@@ -481,6 +482,7 @@ class IconsCountingNamedShapeCountTask:
         evidence_bboxes = named_icon_bboxes_for_shape(scene.instances, shape_id=str(sample.target_shape_id))
         if len(evidence_bboxes) != int(sample.target_count):
             raise RuntimeError("rendered named-shape count did not match target count")
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -609,13 +611,16 @@ class IconsCountingNamedShapeCountTask:
                 "counted_instance_ids": list(counted_instance_ids),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
             },
         }
         output = TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_count)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            ),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,

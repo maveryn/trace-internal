@@ -17,6 +17,9 @@
     "scene:reference_grid_mirror_symmetry_relation": [
       "object_description"
     ],
+    "scene:icon_cutout_relation": [
+      "object_description"
+    ],
     "scene:reference_scene_anchor_relation": [
       "object_description"
     ],
@@ -24,6 +27,9 @@
       "object_description"
     ],
     "scene:named_reference_distance_relation": [
+      "object_description"
+    ],
+    "scene:named_path_relation": [
       "object_description"
     ],
     "scene:paired_canvas_relation": [
@@ -78,6 +84,13 @@
       "The scene shows {object_description}.",
       "The picture shows {object_description}."
     ],
+    "icon_cutout_relation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "The picture shows {object_description}."
+    ],
     "reference_scene_anchor_relation": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
@@ -93,6 +106,13 @@
       "The picture shows {object_description}."
     ],
     "named_reference_distance_relation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "The picture shows {object_description}."
+    ],
+    "named_path_relation": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

@@ -30,6 +30,7 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from ..shared.anchor_marking import draw_anchor_marker
 from ..shared.complexity import build_icons_relation_between_two_anchors_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -466,6 +467,7 @@ def _sample_scene(
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         scene_title="Scene",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     scene_content_bbox = tuple(int(value) for value in layout.scene_content_xyxy)
 
@@ -866,6 +868,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         evidence_value = sort_bboxes_reading_order(scene_payload.matching_bboxes)
+        evidence_payload = bbox_set_evidence(evidence_value)
         answer_value = int(scene_payload.target_count)
 
         trace_payload = {
@@ -942,7 +945,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "anchors": {
                     "anchor_a": dict(scene_payload.anchor_instances[0]),
                     "anchor_b": dict(scene_payload.anchor_instances[1]),
-                    "matching_scene_boxes": list(evidence_value),
+                    "matching_scene_boxes": list(evidence_payload["evidence_value"]),
                 },
             },
             "execution_trace": {
@@ -984,9 +987,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "matching_scene_indices": [int(value) for value in scene_payload.matching_scene_indices],
                 "strip_boundary_margin_px": int(scene_payload.strip_boundary_margin_px),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_value),
-            },
+            "projected_evidence": dict(evidence_payload["projected_evidence"]),
         }
         complexity = build_icons_relation_between_two_anchors_count_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -1013,7 +1014,10 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_value)),
+            evidence_gt=TypedValue(
+                type=str(evidence_payload["evidence_type"]),
+                value=list(evidence_payload["evidence_value"]),
+            ),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

@@ -20,6 +20,30 @@ generation:
         logic_strip: 1.0
         logic_card: 1.0
         logic_outline: 1.0
+    task_puzzles__toggle_grid__toggle_result_label:
+      grid_rows_min: 4
+      grid_rows_max: 5
+      grid_cols_min: 4
+      grid_cols_max: 5
+      result_press_count_min: 2
+      result_press_count_max: 4
+      option_count: 5
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        toggle_clean: 1.0
+        toggle_notebook: 1.0
+        toggle_console: 1.0
+    task_puzzles__toggle_grid__toggle_repair_switch_label:
+      grid_rows_min: 4
+      grid_rows_max: 5
+      grid_cols_min: 4
+      grid_cols_max: 5
+      option_count: 5
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        toggle_clean: 1.0
+        toggle_notebook: 1.0
+        toggle_console: 1.0
     puzzles_logic_raven_matrix_internal:
       option_count: 6
       count_min: 1
@@ -316,6 +340,20 @@ rendering:
         - [54, 102, 180]
         - [47, 128, 117]
         - [161, 94, 68]
+    task_puzzles__toggle_grid__toggle_result_label:
+      canvas_width: 1120
+      canvas_height: 860
+      main_cell_size_px: 72
+      mini_cell_size_px: 28
+      panel_title_font_size_px: 22
+      option_font_size_px: 22
+    task_puzzles__toggle_grid__toggle_repair_switch_label:
+      canvas_width: 1120
+      canvas_height: 860
+      main_cell_size_px: 72
+      mini_cell_size_px: 28
+      panel_title_font_size_px: 22
+      option_font_size_px: 22
     puzzles_logic_raven_matrix_internal:
       canvas_width: 1200
       canvas_height: 920
@@ -572,15 +610,31 @@ prompt:
       object_description_logic_strip: a shape-logic puzzle grid with one marked cell and six labeled image options underneath
       object_description_logic_card: a card-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
       object_description_logic_outline: an outline-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
-      evidence_hint_axis_uniqueness: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_row_and_column_uniqueness: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      evidence_hint_king_non_touch: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the correct option panel
-      json_example_axis_uniqueness: '{"evidence":[[176,650,320,822]],"answer":"C"}'
-      json_example_row_and_column_uniqueness: '{"evidence":[[504,650,648,822]],"answer":"B"}'
-      json_example_king_non_touch: '{"evidence":[[118,621,262,793]],"answer":"A"}'
+      evidence_hint_axis_uniqueness: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
+      evidence_hint_row_and_column_uniqueness: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
+      evidence_hint_king_non_touch: set "evidence" to an object with keys "source_grid" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
+      json_example_axis_uniqueness: '{"evidence":{"source_grid":[330,92,870,632],"selected_option":[176,650,320,822]},"answer":"C"}'
+      json_example_row_and_column_uniqueness: '{"evidence":{"source_grid":[330,92,870,632],"selected_option":[504,650,648,822]},"answer":"B"}'
+      json_example_king_non_touch: '{"evidence":{"source_grid":[396,98,804,506],"selected_option":[118,621,262,793]},"answer":"A"}'
       json_example_answer_only_axis_uniqueness: '{"answer":"C"}'
       json_example_answer_only_row_and_column_uniqueness: '{"answer":"B"}'
       json_example_answer_only_king_non_touch: '{"answer":"A"}'
+    task_puzzles__toggle_grid__toggle_result_label:
+      scene_key: toggle_grid
+      task_key: toggle_grid_query
+      object_description: a Lights-Out-style toggle grid with numbered switches marked on the start grid and labeled candidate result grids
+      answer_hint_option_letter: set "answer" to the single option letter of the result grid after pressing the numbered switches
+      evidence_hint: set "evidence" to an array containing the start-grid panel box followed by the selected result-option panel box
+      json_example: '{"evidence":[[54,54,1066,486],[452,584,632,806]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
+    task_puzzles__toggle_grid__toggle_repair_switch_label:
+      scene_key: toggle_grid
+      task_key: toggle_grid_query
+      object_description: a Lights-Out-style toggle puzzle with a start grid, a target grid, and lettered candidate switches drawn on the start grid
+      answer_hint_option_letter: set "answer" to the single option letter of the switch that changes the start grid into the target grid
+      evidence_hint: set "evidence" to an array containing the start-grid panel box, the target-grid panel box, and the selected switch-cell box
+      json_example: '{"evidence":[[54,74,540,786],[580,74,1066,786],[210,286,282,358]],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'
     puzzles_logic_raven_matrix_internal:
       scene_key: raven_matrix_puzzle
       task_key: raven_matrix_query
@@ -632,10 +686,10 @@ prompt:
       task_key: matchstick_number_transform_query
       answer_hint_add_one_stick: set "answer" to the single option letter of the number reachable by adding exactly one stick
       answer_hint_remove_one_stick: set "answer" to the single option letter of the number reachable by removing exactly one stick
-      evidence_hint_add_one_stick: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the selected option panel
-      evidence_hint_remove_one_stick: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the selected option panel
-      json_example_add_one_stick: '{"evidence":[[440,360,760,578]],"answer":"B"}'
-      json_example_remove_one_stick: '{"evidence":[[440,360,760,578]],"answer":"B"}'
+      evidence_hint_add_one_stick: set "evidence" to an object with keys "source_number" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
+      evidence_hint_remove_one_stick: set "evidence" to an object with keys "source_number" and "selected_option", each mapped to a bounding box [x0, y0, x1, y1]
+      json_example_add_one_stick: '{"evidence":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
+      json_example_remove_one_stick: '{"evidence":{"source_number":[58,58,1142,288],"selected_option":[440,332,760,550]},"answer":"B"}'
       json_example_answer_only_add_one_stick: '{"answer":"B"}'
       json_example_answer_only_remove_one_stick: '{"answer":"B"}'
     task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label:
@@ -681,12 +735,12 @@ prompt:
       object_description_constraint_card: a card-style arithmetic-constraint diagram with numbered shapes, one question-mark target, and a visible rule note
       object_description_constraint_outline: an outline-style arithmetic-constraint diagram with numbered shapes, one question-mark target, and a visible rule note
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_equal_sum_line_constraint_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark node
-      evidence_hint_paired_cluster_sum_relation_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark node
-      evidence_hint_consecutive_window_sum_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark cell
-      json_example_equal_sum_line_constraint_value: '{"evidence":[[76,61,1004,699],[546,470,622,546]],"answer":8}'
-      json_example_paired_cluster_sum_relation_value: '{"evidence":[[76,61,1004,699],[730,406,806,482]],"answer":12}'
-      json_example_consecutive_window_sum_value: '{"evidence":[[76,61,1004,699],[498,408,582,480]],"answer":6}'
+      evidence_hint_equal_sum_line_constraint_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark node
+      evidence_hint_paired_cluster_sum_relation_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark node
+      evidence_hint_consecutive_window_sum_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark cell
+      json_example_equal_sum_line_constraint_value: '{"evidence":[[546,470,622,546]],"answer":8}'
+      json_example_paired_cluster_sum_relation_value: '{"evidence":[[730,406,806,482]],"answer":12}'
+      json_example_consecutive_window_sum_value: '{"evidence":[[498,408,582,480]],"answer":6}'
       json_example_answer_only_equal_sum_line_constraint_value: '{"answer":8}'
       json_example_answer_only_paired_cluster_sum_relation_value: '{"answer":12}'
       json_example_answer_only_consecutive_window_sum_value: '{"answer":6}'
@@ -697,12 +751,12 @@ prompt:
       object_description_constraint_card: a card-style cryptarithm puzzle with one question-mark digit or highlighted target letter
       object_description_constraint_outline: an outline-style cryptarithm puzzle with one question-mark digit or highlighted target letter
       answer_hint: set "answer" to the exact digit requested by the puzzle
-      evidence_hint_hidden_addition_digit_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark digit cell
-      evidence_hint_hidden_subtraction_digit_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark digit cell
-      evidence_hint_letter_digit_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and one highlighted target-letter box
-      json_example_hidden_addition_digit_value: '{"evidence":[[76,61,1004,699],[560,302,644,374]],"answer":7}'
-      json_example_hidden_subtraction_digit_value: '{"evidence":[[76,61,1004,699],[476,386,560,458]],"answer":4}'
-      json_example_letter_digit_value: '{"evidence":[[76,61,1004,699],[392,272,476,344]],"answer":5}'
+      evidence_hint_hidden_addition_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark digit cell
+      evidence_hint_hidden_subtraction_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark digit cell
+      evidence_hint_letter_digit_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the highlighted target-letter box
+      json_example_hidden_addition_digit_value: '{"evidence":[[560,302,644,374]],"answer":7}'
+      json_example_hidden_subtraction_digit_value: '{"evidence":[[476,386,560,458]],"answer":4}'
+      json_example_letter_digit_value: '{"evidence":[[392,272,476,344]],"answer":5}'
       json_example_answer_only_hidden_addition_digit_value: '{"answer":7}'
       json_example_answer_only_hidden_subtraction_digit_value: '{"answer":4}'
       json_example_answer_only_letter_digit_value: '{"answer":5}'
@@ -713,10 +767,10 @@ prompt:
       object_description_constraint_card: a card-style arithmetic grid/table puzzle with one question-mark target cell
       object_description_constraint_outline: an outline-style arithmetic grid/table puzzle with one question-mark target cell
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_row_column_total_missing_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark grid cell
-      evidence_hint_operation_table_cell_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark table cell
-      json_example_row_column_total_missing_value: '{"evidence":[[76,61,1004,699],[498,332,582,404]],"answer":8}'
-      json_example_operation_table_cell_value: '{"evidence":[[76,61,1004,699],[582,404,666,476]],"answer":15}'
+      evidence_hint_row_column_total_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark grid cell
+      evidence_hint_operation_table_cell_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark table cell
+      json_example_row_column_total_missing_value: '{"evidence":[[498,332,582,404]],"answer":8}'
+      json_example_operation_table_cell_value: '{"evidence":[[582,404,666,476]],"answer":15}'
       json_example_answer_only_row_column_total_missing_value: '{"answer":8}'
       json_example_answer_only_operation_table_cell_value: '{"answer":15}'
     task_puzzles__arithmetic_constraint__number_wall_value:
@@ -726,12 +780,12 @@ prompt:
       object_description_constraint_card: a card-style number-wall puzzle with one question-mark brick
       object_description_constraint_outline: an outline-style number-wall puzzle with one question-mark brick
       answer_hint: set "answer" to the exact integer value requested by the puzzle
-      evidence_hint_addition_wall_missing_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark brick
-      evidence_hint_difference_wall_missing_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark brick
-      evidence_hint_multiplication_pyramid_value: set "evidence" to an array containing bounding boxes for the full puzzle panel and the marked question-mark brick
-      json_example_addition_wall_missing_value: '{"evidence":[[76,61,1004,699],[498,416,600,488]],"answer":9}'
-      json_example_difference_wall_missing_value: '{"evidence":[[76,61,1004,699],[498,416,600,488]],"answer":4}'
-      json_example_multiplication_pyramid_value: '{"evidence":[[76,61,1004,699],[434,416,536,488]],"answer":12}'
+      evidence_hint_addition_wall_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
+      evidence_hint_difference_wall_missing_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
+      evidence_hint_multiplication_pyramid_value: set "evidence" to an array containing one [x0, y0, x1, y1] pixel bounding box for the marked question-mark brick
+      json_example_addition_wall_missing_value: '{"evidence":[[498,416,600,488]],"answer":9}'
+      json_example_difference_wall_missing_value: '{"evidence":[[498,416,600,488]],"answer":4}'
+      json_example_multiplication_pyramid_value: '{"evidence":[[434,416,536,488]],"answer":12}'
       json_example_answer_only_addition_wall_missing_value: '{"answer":9}'
       json_example_answer_only_difference_wall_missing_value: '{"answer":4}'
       json_example_answer_only_multiplication_pyramid_value: '{"answer":12}'
@@ -843,4 +897,14 @@ complexity:
       criteria_weights:
         visual_scan: 0.35
         reasoning_load: 0.55
+        scene_variant_load: 0.10
+    task_puzzles__toggle_grid__toggle_result_label:
+      criteria_weights:
+        visual_scan: 0.36
+        reasoning_load: 0.54
+        scene_variant_load: 0.10
+    task_puzzles__toggle_grid__toggle_repair_switch_label:
+      criteria_weights:
+        visual_scan: 0.36
+        reasoning_load: 0.54
         scene_variant_load: 0.10

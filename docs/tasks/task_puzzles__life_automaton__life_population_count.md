@@ -5,12 +5,14 @@
 2. Task group: `automaton`
 3. Task id: `task_puzzles__life_automaton__life_population_count`
 4. Scene id: `life_automaton`
-5. Goal: apply a cellular-life neighbor rule and count alive cells in the future grid.
+5. Goal: count dark cells in a marked row or column of the shown future grid.
 
 ## Contract
 1. Branch metadata: `query_id`
-2. `query_id`: `total_live_count|marked_region_live_count`
+2. `query_id`: `marked_line_live_count`
 3. Answer type: `integer`
 4. Evidence type: `bbox_set`
-5. Evidence target: source-grid or marked-region bbox
+5. Evidence target: marked row or column bbox
 6. Scene variants: `clean_grid|lab_panel|notebook_grid`
+7. Render metadata: records shared panel style, role-aware font family, unit-size jitter, and evidence-safe layout jitter before evidence projection.
+8. Scene-local variation: records `life_board.board_style`, `life_board.cell_palette_id`, resolved RGBs, and alive/dead/marker contrast checks.

@@ -18,6 +18,6 @@
    - multiplication pyramids vary base width while capping visible product size for readability.
 7. The rule text is not printed in the prompt or image; the required relation is inferred from repeated visible brick examples.
 8. `answer_gt.type`: `integer`
-9. `evidence_gt.type`: `bbox_set` over the puzzle panel and the marked question-mark brick.
+9. `evidence_gt.type`: `bbox_set` over the marked question-mark brick only.
 10. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 11. Answers and evidence are produced from the same metadata execution trace.

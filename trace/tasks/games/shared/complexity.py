@@ -1026,10 +1026,8 @@ def build_games_crossing_lane_complexity(
         + (0.44 * normalize_linear(float(vehicle_count), min_value=4.0, max_value=20.0))
     )
     motion_base = {
-        "safe_start_label": 0.42,
         "collision_time_value": 0.62,
         "moving_object_count": 0.58,
-        "goal_reachable_label": 0.70,
     }.get(str(query_id), 0.52)
     motion_reasoning = clamp_unit_interval(
         float(motion_base)
@@ -1038,9 +1036,7 @@ def build_games_crossing_lane_complexity(
     )
     route_reasoning = clamp_unit_interval(
         (
-            0.24
-            if str(query_id) == "safe_start_label"
-            else 0.48
+            0.48
             if str(query_id) in {"collision_time_value", "moving_object_count"}
             else 0.76
         )

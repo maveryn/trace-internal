@@ -50,7 +50,6 @@ def test_icons_counting_singleton_type_contract_matches_scene() -> None:
     assert trace["scene_ir"]["scene_kind"] == "icons_singleton_type_counting"
     assert out.query_id == "singleton_type_count"
     assert execution["question_format"] == "count_singleton_type_icons"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "singleton_type_count"
     assert execution["scene_variant"] == "single_panel_scene"
     assert int(execution["object_count"]) == 9
@@ -194,9 +193,9 @@ def test_icons_counting_type_frequency_sampling_defaults() -> None:
             most_frequent_targets[target_count] += 1
             assert query_id == "most_frequent_type_count"
             assert 7 <= object_count <= 12
-            assert 3 <= target_count <= 5
+            assert 2 <= target_count <= 6
     assert set(query_id_counts.keys()) == {"singleton_type_count", "most_frequent_type_count"}
     assert set(singleton_targets.keys()) == set(range(0, 5))
-    assert set(most_frequent_targets.keys()) == set(range(3, 6))
+    assert set(most_frequent_targets.keys()) == set(range(2, 7))
     assert min(object_counts.keys()) >= 5
     assert max(object_counts.keys()) <= 12

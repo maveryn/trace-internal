@@ -8,6 +8,6 @@
 
 The image shows a mini-golf putting course with a ball, hole, obstacles, and several numbered shot cues. Each cue shows only the starting direction. The task asks which numbered cue reaches the hole when the shot travels straight and bounces off course walls like a mirror.
 
-The answer is a string numbered shot label. Evidence is `bbox_set`: one pixel bounding box around the selected numbered shot marker.
+The answer is a string numbered shot label. Evidence is `point_pair_set`: one pixel point-pair marking the two endpoints of the selected visible dashed cue from the ball outward.
 
 Generation is deterministic for a fixed seed and records the hidden path traces, obstacle geometry, unique hole-reaching cue, prompt keys, render style, and projected evidence in the trace payload.

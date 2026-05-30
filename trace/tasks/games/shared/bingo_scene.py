@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_rendering import fit_font_to_box, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from .bingo_common import BINGO_BOARD_SIZE, BINGO_COLUMN_LABELS, BingoCellInstance
 from .layout import apply_games_layout_jitter_to_bbox
 from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
@@ -39,6 +40,7 @@ class BingoRenderParams:
     mark_inset_px: int
     mark_shape: str = "ellipse"
     cell_fill_pattern: str = "solid"
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -160,24 +162,31 @@ def render_bingo_card_scene(
         width=int(theme.card_border_width_px),
     )
 
-    title_font = load_font(int(params.title_font_size_px), bold=True)
-    header_font = load_font(int(params.header_font_size_px), bold=True)
-    number_font = load_font(int(params.number_font_size_px), bold=True)
-
     title_text = "BINGO"
+    title_font = fit_font_to_box(
+        draw,
+        text=title_text,
+        max_width=max(40.0, float(card_right - card_left) * 0.82),
+        max_height=max(12.0, float(params.title_band_height_px) * 0.78),
+        bold=True,
+        min_size_px=12,
+        max_size_px=max(12, int(params.title_font_size_px)),
+        fill_ratio=0.98,
+        font_family=str(params.font_family) or None,
+    )
     title_bbox = draw.textbbox((0, 0), title_text, font=title_font, stroke_width=1)
     title_origin = (
         float(card_left + (0.5 * ((card_right - card_left) - (title_bbox[2] - title_bbox[0])))),
         float(card_top + max(10.0, 0.5 * (int(params.title_band_height_px) - (title_bbox[3] - title_bbox[1])))),
     )
-    draw.text(
+    draw_text_traced(draw,
         title_origin,
         title_text,
         font=title_font,
         fill=tuple(int(value) for value in theme.title_rgb),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.title_rgb)),
-    )
+     role="readout", required=False,)
 
     grid_left = float(card_left + int(params.panel_margin_px))
     grid_right = float(card_right - int(params.panel_margin_px))
@@ -190,6 +199,28 @@ def render_bingo_card_scene(
     total_gap_height = float((BINGO_BOARD_SIZE - 1) * int(params.cell_gap_px))
     cell_width = float((grid_right - grid_left - total_gap_width) / BINGO_BOARD_SIZE)
     cell_height = float((grid_bottom - grid_top - total_gap_height) / BINGO_BOARD_SIZE)
+    header_font = fit_font_to_box(
+        draw,
+        text="W",
+        max_width=max(12.0, float(cell_width) * 0.78),
+        max_height=max(12.0, float(params.header_height_px) * 0.74),
+        bold=True,
+        min_size_px=10,
+        max_size_px=max(10, int(params.header_font_size_px)),
+        fill_ratio=0.98,
+        font_family=str(params.font_family) or None,
+    )
+    number_font = fit_font_to_box(
+        draw,
+        text="75",
+        max_width=max(14.0, float(cell_width) * 0.76),
+        max_height=max(14.0, float(cell_height) * 0.68),
+        bold=True,
+        min_size_px=10,
+        max_size_px=max(10, int(params.number_font_size_px)),
+        fill_ratio=0.98,
+        font_family=str(params.font_family) or None,
+    )
 
     column_header_bboxes: Dict[str, List[float]] = {}
     for column_index, column_label in enumerate(BINGO_COLUMN_LABELS):
@@ -202,14 +233,14 @@ def render_bingo_card_scene(
             ),
             float(header_top + (0.5 * (int(params.header_height_px) - (header_bbox[3] - header_bbox[1])))),
         )
-        draw.text(
+        draw_text_traced(draw,
             header_origin,
             str(column_label),
             font=header_font,
             fill=tuple(int(value) for value in theme.header_rgb),
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.header_rgb)),
-        )
+         role="readout", required=False,)
         column_header_bboxes[str(column_label)] = [
             round(float(header_origin[0]), 3),
             round(float(header_origin[1]), 3),
@@ -252,14 +283,14 @@ def render_bingo_card_scene(
             float(left + (0.5 * (cell_width - (number_bbox[2] - number_bbox[0])))),
             float(top + (0.5 * (cell_height - (number_bbox[3] - number_bbox[1])))),
         )
-        draw.text(
+        draw_text_traced(draw,
             number_origin,
             number_text,
             font=number_font,
             fill=tuple(int(value) for value in theme.number_rgb),
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.number_rgb)),
-        )
+         role="readout", required=False,)
 
         if bool(cell.is_marked):
             inset = int(params.mark_inset_px)
@@ -349,6 +380,8 @@ def render_bingo_card_scene(
             "style_variant": str(style_variant),
             "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
             "layout_jitter": dict(layout_jitter),
+            "effective_cell_size_px": round(float(min(cell_width, cell_height)), 3),
+            "font_family": str(params.font_family),
         },
     )
 

@@ -71,6 +71,11 @@ rendering:
     dot_radius_px: 7
     dash_length_px: 30
     dash_gap_px: 18
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 620
+    canvas_min_height_px: 520
+    canvas_side_padding_px: 150
+    canvas_vertical_padding_px: 110
 complexity:
   shared:
     criteria_weights:
@@ -85,17 +90,17 @@ prompt:
     task_key: dots_and_boxes_capture_query
     object_description_single_board: a dots-and-boxes grid with some edges already
       drawn
-    evidence_hint_three_sided_box_count: set "evidence" to bounding boxes
-      [x0, y0, x1, y1] for every box with exactly three drawn sides
+    evidence_hint_three_sided_box_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every box with exactly three drawn sides
     answer_hint_three_sided_box_count: set "answer" to the number of boxes with exactly
       three drawn sides
-    evidence_hint_capture_move_count: set "evidence" to bounding boxes
-      [x0, y0, x1, y1] for every missing edge that would complete at least one box
-      if drawn
+    evidence_hint_capture_move_count: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for every missing edge that would complete at least
+      one box if drawn
     answer_hint_capture_move_count: set "answer" to the number of missing edges that
       would complete at least one box if drawn
-    evidence_hint_highlighted_candidate_capture_count: set "evidence" to bounding
-      boxes [x0, y0, x1, y1] for every highlighted missing edge that would
-      complete at least one box if drawn
+    evidence_hint_highlighted_candidate_capture_count: set "evidence" to a JSON
+      array of bounding boxes [x0, y0, x1, y1] for every highlighted missing edge
+      that would complete at least one box if drawn
     answer_hint_highlighted_candidate_capture_count: set "answer" to the number of
       highlighted missing edges that would complete at least one box if drawn

@@ -15,6 +15,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
+from ...shared.color_distance import color_distance
 from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
 from ...shared.output_metadata import default_task_versions
@@ -23,13 +24,13 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.complexity import build_icons_relation_occlusion_order_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_overlap_grid_scene import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
 from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
 from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
-from ...shared.color_distance import color_distance
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
 from ..shared.icon_noise import default_icon_noise_value_ranges
 from ..shared.evidence import matching_scene_cell_bbox_evidence
@@ -144,6 +145,28 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
             group_default(_RENDER_DEFAULTS, "cell_label_font_size_px", _DEFAULTS.cell_label_font_size_px),
         )
     )
+    cell_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace="icons.overlap_grid.cell_label_text",
+        role="icon_cell_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params["panel_fill_rgb"]),
+            tuple(int(value) for value in render_params["background_color_rgb"]),
+        ),
+        preferred_rgbs=(tuple(int(value) for value in render_params["cell_label_color_rgb"]),),
+        required=False,
+    )
+    render_params["cell_label_color_rgb"] = tuple(int(value) for value in cell_label_style.fill_rgb)
+    render_params["cell_label_stroke_rgb"] = tuple(int(value) for value in render_params["panel_fill_rgb"])
+    cell_label_record = cell_label_style.metadata()
+    cell_label_record["stroke_rgb"] = list(render_params["cell_label_stroke_rgb"])
+    previous_legibility = render_params.get("text_legibility")
+    previous_records = []
+    if isinstance(previous_legibility, Mapping) and isinstance(previous_legibility.get("records"), list):
+        previous_records = [dict(record) for record in previous_legibility["records"] if isinstance(record, Mapping)]
+    render_params["text_legibility"] = text_legibility_summary_from_records(
+        [*previous_records, cell_label_record]
+    )
     render_params["pair_min_color_distance"] = float(
         params.get(
             "pair_min_color_distance",
@@ -238,6 +261,12 @@ def _occlusion_style_trace(
         "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
         "panel_border_rgb": list(render_params["panel_border_rgb"]),
         "header_text_rgb": list(render_params["header_text_rgb"]),
+        "header_text_stroke_rgb": list(render_params.get("header_text_stroke_rgb", render_params["panel_fill_rgb"])),
+        "text_color_policy": str(
+            render_params.get("text_color_policy", "read_required_text_uses_random_nonsemantic_readable_ink")
+        ),
+        "text_legibility": dict(render_params.get("text_legibility", {})),
+        "icon_canvas_style": dict(render_params.get("icon_canvas_style", {"enabled": False})),
         "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
         "color_channel_min": int(render_params["color_channel_min"]),
         "color_channel_max": int(render_params["color_channel_max"]),
@@ -251,6 +280,7 @@ def _occlusion_style_trace(
         "cell_padding_px": int(render_params["cell_padding_px"]),
         "cell_border_rgb": list(render_params["cell_border_rgb"]),
         "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
+        "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
         "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
         "icon_noise_edit_types": [str(value) for value in render_params["icon_noise_edit_types"]],
         "icon_noise_edit_count_range": [
@@ -434,6 +464,9 @@ def _sample_scene(
         title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     reference_payload = {

@@ -1,7 +1,5 @@
 # `task_icons__paired_canvas__original_attribute_label`
 
-Status: pending v0 review/calibration artifact refresh.
-
 ## Identity
 - domain: `icons`
 - scene_id: `paired_canvas`
@@ -32,9 +30,12 @@ three-attribute bindings such as color+fill-style+shape.
 - the queried original descriptor is unique in the Original panel
 
 ## Evidence Contract
-- `evidence_gt.type = bbox_set`
-- evidence contains one bbox for the original matching icon in the Original
-  panel and one bbox for its corresponding labeled icon in the Right panel
+- `evidence_gt.type = keyed_bbox_map`
+- evidence contains `original_icon` for the original matching icon in the
+  Original panel and `right_icon` for its corresponding labeled icon in the
+  Right panel
+- `projected_evidence` mirrors this as typed keyed-bbox-map evidence with
+  `keyed_bbox_map` and `pixel_keyed_bbox_map`
 
 ## Trace Contract
 - `scene_ir.entities` contains serialized Original-panel and Right-panel icon
@@ -43,6 +44,8 @@ three-attribute bindings such as color+fill-style+shape.
   every pair.
 - `witness_symbolic.answer_pair_id` identifies the shared pair linking the
   evidence boxes.
+- `render_spec.style.text_legibility` records panel-title and Right-panel
+  candidate-label text legibility.
 
 ## Prompt Contract
 - `scene_key = paired_named_original_relation`
@@ -50,6 +53,6 @@ three-attribute bindings such as color+fill-style+shape.
 - answer-only and answer+evidence modes both include contract-valid JSON
   examples
 
-## Current Review Status
-Current v0 review and solve-rate artifacts are pending. Use
-`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.
+## Review Artifacts
+Use `review/task-reviews/icons/paired_canvas/scene_review.xlsx` as the current
+paired-canvas browser-review sidecars.

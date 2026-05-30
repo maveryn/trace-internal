@@ -1,6 +1,6 @@
 # `task_icons__venn_field__venn_region_shape_count`
 
-Status: pending v0 review/calibration artifact refresh.
+Status: v0 inspection review refreshed; solve-rate calibration pending.
 
 ## Identity
 - domain: `icons`
@@ -58,7 +58,10 @@ three-attribute bindings; color and fill style are separate target modes.
 - `execution_trace.counted_venn_categories` records the categories counted by
   the active query.
 - `render_map.counted_instance_ids`, `witness_symbolic.counted_instance_ids`,
-  and `projected_evidence.value` are derived from the same rendered instances.
+  and `projected_evidence.bbox_set` are derived from the same rendered
+  instances.
+- `projected_evidence` follows the shared icon bbox evidence shape, including
+  `bbox_set`, `pixel_bbox_set`, and `pixel_point_set`.
 
 ## Prompt Contract
 - `scene_key = single_scene_counting`
@@ -70,5 +73,6 @@ three-attribute bindings; color and fill style are separate target modes.
   examples
 
 ## Current Review Status
-Current v0 review and solve-rate artifacts are pending. Use
-`plans/task-reviews/REVIEW_STATUS.md` as the active artifact-status source.
+Current browser-review sidecars live under
+`review/task-reviews/icons/venn_field/task_icons__venn_field__venn_region_shape_count/`.
+Solve-rate status is tracked in `review/calibration_sweep_status.json`.

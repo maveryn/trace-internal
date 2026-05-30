@@ -52,17 +52,22 @@ def test_games_brick_breaker_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == expected_answer_type
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= 1
-    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "brick_breaker"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["render_spec"]["canvas_width"] <= 980
+    assert trace["render_spec"]["canvas_height"] <= 740
+    assert trace["render_spec"]["panel_scene_style"]["treatment"]
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
+    assert float(trace["render_map"]["guide_color_safety"]["guide_anchor_lab_distance"]) >= 40.0
+    for x0, y0, x1, y1 in out.evidence_gt.value:
+        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
 
 
 def test_games_brick_breaker_next_hit_label_matches_target_brick() -> None:

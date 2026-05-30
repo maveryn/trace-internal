@@ -10,8 +10,10 @@ from PIL import Image, ImageDraw
 
 from ...shared.drawing import draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .platformer_common import PlatformerCollectible, PlatformerHazard, PlatformerPlatform
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,7 @@ class PlatformerRenderParams:
     collectible_radius_px: int
     path_width_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -216,6 +219,7 @@ def _fit_text(
     text: str,
     fill: Tuple[int, int, int],
     max_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -226,6 +230,7 @@ def _fit_text(
         max_width=max(1.0, float(right - left)),
         max_height=max(1.0, float(bottom - top)),
         bold=True,
+        font_family=str(font_family),
         min_size_px=7,
         max_size_px=int(max_size_px),
         fill_ratio=0.74,
@@ -233,7 +238,7 @@ def _fit_text(
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -241,7 +246,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _draw_background(draw: ImageDraw.ImageDraw, *, bbox: Tuple[float, float, float, float], theme: PlatformerTheme) -> None:
@@ -342,6 +347,7 @@ def _draw_platform(
             text=str(platform.label),
             fill=theme.platform_text_rgb,
             max_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
         )
     return tuple(round(float(v), 3) for v in bbox)
 
@@ -381,7 +387,14 @@ def _draw_hazard(
             draw.polygon(points, fill=tuple(int(v) for v in fill), outline=tuple(int(v) for v in theme.hazard_outline_rgb))
     if str(hazard.label):
         label_box = (bbox[0] + 5, bbox[1] + 4, bbox[2] - 5, bbox[3] - 4)
-        _fit_text(draw, bbox=label_box, text=str(hazard.label), fill=theme.hazard_text_rgb, max_size_px=int(params.label_font_size_px))
+        _fit_text(
+            draw,
+            bbox=label_box,
+            text=str(hazard.label),
+            fill=theme.hazard_text_rgb,
+            max_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
+        )
     return tuple(round(float(v), 3) for v in bbox)
 
 
@@ -440,6 +453,7 @@ def render_platformer_scene(
     background: Image.Image,
     style_variant: str,
     params: PlatformerRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedPlatformerScene:
     """Render one side-scroller platformer level."""
 
@@ -447,9 +461,24 @@ def render_platformer_scene(
     draw = ImageDraw.Draw(image)
     theme = build_games_platformer_theme(style_variant=str(style_variant))
     level_bbox, layout_jitter = _level_bbox(params)
+    if panel_style is not None:
+        left, top, right, bottom = level_bbox
+        draw_panel_scene_chrome(
+            draw,
+            bbox=(
+                int(round(float(left - 24.0))),
+                int(round(float(top - 24.0))),
+                int(round(float(right + 24.0))),
+                int(round(float(bottom + 24.0))),
+            ),
+            style=panel_style,
+            radius=34,
+            border_width=2,
+        )
     _draw_background(draw, bbox=level_bbox, theme=theme)
 
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    entity_points: Dict[str, Tuple[float, float]] = {}
     scene_entities: list[Dict[str, Any]] = []
     motion_paths_px = {
         "jump_arc": _draw_path(
@@ -465,17 +494,26 @@ def render_platformer_scene(
     for platform in platforms:
         bbox = _draw_platform(draw, level_bbox=level_bbox, platform=platform, theme=theme, params=params)
         entity_bboxes[str(platform.platform_id)] = bbox
+        entity_points[str(platform.platform_id)] = (
+            round(float((bbox[0] + bbox[2]) / 2.0), 3),
+            round(float((bbox[1] + bbox[3]) / 2.0), 3),
+        )
         scene_entities.append(
             {
                 "id": str(platform.platform_id),
                 "type": "platformer_platform",
                 "label": str(platform.label),
                 "bbox": list(bbox),
+                "point": list(entity_points[str(platform.platform_id)]),
             }
         )
     for hazard in hazards:
         bbox = _draw_hazard(draw, level_bbox=level_bbox, hazard=hazard, theme=theme, params=params)
         entity_bboxes[str(hazard.hazard_id)] = bbox
+        entity_points[str(hazard.hazard_id)] = (
+            round(float((bbox[0] + bbox[2]) / 2.0), 3),
+            round(float((bbox[1] + bbox[3]) / 2.0), 3),
+        )
         scene_entities.append(
             {
                 "id": str(hazard.hazard_id),
@@ -483,29 +521,43 @@ def render_platformer_scene(
                 "label": str(hazard.label),
                 "kind": str(hazard.kind),
                 "bbox": list(bbox),
+                "point": list(entity_points[str(hazard.hazard_id)]),
             }
         )
     for collectible in collectibles:
         bbox = _draw_collectible(draw, level_bbox=level_bbox, collectible=collectible, theme=theme, params=params)
         entity_bboxes[str(collectible.collectible_id)] = bbox
+        entity_points[str(collectible.collectible_id)] = (
+            round(float((bbox[0] + bbox[2]) / 2.0), 3),
+            round(float((bbox[1] + bbox[3]) / 2.0), 3),
+        )
         scene_entities.append(
             {
                 "id": str(collectible.collectible_id),
                 "type": "platformer_collectible",
                 "on_path": bool(collectible.on_path),
                 "bbox": list(bbox),
+                "point": list(entity_points[str(collectible.collectible_id)]),
             }
         )
 
     player_bbox = _draw_player(draw, level_bbox=level_bbox, player_xy_norm=player_xy_norm, theme=theme, params=params)
     entity_bboxes["player"] = player_bbox
-    scene_entities.append({"id": "player", "type": "platformer_player", "bbox": list(player_bbox)})
+    entity_points["player"] = (
+        round(float((player_bbox[0] + player_bbox[2]) / 2.0), 3),
+        round(float((player_bbox[1] + player_bbox[3]) / 2.0), 3),
+    )
+    scene_entities.append({"id": "player", "type": "platformer_player", "bbox": list(player_bbox), "point": list(entity_points["player"])})
 
     render_map: Dict[str, Any] = {
         "level_bbox_px": [round(float(v), 3) for v in level_bbox],
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
+        "entity_points_px": {str(key): [float(x), float(y)] for key, (x, y) in entity_points.items()},
         "motion_paths_px": motion_paths_px,
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "query_id": str(query_id),
     }
     return RenderedPlatformerScene(image=image, scene_entities=tuple(scene_entities), render_map=render_map)

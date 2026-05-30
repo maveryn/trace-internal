@@ -35,6 +35,13 @@ def test_games_space_shooter_defaults_present() -> None:
     assert int(rendering["canvas_width"]) == 1060
     assert int(rendering["canvas_height"]) == 820
     assert int(rendering["enemy_width_px"]) > 0
+    assert set(generation["style_variant_weights"].keys()) == {
+        "neon",
+        "deep_space",
+        "vector",
+        "amber",
+        "terminal",
+    }
     assert str(prompt["bundle_id"]) == "games_space_shooter_v0"
     assert "bottom lane pads" in str(prompt["space_shooter_lane_rule_text"]).lower()
     assert "bounding boxes" in str(prompt["evidence_hint_safe_lane_count"])

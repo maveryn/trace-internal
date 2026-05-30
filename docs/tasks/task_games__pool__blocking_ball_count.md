@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: bbox_set over every ball blocking the marked shot lane.
+2. Evidence type: `point_set` over the center of every ball blocking the marked shot lane.
 3. `blocking_ball_count` is retained as `query_id`; `query_spec.params.query_id` is internal replay diagnostics.
 
 ## Implementation

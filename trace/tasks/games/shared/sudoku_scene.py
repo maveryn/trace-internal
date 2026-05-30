@@ -8,7 +8,9 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import SudokuTheme, build_games_sudoku_theme
 from .sudoku_common import Board, Coord, SIZE, coord_to_cell_id, unit_coords
 
@@ -27,6 +29,7 @@ class SudokuRenderParams:
     cell_padding_px: int
     digit_font_size_px: int
     marked_cell_outline_width_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -77,6 +80,7 @@ def _draw_digit(
     theme: SudokuTheme,
     font_size_px: int,
     conflict: bool,
+    font_family: str = "",
 ) -> None:
     """Draw one centered Sudoku digit."""
 
@@ -93,6 +97,7 @@ def _draw_digit(
         min_size_px=16,
         max_size_px=int(font_size_px),
         fill_ratio=0.72,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), text, font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
@@ -100,7 +105,7 @@ def _draw_digit(
     text_x = float(left + (0.5 * (width - text_w)) - float(text_bbox[0]))
     text_y = float(top + (0.5 * (height - text_h)) - float(text_bbox[1]))
     fill = theme.conflict_digit_rgb if bool(conflict) else theme.digit_rgb
-    draw.text((text_x, text_y), text, fill=tuple(int(v) for v in fill), font=font)
+    draw_text_traced(draw,(text_x, text_y), text, fill=tuple(int(v) for v in fill), font=font, role="readout", required=False)
 
 
 def render_sudoku_grid_scene(
@@ -113,6 +118,7 @@ def render_sudoku_grid_scene(
     highlighted_unit_index: int | None = None,
     marked_cell: Coord | None = None,
     conflict_coords: Sequence[Coord] = (),
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSudokuScene:
     """Render one visible Sudoku grid with optional highlighted unit and marked cell."""
 
@@ -142,6 +148,22 @@ def render_sudoku_grid_scene(
     board_left = float(board_bbox[0])
     board_top = float(board_bbox[1])
     cell_size = float((float(board_bbox[2]) - float(board_bbox[0])) / float(SIZE))
+
+    if panel_style is not None:
+        panel_pad = max(18.0, float(params.board_border_width_px) * 2.5)
+        panel_bbox = (
+            int(round(max(6.0, float(board_bbox[0]) - panel_pad))),
+            int(round(max(6.0, float(board_bbox[1]) - panel_pad))),
+            int(round(min(float(params.canvas_width) - 6.0, float(board_bbox[2]) + panel_pad))),
+            int(round(min(float(params.canvas_height) - 6.0, float(board_bbox[3]) + panel_pad))),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=20,
+            border_width=2,
+        )
 
     draw.rectangle(board_bbox, fill=tuple(int(v) for v in theme.board_fill_rgb))
     inner_board_bbox = (
@@ -192,6 +214,7 @@ def render_sudoku_grid_scene(
                     theme=theme,
                     font_size_px=int(params.digit_font_size_px),
                     conflict=(row, col) in conflict_set,
+                    font_family=str(params.font_family),
                 )
             scene_entities.append(
                 {
@@ -263,10 +286,14 @@ def render_sudoku_grid_scene(
         ],
         "marked_cell_id": coord_to_cell_id(marked_cell) if marked_cell is not None else None,
         "conflict_cell_ids": [coord_to_cell_id(coord) for coord in sorted(conflict_set)],
+        "style_variant": str(style_variant),
+        "text_style": {"font_family": str(params.font_family)},
+        "font_family": str(params.font_family),
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "layout_jitter": dict(layout_jitter),
     }
     return RenderedSudokuScene(
-        image=image,
+        image=image.convert("RGB"),
         cell_specs=tuple(cell_specs),
         scene_entities=tuple(scene_entities),
         render_map=render_map,

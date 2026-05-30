@@ -13,18 +13,21 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import required_group_defaults
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.text_rendering import temporary_default_font_family
 from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
     load_puzzle_task_defaults,
-    projected_puzzle_bbox_evidence,
+    projected_puzzle_keyed_bbox_evidence,
     resolve_puzzle_axis_variant,
 )
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds
 from ..shared.dice_scene import (
     SUPPORTED_DICE_SCENE_VARIANTS,
+    SUPPORTED_DICE_VISUAL_STYLES,
     DiceRenderParams,
     render_dice_probability_scene,
 )
@@ -118,6 +121,44 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="pro
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="probability", apply_prob=0.15)
 
 
+def _sample_dice_probability_font(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> str:
+    """Sample one role-aware font family for tray labels in a dice probability scene."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.dice_probability.label_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for the sampled dice scene label font."""
+
+    return {
+        "source": "global_font_pool",
+        "font_family": str(font_family),
+        "font_asset_version": font_asset_version(),
+        "scope": "dice_probability_tray_labels",
+    }
+
+
+def _round_keyed_bbox_map(projected: Mapping[str, Any]) -> Dict[str, List[float]]:
+    keyed = projected.get("keyed_bbox_map", {})
+    if not isinstance(keyed, Mapping):
+        raise ValueError("keyed bbox projection missing keyed_bbox_map")
+    return {
+        str(role): [round(float(value), 3) for value in bbox]
+        for role, bbox in keyed.items()
+    }
+
+
 def _load_defaults(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
     return load_puzzle_task_defaults(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
 
@@ -140,6 +181,38 @@ def _resolve_scene_variant(
         balance_flag_key="balanced_scene_variant_sampling",
         axis_namespace="scene_variant",
     )
+
+
+def _resolve_dice_visual_style(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    task_id: str,
+) -> Tuple[str, Dict[str, float]]:
+    return resolve_puzzle_axis_variant(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=SUPPORTED_DICE_VISUAL_STYLES,
+        task_id=str(task_id),
+        explicit_key="dice_visual_style",
+        weights_key="dice_visual_style_weights",
+        balance_flag_key="balanced_dice_visual_style_sampling",
+        axis_namespace="dice_visual_style",
+    )
+
+
+def _dice_visual_style_metadata(style_id: str, probabilities: Mapping[str, float]) -> Dict[str, Any]:
+    return {
+        "style_id": str(style_id),
+        "style_probabilities": {str(key): float(value) for key, value in probabilities.items()},
+        "semantic_color_policy": {
+            "die_face_colors_preserved": True,
+            "pip_count_and_positions_preserved": True,
+            "style_is_non_semantic": True,
+        },
+    }
 
 
 def _resolve_query_id(
@@ -431,9 +504,13 @@ def _choose_pair_event(
                     and predicate_b(int(b["value"]))
                 )
                 if _valid_favorable_count(len(favorable_pairs), total, min_count=min_count, max_count=max_count):
+                    if str(parity_a) == str(parity_b):
+                        event_description = f"both selected dice show {parity_a} values"
+                    else:
+                        event_description = f"the Tray A die shows an {parity_a} value and the Tray B die shows an {parity_b} value"
                     candidates.append(
                         {
-                            "event_description": f"the Tray A die shows an {parity_a} value and the Tray B die shows an {parity_b} value",
+                            "event_description": str(event_description),
                             "tray_a_parity": str(parity_a),
                             "tray_b_parity": str(parity_b),
                             "favorable_pairs": list(favorable_pairs),
@@ -820,6 +897,12 @@ class _DiceProbabilityBaseTask:
             instance_seed=int(instance_seed),
             task_id=str(self.task_id),
         )
+        dice_visual_style, dice_visual_style_probabilities = _resolve_dice_visual_style(
+            params,
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            task_id=str(self.task_id),
+        )
         dataset = self._build_dataset(
             query_id=str(query_id),
             params=params,
@@ -827,6 +910,12 @@ class _DiceProbabilityBaseTask:
             instance_seed=int(instance_seed),
         )
         render_params = _resolve_render_params(render_defaults)
+        font_family = _sample_dice_probability_font(
+            task_id=str(self.task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=render_defaults,
+        )
         scene_style, scene_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace=f"{self.task_id}.dice_probability_background",
@@ -836,14 +925,16 @@ class _DiceProbabilityBaseTask:
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = render_dice_probability_scene(
-            background,
-            scene_variant=str(scene_variant),
-            mode=str(dataset["mode"]),
-            tray_specs=list(dataset["tray_specs"]),
-            render_params=render_params,
-            scene_style=scene_style,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = render_dice_probability_scene(
+                background,
+                scene_variant=str(scene_variant),
+                mode=str(dataset["mode"]),
+                tray_specs=list(dataset["tray_specs"]),
+                render_params=render_params,
+                scene_style=scene_style,
+                visual_style=str(dice_visual_style),
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -862,14 +953,25 @@ class _DiceProbabilityBaseTask:
         )
         evidence_item_ids = [str(item_id) for item_id in dataset["evidence_item_ids"]]
         calculation_supporting_item_ids = [str(item_id) for item_id in dataset["calculation_supporting_item_ids"]]
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, evidence_item_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
-        if len(evidence_bboxes) != len(evidence_item_ids):
+        evidence_role_item_ids = (
+            {"tray_a": "tray_a", "tray_b": "tray_b"}
+            if str(dataset["mode"]) == "pair"
+            else {"dice_tray": "tray"}
+        )
+        evidence_projection = projected_puzzle_keyed_bbox_evidence(rendered_scene.item_bbox_map, evidence_role_item_ids)
+        evidence_bboxes = _round_keyed_bbox_map(evidence_projection)
+        evidence_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_bboxes),
+            "pixel_keyed_bbox_map": dict(evidence_bboxes),
+            "value": dict(evidence_bboxes),
+        }
+        if len(evidence_bboxes) != len(evidence_role_item_ids):
             raise ValueError("dice probability evidence projection dropped tray boxes")
 
         answer_value = str(dataset["answer_value"])
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
         tray_specs = [dict(tray) for tray in dataset["tray_specs"]]
         all_dice = [dict(die) for tray in tray_specs for die in tray["dice"]]
         visual_scan_count = len(all_dice)
@@ -913,6 +1015,8 @@ class _DiceProbabilityBaseTask:
                     "query_id_probabilities": dict(query_id_probabilities),
                     "scene_variant": str(scene_variant),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
+                    "dice_visual_style": str(dice_visual_style),
+                    "dice_visual_style_probabilities": dict(dice_visual_style_probabilities),
                     "mode": str(mode),
                     "event_description": str(event["event_description"]),
                     "given_description": str(event.get("given_description", "")),
@@ -928,7 +1032,19 @@ class _DiceProbabilityBaseTask:
                 "scene_variant": str(scene_variant),
                 "background_style": dict(background_meta),
                 "scene_style": dict(scene_style_meta),
+                "dice_visual_style": _dice_visual_style_metadata(
+                    str(dice_visual_style),
+                    dice_visual_style_probabilities,
+                ),
                 "post_image_noise": dict(post_noise_meta),
+                "post_image_noise_policy": {
+                    "apply_prob": 0.15,
+                    "reason": "dice_color_and_pip_readability",
+                    "scope": "semantic die colors and visible pip counts",
+                },
+                "label_style": {
+                    "font": _font_trace_record(str(font_family)),
+                },
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "layout": str(mode),
             },
@@ -938,7 +1054,7 @@ class _DiceProbabilityBaseTask:
                 "die_bboxes_px": {str(key): list(value) for key, value in rendered_scene.die_bbox_map.items()},
                 "tray_bboxes_px": {str(key): list(value) for key, value in rendered_scene.tray_bbox_map.items()},
                 "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
-                "evidence_source": "tray_bboxes_px",
+                "evidence_source": "keyed_tray_bboxes_px",
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -946,6 +1062,8 @@ class _DiceProbabilityBaseTask:
                 "scene_id": SCENE_ID,
                 "scene_variant": str(scene_variant),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
+                "dice_visual_style": str(dice_visual_style),
+                "dice_visual_style_probabilities": dict(dice_visual_style_probabilities),
                 "mode": str(mode),
                 "tray_specs": tray_specs,
                 "dice_specs": all_dice,
@@ -960,12 +1078,13 @@ class _DiceProbabilityBaseTask:
                 "total_outcome_count": int(event["total_outcome_count"]),
                 "answer_value": str(answer_value),
                 "evidence_item_ids": list(evidence_item_ids),
+                "evidence_role_item_ids": dict(evidence_role_item_ids),
                 "calculation_supporting_item_ids": list(calculation_supporting_item_ids),
                 "question_format": str(query_id),
             },
             "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "value": dict(evidence_bboxes),
             },
             "projected_evidence": dict(evidence_projection),
             "answer_gt": answer_gt.to_dict(),

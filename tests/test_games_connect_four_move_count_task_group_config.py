@@ -46,6 +46,9 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     assert int(generation["safe_crowded_max_occupied_count"]) == 24
     assert int(rendering["max_board_width_px"]) > 0
     assert int(rendering["player_badge_height_px"]) > 0
+    assert bool(rendering["dynamic_canvas_size_enabled"]) is True
+    assert int(rendering["canvas_min_width_px"]) > 0
+    assert int(rendering["canvas_min_height_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_connect_four_v0"
     assert "connect four" in str(prompt["object_description_midgame_board"]).lower()
     assert "safe" in str(prompt["answer_hint_safe_move_count"]).lower()

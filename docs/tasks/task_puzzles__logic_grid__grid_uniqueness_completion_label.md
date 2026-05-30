@@ -14,6 +14,7 @@
 4. `axis_uniqueness` samples `uniqueness_axis=row|column`
 5. Board size: `5x5..7x7`
 6. Answer type: `option_letter`
-7. Evidence type: `bbox_set`
-8. Evidence target: the winning option panel bbox
+7. Evidence type: `keyed_bbox_map`
+8. Evidence target: role-keyed `source_grid` and `selected_option` bboxes
 9. Scene variants: `logic_strip|logic_card|logic_outline`
+10. Render metadata records the sampled shared panel style and global label font under `render_spec.text_style.font`.

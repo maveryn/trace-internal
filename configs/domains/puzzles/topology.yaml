@@ -100,7 +100,7 @@ generation:
       branch_count_max: 5
       branch_length_min: 2
       branch_length_max: 4
-    task_puzzles__voxel_ladder__voxel_ladder_route_label:
+    task_puzzles__voxel_ladder__checkpoint_sequence_label:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_answer_sampling: true
@@ -108,16 +108,15 @@ generation:
       route_checkpoint_count_max: 4
       route_option_count_min: 4
       route_option_count_max: 5
-      shortest_ladder_count_min: 1
-      shortest_ladder_count_max: 3
+      route_ladder_count_min: 1
+      route_ladder_count_max: 3
       query_id_weights:
         checkpoint_sequence_label: 1.0
-        unreachable_checkpoint_label: 1.0
       scene_variant_weights:
         clean_isometric_voxels: 1.0
         worksheet_voxel_maze: 1.0
         game_board_voxel_maze: 1.0
-    task_puzzles__voxel_ladder__voxel_ladder_route_count:
+    task_puzzles__voxel_ladder__checkpoint_reachability:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_answer_sampling: true
@@ -125,11 +124,11 @@ generation:
       route_checkpoint_count_max: 4
       reachable_checkpoint_count_min: 2
       reachable_checkpoint_count_max: 5
-      shortest_ladder_count_min: 1
-      shortest_ladder_count_max: 3
+      route_ladder_count_min: 1
+      route_ladder_count_max: 3
       query_id_weights:
+        unreachable_checkpoint_label: 1.0
         reachable_checkpoint_count: 1.0
-        shortest_ladder_count: 1.0
       scene_variant_weights:
         clean_isometric_voxels: 1.0
         worksheet_voxel_maze: 1.0
@@ -340,7 +339,7 @@ rendering:
       label_fill_rgb: [35, 42, 54]
       label_text_rgb: [255, 255, 255]
       text_stroke_rgb: [255, 255, 255]
-    task_puzzles__voxel_ladder__voxel_ladder_route_label:
+    task_puzzles__voxel_ladder__checkpoint_sequence_label:
       canvas_width: 1100
       canvas_height: 820
       board_left_px: 58
@@ -368,7 +367,7 @@ rendering:
       checkpoint_top_rgb: [96, 222, 111]
       ladder_rgb: [33, 37, 42]
       shadow_rgb: [222, 226, 232]
-    task_puzzles__voxel_ladder__voxel_ladder_route_count:
+    task_puzzles__voxel_ladder__checkpoint_reachability:
       canvas_width: 1040
       canvas_height: 800
       board_left_px: 72
@@ -452,34 +451,30 @@ prompt:
       evidence_hint: set "evidence" to an array containing the correct option panel box and the black 2x2 missing-region box, each as [x0, y0, x1, y1] pixel boxes
       json_example: '{"evidence":[[774,248,902,376],[424,312,512,400]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
-    task_puzzles__voxel_ladder__voxel_ladder_route_label:
+    task_puzzles__voxel_ladder__checkpoint_sequence_label:
       scene_key: topology_voxel_ladder
-      task_key: voxel_ladder_route_label_query
+      task_key: voxel_ladder_checkpoint_sequence_query
       object_description_clean_isometric_voxels: an isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
       object_description_worksheet_voxel_maze: a worksheet-style isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
       object_description_game_board_voxel_maze: a compact game-board style isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
       answer_hint_checkpoint_sequence_label: set "answer" to the single capital-letter option whose color-swatch sequence matches the checkpoint colors passed on the shortest START-to-GOAL route
-      answer_hint_unreachable_checkpoint_label: set "answer" to the lowercase color name of the only unreachable checkpoint cube as a string
       evidence_hint_checkpoint_sequence_label: set "evidence" to an array containing bounding boxes [x0, y0, x1, y1] for the START cube, the checkpoint cubes on the shortest route, the ladders used on that route, and the GOAL cube
-      evidence_hint_unreachable_checkpoint_label: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the unreachable checkpoint cube
       json_example_checkpoint_sequence_label: '{"evidence":[[128,522,206,590],[318,404,390,474],[472,276,544,346],[592,206,626,336],[664,128,736,198]],"answer":"B"}'
-      json_example_unreachable_checkpoint_label: '{"evidence":[[758,318,830,388]],"answer":"purple"}'
       json_example_answer_only_checkpoint_sequence_label: '{"answer":"B"}'
-      json_example_answer_only_unreachable_checkpoint_label: '{"answer":"purple"}'
-    task_puzzles__voxel_ladder__voxel_ladder_route_count:
+    task_puzzles__voxel_ladder__checkpoint_reachability:
       scene_key: topology_voxel_ladder
-      task_key: voxel_ladder_route_count_query
+      task_key: voxel_ladder_checkpoint_reachability_query
       object_description_clean_isometric_voxels: an isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
       object_description_worksheet_voxel_maze: a worksheet-style isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
       object_description_game_board_voxel_maze: a compact game-board style isometric cube maze with a blue START cube, a red GOAL cube, colored checkpoint cubes, and black ladders between height levels
+      answer_hint_unreachable_checkpoint_label: set "answer" to the lowercase color name of the only unreachable checkpoint cube as a string
       answer_hint_reachable_checkpoint_count: set "answer" to the exact number of colored checkpoint cubes reachable from START as an integer
-      answer_hint_shortest_ladder_count: set "answer" to the exact number of black ladders used on the shortest START-to-GOAL route as an integer
+      evidence_hint_unreachable_checkpoint_label: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for the unreachable checkpoint cube
       evidence_hint_reachable_checkpoint_count: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for each reachable checkpoint cube
-      evidence_hint_shortest_ladder_count: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for each black ladder used on the shortest START-to-GOAL route
+      json_example_unreachable_checkpoint_label: '{"evidence":[[758,318,830,388]],"answer":"purple"}'
       json_example_reachable_checkpoint_count: '{"evidence":[[318,404,390,474],[472,276,544,346],[664,128,736,198]],"answer":3}'
-      json_example_shortest_ladder_count: '{"evidence":[[592,206,626,336],[704,128,738,258]],"answer":2}'
+      json_example_answer_only_unreachable_checkpoint_label: '{"answer":"purple"}'
       json_example_answer_only_reachable_checkpoint_count: '{"answer":3}'
-      json_example_answer_only_shortest_ladder_count: '{"answer":2}'
 
 complexity:
   task_overrides:
@@ -503,12 +498,12 @@ complexity:
         visual_scan: 0.38
         reasoning_load: 0.42
         scene_variant_load: 0.20
-    task_puzzles__voxel_ladder__voxel_ladder_route_label:
+    task_puzzles__voxel_ladder__checkpoint_sequence_label:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.44
         scene_variant_load: 0.20
-    task_puzzles__voxel_ladder__voxel_ladder_route_count:
+    task_puzzles__voxel_ladder__checkpoint_reachability:
       criteria_weights:
         visual_scan: 0.36
         reasoning_load: 0.44

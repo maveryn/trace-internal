@@ -13,6 +13,7 @@ from ....core.seed import spawn_rng
 from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from .common import get_int_param as _get_int, get_int_range as _get_range
 from .unit_size_jitter import resolve_puzzle_unit_size_scale, scale_puzzle_px
 
@@ -879,7 +880,7 @@ def _draw_wrapped_text(
             for line in lines:
                 text_bbox = draw.textbbox((0, 0), line, font=font, stroke_width=1)
                 x = float(bbox[0]) + (float(bbox[2] - bbox[0]) - float(text_bbox[2] - text_bbox[0])) * 0.5
-                draw.text((x, y), line, fill=fill, font=font, stroke_width=1, stroke_fill=stroke_fill)
+                draw_text_traced(draw,(x, y), line, fill=fill, font=font, stroke_width=1, stroke_fill=stroke_fill, role="readout", required=False)
                 y += line_height
             return
 
@@ -1167,28 +1168,28 @@ def render_sokoban_scene(
     board_bbox = _bbox_union(cell_bbox_map.values())
     title_font = load_font(20, bold=True)
     subtitle_font = load_font(16, bold=False)
-    draw.text((board_panel[0] + 22, board_panel[1] + 16), "Sokoban grid", fill=render_params.text_color_rgb, font=title_font)
+    draw_text_traced(draw,(board_panel[0] + 22, board_panel[1] + 16), "Sokoban grid", fill=render_params.text_color_rgb, font=title_font, role="readout", required=False)
     if str(dataset.get("objective_contract")) == "path_sequence_label":
-        draw.text(
+        draw_text_traced(draw,
             (board_panel[0] + 22, board_panel[3] - 56),
             "Move codes: U=up, D=down, L=left, R=right.",
             fill=render_params.text_color_rgb,
             font=subtitle_font,
-        )
-        draw.text(
+         role="readout", required=False,)
+        draw_text_traced(draw,
             (board_panel[0] + 22, board_panel[3] - 82),
             "Boxes count as blockers for these path options.",
             fill=render_params.text_color_rgb,
             font=subtitle_font,
-        )
+         role="readout", required=False,)
     elif query_id == "box_target_manhattan_rank_label":
         rank_word = str(dataset.get("relation_support", {}).get("rank_word", "requested"))
-        draw.text(
+        draw_text_traced(draw,
             (board_panel[0] + 22, board_panel[3] - 82),
             f"Compare same-letter box-target pairs; find the {rank_word} closest pair.",
             fill=render_params.text_color_rgb,
             font=subtitle_font,
-        )
+         role="readout", required=False,)
     option_panel_bbox_map: Dict[str, BBox] = {}
     if not uses_board_options:
         option_x0 = float(board_panel[2] + 34)

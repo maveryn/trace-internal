@@ -234,6 +234,7 @@ def render_paired_canvas(
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         reference_title="Left",
         scene_title="Right",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     rendered_by_panel: Dict[str, List[RenderedPairedIcon]] = {"left": [], "right": []}

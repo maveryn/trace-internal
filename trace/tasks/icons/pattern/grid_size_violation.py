@@ -12,7 +12,6 @@ from ....core.task_group_config import get_task_group_defaults
 from ....core.taxonomy import resolve_task_taxonomy
 from ....core.types import TypedValue
 from ...base import TaskOutput
-from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -27,6 +26,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.complexity import build_icons_pattern_grid_size_violation_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.evidence import bbox_set_evidence
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -160,7 +160,7 @@ class _ScenePayload:
 
 
 _DEFAULTS = _TaskDefaults()
-TASK_ID = "task_icons__pattern_grid__size_pattern_violation_index"
+TASK_ID = "task_icons__pattern_grid__attribute_pattern_violation_index"
 QUERY_ID = "grid_size_violation"
 
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "pattern")
@@ -168,6 +168,14 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
+_GEN_DEFAULTS = {
+    **_GEN_DEFAULTS,
+    **dict(_GEN_DEFAULTS.get("variant_generation_params", {}).get(QUERY_ID, {})),
+}
+_RENDER_DEFAULTS = {
+    **_RENDER_DEFAULTS,
+    **dict(_RENDER_DEFAULTS.get("variant_render_params", {}).get(QUERY_ID, {})),
+}
 
 
 def _int_sequence_param(
@@ -586,6 +594,8 @@ def _sample_scene(
         cell_padding_px=int(render_params["cell_padding_px"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
         cell_corner_radius_px=int(render_params["cell_corner_radius_px"]),
         scene_content_side_padding_px=int(render_params["scene_content_side_padding_px"]),
@@ -593,6 +603,7 @@ def _sample_scene(
         scene_content_top_offset_px=int(render_params["scene_content_top_offset_px"]),
         scene_square_cells=False,
         scene_title="Pattern",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
 
     if not prepared.scene_cells:
@@ -731,7 +742,6 @@ def _sample_scene(
     ), image
 
 
-@register_task
 class IconsPatternGridSizeViolationTask:
     """Identify the numbered cell that breaks a 2D icon-size grid rule."""
 
@@ -822,10 +832,14 @@ class IconsPatternGridSizeViolationTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_bboxes = sort_bboxes_reading_order((scene_payload.violating_cell_bbox,))
+        evidence_artifacts = bbox_set_evidence(evidence_bboxes)
         taxonomy = resolve_task_taxonomy(str(self.task_id))
         query_id = QUERY_ID
         answer_gt = TypedValue(type="integer", value=int(scene_payload.answer_index))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type=str(evidence_artifacts["evidence_type"]),
+            value=list(evidence_artifacts["evidence_value"]),
+        )
         common_ids = {
             "domain": taxonomy.domain,
             "scene_id": taxonomy.scene_id,
@@ -981,9 +995,7 @@ class IconsPatternGridSizeViolationTask:
                 "violation_cell_index": int(scene_payload.violation_cell_index),
                 "plausible_rule_count": int(scene_payload.plausible_rule_count),
             },
-            "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
-            },
+            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }
         expected_size_level = int(scene_payload.expected_grid_size_levels[scene_payload.violation_cell_index])
         violation_level_delta = abs(int(expected_size_level) - int(scene_payload.violation_size_level))

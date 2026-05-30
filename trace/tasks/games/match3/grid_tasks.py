@@ -17,6 +17,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -25,6 +26,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.support_sampling import resolve_integer_choice
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import build_games_complexity, normalize_linear, resolve_games_complexity_weights
 from ..shared.layout import (
     apply_games_layout_jitter_to_bbox,
@@ -47,7 +49,13 @@ QUERY_TARGET_CLEAR_LABEL = "target_clear_swap_label"
 SUPPORTED_EFFECT_VALUE_QUERIES: Tuple[str, ...] = (QUERY_CLEARED_COUNT, QUERY_CREATED_RUN_COUNT)
 SUPPORTED_BEST_SWAP_QUERIES: Tuple[str, ...] = (QUERY_MAX_CLEAR_LABEL, QUERY_TARGET_CLEAR_LABEL)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("square_board", "wide_board", "tall_board")
-SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = ("panel_scene",)
+SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
+    "faceted_jewels",
+    "round_candies",
+    "beveled_tiles",
+    "diamond_gems",
+    "orb_tokens",
+)
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
 GEM_KEYS: Tuple[str, ...] = ("red", "blue", "green", "yellow", "purple", "cyan")
 GEM_RGB: Dict[str, Tuple[int, int, int]] = {
@@ -57,6 +65,43 @@ GEM_RGB: Dict[str, Tuple[int, int, int]] = {
     "yellow": (238, 190, 52),
     "purple": (146, 93, 208),
     "cyan": (38, 169, 204),
+}
+MATCH3_STYLE_RGB: Dict[str, Dict[str, Any]] = {
+    "faceted_jewels": {
+        "gem_shape": "faceted",
+        "cell_alpha": 0.78,
+        "grid_width": 1,
+        "gem_outline_width": 2,
+        "shadow": True,
+    },
+    "round_candies": {
+        "gem_shape": "circle",
+        "cell_alpha": 0.70,
+        "grid_width": 2,
+        "gem_outline_width": 3,
+        "shadow": False,
+    },
+    "beveled_tiles": {
+        "gem_shape": "rounded_square",
+        "cell_alpha": 0.82,
+        "grid_width": 2,
+        "gem_outline_width": 2,
+        "shadow": True,
+    },
+    "diamond_gems": {
+        "gem_shape": "diamond",
+        "cell_alpha": 0.74,
+        "grid_width": 1,
+        "gem_outline_width": 3,
+        "shadow": True,
+    },
+    "orb_tokens": {
+        "gem_shape": "orb",
+        "cell_alpha": 0.66,
+        "grid_width": 2,
+        "gem_outline_width": 3,
+        "shadow": False,
+    },
 }
 
 Coord = Tuple[int, int]
@@ -409,14 +454,14 @@ def _cell_entity_id(coord: Coord) -> str:
     return f"gem_r{int(coord[0]) + 1}_c{int(coord[1]) + 1}"
 
 
-def _move_neighbor_ids(outcome: _MoveOutcome) -> Tuple[str, ...]:
-    return (_cell_entity_id(outcome.move.a), _cell_entity_id(outcome.move.b))
+def _marked_run_entity_id(run_index: int) -> str:
+    return f"marked_created_run_{int(run_index) + 1}"
 
 
-def _evidence_for_outcome(*, arrow_entity_id: str, outcome: _MoveOutcome) -> Tuple[str, ...]:
-    if outcome.cleared_cells:
-        return tuple([str(arrow_entity_id)] + [_cell_entity_id(coord) for coord in outcome.cleared_cells])
-    return tuple([str(arrow_entity_id)] + list(_move_neighbor_ids(outcome)))
+def _evidence_for_effect_outcome(*, query_id: str, outcome: _MoveOutcome) -> Tuple[str, ...]:
+    if str(query_id) == QUERY_CLEARED_COUNT:
+        return tuple(_cell_entity_id(coord) for coord in outcome.cleared_cells)
+    return tuple(_marked_run_entity_id(index) for index, _run in enumerate(outcome.runs))
 
 
 def _resolve_target_answer(
@@ -531,7 +576,7 @@ def _sample_effect_value(
     if not candidates:
         raise ValueError(f"no marked swap candidate for {query_id}={target_answer}")
     marked = rng.choice(tuple(candidates))
-    evidence_ids = _evidence_for_outcome(arrow_entity_id="marked_swap_arrow", outcome=marked)
+    evidence_ids = _evidence_for_effect_outcome(query_id=str(query_id), outcome=marked)
     metadata.update(
         {
             "target_answer": int(target_answer),
@@ -648,7 +693,7 @@ def _sample_best_swap_label(
         for index, (label, outcome) in enumerate(zip(labels, option_outcomes))
     )
     answer_label = str(option_specs[int(answer_slot)].label)
-    evidence_ids = _evidence_for_outcome(arrow_entity_id=option_specs[int(answer_slot)].entity_id, outcome=answer_outcome)
+    evidence_ids = (str(option_specs[int(answer_slot)].entity_id),)
     metadata.update(
         {
             "option_count": int(option_count),
@@ -688,14 +733,14 @@ def _draw_centered_text(
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
     x0, y0, x1, y1 = bbox
-    draw.text(
+    draw_text_traced(draw,
         (float(x0 + ((x1 - x0) - text_w) / 2.0), float(y0 + ((y1 - y0) - text_h) / 2.0)),
         str(text),
         font=font,
         fill=tuple(fill),
         stroke_width=int(stroke_width),
         stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(fill)),
-    )
+     role="readout", required=False,)
 
 
 def _gem_polygon(cx: float, cy: float, radius: float) -> Tuple[Tuple[float, float], ...]:
@@ -708,24 +753,66 @@ def _gem_polygon(cx: float, cy: float, radius: float) -> Tuple[Tuple[float, floa
     )
 
 
+def _blend_rgb(a: Tuple[int, int, int], b: Tuple[int, int, int], alpha: float) -> Tuple[int, int, int]:
+    weight = max(0.0, min(1.0, float(alpha)))
+    return tuple(int(round((float(a[index]) * weight) + (float(b[index]) * (1.0 - weight)))) for index in range(3))
+
+
 def _draw_gem(
     draw: ImageDraw.ImageDraw,
     bbox: Tuple[float, float, float, float],
     *,
     fill_rgb: Tuple[int, int, int],
     outline_rgb: Tuple[int, int, int],
+    shape: str,
+    outline_width: int,
+    shadow: bool,
 ) -> None:
     x0, y0, x1, y1 = bbox
     cx = float((x0 + x1) / 2.0)
     cy = float((y0 + y1) / 2.0)
     radius = float(min(x1 - x0, y1 - y0) / 2.0)
+    width = max(1, int(outline_width))
+    highlight = tuple(min(255, int(value + 42)) for value in fill_rgb)
+    shadow_rgb = tuple(max(0, int(value * 0.70)) for value in fill_rgb)
+
+    if str(shape) == "circle":
+        draw.ellipse((x0, y0, x1, y1), fill=tuple(fill_rgb), outline=tuple(outline_rgb), width=width)
+        inset = radius * 0.32
+        draw.ellipse((cx - inset, cy - radius * 0.55, cx + inset * 0.5, cy - radius * 0.08), fill=highlight)
+        return
+    if str(shape) == "rounded_square":
+        draw.rounded_rectangle((x0, y0, x1, y1), radius=max(6, int(radius * 0.28)), fill=tuple(fill_rgb), outline=tuple(outline_rgb), width=width)
+        draw.rounded_rectangle(
+            (x0 + radius * 0.25, y0 + radius * 0.22, x1 - radius * 0.25, y0 + radius * 0.68),
+            radius=max(4, int(radius * 0.15)),
+            fill=highlight,
+        )
+        if bool(shadow):
+            draw.line((x0 + radius * 0.2, y1 - radius * 0.24, x1 - radius * 0.2, y1 - radius * 0.24), fill=shadow_rgb, width=2)
+        return
+    if str(shape) == "diamond":
+        polygon = ((cx, y0), (x1, cy), (cx, y1), (x0, cy))
+        draw.polygon(polygon, fill=tuple(fill_rgb), outline=tuple(outline_rgb))
+        inner = ((cx, y0 + radius * 0.35), (x1 - radius * 0.35, cy), (cx, cy + radius * 0.20), (x0 + radius * 0.35, cy))
+        draw.polygon(inner, fill=highlight)
+        if bool(shadow):
+            draw.line((x1, cy, cx, y1, x0, cy), fill=shadow_rgb, width=width)
+        return
+    if str(shape) == "orb":
+        draw.ellipse((x0, y0, x1, y1), fill=tuple(fill_rgb), outline=tuple(outline_rgb), width=width)
+        ring = (x0 + radius * 0.18, y0 + radius * 0.18, x1 - radius * 0.18, y1 - radius * 0.18)
+        draw.ellipse(ring, outline=highlight, width=max(2, width - 1))
+        shine = (cx - radius * 0.42, cy - radius * 0.50, cx - radius * 0.05, cy - radius * 0.15)
+        draw.ellipse(shine, fill=(255, 255, 255))
+        return
+
     polygon = _gem_polygon(cx, cy, radius)
     draw.polygon(polygon, fill=tuple(fill_rgb), outline=tuple(outline_rgb))
     inner = _gem_polygon(cx, cy - radius * 0.08, radius * 0.50)
-    highlight = tuple(min(255, int(value + 42)) for value in fill_rgb)
     draw.polygon(inner, fill=highlight)
-    shadow = tuple(max(0, int(value * 0.70)) for value in fill_rgb)
-    draw.line([polygon[2], polygon[3], polygon[4]], fill=shadow, width=2)
+    if bool(shadow):
+        draw.line([polygon[2], polygon[3], polygon[4]], fill=shadow_rgb, width=max(2, width))
 
 
 def _draw_arrow(
@@ -794,6 +881,7 @@ def _render_scene(
     task_id: str,
     instance_seed: int,
     params: Mapping[str, Any],
+    style_variant: str,
 ) -> _RenderedScene:
     canvas_width = _int_default(params, "canvas_width", _DEFAULTS.canvas_width)
     canvas_height = _int_default(params, "canvas_height", _DEFAULTS.canvas_height)
@@ -810,6 +898,13 @@ def _render_scene(
     )
     image = image.convert("RGBA")
     draw = ImageDraw.Draw(image)
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.match3.label_font",
+        params=params,
+    )
+    match3_style = MATCH3_STYLE_RGB.get(str(style_variant), MATCH3_STYLE_RGB["faceted_jewels"])
     layout_jitter = resolve_games_layout_jitter(
         params,
         _RENDER_DEFAULTS,
@@ -853,15 +948,32 @@ def _render_scene(
     grid_left = int(round(panel_bbox[0])) + inner_margin + index_margin
     grid_top = int(round(panel_bbox[1])) + inner_margin + index_margin
 
-    label_font = load_font(_int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px), bold=True)
-    index_font = load_font(_int_default(params, "index_font_size_px", _DEFAULTS.index_font_size_px), bold=True)
+    label_font = load_font(
+        _int_default(params, "label_font_size_px", _DEFAULTS.label_font_size_px),
+        bold=True,
+        font_family=str(font_family),
+    )
+    index_font = load_font(
+        _int_default(params, "index_font_size_px", _DEFAULTS.index_font_size_px),
+        bold=True,
+        font_family=str(font_family),
+    )
     text_rgb = tuple(int(value) for value in style.text_rgb)
     border_rgb = tuple(int(value) for value in style.panel_border_rgb)
-    cell_fill = tuple(int(round((int(style.panel_fill_rgb[i]) * 0.78) + (int(style.background_rgb[i]) * 0.22))) for i in range(3))
+    cell_fill = _blend_rgb(
+        tuple(int(value) for value in style.panel_fill_rgb),
+        tuple(int(value) for value in style.background_rgb),
+        float(match3_style["cell_alpha"]),
+    )
     mark_rgb = tuple(int(value) for value in style.mark_rgb)
+    grid_width_px = int(match3_style["grid_width"])
+    gem_shape = str(match3_style["gem_shape"])
+    gem_outline_width = int(match3_style["gem_outline_width"])
+    gem_shadow = bool(match3_style["shadow"])
 
     entities: List[Dict[str, Any]] = []
     entity_bboxes: Dict[str, List[float]] = {}
+    entity_points: Dict[str, List[float]] = {}
     gem_specs: List[Dict[str, Any]] = []
     cell_centers: Dict[Coord, Tuple[float, float]] = {}
     for col in range(cols):
@@ -877,7 +989,7 @@ def _render_scene(
             x0 = grid_left + col * (cell + gap)
             y0 = grid_top + row * (cell + gap)
             cell_bbox = (int(x0), int(y0), int(x0 + cell), int(y0 + cell))
-            draw_panel_grid_cell(draw, bbox=cell_bbox, fill=cell_fill, style=style, outline=style.grid_rgb, width=1)
+            draw_panel_grid_cell(draw, bbox=cell_bbox, fill=cell_fill, style=style, outline=style.grid_rgb, width=grid_width_px)
             gem_bbox = (
                 float(x0 + gem_inset),
                 float(y0 + gem_inset),
@@ -885,11 +997,20 @@ def _render_scene(
                 float(y0 + cell - gem_inset),
             )
             color_key = str(sample.board[row][col])
-            _draw_gem(draw, gem_bbox, fill_rgb=GEM_RGB[str(color_key)], outline_rgb=border_rgb)
+            _draw_gem(
+                draw,
+                gem_bbox,
+                fill_rgb=GEM_RGB[str(color_key)],
+                outline_rgb=border_rgb,
+                shape=str(gem_shape),
+                outline_width=int(gem_outline_width),
+                shadow=bool(gem_shadow),
+            )
             entity_id = _cell_entity_id((int(row), int(col)))
             bbox_list = [round(float(value), 3) for value in gem_bbox]
             entity_bboxes[entity_id] = list(bbox_list)
             cell_centers[(int(row), int(col))] = (float(x0 + cell / 2.0), float(y0 + cell / 2.0))
+            entity_points[str(entity_id)] = [round(float(x0 + cell / 2.0), 3), round(float(y0 + cell / 2.0), 3)]
             spec = {
                 "entity_id": str(entity_id),
                 "entity_type": "match3_gem",
@@ -919,6 +1040,8 @@ def _render_scene(
             width=int(arrow_width),
         )
         entity_bboxes[str(option.entity_id)] = [float(value) for value in bbox]
+        arrow_point = [round(float((start[0] + end[0]) / 2.0), 3), round(float((start[1] + end[1]) / 2.0), 3)]
+        entity_points[str(option.entity_id)] = list(arrow_point)
         spec = {
             "entity_id": str(option.entity_id),
             "entity_type": "match3_swap_option_arrow",
@@ -930,6 +1053,7 @@ def _render_scene(
             "cleared_cells": [[int(row + 1), int(col + 1)] for row, col in option.outcome.cleared_cells],
             "is_answer": bool(option.is_answer),
             "bbox_px": [float(value) for value in bbox],
+            "center_px": list(arrow_point),
         }
         option_specs.append(dict(spec))
         entities.append(dict(spec))
@@ -951,6 +1075,8 @@ def _render_scene(
             width=int(arrow_width + 2),
         )
         entity_bboxes["marked_swap_arrow"] = [float(value) for value in bbox]
+        marked_arrow_point = [round(float((start[0] + end[0]) / 2.0), 3), round(float((start[1] + end[1]) / 2.0), 3)]
+        entity_points["marked_swap_arrow"] = list(marked_arrow_point)
         marked_spec = {
             "entity_id": "marked_swap_arrow",
             "entity_type": "marked_match3_swap_arrow",
@@ -960,17 +1086,54 @@ def _render_scene(
             "run_count": int(sample.marked_outcome.run_count),
             "cleared_cells": [[int(row + 1), int(col + 1)] for row, col in sample.marked_outcome.cleared_cells],
             "bbox_px": [float(value) for value in bbox],
+            "center_px": list(marked_arrow_point),
         }
         entities.append(dict(marked_spec))
+        for run_index, run in enumerate(sample.marked_outcome.runs):
+            centers = [cell_centers[(int(row), int(col))] for row, col in run]
+            run_point = [
+                round(float(sum(point[0] for point in centers) / float(len(centers))), 3),
+                round(float(sum(point[1] for point in centers) / float(len(centers))), 3),
+            ]
+            run_entity_id = _marked_run_entity_id(int(run_index))
+            entity_points[str(run_entity_id)] = list(run_point)
+            entities.append(
+                {
+                    "entity_id": str(run_entity_id),
+                    "entity_type": "match3_created_run_center",
+                    "run_index": int(run_index),
+                    "cells": [[int(row + 1), int(col + 1)] for row, col in run],
+                    "point_px": list(run_point),
+                }
+            )
 
     render_map = {
         "entity_bboxes_px": dict(entity_bboxes),
+        "entity_points_px": dict(entity_points),
         "gem_bboxes_px": {str(spec["entity_id"]): [float(value) for value in spec["bbox_px"]] for spec in gem_specs},
+        "gem_centers_px": {
+            str(spec["entity_id"]): list(entity_points[str(spec["entity_id"])])
+            for spec in gem_specs
+        },
         "swap_arrow_bboxes_px": {str(spec["entity_id"]): [float(value) for value in spec["bbox_px"]] for spec in option_specs},
+        "swap_arrow_points_px": {str(spec["entity_id"]): [float(value) for value in spec["center_px"]] for spec in option_specs},
         "marked_swap_arrow_bbox_px": None if marked_spec is None else [float(value) for value in marked_spec["bbox_px"]],
+        "marked_swap_arrow_point_px": None if marked_spec is None else [float(value) for value in marked_spec["center_px"]],
         "grid_bbox_px": [float(grid_left), float(grid_top), float(grid_left + grid_width), float(grid_top + grid_height)],
         "scene_variant": str(sample.scene_variant),
-        "style": dict(style_meta),
+        "panel_scene_style": dict(style_meta),
+        "match3_style": {
+            "style_variant": str(style_variant),
+            "gem_shape": str(gem_shape),
+            "cell_fill_rgb": [int(value) for value in cell_fill],
+            "grid_width_px": int(grid_width_px),
+            "gem_outline_width_px": int(gem_outline_width),
+        },
+        "text_style": {
+            "font_family": str(font_family),
+            "font_asset": get_font_family_record(str(font_family)).to_trace(),
+            "text_rgb": [int(value) for value in text_rgb],
+        },
         "layout_jitter": attach_games_unit_size_jitter(resolved_jitter, unit_meta),
         "effective_cell_size_px": int(cell),
         "effective_cell_gap_px": int(gap),
@@ -986,10 +1149,13 @@ def _render_scene(
 
 def _json_examples(query_id: str) -> Tuple[str, str]:
     if str(query_id) in SUPPORTED_BEST_SWAP_QUERIES:
-        answer_and_evidence = {"evidence": [[410, 240, 520, 330], [448, 224, 502, 278]], "answer": "C"}
+        answer_and_evidence = {"evidence": [[456, 284]], "answer": "C"}
         answer_only = {"answer": "C"}
+    elif str(query_id) == QUERY_CREATED_RUN_COUNT:
+        answer_and_evidence = {"evidence": [[318, 338], [450, 338]], "answer": 2}
+        answer_only = {"answer": 2}
     else:
-        answer_and_evidence = {"evidence": [[410, 240, 520, 330], [448, 224, 502, 278]], "answer": 4}
+        answer_and_evidence = {"evidence": [[252, 338], [318, 338], [384, 338], [450, 338]], "answer": 4}
         answer_only = {"answer": 4}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
@@ -1137,11 +1303,12 @@ class _Match3Task:
             task_id=str(self.task_id),
             instance_seed=int(instance_seed),
             params=params,
+            style_variant=str(style_variant),
         )
-        evidence_bboxes = [
-            list(rendered.render_map["entity_bboxes_px"][str(entity_id)])
+        evidence_points = [
+            list(rendered.render_map["entity_points_px"][str(entity_id)])
             for entity_id in sample.evidence_entity_ids
-            if str(entity_id) in rendered.render_map["entity_bboxes_px"]
+            if str(entity_id) in rendered.render_map["entity_points_px"]
         ]
         prompt, prompt_variants, prompt_meta = _build_prompt(sample, instance_seed=int(instance_seed))
         image, post_noise_meta = apply_post_image_noise(
@@ -1151,8 +1318,8 @@ class _Match3Task:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         answer_gt = TypedValue(type=str(sample.answer_type), value=sample.answer)
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_bboxes))
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        complexity = _build_complexity(task_id=str(self.task_id), sample=sample, evidence_count=len(evidence_points))
         option_trace = [
             {
                 "label": str(option.label),
@@ -1213,6 +1380,8 @@ class _Match3Task:
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(rendered.style_meta),
+                "match3_style": dict(rendered.render_map.get("match3_style", {})),
+                "text_style": dict(rendered.render_map.get("text_style", {})),
                 "effective_cell_size_px": rendered.render_map.get("effective_cell_size_px"),
             },
             "render_map": dict(rendered.render_map),
@@ -1233,7 +1402,9 @@ class _Match3Task:
                 "ids": [str(entity_id) for entity_id in sample.evidence_entity_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": dict(rendered.background_meta),
             "post_image_noise": dict(post_noise_meta),

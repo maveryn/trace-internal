@@ -42,6 +42,9 @@ def test_games_dots_and_boxes_capture_count_task_group_defaults_present() -> Non
     assert generation["balanced_capture_move_query_id_sampling"] is True
     assert int(rendering["board_width_px"]) > 0
     assert int(rendering["board_height_px"]) > 0
+    assert rendering["dynamic_canvas_size_enabled"] is True
+    assert int(rendering["canvas_min_width_px"]) >= 620
+    assert int(rendering["canvas_min_height_px"]) >= 520
     assert str(prompt["bundle_id"]) == "games_dots_and_boxes_v0"
     assert str(prompt["scene_key"]) == "visible_dots_and_boxes_board"
     assert str(prompt["task_key"]) == "dots_and_boxes_capture_query"

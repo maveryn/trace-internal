@@ -9,7 +9,7 @@
 
 ## Answer and Evidence
 1. Answer type: `integer`
-2. Evidence type: bbox_set over the forced hidden cells being counted.
+2. Evidence type: `bbox_set` over the forced hidden cells being counted.
 3. The sampled forced-cell query is recorded as `query_id` and `query_spec.params.query_id`.
 
 ## Implementation
@@ -22,6 +22,8 @@
    forced-safe queries.
 6. The opened clue cell(s) used for the local deduction are outlined in the
    image, but evidence remains the hidden forced cells being counted.
+7. Rendering uses shared game panel backgrounds, six scene-local board styles,
+   sampled fonts for clue numbers, unit-size jitter, and layout jitter.
 
 ## Determinism
 1. Generation is deterministic from `instance_seed`, explicit params, prompt bundle version, and renderer/config versions.

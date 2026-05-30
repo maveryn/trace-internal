@@ -19,13 +19,14 @@ from ...shared.color_distance import color_distance
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import load_font
+from ...shared.text_rendering import load_font, temporary_default_font_family
 from ..shared.common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
 from ..shared.complexity import build_puzzle_complexity, normalize_int_with_bounds, resolve_puzzle_complexity_weights
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
@@ -211,6 +212,43 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 _COMPLEXITY_WEIGHTS = resolve_puzzle_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_puzzle_background_defaults(task_group="visual")
 POST_IMAGE_NOISE_DEFAULTS = load_puzzle_noise_defaults(task_group="visual", apply_prob=0.0)
+
+
+def _sample_color_gradient_font(
+    *,
+    task_id: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> str:
+    """Sample one role-aware font family for visible swatch labels."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.color_gradient_label_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str, *, scope: str) -> Dict[str, Any]:
+    """Build trace metadata for one sampled visible-label font."""
+
+    return {
+        "source": "global_font_pool",
+        "font_family": str(font_family),
+        "font_asset_version": font_asset_version(),
+        "scope": str(scope),
+    }
+
+
+def _post_noise_policy_trace() -> Dict[str, Any]:
+    """Document why color-gradient scenes intentionally do not add post-render noise."""
+
+    return {
+        "default_override": True,
+        "reason": "color_semantics_preserve_rgb_separability",
+    }
 
 
 def _clamp_unit(value: float) -> float:
@@ -1250,6 +1288,12 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
         }
 
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
+        font_family = _sample_color_gradient_font(
+            task_id=TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=render_defaults,
+        )
         scene_style, scene_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace=f"{VIOLATION_TASK_ID}.color_gradient_background",
@@ -1266,12 +1310,13 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_scene(
-            background=background,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            render_params=render_params,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_scene(
+                background=background,
+                dataset=dataset,
+                scene_variant=str(scene_variant),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1349,11 +1394,18 @@ class PuzzlesVisualColorGradientViolationCellLabelTask:
                 "background_style": dict(background_meta),
                 "scene_style": dict(scene_style_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "post_image_noise_policy": _post_noise_policy_trace(),
                 "scene_bbox_px": [int(value) for value in rendered_scene.scene_bbox_px],
                 "render_params": {
                     "swatch_size_px": int(render_params.swatch_size_px),
                     "swatch_gap_px": int(render_params.swatch_gap_px),
                     "label_chip_size_px": int(render_params.label_chip_size_px),
+                },
+                "label_style": {
+                    "font": _font_trace_record(
+                        str(font_family),
+                        scope="color_gradient_swatch_labels",
+                    ),
                 },
                 "unit_size_jitter": dict(render_params.unit_size_jitter),
             },
@@ -1498,6 +1550,12 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
         }
 
         render_params = _resolve_render_params(params, render_defaults, instance_seed=int(instance_seed))
+        font_family = _sample_color_gradient_font(
+            task_id=COMPLETION_TASK_ID,
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=render_defaults,
+        )
         scene_style, scene_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace=f"{COMPLETION_TASK_ID}.color_gradient_background",
@@ -1514,12 +1572,13 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_completion_scene(
-            background=background,
-            dataset=dataset,
-            scene_variant=str(scene_variant),
-            render_params=render_params,
-        )
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_completion_scene(
+                background=background,
+                dataset=dataset,
+                scene_variant=str(scene_variant),
+                render_params=render_params,
+            )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1539,8 +1598,12 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
         ]
+        evidence_keyed_bboxes = {
+            "blank_swatch": list(evidence_bboxes[0]),
+            "selected_option": list(evidence_bboxes[1]),
+        }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
 
         query_params = {
             "query_id": COMPLETION_QUERY_ID,
@@ -1609,10 +1672,17 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
                 "background_style": dict(background_meta),
                 "scene_style": dict(scene_style_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "post_image_noise_policy": _post_noise_policy_trace(),
                 "scene_bbox_px": [int(value) for value in rendered_scene.scene_bbox_px],
                 "render_params": {
                     "swatch_gap_px": int(render_params.swatch_gap_px),
                     "label_chip_size_px": int(render_params.label_chip_size_px),
+                },
+                "label_style": {
+                    "font": _font_trace_record(
+                        str(font_family),
+                        scope="color_gradient_sequence_and_option_labels",
+                    ),
                 },
                 "unit_size_jitter": dict(render_params.unit_size_jitter),
             },
@@ -1635,13 +1705,15 @@ class PuzzlesVisualColorGradientCompletionLabelTask:
                 "answer_value": str(dataset.answer_label),
             },
             "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "value": dict(evidence_keyed_bboxes),
             },
             "projected_evidence": {
-                "type": "bbox_set",
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
                 "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
+                "value": dict(evidence_keyed_bboxes),
             },
         }
         visual_scan = normalize_int_with_bounds(int(dataset.sequence_length + dataset.option_count), [9, 13])

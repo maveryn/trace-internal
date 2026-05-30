@@ -7,7 +7,7 @@
 4. Query ids: `pop_count_after_marked_shot`
 5. Objective: compute the numeric pop effect of the marked shot arrow.
 6. Answer type: `integer`.
-7. Evidence type: `bbox_set` over the marked shot arrow and the affected chain marbles.
+7. Evidence type: `point_set` over the centers of existing chain marbles removed by the marked shot; zero-pop shots use an empty point set.
 
 ## Generation Notes
 1. The scene shows a Zuma-like board with a central shooter, a shooter marble, and colored marbles on a gray curved or spiral track.
@@ -15,3 +15,4 @@
 3. The single-step rule inserts the shooter marble at the chain gap indicated by the marked arrow, removes the same-color contiguous run containing it if that run has length at least three, and closes the chain once.
 4. `pop_count_after_marked_shot` counts existing chain marbles removed by the marked shot, excluding the shooter marble.
 5. The task does not apply recursive cascade removal.
+6. Rendering varies shared panel treatment, sampled label font, track layout, and five scene-local track styles before projecting evidence.

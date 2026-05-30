@@ -10,6 +10,7 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `opposite_face_label|marked_edge_neighbor_face_label`
 3. Answer type: `option_letter`
-4. Evidence type: `bbox_set`
-5. Evidence target: marked reference face bbox followed by the selected option-panel bbox.
+4. Evidence type: `keyed_bbox_map`
+5. Evidence keys: `marked_face` and `selected_option`.
 6. The verifier uses finalized face labels, net geometry, and cube-face adjacency metadata, not pixels.
+7. Render metadata records the sampled shared panel style, visible cube-net scene variant, role-aware font family, and post-image noise policy.

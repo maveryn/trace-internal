@@ -17,6 +17,6 @@
    - vertical addition/subtraction varies digit width and, for addition, addend count,
    - letter-digit puzzles vary the number of displayed letters and the number of displayed equations.
 7. `answer_gt.type`: `integer`
-8. `evidence_gt.type`: `bbox_set` over the puzzle panel and the marked digit/letter cell.
+8. `evidence_gt.type`: `bbox_set` over the marked digit cell or highlighted target-letter box only.
 9. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 10. Answers and evidence are produced from the same metadata execution trace.

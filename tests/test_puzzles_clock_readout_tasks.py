@@ -54,14 +54,14 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
             hand_entities = [entity for entity in scene_entities if entity["entity_kind"] == "clock_hand"]
 
             assert out.answer_gt.type == "string"
-            assert out.evidence_gt.type == "bbox_set"
+            assert out.evidence_gt.type == "keyed_point_map"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
             expected_hand_count = 3 if expected_unit == "seconds" else 2
-            assert len(out.evidence_gt.value) == expected_hand_count
+            expected_point_count = expected_hand_count + 1
+            assert len(out.evidence_gt.value) == expected_point_count
             assert trace["scene_ir"]["scene_kind"] == "puzzles_clock_single"
-            assert out.query_id == "default"
             assert out.query_id == f"{expected_unit}_{expected_direction}"
-            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == out.query_id
             assert str(execution["source_query_id"]) == "offset_time"
             assert str(execution["offset_unit"]) == expected_unit
             assert str(execution["offset_direction"]) == expected_direction
@@ -85,7 +85,7 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
                 else str(format_clock_hhmm(int(shown_total_minutes)))
             )
             assert str(execution["shown_time_text"]) == shown_text
-            assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+            assert trace["projected_evidence"]["keyed_point_map"] == out.evidence_gt.value
             expected_points = {
                 "clock_center",
                 "hour_hand_tip",
@@ -93,8 +93,14 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
             }
             if expected_unit == "seconds":
                 expected_points.add("second_hand_tip")
+            assert set(out.evidence_gt.value.keys()) == expected_points
+            assert set(trace["projected_evidence"]["pixel_keyed_point_map"].keys()) == expected_points
             assert set(trace["projected_evidence"]["pixel_point_map"].keys()) == expected_points
+            assert set(execution["supporting_point_roles"]) == expected_points
             assert len(trace["render_map"]["hand_bboxes_px"]) == expected_hand_count
+            assert trace["render_map"]["evidence_source"] == "center_px_and_hand_tips_px"
+            assert trace["render_spec"]["clock_style"]["font"]["source"] == "global_font_pool"
+            assert trace["render_spec"]["clock_style"]["font"]["font_family"]
             assert str(trace["render_spec"]["clock_style"]["accent_color_name"]) == str(accent_colors[scene_index])
             assert str(trace["render_spec"]["clock_style"]["style_variant"]) == str(style_variants[scene_index])
             assert isinstance(trace["render_spec"]["clock_style"]["resolved_colors_rgb"], dict)
@@ -121,14 +127,22 @@ def test_puzzles_clock_readout_contract_matches_trace() -> None:
 
 
 def test_puzzles_clock_prompt_examples_match_variant_offsets() -> None:
-    seconds_example = [[298, 270, 322, 405], [314, 148, 330, 406], [158, 316, 326, 470]]
+    minutes_example = {
+        "clock_center": [320, 320],
+        "hour_hand_tip": [430, 350],
+        "minute_hand_tip": [484, 461],
+    }
+    seconds_example = {
+        **minutes_example,
+        "second_hand_tip": [140, 424],
+    }
     expected = (
         (PuzzlesClockOffsetReadoutTask(), "minutes", "after", (
-            {"evidence": [[298, 270, 322, 405], [314, 148, 330, 406]], "answer": "03:50"},
+            {"evidence": minutes_example, "answer": "03:50"},
             {"answer": "03:50"},
         )),
         (PuzzlesClockOffsetReadoutTask(), "minutes", "before", (
-            {"evidence": [[298, 270, 322, 405], [314, 148, 330, 406]], "answer": "03:00"},
+            {"evidence": minutes_example, "answer": "03:00"},
             {"answer": "03:00"},
         )),
         (PuzzlesClockOffsetReadoutTask(), "seconds", "after", (
@@ -152,7 +166,7 @@ def test_puzzles_clock_prompt_examples_match_variant_offsets() -> None:
         assert answer_only == expected_answer_only
 
 
-def test_puzzles_clock_balanced_sampling_defaults_cover_axes() -> None:
+def test_puzzles_clock_balanced_sampling_defaults_cover_public_axes() -> None:
     task = PuzzlesClockOffsetReadoutTask()
     offset_units: Counter[str] = Counter()
     offset_directions: Counter[str] = Counter()
@@ -166,13 +180,13 @@ def test_puzzles_clock_balanced_sampling_defaults_cover_axes() -> None:
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        assert str(execution["query_id"]) == "default"
+        assert str(execution["query_id"]) in {"minutes_after", "minutes_before"}
         offset_units[str(execution["offset_unit"])] += 1
         offset_directions[str(execution["offset_direction"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         style_variants[str(execution["style_variant"])] += 1
         accent_color_names[str(execution["accent_color_name"])] += 1
-    assert set(offset_units.keys()) == {"minutes", "seconds"}
+    assert set(offset_units.keys()) == {"minutes"}
     assert set(offset_directions.keys()) == {"after", "before"}
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_CLOCK_STYLE_VARIANTS)

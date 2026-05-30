@@ -65,10 +65,14 @@ def test_games_go_group_property_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "point_set"
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["panel_scene_style"]
+    assert trace["render_map"]["panel_scene_style"]
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value) == int(expected_answer)
     assert len(execution[evidence_coord_key]) == int(expected_answer)
     assert len(execution["marked_group_coords"]) >= 1
@@ -200,10 +204,8 @@ def test_games_go_liberty_condition_public_task_records_query_id(query_id: str, 
     )
     trace = out.trace_payload
 
-    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
+    assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(target_answer)

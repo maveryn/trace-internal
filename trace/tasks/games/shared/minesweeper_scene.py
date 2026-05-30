@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .minesweeper_common import Coord, all_coords, clue_number, coord_to_cell_id
 from .style import MinesweeperTheme, build_games_minesweeper_theme
@@ -25,6 +26,7 @@ class MinesweeperRenderParams:
     grid_line_width_px: int
     cell_padding_px: int
     number_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -76,6 +78,7 @@ def _draw_number(
     value: int,
     theme: MinesweeperTheme,
     font_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw one centered Minesweeper clue number."""
 
@@ -95,6 +98,7 @@ def _draw_number(
         min_size_px=14,
         max_size_px=int(font_size_px),
         fill_ratio=0.72,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), text, font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
@@ -103,7 +107,7 @@ def _draw_number(
     text_y = float(top + (0.5 * (height - text_h)) - float(text_bbox[1]))
     colors = tuple(theme.number_rgb_by_value)
     fill = colors[min(max(int(number), 0), len(colors) - 1)]
-    draw.text((text_x, text_y), text, fill=tuple(int(v) for v in fill), font=font)
+    draw_text_traced(draw,(text_x, text_y), text, fill=tuple(int(v) for v in fill), font=font, role="readout", required=False)
 
 
 def _draw_flag(
@@ -238,6 +242,7 @@ def render_minesweeper_grid_scene(
                 value=clue_number(coord, mine_coords=mines, size=int(board_size)),
                 theme=theme,
                 font_size_px=int(params.number_font_size_px),
+                font_family=str(params.font_family),
             )
         if coord in revealed:
             state = "revealed"
@@ -307,6 +312,8 @@ def render_minesweeper_grid_scene(
         "flagged_cell_ids": [coord_to_cell_id(coord) for coord in sorted(flagged)],
         "hidden_cell_ids": [coord_to_cell_id(coord) for coord in sorted(hidden)],
         "highlighted_clue_cell_ids": [coord_to_cell_id(coord) for coord in sorted(highlighted_clues)],
+        "style_variant": str(style_variant),
+        "text_style": {"font_family": str(params.font_family)},
         "layout_jitter": dict(layout_jitter),
     }
     return RenderedMinesweeperScene(

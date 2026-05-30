@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -24,7 +24,7 @@ from ...shared.support_sampling import resolve_integer_choice, resolve_integer_s
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_games_nine_mens_morris_pieces_in_mill_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
-from ..shared.layout import resolve_games_layout_jitter
+from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.morris_common import (
     SUPPORTED_NINE_MENS_MORRIS_QUERY_IDS,
     SUPPORTED_NINE_MENS_MORRIS_SCENE_VARIANTS,
@@ -34,8 +34,9 @@ from ..shared.morris_common import (
     supported_targets_for_query,
 )
 from ..shared.morris_scene import NineMensMorrisRenderParams, render_nine_mens_morris_scene
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_NINE_MENS_MORRIS_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_nine_mens_morris_pieces_in_mill_count_base"
@@ -82,8 +83,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="nine_mens_morris")
-POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="nine_mens_morris", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="nine_mens_morris", apply_prob=0.5)
 
 def _resolve_query_id(
     *,
@@ -309,40 +309,69 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> NineMensMorrisRenderParams:
     """Resolve stable render parameters for one Morris scene."""
 
-    return NineMensMorrisRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        board_width_px=int(params.get("board_width_px", group_default(_RENDER_DEFAULTS, "board_width_px", _DEFAULTS.board_width_px))),
-        board_height_px=int(
-            params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", _DEFAULTS.board_height_px))
-        ),
-        board_corner_radius_px=int(
-            params.get(
-                "board_corner_radius_px",
-                group_default(_RENDER_DEFAULTS, "board_corner_radius_px", _DEFAULTS.board_corner_radius_px),
-            )
-        ),
-        panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))),
-        title_font_size_px=int(
-            params.get("title_font_size_px", group_default(_RENDER_DEFAULTS, "title_font_size_px", _DEFAULTS.title_font_size_px))
-        ),
-        title_band_height_px=int(
-            params.get(
-                "title_band_height_px",
-                group_default(_RENDER_DEFAULTS, "title_band_height_px", _DEFAULTS.title_band_height_px),
-            )
-        ),
-        board_padding_px=int(
-            params.get("board_padding_px", group_default(_RENDER_DEFAULTS, "board_padding_px", _DEFAULTS.board_padding_px))
-        ),
-        piece_radius_px=int(params.get("piece_radius_px", group_default(_RENDER_DEFAULTS, "piece_radius_px", _DEFAULTS.piece_radius_px))),
-        node_radius_px=int(params.get("node_radius_px", group_default(_RENDER_DEFAULTS, "node_radius_px", _DEFAULTS.node_radius_px))),
-        layout_jitter_meta=resolve_games_layout_jitter(
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace="games.nine_mens_morris.unit_size",
+        fallback_min=0.55,
+        fallback_max=1.10,
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
             instance_seed=int(instance_seed),
             namespace="games.nine_mens_morris.layout",
         ),
+        unit_scale_meta,
+    )
+    board_width_px = scale_games_px(
+        params.get("board_width_px", group_default(_RENDER_DEFAULTS, "board_width_px", _DEFAULTS.board_width_px)),
+        unit_scale,
+        min_px=470,
+    )
+    board_height_px = scale_games_px(
+        params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", _DEFAULTS.board_height_px)),
+        unit_scale,
+        min_px=360,
+    )
+    default_canvas_width = int(group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))
+    default_canvas_height = int(group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    canvas_width = int(max(620, min(default_canvas_width, int(board_width_px) + 250)))
+    canvas_height = int(max(500, min(default_canvas_height, int(board_height_px) + 190)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.nine_mens_morris.font_family",
+        params=params,
+    )
+    return NineMensMorrisRenderParams(
+        canvas_width=int(params.get("canvas_width", canvas_width)),
+        canvas_height=int(params.get("canvas_height", canvas_height)),
+        board_width_px=int(board_width_px),
+        board_height_px=int(board_height_px),
+        board_corner_radius_px=scale_games_px(
+            params.get("board_corner_radius_px", group_default(_RENDER_DEFAULTS, "board_corner_radius_px", _DEFAULTS.board_corner_radius_px)),
+            unit_scale,
+            min_px=12,
+        ),
+        panel_margin_px=scale_games_px(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px)), unit_scale, min_px=30),
+        title_font_size_px=scale_games_px(
+            params.get("title_font_size_px", group_default(_RENDER_DEFAULTS, "title_font_size_px", _DEFAULTS.title_font_size_px)),
+            unit_scale,
+            min_px=18,
+        ),
+        title_band_height_px=scale_games_px(
+            params.get("title_band_height_px", group_default(_RENDER_DEFAULTS, "title_band_height_px", _DEFAULTS.title_band_height_px)),
+            unit_scale,
+            min_px=38,
+        ),
+        board_padding_px=scale_games_px(params.get("board_padding_px", group_default(_RENDER_DEFAULTS, "board_padding_px", _DEFAULTS.board_padding_px)), unit_scale, min_px=38),
+        piece_radius_px=scale_games_px(params.get("piece_radius_px", group_default(_RENDER_DEFAULTS, "piece_radius_px", _DEFAULTS.piece_radius_px)), unit_scale, min_px=13),
+        node_radius_px=scale_games_px(params.get("node_radius_px", group_default(_RENDER_DEFAULTS, "node_radius_px", _DEFAULTS.node_radius_px)), unit_scale, min_px=3),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
     )
 
 
@@ -352,8 +381,8 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     json_example = json.dumps(
         {
             "evidence": [
-                [180, 220, 224, 264],
-                [340, 220, 384, 264],
+                [202, 242],
+                [362, 242],
             ],
             "answer": 5,
         },
@@ -376,6 +405,7 @@ class GamesNineMensMorrisPiecesInMillCountTask:
         board_state: NineMensMorrisBoardState | None = None
         rendered_scene = None
         background_meta: Dict[str, Any] | None = None
+        panel_style_meta: Dict[str, Any] | None = None
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             board_state = build_nine_mens_morris_board_state(
@@ -384,12 +414,22 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 player_color=axes.player_color,
                 target_answer=int(axes.target_answer),
             )
-            background, background_meta = make_background_canvas(
+            panel_style, panel_style_meta = resolve_game_panel_scene_style(
+                instance_seed=int(instance_seed),
+                namespace="games.nine_mens_morris.panel_scene_style",
+                treatment_weights=params.get(
+                    "panel_scene_treatment_weights",
+                    group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+                ),
+                palette_weights=params.get(
+                    "panel_scene_palette_weights",
+                    group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+                ),
+            )
+            background, background_meta = make_panel_scene_background(
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
-                instance_seed=int(instance_seed),
-                params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+                style=panel_style,
             )
             rendered_scene = render_nine_mens_morris_scene(
                 board_state=board_state,
@@ -397,10 +437,11 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 scene_variant=str(axes.scene_variant),
                 style_variant=str(axes.style_variant),
                 params=render_params,
+                panel_style=panel_style,
             )
             break
 
-        if board_state is None or rendered_scene is None or background_meta is None:
+        if board_state is None or rendered_scene is None or background_meta is None or panel_style_meta is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
         evidence_ids = evidence_piece_ids(
@@ -408,8 +449,8 @@ class GamesNineMensMorrisPiecesInMillCountTask:
             query_id=str(axes.query_id),
             player_color=axes.player_color,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["piece_bboxes_px"][str(piece_id)])
+        evidence_points = [
+            list(rendered_scene.render_map["piece_centers_px"][str(piece_id)])
             for piece_id in evidence_ids
         ]
         image, post_noise_meta = apply_post_image_noise(
@@ -463,7 +504,11 @@ class GamesNineMensMorrisPiecesInMillCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(axes.target_answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         total_piece_count = len(board_state.piece_specs)
         complexity = build_games_nine_mens_morris_pieces_in_mill_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
@@ -514,6 +559,8 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -545,7 +592,9 @@ class GamesNineMensMorrisPiecesInMillCountTask:
                 "ids": [str(value) for value in evidence_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

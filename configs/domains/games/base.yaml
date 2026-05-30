@@ -6,10 +6,11 @@ prompt:
 rendering:
   shared:
     layout_jitter_enabled: true
-    layout_jitter_x_px_min: -22
-    layout_jitter_x_px_max: 22
-    layout_jitter_y_px_min: -16
-    layout_jitter_y_px_max: 16
+    layout_jitter_mode: slack_fraction
+    layout_jitter_x_slack_fraction_min: -0.75
+    layout_jitter_x_slack_fraction_max: 0.75
+    layout_jitter_y_slack_fraction_min: -0.7
+    layout_jitter_y_slack_fraction_max: 0.7
     layout_jitter_min_margin_px: 16
 
 visual:

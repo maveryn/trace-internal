@@ -11,6 +11,21 @@ SUPPORTED_GAMES_STYLE_VARIANTS: Tuple[str, ...] = (
     "soft",
     "outlined",
 )
+SUPPORTED_DARTS_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic",
+    "soft",
+    "outlined",
+    "league_blue",
+    "parchment",
+    "neon",
+)
+SUPPORTED_CARD_STYLE_VARIANTS: Tuple[str, ...] = (
+    "classic",
+    "soft",
+    "outlined",
+    "ivory",
+    "slate",
+)
 SUPPORTED_CHESS_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic",
     "soft",
@@ -446,6 +461,38 @@ def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
     variant = str(style_variant)
+    if variant == "ivory":
+        return CardTheme(
+            card_fill_rgb=(252, 247, 230),
+            card_border_rgb=(108, 88, 58),
+            card_border_width_px=3,
+            shadow_rgb=(30, 22, 14),
+            shadow_alpha=50,
+            shadow_offset_px=(4, 5),
+            center_symbol_rgb_black=(42, 34, 28),
+            center_symbol_rgb_red=(166, 44, 52),
+            rank_rgb_black=(38, 32, 26),
+            rank_rgb_red=(164, 43, 51),
+            reference_fill_rgb=(116, 83, 40),
+            reference_text_rgb=(255, 250, 236),
+            continuation_rgb=(116, 83, 40),
+        )
+    if variant == "slate":
+        return CardTheme(
+            card_fill_rgb=(239, 244, 248),
+            card_border_rgb=(42, 58, 72),
+            card_border_width_px=4,
+            shadow_rgb=(8, 14, 20),
+            shadow_alpha=70,
+            shadow_offset_px=(5, 6),
+            center_symbol_rgb_black=(23, 32, 42),
+            center_symbol_rgb_red=(190, 56, 72),
+            rank_rgb_black=(20, 29, 39),
+            rank_rgb_red=(186, 52, 68),
+            reference_fill_rgb=(36, 91, 132),
+            reference_text_rgb=(255, 255, 255),
+            continuation_rgb=(36, 91, 132),
+        )
     if variant == "soft":
         return CardTheme(
             card_fill_rgb=(253, 251, 245),
@@ -2093,11 +2140,13 @@ __all__ = [
     "SUPPORTED_CHECKERS_STYLE_VARIANTS",
     "SUPPORTED_CHESS_STYLE_VARIANTS",
     "SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS",
+    "SUPPORTED_DARTS_STYLE_VARIANTS",
     "SUPPORTED_DOMINO_STYLE_VARIANTS",
     "SUPPORTED_DOTS_AND_BOXES_STYLE_VARIANTS",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "SUPPORTED_BINGO_STYLE_VARIANTS",
     "SUPPORTED_BATTLESHIP_STYLE_VARIANTS",
+    "SUPPORTED_CARD_STYLE_VARIANTS",
     "SUPPORTED_GO_STYLE_VARIANTS",
     "SUPPORTED_HEX_STYLE_VARIANTS",
     "SUPPORTED_MINESWEEPER_STYLE_VARIANTS",

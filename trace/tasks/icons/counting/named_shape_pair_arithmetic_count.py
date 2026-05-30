@@ -19,7 +19,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.weighted_sampling import sample_weighted_value, weighted_probability_map
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.icon_scene import sort_bboxes_reading_order
+from ..shared.evidence import keyed_bbox_map_evidence
 from ..shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.procedural_named_icon_field_scene import (
     SCENE_ID,
@@ -42,9 +42,7 @@ from ..shared.procedural_named_icons import (
 )
 
 
-TOTAL_TASK_ID = "task_icons__named_field__shape_pair_total_count"
-DIFFERENCE_TASK_ID = "task_icons__named_field__shape_pair_difference_count"
-TASK_ID = TOTAL_TASK_ID
+TASK_ID = "task_icons__named_field__shape_pair_arithmetic_count"
 
 QUERY_IDS: Tuple[str, ...] = (
     "two_shape_total_count",
@@ -691,9 +689,38 @@ def _role_by_instance_id(sample: _SampleSpec) -> Dict[str, str]:
     }
 
 
-def _evidence_bboxes(sample: _SampleSpec, instances: Sequence[Any]) -> list[list[int]]:
-    counted_ids = set(_counted_instance_ids(sample, instances))
-    return sort_bboxes_reading_order(tuple(instance.bbox_xyxy for instance in instances if str(instance.instance_id) in counted_ids))
+def _instance_bbox_sort_key(instance: Any) -> tuple[int, int, int, int]:
+    bbox = [int(value) for value in instance.bbox_xyxy]
+    return (bbox[1], bbox[0], bbox[3], bbox[2])
+
+
+def _operand_evidence_role_maps(
+    *,
+    instances: Sequence[Any],
+    left_instance_ids: Sequence[str],
+    right_instance_ids: Sequence[str],
+) -> tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+    left_ids = {str(instance_id) for instance_id in left_instance_ids}
+    right_ids = {str(instance_id) for instance_id in right_instance_ids}
+    left_instances = sorted(
+        [instance for instance in instances if str(instance.instance_id) in left_ids],
+        key=_instance_bbox_sort_key,
+    )
+    right_instances = sorted(
+        [instance for instance in instances if str(instance.instance_id) in right_ids],
+        key=_instance_bbox_sort_key,
+    )
+    role_bboxes: Dict[str, Sequence[int]] = {}
+    role_instance_ids: Dict[str, str] = {}
+    for index, instance in enumerate(left_instances, start=1):
+        role = f"left_operand_{index}"
+        role_bboxes[role] = list(instance.bbox_xyxy)
+        role_instance_ids[role] = str(instance.instance_id)
+    for index, instance in enumerate(right_instances, start=1):
+        role = f"right_operand_{index}"
+        role_bboxes[role] = list(instance.bbox_xyxy)
+        role_instance_ids[role] = str(instance.instance_id)
+    return role_bboxes, role_instance_ids
 
 
 def _complexity(sample: _SampleSpec, *, render_params: Mapping[str, Any]) -> TaskComplexity:
@@ -821,9 +848,6 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
             raise RuntimeError(f"could not generate {self.task_id}: {last_error}") from last_error
 
         counted_instance_ids = _counted_instance_ids(sample, scene.instances)
-        evidence_bboxes = _evidence_bboxes(sample, scene.instances)
-        if len(evidence_bboxes) != int(sample.left_count) + int(sample.right_count):
-            raise RuntimeError("rendered named-icon pair arithmetic evidence did not match operand counts")
 
         _, _, active_prompt_defaults = split_generation_rendering_prompt_defaults(
             _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -892,6 +916,14 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
         )
         if len(left_instance_ids) != int(sample.left_count) or len(right_instance_ids) != int(sample.right_count):
             raise RuntimeError("operand role counts do not match sampled counts")
+        evidence_role_bboxes, evidence_role_instance_ids = _operand_evidence_role_maps(
+            instances=scene.instances,
+            left_instance_ids=left_instance_ids,
+            right_instance_ids=right_instance_ids,
+        )
+        if len(evidence_role_bboxes) != int(sample.left_count) + int(sample.right_count):
+            raise RuntimeError("rendered named-icon pair arithmetic evidence did not match operand counts")
+        evidence_artifacts = keyed_bbox_map_evidence(evidence_role_bboxes)
 
         trace_payload = {
             "scene_ir": {
@@ -1068,15 +1100,19 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
                 "counted_instance_ids": list(counted_instance_ids),
                 "left_operand_instance_ids": list(left_instance_ids),
                 "right_operand_instance_ids": list(right_instance_ids),
+                "evidence_roles": dict(evidence_role_instance_ids),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                **dict(evidence_artifacts["projected_evidence"]),
             },
         }
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="integer", value=int(sample.target_answer)),
-            evidence_gt=TypedValue(type="bbox_set", value=list(evidence_bboxes)),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=dict(evidence_artifacts["evidence_value"]),
+            ),
             image=scene.image,
             image_id="img0",
             trace_payload=trace_payload,
@@ -1089,25 +1125,16 @@ class _IconsNamedShapePairArithmeticCountTaskBase:
 
 
 @register_task
-class IconsNamedFieldShapePairTotalCountTask(_IconsNamedShapePairArithmeticCountTaskBase):
-    """Count the total across two named icon groups."""
+class IconsNamedFieldShapePairArithmeticCountTask(_IconsNamedShapePairArithmeticCountTaskBase):
+    """Count total or absolute difference over two named icon groups."""
 
-    task_id = TOTAL_TASK_ID
-    query_ids = TOTAL_QUERY_IDS
-
-
-@register_task
-class IconsNamedFieldShapePairDifferenceCountTask(_IconsNamedShapePairArithmeticCountTaskBase):
-    """Count the absolute difference between two named icon groups."""
-
-    task_id = DIFFERENCE_TASK_ID
-    query_ids = DIFFERENCE_QUERY_IDS
+    task_id = TASK_ID
+    query_ids = QUERY_IDS
 
 
 __all__ = [
     "DIFFERENCE_QUERY_IDS",
-    "IconsNamedFieldShapePairDifferenceCountTask",
-    "IconsNamedFieldShapePairTotalCountTask",
+    "IconsNamedFieldShapePairArithmeticCountTask",
     "QUERY_IDS",
     "TOTAL_QUERY_IDS",
 ]

@@ -41,11 +41,18 @@
 3. Reject/resample conditions: unsupported count config, missing curated assets, anchor-placement failures, or directional overlap-constrained placement failures.
 4. No-auto-relaxation guarantee: generation fails on unmet spatial-capacity/asset/overlap constraints instead of weakening the Anchor relation contract.
 5. Evidence scope: the user-facing `bbox_set` covers counted Scene icons only; the Reference and Anchor boxes stay in trace metadata.
-6. Trace style metadata records the sampled icon palette, overlap/noise config, anchor highlight styling, and final per-instance `tint_rgb` assignments.
-7. Balanced defaults: seeded sampling first balances the four directions, then the task passes a decoupled index to independent count sampling so each direction cycles through the full target-count support.
+6. Trace style metadata records the sampled icon palette, overlap/noise config, anchor highlight styling, final per-instance `tint_rgb` assignments, and panel text-legibility metadata.
+7. Balanced defaults: seeded sampling balances the four direction branches while count sampling remains part of the same task generator used for normal dataset generation.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: object count + target count + query branch.
 2. Determinism/build tests: `tests/test_icons_relation_relative_position_type_contracts.py`
 3. Behavior/trace/prompt tests: `tests/test_icons_relation_relative_position_type_tasks.py`
 4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`
+
+## Current Review Status
+Current browser-review sidecars live under
+`review/task-reviews/icons/reference_canvas/task_icons__reference_canvas__anchor_position_count/`.
+Public evidence uses the shared icon `bbox_set` payload over counted Scene icons
+only; Reference and Anchor boxes remain trace metadata. Solve-rate status is
+tracked in `review/calibration_sweep_status.json`.

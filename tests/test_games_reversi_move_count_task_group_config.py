@@ -33,4 +33,5 @@ def test_games_reversi_move_count_defaults_expose_scene_query_and_answer_axes() 
     assert str(prompt["bundle_id"]) == "games_reversi_v0"
     assert "6 by 6" in str(prompt["object_description_compact_board"])
     assert "corner" in str(prompt["evidence_hint_corner_move_count"]).lower()
+    assert "pixel point" in str(prompt["evidence_hint_flip_count_for_marked_move"]).lower()
     assert "flip" in str(prompt["answer_hint_flip_count_for_marked_move"]).lower()

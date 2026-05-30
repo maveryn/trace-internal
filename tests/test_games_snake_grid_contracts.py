@@ -46,13 +46,10 @@ def test_games_snake_public_tasks_emit_expected_contract(
 
     assert out.answer_gt.type == expected_type
     assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
     assert out.query_id == expected_query
     assert out.scene_id == "snake"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(out.evidence_gt.value) >= 1
     if expected_type == "option_letter":

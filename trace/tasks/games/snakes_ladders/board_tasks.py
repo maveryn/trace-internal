@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
@@ -21,6 +21,7 @@ from ..shared.complexity import build_games_snakes_ladders_board_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.snakes_ladders_common import (
     LAST_SQUARE,
     SUPPORTED_BOARD_SIDES,
@@ -41,7 +42,7 @@ from ..shared.snakes_ladders_common import (
     validate_snakes_ladders_sample,
 )
 from ..shared.snakes_ladders_scene import SnakesLaddersRenderParams, render_snakes_ladders_board_scene
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_snakes_ladders_board_base"
@@ -97,7 +98,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="snakes_ladders")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="snakes_ladders", apply_prob=0.5)
 
 
@@ -329,6 +329,12 @@ def _resolve_axes(
 def _render_params(params: Mapping[str, Any], *, instance_seed: int, board_side: int) -> SnakesLaddersRenderParams:
     """Resolve rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.snakes_ladders.font_family",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -358,6 +364,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int, board_side:
         token_radius_px=scale_games_px(params.get("token_radius_px", group_default(_RENDER_DEFAULTS, "token_radius_px", _DEFAULTS.token_radius_px)), unit_scale, min_px=9),
         die_size_px=scale_games_px(params.get("die_size_px", group_default(_RENDER_DEFAULTS, "die_size_px", _DEFAULTS.die_size_px)), unit_scale, min_px=44),
         jump_width_px=scale_games_px(params.get("jump_width_px", group_default(_RENDER_DEFAULTS, "jump_width_px", _DEFAULTS.jump_width_px)), unit_scale, min_px=3),
+        font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
 
@@ -587,9 +594,7 @@ def _sample_move_outcome_scene(*, rng, axes: _ResolvedAxes) -> SnakesLaddersSamp
         move = apply_die_roll(int(start_square), int(die_value), jumps_tuple, board_side=int(board_side))
         if int(move.final_square) != int(target_final):
             continue
-        evidence_ids = [square_to_cell_id(int(start_square)), "die", square_to_cell_id(int(move.landing_square))]
-        if int(move.final_square) != int(move.landing_square):
-            evidence_ids.append(square_to_cell_id(int(move.final_square)))
+        evidence_ids = [square_to_cell_id(int(start_square)), square_to_cell_id(int(move.final_square))]
         sample = SnakesLaddersSample(
             query_id="move_outcome_value",
             scene_variant=str(axes.scene_variant),
@@ -679,7 +684,10 @@ def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
 
     if str(query_id) == "move_outcome_value":
         answer_value = 0
-        evidence_value = [[88, 682, 178, 772], [806, 164, 894, 252], [278, 586, 368, 676]]
+        evidence_value: Any = {
+            "start_square": [88, 682, 178, 772],
+            "end_square": [462, 398, 552, 488],
+        }
     else:
         answer_value = 0
         evidence_value = [[554, 302, 644, 392]]
@@ -693,6 +701,18 @@ def _move_trace(move: SnakesLaddersMove) -> Dict[str, Any]:
     """Serialize one move trace."""
 
     return move.to_trace()
+
+
+def _evidence_role_entity_ids(sample: SnakesLaddersSample) -> Dict[str, str]:
+    """Return role-bound witness ids when the query needs semantic evidence binding."""
+
+    if str(sample.query_id) != "move_outcome_value" or sample.move is None:
+        return {}
+    move = sample.move
+    return {
+        "start_square": square_to_cell_id(int(sample.start_square)),
+        "end_square": square_to_cell_id(int(move.final_square)),
+    }
 
 
 class GamesSnakesLaddersBoardTask:
@@ -718,12 +738,22 @@ class GamesSnakesLaddersBoardTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid Snakes and Ladders board after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.snakes_ladders.panel_scene_style",
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_snakes_ladders_board_scene(
             jumps=sampled_scene.jumps,
@@ -733,11 +763,41 @@ class GamesSnakesLaddersBoardTask:
             start_square=int(sampled_scene.start_square),
             die_value=int(axes.die_value) if str(axes.query_id) == "move_outcome_value" else None,
             horizon_roll_count=int(sampled_scene.horizon_roll_count) if sampled_scene.horizon_roll_count is not None else None,
+            panel_style=panel_style,
         )
-        evidence_bboxes = [
-            list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
-            for entity_id in sampled_scene.evidence_entity_ids
-        ]
+        evidence_role_entity_ids = _evidence_role_entity_ids(sampled_scene)
+        if evidence_role_entity_ids:
+            evidence_value: Any = {
+                str(role): list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+                for role, entity_id in evidence_role_entity_ids.items()
+            }
+            evidence_type = "keyed_bbox_map"
+            projected_evidence = {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_value),
+                "pixel_keyed_bbox_map": dict(evidence_value),
+            }
+            witness_symbolic = {
+                "type": "object_map",
+                "ids": dict(evidence_role_entity_ids),
+            }
+            evidence_count = len(evidence_role_entity_ids)
+        else:
+            evidence_value = [
+                list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
+                for entity_id in sampled_scene.evidence_entity_ids
+            ]
+            evidence_type = "bbox_set"
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_value],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_value],
+            }
+            witness_symbolic = {
+                "type": "object_set",
+                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+            }
+            evidence_count = len(sampled_scene.evidence_entity_ids)
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -793,7 +853,11 @@ class GamesSnakesLaddersBoardTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type=evidence_type, value=evidence_value)
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_snakes_ladders_board_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -802,7 +866,7 @@ class GamesSnakesLaddersBoardTask:
             jump_count=len(sampled_scene.jumps),
             horizon_roll_count=int(sampled_scene.horizon_roll_count or 1),
             target_answer=int(sampled_scene.answer),
-            evidence_count=len(sampled_scene.evidence_entity_ids),
+            evidence_count=int(evidence_count),
         )
         trace_payload = {
             "scene_ir": {
@@ -851,6 +915,8 @@ class GamesSnakesLaddersBoardTask:
                 "board_side": int(axes.board_side),
                 "last_square": int(board_last_square(int(axes.board_side))),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
@@ -876,15 +942,11 @@ class GamesSnakesLaddersBoardTask:
                 else None,
                 "answer": int(sampled_scene.answer),
                 "evidence_entity_ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
+                "evidence_role_entity_ids": dict(evidence_role_entity_ids),
                 "construction_mode": str(sampled_scene.construction_mode),
             },
-            "witness_symbolic": {
-                "type": "object_set",
-                "ids": [str(entity_id) for entity_id in sampled_scene.evidence_entity_ids],
-            },
-            "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
-            },
+            "witness_symbolic": dict(witness_symbolic),
+            "projected_evidence": dict(projected_evidence),
             "background": background_meta,
             "post_image_noise": post_noise_meta,
         }

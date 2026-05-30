@@ -8,6 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.drawing import draw_centered_text, draw_dashed_line
 from ...shared.text_rendering import load_font
 from .bubble_shooter_common import (
@@ -23,6 +24,12 @@ from .bubble_shooter_common import (
     shooter_bubble_entity_id,
 )
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import (
+    GamePanelSceneStyle,
+    draw_panel_scene_chrome,
+    game_panel_contrast_anchor_colors,
+    game_panel_scene_style_metadata,
+)
 
 
 @dataclass(frozen=True)
@@ -42,6 +49,7 @@ class BubbleShooterRenderParams:
     shooter_radius_px: int
     option_radius_px: int
     option_label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -348,6 +356,7 @@ def _draw_labeled_option(
     radius: float,
     theme: BubbleShooterTheme,
     label_font_size_px: int,
+    font_family: str,
 ) -> Tuple[float, float, float, float]:
     """Draw one labeled color option and return its bbox."""
 
@@ -359,7 +368,7 @@ def _draw_labeled_option(
         theme=theme,
         outline_width=3,
     )
-    font = load_font(max(10, int(label_font_size_px)), bold=True)
+    font = load_font(max(10, int(label_font_size_px)), bold=True, font_family=str(font_family) or None)
     draw_centered_text(
         draw,
         text=str(label),
@@ -443,6 +452,25 @@ def _draw_landing_marker(
     return bbox
 
 
+def _guide_color_anchor_rgbs(
+    *,
+    theme: BubbleShooterTheme,
+    panel_style: GamePanelSceneStyle | None,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return known panel/playfield colors the aim cue must avoid."""
+
+    anchors: list[Tuple[int, int, int]] = [
+        tuple(int(v) for v in theme.playfield_fill_rgb),
+        tuple(int(v) for v in theme.playfield_outline_rgb),
+        tuple(int(v) for v in theme.slot_outline_rgb),
+        tuple(int(v) for v in theme.launcher_fill_rgb),
+        tuple(int(v) for v in theme.launcher_outline_rgb),
+        tuple(int(v) for v in theme.option_panel_fill_rgb),
+        tuple(int(v) for v in theme.option_panel_outline_rgb),
+    ]
+    return tuple(game_panel_contrast_anchor_colors(panel_style, extra_colors=anchors))
+
+
 def render_bubble_shooter_scene(
     *,
     board: Board,
@@ -454,12 +482,21 @@ def render_bubble_shooter_scene(
     scene_variant: str,
     style_variant: str,
     params: BubbleShooterRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBubbleShooterScene:
     """Render one Bubble-shooter playfield with a marked shot landing slot."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
     theme = build_games_bubble_shooter_theme(style_variant=str(style_variant))
+    guide_color_anchors = _guide_color_anchor_rgbs(theme=theme, panel_style=panel_style)
+    guide_line_rgb = resolve_contrasting_palette(
+        (theme.guide_line_rgb,),
+        anchor_colors=guide_color_anchors,
+        min_anchor_distance=40.0,
+        min_pairwise_distance=0.0,
+        distance_space="lab",
+    )[0]
 
     left = float((int(params.canvas_width) - int(params.playfield_width_px)) / 2.0)
     top = float((int(params.canvas_height) - int(params.playfield_height_px)) / 2.0)
@@ -479,6 +516,23 @@ def render_bubble_shooter_scene(
     else:
         layout_jitter = {}
 
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(18, int(round(float(params.panel_margin_px) * 0.56)))
+        panel_bbox = (
+            max(4, int(round(playfield_bbox[0])) - panel_pad),
+            max(4, int(round(playfield_bbox[1])) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(playfield_bbox[2])) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(playfield_bbox[3])) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=32,
+            border_width=max(2, int(round(float(params.playfield_border_width_px) * 0.45))),
+        )
+
     draw.rounded_rectangle(
         playfield_bbox,
         radius=24,
@@ -497,13 +551,15 @@ def render_bubble_shooter_scene(
     )
 
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    entity_centers: Dict[str, Tuple[float, float]] = {}
     bubble_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     scene_entities: list[Dict[str, Any]] = []
     for coord in occupied_coords(board):
         color_key = str(board_value(board, coord))
+        center = centers[coord]
         bbox = _draw_bubble(
             draw,
-            center=centers[coord],
+            center=center,
             radius=radius,
             color_key=color_key,
             theme=theme,
@@ -511,6 +567,7 @@ def render_bubble_shooter_scene(
         )
         entity_id = bubble_entity_id(coord)
         entity_bboxes[str(entity_id)] = bbox
+        entity_centers[str(entity_id)] = (round(float(center[0]), 3), round(float(center[1]), 3))
         bubble_bboxes[str(entity_id)] = bbox
         scene_entities.append(
             {
@@ -520,6 +577,7 @@ def render_bubble_shooter_scene(
                 "col": int(coord[1]),
                 "color_key": str(color_key),
                 "bbox_px": list(bbox),
+                "center_px": list(entity_centers[str(entity_id)]),
             }
         )
 
@@ -527,6 +585,10 @@ def render_bubble_shooter_scene(
     slot_radius = float(radius * 0.92)
     landing_bbox = _draw_landing_marker(draw, center=landing_center, radius=float(radius), theme=theme)
     entity_bboxes[landing_slot_entity_id()] = landing_bbox
+    entity_centers[landing_slot_entity_id()] = (
+        round(float(landing_center[0]), 3),
+        round(float(landing_center[1]), 3),
+    )
     scene_entities.append(
         {
             "entity_id": landing_slot_entity_id(),
@@ -534,6 +596,7 @@ def render_bubble_shooter_scene(
             "row": int(landing_coord[0]),
             "col": int(landing_coord[1]),
             "bbox_px": list(landing_bbox),
+            "center_px": list(entity_centers[landing_slot_entity_id()]),
         }
     )
 
@@ -578,12 +641,17 @@ def render_bubble_shooter_scene(
             width=3,
         )
     entity_bboxes[shooter_bubble_entity_id()] = shooter_bbox
+    entity_centers[shooter_bubble_entity_id()] = (
+        round(float(shooter_center[0]), 3),
+        round(float(shooter_center[1]), 3),
+    )
     scene_entities.append(
         {
             "entity_id": shooter_bubble_entity_id(),
             "entity_type": "bubble_shooter_launcher_bubble",
             "color_key": None if shooter_color_key is None else str(shooter_color_key),
             "bbox_px": list(shooter_bbox),
+            "center_px": list(entity_centers[shooter_bubble_entity_id()]),
         }
     )
 
@@ -601,7 +669,7 @@ def render_bubble_shooter_scene(
             draw,
             start=cue_start,
             end=cue_end,
-            fill=tuple(int(v) for v in theme.guide_line_rgb),
+            fill=tuple(int(v) for v in guide_line_rgb),
             width=int(params.path_width_px),
             dash_px=16,
             gap_px=8,
@@ -638,9 +706,11 @@ def render_bubble_shooter_scene(
                 radius=float(params.option_radius_px),
                 theme=theme,
                 label_font_size_px=int(params.option_label_font_size_px),
+                font_family=str(params.font_family),
             )
             entity_id = option_entity_id(str(option.label))
             entity_bboxes[str(entity_id)] = bbox
+            entity_centers[str(entity_id)] = (round(float(center[0]), 3), round(float(center[1]), 3))
             option_bboxes[str(entity_id)] = bbox
             scene_entities.append(
                 {
@@ -650,16 +720,21 @@ def render_bubble_shooter_scene(
                     "color_key": str(option.color_key),
                     "is_answer": bool(option.is_answer),
                     "bbox_px": list(bbox),
+                    "center_px": list(entity_centers[str(entity_id)]),
                 }
             )
 
     render_map = {
         "playfield_bbox_px": [round(float(v), 3) for v in playfield_bbox],
+        "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
         "bubble_bboxes_px": {str(key): list(value) for key, value in bubble_bboxes.items()},
         "option_bboxes_px": {str(key): list(value) for key, value in option_bboxes.items()},
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
+        "entity_centers_px": {str(key): list(value) for key, value in entity_centers.items()},
         "landing_slot_bbox_px": list(landing_bbox),
+        "landing_slot_center_px": list(entity_centers[landing_slot_entity_id()]),
         "shooter_bubble_bbox_px": list(shooter_bbox),
+        "shooter_bubble_center_px": list(entity_centers[shooter_bubble_entity_id()]),
         "slot_centers_px": {
             f"{row},{col}": [round(float(center[0]), 3), round(float(center[1]), 3)]
             for (row, col), center in centers.items()
@@ -674,6 +749,18 @@ def render_bubble_shooter_scene(
             "end": [round(float(cue_end[0]), 3), round(float(cue_end[1]), 3)],
         },
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "guide_line_rgb": list(guide_line_rgb),
+        "guide_color_safety": {
+            "distance_space": "lab",
+            "min_anchor_distance_required": 40.0,
+            "anchor_rgbs": [list(color) for color in guide_color_anchors],
+            "guide_anchor_lab_distance": round(
+                float(min_color_distance_to_anchors(guide_line_rgb, guide_color_anchors, distance_space="lab")),
+                3,
+            ),
+        },
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedBubbleShooterScene(
         image=image.convert("RGB"),

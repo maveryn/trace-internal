@@ -17,7 +17,6 @@ from trace.tasks.games.shared.bubble_shooter_common import (
     BUBBLE_OPTION_LABELS,
     bubble_entity_id,
     compute_shot_outcome,
-    option_entity_id,
     sorted_coords,
 )
 from trace.tasks.games.shared.bubble_shooter_common import landing_slot_entity_id
@@ -63,18 +62,29 @@ def test_games_bubble_shooter_public_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.answer_gt.type == answer_type
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "point_set"
     assert out.query_id == expected_query
     assert out.scene_id == "bubble_shooter"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_point_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["render_spec"]["canvas_width"] <= 980
+    assert trace["render_spec"]["canvas_height"] <= 820
+    assert trace["render_spec"]["panel_scene_style"]["treatment"]
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
+    assert float(trace["render_map"]["guide_color_safety"]["guide_anchor_lab_distance"]) >= 40.0
+    for x, y in out.evidence_gt.value:
+        assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
+    expected_points = [
+        trace["render_map"]["entity_centers_px"][str(entity_id)]
+        for entity_id in execution["evidence_entity_ids"]
+    ]
+    assert out.evidence_gt.value == expected_points
 
 
 def test_games_bubble_shooter_pop_count_matches_computed_outcome() -> None:
@@ -161,8 +171,12 @@ def test_games_bubble_shooter_pop_color_label_has_one_displayed_popping_option()
 
     assert positives == ["F"]
     assert out.answer_gt.value == "F"
-    assert landing_slot_entity_id() in set(execution["evidence_entity_ids"])
-    assert option_entity_id("F") in set(execution["evidence_entity_ids"])
+    assert landing_slot_entity_id() not in set(execution["evidence_entity_ids"])
+    assert not any(str(entity_id).startswith("option_") for entity_id in execution["evidence_entity_ids"])
+    assert set(execution["evidence_entity_ids"]) == {
+        bubble_entity_id(coord)
+        for coord in compute_shot_outcome(board, landing_coord=landing, color_key=str(execution["outcome"]["color_key"])).popped_coords
+    }
 
 
 def test_games_bubble_shooter_query_cycle_covers_support() -> None:

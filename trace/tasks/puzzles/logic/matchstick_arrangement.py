@@ -17,11 +17,17 @@ from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.drawing import draw_centered_text, draw_rounded_rect
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.mcq import option_label_for_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
-from ...shared.text_rendering import load_font
-from ..shared.common import load_puzzle_task_defaults, projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
+from ...shared.text_rendering import load_font, temporary_default_font_family
+from ..shared.common import (
+    load_puzzle_task_defaults,
+    projected_puzzle_bbox_evidence,
+    projected_puzzle_keyed_bbox_evidence,
+    resolve_puzzle_axis_variant,
+)
 from ..shared.complexity import build_puzzle_complexity, clamp_unit_interval, normalize_int_with_bounds
 from ..shared.scene_style import make_puzzle_scene_background, resolve_puzzle_scene_style
 from ..shared.visual_defaults import load_puzzle_background_defaults, load_puzzle_noise_defaults
@@ -181,6 +187,50 @@ def _resolve_render_params(params: Mapping[str, Any], render_defaults: Mapping[s
 
 def _load_defaults(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, float]]:
     return load_puzzle_task_defaults(_TASK_GROUP_DEFAULTS, task_id=str(task_id))
+
+
+def _sample_matchstick_font(*, task_id: str, instance_seed: int, params: Mapping[str, Any], render_defaults: Mapping[str, Any]) -> str:
+    """Sample one role-aware font family for matchstick option labels and captions."""
+
+    return sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.matchstick_font",
+        params={**dict(render_defaults), **dict(params)},
+    )
+
+
+def _font_trace_record(font_family: str) -> Dict[str, Any]:
+    """Build trace metadata for the sampled matchstick label font."""
+
+    return {
+        **get_font_family_record(str(font_family)).to_trace(),
+        "source": "global_font_pool",
+        "font_asset_version": font_asset_version(),
+        "selection_scope": "matchstick_option_labels_and_captions",
+        "include_tags": [],
+        "exclude_tags": [],
+    }
+
+
+def _matchstick_style_trace(scene_variant: str) -> Dict[str, Any]:
+    """Record the resolved non-semantic matchstick material style."""
+
+    style = _style(str(scene_variant))
+    trace: Dict[str, Any] = {
+        "scene_variant": str(scene_variant),
+        "panel_fill_rgb": [int(value) for value in style["panel_fill"]],
+        "panel_outline_rgb": [int(value) for value in style["panel_outline"]],
+        "stick_rgb": [int(value) for value in style["stick"]],
+        "stick_shadow_rgb": [int(value) for value in style["stick_shadow"]],
+        "label_fill_rgb": [int(value) for value in style["label_fill"]],
+        "label_text_rgb": [int(value) for value in style["label_text"]],
+        "caption_rgb": [int(value) for value in style["caption"]],
+        "palette_rgb": [[int(value) for value in color] for color in style.get("palette", ())],
+    }
+    tip = style.get("tip")
+    trace["tip_rgb"] = None if tip is None else [int(value) for value in tip]
+    return trace
 
 
 def _resolve_axis_variant(
@@ -880,10 +930,45 @@ class _PuzzlesLogicMatchstickBaseTask:
         render_params: _RenderParams,
         background_meta: Mapping[str, Any],
         post_noise_meta: Mapping[str, Any],
-        evidence_bboxes: Sequence[Sequence[float]],
+        font_meta: Mapping[str, Any],
+        evidence_type: str,
+        evidence_value: Any,
+        evidence_role_item_ids: Mapping[str, str] | None = None,
         answer_value: str,
         option_count: int,
     ) -> Dict[str, Any]:
+        role_item_ids = {str(key): str(value) for key, value in dict(evidence_role_item_ids or {}).items()}
+        if str(evidence_type) == "keyed_bbox_map":
+            evidence_payload = {
+                str(key): [round(float(value), 3) for value in bbox]
+                for key, bbox in dict(evidence_value).items()
+            }
+            witness_symbolic = {
+                "type": "keyed_bbox_map",
+                "value": dict(evidence_payload),
+            }
+            projected_evidence = {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_payload),
+                "pixel_keyed_bbox_map": dict(evidence_payload),
+                "value": dict(evidence_payload),
+            }
+            evidence_source = "keyed_item_bboxes_px"
+            supporting_item_ids = list(role_item_ids.values())
+        else:
+            evidence_payload = [[round(float(value), 3) for value in bbox] for bbox in list(evidence_value)]
+            witness_symbolic = {
+                "type": "bbox_set",
+                "value": [list(bbox) for bbox in evidence_payload],
+            }
+            projected_evidence = {
+                "type": "bbox_set",
+                "bbox_set": [list(bbox) for bbox in evidence_payload],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_payload],
+                "value": [list(bbox) for bbox in evidence_payload],
+            }
+            evidence_source = "item_bboxes_px"
+            supporting_item_ids = [f"option_{answer_value}"]
         params = {
             "query_id": str(query_id),
             "query_id_probabilities": {str(query_id): 1.0},
@@ -922,6 +1007,13 @@ class _PuzzlesLogicMatchstickBaseTask:
                 "post_image_noise": dict(post_noise_meta),
                 "scene_bbox_px": [round(float(value), 3) for value in rendered_scene.scene_bbox_px],
                 "stick_width_px": int(render_params.stick_width_px),
+                "text_style": {
+                    "font": dict(font_meta),
+                },
+                "scene_style": {
+                    "matchstick": _matchstick_style_trace(str(scene_variant)),
+                    "font": dict(font_meta),
+                },
             },
             "render_map": {
                 "image_id": "img0",
@@ -930,23 +1022,17 @@ class _PuzzlesLogicMatchstickBaseTask:
                     str(key): [round(float(v), 3) for v in value]
                     for key, value in rendered_scene.item_bbox_map.items()
                 },
-                "evidence_source": "item_bboxes_px",
+                "evidence_source": str(evidence_source),
             },
             "execution_trace": {
                 **dict(params),
                 "question_format": str(query_id),
                 "answer_value": str(answer_value),
-                "supporting_item_ids": [f"option_{answer_value}"],
+                "supporting_item_ids": [str(item_id) for item_id in supporting_item_ids],
+                "evidence_role_item_ids": dict(role_item_ids),
             },
-            "witness_symbolic": {
-                "type": "bbox_set",
-                "value": list(evidence_bboxes),
-            },
-            "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "value": list(evidence_bboxes),
-            },
+            "witness_symbolic": dict(witness_symbolic),
+            "projected_evidence": dict(projected_evidence),
         }
 
 
@@ -999,6 +1085,13 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
         if dataset is None:
             raise RuntimeError("failed to generate matchstick number-transform puzzle") from last_error
         render_params = _resolve_render_params(params, render_defaults)
+        font_family = _sample_matchstick_font(
+            task_id=str(self.task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=render_defaults,
+        )
+        font_meta = _font_trace_record(str(font_family))
         scene_style, _scene_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace=f"{self.task_id}.matchstick_number_background",
@@ -1008,7 +1101,8 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_number_scene(background=background, dataset=dataset, render_params=render_params)
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_number_scene(background=background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(rendered_scene.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(
             task_id=str(self.task_id),
@@ -1018,10 +1112,17 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             instance_seed=int(instance_seed),
             task_key=str(self.task_key),
         )
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.item_bbox_map, [f"option_{dataset.answer_label}"])
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_role_item_ids = {
+            "source_number": "source_panel",
+            "selected_option": f"option_{dataset.answer_label}",
+        }
+        evidence_projection = projected_puzzle_keyed_bbox_evidence(rendered_scene.item_bbox_map, evidence_role_item_ids)
+        evidence_bboxes = {
+            str(key): [round(float(value), 3) for value in bbox]
+            for key, bbox in evidence_projection["keyed_bbox_map"].items()
+        }
         answer_gt = TypedValue(type="option_letter", value=str(dataset.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
         trace_payload = self._common_trace(
             query_id=str(query_id),
             scene_variant=str(dataset.scene_variant),
@@ -1031,7 +1132,10 @@ class PuzzlesLogicMatchstickNumberTransformLabelTask(_PuzzlesLogicMatchstickBase
             render_params=render_params,
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
-            evidence_bboxes=evidence_bboxes,
+            font_meta=font_meta,
+            evidence_type="keyed_bbox_map",
+            evidence_value=evidence_bboxes,
+            evidence_role_item_ids=evidence_role_item_ids,
             answer_value=str(dataset.answer_label),
             option_count=int(dataset.option_count),
         )
@@ -1128,6 +1232,13 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
         if dataset is None:
             raise RuntimeError("failed to generate matchstick loose-endpoint extremum puzzle") from last_error
         render_params = _resolve_render_params(params, render_defaults)
+        font_family = _sample_matchstick_font(
+            task_id=str(self.task_id),
+            instance_seed=int(instance_seed),
+            params=params,
+            render_defaults=render_defaults,
+        )
+        font_meta = _font_trace_record(str(font_family))
         scene_style, _scene_style_meta = resolve_puzzle_scene_style(
             instance_seed=int(instance_seed),
             namespace=f"{self.task_id}.matchstick_endpoint_background",
@@ -1137,7 +1248,8 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             canvas_height=int(render_params.canvas_height),
             style=scene_style,
         )
-        rendered_scene = _render_shape_scene(background=background, dataset=dataset, render_params=render_params)
+        with temporary_default_font_family(str(font_family)):
+            rendered_scene = _render_shape_scene(background=background, dataset=dataset, render_params=render_params)
         image, post_noise_meta = apply_post_image_noise(rendered_scene.image, instance_seed=int(instance_seed), params=params, default_config=POST_IMAGE_NOISE_DEFAULTS)
         prompt, prompt_variants, prompt_meta = _build_prompt(
             task_id=str(self.task_id),
@@ -1160,7 +1272,9 @@ class PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask(_PuzzlesLogicMatchsti
             render_params=render_params,
             background_meta=background_meta,
             post_noise_meta=post_noise_meta,
-            evidence_bboxes=evidence_bboxes,
+            font_meta=font_meta,
+            evidence_type="bbox_set",
+            evidence_value=evidence_bboxes,
             answer_value=str(dataset.answer_label),
             option_count=int(dataset.option_count),
         )

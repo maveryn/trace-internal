@@ -12,8 +12,8 @@
 2. Query id: `reflection_match_label`.
 3. Supported `query_id` values: `vertical_reflection_match`, `horizontal_reflection_match`, `diagonal_main_reflection_match`, `diagonal_anti_reflection_match`.
 4. Answer type: `answer_gt.type = option_letter`.
-5. Evidence type: `evidence_gt.type = bbox_set` containing exactly one pixel-space box around the matching Scene cell.
-6. Option policy: Scene cell count is fixed at `5` with labels `A..E`; exactly one cell is the requested reflection of the Reference, and calibration exports balance answer labels and answer positions.
+5. Evidence type: `evidence_gt.type = keyed_bbox_map` with `reference_cell` and `selected_option` pixel-space boxes.
+6. Option policy: Scene cell count is fixed at `6` with labels `A..F`; exactly one cell is the requested reflection of the Reference, and calibration exports balance answer labels and answer positions.
 7. Distractor policy: the calibrated mix includes one wrong-axis reflection distractor, the unreflected Reference pattern, and altered reflections with an extra unmatched icon. Distractors are rejected if they are pixel-identical to the requested reflection.
 8. Asset policy: cells use the curated asymmetric icon subset from `assets/icons/non_symmetry.txt`; the Reference patch uses 2 or 3 icons and is sampled to have no supported mirror symmetry so wrong-axis reflections remain visually distinct.
 9. Cell styling: the Reference cell and Scene cells use centered square patches so vertical, horizontal, and diagonal reflections share one consistent frame.
@@ -23,7 +23,7 @@
 1. `prompt_bundle_id`: `icons_relation_v0`
 2. `scene_key`: `reference_grid_mirror_symmetry_relation`
 3. `task_key`: `relation_query`
-4. Answer+evidence JSON shape: `{"evidence":[[360,120,560,320]],"answer":"B"}`
+4. Answer+evidence JSON shape: `{"evidence":{"reference_cell":[72,132,252,312],"selected_option":[360,120,560,320]},"answer":"B"}`
 5. Answer-only JSON shape: `{"answer":"B"}`
 6. Required slots:
    - shared: `object_description`, one query-specific `question_text_*`
@@ -37,10 +37,10 @@
 2. Unique-answer policy: the answer index is sampled first, the correct reflected patch is inserted into exactly one labeled Scene cell, and every distractor is checked against that exact patch.
 3. Reject/resample conditions: unsupported object count, empty icon pool, palette-separation failures, inability to render a non-symmetric Reference patch, or insufficient unique distractor patches.
 4. No-auto-relaxation guarantee: generation fails on unmet layout/reflection constraints instead of accepting ambiguous options.
-5. Semantic-unit rule: evidence is a box around the matching Scene option cell, not the individual icons inside the cell.
-6. Trace style metadata records the sampled palette, square patch placement, grid styling, and reflection axis.
+5. Semantic-unit rule: evidence uses role-keyed boxes for the Reference cell and matching Scene option cell, not the individual icons inside either cell.
+6. Trace style metadata records the sampled palette, square patch placement, grid styling, validated text-legibility metadata, and reflection axis.
 
 ## 5) Complexity + tests
-1. Complexity definition/components: calibrated 5-option count + reflection axis + rendered cell clutter.
+1. Complexity definition/components: calibrated 6-option count + reflection axis + rendered cell clutter.
 2. Behavior/trace/prompt tests: `tests/test_icons_relation_reflection_match_label_tasks.py`
 3. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

@@ -33,5 +33,8 @@ def test_games_go_group_property_count_defaults_present() -> None:
     assert list(generation["board_size_support"]) == [6, 7, 8]
     assert int(rendering["max_board_size_px"]) > 0
     assert float(rendering["stone_radius_fraction"]) > 0.0
+    assert rendering["dynamic_canvas_size_enabled"] is True
+    assert int(rendering["canvas_min_width_px"]) >= 560
+    assert int(rendering["canvas_min_height_px"]) >= 560
     assert str(prompt["bundle_id"]) == "games_go_v0"
     assert "liberty" in str(prompt["liberty_rule_text"]).lower()

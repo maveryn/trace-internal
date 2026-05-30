@@ -34,7 +34,11 @@ from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scen
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import panel_geometry_to_trace
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
-from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.icon_task_rendering import (
+    icon_render_style_trace,
+    resolve_icon_cell_render_params,
+    sample_icon_instance_noise,
+)
 from ..shared.evidence import matching_scene_cell_bbox_evidence
 from ..shared.public_query_task import rewrite_icons_query_output
 
@@ -293,34 +297,11 @@ def _resolve_rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
     """Resolve render params, including grid-cell extras for symmetry scenes."""
 
-    render_params = resolve_icon_render_params(
+    render_params = resolve_icon_cell_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
         fallback_defaults=_DEFAULTS,
         instance_seed=int(instance_seed),
-    )
-    render_params["cell_padding_px"] = int(
-        params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px))
-    )
-    render_params["cell_border_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_border_rgb",
-        fallback=_DEFAULTS.cell_border_rgb,
-        instance_seed=int(instance_seed),
-    )
-    render_params["cell_label_color_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_label_color_rgb",
-        fallback=_DEFAULTS.cell_label_color_rgb,
-        instance_seed=int(instance_seed),
-    )
-    render_params["cell_label_font_size_px"] = int(
-        params.get(
-            "cell_label_font_size_px",
-            group_default(_RENDER_DEFAULTS, "cell_label_font_size_px", _DEFAULTS.cell_label_font_size_px),
-        )
     )
     render_params["rotation_candidates_degrees"] = _resolve_rotation_candidates(params)
     render_params["symmetric_icon_count_choices"] = tuple(
@@ -999,40 +980,27 @@ def _mirror_style_trace(
 ) -> Dict[str, Any]:
     """Return the canonical render-style trace block for mirror-symmetry grids."""
 
-    return {
-        "background_color_rgb": list(render_params["background_color_rgb"]),
-        "panel_fill_rgb": list(render_params["panel_fill_rgb"]),
-        "panel_border_rgb": list(render_params["panel_border_rgb"]),
-        "header_text_rgb": list(render_params["header_text_rgb"]),
-        "sampled_palette_rgb": [list(color) for color in sampled_palette_rgb],
-        "color_channel_min": int(render_params["color_channel_min"]),
-        "color_channel_max": int(render_params["color_channel_max"]),
-        "min_color_distance": float(render_params["min_color_distance"]),
-        "color_distance_space": str(render_params["color_distance_space"]),
-        "rotation_candidates_degrees": [int(value) for value in render_params["rotation_candidates_degrees"]],
-        "symmetric_icon_count_choices": [int(value) for value in render_params["symmetric_icon_count_choices"]],
-        "both_axes_icon_count_choices": [int(value) for value in render_params["both_axes_icon_count_choices"]],
-        "nonsymmetric_icon_count_choices": [int(value) for value in render_params["nonsymmetric_icon_count_choices"]],
-        "patch_inner_margin_px": int(render_params["patch_inner_margin_px"]),
-        "patch_min_gap_px": int(render_params["patch_min_gap_px"]),
-        "patch_sampling_attempts": int(render_params["patch_sampling_attempts"]),
-        "cell_padding_px": int(render_params["cell_padding_px"]),
-        "cell_border_rgb": list(render_params["cell_border_rgb"]),
-        "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
-        "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
-        "icon_noise_edit_types": [str(value) for value in render_params["icon_noise_edit_types"]],
-        "icon_noise_edit_count_range": [
-            int(render_params["icon_noise_edit_count_range"][0]),
-            int(render_params["icon_noise_edit_count_range"][1]),
-        ],
-        "icon_noise_value_ranges": {
-            str(edit_type): {
-                str(param): [float(bounds[0]), float(bounds[1])]
-                for param, bounds in params.items()
-            }
-            for edit_type, params in render_params["icon_noise_value_ranges"].items()
-        },
-    }
+    style = icon_render_style_trace(
+        render_params=render_params,
+        sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in sampled_palette_rgb),
+    )
+    style.update(
+        {
+            "rotation_candidates_degrees": [int(value) for value in render_params["rotation_candidates_degrees"]],
+            "symmetric_icon_count_choices": [int(value) for value in render_params["symmetric_icon_count_choices"]],
+            "both_axes_icon_count_choices": [int(value) for value in render_params["both_axes_icon_count_choices"]],
+            "nonsymmetric_icon_count_choices": [int(value) for value in render_params["nonsymmetric_icon_count_choices"]],
+            "patch_inner_margin_px": int(render_params["patch_inner_margin_px"]),
+            "patch_min_gap_px": int(render_params["patch_min_gap_px"]),
+            "patch_sampling_attempts": int(render_params["patch_sampling_attempts"]),
+            "cell_padding_px": int(render_params["cell_padding_px"]),
+            "cell_border_rgb": list(render_params["cell_border_rgb"]),
+            "cell_label_color_rgb": list(render_params["cell_label_color_rgb"]),
+            "cell_label_stroke_rgb": list(render_params.get("cell_label_stroke_rgb", render_params["panel_fill_rgb"])),
+            "cell_label_font_size_px": int(render_params["cell_label_font_size_px"]),
+        }
+    )
+    return style
 
 
 def _sample_scene(
@@ -1112,9 +1080,12 @@ def _sample_scene(
         cell_padding_px=int(render_params["cell_padding_px"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
         reference_square_cell=True,
         scene_square_cells=True,
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     image = prepared.image
 

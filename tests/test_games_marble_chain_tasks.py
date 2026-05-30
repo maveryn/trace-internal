@@ -28,6 +28,13 @@ def test_games_marble_chain_defaults_expose_axes_and_prompt_bundle() -> None:
     }
     assert list(generation["option_count_support"]) == [5, 6, 7]
     assert list(generation["target_pop_count_support"]) == [0, 2, 3, 4, 5]
+    assert set(generation["style_variant_weights"].keys()) == {
+        "classic_track",
+        "arcade_track",
+        "neon_track",
+        "chalk_track",
+        "copper_track",
+    }
     assert int(rendering["canvas_width"]) == 900
     assert int(rendering["canvas_height"]) == 760
     assert float(rendering["unit_size_scale_max"]) / float(rendering["unit_size_scale_min"]) >= 2.0
@@ -58,10 +65,11 @@ def test_games_marble_chain_max_pop_direction_has_unique_answer() -> None:
 
     assert out.answer_gt.type == "string"
     assert answers == [str(out.answer_gt.value)]
-    assert out.query_id == "default"
     assert out.scene_id == "marble_chain"
     assert out.query_id == "max_pop_direction_label"
-    assert len(out.evidence_gt.value) >= 1
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == 1
+    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
 
 
 def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
@@ -78,6 +86,8 @@ def test_games_marble_chain_target_pop_direction_has_unique_answer() -> None:
     assert answers == [str(out.answer_gt.value)]
     assert execution["target_pop_count"] == 3
     assert out.query_id == "target_pop_direction_label"
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == 1
 
 
 def test_games_marble_chain_pop_count_matches_marked_outcome() -> None:
@@ -92,5 +102,6 @@ def test_games_marble_chain_pop_count_matches_marked_outcome() -> None:
     assert int(out.answer_gt.value) == 4
     assert int(marked["pop_count"]) == 4
     assert out.query_id == "pop_count_after_marked_shot"
-    assert out.query_id == "default"
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == 4
+    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value

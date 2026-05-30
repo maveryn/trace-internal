@@ -18,6 +18,13 @@ def test_games_match3_defaults_expose_axes_and_prompt_bundle() -> None:
     )
 
     assert set(generation["scene_variant_weights"].keys()) == {"square_board", "wide_board", "tall_board"}
+    assert set(generation["style_variant_weights"].keys()) == {
+        "faceted_jewels",
+        "round_candies",
+        "beveled_tiles",
+        "diamond_gems",
+        "orb_tokens",
+    }
     assert set(generation["effect_value_query_id_weights"].keys()) == {
         "cleared_count_after_marked_swap",
         "created_run_count_after_marked_swap",
@@ -87,10 +94,11 @@ def test_games_match3_max_clear_label_has_unique_answer() -> None:
 
     assert out.answer_gt.type == "string"
     assert answers == [str(out.answer_gt.value)]
-    assert out.query_id == "default"
     assert out.scene_id == "match3"
     assert out.query_id == "max_clear_swap_label"
-    assert len(out.evidence_gt.value) >= 1
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == 1
+    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
 
 
 def test_games_match3_target_clear_label_has_unique_answer() -> None:
@@ -106,6 +114,8 @@ def test_games_match3_target_clear_label_has_unique_answer() -> None:
     assert answers == [str(out.answer_gt.value)]
     assert out.trace_payload["execution_trace"]["target_clear_count"] == 3
     assert out.query_id == "target_clear_swap_label"
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == 1
 
 
 def test_games_match3_marked_clear_count_matches_trace() -> None:
@@ -120,8 +130,9 @@ def test_games_match3_marked_clear_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == 4
     assert int(marked["clear_count"]) == 4
     assert out.query_id == "cleared_count_after_marked_swap"
-    assert out.query_id == "default"
-    assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == int(marked["clear_count"])
+    assert out.trace_payload["projected_evidence"]["point_set"] == out.evidence_gt.value
 
 
 def test_games_match3_marked_run_count_matches_trace() -> None:
@@ -136,3 +147,5 @@ def test_games_match3_marked_run_count_matches_trace() -> None:
     assert int(out.answer_gt.value) == 2
     assert int(marked["run_count"]) == 2
     assert out.query_id == "created_run_count_after_marked_swap"
+    assert out.evidence_gt.type == "point_set"
+    assert len(out.evidence_gt.value) == int(marked["run_count"])

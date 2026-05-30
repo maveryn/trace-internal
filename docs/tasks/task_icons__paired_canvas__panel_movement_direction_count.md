@@ -13,6 +13,8 @@
 3. Query id: `moved_left_count|moved_right_count|moved_up_count|moved_down_count`.
 4. Answer type: `answer_gt.type = integer`.
 5. Evidence type: `evidence_gt.type = bbox_set` over every counted Right-panel destination icon.
+   `projected_evidence` mirrors this as typed bbox-set evidence with
+   `bbox_set`, `pixel_bbox_set`, and bbox-center `pixel_point_set`.
 6. Unique-answer policy: target pairs move in the queried direction; distractor pairs move in other cardinal directions with a configured minimum displacement.
 
 ## 3) Prompt contract
@@ -26,3 +28,4 @@
 1. The movement direction for each pair is recorded in trace metadata.
 2. Evidence is computed from the Right-panel destination icons for target pairs.
 3. Generation fails rather than relaxing movement-direction, correspondence, or placement constraints.
+4. Render metadata records panel-title text legibility.

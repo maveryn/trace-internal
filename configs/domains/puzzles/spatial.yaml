@@ -90,6 +90,8 @@ generation:
       rolling_grid_cols_max: 6
       rolling_path_length_min: 4
       rolling_path_length_max: 7
+      surface_path_step_count_min: 3
+      surface_path_step_count_max: 5
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       query_id_weights:
@@ -98,6 +100,8 @@ generation:
         final_top_face_label: 1.0
         final_front_face_label: 1.0
         final_right_face_label: 1.0
+        folded_path_endpoint_label: 1.0
+        folded_path_face_sequence_label: 1.0
       scene_variant_weights:
         clean_net: 1.0
         paper_model: 1.0
@@ -629,11 +633,14 @@ prompt:
       task_key: cube_surface_net_query
       object_description_face_relation_label: a labeled cube net with one marked reference face and labeled face options
       object_description_rolling_result_label: a labeled start cube, an arrow path showing cube rolls, and labeled face options
+      object_description_surface_path_label: a labeled cube net with a marked start face, numbered folded-edge move instructions, and labeled answer options
       answer_hint_option_letter: set "answer" to the single option label as a capital letter
-      evidence_hint_face_relation: set "evidence" to an array containing the marked reference face box followed by the selected option panel box, each as [x0, y0, x1, y1] in pixels
-      evidence_hint_rolling_result: set "evidence" to an array containing the start-cube panel box, the roll-path panel box, and the selected option panel box, each as [x0, y0, x1, y1] in pixels
-      json_example_face_relation: '{"evidence":[[320,220,406,306],[812,220,966,326]],"answer":"D"}'
-      json_example_rolling_result: '{"evidence":[[54,54,384,438],[420,54,1046,438],[428,610,650,716]],"answer":"B"}'
+      evidence_hint_face_relation: set "evidence" to an object with keys "marked_face" and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      evidence_hint_rolling_result: set "evidence" to an object with keys "start_cube", "roll_path", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      evidence_hint_surface_path: set "evidence" to an object with keys "start_face", "move_instructions", and "selected_option", each mapped to a pixel bounding box [x0, y0, x1, y1]
+      json_example_face_relation: '{"evidence":{"marked_face":[320,220,406,306],"selected_option":[812,220,966,326]},"answer":"D"}'
+      json_example_rolling_result: '{"evidence":{"start_cube":[54,54,384,438],"roll_path":[420,54,1046,438],"selected_option":[428,610,650,716]},"answer":"B"}'
+      json_example_surface_path: '{"evidence":{"start_face":[210,216,296,302],"move_instructions":[558,54,1046,482],"selected_option":[428,610,650,716]},"answer":"B"}'
       json_example_answer_only_option_label: '{"answer":"D"}'
     puzzles_spatial_sokoban_grid_internal:
       scene_key: spatial_sokoban_grid_puzzle

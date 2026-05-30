@@ -8,8 +8,10 @@ from typing import Any, Dict, List, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .pool_common import POOL_POCKETS, PoolBall, PoolPocket, ball_group
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .style import PoolTheme, build_games_pool_theme
 
 
@@ -27,6 +29,7 @@ class PoolRenderParams:
     ball_radius_px: int
     ball_number_font_size_px: int
     badge_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -84,6 +87,7 @@ def _draw_centered_text(
     fill: Tuple[int, int, int],
     max_size_px: int,
     bold: bool = False,
+    font_family: str = "",
 ) -> None:
     """Draw centered text inside a bbox."""
 
@@ -96,6 +100,7 @@ def _draw_centered_text(
         bold=bool(bold),
         min_size_px=8,
         max_size_px=int(max_size_px),
+        font_family=str(font_family),
         fill_ratio=0.84,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
@@ -103,7 +108,7 @@ def _draw_centered_text(
     th = float(text_bbox[3] - text_bbox[1])
     x = float(left + (0.5 * (float(right - left) - tw)) - text_bbox[0])
     y = float(top + (0.5 * (float(bottom - top) - th)) - text_bbox[1])
-    draw.text((x, y), str(text), fill=tuple(int(value) for value in fill), font=font)
+    draw_text_traced(draw, (x, y), str(text), fill=tuple(int(value) for value in fill), font=font, role="readout", required=False)
 
 
 def _draw_ball(
@@ -113,6 +118,7 @@ def _draw_ball(
     bbox_px: Tuple[float, float, float, float],
     theme: PoolTheme,
     font_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw one cue or object ball."""
 
@@ -153,6 +159,7 @@ def _draw_ball(
         fill=(18, 20, 24),
         max_size_px=int(font_size_px),
         bold=True,
+        font_family=str(font_family),
     )
 
 
@@ -189,6 +196,7 @@ def _draw_badge(
         fill=tuple(int(value) for value in theme.badge_text_rgb),
         max_size_px=int(params.badge_font_size_px),
         bold=True,
+        font_family=str(params.font_family),
     )
     return bbox
 
@@ -205,6 +213,7 @@ def render_pool_table_scene(
     shot_path_ball_id: str | None,
     shot_path_pocket_id: str | None,
     params: PoolRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedPoolScene:
     """Render one Pool table with visible balls and optional shot indicators."""
 
@@ -226,6 +235,19 @@ def render_pool_table_scene(
         canvas_height=int(params.canvas_height),
         jitter=params.layout_jitter_meta,
     )
+    if panel_style is not None:
+        draw_panel_scene_chrome(
+            draw,
+            bbox=(
+                int(round(float(rail_bbox[0] - 30.0))),
+                int(round(float(rail_bbox[1] - 30.0))),
+                int(round(float(rail_bbox[2] + 30.0))),
+                int(round(float(rail_bbox[3] + 30.0))),
+            ),
+            style=panel_style,
+            radius=36,
+            border_width=2,
+        )
     rail = float(params.rail_width_px)
     cloth_bbox = (
         round(float(rail_bbox[0] + rail), 3),
@@ -296,12 +318,18 @@ def render_pool_table_scene(
             bbox_px=bbox,
             theme=theme,
             font_size_px=int(params.ball_number_font_size_px),
+            font_family=str(params.font_family),
         )
         if str(ball.ball_id) == str(marked_ball_id):
             pad = float(params.ball_radius_px) * 0.32
             mark_bbox = (bbox[0] - pad, bbox[1] - pad, bbox[2] + pad, bbox[3] + pad)
-            draw.ellipse(mark_bbox, fill=tuple(int(value) for value in theme.marker_fill_rgba))
             draw.ellipse(mark_bbox, outline=tuple(int(value) for value in theme.marker_rgb), width=5)
+            inner_pad = float(params.ball_radius_px) * 0.11
+            draw.ellipse(
+                (bbox[0] - inner_pad, bbox[1] - inner_pad, bbox[2] + inner_pad, bbox[3] + inner_pad),
+                outline=(255, 255, 255, 150),
+                width=2,
+            )
         scene_entities.append(
             {
                 "entity_id": str(ball.ball_id),
@@ -311,6 +339,7 @@ def render_pool_table_scene(
                 "is_cue": bool(ball.is_cue),
                 "is_marked": bool(str(ball.ball_id) == str(marked_ball_id)),
                 "center_norm": [float(ball.center[0]), float(ball.center[1])],
+                "point_px": [round(float(center[0]), 3), round(float(center[1]), 3)],
                 "bbox_px": list(bbox),
             }
         )
@@ -327,6 +356,10 @@ def render_pool_table_scene(
                 "entity_type": "pool_pocket",
                 "display_name": str(pocket.display_name),
                 "center_norm": [float(pocket.center[0]), float(pocket.center[1])],
+                "point_px": [
+                    round(float(pocket_centers_px[str(pocket.pocket_id)][0]), 3),
+                    round(float(pocket_centers_px[str(pocket.pocket_id)][1]), 3),
+                ],
                 "bbox_px": list(pocket_bboxes_px[str(pocket.pocket_id)]),
                 "is_marked": bool(str(pocket.pocket_id) == str(marked_pocket_id)),
             }
@@ -356,8 +389,19 @@ def render_pool_table_scene(
             "rail_bbox_px": list(rail_bbox),
             "cloth_bbox_px": list(cloth_bbox),
             "ball_bboxes_px": dict(ball_bboxes_px),
+            "ball_points_px": {
+                str(ball_id): [round(float(center[0]), 3), round(float(center[1]), 3)]
+                for ball_id, center in ball_centers_px.items()
+            },
             "pocket_bboxes_px": dict(pocket_bboxes_px),
+            "pocket_points_px": {
+                str(pocket_id): [round(float(center[0]), 3), round(float(center[1]), 3)]
+                for pocket_id, center in pocket_centers_px.items()
+            },
             "layout_jitter": {**dict(layout_jitter), "table_dx_px": float(dx), "table_dy_px": float(dy)},
+            "font_family": str(params.font_family),
+            "text_style": {"font_family": str(params.font_family)},
+            "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         },
     )
 

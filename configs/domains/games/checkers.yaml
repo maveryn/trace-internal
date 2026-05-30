@@ -52,6 +52,11 @@ rendering:
     board_frame_width_px: 10
     piece_inset_fraction: 0.17
     player_badge_font_size_px: 22
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 560
+    canvas_side_padding_px: 132
+    canvas_vertical_padding_px: 92
 complexity:
   shared:
     criteria_weights:
@@ -75,12 +80,12 @@ prompt:
     king_chain_rule_text: The blue outlined checker is a king; it may capture diagonally
       in any direction, remove the jumped piece, and continue jumping from each landing
       square while another capture is available.
-    evidence_hint_legal_move_count: set "evidence" to [x0, y0, x1, y1] boxes for every
-      legal landing square
-    evidence_hint_capture_move_count: set "evidence" to [x0, y0, x1, y1] boxes for
-      every capture landing square
-    evidence_hint_max_capture_chain_length: set "evidence" to [x0, y0, x1, y1] boxes
-      for the opponent pieces captured along the longest chain
+    evidence_hint_legal_move_count: set "evidence" to a JSON array of bounding boxes
+      [x0, y0, x1, y1] for every legal landing square
+    evidence_hint_capture_move_count: set "evidence" to a JSON array of bounding boxes
+      [x0, y0, x1, y1] for every capture landing square
+    evidence_hint_max_capture_chain_length: set "evidence" to a JSON array of bounding
+      boxes [x0, y0, x1, y1] for the opponent pieces captured along the longest chain
     answer_hint_legal_move_count: set "answer" to the count of legal moves
     answer_hint_capture_move_count: set "answer" to the count of capture moves
     answer_hint_max_capture_chain_length: set "answer" to the maximum number of opponent

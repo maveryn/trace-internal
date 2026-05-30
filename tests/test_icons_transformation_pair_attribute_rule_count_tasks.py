@@ -25,7 +25,7 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
         51200,
         params={
             "attribute_rule": "color_and_size_change",
-            "object_count": 8,
+            "object_count": 6,
             "target_count": 3,
         },
         max_attempts=200,
@@ -37,15 +37,13 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     assert int(out.answer_gt.value) == 3
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 3
-    assert out.query_id == "default"
     assert out.query_id == "color_and_size_change"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "color_and_size_change"
     assert execution["question_format"] == "count_scene_cells_matching_reference_attribute_rule"
     assert execution["changed_attributes"] == ["color", "size"]
-    assert int(execution["object_count"]) == 8
+    assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 3
-    assert len(scene_entities) == 8
+    assert len(scene_entities) == 6
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
     assert set(out.complexity.complexity_components.keys()) == {
@@ -62,6 +60,13 @@ def test_icons_transformation_pair_attribute_rule_count_contract_matches_scene()
     ]
     assert out.evidence_gt.value == expected_evidence
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    style = trace["render_spec"]["style"]
+    assert int(style["text_legibility"]["failure_count"]) == 0
+    assert {
+        str(record["role"])
+        for record in style["text_legibility"]["records"]
+    } >= {"icon_panel_header_text", "icon_cell_label_text"}
+    assert "cell_label_stroke_rgb" in style
     assert trace["render_map"]["anchors"]["reference_pair"]["attribute_rule"] == "color_and_size_change"
 
     for entity in scene_entities:
@@ -120,24 +125,25 @@ def test_icons_transformation_pair_attribute_rule_count_balanced_sampling_defaul
         rules[str(execution["query_id"])] += 1
         target_counts[int(execution["target_count"])] += 1
         assert 0 <= int(execution["target_count"]) <= 4
-        assert 4 <= int(execution["object_count"]) <= 9
+        assert int(execution["object_count"]) == 6
     assert set(rules.keys()) == {"color_only_change", "size_only_change", "color_and_size_change"}
     assert sum(rules.values()) == 60
     assert set(target_counts.keys()) == set(range(0, 5))
 
 
 def test_icons_transformation_pair_attribute_rule_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons__pair_grid__pair_attribute_rule_count"
+    task_id = "task_icons__pair_grid__pair_relation_count"
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons__pair_grid__pair_attribute_rule_count",
+        dataset_name=f"build_smoke_{task_id}",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons__pair_grid__pair_attribute_rule_count",
+                task_id=task_id,
                 count=4,
-                params={},
+                params={"query_id": "color_only_change"},
             )
         ],
         strict_repro=False,
@@ -152,7 +158,7 @@ def test_icons_transformation_pair_attribute_rule_count_build_smoke(tmp_path: Pa
     assert all(record["task_group"] == "transformation" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons__pair_grid__pair_attribute_rule_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"][task_id]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

@@ -23,12 +23,12 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
-2. The active automaton family includes agent-turning, cellular-life, and compact tape-machine simulations. Agent tasks ask for final pose or update-count values under visible state-transition rules; Life tasks ask for future-grid options or future live-cell counts under the visible neighbor rule; the tape-machine task asks for a fixed-step written-symbol count under a visible transition table.
+2. The active automaton family includes agent-turning, cellular-life, and compact tape-machine simulations. Agent tasks ask for final pose or update-count values under visible state-transition rules; Life tasks ask for future-grid options under the visible neighbor rule or marked-line counts on the shown future grid; the tape-machine task asks for a fixed-step written-symbol count under a visible transition table.
 3. The active `cell_board` scene includes rectangular board tasks for visible color-attribute counts, color-region counts, path distance, reachability counts, and symmetry-violation counts.
 4. The active counterfactual family includes counterfactual board-count puzzles under the `counterfactual_board` scene. These ask for counts on synthetic boards whose familiar visual priors may be intentionally shifted; evidence is projected from the counted board regions/cells rather than from a hidden canonical rule.
-5. The active logic family currently includes missing grid-cell option selection, Raven-style matrix tasks, nonogram clue/grid tasks, matchstick arrangement tasks, arithmetic-constraint diagram tasks, tents clue-grid tasks, and Star Battle region-grid tasks. Logic answers are `option_letter` or `integer`, with evidence projected from option panels, clue rails, marked lines, candidate cells, arithmetic diagram panels, marked unknown nodes/cells/symbols, marked trees, marked regions, or marked row/column clues.
+5. The active logic family currently includes missing grid-cell option selection, Raven-style matrix tasks, nonogram clue/grid tasks, matchstick arrangement tasks, arithmetic-constraint diagram tasks, tents clue-grid tasks, Star Battle region-grid tasks, and toggle-grid state-transition tasks. Logic answers are `option_letter` or `integer`, with evidence projected from option panels, clue rails, marked lines, candidate cells, arithmetic diagram panels, marked unknown nodes/cells/symbols, marked trees, marked regions, marked row/column clues, or toggle-grid panels/cells.
 6. The active probability family currently includes visible-top dice probability tasks and equal-sector spinner probability tasks with reduced-fraction string answers and tray/panel-level `bbox_set` evidence.
-7. The active clock family includes single-clock offset readout and multi-clock comparison tasks, with local evidence on clock hands or the winning clock face.
+7. The active clock family includes single-clock offset readout and multi-clock comparison tasks, with local evidence on clock centers/hand tips or the winning clock face.
 8. The active spatial family currently mixes option-based transform-result puzzles, cube/voxel structure and projection puzzles, cube surface/net folding and rolling puzzles, a static 2D polyomino missing-region puzzle, Rubik-style cube-net lookup/counting/transform puzzles, Sokoban-style grid movement/path/relation puzzles, sliding-block puzzles, and tangram-style polygon-piece matching/counting puzzles. Prompt-facing evidence stays local to the winning option image/panel, visible cube/voxel structures, cube-net reference regions, ordered option-plus-target-region boxes, moved or blocking board pieces, or query-grid cells that should be filled.
 9. The active visual family includes color-gradient anomaly and completion puzzles, with evidence projected from the violating swatch or the blank-plus-option swatches.
 10. The active topology family currently includes cyclic-order loop label tasks, one string-component count task with query branches, wall-maze reachability tasks, pipe/conduit 2x2 flow-repair option selection, and voxel-ladder route/count puzzles.
@@ -40,6 +40,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 16. Puzzle scenes built from repeated cells or units should use explicit render-only unit-size jitter. Try for at least a `2x` min-to-max span first, but use a narrower documented range when readability, scene fit, or evidence integrity requires it. This applies to cell-board tiles, counterfactual boards, logic/nonogram/Star Battle/tents grids, maze and pipe cells, automaton cells, word-search cells, music-staff note spacing, polyomino unit squares, Rubik stickers, sliding/Sokoban board cells, and cube/voxel unit cubes. Board-size or option-count variation alone is not enough; evidence bboxes must be derived after the sampled cell or unit size is fixed.
 17. Broad style primitives may live in domain-level config/helpers, but concrete rendering variation is applied scene by scene. Each puzzle scene owns how palettes, strokes, board chrome, option cards, labels, unit-size jitter, and layout slack map onto its visual grammar and evidence.
 18. Do not use a blind domain-level recolor/layout pass for puzzle scenes; visual variation must preserve semantic contrast and must not alter the answer, evidence, hidden rule, or verifier contract.
+19. Use unordered `bbox_set`/`point_set` evidence only for homogeneous witnesses. When a puzzle task evidence contract includes distinct roles such as start marker versus selected option, source versus target panel, or reference versus candidate item, use global `keyed_bbox_map` or `keyed_point_map` evidence.
 
 ## Automaton tasks
 1. Active task ids:
@@ -51,9 +52,9 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 2. Public contract:
    - each task records branch metadata in `query_id`,
    - agent final-pose records `query_id=binary_rule_final_pose|three_state_rule_final_pose`,
-   - agent update-count records `query_id=target_state_flip_count|marked_region_flip_count` and records the sampled turning rule in trace metadata,
+   - agent update-count records `query_id=marked_region_flip_count` and records the sampled turning rule in trace metadata,
    - Life future-grid records `query_id=one_step_future_grid|two_step_future_grid`,
-   - Life population-count records `query_id=total_live_count|marked_region_live_count`,
+   - Life population-count records `query_id=marked_line_live_count`,
    - Turing written-symbol count records `query_id=written_symbol_count`.
 3. Supported `scene_variant` values:
    - `clean_grid`
@@ -63,17 +64,23 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - final-pose and future-grid tasks use `answer_gt.type = option_letter`,
    - update-count, population-count, and Turing written-symbol tasks use `answer_gt.type = integer`.
 5. Evidence contract:
-   - `evidence_gt.type = bbox_set`,
-   - final-pose evidence contains the starting-agent box followed by the selected option box,
-   - update-count evidence contains the starting-agent box followed by the marked-region or source-grid box,
-   - future-grid evidence contains the source-grid box followed by the selected option box,
-   - population-count evidence contains the source-grid or marked-region box,
+   - final-pose and Life future-grid use `evidence_gt.type = keyed_bbox_map`; other automaton tasks use `bbox_set`,
+   - final-pose evidence uses `keyed_bbox_map` with `start_marker` and `selected_option`,
+   - update-count evidence contains the marked-region box,
+   - future-grid evidence uses `keyed_bbox_map` with `source_grid` and `selected_option`,
+   - population-count evidence contains the marked row or column box,
    - Turing written-symbol evidence contains the starting tape/head panel and transition-table boxes.
 6. Scene contract:
    - agent automaton scenes show a state grid plus an arrow marker for the starting pose,
    - binary rules use light versus colored state cells, with the actual non-semantic cell palette sampled by the scene style; three-state rules draw state labels `0`, `1`, and `2`,
    - `agent_automaton` samples non-semantic treatment and palette axes through the global shared panel-style layer, using the shared 20-treatment and 20-palette puzzle/game canvas registry,
+   - `agent_automaton` also samples a scene-local `agent_board.board_style` axis (`classic_grid`, `rounded_tiles`, `inset_cells`, `lab_matrix`, `notebook_cells`) and records the selected style under `render_spec.scene_style.agent_board`,
+   - agent labels, step markers, and option labels sample one deterministic font family from the readout font pool,
    - Life scenes use dark cells for alive cells and light cells for empty cells,
+   - Life scenes sample the shared puzzle/game panel-style layer, use deterministic evidence-safe layout jitter, and record the role-aware font family used for option labels in `render_spec.scene_style.font`,
+   - Life scenes also sample a scene-local `life_board.board_style` axis (`classic_grid`, `rounded_tiles`, `inset_tiles`, `lab_matrix`, `notebook_cells`, `terminal_cells`) and `life_board.cell_palette_id` axis (`mono_ink`, `blueprint_cells`, `forest_cells`, `plum_cells`, `sepia_cells`, `teal_cells`, `burgundy_cells`, `carbon_cells`),
+   - Life cell palettes vary alive/dead/grid/edge/mark/accent RGBs while preserving the semantic rule that alive cells are dark and empty cells are light; resolved RGBs and contrast checks are recorded under `render_spec.scene_style.life_board`,
+   - Life future-grid option panels use the same grid cell scale as the source grid so the task is a state-comparison problem, not a resize-matching problem,
    - Turing scenes show the starting tape, head position, start state, step count, queried symbol, and complete transition table,
    - option tasks render exactly five labeled option panels.
 7. Trace contract:
@@ -105,12 +112,15 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - avoid external graph-paper/grid backgrounds because they create a competing coordinate system,
    - use the shared puzzle/game panel-style renderer for non-semantic
      background, panel chrome, grid-line, and placement variation,
+   - sample the scene-local `cell_board.tile_style` axis (`classic_grid`, `rounded_tiles`, `inset_tiles`, `thin_line`, `lab_matrix`) for tile chrome while preserving task-semantic tile fills and board geometry,
    - preserve task-semantic tile colors exactly when prompts refer to colors,
-   - movement-style tasks use square cells so equal-cost horizontal and vertical moves look visually uniform.
+   - movement-style tasks use square cells so equal-cost horizontal and vertical moves look visually uniform,
+   - coordinate labels, when enabled for row/column queries, use one deterministic font family sampled from the readout font pool and recorded in `render_spec.label_style.font`.
 6. Evidence contract:
    - public evidence is projected into image pixels after final layout,
    - unordered tile sets use tile-center `point_set`,
    - ordered paths or trajectories use tile-center `point_sequence`,
+   - zero-count tile-set queries use an empty public point set rather than broad board evidence,
    - grid coordinates and stable tile ids stay private in trace metadata,
    - optional review/debug `bbox_set` projections may be retained in `projected_evidence` but are not the active public evidence contract.
 7. Trace contract:
@@ -125,7 +135,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `task_puzzles__clock_collection__compare`
 2. Public contract:
    - each task records branch metadata in `query_id`,
-   - readout tasks record `query_id=minutes_after|minutes_before`,
+   - readout tasks record `query_id=minutes_after|minutes_before` by default; seconds query ids are supported for explicit `offset_unit=seconds` generation,
    - compare records `query_id=earliest_time_label|latest_time_label`.
 3. Supported `scene_variant` values:
    - `classic`
@@ -135,8 +145,11 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - readout tasks answer with HH:MM or HH:MM:SS strings,
    - compare answers with the winning clock label string.
 5. Evidence contract:
-   - readout evidence is a `bbox_set` over visible clock hands,
+   - readout evidence is a `keyed_point_map` over the clock center and visible hand tips,
    - compare evidence is a one-box `bbox_set` over the winning clock face.
+6. Scene contract:
+   - readout clock numerals use one deterministic font family from the readout font pool and record it in `render_spec.clock_style.font`,
+   - clock-collection compare scenes use one deterministic font family for every clock numeral and visible clock label, record it in `render_spec.clock_style.font`, and use standard evidence-safe post-image noise with `apply_prob=0.5`.
 
 ## Logic grid completion tasks
 1. Active task ids:
@@ -156,8 +169,8 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 5. Required slots:
    - `answer_gt.type = option_letter`
 6. Evidence contract:
-   - `evidence_gt.type = bbox_set`
-   - exactly one bbox for the winning option panel
+   - `evidence_gt.type = keyed_bbox_map`
+   - role keys are `source_grid` and `selected_option`
 7. Scene contract:
    - one square logic grid per image,
    - board size ranges from `5x5` through `7x7` for uniqueness and `3x3` through `5x5` for king non-touch,
@@ -165,6 +178,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - exactly six labeled image options (`A..F`) appear below the board,
    - each option panel contains one candidate shape,
    - the king non-touch prompt explicitly states that identical symbols may not touch edge-to-edge or corner-to-corner,
+   - the missing-cell marker and option labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.text_style.font`,
    - the answer is the option letter, not the shape name.
 8. Trace contract:
    - `scene_ir.entities` includes `puzzle_logic_cell`, `puzzle_logic_option_panel`, `puzzle_logic_option_label`, and `puzzle_logic_option_symbol_box` entities,
@@ -253,15 +267,17 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 4. Answer contract:
    - both tasks use `answer_gt.type = option_letter`.
 5. Evidence contract:
-   - `evidence_gt.type = bbox_set`,
-   - evidence contains one bbox for the selected option panel.
+   - number transform uses `evidence_gt.type = keyed_bbox_map` with keys `source_number` and `selected_option`,
+   - loose-endpoint extremum uses `evidence_gt.type = bbox_set` with one bbox for the selected option panel.
 6. Scene contract:
    - number transform shows a Source two-digit number and labeled candidate numbers,
    - loose-endpoint extremum shows six labeled stick arrangements with a unique largest or smallest loose-endpoint count,
-   - visual styles change stick material/color/background without changing the option-panel evidence contract.
+   - visual styles change stick material/color/background without changing the evidence contract,
+   - option labels and captions sample one deterministic font family from the readout font pool.
 7. Trace contract:
    - `scene_ir.entities` includes Source and option panel entities for number transform and option panel entities for loose-endpoint extremum,
    - `render_map.item_bboxes_px` stores Source and option-panel bboxes where present,
+   - number-transform traces store `evidence_role_item_ids` mapping `source_number` to the Source panel and `selected_option` to the chosen option panel,
    - number-transform traces store the Source number, answer number, changed digit index, and added/removed segment keys,
    - loose-endpoint traces store each option edge set, grid size, and per-option loose-endpoint counts.
 
@@ -287,7 +303,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - all branches use `answer_gt.type = integer`.
 6. Evidence contract:
    - `evidence_gt.type = bbox_set`,
-   - evidence contains the full arithmetic puzzle panel and the marked question-mark node/cell or highlighted query-symbol box.
+   - evidence contains the marked question-mark node/cell or highlighted query-symbol box only; the full panel stays in trace metadata.
 7. Scene contract:
    - one compact worksheet-style arithmetic diagram per image,
    - equal-side branches draw a triangle/square/pentagon with numbered perimeter nodes and one missing node,
@@ -422,6 +438,34 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `render_map.item_bboxes_px` stores clue, region, cell, star, and candidate bboxes used for evidence,
    - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, grid size, region grid, visible stars, candidate specs, legal cells, scoped legal cells, answer value, and supporting item ids.
 
+## Toggle-grid logic tasks
+1. Active task ids:
+   - `task_puzzles__toggle_grid__toggle_result_label`
+   - `task_puzzles__toggle_grid__toggle_repair_switch_label`
+2. Public contract:
+   - both tasks use public `scene_id=toggle_grid`,
+   - result selection records fixed `query_id=toggle_result_label`,
+   - repair selection records fixed `query_id=toggle_repair_switch_label`.
+3. Supported `scene_variant` values:
+   - `toggle_clean`
+   - `toggle_notebook`
+   - `toggle_console`
+4. Answer contract:
+   - both tasks use `answer_gt.type = option_letter`,
+   - the answer is the option letter, not a free-form grid state or switch coordinate.
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`,
+   - result evidence contains the start-grid panel followed by the selected result-option panel,
+   - repair evidence contains the start-grid panel, target-grid panel, and selected switch-cell bbox.
+6. Scene contract:
+   - result scenes show one start grid with numbered switch presses and labeled candidate result grids,
+   - repair scenes show a start grid with lettered candidate switches and a target grid,
+   - a switch press flips that cell and its orthogonal neighbors only.
+7. Trace contract:
+   - `scene_ir.entities` identifies the puzzle as `puzzle_toggle_grid`,
+   - `render_map` stores start/target grid panel boxes, cell boxes, and option-panel boxes used for evidence,
+   - `execution_trace` stores the start state, target state, pressed cells or candidate switches, option specs, answer value, and toggle rule.
+
 ## Dice probability tasks
 1. Active task ids:
    - `task_puzzles__dice_probability__dice_single_event_value`
@@ -438,19 +482,21 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `answer_gt.type = string`,
    - answer values are reduced fraction strings such as `"3/8"`.
 5. Evidence contract:
-   - `evidence_gt.type = bbox_set`,
-   - single and conditional evidence contains the full dice tray box,
-   - pair evidence contains the full Tray A box followed by the full Tray B box.
+   - `evidence_gt.type = keyed_bbox_map`,
+   - single and conditional evidence uses `dice_tray`,
+   - pair evidence uses `tray_a` and `tray_b`.
 6. Scene contract:
    - dice are rendered as individual rounded square dice with visible top-face pips,
    - probability is always over uniformly selecting from the shown dice, not rolling unseen dice,
    - the single task samples parity, threshold, value-set, color-and-value, and color-or-value events,
    - the pair task samples independent one-die selections from Tray A and Tray B with sum, threshold, difference, ordered parity-combo, and color/value events,
-   - the conditional task samples one-die selections with image-grounded denominator filters.
+   - the conditional task samples one-die selections with image-grounded denominator filters,
+   - all tray labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.label_style.font`,
+   - post-image noise stays at `apply_prob=0.15` because die colors and pip counts are semantic and must remain separable.
 7. Trace contract:
    - `scene_ir.entities` includes `dice_tray` and `probability_die` entities,
    - `render_map.die_bboxes_px`, `render_map.tray_bboxes_px`, and `render_map.item_bboxes_px` store die and tray boxes,
-   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, dice specs, event description, favorable outcome count, total outcome count, reduced fraction answer, tray evidence item ids, and die-level calculation support ids,
+   - `execution_trace` stores `query_id`, `scene_id`, `scene_variant`, dice specs, event description, favorable outcome count, total outcome count, reduced fraction answer, tray evidence role ids, and die-level calculation support ids,
    - conditional tasks also store denominator support ids.
 
 ## Spinner probability tasks
@@ -563,26 +609,34 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 1. Active task ids:
    - `task_puzzles__cube_net__cube_net_face_relation_label`
    - `task_puzzles__cube_net__cube_rolling_result_label`
+   - `task_puzzles__cube_net__surface_net_path_label`
 2. Public contract:
    - each task records branch metadata in `query_id`,
    - cube-net relation records `query_id=opposite_face_label|marked_edge_neighbor_face_label`,
    - cube rolling records `query_id=final_top_face_label|final_front_face_label|final_right_face_label`,
-   - both tasks share public `scene_id=cube_net`.
+   - folded surface path records `query_id=folded_path_endpoint_label|folded_path_face_sequence_label`,
+   - all three tasks share public `scene_id=cube_net`.
 3. Answer contract:
-   - both tasks use `answer_gt.type = option_letter`,
+   - all three tasks use `answer_gt.type = option_letter`,
    - the answer is the option letter, not a free-form face label.
 4. Evidence contract:
-   - `evidence_gt.type = bbox_set`,
-   - cube-net relation returns the marked reference face bbox followed by the selected option panel bbox,
-   - cube rolling returns the start-cube panel bbox, roll-path panel bbox, and selected option panel bbox.
+   - `evidence_gt.type = keyed_bbox_map`,
+   - cube-net relation uses `marked_face` and `selected_option`,
+   - cube rolling uses `start_cube`, `roll_path`, and `selected_option`,
+   - folded surface path uses `start_face`, `move_instructions`, and `selected_option`.
 5. Scene contract:
    - cube-net relation scenes show one labeled cube net with a marked reference face and six labeled face options,
    - marked-edge queries may mark an outside edge of the net; the answer is the folded-cube face that shares that edge,
    - cube rolling scenes show a labeled start cube, an arrow path from `S` to `E`, and six labeled face options,
-   - face colors and panel styles are non-semantic; face labels and traced orientation metadata define the answer.
+   - folded surface path scenes show a labeled cube net, a marked start face, numbered folded-edge moves, and endpoint or face-sequence options,
+   - face colors and panel styles are non-semantic; face labels and traced orientation metadata define the answer,
+   - `scene_variant=clean_net|paper_model|game_mat` changes only non-semantic panel chrome/fold-seam styling,
+   - all face, option, instruction, and panel labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.label_style.font`,
+   - cube-net tasks use standard evidence-safe post-image noise with `apply_prob=0.5`.
 6. Trace contract:
    - relation tasks store face labels, net coordinates, reference face, marked side, and correct face,
    - rolling tasks store start and final orientation, grid path cells, path directions, target slot, and correct face,
+   - folded surface path tasks store start face, path sides, visited face sequence, endpoint face, and option specs,
    - prompt-facing evidence is projected from finalized face, path, cube, and option-panel boxes, not inferred from pixels.
 
 ## Polyomino missing-region spatial task
@@ -740,6 +794,8 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 8. Scene contract:
    - one orthogonal wall maze shows a `START` cell and uniquely labeled exits on the outer boundary,
    - solid walls block movement between cells and wall gaps are passable,
+   - maze scenes use the shared puzzle/game panel-style background layer plus scene-local wall, floor, marker, palette, stroke, and unit-size variation,
+   - START and exit labels sample one deterministic font family from the readout font pool,
    - maze rows default to `6..8`, columns default to `7..10`, and exit count defaults to `4..6`,
    - the generator constructs either exactly one exit with the sampled target reachability or the sampled number of reachable exits while keeping at least one unreachable exit.
 9. Trace contract:
@@ -751,12 +807,12 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 
 ## Voxel-ladder maze tasks
 1. Active task ids:
-   - `task_puzzles__voxel_ladder__voxel_ladder_route_label`
-   - `task_puzzles__voxel_ladder__voxel_ladder_route_count`
+   - `task_puzzles__voxel_ladder__checkpoint_sequence_label`
+   - `task_puzzles__voxel_ladder__checkpoint_reachability`
 2. Public contract:
    - both tasks record branch metadata in `query_id`,
-   - label queries record `query_id=checkpoint_sequence_label|unreachable_checkpoint_label`,
-   - count queries record `query_id=reachable_checkpoint_count|shortest_ladder_count`.
+   - checkpoint-sequence records `query_id=checkpoint_sequence_label`,
+   - checkpoint-reachability records `query_id=unreachable_checkpoint_label|reachable_checkpoint_count`.
 3. Supported `scene_variant` values:
    - `clean_isometric_voxels`
    - `worksheet_voxel_maze`
@@ -764,17 +820,16 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 4. Answer contract:
    - `checkpoint_sequence_label` uses `answer_gt.type = option_letter` and the displayed options are color-swatch checkpoint sequences,
    - `unreachable_checkpoint_label` uses `answer_gt.type = string` with a lowercase TRACE color name,
-   - count queries use `answer_gt.type = integer`.
+   - `reachable_checkpoint_count` uses `answer_gt.type = integer`.
 5. Evidence contract:
    - `evidence_gt.type = bbox_set`,
    - checkpoint-sequence evidence contains the START cube, route checkpoint cubes, route ladders, and GOAL cube,
    - unreachable-checkpoint evidence contains the unreachable checkpoint cube,
-   - reachable-checkpoint evidence contains all reachable checkpoint cubes,
-   - shortest-ladder evidence contains the ladders on the shortest START-to-GOAL route.
+   - reachable-checkpoint evidence contains all reachable checkpoint cubes.
 6. Scene contract:
    - one isometric voxel maze shows a blue `START` cube, red `GOAL` cube, checkpoint cubes sampled without replacement from the canonical TRACE named-color palette, and black ladders between height levels,
    - movement follows adjacent same-height cube tops and black ladders for vertical transitions,
-   - route checkpoint count defaults to `2..4`, reachable checkpoint count to `2..5`, route-option count to `4..5`, and shortest-ladder count to `1..3`,
+   - route checkpoint count defaults to `2..4`, reachable checkpoint count to `2..5`, route-option count to `4..5`, and route ladder count to `1..3`,
    - the generator constructs unique final answers from metadata and keeps route/counter support item ids tied to rendered item bboxes.
 7. Trace contract:
    - `scene_ir.entities` includes voxel cube, checkpoint, ladder, and route-option entities,
@@ -795,7 +850,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - scene: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-7. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option image.
+7. Prompt-facing evidence wording should use a `keyed_bbox_map` object with `source_grid` and `selected_option`.
 8. `king_non_touch` prompt wording should make the rule explicit: identical symbols may not touch by edge or by corner.
 
 ## Prompt contract for nonogram logic tasks
@@ -847,6 +902,20 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 7. Prompt wording should state the Star Battle quota rule and no-touch rule when asking for a legal placement.
 
+## Prompt contract for toggle-grid logic tasks
+1. Bundle: `puzzles_logic_v0`
+2. `scene_key`: `toggle_grid`
+3. Task key: `toggle_grid_query`
+4. Public task ids:
+   - `task_puzzles__toggle_grid__toggle_result_label`
+   - `task_puzzles__toggle_grid__toggle_repair_switch_label`
+5. Internal `query_key`: `toggle_result_label|toggle_repair_switch_label`
+6. Required slots:
+   - scene: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+7. Prompt wording should state the toggle rule and ask for the option letter; evidence wording should request only the input panels/cells needed for the task.
+
 ## Prompt contract for dice probability tasks
 1. Bundle: `puzzles_probability_v0`
 2. `scene_key`: `dice_probability`
@@ -866,6 +935,8 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 7. Prompt wording must say selections are uniform over shown dice and must refer to visible top values, not rolling dice.
+8. Public evidence uses role-keyed tray bboxes (`dice_tray` for single/conditional tasks, `tray_a` and `tray_b` for pair tasks).
+9. Render metadata records the shared panel style, tray label font, reduced dice-readability noise policy, and `dice_visual_style.style_id` (`classic_rounded`, `flat_print`, `beveled_tokens`, `inked_pips`, `soft_shadow`).
 
 ## Prompt contract for spinner probability tasks
 1. Bundle: `puzzles_probability_v0`
@@ -1011,12 +1082,12 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
 1. Bundle: `puzzles_topology_v0`
 2. `scene_key`: `topology_voxel_ladder`
 3. Task keys:
-   - `voxel_ladder_route_label_query`
-   - `voxel_ladder_route_count_query`
+   - `voxel_ladder_checkpoint_sequence_query`
+   - `voxel_ladder_checkpoint_reachability_query`
 4. Public task ids:
-   - `task_puzzles__voxel_ladder__voxel_ladder_route_label`
-   - `task_puzzles__voxel_ladder__voxel_ladder_route_count`
-5. Internal `query_key`: `checkpoint_sequence_label|unreachable_checkpoint_label|reachable_checkpoint_count|shortest_ladder_count`
+   - `task_puzzles__voxel_ladder__checkpoint_sequence_label`
+   - `task_puzzles__voxel_ladder__checkpoint_reachability`
+5. Internal `query_key`: `checkpoint_sequence_label|unreachable_checkpoint_label|reachable_checkpoint_count`
 6. Required slots:
    - scene: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
@@ -1053,8 +1124,11 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `answer_gt.type = option_letter`,
    - answer is the capital-letter label on the option swatch that completes the row.
 10. Completion evidence contract:
-   - `evidence_gt.type = bbox_set`,
-   - two bboxes for the blank swatch and the correct option swatch.
+   - `evidence_gt.type = keyed_bbox_map`,
+   - role keys are `blank_swatch` and `selected_option`.
+11. Scene contract:
+   - all swatch and option labels use one deterministic font family sampled from the readout font pool and recorded in `render_spec.label_style.font`,
+   - post-image noise is intentionally disabled because these tasks use exact color relationships as the semantic signal; `render_spec.post_image_noise_policy` records this override.
 
 ## Counterfactual board-grid task
 1. Active task id:
@@ -1066,15 +1140,18 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - `chess_checkers`: fixed canonical board rendering with sparse checker/chess discs; canonical prior `8 x 8`; visible rows/columns sampled `6..10`.
    - `sudoku`: fixed canonical grid rendering with sparse given digits; canonical prior `9 x 9`; visible rows/columns sampled `7..11`.
    - `xiangqi`: fixed canonical line-board rendering with sparse xiangqi-style pieces; canonical prior `10` horizontal lines by `9` vertical lines; visible horizontal lines sampled `8..12` and vertical lines sampled `7..11`.
-4. Prompt-facing text intentionally does not name the board/game. The image should carry the familiar-board prior.
+4. Prompt-facing text intentionally does not name the board/game or mention that the visible size may differ from a usual pattern. The image should carry the familiar-board prior.
 5. The scene samples one shared puzzle-domain light background style per instance and does not render a drop shadow under the board.
 6. Answer contract:
    - `answer_gt.type = integer`,
    - answer is the requested visible row, column, horizontal-line, or vertical-line count.
 7. Evidence contract:
    - `evidence_gt.type = bbox_set`,
-   - exactly one bbox for the full board.
+   - evidence contains one bbox for each counted visible row, column, horizontal line, or vertical line requested by the query.
 8. Decorative digits/pieces are recorded separately in trace metadata and are not part of prompt-facing evidence.
+9. Scene contract:
+   - decorative board text uses one deterministic font family sampled with `role="decorative"` and recorded in `render_spec.label_style.font`,
+   - post-image noise uses the standard evidence-safe default `apply_prob=0.5`.
 
 ## Prompt contract for `task_puzzles__counterfactual_board__board_grid_count`
 1. Bundle: `puzzles_counterfactual_v0`
@@ -1085,7 +1162,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - scene: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-6. Prompt wording should mirror the VLM-bias style: ask generic row, column, cell, horizontal-line, or vertical-line counts without naming the game.
+6. Prompt wording should mirror the VLM-bias style: ask generic row, column, horizontal-line, or vertical-line counts without naming the game or hinting that the board size has been altered.
 
 ## Prompt contract for `task_puzzles__color_gradient__color_gradient_completion_label`
 1. Bundle: `puzzles_visual_v0`
@@ -1096,6 +1173,7 @@ This is the active puzzles-domain contract. For cross-domain coverage rollups, u
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing wording should ask for the option that completes the blank swatch and should not name the hidden HSL rule.
+7. Prompt-facing evidence uses a `keyed_bbox_map` object with keys `blank_swatch` and `selected_option`.
 
 ## Prompt contract for `task_puzzles__color_gradient__color_gradient_violation_cell_label`
 1. Bundle: `puzzles_visual_v0`

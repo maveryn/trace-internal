@@ -23,6 +23,7 @@ from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font
+from ...shared.text_legibility import draw_text_traced
 from ..shared.common import (
     get_int_param as _get_int,
     get_int_range as _get_range,
@@ -733,7 +734,7 @@ def _render_scene(
         }
     ]
 
-    draw.text((panel_x0 + 18, panel_y0 + 14), "Star Battle", fill=render_params.text_color_rgb, font=title_font)
+    draw_text_traced(draw,(panel_x0 + 18, panel_y0 + 14), "Star Battle", fill=render_params.text_color_rgb, font=title_font, role="readout", required=False)
     for row in range(size):
         bbox = (grid_x0 - clue, grid_y0 + row * cell_size, grid_x0, grid_y0 + (row + 1) * cell_size)
         row_bbox_map[f"row_{row}"] = _round_bbox(bbox)

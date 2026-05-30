@@ -35,5 +35,6 @@ def test_games_bubble_shooter_defaults_expose_scene_query_answer_and_style_axes(
     assert generation["option_count_support"] == [4, 5, 6]
     assert rendering["canvas_width"] == 980
     assert rendering["canvas_height"] == 820
+    assert rendering["dynamic_canvas_size_enabled"] is True
     assert str(prompt["bundle_id"]) == "games_bubble_shooter_v0"
     assert "close-packed" in str(prompt["object_description_open_pack"])

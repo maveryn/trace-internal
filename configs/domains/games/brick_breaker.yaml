@@ -54,6 +54,11 @@ rendering:
     ball_radius_px: 16
     path_width_px: 5
     label_font_size_px: 24
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 440
+    canvas_side_padding_px: 120
+    canvas_vertical_padding_px: 78
 complexity:
   shared:
     criteria_weights:

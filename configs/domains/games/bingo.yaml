@@ -84,6 +84,11 @@ rendering:
     card_height_px: 620
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 440
+    canvas_side_padding_px: 140
+    canvas_vertical_padding_px: 70
     card_corner_radius_px: 24
     panel_margin_px: 56
     title_font_size_px: 34

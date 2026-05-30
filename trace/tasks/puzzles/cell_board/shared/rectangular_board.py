@@ -8,7 +8,9 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from trace.tasks.shared.bbox_projection import BBox
+from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import draw_text_centered, load_font
+from trace.tasks.puzzles.shared.common import resolve_puzzle_axis_variant
 from trace.tasks.puzzles.shared.scene_style import (
     PuzzleSceneStyle,
     draw_puzzle_chrome_by_mode,
@@ -22,6 +24,14 @@ from .grid_graph import cell_id
 
 Coord = Tuple[int, int]
 Color = Tuple[int, int, int]
+
+SUPPORTED_CELL_BOARD_TILE_STYLES: Tuple[str, ...] = (
+    "classic_grid",
+    "rounded_tiles",
+    "inset_tiles",
+    "thin_line",
+    "lab_matrix",
+)
 
 
 @dataclass(frozen=True)
@@ -175,6 +185,124 @@ def build_rectangular_tile_bbox_map(layout: RectangularBoardLayout) -> Dict[str,
     return bbox_map
 
 
+def _resolve_cell_board_tile_style(
+    *,
+    params: Mapping[str, Any],
+    rendering_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[str, Dict[str, float]]:
+    return resolve_puzzle_axis_variant(
+        params=params,
+        gen_defaults=rendering_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=SUPPORTED_CELL_BOARD_TILE_STYLES,
+        task_id=str(namespace),
+        explicit_key="cell_board_tile_style",
+        weights_key="cell_board_tile_style_weights",
+        balance_flag_key="balanced_cell_board_tile_style_sampling",
+        axis_namespace="cell_board_tile_style",
+    )
+
+
+def _cell_board_tile_style_metadata(
+    *,
+    tile_style: str,
+    tile_style_probabilities: Mapping[str, float],
+) -> Dict[str, Any]:
+    return {
+        "tile_style": str(tile_style),
+        "tile_style_probabilities": {
+            str(key): float(value)
+            for key, value in tile_style_probabilities.items()
+        },
+        "semantic_color_policy": {
+            "tile_fill_colors_preserved": True,
+            "tile_geometry_preserved": True,
+            "style_is_non_semantic": True,
+        },
+    }
+
+
+def rectangular_board_tile_style(background_meta: Mapping[str, Any]) -> str:
+    """Return the sampled rectangular board tile style from background metadata."""
+
+    scene_style = background_meta.get("scene_style", {}) if isinstance(background_meta, Mapping) else {}
+    board_meta = scene_style.get("cell_board", {}) if isinstance(scene_style, Mapping) else {}
+    tile_style = board_meta.get("tile_style", "") if isinstance(board_meta, Mapping) else ""
+    if str(tile_style) in set(SUPPORTED_CELL_BOARD_TILE_STYLES):
+        return str(tile_style)
+    return "classic_grid"
+
+
+def _draw_styled_tile(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: BBox,
+    fill: Color,
+    outline_color: Color,
+    width: int,
+    tile_style: str,
+    scene_style: PuzzleSceneStyle | None,
+) -> None:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    tile_style_id = str(tile_style)
+    fill_rgb = tuple(int(value) for value in fill)
+    outline_rgb = tuple(int(value) for value in outline_color)
+    line_width = max(1, int(width))
+    cell_w = max(1.0, float(x1) - float(x0))
+    cell_h = max(1.0, float(y1) - float(y0))
+    radius = max(3, int(round(min(cell_w, cell_h) * 0.11)))
+
+    if scene_style is not None and tile_style_id == "classic_grid":
+        draw_puzzle_grid_cell(
+            draw,
+            bbox=(int(x0), int(y0), int(x1), int(y1)),
+            fill=fill_rgb,
+            style=scene_style,
+            outline=outline_rgb,
+            width=line_width,
+        )
+        return
+
+    if tile_style_id == "rounded_tiles":
+        draw.rounded_rectangle(
+            [x0, y0, x1, y1],
+            radius=radius,
+            fill=fill_rgb,
+            outline=outline_rgb,
+            width=line_width,
+        )
+        return
+
+    if tile_style_id == "inset_tiles":
+        grid_fill = tuple(int(value) for value in (scene_style.grid_rgb if scene_style is not None else outline_rgb))
+        draw.rectangle([x0, y0, x1, y1], fill=grid_fill, outline=outline_rgb, width=1)
+        inset = max(2.0, min(cell_w, cell_h) * 0.10)
+        draw.rounded_rectangle(
+            [x0 + inset, y0 + inset, x1 - inset, y1 - inset],
+            radius=max(2, radius - 2),
+            fill=fill_rgb,
+            outline=outline_rgb,
+            width=max(1, line_width - 1),
+        )
+        return
+
+    if tile_style_id == "thin_line":
+        draw.rectangle([x0, y0, x1, y1], fill=fill_rgb, outline=outline_rgb, width=max(1, line_width - 1))
+        return
+
+    if tile_style_id == "lab_matrix":
+        draw.rectangle([x0, y0, x1, y1], fill=fill_rgb, outline=outline_rgb, width=line_width)
+        accent_rgb = tuple(int(value) for value in (scene_style.panel_accent_rgb if scene_style is not None else outline_rgb))
+        inset = max(3.0, min(cell_w, cell_h) * 0.14)
+        draw.line([(x0 + inset, y0 + inset), (x1 - inset, y0 + inset)], fill=accent_rgb, width=1)
+        draw.line([(x0 + inset, y0 + inset), (x0 + inset, y1 - inset)], fill=accent_rgb, width=1)
+        return
+
+    draw.rectangle([x0, y0, x1, y1], fill=fill_rgb, outline=outline_rgb, width=line_width)
+
+
 def render_rectangular_tile_board(
     draw: ImageDraw.ImageDraw,
     *,
@@ -183,6 +311,8 @@ def render_rectangular_tile_board(
     tile_outline_color: Color | None = None,
     scene_style: PuzzleSceneStyle | None = None,
     panel_chrome_mode: str = "accent_frame",
+    label_font_family: str | None = None,
+    tile_style: str = "classic_grid",
 ) -> Dict[str, BBox]:
     """Render one rectangular-tile board with optional top/left coordinate labels."""
     bbox_map = build_rectangular_tile_bbox_map(layout)
@@ -208,25 +338,24 @@ def render_rectangular_tile_board(
             coord = (int(row), int(col))
             bbox = bbox_map[cell_id(coord)]
             fill = fill_colors_by_coord.get(coord, (255, 255, 255))
-            if scene_style is None:
-                outline_color = tuple(int(value) for value in (tile_outline_color or (84, 84, 84)))
-                draw.rectangle(
-                    [float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])],
-                    fill=tuple(int(value) for value in fill),
-                    outline=outline_color,
-                    width=int(layout.tile_outline_width_px),
+            outline_color = tuple(
+                int(value)
+                for value in (
+                    tile_outline_color
+                    or (scene_style.grid_rgb if scene_style is not None else (84, 84, 84))
                 )
-            else:
-                draw_puzzle_grid_cell(
-                    draw,
-                    bbox=(int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])),
-                    fill=tuple(int(value) for value in fill),
-                    style=scene_style,
-                    outline=tuple(int(value) for value in tile_outline_color) if tile_outline_color else None,
-                    width=int(layout.tile_outline_width_px),
-                )
+            )
+            _draw_styled_tile(
+                draw,
+                bbox=bbox,
+                fill=tuple(int(value) for value in fill),
+                outline_color=outline_color,
+                width=int(layout.tile_outline_width_px),
+                tile_style=str(tile_style),
+                scene_style=scene_style,
+            )
     if bool(layout.coordinate_labels):
-        font = load_font(int(layout.label_font_size_px), bold=True)
+        font = load_font(int(layout.label_font_size_px), bold=True, font_family=label_font_family)
         label_fill = (
             tuple(int(value) for value in scene_style.text_rgb)
             if scene_style is not None
@@ -270,6 +399,8 @@ def build_rectangular_board_background(
     canvas_height: int,
     instance_seed: int,
     namespace: str,
+    params: Mapping[str, Any] | None = None,
+    rendering_defaults: Mapping[str, Any] | None = None,
 ) -> tuple[Image.Image, Dict[str, Any], PuzzleSceneStyle, str]:
     """Build a shared puzzle/game-style canvas for one rectangular cell-board."""
 
@@ -278,6 +409,25 @@ def build_rectangular_board_background(
         namespace=str(namespace),
     )
     chrome_mode, chrome_metadata = resolve_panel_chrome_mode(
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    label_font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.board_label_font",
+        params=params or {},
+    )
+    label_font_metadata = {
+        **get_font_family_record(str(label_font_family)).to_trace(),
+        "font_asset_version": font_asset_version(),
+        "selection_scope": "cell_board_coordinate_labels",
+        "include_tags": [],
+        "exclude_tags": [],
+    }
+    tile_style, tile_style_probabilities = _resolve_cell_board_tile_style(
+        params=params or {},
+        rendering_defaults=rendering_defaults or {},
         instance_seed=int(instance_seed),
         namespace=str(namespace),
     )
@@ -291,8 +441,22 @@ def build_rectangular_board_background(
         **dict(style_metadata),
         "panel_chrome": dict(chrome_metadata),
         "panel_chrome_mode": str(chrome_mode),
+        "board_label_font": dict(label_font_metadata),
+        "cell_board": _cell_board_tile_style_metadata(
+            tile_style=str(tile_style),
+            tile_style_probabilities=tile_style_probabilities,
+        ),
     }
     return image, background_record, scene_style, str(chrome_mode)
+
+
+def rectangular_board_label_font_family(background_meta: Mapping[str, Any]) -> str:
+    """Return the sampled board label font family from background metadata."""
+
+    scene_style = background_meta.get("scene_style", {}) if isinstance(background_meta, Mapping) else {}
+    font_meta = scene_style.get("board_label_font", {}) if isinstance(scene_style, Mapping) else {}
+    family = font_meta.get("font_family", "") if isinstance(font_meta, Mapping) else ""
+    return str(family)
 
 
 def build_rectangular_board_render_spec(
@@ -305,6 +469,12 @@ def build_rectangular_board_render_spec(
     post_noise_meta: Mapping[str, Any],
 ) -> Dict[str, Any]:
     """Build shared render metadata for one rectangular tile board."""
+    scene_style_meta = background_meta.get("scene_style", {}) if isinstance(background_meta, Mapping) else {}
+    label_font_meta = (
+        scene_style_meta.get("board_label_font", {})
+        if isinstance(scene_style_meta, Mapping)
+        else {}
+    )
     return {
         "coord_space": "tile_grid",
         "tiling_type": "rectangular_tiling",
@@ -333,6 +503,7 @@ def build_rectangular_board_render_spec(
         "label_style": {
             "font_size_px": int(layout.label_font_size_px),
             "stroke_width_px": int(layout.label_stroke_width_px),
+            "font": dict(label_font_meta) if isinstance(label_font_meta, Mapping) else {},
         },
         "tile_aspect_ratio": round(float(tile_spec.aspect_ratio), 6),
         "tile_orientation": str(tile_spec.orientation),
@@ -346,9 +517,12 @@ __all__ = [
     "Coord",
     "RectangularBoardLayout",
     "RectangularTileSpec",
+    "SUPPORTED_CELL_BOARD_TILE_STYLES",
     "build_rectangular_board_render_spec",
     "build_rectangular_board_background",
     "build_rectangular_tile_bbox_map",
+    "rectangular_board_label_font_family",
+    "rectangular_board_tile_style",
     "render_rectangular_tile_board",
     "resolve_rectangular_board_layout",
     "sample_rectangular_tile_spec",

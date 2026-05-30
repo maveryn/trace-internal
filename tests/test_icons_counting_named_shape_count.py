@@ -27,7 +27,6 @@ def test_icons_counting_named_shape_count_contract() -> None:
     trace = out.trace_payload
     assert out.scene_id == "named_field"
     assert out.query_id == "named_shape_count"
-    assert out.query_id == "default"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 3
     assert out.evidence_gt.type == "bbox_set"
@@ -37,6 +36,8 @@ def test_icons_counting_named_shape_count_contract() -> None:
     assert trace["execution_trace"]["target_shape_name"] == "star"
     assert trace["execution_trace"]["shape_counts"]["star"] == 3
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
     counted_ids = set(trace["render_map"]["counted_instance_ids"])
     entity_by_id = {str(entity["instance_id"]): entity for entity in trace["scene_ir"]["entities"]}
     assert len(entity_by_id) == 22

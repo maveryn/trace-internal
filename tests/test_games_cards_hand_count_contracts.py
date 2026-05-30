@@ -202,11 +202,9 @@ def test_games_cards_reference_condition_public_task_records_query_id(
     )
     trace = out.trace_payload
 
-    assert out.query_id == "default"
     assert out.query_id == query_id
-    assert trace["query_spec"]["params"]["query_id"] == "default"
+    assert trace["query_spec"]["query_id"] == query_id
     assert trace["query_spec"]["params"]["query_id"] == query_id
-    assert trace["execution_trace"]["query_id"] == "default"
     assert trace["execution_trace"]["query_id"] == query_id
     assert int(out.answer_gt.value) == int(target_answer)
 
@@ -240,10 +238,10 @@ def test_games_cards_rule_tasks_emit_label_contracts(
     assert str(execution[label_key]).endswith(answer)
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) >= int(min_evidence_count)
-    assert out.query_id == "default"
     assert out.query_id == expected_query_id
     assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id"] == "default"
+    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
+    assert trace["query_spec"]["params"]["query_id_probabilities"] == {expected_query_id: 1.0}
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
 
 

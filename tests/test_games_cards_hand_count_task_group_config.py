@@ -25,7 +25,7 @@ def test_games_cards_hand_count_defaults_expose_scene_query_and_card_axes() -> N
         "exact_triple_count",
         "longest_run_length",
     }
-    assert set(generation["style_variant_weights"].keys()) == {"classic", "soft", "outlined"}
+    assert set(generation["style_variant_weights"].keys()) == {"classic", "soft", "outlined", "ivory", "slate"}
     assert list(generation["same_suit_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["higher_rank_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["exact_triple_count_support"]) == [0, 1, 2, 3, 4]

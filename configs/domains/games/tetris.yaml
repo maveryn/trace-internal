@@ -11,7 +11,11 @@ generation:
       single_clear_result: 1.0
       multi_clear_result: 1.0
     style_variant_weights:
-      panel_scene: 1.0
+      classic_blocks: 1.0
+      beveled_blocks: 1.0
+      paper_tiles: 1.0
+      glass_blocks: 1.0
+      neon_blocks: 1.0
     balanced_scene_variant_sampling: true
     balanced_query_sampling: true
     balanced_style_variant_sampling: true
@@ -59,9 +63,9 @@ prompt:
     next_piece_rule_text: The NEXT piece may be rotated and moved sideways, then it falls straight down until it rests.
     fixed_drop_rule_text: In the START board, the falling piece drops straight down from its shown position without moving sideways or rotating.
     line_clear_rule_text: After the piece locks, every completely filled row clears and all rows above fall down by the number of cleared rows.
-    evidence_hint_line_clear_count: set "evidence" to bounding boxes [x0, y0, x1, y1] for the main board and the NEXT piece panel
+    evidence_hint_line_clear_count: set "evidence" to an object mapping "board" and "next_piece" to their bounding boxes [x0, y0, x1, y1]
     answer_hint_line_clear_count: set "answer" to the maximum number of rows the NEXT piece can clear
-    evidence_hint_drop_result_label: set "evidence" to an array containing the selected result-board bounding box
+    evidence_hint_drop_result_label: set "evidence" to an array containing the selected result-board bounding box [x0, y0, x1, y1]
     answer_hint_drop_result_label: set "answer" to only the selected option letter
 
 visual:

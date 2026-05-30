@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_legibility import draw_centered_traced_text
+from ...shared.text_rendering import load_font
 from .icon_assets import render_icon_rgba
 from .icon_grid_scene import resolve_horizontal_row_slots
 from .icon_noise import NoiseEdit, serialize_icon_noise_edits
@@ -20,6 +21,7 @@ from .icon_scene import (
     random_paste_bbox,
     resolve_single_panel_layout,
 )
+from .scene_style import IconCanvasStyle
 
 
 BBox = Tuple[int, int, int, int]
@@ -106,6 +108,7 @@ def render_icon_sequence_scene(
     cell_label_font_size_px: int = 0,
     cell_label_color_rgb: Tuple[int, int, int] | None = None,
     scene_title: str = "Sequence",
+    icon_canvas_style: IconCanvasStyle | None = None,
 ) -> RenderedIconSequenceScene:
     """Render one single-panel horizontal sequence of scene cells."""
 
@@ -130,6 +133,7 @@ def render_icon_sequence_scene(
         corner_radius_px=int(panel_corner_radius_px),
         title_font_size_px=int(panel_title_font_size_px),
         scene_title=str(scene_title),
+        icon_canvas_style=icon_canvas_style,
     )
 
     cell_slots = resolve_horizontal_row_slots(
@@ -162,7 +166,7 @@ def render_icon_sequence_scene(
         label_band_height = 0
         if label_font is not None and label_text:
             label_band_height = max(24, int(round(float(label_font_size) * 1.5)))
-            draw_text_centered(
+            draw_centered_traced_text(
                 draw,
                 text=str(label_text),
                 center=(
@@ -170,9 +174,11 @@ def render_icon_sequence_scene(
                     float(cell_bbox[1]) + (0.5 * float(label_band_height)),
                 ),
                 font=label_font,
-                fill=tuple(int(v) for v in (cell_label_color_rgb or missing_mark_color_rgb)),
-                stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+                fill_rgb=tuple(int(v) for v in (cell_label_color_rgb or missing_mark_color_rgb)),
+                stroke_rgb=tuple(int(v) for v in panel_fill_rgb),
                 stroke_width=2,
+                role="icon_cell_label_text",
+                required=False,
             )
         icon_content_bbox = (
             int(cell_bbox[0] + inner_padding),
@@ -183,7 +189,7 @@ def render_icon_sequence_scene(
         if int(icon_content_bbox[1]) >= int(icon_content_bbox[3]):
             raise ValueError("sequence cell is too short for label and icon content")
         if bool(cell_spec.is_missing):
-            draw_text_centered(
+            draw_centered_traced_text(
                 draw,
                 text="?",
                 center=(
@@ -191,9 +197,11 @@ def render_icon_sequence_scene(
                     0.5 * float(icon_content_bbox[1] + icon_content_bbox[3]),
                 ),
                 font=missing_font,
-                fill=tuple(int(v) for v in missing_mark_color_rgb),
-                stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+                fill_rgb=tuple(int(v) for v in missing_mark_color_rgb),
+                stroke_rgb=tuple(int(v) for v in panel_fill_rgb),
                 stroke_width=2,
+                role="icon_missing_mark_text",
+                required=False,
             )
             rendered_cells.append(
                 RenderedSequenceCell(

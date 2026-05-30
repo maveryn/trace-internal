@@ -9,11 +9,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -26,8 +26,9 @@ from ..shared.domino_scene import DominoRenderParams, DominoTileInstance, render
 from ..shared.fixed_query_task import rewrite_public_query_output
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_DOMINO_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_dominoes_chain_count_base"
@@ -42,7 +43,6 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     "double_count",
 )
 TWO_STEP_QUERY_ID = "two_step_extension_label"
-TWO_STEP_SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_QUERY_IDS + (TWO_STEP_QUERY_ID,)
 OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEFGHIJKL")
 PIP_VALUES: Tuple[int, ...] = tuple(range(7))
 CANONICAL_DOMINOES: Tuple[Tuple[int, int], ...] = tuple(
@@ -126,7 +126,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="dominoes")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="dominoes", apply_prob=0.0)
 
 
@@ -1140,10 +1139,10 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
         answer_only = {"answer": 3}
     elif str(query_id) == TWO_STEP_QUERY_ID:
         answer_and_evidence = {
-            "evidence": [
-                [248, 318, 386, 394],
-                [408, 318, 546, 394],
-            ],
+            "evidence": {
+                "first_step_domino": [248, 318, 386, 394],
+                "second_step_domino": [408, 318, 546, 394],
+            },
             "answer": "B",
         }
         answer_only = {"answer": "B"}
@@ -1165,6 +1164,12 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> DominoRenderParams:
     """Resolve domino-scene rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.dominoes.font_family",
+        params=params,
+    )
     return DominoRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -1211,6 +1216,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> DominoRe
                 group_default(_RENDER_DEFAULTS, "section_separator_width_px", _DEFAULTS.section_separator_width_px),
             )
         ),
+        font_family=str(font_family),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
@@ -1235,6 +1241,29 @@ class GamesDominoesChainCountTask:
             supported_query_ids=tuple(str(value) for value in self.supported_query_ids),
         )
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.dominoes.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
 
         sampled_scene: _SampledDominoScene | None = None
         rendered_scene = None
@@ -1245,12 +1274,10 @@ class GamesDominoesChainCountTask:
             except ValueError:
                 continue
 
-            background, background_meta = make_background_canvas(
+            background, background_meta = make_panel_scene_background(
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
-                instance_seed=int(instance_seed),
-                params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+                style=panel_style,
             )
             rendered_scene = render_domino_chain_scene(
                 chain_tiles=list(sampled_scene.chain_tiles),
@@ -1259,6 +1286,7 @@ class GamesDominoesChainCountTask:
                 scene_variant=str(axes.scene_variant),
                 style_variant=str(axes.style_variant),
                 params=render_params,
+                panel_style=panel_style,
             )
             break
 
@@ -1269,6 +1297,14 @@ class GamesDominoesChainCountTask:
             list(rendered_scene.render_map["domino_bboxes_px"][str(tile_id)])
             for tile_id in sampled_scene.evidence_tile_ids
         ]
+        keyed_evidence_bboxes: Dict[str, List[float]] | None = None
+        if str(axes.query_id) == TWO_STEP_QUERY_ID:
+            if sampled_scene.first_step_tile_id is None or sampled_scene.second_step_tile_id is None:
+                raise RuntimeError("two-step domino scene missing role-bound evidence ids")
+            keyed_evidence_bboxes = {
+                "first_step_domino": list(rendered_scene.render_map["domino_bboxes_px"][str(sampled_scene.first_step_tile_id)]),
+                "second_step_domino": list(rendered_scene.render_map["domino_bboxes_px"][str(sampled_scene.second_step_tile_id)]),
+            }
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
@@ -1336,7 +1372,15 @@ class GamesDominoesChainCountTask:
             if str(axes.query_id) == TWO_STEP_QUERY_ID
             else TypedValue(type="integer", value=int(sampled_scene.answer_value))
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = (
+            TypedValue(type="keyed_bbox_map", value=dict(keyed_evidence_bboxes or {}))
+            if str(axes.query_id) == TWO_STEP_QUERY_ID
+            else TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        )
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_dominoes_chain_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1411,15 +1455,35 @@ class GamesDominoesChainCountTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": execution_trace,
             "witness_symbolic": {
-                "type": "object_set",
-                "ids": [str(tile_id) for tile_id in sampled_scene.evidence_tile_ids],
+                "type": "object_map" if str(axes.query_id) == TWO_STEP_QUERY_ID else "object_set",
+                "ids": {
+                    "first_step_domino": None if sampled_scene.first_step_tile_id is None else str(sampled_scene.first_step_tile_id),
+                    "second_step_domino": None if sampled_scene.second_step_tile_id is None else str(sampled_scene.second_step_tile_id),
+                }
+                if str(axes.query_id) == TWO_STEP_QUERY_ID
+                else [str(tile_id) for tile_id in sampled_scene.evidence_tile_ids],
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                **(
+                    {
+                        "type": "keyed_bbox_map",
+                        "keyed_bbox_map": dict(keyed_evidence_bboxes or {}),
+                        "pixel_keyed_bbox_map": dict(keyed_evidence_bboxes or {}),
+                        "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                    }
+                    if str(axes.query_id) == TWO_STEP_QUERY_ID
+                    else {
+                        "type": "bbox_set",
+                        "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                        "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                    }
+                )
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,
@@ -1456,7 +1520,7 @@ class GamesDominoesTwoStepExtensionLabelTask(GamesDominoesChainCountTask):
     """Choose the labeled loose domino that works as the second step in a chain extension."""
 
     task_id = "task_games__dominoes__two_step_extension_label"
-    supported_query_ids = TWO_STEP_SUPPORTED_QUERY_IDS
+    supported_query_ids = (TWO_STEP_QUERY_ID,)
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         forced_params = dict(params)

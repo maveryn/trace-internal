@@ -63,6 +63,7 @@ class RenderedPuzzleLogicScene:
     image: Image.Image
     entities: List[Dict[str, Any]]
     scene_bbox_px: List[float]
+    board_bbox_px: List[float]
     cell_bbox_map: Dict[str, List[float]]
     option_panel_bbox_map: Dict[str, List[float]]
 
@@ -137,6 +138,12 @@ def render_puzzle_logic_scene(
         float(board_left + board_width + board_panel_pad),
         float(board_top + board_height + board_panel_pad),
     )
+    board_bbox = (
+        float(board_left),
+        float(board_top),
+        float(board_left + board_width),
+        float(board_top + board_height),
+    )
     options_panel_bbox = (
         float(options_left - board_panel_pad),
         float(options_top - board_panel_pad),
@@ -144,7 +151,7 @@ def render_puzzle_logic_scene(
         float(options_top + options_height + board_panel_pad),
     )
     if selected_variant in {"logic_card", "logic_outline"}:
-        fill = render_params.panel_fill_rgb if selected_variant == "logic_card" else (248, 248, 248)
+        fill = render_params.panel_fill_rgb if selected_variant == "logic_card" else render_params.option_panel_fill_rgb
         draw_rounded_rect(
             draw,
             board_panel_bbox,
@@ -324,6 +331,7 @@ def render_puzzle_logic_scene(
         image=image,
         entities=entities,
         scene_bbox_px=scene_bbox,
+        board_bbox_px=[round(float(value), 3) for value in board_bbox],
         cell_bbox_map=cell_bbox_map,
         option_panel_bbox_map=option_panel_bbox_map,
     )

@@ -22,6 +22,7 @@ from .pacman_common import (
     route_entity_id,
     sorted_coords,
 )
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ class PacmanRenderParams:
     ghost_radius_px: int
     route_width_px: int
     item_label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -244,7 +246,7 @@ def _grid_geometry(
     params: PacmanRenderParams,
     row_count: int,
     col_count: int,
-) -> Tuple[Tuple[float, float, float, float], float, Dict[Coord, Tuple[float, float]]]:
+) -> Tuple[Tuple[float, float, float, float], float, Dict[Coord, Tuple[float, float]], Dict[str, Any]]:
     """Return maze bbox, cell size, and cell centers."""
 
     base_bbox = (
@@ -253,7 +255,7 @@ def _grid_geometry(
         0.5 * (float(params.canvas_width) + float(params.maze_width_px)),
         0.5 * (float(params.canvas_height) + float(params.maze_height_px)),
     )
-    maze_bbox, dx, dy, _resolved = apply_games_layout_jitter_to_bbox(
+    maze_bbox, _dx, _dy, layout_jitter = apply_games_layout_jitter_to_bbox(
         bbox_px=base_bbox,
         canvas_width=int(params.canvas_width),
         canvas_height=int(params.canvas_height),
@@ -275,7 +277,7 @@ def _grid_geometry(
         for row in range(int(row_count))
         for col in range(int(col_count))
     }
-    return (left, top, right, bottom), float(cell_size), centers
+    return (left, top, right, bottom), float(cell_size), centers, dict(layout_jitter)
 
 
 def _cell_bbox(
@@ -423,14 +425,33 @@ def render_pacman_scene(
     scene_variant: str,
     style_variant: str,
     params: PacmanRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedPacmanScene:
     """Render one visible Pac-Man maze scene."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     theme = build_games_pacman_theme(style_variant=str(style_variant))
-    maze_bbox, cell_size, centers = _grid_geometry(params=params, row_count=int(row_count), col_count=int(col_count))
+    maze_bbox, cell_size, centers, layout_jitter = _grid_geometry(
+        params=params,
+        row_count=int(row_count),
+        col_count=int(col_count),
+    )
     left, top, right, bottom = maze_bbox
+    chrome_bbox = (
+        int(round(float(left - 28.0))),
+        int(round(float(top - 28.0))),
+        int(round(float(right + 28.0))),
+        int(round(float(bottom + 28.0))),
+    )
+    if panel_style is not None:
+        draw_panel_scene_chrome(
+            draw,
+            bbox=chrome_bbox,
+            style=panel_style,
+            radius=24,
+            border_width=2,
+        )
     draw.rounded_rectangle(
         (
             float(left - 18.0),
@@ -448,6 +469,7 @@ def render_pacman_scene(
     wall_set = {tuple(coord) for coord in wall_cells}
     entities: list[Dict[str, Any]] = []
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    entity_points: Dict[str, Tuple[float, float]] = {}
 
     for coord in sorted_coords(tuple(open_set | wall_set)):
         bbox = _cell_bbox(coord, maze_bbox=maze_bbox, cell_size=float(cell_size), gap_px=float(params.wall_gap_px))
@@ -484,16 +506,18 @@ def render_pacman_scene(
         draw.ellipse(bbox, fill=theme.pellet_fill_rgb)
         entity_id = pellet_entity_id(coord)
         entity_bboxes[entity_id] = bbox
+        entity_points[entity_id] = (round(float(center[0]), 3), round(float(center[1]), 3))
         entities.append(
             {
                 "entity_id": entity_id,
                 "type": "pellet",
                 "coord": [int(coord[0]), int(coord[1])],
                 "bbox_px": list(bbox),
+                "point_px": list(entity_points[entity_id]),
             }
         )
 
-    label_font = load_font(int(params.item_label_font_size_px), bold=True)
+    label_font = load_font(int(params.item_label_font_size_px), bold=True, font_family=str(params.font_family))
     item_radius = max(12.0, float(params.item_radius_px))
     for item in items:
         coord = tuple(item.coord)
@@ -517,6 +541,7 @@ def render_pacman_scene(
         )
         entity_id = item_entity_id(str(item.label))
         entity_bboxes[entity_id] = item_bbox
+        entity_points[entity_id] = (round(float(center[0]), 3), round(float(center[1]), 3))
         entities.append(
             {
                 "entity_id": entity_id,
@@ -525,6 +550,7 @@ def render_pacman_scene(
                 "kind": str(item.kind),
                 "coord": [int(coord[0]), int(coord[1])],
                 "bbox_px": list(item_bbox),
+                "point_px": list(entity_points[entity_id]),
             }
         )
 
@@ -542,6 +568,7 @@ def render_pacman_scene(
         )
         entity_id = ghost_entity_id(str(ghost.ghost_id))
         entity_bboxes[entity_id] = ghost_bbox
+        entity_points[entity_id] = (round(float(center[0]), 3), round(float(center[1]), 3))
         entities.append(
             {
                 "entity_id": entity_id,
@@ -550,6 +577,7 @@ def render_pacman_scene(
                 "is_stop_ghost": bool(ghost.is_stop_ghost),
                 "coord": [int(coord[0]), int(coord[1])],
                 "bbox_px": list(ghost_bbox),
+                "point_px": list(entity_points[entity_id]),
             }
         )
 
@@ -566,12 +594,14 @@ def render_pacman_scene(
         theme=theme,
     )
     entity_bboxes[pacman_entity_id()] = pac_bbox
+    entity_points[pacman_entity_id()] = (round(float(pac_center[0]), 3), round(float(pac_center[1]), 3))
     entities.append(
         {
             "entity_id": pacman_entity_id(),
             "type": "pacman",
             "coord": [int(pacman_coord[0]), int(pacman_coord[1])],
             "bbox_px": list(pac_bbox),
+            "point_px": list(entity_points[pacman_entity_id()]),
         }
     )
     for index, coord in enumerate(route_coords):
@@ -588,11 +618,17 @@ def render_pacman_scene(
 
     render_map = {
         "entity_bboxes_px": {str(entity_id): [float(value) for value in bbox] for entity_id, bbox in entity_bboxes.items()},
+        "entity_points_px": {str(entity_id): [float(x), float(y)] for entity_id, (x, y) in entity_points.items()},
         "cell_centers_px": {f"r{row}_c{col}": [float(x), float(y)] for (row, col), (x, y) in centers.items()},
         "route_polyline_px": [[float(x), float(y)] for x, y in route_points],
         "maze_bbox_px": [float(left), float(top), float(right), float(bottom)],
         "cell_size_px": float(cell_size),
-        "layout_jitter": dict(params.layout_jitter_meta or {}),
+        "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "text_style": {
+            "font_family": str(params.font_family),
+        },
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedPacmanScene(
         image=image,

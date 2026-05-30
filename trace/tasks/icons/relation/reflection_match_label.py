@@ -28,13 +28,13 @@ from ...shared.prompt_variants import (
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.complexity import build_icons_relation_mirror_symmetry_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.evidence import matching_scene_cell_bbox_evidence
+from ..shared.evidence import keyed_bbox_map_evidence
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scene
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import panel_geometry_to_trace
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
-from ..shared.icon_task_rendering import resolve_icon_render_params, resolve_icon_rgb_param, sample_icon_instance_noise
+from ..shared.icon_task_rendering import resolve_icon_cell_render_params, sample_icon_instance_noise
 from ..shared.public_query_task import rewrite_icons_query_output
 from .mirror_symmetry import (
     _flip_image,
@@ -209,34 +209,11 @@ def _resolve_rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dict[str, Any]:
     """Resolve render params, including grid-cell extras."""
 
-    render_params = resolve_icon_render_params(
+    render_params = resolve_icon_cell_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
         fallback_defaults=_DEFAULTS,
         instance_seed=int(instance_seed),
-    )
-    render_params["cell_padding_px"] = int(
-        params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px))
-    )
-    render_params["cell_border_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_border_rgb",
-        fallback=_DEFAULTS.cell_border_rgb,
-        instance_seed=int(instance_seed),
-    )
-    render_params["cell_label_color_rgb"] = resolve_icon_rgb_param(
-        params=params,
-        render_defaults=_RENDER_DEFAULTS,
-        key="cell_label_color_rgb",
-        fallback=_DEFAULTS.cell_label_color_rgb,
-        instance_seed=int(instance_seed),
-    )
-    render_params["cell_label_font_size_px"] = int(
-        params.get(
-            "cell_label_font_size_px",
-            group_default(_RENDER_DEFAULTS, "cell_label_font_size_px", _DEFAULTS.cell_label_font_size_px),
-        )
     )
     render_params["rotation_candidates_degrees"] = _resolve_rotation_candidates(params)
     render_params["symmetric_icon_count_choices"] = tuple(
@@ -517,9 +494,12 @@ def _sample_scene(
         cell_padding_px=int(render_params["cell_padding_px"]),
         cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
         cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
         cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
         reference_square_cell=True,
         scene_square_cells=True,
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     image = prepared.image
     ref_content = tuple(int(value) for value in prepared.reference_cell.content_bbox_xyxy)
@@ -768,14 +748,19 @@ class IconsRelationReflectionMatchLabelTask:
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
-        evidence_artifacts = matching_scene_cell_bbox_evidence(
-            scene_cells=scene_payload.scene_cells,
-            matching_labels=[str(scene_payload.answer_label)],
+        matching_cell = next(
+            cell for cell in scene_payload.scene_cells if str(cell.get("label")) == str(scene_payload.answer_label)
+        )
+        evidence_artifacts = keyed_bbox_map_evidence(
+            {
+                "reference_cell": scene_payload.reference_cell["cell_bbox_xyxy"],
+                "selected_option": matching_cell["cell_bbox_xyxy"],
+            }
         )
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))
         evidence_gt = TypedValue(
             type=str(evidence_artifacts["evidence_type"]),
-            value=list(evidence_artifacts["evidence_value"]),
+            value=dict(evidence_artifacts["evidence_value"]),
         )
         trace_payload = {
             "scene_ir": {
@@ -822,6 +807,7 @@ class IconsRelationReflectionMatchLabelTask:
                 "anchors": {
                     "reference_cell": dict(scene_payload.reference_cell),
                     "answer_label": str(scene_payload.answer_label),
+                    "selected_option": dict(matching_cell),
                     "scene_cells": [dict(item) for item in scene_payload.scene_cells],
                 },
             },
@@ -842,7 +828,9 @@ class IconsRelationReflectionMatchLabelTask:
                 "query_id": str(scene_payload.query_id),
                 "reflection_axis": str(scene_payload.reflection_axis),
                 "answer_label": str(scene_payload.answer_label),
-                **dict(evidence_artifacts["witness_symbolic"]),
+                "matching_cell_labels": [str(scene_payload.answer_label)],
+                "reference_cell_bbox": list(scene_payload.reference_cell["cell_bbox_xyxy"]),
+                "selected_option_bbox": list(matching_cell["cell_bbox_xyxy"]),
             },
             "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }

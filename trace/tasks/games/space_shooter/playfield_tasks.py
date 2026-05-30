@@ -9,11 +9,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -25,6 +25,7 @@ from ..shared.complexity import build_games_space_shooter_complexity
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin
 from ..shared.layout import resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.space_shooter_common import (
     SUPPORTED_SPACE_SHOOTER_QUERY_IDS,
     SUPPORTED_SPACE_SHOOTER_SCENE_VARIANTS,
@@ -37,7 +38,7 @@ from ..shared.space_shooter_common import (
     validate_space_shooter_sample,
 )
 from ..shared.space_shooter_scene import SpaceShooterRenderParams, render_space_shooter_scene
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_space_shooter_playfield_base"
@@ -98,7 +99,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="space_shooter")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="space_shooter", apply_prob=0.0)
 
 
@@ -239,6 +239,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SpaceShooterRenderParams:
     """Resolve Space-shooter rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.space_shooter.font_family",
+        params=params,
+    )
     return SpaceShooterRenderParams(
         canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
         canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
@@ -257,6 +263,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> SpaceSho
         player_ship_width_px=int(params.get("player_ship_width_px", group_default(_RENDER_DEFAULTS, "player_ship_width_px", _DEFAULTS.player_ship_width_px))),
         player_ship_height_px=int(params.get("player_ship_height_px", group_default(_RENDER_DEFAULTS, "player_ship_height_px", _DEFAULTS.player_ship_height_px))),
         label_font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+        font_family=str(font_family),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
@@ -667,12 +674,33 @@ class GamesSpaceShooterPlayfieldTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.space_shooter.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_space_shooter_scene(
             lane_count=int(sampled_scene.lane_count),
@@ -684,6 +712,7 @@ class GamesSpaceShooterPlayfieldTask:
             style_variant=str(axes.style_variant),
             params=render_params,
             highlight_player_lane=str(axes.query_id) == "projectile_intercept_count",
+            panel_style=panel_style,
         )
         evidence_bboxes = [
             list(rendered_scene.render_map["entity_bboxes_px"][str(entity_id)])
@@ -745,6 +774,10 @@ class GamesSpaceShooterPlayfieldTask:
             value=sampled_scene.answer,
         )
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_space_shooter_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -830,6 +863,8 @@ class GamesSpaceShooterPlayfieldTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

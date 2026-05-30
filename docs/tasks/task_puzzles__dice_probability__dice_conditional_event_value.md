@@ -14,6 +14,7 @@
 4. Conditional denominator support: `4..6` visible dice
 5. Conditional favorable support: `2..3` visible dice
 6. Answer type: `string`
-7. Evidence type: `bbox_set`
-8. Evidence target: the full dice tray box
+7. Evidence type: `keyed_bbox_map`
+8. Evidence key: `dice_tray`
 9. Scene variants: `dice_tray_clean|dice_tray_felt|dice_tray_notebook`
+10. Render metadata records the sampled shared panel style, `dice_visual_style`, tray label font, and the reduced post-image noise policy used to preserve semantic die color and pip readability.

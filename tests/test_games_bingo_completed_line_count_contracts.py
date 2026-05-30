@@ -49,6 +49,14 @@ def test_games_bingo_completed_line_count_emits_expected_contract(
     assert int(execution["target_answer"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
+    assert trace["render_spec"]["canvas_width"] <= 1180
+    assert trace["render_spec"]["canvas_height"] <= 760
+    assert float(trace["render_spec"]["effective_cell_size_px"]) >= 28.0
+    assert trace["render_spec"]["text_style"]["font_family"]
+    assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
+    for x0, y0, x1, y1 in out.evidence_gt.value:
+        assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
+        assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
 
     if str(out.query_id) == "completed_axis_line_count":
         if str(execution["line_axis"]) == "row":
@@ -109,9 +117,8 @@ def test_games_bingo_line_sum_extremum_value_has_unique_extremum_line(
 
 def test_games_bingo_line_sum_extremum_public_wrapper_uses_default_variant() -> None:
     out = create_task("task_games__bingo__line_sum_extremum_value").generate(27024, params={}, max_attempts=100)
-    assert out.query_id == "default"
     assert out.query_id == "line_sum_extremum_value"
-    assert out.trace_payload["query_spec"]["params"]["query_id"] == "default"
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == "line_sum_extremum_value"
 
 
 def test_games_bingo_completed_line_count_is_deterministic() -> None:

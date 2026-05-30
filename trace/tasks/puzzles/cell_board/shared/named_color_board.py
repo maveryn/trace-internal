@@ -16,6 +16,8 @@ from .rectangular_board import (
     RectangularTileSpec,
     build_rectangular_board_background,
     build_rectangular_board_render_spec,
+    rectangular_board_label_font_family,
+    rectangular_board_tile_style,
     render_rectangular_tile_board,
     resolve_rectangular_board_layout,
     sample_rectangular_tile_spec,
@@ -246,6 +248,8 @@ def build_rectangular_named_color_board_scene(
         canvas_height=int(layout.canvas_height_px),
         instance_seed=int(instance_seed),
         namespace="puzzles.cell_board.named_color",
+        params=params,
+        rendering_defaults=rendering_defaults,
     )
     draw = ImageDraw.Draw(base_image)
     bbox_map = render_rectangular_tile_board(
@@ -257,6 +261,8 @@ def build_rectangular_named_color_board_scene(
         },
         scene_style=scene_style,
         panel_chrome_mode=str(panel_chrome_mode),
+        label_font_family=rectangular_board_label_font_family(background_meta),
+        tile_style=rectangular_board_tile_style(background_meta),
     )
     image, post_noise_meta = apply_post_image_noise(
         base_image,

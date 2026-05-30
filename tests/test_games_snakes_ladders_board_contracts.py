@@ -47,16 +47,20 @@ def test_games_snakes_ladders_move_outcome_matches_trace() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(move.final_square) == 31
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert out.query_id == "move_outcome_value"
     assert out.scene_id == "snakes_ladders"
-    assert execution["query_id"] == "default"
+    assert execution["query_id"] == "move_outcome_value"
     assert execution["board_side"] in {5, 6, 7}
-    assert trace_value(out, "query_spec", "params", "query_id") == "default"
     assert trace_value(out, "query_spec", "params", "query_id") == "move_outcome_value"
-    assert trace_value(out, "projected_evidence", "bbox_set") == out.evidence_gt.value
-    assert "die" in execution["evidence_entity_ids"]
+    assert trace_value(out, "projected_evidence", "type") == "keyed_bbox_map"
+    assert trace_value(out, "projected_evidence", "keyed_bbox_map") == out.evidence_gt.value
+    assert set(out.evidence_gt.value) == {"start_square", "end_square"}
+    assert execution["evidence_entity_ids"] == [
+        square_to_cell_id(int(execution["start_square"])),
+        square_to_cell_id(int(move.final_square)),
+    ]
+    assert execution["evidence_role_entity_ids"]["end_square"] == square_to_cell_id(int(move.final_square))
 
 def test_games_snakes_ladders_best_roll_returns_best_final_square() -> None:
     out = GamesSnakesLaddersBestRollValueTask().generate(
@@ -74,7 +78,6 @@ def test_games_snakes_ladders_best_roll_returns_best_final_square() -> None:
 
     assert int(out.answer_gt.value) == int(answer) == 49
     assert out.query_id == "best_roll_value"
-    assert out.query_id == "default"
     assert execution["board_side"] == 7
     assert len(execution["optimal_route"]) == 2
     assert execution["best_final_square"] == 49

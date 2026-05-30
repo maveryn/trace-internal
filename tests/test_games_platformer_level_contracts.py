@@ -23,13 +23,13 @@ from tests.helpers import read_jsonl
             GamesPlatformerJumpLandingLabelTask,
             {"target_platform_label": "F", "platform_count": 7, "style_variant": "snow"},
             "jump_landing_label",
-            "string",
+            ("string", "bbox_set"),
         ),
         (
             GamesPlatformerCollectibleCountTask,
             {"target_collectible_count": 6, "style_variant": "cave"},
             "collectible_count",
-            "integer",
+            ("integer", "point_set"),
         ),
     ),
 )
@@ -37,24 +37,21 @@ def test_games_platformer_public_tasks_emit_expected_contract(
     task_cls: type[GamesPlatformerLevelTask],
     params: dict[str, int | str],
     expected_query: str,
-    expected_type: str,
+    expected_type: tuple[str, str],
 ) -> None:
     out = task_cls().generate(97200, params=params, max_attempts=512)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.answer_gt.type == expected_type
-    assert out.evidence_gt.type == "bbox_set"
-    assert out.query_id == "default"
+    expected_answer_type, expected_evidence_type = expected_type
+    assert out.answer_gt.type == expected_answer_type
+    assert out.evidence_gt.type == expected_evidence_type
     assert out.query_id == expected_query
     assert out.scene_id == "platformer"
     assert trace["query_spec"]["query_id"] == expected_query
-    assert trace["query_spec"]["query_id"] == "default"
     assert trace["query_spec"]["params"]["query_id"] == expected_query
-    assert trace["query_spec"]["params"]["query_id"] == "default"
     assert execution["query_id"] == expected_query
-    assert execution["query_id"] == "default"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"][expected_evidence_type] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == len(out.evidence_gt.value)
 
 
@@ -84,6 +81,7 @@ def test_games_platformer_collectible_count_matches_on_path_coins() -> None:
 
     assert int(out.answer_gt.value) == len(on_path_ids) == 7
     assert list(execution["evidence_entity_ids"]) == on_path_ids
+    assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == 7
 
 

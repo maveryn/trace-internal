@@ -62,25 +62,25 @@
   },
   "query_templates": {
     "legal_move_count": [
-      "{backgammon_rule_text} How many distinct destination points can black legally move to?",
-      "{backgammon_rule_text} Count the distinct numbered points that black can legally reach with one die.",
-      "Using the shown dice, count the distinct legal destination points for black. {backgammon_rule_text}",
-      "{backgammon_rule_text} What is the number of distinct black legal move destinations?",
-      "For black's single-die moves, how many distinct destination points are legal? {backgammon_rule_text}"
+      "{backgammon_rule_text} How many distinct destination points can the active player legally move to?",
+      "{backgammon_rule_text} Count the distinct numbered points that the active player can legally reach with one die.",
+      "Using the shown dice, count the distinct legal destination points for the active player. {backgammon_rule_text}",
+      "{backgammon_rule_text} What is the number of distinct legal move destinations for the active player?",
+      "For the active player's single-die moves, how many distinct destination points are legal? {backgammon_rule_text}"
     ],
     "hit_move_count": [
-      "{backgammon_rule_text} How many distinct destination points would let black hit exactly one white checker?",
-      "Using the shown dice, count black destinations that contain exactly one white checker. {backgammon_rule_text}",
-      "{backgammon_rule_text} How many distinct single-die destinations are hit moves for black?",
-      "{backgammon_rule_text} Count the destination points where black would land on a lone white checker.",
-      "For black's single-die moves, how many distinct destinations would hit a white blot? {backgammon_rule_text}"
+      "{backgammon_rule_text} How many distinct destination points would let the active player hit exactly one opposing checker?",
+      "Using the shown dice, count active-player destinations that contain exactly one opposing checker. {backgammon_rule_text}",
+      "{backgammon_rule_text} How many distinct single-die destinations are hit moves for the active player?",
+      "{backgammon_rule_text} Count the destination points where the active player would land on a lone opposing checker.",
+      "For the active player's single-die moves, how many distinct destinations would hit an opposing blot? {backgammon_rule_text}"
     ],
     "blocked_destination_count": [
-      "{backgammon_rule_text} Considering black's possible single-die destinations, how many distinct destination points are blocked?",
-      "Using the shown dice, count black destination points blocked by two or more white checkers. {backgammon_rule_text}",
-      "{backgammon_rule_text} How many distinct possible black destinations cannot be used because they are blocked?",
-      "{backgammon_rule_text} Count the blocked destination points among black's single-die destination candidates.",
-      "For black's single-die moves, how many distinct destination points have two or more white checkers? {backgammon_rule_text}"
+      "{backgammon_rule_text} Considering the active player's possible single-die destinations, how many distinct destination points are blocked?",
+      "Using the shown dice, count active-player destination points blocked by two or more opposing checkers. {backgammon_rule_text}",
+      "{backgammon_rule_text} How many distinct possible active-player destinations cannot be used because they are blocked?",
+      "{backgammon_rule_text} Count the blocked destination points among the active player's single-die destination candidates.",
+      "For the active player's single-die moves, how many distinct destination points have two or more opposing checkers? {backgammon_rule_text}"
     ]
   },
   "allow_empty_task_templates": true

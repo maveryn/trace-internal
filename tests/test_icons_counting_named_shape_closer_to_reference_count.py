@@ -51,7 +51,6 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
 
         assert out.scene_id == "named_field"
         assert out.query_id == query_id
-        assert out.query_id == "default"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 3
         assert out.evidence_gt.type == "bbox_set"
@@ -65,6 +64,11 @@ def test_icons_counting_named_shape_closer_to_reference_contract_all_queries() -
         assert set(trace["render_map"]["counted_instance_ids"]) == {str(entity["instance_id"]) for entity in counted}
         assert sorted(out.evidence_gt.value) == sorted(entity["bbox_xyxy"] for entity in counted)
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["type"] == "bbox_set"
+        assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+        assert trace["render_spec"]["style"]["text_legibility"]["required_role_count"] >= 2
+        assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
+        assert "reference_label_stroke_rgb" in trace["render_spec"]["style"]
         assert "reference A" in out.prompt
         assert "reference B" in out.prompt
         assert "star icons" in out.prompt

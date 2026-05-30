@@ -1,4 +1,4 @@
-"""Contract tests for split icon reference-match counting."""
+"""Contract tests for icon reference-predicate counting."""
 
 from __future__ import annotations
 
@@ -9,17 +9,17 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.counting.reference_match_count import IconsReferenceCanvasAttributeMatchCountTask
+from trace.tasks.icons.counting.reference_match_count import IconsReferenceCanvasReferencePredicateCountTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
     ("task_cls", "query_id"),
     (
-        (IconsReferenceCanvasAttributeMatchCountTask, "match_type"),
-        (IconsReferenceCanvasAttributeMatchCountTask, "match_color"),
-        (IconsReferenceCanvasAttributeMatchCountTask, "match_rotation"),
-        (IconsReferenceCanvasAttributeMatchCountTask, "match_type_color_rotation"),
+        (IconsReferenceCanvasReferencePredicateCountTask, "match_type"),
+        (IconsReferenceCanvasReferencePredicateCountTask, "match_color"),
+        (IconsReferenceCanvasReferencePredicateCountTask, "match_rotation"),
+        (IconsReferenceCanvasReferencePredicateCountTask, "match_type_color_rotation"),
     ),
 )
 def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_id: str) -> None:
@@ -32,14 +32,13 @@ def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_i
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.query_id == "default"
     assert out_a.query_id == query_id
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
 
 
 @pytest.mark.parametrize(
     "task_id",
-    ("task_icons__reference_canvas__attribute_match_count",),
+    ("task_icons__reference_canvas__reference_predicate_count",),
 )
 def test_icons_counting_attribute_match_count_build_smoke(tmp_path: Path, task_id: str) -> None:
     output_root = tmp_path / task_id

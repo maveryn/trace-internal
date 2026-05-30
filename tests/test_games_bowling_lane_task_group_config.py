@@ -28,6 +28,7 @@ def test_games_bowling_lane_defaults_present() -> None:
     assert set(generation["scene_variant_weights"].keys()) == set(SUPPORTED_BOWLING_SCENE_VARIANTS)
     assert set(generation["query_id_weights"].keys()) == set(SUPPORTED_BOWLING_QUERY_IDS)
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_BOWLING_STYLE_VARIANTS)
+    assert len(SUPPORTED_BOWLING_STYLE_VARIANTS) >= 5
     assert list(generation["visible_pin_count_support"]) == [4, 5, 6, 7, 8, 9]
     assert list(generation["path_option_count_support"]) == [4, 5, 6]
     assert list(generation["target_pin_index_support"]) == list(range(10))
@@ -37,4 +38,6 @@ def test_games_bowling_lane_defaults_present() -> None:
     assert int(rendering["pin_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_bowling_v0"
     assert "dashed arrow" in str(prompt["bowling_motion_rule_text"]).lower()
+    assert "extend each numbered dashed path" in str(prompt["spare_path_rule_text"]).lower()
     assert "bounding box" in str(prompt["evidence_hint_first_pin_hit_label"])
+    assert "point-pair" in str(prompt["evidence_hint_spare_path_label"])

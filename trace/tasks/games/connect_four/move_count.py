@@ -9,11 +9,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -44,8 +44,9 @@ from ..shared.connect_four_scene import ConnectFourRenderParams, render_connect_
 from ..shared.fixed_query_task import QuerySubsetTaskMixin
 from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.style import SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_connect_four_move_count_base"
@@ -105,6 +106,11 @@ class _TaskDefaults:
     disc_inset_fraction: float = 0.14
     player_badge_font_size_px: int = 22
     marked_square_outline_width_px: int = 6
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 520
+    canvas_side_padding_px: int = 132
+    canvas_vertical_padding_px: int = 92
 
 
 @dataclass(frozen=True)
@@ -154,7 +160,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="connect_four")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="connect_four", apply_prob=0.0)
 
 
@@ -602,6 +607,12 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ConnectFourRenderParams:
     """Resolve Connect Four rendering parameters from config/defaults."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.connect_four.text_font",
+        params=params,
+    )
     unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
         params,
         _RENDER_DEFAULTS,
@@ -617,35 +628,91 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ConnectF
         ),
         unit_scale_meta,
     )
-    return ConnectFourRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(
-            params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))
+    max_board_width_px = scale_games_px(
+        params.get(
+            "max_board_width_px",
+            group_default(_RENDER_DEFAULTS, "max_board_width_px", _DEFAULTS.max_board_width_px),
         ),
+        unit_scale,
+        min_px=390,
+    )
+    player_badge_height_px = int(
+        params.get(
+            "player_badge_height_px",
+            group_default(_RENDER_DEFAULTS, "player_badge_height_px", _DEFAULTS.player_badge_height_px),
+        )
+    )
+    player_badge_width_px = int(
+        params.get(
+            "player_badge_width_px",
+            group_default(_RENDER_DEFAULTS, "player_badge_width_px", _DEFAULTS.player_badge_width_px),
+        )
+    )
+    header_gap_px = int(params.get("header_gap_px", group_default(_RENDER_DEFAULTS, "header_gap_px", _DEFAULTS.header_gap_px)))
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    canvas_width = int(base_canvas_width)
+    canvas_height = int(base_canvas_height)
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(max_board_width_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(max_board_width_px)
+                        + float(player_badge_height_px)
+                        + float(header_gap_px)
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px),
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+        )
+    return ConnectFourRenderParams(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         panel_margin_px=int(
             params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", _DEFAULTS.panel_margin_px))
         ),
-        player_badge_height_px=int(
-            params.get(
-                "player_badge_height_px",
-                group_default(_RENDER_DEFAULTS, "player_badge_height_px", _DEFAULTS.player_badge_height_px),
-            )
-        ),
-        player_badge_width_px=int(
-            params.get(
-                "player_badge_width_px",
-                group_default(_RENDER_DEFAULTS, "player_badge_width_px", _DEFAULTS.player_badge_width_px),
-            )
-        ),
-        header_gap_px=int(params.get("header_gap_px", group_default(_RENDER_DEFAULTS, "header_gap_px", _DEFAULTS.header_gap_px))),
-        max_board_width_px=scale_games_px(
-            params.get(
-                "max_board_width_px",
-                group_default(_RENDER_DEFAULTS, "max_board_width_px", _DEFAULTS.max_board_width_px),
-            ),
-            unit_scale,
-            min_px=390,
-        ),
+        player_badge_height_px=int(player_badge_height_px),
+        player_badge_width_px=int(player_badge_width_px),
+        header_gap_px=int(header_gap_px),
+        max_board_width_px=int(max_board_width_px),
         board_corner_radius_px=scale_games_px(
             params.get(
                 "board_corner_radius_px",
@@ -683,6 +750,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> ConnectF
             min_px=3,
         ),
         layout_jitter_meta=layout_jitter,
+        font_family=str(font_family),
     )
 
 
@@ -1092,12 +1160,33 @@ class GamesConnectFourMoveCountTask:
         if sampled_scene is None:
             raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts")
 
-        background, background_meta = make_background_canvas(
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.connect_four_board.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
+        background, background_meta = make_panel_scene_background(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
-            instance_seed=int(instance_seed),
-            params=params,
-            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            style=panel_style,
         )
         rendered_scene = render_connect_four_board_scene(
             board=sampled_scene.board,
@@ -1107,6 +1196,7 @@ class GamesConnectFourMoveCountTask:
             current_player=int(sampled_scene.current_player),
             params=render_params,
             marked_square=None,
+            panel_style=panel_style,
         )
         evidence_bboxes = [
             list(rendered_scene.render_map["cell_bboxes_px"][str(entity_id)])
@@ -1174,6 +1264,10 @@ class GamesConnectFourMoveCountTask:
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.evaluation.answer))
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_connect_four_move_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -1235,6 +1329,9 @@ class GamesConnectFourMoveCountTask:
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
+                "effective_cell_size_px": rendered_scene.render_map.get("effective_cell_size_px"),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {

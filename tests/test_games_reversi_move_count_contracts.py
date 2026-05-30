@@ -16,7 +16,7 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_evidence_count"),
+    ("params", "expected_answer", "expected_evidence_count", "expected_evidence_type"),
     (
         (
             {
@@ -26,6 +26,7 @@ from tests.helpers import read_jsonl
             },
             4,
             4,
+            "bbox_set",
         ),
         (
             {
@@ -35,6 +36,7 @@ from tests.helpers import read_jsonl
             },
             0,
             0,
+            "bbox_set",
         ),
         (
             {
@@ -44,6 +46,7 @@ from tests.helpers import read_jsonl
             },
             5,
             5,
+            "point_set",
         ),
     ),
 )
@@ -51,6 +54,7 @@ def test_games_reversi_move_count_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
     expected_evidence_count: int,
+    expected_evidence_type: str,
 ) -> None:
     out = GamesReversiMoveCountTask().generate(28001, params=params, max_attempts=32)
     trace = out.trace_payload
@@ -58,11 +62,11 @@ def test_games_reversi_move_count_emits_expected_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == str(expected_evidence_type)
     assert len(out.evidence_gt.value) == int(expected_evidence_count)
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"][str(expected_evidence_type)] == out.evidence_gt.value
     assert len(execution["evidence_entity_ids"]) == int(expected_evidence_count)
     assert all(str(entity_id).startswith("cell_r") for entity_id in execution["evidence_entity_ids"])
 
@@ -103,6 +107,8 @@ def test_games_reversi_move_count_flip_query_marks_move_and_keeps_evidence_on_fl
     assert trace["render_map"]["marked_square_bbox_px"] is not None
     assert execution["marked_move_cell_id"] not in set(execution["evidence_entity_ids"])
     assert len(execution["marked_move_flip_coords"]) == 4
+    assert out.evidence_gt.type == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
 
 
 def test_games_reversi_move_count_query_cycle_covers_answer_scene_and_style_support() -> None:

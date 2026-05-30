@@ -15,6 +15,13 @@
       "{question_text}",
       "{question_text}",
       "{question_text}"
+    ],
+    "run_length_query": [
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}",
+      "{question_text}"
     ]
   },
   "required_slots_by_key": {
@@ -24,10 +31,16 @@
     "scene:sequence_rotation_violation": [
       "object_description"
     ],
+    "scene:named_strip_run_length": [
+      "object_description"
+    ],
     "task:missing_count_query": [
       "question_text"
     ],
     "task:rotation_violation_query": [
+      "question_text"
+    ],
+    "task:run_length_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [
@@ -67,6 +80,13 @@
       "The picture shows {object_description}."
     ],
     "sequence_rotation_violation": [
+      "The image shows {object_description}.",
+      "The figure shows {object_description}.",
+      "This image shows {object_description}.",
+      "The scene shows {object_description}.",
+      "The picture shows {object_description}."
+    ],
+    "named_strip_run_length": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

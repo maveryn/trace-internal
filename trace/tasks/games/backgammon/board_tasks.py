@@ -13,6 +13,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -28,8 +29,10 @@ from ..shared.backgammon_common import (
     POINT_IDS,
     BackgammonPoint,
     BackgammonSample,
-    compute_black_single_die_destinations,
+    compute_single_die_destinations,
+    destination_for_player,
     empty_points,
+    opponent_for_player,
     point_entity_id,
     stack_at,
     target_destinations_for_query,
@@ -38,7 +41,7 @@ from ..shared.backgammon_common import (
 from ..shared.backgammon_scene import BackgammonRenderParams, render_backgammon_scene
 from ..shared.complexity import build_games_backgammon_board_complexity
 from ..shared.fixed_query_task import QuerySubsetTaskMixin
-from ..shared.layout import resolve_games_layout_jitter
+from ..shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
 from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
 from ..shared.visual_defaults import load_games_noise_defaults
@@ -46,6 +49,7 @@ from ..shared.visual_defaults import load_games_noise_defaults
 
 TASK_ID = "games_backgammon_board_base"
 _BACKGAMMON_SCENE_VARIANTS: Tuple[str, ...] = ("standard_board",)
+_ACTIVE_PLAYERS: Tuple[str, ...] = (PLAYER_BLACK, PLAYER_WHITE)
 
 
 @dataclass(frozen=True)
@@ -61,10 +65,15 @@ class _TaskDefaults:
     board_height_px: int = 560
     board_margin_px: int = 50
     board_border_width_px: int = 5
-    point_label_font_size_px: int = 18
-    header_font_size_px: int = 20
+    point_label_font_size_px: int = 20
+    header_font_size_px: int = 24
     checker_radius_px: int = 21
     die_size_px: int = 44
+    dynamic_canvas_size_enabled: bool = True
+    canvas_min_width_px: int = 560
+    canvas_min_height_px: int = 420
+    canvas_side_padding_px: int = 90
+    canvas_vertical_padding_px: int = 80
 
 
 @dataclass(frozen=True)
@@ -74,11 +83,13 @@ class _ResolvedAxes:
     query_id: str
     scene_variant: str
     style_variant: str
+    active_player: str
     target_answer: int
     target_answer_support: Tuple[int, ...]
     query_id_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
+    active_player_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
 
 
@@ -198,6 +209,15 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         balance_flag_key="balanced_style_variant_sampling",
         supported=BACKGAMMON_STYLE_VARIANTS,
     )
+    active_player, active_player_probabilities = _resolve_named_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace="active_player",
+        explicit_key="active_player",
+        weights_key="active_player_weights",
+        balance_flag_key="balanced_active_player_sampling",
+        supported=_ACTIVE_PLAYERS,
+    )
     support_key, fallback_support = _support_key_for_query(str(query_id))
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -220,11 +240,13 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         query_id=str(query_id),
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),
+        active_player=str(active_player),
         target_answer=int(target_answer),
         target_answer_support=tuple(int(value) for value in target_answer_support),
         query_id_probabilities=dict(query_id_probabilities),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
+        active_player_probabilities=dict(active_player_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
 
@@ -232,23 +254,86 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
 def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> BackgammonRenderParams:
     """Resolve renderer parameters."""
 
-    return BackgammonRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height))),
-        board_width_px=int(params.get("board_width_px", group_default(_RENDER_DEFAULTS, "board_width_px", _DEFAULTS.board_width_px))),
-        board_height_px=int(params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", _DEFAULTS.board_height_px))),
-        board_margin_px=int(params.get("board_margin_px", group_default(_RENDER_DEFAULTS, "board_margin_px", _DEFAULTS.board_margin_px))),
-        board_border_width_px=int(params.get("board_border_width_px", group_default(_RENDER_DEFAULTS, "board_border_width_px", _DEFAULTS.board_border_width_px))),
-        point_label_font_size_px=int(params.get("point_label_font_size_px", group_default(_RENDER_DEFAULTS, "point_label_font_size_px", _DEFAULTS.point_label_font_size_px))),
-        header_font_size_px=int(params.get("header_font_size_px", group_default(_RENDER_DEFAULTS, "header_font_size_px", _DEFAULTS.header_font_size_px))),
-        checker_radius_px=int(params.get("checker_radius_px", group_default(_RENDER_DEFAULTS, "checker_radius_px", _DEFAULTS.checker_radius_px))),
-        die_size_px=int(params.get("die_size_px", group_default(_RENDER_DEFAULTS, "die_size_px", _DEFAULTS.die_size_px))),
-        layout_jitter_meta=resolve_games_layout_jitter(
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.backgammon.text_font",
+        params=params,
+    )
+    unit_scale, unit_scale_meta = resolve_games_unit_size_scale(
+        params,
+        _RENDER_DEFAULTS,
+        instance_seed=int(instance_seed),
+        namespace="games.backgammon.unit_size",
+    )
+    layout_jitter = attach_games_unit_size_jitter(
+        resolve_games_layout_jitter(
             params,
             _RENDER_DEFAULTS,
             instance_seed=int(instance_seed),
             namespace="games.backgammon.layout",
         ),
+        unit_scale_meta,
+    )
+    board_width_px = scale_games_px(
+        params.get("board_width_px", group_default(_RENDER_DEFAULTS, "board_width_px", _DEFAULTS.board_width_px)),
+        unit_scale,
+        min_px=450,
+    )
+    board_height_px = scale_games_px(
+        params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", _DEFAULTS.board_height_px)),
+        unit_scale,
+        min_px=280,
+    )
+    dynamic_canvas_enabled = bool(
+        params.get(
+            "dynamic_canvas_size_enabled",
+            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", _DEFAULTS.dynamic_canvas_size_enabled),
+        )
+    )
+    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", _DEFAULTS.canvas_width)))
+    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", _DEFAULTS.canvas_height)))
+    canvas_width = base_canvas_width
+    canvas_height = base_canvas_height
+    if dynamic_canvas_enabled and params.get("canvas_width") is None:
+        canvas_width = min(
+            int(base_canvas_width),
+            max(
+                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", _DEFAULTS.canvas_min_width_px))),
+                int(
+                    round(
+                        float(board_width_px)
+                        + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", _DEFAULTS.canvas_side_padding_px))))
+                    )
+                ),
+            ),
+        )
+    if dynamic_canvas_enabled and params.get("canvas_height") is None:
+        canvas_height = min(
+            int(base_canvas_height),
+            max(
+                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", _DEFAULTS.canvas_min_height_px))),
+                int(
+                    round(
+                        float(board_height_px)
+                        + (2.0 * float(params.get("canvas_vertical_padding_px", group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", _DEFAULTS.canvas_vertical_padding_px))))
+                    )
+                ),
+            ),
+        )
+    return BackgammonRenderParams(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        board_width_px=int(board_width_px),
+        board_height_px=int(board_height_px),
+        board_margin_px=scale_games_px(params.get("board_margin_px", group_default(_RENDER_DEFAULTS, "board_margin_px", _DEFAULTS.board_margin_px)), unit_scale, min_px=24),
+        board_border_width_px=scale_games_px(params.get("board_border_width_px", group_default(_RENDER_DEFAULTS, "board_border_width_px", _DEFAULTS.board_border_width_px)), unit_scale, min_px=2),
+        point_label_font_size_px=scale_games_px(params.get("point_label_font_size_px", group_default(_RENDER_DEFAULTS, "point_label_font_size_px", _DEFAULTS.point_label_font_size_px)), unit_scale, min_px=12),
+        header_font_size_px=scale_games_px(params.get("header_font_size_px", group_default(_RENDER_DEFAULTS, "header_font_size_px", _DEFAULTS.header_font_size_px)), unit_scale, min_px=14),
+        checker_radius_px=scale_games_px(params.get("checker_radius_px", group_default(_RENDER_DEFAULTS, "checker_radius_px", _DEFAULTS.checker_radius_px)), unit_scale, min_px=11),
+        die_size_px=scale_games_px(params.get("die_size_px", group_default(_RENDER_DEFAULTS, "die_size_px", _DEFAULTS.die_size_px)), unit_scale, min_px=24),
+        font_family=str(font_family),
+        layout_jitter_meta=layout_jitter,
     )
 
 
@@ -260,19 +345,28 @@ def _choose_dice(rng: Any) -> Tuple[int, int]:
     return int(values[0]), int(values[1])
 
 
-def _choose_source_points(rng: Any, *, dice: Tuple[int, int], source_count: int) -> Tuple[int, ...]:
-    """Choose black source points whose single-die destinations are not other sources."""
+def _choose_source_points(
+    rng: Any,
+    *,
+    dice: Tuple[int, int],
+    source_count: int,
+    active_player: str,
+) -> Tuple[int, ...]:
+    """Choose source points whose single-die destinations are not other sources."""
 
-    candidates = [point for point in POINT_IDS if int(point) > max(int(value) for value in dice)]
+    if str(active_player) == PLAYER_BLACK:
+        candidates = [point for point in POINT_IDS if int(point) > max(int(value) for value in dice)]
+    else:
+        candidates = [point for point in POINT_IDS if int(point) <= 24 - max(int(value) for value in dice)]
     rng.shuffle(candidates)
     selected: list[int] = []
     for candidate in candidates:
         blocked_by_source_conflict = False
         for existing in selected:
             for die in dice:
-                if int(candidate) - int(die) == int(existing):
+                if destination_for_player(int(candidate), int(die), active_player=str(active_player)) == int(existing):
                     blocked_by_source_conflict = True
-                if int(existing) - int(die) == int(candidate):
+                if destination_for_player(int(existing), int(die), active_player=str(active_player)) == int(candidate):
                     blocked_by_source_conflict = True
         if blocked_by_source_conflict:
             continue
@@ -282,37 +376,43 @@ def _choose_source_points(rng: Any, *, dice: Tuple[int, int], source_count: int)
     raise ValueError("could not choose enough Backgammon black source points")
 
 
-def _candidate_destinations(*, sources: Sequence[int], dice: Tuple[int, int]) -> Tuple[int, ...]:
-    """Return distinct single-die destination points for black sources."""
+def _candidate_destinations(
+    *,
+    sources: Sequence[int],
+    dice: Tuple[int, int],
+    active_player: str,
+) -> Tuple[int, ...]:
+    """Return distinct single-die destination points for active-player sources."""
 
     destinations = {
-        int(source) - int(die)
+        destination_for_player(int(source), int(die), active_player=str(active_player))
         for source in sources
         for die in dice
-        if int(source) - int(die) in POINT_IDS
+        if destination_for_player(int(source), int(die), active_player=str(active_player)) in POINT_IDS
     }
     return tuple(sorted(destinations))
 
 
-def _target_state_for_query(rng: Any, *, query_id: str, is_target: bool) -> BackgammonPoint:
+def _target_state_for_query(rng: Any, *, query_id: str, is_target: bool, active_player: str) -> BackgammonPoint:
     """Return the stack state to place on a candidate destination."""
 
     query = str(query_id)
+    opponent = opponent_for_player(str(active_player))
     if query == "legal_move_count":
         if bool(is_target):
             return BackgammonPoint(owner=None, count=0)
-        return BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(2, 4)))
+        return BackgammonPoint(owner=opponent, count=int(rng.randint(2, 4)))
     if query == "hit_move_count":
         if bool(is_target):
-            return BackgammonPoint(owner=PLAYER_WHITE, count=1)
+            return BackgammonPoint(owner=opponent, count=1)
         if float(rng.random()) < 0.48:
-            return BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(2, 4)))
+            return BackgammonPoint(owner=opponent, count=int(rng.randint(2, 4)))
         return BackgammonPoint(owner=None, count=0)
     if query == "blocked_destination_count":
         if bool(is_target):
-            return BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(2, 4)))
+            return BackgammonPoint(owner=opponent, count=int(rng.randint(2, 4)))
         if float(rng.random()) < 0.38:
-            return BackgammonPoint(owner=PLAYER_WHITE, count=1)
+            return BackgammonPoint(owner=opponent, count=1)
         return BackgammonPoint(owner=None, count=0)
     raise ValueError(f"unsupported Backgammon query_id: {query}")
 
@@ -321,6 +421,8 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
     """Construct one exact-answer Backgammon position."""
 
     query = str(axes.query_id)
+    active_player = str(axes.active_player)
+    opponent = opponent_for_player(active_player)
     target_answer = int(axes.target_answer)
     for _inner_attempt in range(1500):
         dice = _choose_dice(rng)
@@ -328,10 +430,15 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
         max_sources = min(8, max(min_sources, int(target_answer) + 2))
         source_count = int(rng.randint(int(min_sources), int(max_sources)))
         try:
-            sources = _choose_source_points(rng, dice=dice, source_count=source_count)
+            sources = _choose_source_points(
+                rng,
+                dice=dice,
+                source_count=source_count,
+                active_player=active_player,
+            )
         except ValueError:
             continue
-        candidates = _candidate_destinations(sources=sources, dice=dice)
+        candidates = _candidate_destinations(sources=sources, dice=dice, active_player=active_player)
         if len(candidates) < int(target_answer):
             continue
         target_destinations = tuple(sorted(rng.sample(list(candidates), int(target_answer))))
@@ -339,12 +446,13 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
 
         points = empty_points()
         for source in sources:
-            points[int(source)] = BackgammonPoint(owner=PLAYER_BLACK, count=int(rng.randint(1, 4)))
+            points[int(source)] = BackgammonPoint(owner=active_player, count=int(rng.randint(1, 4)))
         for destination in candidates:
             points[int(destination)] = _target_state_for_query(
                 rng,
                 query_id=query,
                 is_target=int(destination) in target_set,
+                active_player=active_player,
             )
 
         protected_points = set(int(point) for point in sources) | set(int(point) for point in candidates)
@@ -352,15 +460,16 @@ def _sample_scene(rng: Any, *, axes: _ResolvedAxes) -> BackgammonSample:
             if int(point) in protected_points:
                 continue
             if float(rng.random()) < 0.20:
-                points[int(point)] = BackgammonPoint(owner=PLAYER_WHITE, count=int(rng.randint(1, 4)))
+                points[int(point)] = BackgammonPoint(owner=opponent, count=int(rng.randint(1, 4)))
 
-        outcome = compute_black_single_die_destinations(points, dice=dice)
+        outcome = compute_single_die_destinations(points, dice=dice, active_player=active_player)
         expected_targets = target_destinations_for_query(outcome, query_id=query)
         if tuple(expected_targets) != tuple(target_destinations):
             continue
         sample = BackgammonSample(
             points=dict(points),
             dice=(int(dice[0]), int(dice[1])),
+            active_player=active_player,
             query_id=query,
             answer=int(target_answer),
             target_destinations=tuple(int(point) for point in target_destinations),
@@ -401,6 +510,10 @@ class GamesBackgammonBoardTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
 
         sampled_scene: BackgammonSample | None = None
         for attempt_index in range(max(1, int(max_attempts))):
@@ -446,6 +559,7 @@ class GamesBackgammonBoardTask:
             dice=sampled_scene.dice,
             background=background,
             style_variant=str(axes.style_variant),
+            active_player=str(sampled_scene.active_player),
             params=render_params,
             panel_style=panel_style,
         )
@@ -505,10 +619,10 @@ class GamesBackgammonBoardTask:
 
         answer_gt = TypedValue(type="integer", value=int(sampled_scene.answer))
         evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
-        black_source_count = sum(
+        active_source_count = sum(
             1
             for point in POINT_IDS
-            if str(stack_at(sampled_scene.points, int(point)).owner) == PLAYER_BLACK
+            if str(stack_at(sampled_scene.points, int(point)).owner) == str(sampled_scene.active_player)
         )
         occupied_count = sum(
             1
@@ -521,7 +635,7 @@ class GamesBackgammonBoardTask:
             scene_variant=str(axes.scene_variant),
             query_id=str(axes.query_id),
             occupied_point_count=int(occupied_count),
-            black_source_count=int(black_source_count),
+            black_source_count=int(active_source_count),
             target_answer=int(sampled_scene.answer),
             evidence_count=len(evidence_entity_ids),
         )
@@ -542,6 +656,7 @@ class GamesBackgammonBoardTask:
                     "scene_variant": str(axes.scene_variant),
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
+                    "active_player": str(sampled_scene.active_player),
                     "dice": [int(value) for value in sampled_scene.dice],
                     "target_destinations": [int(point) for point in sampled_scene.target_destinations],
                     "evidence_entity_ids": [str(entity_id) for entity_id in evidence_entity_ids],
@@ -557,28 +672,34 @@ class GamesBackgammonBoardTask:
                     "scene_variant": str(axes.scene_variant),
                     "query_id": str(axes.query_id),
                     "style_variant": str(axes.style_variant),
+                    "active_player": str(sampled_scene.active_player),
                     "dice": [int(value) for value in sampled_scene.dice],
                     "target_answer": int(sampled_scene.answer),
                     "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
                     "query_id_probabilities": dict(axes.query_id_probabilities),
                     "style_variant_probabilities": dict(axes.style_variant_probabilities),
+                    "active_player_probabilities": dict(axes.active_player_probabilities),
                     "target_answer_probabilities": dict(axes.target_answer_probabilities),
                 },
             },
             "render_spec": {
                 "scene_variant": str(axes.scene_variant),
                 "style_variant": str(axes.style_variant),
+                "active_player": str(sampled_scene.active_player),
                 "canvas_width": int(image.size[0]),
                 "canvas_height": int(image.size[1]),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
                 "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
+                "effective_point_width_px": rendered_scene.render_map.get("effective_point_width_px"),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": {
                 "scene_variant": str(axes.scene_variant),
                 "query_id": str(axes.query_id),
                 "style_variant": str(axes.style_variant),
+                "active_player": str(sampled_scene.active_player),
                 "points": point_trace,
                 "dice": [int(value) for value in sampled_scene.dice],
                 "outcome": {

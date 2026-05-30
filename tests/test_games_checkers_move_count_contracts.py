@@ -128,8 +128,9 @@ def test_games_checkers_max_capture_chain_evidence_tracks_captured_pieces() -> N
     chain = execution["max_capture_chain_specs"][0]
     captured_coords = {tuple(coord) for coord in chain["captured"]}
 
-    assert out.query_id == "default"
     assert out.query_id == "max_capture_chain_length"
+    assert out.trace_payload["query_spec"]["query_id"] == "max_capture_chain_length"
+    assert out.trace_payload["query_spec"]["params"]["query_id"] == "max_capture_chain_length"
     assert int(out.answer_gt.value) == 5
     assert evidence_coords == captured_coords
     assert len(evidence_coords) == 5

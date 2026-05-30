@@ -8,6 +8,7 @@ generation:
       single_favorable_count_max: 14
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
+      balanced_dice_visual_style_sampling: true
       query_id_weights:
         single_parity_probability: 1.0
         single_threshold_probability: 1.0
@@ -18,6 +19,12 @@ generation:
         dice_tray_clean: 1.0
         dice_tray_felt: 1.0
         dice_tray_notebook: 1.0
+      dice_visual_style_weights:
+        classic_rounded: 1.0
+        flat_print: 1.0
+        beveled_tokens: 1.0
+        inked_pips: 1.0
+        soft_shadow: 1.0
     task_puzzles__dice_probability__dice_pair_event_value:
       pair_dice_count_min: 3
       pair_dice_count_max: 5
@@ -26,6 +33,7 @@ generation:
       pair_favorable_count_max: 32
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
+      balanced_dice_visual_style_sampling: true
       query_id_weights:
         pair_sum_probability: 1.0
         pair_sum_threshold_probability: 1.0
@@ -36,6 +44,12 @@ generation:
         dice_tray_clean: 1.0
         dice_tray_felt: 1.0
         dice_tray_notebook: 1.0
+      dice_visual_style_weights:
+        classic_rounded: 1.0
+        flat_print: 1.0
+        beveled_tokens: 1.0
+        inked_pips: 1.0
+        soft_shadow: 1.0
     task_puzzles__dice_probability__dice_conditional_event_value:
       conditional_dice_count_min: 8
       conditional_dice_count_max: 12
@@ -46,6 +60,7 @@ generation:
       conditional_favorable_count_max: 3
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
+      balanced_dice_visual_style_sampling: true
       query_id_weights:
         conditional_value_property_given_color_probability: 1.0
         conditional_color_given_value_property_probability: 1.0
@@ -54,6 +69,12 @@ generation:
         dice_tray_clean: 1.0
         dice_tray_felt: 1.0
         dice_tray_notebook: 1.0
+      dice_visual_style_weights:
+        classic_rounded: 1.0
+        flat_print: 1.0
+        beveled_tokens: 1.0
+        inked_pips: 1.0
+        soft_shadow: 1.0
     task_puzzles__spinner_probability__spinner_compound_event_value:
       single_sector_count_min: 6
       single_sector_count_max: 10
@@ -139,16 +160,16 @@ prompt:
       object_description_dice_tray_clean: one tray of colored dice. Each die shows a visible top value
       object_description_dice_tray_felt: one felt-style tray of colored dice. Each die shows a visible top value
       object_description_dice_tray_notebook: one notebook-style tray of colored dice. Each die shows a visible top value
-      evidence_hint_single_parity_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_single_threshold_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_single_value_set_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_single_color_and_value_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_single_color_or_value_probability: set "evidence" to an array containing the full dice tray bounding box
-      json_example_single_parity_probability: '{"evidence":[[145,112,955,650]],"answer":"3/8"}'
-      json_example_single_threshold_probability: '{"evidence":[[145,112,955,650]],"answer":"5/12"}'
-      json_example_single_value_set_probability: '{"evidence":[[145,112,955,650]],"answer":"1/3"}'
-      json_example_single_color_and_value_probability: '{"evidence":[[145,112,955,650]],"answer":"1/6"}'
-      json_example_single_color_or_value_probability: '{"evidence":[[145,112,955,650]],"answer":"7/12"}'
+      evidence_hint_single_parity_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_single_threshold_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_single_value_set_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_single_color_and_value_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_single_color_or_value_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      json_example_single_parity_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"3/8"}'
+      json_example_single_threshold_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"5/12"}'
+      json_example_single_value_set_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"1/3"}'
+      json_example_single_color_and_value_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"1/6"}'
+      json_example_single_color_or_value_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"7/12"}'
       json_example_answer_only_single_parity_probability: '{"answer":"3/8"}'
       json_example_answer_only_single_threshold_probability: '{"answer":"5/12"}'
       json_example_answer_only_single_value_set_probability: '{"answer":"1/3"}'
@@ -160,16 +181,16 @@ prompt:
       object_description_dice_tray_clean: two dice trays labeled Tray A and Tray B. Each die shows a visible top value
       object_description_dice_tray_felt: two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value
       object_description_dice_tray_notebook: two notebook-style dice trays labeled Tray A and Tray B. Each die shows a visible top value
-      evidence_hint_pair_sum_probability: set "evidence" to an array containing the full Tray A bounding box followed by the full Tray B bounding box
-      evidence_hint_pair_sum_threshold_probability: set "evidence" to an array containing the full Tray A bounding box followed by the full Tray B bounding box
-      evidence_hint_pair_difference_probability: set "evidence" to an array containing the full Tray A bounding box followed by the full Tray B bounding box
-      evidence_hint_pair_parity_combo_probability: set "evidence" to an array containing the full Tray A bounding box followed by the full Tray B bounding box
-      evidence_hint_pair_color_value_combo_probability: set "evidence" to an array containing the full Tray A bounding box followed by the full Tray B bounding box
-      json_example_pair_sum_probability: '{"evidence":[[68,142,522,628],[578,142,1032,628]],"answer":"1/6"}'
-      json_example_pair_sum_threshold_probability: '{"evidence":[[68,142,522,628],[578,142,1032,628]],"answer":"5/12"}'
-      json_example_pair_difference_probability: '{"evidence":[[68,142,522,628],[578,142,1032,628]],"answer":"1/4"}'
-      json_example_pair_parity_combo_probability: '{"evidence":[[68,142,522,628],[578,142,1032,628]],"answer":"1/4"}'
-      json_example_pair_color_value_combo_probability: '{"evidence":[[68,142,522,628],[578,142,1032,628]],"answer":"1/8"}'
+      evidence_hint_pair_sum_probability: set "evidence" to an object with keys "tray_a" and "tray_b", each mapped to that tray bounding box [x0, y0, x1, y1]
+      evidence_hint_pair_sum_threshold_probability: set "evidence" to an object with keys "tray_a" and "tray_b", each mapped to that tray bounding box [x0, y0, x1, y1]
+      evidence_hint_pair_difference_probability: set "evidence" to an object with keys "tray_a" and "tray_b", each mapped to that tray bounding box [x0, y0, x1, y1]
+      evidence_hint_pair_parity_combo_probability: set "evidence" to an object with keys "tray_a" and "tray_b", each mapped to that tray bounding box [x0, y0, x1, y1]
+      evidence_hint_pair_color_value_combo_probability: set "evidence" to an object with keys "tray_a" and "tray_b", each mapped to that tray bounding box [x0, y0, x1, y1]
+      json_example_pair_sum_probability: '{"evidence":{"tray_a":[68,142,522,628],"tray_b":[578,142,1032,628]},"answer":"1/6"}'
+      json_example_pair_sum_threshold_probability: '{"evidence":{"tray_a":[68,142,522,628],"tray_b":[578,142,1032,628]},"answer":"5/12"}'
+      json_example_pair_difference_probability: '{"evidence":{"tray_a":[68,142,522,628],"tray_b":[578,142,1032,628]},"answer":"1/4"}'
+      json_example_pair_parity_combo_probability: '{"evidence":{"tray_a":[68,142,522,628],"tray_b":[578,142,1032,628]},"answer":"1/4"}'
+      json_example_pair_color_value_combo_probability: '{"evidence":{"tray_a":[68,142,522,628],"tray_b":[578,142,1032,628]},"answer":"1/8"}'
       json_example_answer_only_pair_sum_probability: '{"answer":"1/6"}'
       json_example_answer_only_pair_sum_threshold_probability: '{"answer":"5/12"}'
       json_example_answer_only_pair_difference_probability: '{"answer":"1/4"}'
@@ -181,12 +202,12 @@ prompt:
       object_description_dice_tray_clean: one tray of colored dice. Each die shows a visible top value
       object_description_dice_tray_felt: one felt-style tray of colored dice. Each die shows a visible top value
       object_description_dice_tray_notebook: one notebook-style tray of colored dice. Each die shows a visible top value
-      evidence_hint_conditional_value_property_given_color_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_conditional_color_given_value_property_probability: set "evidence" to an array containing the full dice tray bounding box
-      evidence_hint_conditional_color_given_value_set_probability: set "evidence" to an array containing the full dice tray bounding box
-      json_example_conditional_value_property_given_color_probability: '{"evidence":[[145,112,955,650]],"answer":"2/5"}'
-      json_example_conditional_color_given_value_property_probability: '{"evidence":[[145,112,955,650]],"answer":"1/4"}'
-      json_example_conditional_color_given_value_set_probability: '{"evidence":[[145,112,955,650]],"answer":"1/3"}'
+      evidence_hint_conditional_value_property_given_color_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_conditional_color_given_value_property_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      evidence_hint_conditional_color_given_value_set_probability: set "evidence" to an object with key "dice_tray" mapped to the full dice tray bounding box [x0, y0, x1, y1]
+      json_example_conditional_value_property_given_color_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"2/5"}'
+      json_example_conditional_color_given_value_property_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"1/4"}'
+      json_example_conditional_color_given_value_set_probability: '{"evidence":{"dice_tray":[145,112,955,650]},"answer":"1/3"}'
       json_example_answer_only_conditional_value_property_given_color_probability: '{"answer":"2/5"}'
       json_example_answer_only_conditional_color_given_value_property_probability: '{"answer":"1/4"}'
       json_example_answer_only_conditional_color_given_value_set_probability: '{"answer":"1/3"}'

@@ -8,10 +8,17 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from ...shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ...shared.drawing import draw_dashed_line
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
 from .minigolf_common import MinigolfObstacle, MinigolfShotOption
+from .scene_style import (
+    GamePanelSceneStyle,
+    game_panel_contrast_anchor_colors,
+    game_panel_scene_style_metadata,
+)
 
 
 @dataclass(frozen=True)
@@ -29,6 +36,7 @@ class MinigolfRenderParams:
     obstacle_radius_px: int
     path_width_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -158,6 +166,7 @@ def _fit_text(
     text: str,
     fill: Tuple[int, int, int],
     max_size_px: int,
+    font_family: str | None = None,
 ) -> None:
     """Draw centered text inside one bbox."""
 
@@ -168,6 +177,7 @@ def _fit_text(
         max_width=max(1.0, float(right - left)),
         max_height=max(1.0, float(bottom - top)),
         bold=True,
+        font_family=str(font_family or "") or None,
         min_size_px=7,
         max_size_px=int(max_size_px),
         fill_ratio=0.74,
@@ -175,7 +185,7 @@ def _fit_text(
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -183,7 +193,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _course_bbox(params: MinigolfRenderParams) -> Tuple[Tuple[float, float, float, float], Dict[str, Any]]:
@@ -237,7 +247,14 @@ def _draw_obstacle(
     else:
         draw.ellipse(bbox, fill=tuple(int(v) for v in fill), outline=tuple(int(v) for v in theme.obstacle_outline_rgb), width=2)
     label_box = (cx - radius * 0.52, cy - radius * 0.52, cx + radius * 0.52, cy + radius * 0.52)
-    _fit_text(draw, bbox=label_box, text=str(obstacle.label), fill=theme.obstacle_text_rgb, max_size_px=int(params.label_font_size_px))
+    _fit_text(
+        draw,
+        bbox=label_box,
+        text=str(obstacle.label),
+        fill=theme.obstacle_text_rgb,
+        max_size_px=int(params.label_font_size_px),
+        font_family=str(params.font_family),
+    )
     return tuple(round(float(v), 3) for v in bbox)
 
 
@@ -256,8 +273,33 @@ def _draw_path_marker(
     radius = max(16.0, float(params.label_font_size_px) * 0.78)
     bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
     draw.ellipse(bbox, fill=tuple(int(v) for v in theme.path_label_fill_rgb), outline=tuple(int(v) for v in color), width=4)
-    _fit_text(draw, bbox=(bbox[0] + 3, bbox[1] + 2, bbox[2] - 3, bbox[3] - 2), text=str(label), fill=theme.path_label_text_rgb, max_size_px=int(params.label_font_size_px))
+    _fit_text(
+        draw,
+        bbox=(bbox[0] + 3, bbox[1] + 2, bbox[2] - 3, bbox[3] - 2),
+        text=str(label),
+        fill=theme.path_label_text_rgb,
+        max_size_px=int(params.label_font_size_px),
+        font_family=str(params.font_family),
+    )
     return tuple(round(float(v), 3) for v in bbox)
+
+
+def _path_color_anchor_rgbs(
+    *,
+    theme: MinigolfTheme,
+    panel_style: GamePanelSceneStyle | None,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return known colors that Mini-golf cue/path colors must avoid."""
+
+    anchors: list[Tuple[int, int, int]] = [
+        tuple(int(v) for v in theme.course_fill_rgb),
+        tuple(int(v) for v in theme.course_outline_rgb),
+        tuple(int(v) for v in theme.fairway_line_rgb),
+        tuple(int(v) for v in theme.path_label_fill_rgb),
+        tuple(int(v) for v in theme.ball_fill_rgb),
+        tuple(int(v) for v in theme.cup_outline_rgb),
+    ]
+    return tuple(game_panel_contrast_anchor_colors(panel_style, extra_colors=anchors))
 
 
 def render_minigolf_scene(
@@ -272,12 +314,28 @@ def render_minigolf_scene(
     background: Image.Image,
     style_variant: str,
     params: MinigolfRenderParams,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedMinigolfScene:
     """Render one mini-golf course."""
 
     image = background.convert("RGB").copy()
     draw = ImageDraw.Draw(image)
     theme = build_games_minigolf_theme(style_variant=str(style_variant))
+    path_color_anchors = _path_color_anchor_rgbs(theme=theme, panel_style=panel_style)
+    path_palette_rgb = resolve_contrasting_palette(
+        theme.path_palette_rgb,
+        anchor_colors=path_color_anchors,
+        min_anchor_distance=40.0,
+        min_pairwise_distance=24.0,
+        distance_space="lab",
+    )
+    cue_line_rgb = resolve_contrasting_palette(
+        ((245, 246, 248),),
+        anchor_colors=path_color_anchors,
+        min_anchor_distance=40.0,
+        min_pairwise_distance=0.0,
+        distance_space="lab",
+    )[0]
     course_bbox, layout_jitter = _course_bbox(params)
     left, top, right, bottom = course_bbox
     draw.rounded_rectangle(
@@ -299,11 +357,17 @@ def render_minigolf_scene(
         draw.line((left + 34, y, right - 34, y), fill=tuple(int(v) for v in theme.fairway_line_rgb), width=1)
 
     entity_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    entity_points: Dict[str, Tuple[float, float]] = {}
     scene_entities: list[Dict[str, Any]] = []
     obstacle_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
     for obstacle in obstacles:
+        obstacle_center = _to_px(course_bbox, (float(obstacle.x_norm), float(obstacle.y_norm)))
         bbox = _draw_obstacle(draw, course_bbox=course_bbox, obstacle=obstacle, theme=theme, params=params)
         entity_bboxes[str(obstacle.obstacle_id)] = bbox
+        entity_points[str(obstacle.obstacle_id)] = (
+            round(float(obstacle_center[0]), 3),
+            round(float(obstacle_center[1]), 3),
+        )
         obstacle_bboxes[str(obstacle.obstacle_id)] = bbox
         scene_entities.append(
             {
@@ -312,6 +376,7 @@ def render_minigolf_scene(
                 "label": str(obstacle.label),
                 "kind": str(obstacle.kind),
                 "bbox": list(bbox),
+                "point": list(entity_points[str(obstacle.obstacle_id)]),
             }
         )
 
@@ -327,16 +392,19 @@ def render_minigolf_scene(
         fill=tuple(int(v) for v in theme.flag_rgb),
     )
     entity_bboxes["hole"] = tuple(round(float(v), 3) for v in hole_bbox)
-    scene_entities.append({"id": "hole", "type": "minigolf_hole", "bbox": list(entity_bboxes["hole"])})
+    entity_points["hole"] = (round(float(hole_px[0]), 3), round(float(hole_px[1]), 3))
+    scene_entities.append({"id": "hole", "type": "minigolf_hole", "bbox": list(entity_bboxes["hole"]), "point": list(entity_points["hole"])})
 
     ball_r = float(params.ball_radius_px)
     ball_bbox = (ball_px[0] - ball_r, ball_px[1] - ball_r, ball_px[0] + ball_r, ball_px[1] + ball_r)
     draw.ellipse(ball_bbox, fill=tuple(int(v) for v in theme.ball_fill_rgb), outline=tuple(int(v) for v in theme.ball_outline_rgb), width=3)
     entity_bboxes["ball"] = tuple(round(float(v), 3) for v in ball_bbox)
-    scene_entities.append({"id": "ball", "type": "minigolf_ball", "bbox": list(entity_bboxes["ball"])})
+    entity_points["ball"] = (round(float(ball_px[0]), 3), round(float(ball_px[1]), 3))
+    scene_entities.append({"id": "ball", "type": "minigolf_ball", "bbox": list(entity_bboxes["ball"]), "point": list(entity_points["ball"])})
 
     motion_paths_px: Dict[str, Dict[str, Any]] = {}
     path_bboxes: Dict[str, Tuple[float, float, float, float]] = {}
+    path_point_pairs: Dict[str, Tuple[Tuple[float, float], Tuple[float, float]]] = {}
     if str(query_id) == "first_obstacle_label":
         path = hidden_paths_norm.get("shown_path", tuple())
         if len(path) >= 2:
@@ -350,7 +418,7 @@ def render_minigolf_scene(
                 draw,
                 start=start,
                 end=visible_end,
-                fill=(245, 246, 248),
+                fill=tuple(int(v) for v in cue_line_rgb),
                 width=int(params.path_width_px),
                 dash_px=14,
                 gap_px=8,
@@ -361,10 +429,11 @@ def render_minigolf_scene(
             }
     else:
         for path in shot_options:
-            color = theme.path_palette_rgb[int(path.color_index) % len(theme.path_palette_rgb)]
+            color = path_palette_rgb[int(path.color_index) % len(path_palette_rgb)]
             start = ball_px
             cue_len = min(float(params.course_width_px), float(params.course_height_px)) * 0.165
             end = (start[0] + (math.cos(float(path.angle_rad)) * cue_len), start[1] + (math.sin(float(path.angle_rad)) * cue_len))
+            cue_midpoint = ((start[0] + end[0]) / 2.0, (start[1] + end[1]) / 2.0)
             draw_dashed_line(
                 draw,
                 start=start,
@@ -377,6 +446,14 @@ def render_minigolf_scene(
             marker_center = (start[0] + (math.cos(float(path.angle_rad)) * (cue_len + 28.0)), start[1] + (math.sin(float(path.angle_rad)) * (cue_len + 28.0)))
             bbox = _draw_path_marker(draw, center=marker_center, label=str(path.label), color=color, theme=theme, params=params)
             entity_bboxes[str(path.path_id)] = bbox
+            entity_points[str(path.path_id)] = (
+                round(float(cue_midpoint[0]), 3),
+                round(float(cue_midpoint[1]), 3),
+            )
+            path_point_pairs[str(path.path_id)] = (
+                (round(float(start[0]), 3), round(float(start[1]), 3)),
+                (round(float(end[0]), 3), round(float(end[1]), 3)),
+            )
             path_bboxes[str(path.path_id)] = bbox
             scene_entities.append(
                 {
@@ -384,6 +461,8 @@ def render_minigolf_scene(
                     "type": "minigolf_shot_option",
                     "label": str(path.label),
                     "bbox": list(bbox),
+                    "point": list(entity_points[str(path.path_id)]),
+                    "point_pair": [list(point) for point in path_point_pairs[str(path.path_id)]],
                 }
             )
             hidden = hidden_paths_norm.get(str(path.path_id), tuple())
@@ -395,10 +474,38 @@ def render_minigolf_scene(
     render_map: Dict[str, Any] = {
         "course_bbox_px": [round(float(v), 3) for v in course_bbox],
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
+        "entity_points_px": {str(key): list(value) for key, value in entity_points.items()},
         "obstacle_bboxes_px": {str(key): list(value) for key, value in obstacle_bboxes.items()},
         "path_bboxes_px": {str(key): list(value) for key, value in path_bboxes.items()},
+        "path_point_pairs_px": {str(key): [list(point) for point in value] for key, value in path_point_pairs.items()},
         "motion_paths_px": motion_paths_px,
         "layout_jitter": dict(layout_jitter),
+        "text_style": {
+            "font_family": str(params.font_family),
+        },
+        "style_variant": str(style_variant),
+        "font_family": str(params.font_family),
+        "path_palette_rgb": [list(color) for color in path_palette_rgb],
+        "cue_line_rgb": list(cue_line_rgb),
+        "path_color_safety": {
+            "distance_space": "lab",
+            "min_anchor_distance_required": 40.0,
+            "min_pairwise_distance_required": 24.0,
+            "anchor_rgbs": [list(color) for color in path_color_anchors],
+            "path_anchor_lab_distances": [
+                round(float(min_color_distance_to_anchors(color, path_color_anchors, distance_space="lab")), 3)
+                for color in path_palette_rgb
+            ],
+            "cue_anchor_lab_distance": round(
+                float(min_color_distance_to_anchors(cue_line_rgb, path_color_anchors, distance_space="lab")),
+                3,
+            ),
+            "min_path_anchor_lab_distance": round(
+                min(float(min_color_distance_to_anchors(color, path_color_anchors, distance_space="lab")) for color in path_palette_rgb),
+                3,
+            ),
+        },
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedMinigolfScene(image=image, scene_entities=tuple(scene_entities), render_map=render_map)
 

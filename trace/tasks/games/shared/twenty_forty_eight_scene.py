@@ -36,6 +36,7 @@ class TwentyFortyEightRenderParams:
     arrow_width_px: int
     label_font_size_px: int
     goal_outline_width_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -221,6 +222,7 @@ def _draw_tile_text(
     value: int,
     theme: TwentyFortyEightTheme,
     max_font_size_px: int,
+    font_family: str,
 ) -> None:
     """Draw one centered 2048 tile value."""
 
@@ -237,6 +239,7 @@ def _draw_tile_text(
         min_size_px=18,
         max_size_px=int(max_font_size_px),
         fill_ratio=0.72,
+        font_family=str(font_family) or None,
     )
     fill = theme.tile_text_rgb_dark if int(value) <= 4 else theme.tile_text_rgb_light
     draw_centered_text(
@@ -307,6 +310,7 @@ def _draw_arrow_label(
         min_size_px=12,
         max_size_px=int(params.label_font_size_px),
         fill_ratio=0.70,
+        font_family=str(params.font_family) or None,
     )
     draw_centered_text(
         draw,
@@ -429,6 +433,7 @@ def render_2048_board_scene(
                 value=value,
                 theme=theme,
                 max_font_size_px=int(params.tile_font_size_px),
+                font_family=str(params.font_family),
             )
             scene_entities.append(
                 {
@@ -520,6 +525,7 @@ def render_2048_board_scene(
         "style_variant": str(style_variant),
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "effective_cell_size_px": round(float(cell_size), 3),
+        "font_family": str(params.font_family),
         "goal_cell": None if goal_cell is None else [int(goal_cell[0]), int(goal_cell[1])],
     }
     return Rendered2048Scene(

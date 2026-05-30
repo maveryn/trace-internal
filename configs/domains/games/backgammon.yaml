@@ -12,9 +12,13 @@ generation:
       parchment: 1.0
       slate: 1.0
       tournament: 1.0
+    active_player_weights:
+      black: 1.0
+      white: 1.0
     balanced_scene_variant_sampling: true
     balanced_query_id_sampling: true
     balanced_style_variant_sampling: true
+    balanced_active_player_sampling: true
     balanced_target_answer_sampling: true
     legal_count_support:
       - 1
@@ -43,10 +47,17 @@ rendering:
     board_height_px: 560
     board_margin_px: 50
     board_border_width_px: 5
-    point_label_font_size_px: 18
-    header_font_size_px: 20
+    point_label_font_size_px: 20
+    header_font_size_px: 24
     checker_radius_px: 21
     die_size_px: 44
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    dynamic_canvas_size_enabled: true
+    canvas_min_width_px: 560
+    canvas_min_height_px: 420
+    canvas_side_padding_px: 90
+    canvas_vertical_padding_px: 80
 complexity:
   shared:
     criteria_weights:
@@ -60,10 +71,10 @@ prompt:
     scene_key: visible_backgammon_board
     task_key: backgammon_query
     object_description_standard_board: a numbered backgammon board with black and white checker stacks and two dice
-    backgammon_rule_text: Black moves from higher-numbered points toward lower-numbered points. For each occupied black point, subtract either shown die to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more white checkers is blocked.
-    evidence_hint_legal_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where black can legally move
+    backgammon_rule_text: The board header shows which player moves and whether that player moves 24 to 1 or 1 to 24. For each occupied active-player point, use either shown die in that direction to get a candidate destination number. Count each distinct destination number once, even if more than one checker or die reaches it. A destination point with two or more opposing checkers is blocked.
+    evidence_hint_legal_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player can legally move
     answer_hint_legal_move_count: set "answer" to the number of distinct legal destination points
-    evidence_hint_hit_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where black would hit exactly one white checker
+    evidence_hint_hit_move_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct destination points where the active player would hit exactly one opposing checker
     answer_hint_hit_move_count: set "answer" to the number of distinct hit destination points
-    evidence_hint_blocked_destination_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct possible destination points blocked by two or more white checkers
+    evidence_hint_blocked_destination_count: set "evidence" to bounding boxes [x0, y0, x1, y1] around the distinct possible destination points blocked by two or more opposing checkers
     answer_hint_blocked_destination_count: set "answer" to the number of distinct blocked destination points

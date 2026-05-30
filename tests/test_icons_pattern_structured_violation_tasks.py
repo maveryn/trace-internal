@@ -94,7 +94,6 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "default"
     assert out.query_id == "row_rotation_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_sequence_rotation_violation"
     assert trace["scene_ir"]["scene_id"] == "sequence_strip"
@@ -102,11 +101,20 @@ def test_icons_pattern_structured_violation_row_rotation_contract_matches_scene(
     assert "source_task_id" not in execution
     assert "source_query_id" not in execution
     assert execution["scene_variant"] == "sequence_row"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "row_rotation_violation"
     assert trace["query_spec"]["template_id"] == "icons_pattern_v0"
     assert int(out.answer_gt.value) == 4
+    assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["pixel_bbox_set"] == out.evidence_gt.value
+    assert len(trace["projected_evidence"]["pixel_point_set"]) == 1
+    drawn_text_roles = {
+        str(record.get("role"))
+        for record in trace["render_spec"]["drawn_text"]["text_legibility"]["records"]
+    }
+    assert "icon_cell_label_text" in drawn_text_roles
     exact_match, plausible_indices = _plausible_row_violation_indices(list(execution["observed_sequence_rotations_degrees"]))
     assert exact_match is False
     assert plausible_indices == {3}
@@ -128,7 +136,6 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "default"
     assert out.query_id == "grid_size_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_size_violation"
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
@@ -136,9 +143,17 @@ def test_icons_pattern_structured_violation_grid_size_contract_matches_scene() -
     assert "source_task_id" not in execution
     assert "source_query_id" not in execution
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "grid_size_violation"
     assert int(out.answer_gt.value) == 5
+    assert out.evidence_gt.type == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    style = trace["render_spec"]["style"]
+    assert int(style["text_legibility"]["failure_count"]) == 0
+    assert {
+        str(record["role"])
+        for record in style["text_legibility"]["records"]
+    } >= {"icon_panel_header_text", "icon_cell_label_text"}
     exact_match, plausible_indices = _plausible_grid_size_indices(
         list(execution["observed_grid_size_levels"]),
         grid_rows=int(execution["grid_rows"]),
@@ -164,15 +179,22 @@ def test_icons_pattern_grid_color_violation_contract_matches_scene() -> None:
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "default"
     assert out.query_id == "grid_color_violation"
     assert trace["scene_ir"]["scene_kind"] == "icons_pattern_grid_color_violation"
     assert trace["scene_ir"]["scene_id"] == "pattern_grid"
     assert trace["query_spec"]["query_id"] == "grid_color_violation"
     assert execution["scene_variant"] == "numbered_grid"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "grid_color_violation"
     assert int(out.answer_gt.value) == 5
+    assert out.evidence_gt.type == "bbox_set"
+    assert trace["projected_evidence"]["type"] == "bbox_set"
+    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    style = trace["render_spec"]["style"]
+    assert int(style["text_legibility"]["failure_count"]) == 0
+    assert {
+        str(record["role"])
+        for record in style["text_legibility"]["records"]
+    } >= {"icon_panel_header_text", "icon_cell_label_text"}
     exact_match, plausible_indices = _plausible_grid_color_indices(
         list(execution["observed_grid_color_levels"]),
         grid_rows=int(execution["grid_rows"]),
@@ -211,7 +233,6 @@ def test_icons_pattern_violation_balances_answers_by_default(task_cls, expected_
             params={},
             max_attempts=200,
         )
-        assert out.query_id == "default"
         assert out.query_id
         counts[int(out.answer_gt.value)] += 1
     assert set(counts.keys()) == expected_answers

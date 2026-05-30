@@ -38,9 +38,7 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["scene_ir"]["scene_kind"] == "icons_reference_grid_mirror_symmetry_count"
     assert execution["question_format"] == "count_scene_cells_matching_reference_mirror_symmetry"
-    assert out.query_id == "default"
     assert out.query_id == "mirror_diagonal_main"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "mirror_diagonal_main"
     assert execution["internal_query_id"] == "mirror_diagonal_main"
     assert execution["mirror_signature"] == "mirror_diagonal_main"
@@ -76,6 +74,9 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert out.evidence_gt.value == expected_evidence
     assert trace["projected_evidence"]["type"] == "bbox_set"
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["render_spec"]["style"]["text_legibility"]["required_role_count"] >= 2
+    assert trace["render_spec"]["style"]["text_legibility"]["failure_count"] == 0
+    assert "cell_label_stroke_rgb" in trace["render_spec"]["style"]
     sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
     assert len(sampled_palette) >= 2
 
@@ -193,8 +194,6 @@ def test_icons_relation_mirror_symmetry_balanced_sampling_defaults() -> None:
         object_counts[object_count] += 1
         target_counts[target_count] += 1
         distractor_counts[distractor_count] += 1
-        assert str(out.query_id) == "default"
-        assert str(execution["query_id"]) == "default"
         assert str(out.query_id) == str(execution["mirror_signature"])
         mirror_signature = str(execution["mirror_signature"])
         signature_counts[mirror_signature] += 1

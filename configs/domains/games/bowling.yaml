@@ -73,8 +73,8 @@ prompt:
     task_key: bowling_lane_query
     object_description_lane_rack: a bowling lane with a bowling ball, visible labeled pins, and any shown aiming paths
     bowling_motion_rule_text: The dashed arrow shows the ball's current straight path.
-    spare_path_rule_text: A spare path is correct when its dashed line passes through every remaining standing pin.
+    spare_path_rule_text: Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin.
     evidence_hint_first_pin_hit_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the first pin hit by the shown path
     answer_hint_first_pin_hit_label: set "answer" to the selected pin label as a string
-    evidence_hint_spare_path_label: set "evidence" to one bounding box [x0, y0, x1, y1] around the selected path's circular label marker
+    evidence_hint_spare_path_label: set "evidence" to one path point-pair as [[[x0,y0],[x1,y1]]], using the two endpoints of the selected visible dashed cue
     answer_hint_spare_path_label: set "answer" to the selected numbered path label as a string

@@ -13,6 +13,7 @@ from trace.tasks.puzzles.probability.dice import (
     PuzzlesProbabilityDicePairEventValueTask,
     PuzzlesProbabilityDiceSingleEventValueTask,
 )
+from trace.tasks.puzzles.shared.dice_scene import SUPPORTED_DICE_VISUAL_STYLES
 
 
 TASKS = (
@@ -55,16 +56,23 @@ def test_dice_probability_tasks_emit_contracts() -> None:
         event = execution["event"]
 
         assert out.scene_id == "dice_probability"
-        assert out.query_id == "default"
         assert out.query_id in queries
         assert out.answer_gt.type == "string"
-        assert out.evidence_gt.type == "bbox_set"
-        assert trace["query_spec"]["params"]["query_id"] == "default"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert trace["query_spec"]["params"]["query_id"] == out.query_id
         assert trace["render_spec"]["scene_id"] == "dice_probability"
-        assert trace["render_map"]["evidence_source"] == "tray_bboxes_px"
+        assert trace["render_map"]["evidence_source"] == "keyed_tray_bboxes_px"
+        assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
+        assert trace["render_spec"]["label_style"]["font"]["font_family"]
+        dice_style = trace["render_spec"]["dice_visual_style"]
+        assert dice_style["style_id"] in set(SUPPORTED_DICE_VISUAL_STYLES)
+        assert dice_style["semantic_color_policy"]["die_face_colors_preserved"] is True
+        assert dice_style["semantic_color_policy"]["pip_count_and_positions_preserved"] is True
+        assert trace["render_spec"]["post_image_noise_policy"]["reason"] == "dice_color_and_pip_readability"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
         assert out.image.size == (
             int(trace["render_spec"]["canvas_width"]),
             int(trace["render_spec"]["canvas_height"]),
@@ -74,20 +82,21 @@ def test_dice_probability_tasks_emit_contracts() -> None:
             int(event["total_outcome_count"]),
         )
         assert 0 < int(event["favorable_outcome_count"]) < int(event["total_outcome_count"])
-        assert len(out.evidence_gt.value) == len(execution["evidence_item_ids"])
         if execution["mode"] == "pair":
+            assert set(out.evidence_gt.value) == {"tray_a", "tray_b"}
             assert execution["evidence_item_ids"] == ["tray_a", "tray_b"]
-            assert len(out.evidence_gt.value) == 2
+            assert execution["evidence_role_item_ids"] == {"tray_a": "tray_a", "tray_b": "tray_b"}
             assert event["favorable_pairs"]
         else:
+            assert set(out.evidence_gt.value) == {"dice_tray"}
             assert execution["evidence_item_ids"] == ["tray"]
-            assert len(out.evidence_gt.value) == 1
+            assert execution["evidence_role_item_ids"] == {"dice_tray": "tray"}
             assert event["favorable_die_ids"]
         if execution["mode"] == "conditional":
             assert event["denominator_die_ids"]
             assert set(event["favorable_die_ids"]).issubset(set(event["denominator_die_ids"]))
         assert execution["calculation_supporting_item_ids"]
-        for bbox in out.evidence_gt.value:
+        for bbox in out.evidence_gt.value.values():
             assert len(bbox) == 4
             assert 0 <= float(bbox[0]) < float(bbox[2]) <= out.image.size[0]
             assert 0 <= float(bbox[1]) < float(bbox[3]) <= out.image.size[1]
@@ -97,6 +106,7 @@ def test_dice_probability_generation_is_deterministic() -> None:
     task = PuzzlesProbabilityDiceConditionalEventValueTask()
     params = {
         "scene_variant": "dice_tray_felt",
+        "dice_visual_style": "inked_pips",
         "query_id": "conditional_color_given_value_property_probability",
     }
     out_a = task.generate(2026052699, params=params, max_attempts=30)

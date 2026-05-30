@@ -237,6 +237,7 @@ def test_cell_board_reachable_target_count_supports_zero_answer_with_empty_evide
     assert out.evidence_gt.value == []
     assert execution["reachable_target_coords"] == []
     assert int(execution["total_target_count"]) >= 2
+    assert "or [] if no target tiles are reachable" in out.prompt_variants["answer_and_evidence"]
 
 
 def test_cell_board_reachable_target_count_is_deterministic() -> None:

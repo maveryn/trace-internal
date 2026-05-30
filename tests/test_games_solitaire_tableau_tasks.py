@@ -31,6 +31,13 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
     )
 
     assert set(generation["scene_variant_weights"].keys()) == {"klondike_tableau", "freecell_tableau"}
+    assert set(generation["style_variant_weights"].keys()) == {
+        "classic_cards",
+        "ivory_table",
+        "casino_felt",
+        "slate_cards",
+        "paper_tableau",
+    }
     assert list(generation["move_option_count_support"]) == [4, 5]
     assert list(generation["foundation_ready_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["tableau_sequence_target_answer_support"]) == [0, 1, 2, 3, 4]
@@ -73,15 +80,17 @@ def test_games_solitaire_move_legality_has_one_legal_option() -> None:
     assert out.answer_gt.type == "string"
     assert legal_labels == [str(out.answer_gt.value)]
     assert execution["answer_option_label"] == out.answer_gt.value
-    assert len(out.evidence_gt.value) == 3
+    assert out.evidence_gt.type == "keyed_bbox_map"
+    assert set(out.evidence_gt.value) == {"source_card", "target"}
     assert set(execution["evidence_entity_ids"]) == {
-        f"move_option_{str(out.answer_gt.value).lower()}",
         execution["legal_source_id"],
         execution["legal_target_id"],
     }
-    assert out.query_id == "default"
     assert out.scene_id == "solitaire"
     assert out.query_id == "move_legality_label"
+    assert out.trace_payload["projected_evidence"]["type"] == "keyed_bbox_map"
+    assert out.trace_payload["render_spec"]["solitaire_tableau_style"]["style_variant"]
+    assert out.trace_payload["render_spec"]["text_style"]["font_family"]
 
 
 def test_games_solitaire_foundation_ready_count_matches_trace() -> None:
@@ -113,4 +122,5 @@ def test_games_solitaire_tableau_sequence_count_matches_trace() -> None:
     assert int(execution["valid_sequence_pair_count"]) == 4
     assert len(execution["valid_sequence_pairs"]) == 4
     assert out.query_id == "tableau_sequence_count"
+    assert out.trace_payload["projected_evidence"]["type"] == "bbox_set"
     assert out.trace_payload["projected_evidence"]["bbox_set"] == out.evidence_gt.value

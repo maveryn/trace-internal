@@ -9,11 +9,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.font_assets import get_font_family_record, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -35,8 +35,9 @@ from ..shared.darts_scene import (
 from ..shared.fixed_query_task import FixedQueryVariantTaskMixin, QuerySubsetTaskMixin
 from ..shared.layout import apply_games_layout_jitter_to_bbox, resolve_games_layout_jitter
 from ..shared.sampling import resolve_games_named_axis, resolve_games_query_id
-from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
-from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
+from ..shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from ..shared.style import SUPPORTED_DARTS_STYLE_VARIANTS
+from ..shared.visual_defaults import load_games_noise_defaults
 
 
 TASK_ID = "games_darts_score_count_base"
@@ -124,7 +125,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_games_background_defaults(task_group="darts")
 POST_IMAGE_NOISE_DEFAULTS = load_games_noise_defaults(task_group="darts", apply_prob=0.0)
 
 
@@ -237,7 +237,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         explicit_key="style_variant",
         weights_key="style_variant_weights",
         balance_flag_key="balanced_style_variant_sampling",
-        supported=SUPPORTED_GAMES_STYLE_VARIANTS,
+        supported=SUPPORTED_DARTS_STYLE_VARIANTS,
     )
 
     dart_count_support_key = _dart_count_support_key(str(query_id))
@@ -533,10 +533,10 @@ def _build_prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
     """Return prompt JSON examples matching the active darts query semantics."""
 
     if str(query_id) == "total_score":
-        answer_and_evidence = {"evidence": [[402, 210, 420, 228]], "answer": "C"}
+        answer_and_evidence = {"evidence": [[411, 219]], "answer": "C"}
         answer_only = {"answer": "C"}
     else:
-        answer_and_evidence = {"evidence": [[402, 210, 420, 228], [516, 355, 534, 373]], "answer": 2}
+        answer_and_evidence = {"evidence": [[411, 219], [525, 364]], "answer": 2}
         answer_only = {"answer": 2}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -569,6 +569,12 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dartboar
         params.get("board_center_y_px", group_default(_RENDER_DEFAULTS, "board_center_y_px", _DEFAULTS.board_center_y_px))
     )
     board_radius = int(params.get("board_radius_px", group_default(_RENDER_DEFAULTS, "board_radius_px", _DEFAULTS.board_radius_px)))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace="games.darts.font_family",
+        params=params,
+    )
     requested_jitter = resolve_games_layout_jitter(
         params,
         _RENDER_DEFAULTS,
@@ -601,6 +607,7 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> Dartboar
         title_font_size_px=int(
             params.get("title_font_size_px", group_default(_RENDER_DEFAULTS, "title_font_size_px", _DEFAULTS.title_font_size_px))
         ),
+        font_family=str(font_family),
         layout_jitter_meta=dict(layout_jitter),
     )
 
@@ -614,6 +621,29 @@ class GamesDartsScoreCountTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         axes = _resolve_axes(int(instance_seed), params=params)
         render_params = _render_params(params, instance_seed=int(instance_seed))
+        allowed_panel_treatments_raw = params.get(
+            "panel_scene_treatments",
+            group_default(_RENDER_DEFAULTS, "panel_scene_treatments", None),
+        )
+        if isinstance(allowed_panel_treatments_raw, str):
+            allowed_panel_treatments = (str(allowed_panel_treatments_raw),)
+        elif allowed_panel_treatments_raw is None:
+            allowed_panel_treatments = None
+        else:
+            allowed_panel_treatments = tuple(str(item) for item in allowed_panel_treatments_raw)
+        panel_style, panel_style_meta = resolve_game_panel_scene_style(
+            instance_seed=int(instance_seed),
+            namespace="games.darts.panel_scene_style",
+            treatments=allowed_panel_treatments,
+            treatment_weights=params.get(
+                "panel_scene_treatment_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_treatment_weights", None),
+            ),
+            palette_weights=params.get(
+                "panel_scene_palette_weights",
+                group_default(_RENDER_DEFAULTS, "panel_scene_palette_weights", None),
+            ),
+        )
         color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dart_color")
         dart_fill_color, dart_fill_min_lab_distance = sample_dart_marker_color(
             color_rng,
@@ -626,12 +656,10 @@ class GamesDartsScoreCountTask:
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.attempt.{int(attempt_index)}")
             sampled_scene = _sample_scene(attempt_rng, axes=axes, render_params=render_params)
-            background, background_meta = make_background_canvas(
+            background, background_meta = make_panel_scene_background(
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
-                instance_seed=int(instance_seed),
-                params=params,
-                default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+                style=panel_style,
             )
             rendered_scene = render_darts_scene(
                 darts=list(sampled_scene.darts),
@@ -642,6 +670,7 @@ class GamesDartsScoreCountTask:
                 dart_fill_color=dart_fill_color,
                 dart_fill_min_lab_distance=float(dart_fill_min_lab_distance),
                 score_options=tuple(sampled_scene.score_options),
+                panel_style=panel_style,
             )
             break
         if sampled_scene is None or rendered_scene is None:
@@ -653,6 +682,10 @@ class GamesDartsScoreCountTask:
         evidence_entity_ids = [str(dart_id) for dart_id in sampled_scene.evidence_dart_ids]
         evidence_bboxes = [
             list(rendered_scene.render_map["dart_bboxes_px"][str(dart_id)])
+            for dart_id in sampled_scene.evidence_dart_ids
+        ]
+        evidence_points = [
+            list(rendered_scene.render_map["dart_centers_px"][str(dart_id)])
             for dart_id in sampled_scene.evidence_dart_ids
         ]
         if is_total_score and sampled_scene.answer_label is None:
@@ -715,7 +748,11 @@ class GamesDartsScoreCountTask:
             type="string" if is_total_score else "integer",
             value=str(answer_value) if is_total_score else int(answer_value),
         )
-        evidence_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in evidence_bboxes])
+        evidence_gt = TypedValue(type="point_set", value=[list(point) for point in evidence_points])
+        text_style_meta = {
+            "font_family": str(render_params.font_family),
+            "font_asset": get_font_family_record(str(render_params.font_family)).to_trace(),
+        }
         complexity = build_games_darts_score_complexity(
             task_group_defaults=_TASK_GROUP_DEFAULTS,
             task_id=TASK_ID,
@@ -809,6 +846,8 @@ class GamesDartsScoreCountTask:
                 "dart_fill_color": [int(v) for v in dart_fill_color],
                 "dart_fill_min_lab_distance": round(float(dart_fill_min_lab_distance), 3),
                 "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
+                "panel_scene_style": dict(panel_style_meta),
+                "text_style": dict(text_style_meta),
             },
             "render_map": dict(rendered_scene.render_map),
             "execution_trace": execution_trace,
@@ -817,7 +856,10 @@ class GamesDartsScoreCountTask:
                 "ids": list(evidence_entity_ids),
             },
             "projected_evidence": {
-                "bbox_set": [list(bbox) for bbox in evidence_bboxes],
+                "type": "point_set",
+                "point_set": [list(point) for point in evidence_points],
+                "pixel_point_set": [list(point) for point in evidence_points],
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_bboxes],
             },
             "background": background_meta,
             "post_image_noise": post_noise_meta,

@@ -33,7 +33,7 @@ class BackgammonPoint:
 
 @dataclass(frozen=True)
 class BackgammonOutcome:
-    """Computed single-die destination sets for black-to-move scenes."""
+    """Computed single-die destination sets for one active player."""
 
     legal_destinations: Tuple[int, ...]
     hit_destinations: Tuple[int, ...]
@@ -46,6 +46,7 @@ class BackgammonSample:
 
     points: Mapping[int, BackgammonPoint]
     dice: Tuple[int, int]
+    active_player: str
     query_id: str
     answer: int
     target_destinations: Tuple[int, ...]
@@ -101,31 +102,77 @@ def is_white_blot(points: Mapping[int, BackgammonPoint], point_id: int) -> bool:
     return str(stack.owner) == PLAYER_WHITE and int(stack.count) == 1
 
 
+def opponent_for_player(active_player: str) -> str:
+    """Return the opposing checker color for one active player."""
+
+    player = str(active_player)
+    if player == PLAYER_BLACK:
+        return PLAYER_WHITE
+    if player == PLAYER_WHITE:
+        return PLAYER_BLACK
+    raise ValueError(f"unsupported Backgammon player: {active_player!r}")
+
+
+def destination_for_player(source: int, die: int, *, active_player: str) -> int:
+    """Return one single-die destination point for the active player."""
+
+    if str(active_player) == PLAYER_BLACK:
+        return int(source) - int(die)
+    if str(active_player) == PLAYER_WHITE:
+        return int(source) + int(die)
+    raise ValueError(f"unsupported Backgammon player: {active_player!r}")
+
+
+def is_blocked_by_opponent(points: Mapping[int, BackgammonPoint], point_id: int, *, active_player: str) -> bool:
+    """Return true when a destination has two or more opposing checkers."""
+
+    stack = stack_at(points, int(point_id))
+    return str(stack.owner) == opponent_for_player(str(active_player)) and int(stack.count) >= 2
+
+
+def is_opponent_blot(points: Mapping[int, BackgammonPoint], point_id: int, *, active_player: str) -> bool:
+    """Return true when a destination has exactly one opposing checker."""
+
+    stack = stack_at(points, int(point_id))
+    return str(stack.owner) == opponent_for_player(str(active_player)) and int(stack.count) == 1
+
+
+def compute_single_die_destinations(
+    points: Mapping[int, BackgammonPoint],
+    *,
+    dice: Tuple[int, int],
+    active_player: str,
+) -> BackgammonOutcome:
+    """Compute destination-point sets for the active player and shown dice."""
+
+    player = str(active_player)
+    candidate_destinations: set[int] = set()
+    for source in POINT_IDS:
+        stack = stack_at(points, int(source))
+        if str(stack.owner) != player or int(stack.count) <= 0:
+            continue
+        for die in dice:
+            dest = destination_for_player(int(source), int(die), active_player=player)
+            if int(dest) in POINT_IDS:
+                candidate_destinations.add(int(dest))
+
+    blocked = tuple(sorted(point for point in candidate_destinations if is_blocked_by_opponent(points, point, active_player=player)))
+    legal = tuple(sorted(point for point in candidate_destinations if point not in set(blocked)))
+    hit = tuple(sorted(point for point in legal if is_opponent_blot(points, point, active_player=player)))
+    return BackgammonOutcome(
+        legal_destinations=legal,
+        hit_destinations=hit,
+        blocked_destinations=blocked,
+    )
+
+
 def compute_black_single_die_destinations(
     points: Mapping[int, BackgammonPoint],
     *,
     dice: Tuple[int, int],
 ) -> BackgammonOutcome:
     """Compute destination-point sets for black moving from high points to low points."""
-
-    candidate_destinations: set[int] = set()
-    for source in POINT_IDS:
-        stack = stack_at(points, int(source))
-        if str(stack.owner) != PLAYER_BLACK or int(stack.count) <= 0:
-            continue
-        for die in dice:
-            dest = int(source) - int(die)
-            if int(dest) in POINT_IDS:
-                candidate_destinations.add(int(dest))
-
-    blocked = tuple(sorted(point for point in candidate_destinations if is_blocked_by_white(points, point)))
-    legal = tuple(sorted(point for point in candidate_destinations if point not in set(blocked)))
-    hit = tuple(sorted(point for point in legal if is_white_blot(points, point)))
-    return BackgammonOutcome(
-        legal_destinations=legal,
-        hit_destinations=hit,
-        blocked_destinations=blocked,
-    )
+    return compute_single_die_destinations(points, dice=dice, active_player=PLAYER_BLACK)
 
 
 def target_destinations_for_query(outcome: BackgammonOutcome, *, query_id: str) -> Tuple[int, ...]:
@@ -160,7 +207,13 @@ def validate_backgammon_sample(sample: BackgammonSample) -> None:
             raise ValueError(f"unsupported checker owner: {stack.owner}")
         if int(stack.count) < 1:
             raise ValueError("occupied points must have positive checker count")
-    outcome = compute_black_single_die_destinations(sample.points, dice=sample.dice)
+    if str(sample.active_player) not in {PLAYER_BLACK, PLAYER_WHITE}:
+        raise ValueError(f"unsupported active player: {sample.active_player}")
+    outcome = compute_single_die_destinations(
+        sample.points,
+        dice=sample.dice,
+        active_player=str(sample.active_player),
+    )
     expected = target_destinations_for_query(outcome, query_id=str(sample.query_id))
     if tuple(expected) != tuple(sample.target_destinations):
         raise ValueError("target destinations do not match recomputed outcome")
@@ -179,10 +232,15 @@ __all__ = [
     "BackgammonSample",
     "checker_entity_id",
     "compute_black_single_die_destinations",
+    "compute_single_die_destinations",
+    "destination_for_player",
     "die_entity_id",
     "empty_points",
     "is_blocked_by_white",
+    "is_blocked_by_opponent",
+    "is_opponent_blot",
     "is_white_blot",
+    "opponent_for_player",
     "point_entity_id",
     "stack_at",
     "target_destinations_for_query",

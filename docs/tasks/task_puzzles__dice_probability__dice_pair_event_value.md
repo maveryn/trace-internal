@@ -12,6 +12,7 @@
 2. `query_id`: `pair_sum_probability|pair_sum_threshold_probability|pair_difference_probability|pair_parity_combo_probability|pair_color_value_combo_probability`
 3. Dice count per tray: `3..5`
 4. Answer type: `string`
-5. Evidence type: `bbox_set`
-6. Evidence target: the full Tray A box followed by the full Tray B box
+5. Evidence type: `keyed_bbox_map`
+6. Evidence keys: `tray_a` and `tray_b`
 7. Scene variants: `dice_tray_clean|dice_tray_felt|dice_tray_notebook`
+8. Render metadata records the sampled shared panel style, `dice_visual_style`, tray label font, and the reduced post-image noise policy used to preserve semantic die color and pip readability.

@@ -442,6 +442,7 @@ def render_procedural_named_icon_field_scene(
         corner_radius_px=int(render_params["panel_corner_radius_px"]),
         title_font_size_px=int(render_params["panel_title_font_size_px"]),
         scene_title="Scene",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
     )
     rows, cols = _resolve_grid(count=len(icon_specs), content_bbox=layout.scene_content_xyxy)
     _draw_layout_guides(

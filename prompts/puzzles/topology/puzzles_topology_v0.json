@@ -30,14 +30,14 @@
       "",
       ""
     ],
-    "voxel_ladder_route_label_query": [
+    "voxel_ladder_checkpoint_sequence_query": [
       "",
       "",
       "",
       "",
       ""
     ],
-    "voxel_ladder_route_count_query": [
+    "voxel_ladder_checkpoint_reachability_query": [
       "",
       "",
       "",
@@ -202,13 +202,6 @@
       "Starting at START, how many colored checkpoint cubes can be reached without leaving the cube platforms?",
       "What is the number of reachable colored checkpoints from START?",
       "Count all colored checkpoint cubes that are reachable from START through the voxel maze."
-    ],
-    "shortest_ladder_count": [
-      "How many black ladders are used on the shortest valid route from START to GOAL?",
-      "Trace the shortest START-to-GOAL route. What is the number of ladders used?",
-      "Count the black ladders on the shortest route from START to GOAL.",
-      "What is the fewest number of ladders needed to reach GOAL from START?",
-      "Following the shortest valid route through cube tops and ladders, how many ladders are used?"
     ]
   },
   "allow_empty_task_templates": true

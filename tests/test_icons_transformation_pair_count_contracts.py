@@ -26,17 +26,18 @@ def test_icons_transformation_pair_count_deterministic() -> None:
 
 
 def test_icons_transformation_pair_count_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons__pair_grid__pair_geometric_transform_count"
+    task_id = "task_icons__pair_grid__pair_relation_count"
+    output_root = tmp_path / task_id
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons__pair_grid__pair_geometric_transform_count",
+        dataset_name=f"build_smoke_{task_id}",
         instance_version="v0",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons__pair_grid__pair_geometric_transform_count",
+                task_id=task_id,
                 count=4,
-                params={},
+                params={"query_id": "same_pair_transform"},
             )
         ],
         strict_repro=False,
@@ -51,7 +52,7 @@ def test_icons_transformation_pair_count_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "transformation" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons__pair_grid__pair_geometric_transform_count"]) == 4
+    assert int(build_report["accepted_counts_by_task"][task_id]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

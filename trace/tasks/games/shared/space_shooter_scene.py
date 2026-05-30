@@ -9,7 +9,9 @@ from PIL import Image, ImageDraw
 
 from ....core.seed import hash64
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .layout import apply_games_layout_jitter_to_bbox
+from .scene_style import GamePanelSceneStyle, draw_panel_scene_chrome, game_panel_scene_style_metadata
 from .space_shooter_common import SpaceBlocker, SpaceEnemy, SpaceProjectile, lane_entity_id
 
 
@@ -34,6 +36,7 @@ class SpaceShooterRenderParams:
     player_ship_width_px: int
     player_ship_height_px: int
     label_font_size_px: int
+    font_family: str = ""
     layout_jitter_meta: Dict[str, Any] | None = None
 
 
@@ -171,6 +174,7 @@ def _fit_text(
     text: str,
     fill: Tuple[int, int, int],
     max_size_px: int,
+    font_family: str = "",
     bold: bool = True,
 ) -> None:
     """Draw centered text inside one bbox."""
@@ -185,11 +189,12 @@ def _fit_text(
         min_size_px=8,
         max_size_px=int(max_size_px),
         fill_ratio=0.78,
+        font_family=str(font_family) or None,
     )
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw.text(
+    draw_text_traced(draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -197,7 +202,7 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-    )
+     role="readout", required=False,)
 
 
 def _draw_enemy(
@@ -207,6 +212,7 @@ def _draw_enemy(
     enemy: SpaceEnemy,
     theme: SpaceShooterTheme,
     label_font_size_px: int,
+    font_family: str = "",
 ) -> None:
     """Draw one enemy ship."""
 
@@ -225,7 +231,14 @@ def _draw_enemy(
     draw.polygon(body, fill=tuple(int(v) for v in theme.enemy_fill_rgb), outline=tuple(int(v) for v in theme.enemy_outline_rgb))
     draw.line(body + [body[0]], fill=tuple(int(v) for v in theme.enemy_outline_rgb), width=max(2, int(round(0.05 * height))))
     label_box = (left + 0.28 * width, top + 0.24 * height, right - 0.28 * width, bottom - 0.28 * height)
-    _fit_text(draw, bbox=label_box, text=str(enemy.label), fill=theme.enemy_text_rgb, max_size_px=int(label_font_size_px))
+    _fit_text(
+        draw,
+        bbox=label_box,
+        text=str(enemy.label),
+        fill=theme.enemy_text_rgb,
+        max_size_px=int(label_font_size_px),
+        font_family=str(font_family),
+    )
 
 
 def _draw_projectile(
@@ -309,6 +322,7 @@ def render_space_shooter_scene(
     style_variant: str,
     params: SpaceShooterRenderParams,
     highlight_player_lane: bool = False,
+    panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedSpaceShooterScene:
     """Render one Space-shooter playfield."""
 
@@ -335,6 +349,24 @@ def render_space_shooter_scene(
     else:
         layout_jitter = {}
 
+    clip_left, clip_top, clip_right, clip_bottom = playfield_bbox
+    panel_bbox: Tuple[int, int, int, int] | None = None
+    if panel_style is not None:
+        panel_pad = max(16, int(round(float(params.panel_margin_px) * 0.55)))
+        panel_bbox = (
+            max(4, int(round(clip_left)) - panel_pad),
+            max(4, int(round(clip_top)) - panel_pad),
+            min(int(params.canvas_width) - 4, int(round(clip_right)) + panel_pad),
+            min(int(params.canvas_height) - 4, int(round(clip_bottom)) + panel_pad),
+        )
+        draw_panel_scene_chrome(
+            draw,
+            bbox=panel_bbox,
+            style=panel_style,
+            radius=30,
+            border_width=max(2, int(round(float(params.playfield_border_width_px) * 0.45))),
+        )
+
     draw.rounded_rectangle(
         playfield_bbox,
         radius=20,
@@ -342,7 +374,6 @@ def render_space_shooter_scene(
         outline=tuple(int(v) for v in theme.screen_outline_rgb) + (255,),
         width=int(params.playfield_border_width_px),
     )
-    clip_left, clip_top, clip_right, clip_bottom = playfield_bbox
     for star_index in range(70):
         sx = float(clip_left + 20 + (int(hash64(star_index, "space.star.x")) % max(1, int(playfield_width - 40))))
         sy = float(clip_top + 16 + (int(hash64(star_index, "space.star.y")) % max(1, int(playfield_height - 96))))
@@ -497,7 +528,14 @@ def render_space_shooter_scene(
             dx_frac=float(enemy.dx_frac),
             dy_px=float(enemy.dy_px),
         )
-        _draw_enemy(draw, bbox=bbox, enemy=enemy, theme=theme, label_font_size_px=int(params.label_font_size_px))
+        _draw_enemy(
+            draw,
+            bbox=bbox,
+            enemy=enemy,
+            theme=theme,
+            label_font_size_px=int(params.label_font_size_px),
+            font_family=str(params.font_family),
+        )
         enemy_bboxes[str(enemy.enemy_id)] = bbox
         entity_bboxes[str(enemy.enemy_id)] = bbox
         scene_entities.append(
@@ -513,6 +551,7 @@ def render_space_shooter_scene(
 
     render_map = {
         "playfield_bbox_px": [round(float(v), 3) for v in playfield_bbox],
+        "panel_bbox_px": None if panel_bbox is None else [int(value) for value in panel_bbox],
         "lane_bboxes_px": {str(key): list(value) for key, value in lane_bboxes.items()},
         "enemy_bboxes_px": {str(key): list(value) for key, value in enemy_bboxes.items()},
         "projectile_bboxes_px": {str(key): list(value) for key, value in projectile_bboxes.items()},
@@ -520,6 +559,9 @@ def render_space_shooter_scene(
         "entity_bboxes_px": {str(key): list(value) for key, value in entity_bboxes.items()},
         "player_ship_bbox_px": list(player_bbox),
         "layout_jitter": dict(layout_jitter),
+        "font_family": str(params.font_family),
+        "text_style": {"font_family": str(params.font_family)},
+        "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
     }
     return RenderedSpaceShooterScene(
         image=image.convert("RGB"),

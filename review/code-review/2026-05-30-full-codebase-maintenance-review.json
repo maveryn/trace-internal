@@ -173,8 +173,8 @@
       "impact": "Review, release readiness, and calibration provenance are unreliable while intentional source changes are mixed with untracked files and unrelated dirty state.",
       "recommendation": "Split the workspace into intentional change sets and either stage or explicitly discard every source-like file before treating the branch as reviewable.",
       "validation_target": "git status --short over source roots is clean or contains only the intended patch.",
-      "status": "triaged_pending_commit_split",
-      "resolution": "Cache directories, notebook checkpoint directories, and Python bytecode under active source/review roots were removed. Dirty-tree manifest created at review/code-review/2026-05-30-dirty-tree-triage.md and .json, with cleanup action list at review/code-review/2026-05-30-cr001-cleanup-action-list.md. Deleted tracked files were reviewed as retired/inactive surfaces to keep deleted, including deleted illustration code/test paths after checking for active import references; untracked source-like files were reviewed as active additions to keep/stage. Remaining tracked-modified files need commit splitting rather than blind reversion."
+      "status": "resolved",
+      "resolution": "Cache directories, notebook checkpoint directories, and Python bytecode under active source/review roots were removed. Dirty-tree manifest created at review/code-review/2026-05-30-dirty-tree-triage.md and .json, with cleanup action list at review/code-review/2026-05-30-cr001-cleanup-action-list.md. Deleted tracked files were reviewed as retired/inactive surfaces to keep deleted, including deleted illustration code/test paths after checking for active import references; untracked source-like files were reviewed as active additions to keep/stage. The reviewed source state was committed as 2b85e21a, f3265030, 17a1d9eb, 07c1bd67, a0f2c875, 48404ee1, and 12e1ed1d."
     },
     {
       "id": "CR-002",

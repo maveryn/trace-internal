@@ -33,7 +33,7 @@ Scope: TRACE repository maintenance review excluding `rlvr/`. The audit focused 
 
 | ID | Severity | Status | Area | Finding |
 | --- | --- | --- | --- | --- |
-| CR-001 | High | Triaged | Repo hygiene | The working tree has a very large amount of source-like dirty state that should be resolved before release, merge, or authoritative review. |
+| CR-001 | High | Resolved | Repo hygiene | The working tree had a very large amount of source-like dirty state that needed resolution before release, merge, or authoritative review. |
 | CR-002 | High | Resolved | Benchmark scripts | Vero/benchmark coverage scripts reference inactive public task ids, so coverage mapping can silently under-report or misroute gaps. |
 | CR-003 | Medium | Resolved | Skills/docs | Icon complexity guidance references removed icon task ids. |
 | CR-004 | Medium | Resolved | Docs | `CODE_REVIEW_GUIDELINES.md` has duplicate rule numbers in the same distilled-list sequence. |
@@ -48,7 +48,15 @@ Scope: TRACE repository maintenance review excluding `rlvr/`. The audit focused 
 
 Severity: High
 
-Status: Triaged. Cache directories, notebook checkpoint directories, and Python bytecode under active source/review roots were removed. A file-level dirty-tree manifest was created at `review/code-review/2026-05-30-dirty-tree-triage.md` and `review/code-review/2026-05-30-dirty-tree-triage.json`, with a cleanup action list at `review/code-review/2026-05-30-cr001-cleanup-action-list.md`. Deleted tracked files were reviewed as retired/inactive surfaces to keep deleted, including the deleted illustration code/test paths after checking for active import references. Untracked source-like files were reviewed as active additions to keep/stage. The remaining tracked-modified set still needs commit splitting rather than blind reversion.
+Status: Resolved. Cache directories, notebook checkpoint directories, and Python bytecode under active source/review roots were removed. A file-level dirty-tree manifest was created at `review/code-review/2026-05-30-dirty-tree-triage.md` and `review/code-review/2026-05-30-dirty-tree-triage.json`, with a cleanup action list at `review/code-review/2026-05-30-cr001-cleanup-action-list.md`. Deleted tracked files were reviewed as retired/inactive surfaces to keep deleted, including the deleted illustration code/test paths after checking for active import references. Untracked source-like files were reviewed as active additions to keep/stage. The reviewed source state is now represented by clean commits:
+
+- `2b85e21a` Organize review workspace and shared tooling
+- `f3265030` Group chart rendering and task updates
+- `17a1d9eb` Group graph and pages rendering updates
+- `07c1bd67` Group puzzle game and icon updates
+- `a0f2c875` Group geometry and physics diagram updates
+- `48404ee1` Group illustration and three dimensional task updates
+- `12e1ed1d` Refresh active task registry inventory
 
 Evidence:
 - `git status --short` over reviewed source roots reported approximately 1033 modified files, 52 deleted files, and 134 untracked files.
@@ -59,12 +67,12 @@ Impact:
 - Code review, release readiness, and calibration provenance become unreliable while source files are untracked or mixed with unrelated edits.
 
 Recommendation:
-- Split the workspace into intentional change sets.
+- Keep future source changes in intentional commits before authoritative review.
 - Stage or explicitly discard every source-like file before treating this branch as reviewable.
 - Keep generated review output under `review/task-reviews/` and persistent review/audit notes under `review/docs/` or `review/code-review/`.
 
 Validation target:
-- `git status --short -- trace scripts docs configs prompts tests skills assets eval review AGENTS.md README.md pyproject.toml` should be clean or contain only the intended patch.
+- `git status --short -uall --ignored=no` should be clean or contain only the intended patch.
 
 ### CR-002: Benchmark coverage scripts reference inactive task ids
 

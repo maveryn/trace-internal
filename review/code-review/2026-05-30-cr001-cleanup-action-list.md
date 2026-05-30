@@ -240,4 +240,12 @@ This action list converts the dirty-tree triage into file-level recommendations.
 
 ## Next Gate
 
-CR-001 can be marked resolved only after these keep/delete/revert decisions are represented in a clean commit or an explicitly approved cleanup patch.
+Resolved. The keep/delete/stage decisions above were represented in clean commits:
+
+- `2b85e21a` Organize review workspace and shared tooling
+- `f3265030` Group chart rendering and task updates
+- `17a1d9eb` Group graph and pages rendering updates
+- `07c1bd67` Group puzzle game and icon updates
+- `a0f2c875` Group geometry and physics diagram updates
+- `48404ee1` Group illustration and three dimensional task updates
+- `12e1ed1d` Refresh active task registry inventory

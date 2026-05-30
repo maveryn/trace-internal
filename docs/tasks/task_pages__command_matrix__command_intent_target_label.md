@@ -6,7 +6,7 @@
 3. Task id: `task_pages__command_matrix__command_intent_target_label`
 4. Objective: identify the labeled command cell matching referenced intent/object cues, a shuffled intent guide, object row cue chips, and coded action header.
 5. Answer type: `option_letter`
-6. Evidence type: ordered `bbox_set`
+6. Evidence type: `keyed_bbox_map`
 
 ## Variants
 1. `query_id=command_intent_target_label`: prompt gives an intent cue and visible object row label.
@@ -28,8 +28,8 @@
 
 ## Answer And Evidence
 1. Answer is the candidate label of the command cell at the requested object/action intersection.
-2. Evidence for `command_intent_target_label` contains four boxes in order: the intent-guide card bbox, the object row bbox, the coded action header bbox, then the target command-control bbox.
-3. Evidence for `dual_guide_command_label` contains five boxes in order: the intent-guide card bbox, the object cue chip bbox, the object row bbox, the coded action header bbox, then the target command-control bbox.
+2. Evidence for `command_intent_target_label` is a keyed bbox map with keys `action_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
+3. Evidence for `dual_guide_command_label` is a keyed bbox map with keys `action_cue_guide`, `object_cue_guide`, `object_row`, `action_code_header`, and `target_command_cell`.
 4. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
 5. Prompt text uses short cue phrases, so the visible row/header must be found through the guide-card mappings.
 

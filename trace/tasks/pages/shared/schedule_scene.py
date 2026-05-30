@@ -11,6 +11,7 @@ from ....core.seed import hash64
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.time_artifact_style import TimeArtifactScheduleTheme
 from ...shared.time_format import format_day_time_hhmm
+from ...shared.text_legibility import draw_text_traced
 
 
 SUPPORTED_PAGE_SCHEDULE_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -268,12 +269,12 @@ def render_day_schedule_scene(
         draw.line([(planner_left, y), (planner_right, y)], fill=line_color, width=int(line_width))
         if minute_value < int(end_total_minutes) and is_hour:
             time_text = format_day_time_hhmm(int(minute_value))
-            draw.text(
+            draw_text_traced(draw,
                 (float(panel_bbox[0] + 8), float(y - (0.5 * render_params.hour_label_font_size_px))),
                 str(time_text),
                 font=hour_label_font,
                 fill=visual_theme.time_text_rgb,
-            )
+             role="readout", required=False,)
 
     reference_band_line_ys: Tuple[float, float] | None = None
     if bool(show_reference_time_band):

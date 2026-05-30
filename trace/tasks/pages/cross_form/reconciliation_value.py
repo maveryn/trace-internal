@@ -18,7 +18,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.common import projected_document_bbox_evidence
 from ..shared.complexity import (
     build_pages_complexity,
     clamp_unit_interval,
@@ -63,39 +62,21 @@ POST_IMAGE_NOISE_DEFAULTS = load_pages_noise_defaults(task_group="cross_form", a
 def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
     """Return stable JSON examples that match the active reconciliation variant."""
 
+    def _example_evidence() -> list[list[int]]:
+        evidence: list[list[int]] = []
+        for index in range(1, 4):
+            y0 = 300 + (index * 48)
+            y1 = y0 + 22
+            evidence.append([850, y0 - 8, 1268, y1 + 8])
+        return evidence
+
     examples = {
-        "total_amount_delta": (
-            [
-                [120, 330, 180, 352],
-                [380, 330, 430, 352],
-                [890, 330, 950, 352],
-                [1160, 330, 1210, 352],
-                [500, 330, 555, 352],
-            ],
-            864,
-        ),
-        "shortfall_minus_overage_value": (
-            [
-                [120, 420, 180, 442],
-                [380, 420, 430, 442],
-                [890, 420, 950, 442],
-                [1160, 420, 1210, 442],
-                [500, 420, 555, 442],
-            ],
-            324,
-        ),
-        "sum_absolute_quantity_differences": (
-            [
-                [120, 510, 180, 532],
-                [380, 510, 430, 532],
-                [890, 510, 950, 532],
-                [1160, 510, 1210, 532],
-            ],
-            42,
-        ),
+        "total_amount_delta": (_example_evidence(), 864),
+        "shortfall_minus_overage_value": (_example_evidence(), 324),
+        "sum_absolute_quantity_differences": (_example_evidence(), 42),
     }
-    evidence_bboxes, answer_value = examples[str(query_id)]
-    answer_and_evidence = {"evidence": evidence_bboxes, "answer": int(answer_value)}
+    evidence_map, answer_value = examples[str(query_id)]
+    answer_and_evidence = {"evidence": evidence_map, "answer": int(answer_value)}
     answer_only = {"answer": int(answer_value)}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -199,12 +180,12 @@ class PagesCrossFormReconciliationValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bbox_ids = [str(bbox_id) for bbox_id in dataset["evidence_bbox_ids"]]
-        evidence_projection = projected_document_bbox_evidence(
-            dict(rendered_scene.cell_value_bbox_map),
-            evidence_bbox_ids,
-        )
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_bbox_ids = [str(value) for value in dataset["evidence_bbox_ids"]]
+        evidence_bboxes = [
+            [round(float(value), 3) for value in rendered_scene.row_bbox_map[str(bbox_id)]]
+            for bbox_id in evidence_bbox_ids
+        ]
+        supporting_cell_bbox_ids = {str(key): str(value) for key, value in dict(dataset["supporting_cell_bbox_ids"]).items()}
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
@@ -299,14 +280,21 @@ class PagesCrossFormReconciliationValueTask:
                 "mismatch_item_ids": [str(item) for item in dataset["mismatch_item_ids"]],
                 "answer_value": int(answer_value),
                 "evidence_bbox_ids": list(evidence_bbox_ids),
+                "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
                 "supporting_bbox_ids": list(evidence_bbox_ids),
                 "evidence_semantics": str(query_id),
             },
             "witness_symbolic": {
-                "type": "ordered_cell_bbox_ids",
+                "type": "receiving_row_bbox_ids",
                 "ids": list(evidence_bbox_ids),
+                "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
             },
-            "projected_evidence": dict(evidence_projection),
+            "projected_evidence": {
+                "type": "bbox_set",
+                "bbox_set": list(evidence_bboxes),
+                "pixel_bbox_set": list(evidence_bboxes),
+                "evidence_bbox_ids": list(evidence_bbox_ids),
+            },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
             "answer_gt": answer_gt.to_dict(),

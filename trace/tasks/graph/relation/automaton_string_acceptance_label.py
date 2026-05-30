@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_legibility import draw_centered_readable_text, draw_readable_text, resolve_readable_text_style
 from ...shared.text_rendering import load_font
 from ..shared.complexity import (
     build_graph_complexity,
@@ -555,6 +556,7 @@ def _draw_candidate_options_panel(
     sample: _AcceptanceSample,
     render_params: GraphRenderParams,
     option_panel_height_px: int,
+    layout_seed: int,
 ) -> Tuple[Image.Image, Dict[str, list[int]], Dict[str, Any]]:
     """Extend the graph render with a labeled candidate-string option panel."""
 
@@ -583,10 +585,37 @@ def _draw_candidate_options_panel(
         outline=tuple(int(value) for value in render_params.panel_border_rgb),
         width=2,
     )
-    title_font = load_font(17, bold=True)
-    option_font = load_font(20, bold=True)
+    title_font = load_font(17, bold=True, font_family=str(render_params.font_family or ""))
+    option_font = load_font(18, bold=True, font_family=str(render_params.font_family or ""))
     text_fill = tuple(int(value) for value in render_params.title_color_rgb)
-    draw.text((panel[0] + 18, panel[1] + 10), "Candidate strings", fill=text_fill, font=title_font)
+    title_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.automaton.candidate_panel_title_text",
+        role="automaton_candidate_panel_title_text",
+        surface_rgbs=(tuple(int(value) for value in render_params.panel_fill_rgb),),
+        preferred_rgbs=(text_fill,),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
+    option_chip_fill = tuple(int(value) for value in render_params.panel_fill_rgb)
+    option_chip_outline = tuple(int(value) for value in render_params.panel_border_rgb)
+    option_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.automaton.candidate_option_text",
+        role="automaton_candidate_option_text",
+        surface_rgbs=(option_chip_fill,),
+        preferred_rgbs=(text_fill,),
+        min_contrast_ratio=7.0,
+        min_lab_distance=38.0,
+    )
+    draw_readable_text(
+        draw,
+        xy=(panel[0] + 18, panel[1] + 10),
+        text="Candidate strings",
+        font=title_font,
+        style=title_style,
+        stroke_width=2,
+    )
 
     option_bboxes: Dict[str, list[int]] = {}
     columns = 3
@@ -609,15 +638,19 @@ def _draw_candidate_options_panel(
         draw.rounded_rectangle(
             (x0, y0, x1, y1),
             radius=10,
-            fill=(255, 255, 255),
-            outline=(205, 214, 226),
+            fill=option_chip_fill,
+            outline=option_chip_outline,
             width=1,
         )
         text = f"{str(option_label)}: {sample.candidate_strings_by_option[str(option_label)]}"
-        bbox = draw.textbbox((0, 0), text, font=option_font)
-        tx = int(x0 + max(10, (cell_w - int(bbox[2] - bbox[0])) // 2))
-        ty = int(y0 + max(4, (cell_h - int(bbox[3] - bbox[1])) // 2) - 1)
-        draw.text((tx, ty), text, fill=text_fill, font=option_font)
+        draw_centered_readable_text(
+            draw,
+            center=(0.5 * float(x0 + x1), 0.5 * float(y0 + y1)),
+            text=text,
+            font=option_font,
+            style=option_style,
+            stroke_width=2,
+        )
         option_bboxes[str(option_label)] = [int(x0), int(y0), int(x1), int(y1)]
 
     return image, option_bboxes, {
@@ -728,6 +761,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                     start_label=str(sample.start_label),
                     accepting_labels=tuple(str(label) for label in sample.accepting_labels),
                     render_params=render_params,
+                    layout_seed=int(instance_seed + attempt),
                 )
                 image_with_options, option_bboxes, option_panel_meta = _draw_candidate_options_panel(
                     rendered_scene=rendered_scene,
@@ -739,6 +773,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                             group_default(_RENDER_DEFAULTS, "option_panel_height_px", _DEFAULTS.option_panel_height_px),
                         )
                     ),
+                    layout_seed=int(instance_seed + attempt),
                 )
                 image, post_noise_meta = apply_post_image_noise(
                     image_with_options,
@@ -764,7 +799,8 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint",
+                "evidence_hint_dfa_accepted_string_label",
+                "evidence_hint_nfa_accepted_string_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -772,6 +808,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -784,7 +821,7 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                 "object_description": str(prompt_defaults["object_description"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -950,6 +987,11 @@ class GraphRelationAutomatonStringAcceptanceLabelTask:
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
                     "label_stroke_width_px": int(rendered_scene.resolved_label_stroke_width_px),
+                    "font_family": str(render_params.font_family or ""),
+                    "font_asset": dict(render_params.font_asset) if isinstance(render_params.font_asset, Mapping) else {},
+                    "font_asset_version": str(render_params.font_asset_version or ""),
+                    "font_exclusion_reason": str(render_params.font_exclusion_reason),
+                    "context_text_elements": list(render_panel_geometry.get("context_text_elements", [])),
                     "automaton_accepting_state_glyph": "double_inner_ring",
                     "automaton_start_state_glyph": "incoming_start_arrow",
                     "transition_labels_by_edge": list(transition_entries),

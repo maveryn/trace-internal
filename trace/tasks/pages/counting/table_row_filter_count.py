@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 
 
 TASK_ID = "gui_counting_table_row_filter_internal"
@@ -264,7 +265,7 @@ def _draw_text_left(
     )
     _width, height = _measure_text(draw, str(text), font)
     y = float(y1) + max(0.0, (float(y2 - y1) - float(height)) / 2.0) - 1.0
-    draw.text((float(x1), float(y)), str(text), fill=fill, font=font)
+    draw_text_traced(draw,(float(x1), float(y)), str(text), fill=fill, font=font, role="readout", required=False)
 
 
 def _draw_text_center_fit(
@@ -937,9 +938,9 @@ def _draw_app_chrome(
     for idx, color in enumerate(((221, 91, 84), (229, 174, 65), (88, 174, 104))):
         draw.ellipse([window[0] + 18 + idx * 22, dot_y - 6, window[0] + 30 + idx * 22, dot_y + 6], fill=color)
     title_font = load_font(int(render_params.title_font_size_px), bold=True)
-    draw.text((window[0] + 98, title_bar[1] + 10), str(profile.app_title), fill=theme.title_text, font=title_font)
+    draw_text_traced(draw,(window[0] + 98, title_bar[1] + 10), str(profile.app_title), fill=theme.title_text, font=title_font, role="readout", required=False)
     small_font = load_font(int(render_params.small_font_size_px), bold=False)
-    draw.text((window[2] - 255, title_bar[1] + 16), str(profile.window_title), fill=theme.title_text, font=small_font)
+    draw_text_traced(draw,(window[2] - 255, title_bar[1] + 16), str(profile.window_title), fill=theme.title_text, font=small_font, role="readout", required=False)
     menu_y1 = title_bar[3]
     menu_y2 = menu_y1 + int(render_params.menu_bar_height_px)
     draw.rectangle([window[0], menu_y1, window[2], menu_y2], fill=theme.panel_fill, outline=theme.chrome_line)
@@ -947,7 +948,7 @@ def _draw_app_chrome(
     tab_x = window[0] + 26
     for idx, tab in enumerate(("File", str(profile.primary_tab), str(profile.secondary_tab), "View", "Help")):
         fill = theme.accent if idx == 1 else theme.muted_text
-        draw.text((tab_x, menu_y1 + 9), tab, fill=fill, font=tab_font)
+        draw_text_traced(draw,(tab_x, menu_y1 + 9), tab, fill=fill, font=tab_font, role="readout", required=False)
         tab_x += 86 if idx else 64
     return (window[0] + 22, menu_y2 + 18, window[2] - 22, window[3] - 18), profile
 
@@ -1003,7 +1004,7 @@ def _render_table_scene(
         bold=True,
     )
     status_font = load_font(int(render_params.small_font_size_px), bold=False)
-    draw.text((title_bar[2] - 142.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=status_font)
+    draw_text_traced(draw,(title_bar[2] - 142.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=status_font, role="readout", required=False)
 
     table = (x1 + 18.0, title_bar[3] + 12.0, x2 - 18.0, y2 - 16.0)
     _rounded_rect(draw, table, radius=int(render_params.table_corner_radius_px), fill=theme.panel_fill, outline=theme.chrome_line, width=1)
@@ -1059,13 +1060,13 @@ def _render_table_scene(
         section_y1 = y_cursor
         section_y2 = section_y1 + int(render_params.section_header_height_px)
         draw.rectangle([table_x1, section_y1, table_x2, section_y2], fill=theme.panel_alt_fill, outline=theme.chrome_line)
-        draw.text((table_x1 + 14.0, section_y1 + 6.0), str(section_name), fill=theme.text, font=section_font)
-        draw.text(
+        draw_text_traced(draw,(table_x1 + 14.0, section_y1 + 6.0), str(section_name), fill=theme.text, font=section_font, role="readout", required=False)
+        draw_text_traced(draw,
             (table_x2 - 92.0, section_y1 + 6.0),
             f"{len(rows_by_section[str(section_name)])} rows",
             fill=theme.muted_text,
             font=section_font,
-        )
+         role="readout", required=False,)
         y_cursor = section_y2
         first_row_y = y_cursor
         for local_index, row in enumerate(rows_by_section[str(section_name)]):

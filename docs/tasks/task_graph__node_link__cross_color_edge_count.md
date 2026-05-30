@@ -27,7 +27,7 @@
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is a `point_pair_set` of endpoint-node-center pairs for every counted edge.
+1. Prompt-facing evidence is a `point_pair_set` of endpoint-node-center pairs for every counted edge; each endpoint is a `[x,y]` pixel point.
 2. For directed graphs, each evidence pair is ordered source-to-target.
 3. `answer_gt.value == len(evidence_gt.value)` by construction, including zero-answer cases.
 4. `execution_trace.node_color_names_by_label` records every node's semantic color.

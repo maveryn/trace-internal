@@ -16,10 +16,22 @@ from trace.tasks.pages.schema.database_diagram import (
 
 def _assert_bboxes_inside_image(out) -> None:
     width, height = out.image.size
-    for bbox in out.evidence_gt.value:
+    evidence_value = out.evidence_gt.value
+    bboxes = evidence_value.values() if isinstance(evidence_value, dict) else evidence_value
+    for bbox in bboxes:
         x0, y0, x1, y1 = [float(value) for value in bbox]
         assert 0.0 <= x0 <= x1 <= float(width)
         assert 0.0 <= y0 <= y1 <= float(height)
+
+
+def _assert_point_pairs_inside_image(out) -> None:
+    width, height = out.image.size
+    for point_pair in out.evidence_gt.value:
+        assert len(point_pair) == 2
+        for point in point_pair:
+            x, y = [float(value) for value in point]
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
 
 
 def test_pages_schema_tasks_are_registered_in_public_taxonomy() -> None:
@@ -42,7 +54,6 @@ def test_pages_schema_field_role_count_contract() -> None:
         ]
 
         assert out.scene_id == "schema"
-        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
@@ -60,18 +71,18 @@ def test_pages_schema_relationship_count_contract() -> None:
         trace = out.trace_payload
         query = trace["execution_trace"]["query"]
         expected = [
-            trace["render_map"]["relationship_bboxes_px"][str(relationship_id)]
+            trace["render_map"]["relationship_point_pairs_px"][str(relationship_id)]
             for relationship_id in query["evidence_relationship_ids"]
         ]
 
         assert out.scene_id == "schema"
-        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
+        assert out.evidence_gt.type == "point_pair_set"
         assert int(out.answer_gt.value) == int(query["answer"])
         assert len(out.evidence_gt.value) == int(out.answer_gt.value)
         assert out.evidence_gt.value == expected
-        _assert_bboxes_inside_image(out)
+        _assert_point_pairs_inside_image(out)
 
 
 def test_pages_schema_generation_is_deterministic() -> None:

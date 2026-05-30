@@ -39,7 +39,7 @@
 8. When `label_variant=short_names`, prompt references to queried labels are quoted, for example node `"Abby"`.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the unordered `point_set` of pixel centers for all nodes matching the requested common-neighbor, common-successor, or common-predecessor condition.
+1. Prompt-facing evidence is the unordered `point_set` of pixel centers for all nodes matching the active query branch: adjacent to both queried nodes, pointed to by both queried nodes, or pointing to both queried nodes.
 2. `answer_gt.value == len(evidence_gt.value)` by construction, including zero-answer cases where evidence is an empty array.
 3. `execution_trace.common_neighbor_mode` records the exact relation mode.
 4. `execution_trace.query_label_a` and `execution_trace.query_label_b` record the two queried labels.

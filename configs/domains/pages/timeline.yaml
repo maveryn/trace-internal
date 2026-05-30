@@ -95,9 +95,9 @@ prompt:
       interval_relation_description_between: strictly between the two highlighted reference events
       interval_relation_description_outside: before the first highlighted reference event or after the second highlighted reference event, excluding the highlighted events
       answer_hint_between: set "answer" to the integer count of events strictly between the two highlighted reference events
-      answer_hint_outside: set "answer" to the integer count of events outside the highlighted interval, excluding the two highlighted reference events
+      answer_hint_outside: set "answer" to the integer count of events in the two outer timeline ranges
       evidence_hint_between: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all event cards strictly between the two highlighted reference events
-      evidence_hint_outside: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all event cards outside the interval bounded by the two highlighted reference events, excluding the highlighted reference events themselves
+      evidence_hint_outside: set "evidence" to an array of bounding boxes [x0, y0, x1, y1] for all counted event cards in the two outer timeline ranges
       json_example_between: '{"evidence":[[412,410,516,480],[538,158,642,228]],"answer":2}'
       json_example_answer_only_between: '{"answer":2}'
       json_example_outside: '{"evidence":[[160,158,264,228],[790,410,894,480]],"answer":2}'

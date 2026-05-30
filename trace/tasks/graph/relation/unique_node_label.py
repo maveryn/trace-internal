@@ -158,9 +158,9 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 
 
 def _build_prompt_json_examples() -> Tuple[str, str]:
-    """Return prompt examples that match the node-bbox evidence format."""
+    """Return prompt examples that match the node-center evidence format."""
 
-    example_evidence = [[280, 164, 326, 210]]
+    example_evidence = [[303, 187]]
     return (
         json.dumps({"evidence": example_evidence, "answer": "B"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": "B"}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -551,8 +551,8 @@ class GraphRelationUniqueNodeLabelTask:
                     layout_fallback_variants=layout_fallback_variants,
                 )
                 evidence_projection = projected_node_point_evidence(rendered_scene, (str(graph_sample.answer_label),))
-                if not evidence_projection.get("pixel_bbox_set"):
-                    raise ValueError("answer node bbox was not rendered")
+                if not evidence_projection.get("pixel_point_set"):
+                    raise ValueError("answer node center was not rendered")
                 image, post_noise_meta = apply_post_image_noise(
                     rendered_scene.image,
                     instance_seed=int(instance_seed),
@@ -578,7 +578,9 @@ class GraphRelationUniqueNodeLabelTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_unique_neighbor_label",
+                "evidence_hint_unique_successor_label",
+                "evidence_hint_unique_predecessor_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -591,6 +593,7 @@ class GraphRelationUniqueNodeLabelTask:
             label_variant=str(query.label_variant),
         )
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description_undirected"
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -604,7 +607,7 @@ class GraphRelationUniqueNodeLabelTask:
                 "query_label": str(prompt_query_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(query_label=str(prompt_query_label)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -614,9 +617,9 @@ class GraphRelationUniqueNodeLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_projection = projected_node_point_evidence(rendered_scene, (str(graph_sample.answer_label),))
-        evidence_bboxes = [[int(round(float(value))) for value in bbox] for bbox in evidence_projection["pixel_bbox_set"]]
+        evidence_points = [[int(round(float(value))) for value in point] for point in evidence_projection["pixel_point_set"]]
         answer_gt = TypedValue(type="string", value=str(graph_sample.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="point_set", value=list(evidence_points))
         supporting_edge = (str(graph_sample.supporting_edge[0]), str(graph_sample.supporting_edge[1]))
         node_entities = [
             {
@@ -812,9 +815,10 @@ class GraphRelationUniqueNodeLabelTask:
                 "supporting_edge": list(supporting_edge),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
+                "type": "point_set",
+                "point_set": list(evidence_points),
+                "pixel_point_set": list(evidence_points),
+                "pixel_bbox_set": [list(bbox) for bbox in evidence_projection["pixel_bbox_set"]],
             },
         }
 

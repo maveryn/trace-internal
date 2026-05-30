@@ -31,7 +31,7 @@
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":"C"}`
 6. Answer+evidence JSON shape: `{"evidence":[[150,250],[310,190],[480,230]],"answer":"C"}`
-7. Prompt-facing evidence is one accepting state-center path for the chosen candidate string.
+7. Prompt-facing evidence is one accepting state-center path for the candidate string whose option label is returned in `answer`.
 
 ## 4) Evidence + Trace Contract
 1. Prompt-facing evidence is the ordered `point_sequence` of state centers on one accepting path.
@@ -43,10 +43,12 @@
 7. `scene_ir.entities` stores state geometry, transition geometry, accepting/start flags, and candidate-option boxes.
 
 ## 5) Visual Policy
-1. Rendering uses the shared graph light-panel style and the existing automaton start/accepting glyphs.
+1. Rendering uses the shared graph light-panel style, role-appropriate shared font pool, and the existing automaton start/accepting glyphs.
 2. State layout, whole-image transform, edge routing, and node color are visual variation only.
-3. Candidate strings are drawn in a separate option panel below the state diagram.
-4. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+3. Optional shared graph context text can appear as non-answer visual context, with state evidence projected after final layout jitter.
+4. State labels, transition labels, the start marker, and candidate-option strings use readable text styles with recorded contrast metadata.
+5. Candidate strings are drawn in a separate option panel below the state diagram using the same sampled font family.
+6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.

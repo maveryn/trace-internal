@@ -229,6 +229,11 @@ class GraphOptimizationAdjacencyMatrixMSTWeightTask:
             subtitle="Undirected graph; blank cells mean no edge.",
             weighted=True,
             font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+            layout_seed=int(instance_seed),
+            font_family=params.get("font_family"),
+            context_text_probability=float(
+                params.get("context_text_probability", group_default(_RENDER_DEFAULTS, "context_text_probability", 0.35))
+            ),
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,

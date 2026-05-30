@@ -72,8 +72,7 @@
    - `pixel_point_set`
    - `pixel_bbox_set`
 7. `execution_trace` records:
-   - `query_id`
-   - `query_id` (always `default`)
+   - `query_id` (the concrete public query branch)
    - `scene_variant`
    - `target_count`
    - feasible support distributions for node count / target count

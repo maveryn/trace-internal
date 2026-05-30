@@ -330,9 +330,9 @@ prompt:
       task_key: map_navigation_query
       object_description_campus_map: a printed campus layout with labeled landmarks,
         named zones, visible walking paths, and a compass
-      evidence_hint_destination_after_directions: set "evidence" to an array of bounding
-        boxes [x0, y0, x1, y1] for the route landmarks from the start through the
-        destination
-      evidence_hint_landmark_after_route_step: set "evidence" to an array of bounding
-        boxes [x0, y0, x1, y1] for the highlighted-route landmarks from the start
-        through the requested landmark
+      evidence_hint_destination_after_directions: set "evidence" to an ordered array
+        of [x0, y0, x1, y1] pixel bounding boxes for the route landmarks from the
+        start through the destination
+      evidence_hint_landmark_after_route_step: set "evidence" to an ordered array
+        of [x0, y0, x1, y1] pixel bounding boxes for the highlighted-route landmarks
+        from the start through the requested landmark

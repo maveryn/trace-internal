@@ -6,7 +6,7 @@
 3. Task id: `task_pages__web_action__web_action_target_label`
 4. Objective: identify the labeled web control that satisfies a visible action instruction by using a cue-to-key guide on a browser-like page.
 5. Answer type: `option_letter`
-6. Evidence type: ordered `bbox_set`
+6. Evidence type: role-keyed `keyed_bbox_map`
 
 ## Variants
 1. `click_target_label`: choose a clickable button/link control for the item card whose visible category/status pair matches the instruction, after matching the instruction cue to the guide key.
@@ -24,7 +24,10 @@
 
 ## Answer And Evidence
 1. Answer is the candidate label of the target web control.
-2. Evidence contains four boxes in order: the instruction banner bbox, the matching guide-card bbox, the supporting page context bbox, then the target control bbox.
+2. Evidence contains four role-keyed boxes using query-specific visible roles:
+   - `click_target_label`: `instruction_banner`, `action_key_guide`, `item_card`, and `target_button`
+   - `type_field_label`: `instruction_banner`, `field_key_guide`, `form_section`, and `target_input`
+   - `select_option_label`: `instruction_banner`, `option_key_guide`, `option_group`, and `target_option`
 3. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
 
 ## Prompt

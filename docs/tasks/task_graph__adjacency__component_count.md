@@ -22,4 +22,5 @@
 3. Directed samples may include one-way edges between SCCs but preserve the requested SCC count.
 4. Node labels use graph label variants `letters|numbers|named`.
 5. The prompt names the concrete representation used in the image, not a combined list/matrix description.
-6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+6. The adjacency panel samples approved font families and readable table/list styles; non-answer header context chips may appear.
+7. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.

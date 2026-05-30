@@ -40,14 +40,17 @@ from ..shared.visual_defaults import load_pages_background_defaults, load_pages_
 
 
 TASK_ID = "pages_schedule_day_planner_base"
-OVERLAP_COUNT_TASK_ID = "task_pages__schedule__overlap_count"
-LONGER_THAN_REFERENCE_TASK_ID = "task_pages__schedule__longer_than_reference_count"
+REFERENCE_INTERVAL_COUNT_TASK_ID = "task_pages__schedule__reference_interval_count"
 MAXIMUM_NON_OVERLAPPING_TASK_ID = "task_pages__schedule__maximum_non_overlapping_count"
 PUBLIC_SCENE_ID = "schedule"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "overlap_count",
   "longer_than_reference_count",
   "maximum_non_overlapping_count",
+)
+REFERENCE_INTERVAL_QUERY_IDS: Tuple[str, ...] = (
+  "overlap_count",
+  "longer_than_reference_count",
 )
 _INTERVAL_REASONING_BASE_BY_VARIANT = {
   "overlap_count": 0.40,
@@ -1176,21 +1179,35 @@ class _FixedScheduleTask(_PagesScheduleDayPlannerBase):
 
 
 @register_task
-class PagesScheduleOverlapCountTask(_FixedScheduleTask):
-  """Count scheduled events that overlap a highlighted reference event."""
+class PagesScheduleReferenceIntervalCountTask(_PagesScheduleDayPlannerBase):
+  """Count schedule events satisfying a relation to one highlighted reference event."""
 
-  task_id = OVERLAP_COUNT_TASK_ID
-  fixed_query_id = "overlap_count"
-  fixed_query_id = "overlap_count"
+  task_id = REFERENCE_INTERVAL_COUNT_TASK_ID
 
-
-@register_task
-class PagesScheduleLongerThanReferenceCountTask(_FixedScheduleTask):
-  """Count scheduled events longer than a highlighted reference event."""
-
-  task_id = LONGER_THAN_REFERENCE_TASK_ID
-  fixed_query_id = "longer_than_reference_count"
-  fixed_query_id = "longer_than_reference_count"
+  def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    scoped_params = dict(params)
+    explicit_query_id = scoped_params.get("query_id")
+    if explicit_query_id is not None and str(explicit_query_id) != "default":
+      if str(explicit_query_id) not in set(REFERENCE_INTERVAL_QUERY_IDS):
+        raise ValueError(f"query_id={explicit_query_id!r} is not valid for {self.task_id}")
+    else:
+      scoped_params.pop("query_id", None)
+      scoped_params["query_id_weights"] = {str(query_id): 1.0 for query_id in REFERENCE_INTERVAL_QUERY_IDS}
+    output = super().generate(
+      int(instance_seed),
+      params=scoped_params,
+      max_attempts=int(max_attempts),
+    )
+    probabilities = {}
+    execution = output.trace_payload.get("execution_trace") if isinstance(output.trace_payload, dict) else None
+    if isinstance(execution, dict) and isinstance(execution.get("query_id_probabilities"), dict):
+      probabilities = {str(key): float(value) for key, value in execution["query_id_probabilities"].items()}
+    return rewrite_time_artifact_query_output(
+      output,
+      query_id=str(output.query_id),
+      scene_id=PUBLIC_SCENE_ID,
+      query_probabilities=probabilities or {str(output.query_id): 1.0},
+    )
 
 
 @register_task
@@ -1199,11 +1216,10 @@ class PagesScheduleMaximumNonOverlappingCountTask(_FixedScheduleTask):
 
   task_id = MAXIMUM_NON_OVERLAPPING_TASK_ID
   fixed_query_id = "maximum_non_overlapping_count"
-  fixed_query_id = "maximum_non_overlapping_count"
 
 
 __all__ = [
-  "PagesScheduleOverlapCountTask",
-  "PagesScheduleLongerThanReferenceCountTask",
+  "PagesScheduleReferenceIntervalCountTask",
   "PagesScheduleMaximumNonOverlappingCountTask",
+  "REFERENCE_INTERVAL_QUERY_IDS",
 ]

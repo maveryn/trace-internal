@@ -35,11 +35,11 @@
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":3}`
 6. Answer+evidence JSON shape: `{"evidence":[[180,220],[310,180]],"answer":3}`
-7. Prompt-facing evidence uses pixel-space node centers for every node attaining the queried extreme degree value.
+7. Prompt-facing evidence uses pixel-space node centers for every node attaining the active branch's maximum/minimum degree, in-degree, out-degree, or total-degree value.
 8. If the node label format is `short_names`, prompt references quote the node label, for example node `"Abby"`.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_set` of node centers for all nodes whose queried degree equals the extreme value.
+1. Prompt-facing evidence is the `point_set` of node centers for all nodes whose branch-specific degree value equals the requested maximum or minimum.
 2. `answer_gt.value == execution_trace.target_degree` by construction.
 3. `len(evidence_gt.value)` may be greater than one when multiple nodes tie for the same extreme value.
 4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, `out_degree`, or `total_degree`.

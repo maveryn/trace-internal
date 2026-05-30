@@ -53,9 +53,7 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == "purchase_receipt_pair"
         assert str(execution["question_format"]) == "cross_form_reconciliation_value"
@@ -69,14 +67,19 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
         assert [str(item) for item in execution["receiving_item_order_ids"]] != [
             str(spec["item_id"]) for spec in item_specs
         ]
+        assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
         assert [str(item) for item in execution["supporting_bbox_ids"]] == evidence_bbox_ids
+        assert all(str(item).startswith("recv:") for item in evidence_bbox_ids)
+        assert set(evidence_bbox_ids) == {f"recv:{item_id}" for item_id in execution["mismatch_item_ids"]}
 
         expected_bboxes = [
-            [float(value) for value in render_map["cell_value_bboxes_px"][bbox_id]]
+            [float(value) for value in render_map["row_bboxes_px"][bbox_id]]
             for bbox_id in evidence_bbox_ids
         ]
         assert evidence_bboxes == expected_bboxes
+        supporting_cell_bbox_ids = dict(execution["supporting_cell_bbox_ids"])
+        assert supporting_cell_bbox_ids
 
         visible_numbers = {
             int(value)
@@ -87,15 +90,18 @@ def test_pages_cross_form_reconciliation_value_contract_matches_trace() -> None:
 
         if str(query_id) == "total_amount_delta":
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == 5 * len(execution["mismatch_item_ids"])
+            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert sum(1 for role in supporting_cell_bbox_ids if role.endswith("_unit_value")) == len(execution["mismatch_item_ids"])
         elif str(query_id) == "shortfall_minus_overage_value":
             assert len(execution["shortfall_item_ids"]) >= 1
             assert len(execution["overage_item_ids"]) >= 1
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == 5 * len(execution["mismatch_item_ids"])
+            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert sum(1 for role in supporting_cell_bbox_ids if role.endswith("_unit_value")) == len(execution["mismatch_item_ids"])
         elif str(query_id) == "sum_absolute_quantity_differences":
             assert 3 <= len(execution["mismatch_item_ids"]) <= 5
-            assert len(evidence_bbox_ids) == 4 * len(execution["mismatch_item_ids"])
+            assert len(evidence_bbox_ids) == len(execution["mismatch_item_ids"])
+            assert not any(role.endswith("_unit_value") for role in supporting_cell_bbox_ids)
 
 
 def test_pages_cross_form_reconciliation_prompt_examples_match_contract() -> None:
@@ -153,3 +159,28 @@ def test_pages_cross_form_reconciliation_balanced_sampling_covers_variants() -> 
     }
     assert set(scene_variants.keys()) == {"purchase_receipt_pair"}
     assert all(count >= 3 for count in query_ids.values())
+
+
+def test_pages_cross_form_reconciliation_layout_jitter_stays_in_bounds() -> None:
+    task = PagesCrossFormReconciliationValueTask()
+
+    for dx, dy in ((24, 18), (-24, -18)):
+        out = task.generate(
+            70320 + dx + dy,
+            params={
+                "query_id": "total_amount_delta",
+                "layout_jitter_enabled": True,
+                "layout_jitter_x_px": dx,
+                "layout_jitter_y_px": dy,
+            },
+            max_attempts=10,
+        )
+        width, height = out.image.size
+        trace = out.trace_payload
+        all_bboxes = []
+        all_bboxes.extend(trace["render_map"]["panel_bboxes_px"].values())
+        all_bboxes.extend(out.evidence_gt.value)
+        for bbox in all_bboxes:
+            x0, y0, x1, y1 = [float(value) for value in bbox]
+            assert 0.0 <= x0 <= x1 <= float(width)
+            assert 0.0 <= y0 <= y1 <= float(height)

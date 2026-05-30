@@ -41,10 +41,8 @@ def test_gui_relation_professional_target_contract_matches_trace() -> None:
         evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_id) == "default"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert trace["scene_ir"]["scene_kind"] == SCENE_KIND
         assert str(out.answer_gt.value) == str(execution["target_label"])
@@ -53,9 +51,26 @@ def test_gui_relation_professional_target_contract_matches_trace() -> None:
         assert str(target["action_label"]) == str(execution["action_label"])
         assert str(target["cue_label"]) == str(execution["cue_label"])
         assert str(target["code_label"]) == str(execution["code_label"])
-        assert out.evidence_gt.value == [record["bbox_px"] for record in evidence_supports] + [target["bbox_px"]]
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert len(out.evidence_gt.value) == 4
+        guide_role = str(evidence_supports[0]["support_kind"])
+        context_role = f"{str(evidence_supports[1]['support_kind'])}_row"
+        header_role = str(evidence_supports[2]["support_kind"])
+        target_role = f"target_{str(target['role'])}"
+        expected_evidence = {
+            guide_role: evidence_supports[0]["bbox_px"],
+            context_role: evidence_supports[1]["bbox_px"],
+            header_role: evidence_supports[2]["bbox_px"],
+            target_role: target["bbox_px"],
+        }
+        assert out.evidence_gt.value == expected_evidence
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert set(out.evidence_gt.value) == {guide_role, context_role, header_role, target_role}
+        assert execution["evidence_role_support_ids"] == {
+            guide_role: str(execution["evidence_support_ids"][0]),
+            context_role: str(execution["evidence_support_ids"][1]),
+            header_role: str(execution["evidence_support_ids"][2]),
+            target_role: str(target["control_id"]),
+        }
         assert [str(record["support_kind"]) for record in evidence_supports] == [
             str(record["support_kind"]) for record in evidence_supports
         ]
@@ -73,15 +88,21 @@ def test_gui_relation_professional_target_contract_matches_trace() -> None:
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value for coord in (box[1], box[3]))
+        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value.values() for coord in (box[0], box[2]))
+        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value.values() for coord in (box[1], box[3]))
 
 
 def test_gui_relation_professional_target_prompt_examples_match_option_contract() -> None:
     task = PagesRelationProfessionalTargetLabelTask()
     out = task.generate(89200, params={}, max_attempts=20)
+    evidence_keys = list(dict(out.evidence_gt.value).keys())
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": [[520, 130, 690, 196], [72, 260, 300, 344], [520, 212, 690, 252], [520, 360, 690, 444]],
+        "evidence": {
+            evidence_keys[0]: [520, 130, 690, 196],
+            evidence_keys[1]: [72, 260, 300, 344],
+            evidence_keys[2]: [520, 212, 690, 252],
+            evidence_keys[3]: [520, 360, 690, 444],
+        },
         "answer": "G",
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "G"}

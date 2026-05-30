@@ -52,6 +52,7 @@ class RenderedCalendarScene:
     month: int
     row_count: int
     title_text: str
+    title_bbox_px: Tuple[float, float, float, float] | None
     panel_bbox_px: Tuple[float, float, float, float]
     scene_bbox_px: Tuple[float, float, float, float]
     date_cell_bboxes_by_day: Dict[int, Tuple[float, float, float, float]]
@@ -132,6 +133,8 @@ def render_month_calendar_scene(
     scene_variant: str,
     render_params: CalendarRenderParams,
     visual_theme: TimeArtifactCalendarTheme,
+    panel_bbox_px: Sequence[float] | None = None,
+    title_text: str | None = None,
 ) -> RenderedCalendarScene:
     """Render one month-view calendar and return projected valid-date geometry."""
 
@@ -145,12 +148,19 @@ def render_month_calendar_scene(
     weekday_font = load_font(int(render_params.weekday_font_size_px), bold=True)
     date_font = load_font(int(render_params.date_font_size_px), bold=False)
 
-    panel_bbox = (
-        float(render_params.outer_margin_px),
-        float(render_params.outer_margin_px),
-        float(render_params.canvas_width - render_params.outer_margin_px),
-        float(render_params.canvas_height - render_params.outer_margin_px),
-    )
+    if panel_bbox_px is None:
+        panel_bbox = (
+            float(render_params.outer_margin_px),
+            float(render_params.outer_margin_px),
+            float(render_params.canvas_width - render_params.outer_margin_px),
+            float(render_params.canvas_height - render_params.outer_margin_px),
+        )
+    else:
+        if len(panel_bbox_px) < 4:
+            raise ValueError("panel_bbox_px must contain four coordinates")
+        panel_bbox = tuple(float(value) for value in panel_bbox_px[:4])
+        if float(panel_bbox[2]) <= float(panel_bbox[0]) or float(panel_bbox[3]) <= float(panel_bbox[1]):
+            raise ValueError("panel_bbox_px must have positive width and height")
     panel_outline_width = 0 if str(scene_variant) == "minimal" else int(render_params.panel_outline_width_px)
     _rounded(
         draw,
@@ -161,22 +171,34 @@ def render_month_calendar_scene(
         width=max(1, int(panel_outline_width)) if panel_outline_width > 0 else 1,
     )
 
-    title_text = f"{month_name(int(month))} {int(year)}"
-    title_center = (
-        0.5 * float(panel_bbox[0] + panel_bbox[2]),
-        float(panel_bbox[1]) + (0.5 * float(render_params.title_height_px)),
-    )
-    draw_text_centered(
-        draw,
-        text=str(title_text),
-        center=title_center,
-        font=title_font,
-        fill=tuple(int(channel) for channel in visual_theme.title_text_rgb),
-    )
+    resolved_title_text = f"{month_name(int(month))} {int(year)}" if title_text is None else str(title_text).strip()
+    title_bbox: Tuple[float, float, float, float] | None = None
+    if resolved_title_text:
+        title_bbox = (
+            float(panel_bbox[0]) + float(render_params.cell_gap_px),
+            float(panel_bbox[1]),
+            float(panel_bbox[2]) - float(render_params.cell_gap_px),
+            float(panel_bbox[1]) + float(render_params.title_height_px),
+        )
+        title_center = (
+            0.5 * float(title_bbox[0] + title_bbox[2]),
+            0.5 * float(title_bbox[1] + title_bbox[3]),
+        )
+        draw_text_centered(
+            draw,
+            text=str(resolved_title_text),
+            center=title_center,
+            font=title_font,
+            fill=tuple(int(channel) for channel in visual_theme.title_text_rgb),
+        )
 
     grid_left = float(panel_bbox[0]) + float(render_params.cell_gap_px)
     grid_right = float(panel_bbox[2]) - float(render_params.cell_gap_px)
-    weekday_top = float(panel_bbox[1]) + float(render_params.title_height_px) + float(render_params.title_bottom_gap_px)
+    weekday_top = (
+        float(panel_bbox[1]) + float(render_params.title_height_px) + float(render_params.title_bottom_gap_px)
+        if resolved_title_text
+        else float(panel_bbox[1]) + float(render_params.cell_gap_px)
+    )
     available_grid_top = weekday_top + float(render_params.weekday_header_height_px) + float(render_params.weekday_grid_gap_px)
     grid_bottom = float(panel_bbox[3]) - float(render_params.cell_gap_px)
     cell_gap = float(render_params.cell_gap_px)
@@ -303,7 +325,8 @@ def render_month_calendar_scene(
         year=int(year),
         month=int(month),
         row_count=int(row_count),
-        title_text=str(title_text),
+        title_text=str(resolved_title_text),
+        title_bbox_px=(tuple(float(value) for value in title_bbox) if title_bbox is not None else None),
         panel_bbox_px=tuple(float(value) for value in panel_bbox),
         scene_bbox_px=tuple(float(value) for value in panel_bbox),
         date_cell_bboxes_by_day={int(day): tuple(float(value) for value in bbox) for day, bbox in date_cell_bboxes_by_day.items()},

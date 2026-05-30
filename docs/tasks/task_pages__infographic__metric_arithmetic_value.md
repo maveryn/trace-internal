@@ -9,6 +9,6 @@
 ## Contract
 Samples one arithmetic query over a multi-section infographic of metric cards.
 
-Query ids: `sum_named_metrics|section_extrema_arithmetic|section_total_extrema_difference|section_total_except_named`.
+Query ids: `sum_named_metrics|section_extrema_arithmetic|section_total_extrema_difference|section_total_except_named|section_icon_total_value|section_icon_total_difference_value`.
 
-Answers are integers. Evidence is a `bbox_set` over the metric labels and printed values used by the computation.
+Answers are integers. Evidence is a `keyed_bbox_map` over the supporting metric-card boxes, keyed by the visible metric-card labels used by the computation.

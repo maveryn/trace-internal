@@ -138,7 +138,14 @@ prompt:
       task_key: extreme_degree_value_query
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the queried extreme degree value
+      evidence_hint_max_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum degree value
+      evidence_hint_min_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum degree value
+      evidence_hint_max_in_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum in-degree value
+      evidence_hint_min_in_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum in-degree value
+      evidence_hint_max_out_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum out-degree value
+      evidence_hint_min_out_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum out-degree value
+      evidence_hint_max_total_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the maximum total degree value
+      evidence_hint_min_total_degree_value: set "evidence" to an array of [x,y] pixel points at the centers of all nodes attaining the minimum total degree value
       answer_hint: set "answer" to the queried extreme degree value as an integer
       json_example: '{"evidence":[[180,220],[310,180]],"answer":3}'
       json_example_answer_only: '{"answer":3}'

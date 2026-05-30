@@ -400,11 +400,11 @@
       "Ignoring blocked pipes, how many junctions are connected to {query_label}, including {query_label}?"
     ],
     "pipe_exact_distance_count": [
-      "How many junctions are exactly {query_distance} open pipe segments away from junction {query_label}?",
-      "Using only open pipes, count the junctions at distance {query_distance} from {query_label}.",
-      "What is the number of junctions exactly {query_distance} open-pipe steps from {query_label}?",
-      "Ignoring blocked pipes, how many junctions can be reached from {query_label} in exactly {query_distance} pipe segments?",
-      "How many junctions are at open-pipe distance {query_distance} from junction {query_label}?"
+      "How many junctions have shortest open-pipe distance exactly {query_distance} segments from junction {query_label}?",
+      "Using only open pipes, count the junctions whose shortest distance from {query_label} is {query_distance} segments.",
+      "What is the number of junctions exactly {query_distance} shortest open-pipe steps from {query_label}?",
+      "Ignoring blocked pipes, how many junctions have shortest path length {query_distance} pipe segments from {query_label}?",
+      "How many junctions are at shortest open-pipe distance {query_distance} segments from junction {query_label}?"
     ],
     "metro_exact_distance_count": [
       "How many stations have shortest metro-route distance exactly {query_distance} route segments from station {query_label}?",

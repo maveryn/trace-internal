@@ -53,9 +53,9 @@ prompt:
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested integer
-    answer_hint_label: set "answer" to the exact section label as a string
-    evidence_hint: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the labels and printed values used in the arithmetic
-    evidence_hint_label: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the labels and printed values supporting the answer section
+    answer_hint_label: set "answer" to the exact visible text requested by the question
+    evidence_hint: set "evidence" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
+    evidence_hint_label: set "evidence" to an object mapping each supporting metric card's visible label to that card's [x0,y0,x1,y1] pixel bounding box
 
 visual:
   noise:

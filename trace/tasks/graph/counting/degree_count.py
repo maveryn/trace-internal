@@ -676,7 +676,9 @@ class _GraphCountingDegreeCountBaseTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_degree_count",
+                "evidence_hint_in_degree_count",
+                "evidence_hint_out_degree_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -691,6 +693,7 @@ class _GraphCountingDegreeCountBaseTask:
             "in_degree": "in_degree_count",
             "out_degree": "out_degree_count",
         }[str(query.degree_mode)]
+        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -709,7 +712,7 @@ class _GraphCountingDegreeCountBaseTask:
                 "query_degree": int(query.query_degree),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(query_degree=int(query.query_degree)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

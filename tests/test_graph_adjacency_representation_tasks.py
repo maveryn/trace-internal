@@ -90,7 +90,11 @@ def test_graph_counting_adjacency_component_count_contracts() -> None:
             assert "adjacency list or adjacency matrix" not in prompt_line
         for bbox in out.evidence_gt.value:
             _assert_bbox_in_image(bbox, out.image.size)
-        assert "one row label from each counted component" in out.prompt_variants["answer_and_evidence"]
+        evidence_text = out.prompt_variants["answer_and_evidence"]
+        if query_id == "directed_strong_component_count":
+            assert "one row label from each strongly connected component" in evidence_text
+        else:
+            assert "one row label from each connected component" in evidence_text
 
 
 def test_graph_optimization_adjacency_matrix_mst_weight_contracts() -> None:

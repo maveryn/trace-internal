@@ -18,7 +18,7 @@ def forced_query_id_params(params: Mapping[str, Any], *, query_id: str) -> Dict[
 
 
 def rewrite_graph_query_output(output: TaskOutput, *, query_id: str) -> TaskOutput:
-    """Rewrite generated graph output so public task metadata has one default variant."""
+    """Rewrite generated graph output to a concrete public graph query id."""
 
     rewritten = rewrite_public_query_output(
         output,

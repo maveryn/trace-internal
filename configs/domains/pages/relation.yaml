@@ -200,25 +200,34 @@ prompt:
       scene_key: gui_navigation_paths
       task_key: navigation_path_query
       object_description: menus, sidebar trees, ribbon groups, and labeled target controls in a desktop application
-      evidence_hint: set "evidence" to an array containing [x0, y0, x1, y1] boxes for the visible path context and target control
+      evidence_hint_menu_path_target_label: set "evidence" to an object mapping menu_root, menu_group, and target_command to [x0, y0, x1, y1] boxes
+      evidence_hint_sidebar_tree_target_label: set "evidence" to an object mapping sidebar_section, sidebar_group, and target_item to [x0, y0, x1, y1] boxes
+      evidence_hint_ribbon_group_command_label: set "evidence" to an object mapping ribbon_tab, ribbon_group, and target_command to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
     task_pages__command_matrix__command_intent_target_label:
       scene_key: gui_command_intents
       task_key: command_intent_query
       object_description: a command matrix with a shuffled intent guide, object cue chips, object rows, coded action headers, and labeled command controls
-      evidence_hint: set "evidence" to [x0, y0, x1, y1] boxes for the intent guide, optional object guide, object row, coded action header, and target control
+      evidence_hint_command_intent_target_label: set "evidence" to an object mapping action_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
+      evidence_hint_dual_guide_command_label: set "evidence" to an object mapping action_cue_guide, object_cue_guide, object_row, action_code_header, and target_command_cell to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
     task_pages__workspace__professional_target_label:
       scene_key: gui_professional_target_controls
       task_key: professional_target_query
       object_description: a professional application workspace with a shuffled guide, context rows, coded headers, and labeled controls
-      evidence_hint: set "evidence" to [x0, y0, x1, y1] boxes for the guide card, context row, coded header, and target control
+      evidence_hint_toolbar_palette_control_label: set "evidence" to an object mapping tool_cue_card, tool_context_row, tool_code_header, and target_toolbar_palette_control to [x0, y0, x1, y1] boxes
+      evidence_hint_property_panel_control_label: set "evidence" to an object mapping setting_cue_card, inspector_section_row, setting_code_header, and target_property_panel_control to [x0, y0, x1, y1] boxes
+      evidence_hint_canvas_workspace_control_label: set "evidence" to an object mapping canvas_cue_card, canvas_target_row, canvas_code_header, and target_canvas_workspace_control to [x0, y0, x1, y1] boxes
+      evidence_hint_code_workspace_control_label: set "evidence" to an object mapping ide_cue_card, code_target_row, ide_code_header, and target_code_workspace_control to [x0, y0, x1, y1] boxes
+      evidence_hint_file_dialog_control_label: set "evidence" to an object mapping dialog_cue_card, dialog_location_row, dialog_code_header, and target_file_dialog_control to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
     task_pages__web_action__web_action_target_label:
       scene_key: gui_web_action_targets
       task_key: web_action_query
       object_description: a browser page with an action instruction banner, a visible cue-to-key guide, and candidate markers on targetable web controls
-      evidence_hint: set "evidence" to [x0, y0, x1, y1] boxes for the instruction banner, matching guide card, page context, and target control
+      evidence_hint_click_target_label: set "evidence" to an object mapping instruction_banner, action_key_guide, item_card, and target_button to [x0, y0, x1, y1] boxes
+      evidence_hint_type_field_label: set "evidence" to an object mapping instruction_banner, field_key_guide, form_section, and target_input to [x0, y0, x1, y1] boxes
+      evidence_hint_select_option_label: set "evidence" to an object mapping instruction_banner, option_key_guide, option_group, and target_option to [x0, y0, x1, y1] boxes
       answer_hint: set "answer" to the selected candidate label as a single capital letter
 
 visual:

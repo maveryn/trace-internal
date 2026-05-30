@@ -41,26 +41,32 @@ def test_pages_arithmetic_section_expression_value_contract_matches_trace() -> N
             trace = out.trace_payload
             execution = trace["execution_trace"]
             render_map = trace["render_map"]
-            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+            evidence_bboxes = {
+                str(key): [float(value) for value in bbox]
+                for key, bbox in dict(out.evidence_gt.value).items()
+            }
 
             assert out.answer_gt.type == "string"
-            assert out.evidence_gt.type == "bbox_set"
+            assert out.evidence_gt.type == "keyed_bbox_map"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == str(query_id)
+            assert str(execution["source_query_id"]) == str(query_id)
+            assert str(execution["internal_query_id"]) == str(query_id)
             assert str(execution["question_format"]) == "document_section_expression_value"
             assert str(execution["view_family"]) == "structured_document"
-            assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+            assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+            assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+            assert trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
             assert str(out.answer_gt.value) == str(execution["result_value"])
             assert len(evidence_bboxes) == len(execution["operand_value_bbox_ids"])
 
-            expected_bboxes = [
-                [float(value) for value in render_map["field_value_bboxes_px"][str(bbox_id)]]
-                for bbox_id in execution["operand_value_bbox_ids"]
-            ]
+            role_to_bbox_id = trace["witness_symbolic"]["operand_role_to_bbox_id"]
+            expected_bboxes = {
+                str(role): [float(value) for value in render_map["field_value_bboxes_px"][str(bbox_id)]]
+                for role, bbox_id in role_to_bbox_id.items()
+            }
             assert evidence_bboxes == expected_bboxes
 
             visible_values = [str(spec["field_value"]) for spec in execution["field_specs"]]
@@ -96,21 +102,31 @@ def test_pages_arithmetic_prompt_examples_match_variant_contract() -> None:
     expected = {
         "sum_two_amounts_in_section": (
             {
-                "evidence": [[150, 260, 364, 294], [150, 320, 364, 354]],
+                "evidence": {
+                    "first_operand": [150, 260, 364, 294],
+                    "second_operand": [150, 320, 364, 354],
+                },
                 "answer": "$146.80",
             },
             {"answer": "$146.80"},
         ),
         "difference_two_amounts_in_section": (
             {
-                "evidence": [[150, 260, 364, 294], [150, 320, 364, 354]],
+                "evidence": {
+                    "first_operand": [150, 260, 364, 294],
+                    "second_operand": [150, 320, 364, 354],
+                },
                 "answer": "$42.50",
             },
             {"answer": "$42.50"},
         ),
         "sum_minus_amount_in_section": (
             {
-                "evidence": [[150, 260, 364, 294], [150, 320, 364, 354], [150, 380, 364, 414]],
+                "evidence": {
+                    "first_operand": [150, 260, 364, 294],
+                    "second_operand": [150, 320, 364, 354],
+                    "third_operand": [150, 380, 364, 414],
+                },
                 "answer": "$133.30",
             },
             {"answer": "$133.30"},
@@ -145,7 +161,7 @@ def test_pages_arithmetic_balanced_sampling_defaults_cover_variants() -> None:
     scene_variants: Counter[str] = Counter()
     pairs: Counter[tuple[str, str]] = Counter()
 
-    for index in range(36):
+    for index in range(72):
         out = task.generate(hash64(38380, "pages_arithmetic", index), params={}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
         query_ids[str(execution["query_id"])] += 1

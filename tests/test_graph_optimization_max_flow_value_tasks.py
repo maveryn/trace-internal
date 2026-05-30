@@ -82,7 +82,6 @@ def test_graph_optimization_max_flow_contract_matches_trace() -> None:
 
     assert "task_graph__flow_network__max_flow_value" in TASK_REGISTRY
     assert out.scene_id == "flow_network"
-    assert out.query_id == "default"
     assert out.query_id == "max_flow_value"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_pair_set"
@@ -147,12 +146,12 @@ def test_graph_optimization_max_flow_prompt_examples_match_contract() -> None:
     assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
     assert answer_and_evidence["evidence"] == [[[180, 220], [310, 180]], [[310, 180], [430, 260]]]
     assert answer_and_evidence["answer"] == 2
-    assert "[[source_x,source_y],[target_x,target_y]]" in out.prompt_variants["answer_and_evidence"]
+    assert "pixel centers of the two endpoint nodes" in out.prompt_variants["answer_and_evidence"]
 
 
 def test_graph_optimization_max_flow_rejects_removed_edge_query() -> None:
     task = GraphOptimizationMaxFlowValueTask()
-    with pytest.raises(ValueError, match="unsupported max-flow query id"):
+    with pytest.raises(ValueError, match="public task query_id must match"):
         task.generate(
             32025,
             params={"query_id": "max_flow_after_edge_removal_value"},

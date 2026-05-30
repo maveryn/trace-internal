@@ -541,7 +541,8 @@ class GraphCountingSourceSinkCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_source_count",
+                "evidence_hint_sink_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -550,6 +551,7 @@ class GraphCountingSourceSinkCountTask:
         )
         prompt_json_example, prompt_json_example_answer_only = build_graph_prompt_json_examples(evidence_value=[[180, 220], [310, 180]], answer_value=2)
         prompt_query_key = "source_count" if str(query.source_sink_mode) == "source" else "sink_count"
+        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -562,7 +564,7 @@ class GraphCountingSourceSinkCountTask:
                 "object_description": str(prompt_defaults["object_description_directed"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

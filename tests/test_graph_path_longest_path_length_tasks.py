@@ -78,7 +78,6 @@ def test_graph_path_longest_path_length_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__longest_path_length" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "directed_longest_path_length"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_sequence"

@@ -48,9 +48,8 @@ from ..shared.public_query_task import rewrite_pages_query_output
 
 
 SCENE_ID = "concept_map"
-BRANCH_ITEM_COUNT_TASK_ID = "task_pages__concept_map__branch_item_count"
+NODE_FILTER_COUNT_TASK_ID = "task_pages__concept_map__node_filter_count"
 ORDERED_CHILD_LABEL_TASK_ID = "task_pages__concept_map__ordered_child_label"
-FILTERED_NODE_COUNT_TASK_ID = "task_pages__concept_map__filtered_node_count"
 
 _LAYOUT_VARIANTS: Tuple[str, ...] = ("radial_mind_map", "left_right_map", "clustered_map")
 _STYLE_VARIANTS: Tuple[str, ...] = ("bright_notes", "ink_outline", "soft_cards", "technical_pastel")
@@ -65,9 +64,8 @@ _CONTEXT_VARIANTS: Tuple[str, ...] = (
     "science_topics",
 )
 _QUERY_IDS: Dict[str, Tuple[str, ...]] = {
-    BRANCH_ITEM_COUNT_TASK_ID: ("branch_child_count",),
+    NODE_FILTER_COUNT_TASK_ID: ("branch_child_count", "marked_child_count"),
     ORDERED_CHILD_LABEL_TASK_ID: ("nth_child_label",),
-    FILTERED_NODE_COUNT_TASK_ID: ("marked_child_count",),
 }
 _TASK_KEYS: Dict[str, str] = {
     "branch_child_count": "branch_child_count_query",
@@ -450,10 +448,10 @@ def _build_concept_scene(
     forced_count: int | None = None
     forced_marker = _MARKERS[abs(int(sampling_index)) % len(_MARKERS)]
 
-    if str(task_id) == BRANCH_ITEM_COUNT_TASK_ID:
+    if str(query_id) == "branch_child_count":
         forced_count = int(child_min) + (abs(int(sampling_index)) % (int(child_max) - int(child_min) + 1))
         forced_branch_index = abs(int(sampling_index // max(1, int(child_max - child_min + 1)))) % int(branch_count)
-    elif str(task_id) == FILTERED_NODE_COUNT_TASK_ID:
+    elif str(query_id) == "marked_child_count":
         forced_count = int(marker_min) + (abs(int(sampling_index)) % (int(marker_max) - int(marker_min) + 1))
         forced_branch_index = abs(int(sampling_index // max(1, int(marker_max - marker_min + 1)))) % int(branch_count)
 
@@ -463,7 +461,7 @@ def _build_concept_scene(
         item_count = int(rng.randint(int(child_min), int(child_max)))
         if forced_branch_index is not None and int(branch_index) == int(forced_branch_index):
             item_count = max(int(item_count), int(forced_count or item_count))
-            if str(task_id) == FILTERED_NODE_COUNT_TASK_ID:
+            if str(query_id) == "marked_child_count":
                 item_count = max(int(item_count), int(forced_count or item_count) + 1)
             item_count = min(int(child_max), int(item_count))
         pool = [str(item) for item in item_pool if str(item) not in used_labels]
@@ -473,7 +471,7 @@ def _build_concept_scene(
         for label in labels:
             used_labels.add(str(label))
         marker_ids: list[str] = []
-        if str(task_id) == FILTERED_NODE_COUNT_TASK_ID and int(branch_index) == int(forced_branch_index):
+        if str(query_id) == "marked_child_count" and int(branch_index) == int(forced_branch_index):
             forced_positions = set(rng.sample(list(range(int(item_count))), int(forced_count or 1)))
             alternatives = [marker for marker in _MARKERS if marker["marker_id"] != forced_marker["marker_id"]]
             for child_index in range(int(item_count)):
@@ -762,7 +760,7 @@ def _build_query(
     answer_index: int,
     marker: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    if str(task_id) == BRANCH_ITEM_COUNT_TASK_ID:
+    if str(query_id) == "branch_child_count":
         branch_index, _target = _select_branch_by_answer_index(
             branches=branches,
             answer_index=int(answer_index),
@@ -795,12 +793,19 @@ def _build_query(
             "task_key": _TASK_KEYS[str(query_id)],
             "branch_id": str(branch["branch_id"]),
             "branch_label": str(branch["label"]),
+            "answer_node_id": str(target["node_id"]),
             "rank": int(rank),
             "rank_ordinal": _ordinal_label(int(rank)),
             "reading_order": "from top to bottom, breaking ties from left to right",
             "answer": str(target["label"]),
             "evidence_node_ids": [str(branch["branch_id"]), str(target["node_id"])],
+            "evidence_role_node_ids": {
+                "parent_branch": str(branch["branch_id"]),
+                "answer_child": str(target["node_id"]),
+            },
         }
+    if str(query_id) != "marked_child_count":
+        raise ValueError(f"unsupported concept-map query_id for {task_id}: {query_id}")
     target = 1 + (abs(int(answer_index)) % 5)
     eligible = [
         branch for branch in branches
@@ -1014,7 +1019,13 @@ def _build_prompt_json_examples(*, answer_type: str) -> tuple[str, str]:
     if str(answer_type) == "string":
         answer = "New York"
         answer_only = {"answer": answer}
-        with_evidence = {"evidence": [[90, 120, 220, 156], [250, 190, 390, 226]], "answer": answer}
+        with_evidence = {
+            "evidence": {
+                "parent_branch": [90, 120, 220, 156],
+                "answer_child": [250, 190, 390, 226],
+            },
+            "answer": answer,
+        }
     else:
         answer_only = {"answer": 3}
         with_evidence = {"evidence": [[90, 120, 220, 156], [250, 190, 390, 226]], "answer": 3}
@@ -1159,23 +1170,45 @@ def _build_output(
         evidence_id = f"node:{node_id}"
         evidence_ids.append(evidence_id)
         bbox_source_map[evidence_id] = render_map["node_bboxes_px"][node_id]
-    evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-    evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
     answer_gt = (
         TypedValue(type="string", value=str(query["answer"]))
         if str(answer_type) == "string"
         else TypedValue(type="integer", value=int(query["answer"]))
     )
-    evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+    if str(answer_type) == "string":
+        evidence_role_node_ids = {
+            str(role): str(node_id)
+            for role, node_id in dict(query.get("evidence_role_node_ids", {})).items()
+        }
+        evidence_role_ids = {
+            str(role): f"node:{node_id}"
+            for role, node_id in evidence_role_node_ids.items()
+        }
+        evidence_bbox_map = {
+            str(role): [round(float(value), 3) for value in bbox_source_map[str(evidence_id)]]
+            for role, evidence_id in evidence_role_ids.items()
+        }
+        evidence_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_bbox_map),
+            "pixel_keyed_bbox_map": dict(evidence_bbox_map),
+        }
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
+    else:
+        evidence_role_node_ids = {}
+        evidence_role_ids = {}
+        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
+        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
     branch_scan = normalize_int_with_bounds(int(scene["branch_count"]), [4, 8])
     child_scan = normalize_int_with_bounds(int(scene["child_count"]), [16, 56])
     evidence_load = normalize_int_with_bounds(len(evidence_ids), [1, 10])
     base_reasoning = {
-        BRANCH_ITEM_COUNT_TASK_ID: 0.34,
-        ORDERED_CHILD_LABEL_TASK_ID: 0.42,
-        FILTERED_NODE_COUNT_TASK_ID: 0.52,
-    }[str(task_id)]
+        "branch_child_count": 0.34,
+        "nth_child_label": 0.42,
+        "marked_child_count": 0.52,
+    }[str(query["query_id"])]
     complexity = build_pages_complexity(
         weights=complexity_weights,
         components={
@@ -1293,11 +1326,15 @@ def _build_output(
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
             "evidence_ids": list(evidence_ids),
+            "evidence_role_ids": dict(evidence_role_ids),
+            "evidence_role_node_ids": dict(evidence_role_node_ids),
             "supporting_bbox_ids": list(evidence_ids),
         },
         "witness_symbolic": {
-            "type": "bbox_id_set",
+            "type": "keyed_bbox_map" if str(answer_type) == "string" else "bbox_id_set",
             "ids": list(evidence_ids),
+            "evidence_role_ids": dict(evidence_role_ids),
+            "value": dict(evidence_gt.value) if str(answer_type) == "string" else list(evidence_ids),
         },
         "projected_evidence": dict(evidence_projection),
         "background": dict(background_meta),
@@ -1324,10 +1361,10 @@ def _build_output(
 
 
 @register_task
-class PagesConceptMapBranchItemCountTask:
-    """Count child items under a named branch in a concept map."""
+class PagesConceptMapNodeFilterCountTask:
+    """Count concept-map child items satisfying a branch or marker predicate."""
 
-    task_id = BRANCH_ITEM_COUNT_TASK_ID
+    task_id = NODE_FILTER_COUNT_TASK_ID
     domain = "pages"
     task_group = "concept_map"
 
@@ -1360,31 +1397,9 @@ class PagesConceptMapOrderedChildLabelTask:
             max_attempts=int(max_attempts),
         )
 
-
-@register_task
-class PagesConceptMapFilteredNodeCountTask:
-    """Count marked child items under a named concept-map branch."""
-
-    task_id = FILTERED_NODE_COUNT_TASK_ID
-    domain = "pages"
-    task_group = "concept_map"
-
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        return _build_output(
-            task_id=self.task_id,
-            domain=self.domain,
-            task_group=self.task_group,
-            instance_seed=int(instance_seed),
-            params=dict(params),
-            max_attempts=int(max_attempts),
-        )
-
-
 __all__ = [
-    "BRANCH_ITEM_COUNT_TASK_ID",
-    "FILTERED_NODE_COUNT_TASK_ID",
+    "NODE_FILTER_COUNT_TASK_ID",
     "ORDERED_CHILD_LABEL_TASK_ID",
-    "PagesConceptMapBranchItemCountTask",
-    "PagesConceptMapFilteredNodeCountTask",
+    "PagesConceptMapNodeFilterCountTask",
     "PagesConceptMapOrderedChildLabelTask",
 ]

@@ -24,7 +24,7 @@
    - undirected branch asks for the label on the edge between two nodes,
    - directed branch asks for the label on the arrow from one node to another,
    - shortest-path branch asks for the label on the first edge or arrow along a unique shortest path,
-   - answer is the lowercase text label shown on that queried edge or arrow,
+   - answer is the lowercase text label shown on the active branch's requested edge, arrow, or first shortest-path edge,
    - default edge-label support is `feeds|blocks|joins|routes|checks|updates`.
 
 ## 3) Prompt Contract
@@ -34,11 +34,11 @@
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":"feeds"}`
 6. Answer+evidence JSON shape: `{"evidence":[[240,190,308,214]],"answer":"feeds"}`
-7. Prompt-facing evidence is one pixel-space bbox around the visible edge-label text for the queried edge.
+7. Prompt-facing evidence is one pixel-space bbox around the visible edge-label text for the active branch's requested edge, arrow, or first shortest-path edge.
 8. When `label_variant=short_names`, prompt references to queried node labels are quoted, for example node `"Abby"`.
 
 ## 4) Evidence + Trace Contract
-1. Prompt-facing evidence is a one-item `bbox_set` around the queried edge-label box.
+1. Prompt-facing evidence is a one-item `bbox_set` around the active branch's requested edge-label box.
 2. `answer_gt.value` equals the visible edge label recorded for `execution_trace.query_edge`.
 3. `execution_trace.query_edge` records the symbolic queried edge; for shortest-path queries this is the first edge on `execution_trace.query_path_labels`.
 4. `execution_trace.edge_attribute_labels_by_label_pair` records every rendered edge label.

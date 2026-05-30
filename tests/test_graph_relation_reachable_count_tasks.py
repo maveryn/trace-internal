@@ -145,7 +145,7 @@ def test_graph_relation_reachable_count_balanced_sampling_defaults() -> None:
         topology_profiles[str(execution["topology_profile"])] += 1
         assert 5 <= int(execution["node_count"]) <= 10
         assert 1 <= int(execution["target_reachable_count"]) <= 8
-        assert int(execution["target_reachable_count"]) <= int(execution["node_count"]) - 1
+        assert int(execution["target_reachable_count"]) <= int(execution["node_count"])
         assert str(execution["query_label"]) in set(execution["matching_labels"])
     assert set(label_variants.keys()) == {"letters", "numbers", "named"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}

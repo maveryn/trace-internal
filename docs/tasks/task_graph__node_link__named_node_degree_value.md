@@ -20,7 +20,7 @@
    - simple unweighted graph only,
    - no self-loops or multi-edges,
    - directed branches also reject reciprocal directed edge pairs,
-   - visible node labels use one whole-image label format (`letters`, `numbers`, or `short_names`),
+   - visible node labels use one whole-image label format (`letters`, `numbers`, or `named`),
    - node count is sampled from `5..10`.
 9. Query contract:
    - undirected branch asks for the degree of a named node,
@@ -35,8 +35,8 @@
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+evidence JSON shape: `{"evidence":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
-7. Prompt-facing evidence uses pixel-space endpoint pairs for every counted edge.
-8. If the node label format is `short_names`, prompt references quote the node label, for example node `"Abby"`.
+7. Prompt-facing evidence uses pixel-space endpoint pairs for every counted edge, with each endpoint as a `[x,y]` pixel point.
+8. If the node label format is `named`, prompt references quote the node label, for example node `"Abby"`.
 
 ## 4) Evidence + trace contract
 1. Prompt-facing evidence is the `point_pair_set` of endpoint-center pairs for all edges counted toward the queried degree value.

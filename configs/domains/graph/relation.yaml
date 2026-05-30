@@ -70,8 +70,6 @@ generation:
         reachable_count: 1.0
         reachable_count_after_edge_removal: 1.0
         reachable_count_after_edge_addition: 1.0
-      query_id_weights:
-        reachable_count: 1.0
       label_variant_weights:
         letters: 1.0
         numbers: 1.0
@@ -263,10 +261,23 @@ generation:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       balanced_label_variant_sampling: true
-    task_graph__binary_tree__tree_operation_label:
+    task_graph__binary_tree__bst_path_operation_label:
       query_id_weights:
         bst_search_terminal_label: 1.0
         bst_insert_parent_label: 1.0
+      scene_variant_weights:
+        classic_tree: 1.0
+        paper_tree: 1.0
+        boxed_tree: 1.0
+      node_count_min: 7
+      node_count_max: 13
+      max_depth: 4
+      key_min: 10
+      key_max: 99
+      balanced_query_id_sampling: true
+      balanced_scene_variant_sampling: true
+    task_graph__binary_tree__heap_property_violation_label:
+      query_id_weights:
         heap_property_violation_label: 1.0
       scene_variant_weights:
         classic_tree: 1.0
@@ -364,11 +375,15 @@ generation:
       query_distance_max: 3
       target_exact_distance_count_min: 1
       target_exact_distance_count_max: 5
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
       grid_shape_variant_weights:
         3x4: 1.0
         3x5: 1.0
         4x4: 1.0
         4x5: 1.0
+      balanced_label_variant_sampling: true
       balanced_grid_shape_variant_sampling: true
     task_graph__node_link__unique_cycle_size:
       query_id_weights:
@@ -421,7 +436,13 @@ rendering:
       node_radius_min_px: 20
       node_radius_max_px: 26
       label_font_size_px: 20
-    task_graph__binary_tree__tree_operation_label:
+    task_graph__binary_tree__bst_path_operation_label:
+      canvas_width: 900
+      canvas_height: 660
+      node_radius_min_px: 20
+      node_radius_max_px: 26
+      label_font_size_px: 20
+    task_graph__binary_tree__heap_property_violation_label:
       canvas_width: 900
       canvas_height: 660
       node_radius_min_px: 20
@@ -492,18 +513,31 @@ prompt:
       scene_key: binary_tree_relation
       task_key: binary_tree_node_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
-      evidence_hint: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the node or nodes named in the question and the answer node
+      evidence_hint_parent_label: set "evidence" to a JSON object with keys "child" and "parent"; each value is a [x0,y0,x1,y1] pixel box around that node
+      evidence_hint_left_child_label: set "evidence" to a JSON object with keys "parent" and "left_child"; each value is a [x0,y0,x1,y1] pixel box around that node
+      evidence_hint_right_child_label: set "evidence" to a JSON object with keys "parent" and "right_child"; each value is a [x0,y0,x1,y1] pixel box around that node
+      evidence_hint_sibling_label: set "evidence" to a JSON object with keys "node" and "sibling"; each value is a [x0,y0,x1,y1] pixel box around that node
+      evidence_hint_lowest_common_ancestor_label: set "evidence" to a JSON object with keys "node_a", "node_b", and "lowest_common_ancestor"; each value is a [x0,y0,x1,y1] pixel box around that node
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      json_example: '{"evidence":[[156,124,204,172],[470,430,520,480]],"answer":"M"}'
+      json_example: '{"evidence":{"child":[156,124,204,172],"parent":[470,430,520,480]},"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'
-    task_graph__binary_tree__tree_operation_label:
+    task_graph__binary_tree__bst_path_operation_label:
       scene_key: search_tree_operation
       task_key: search_tree_operation_label_query
-      object_description: a numeric-key binary tree for a binary-search-tree or min-heap operation
+      object_description: a numeric-key binary search tree
       object_description_bst: a numeric-key binary search tree
-      object_description_heap: a numeric-key binary tree intended to be a min-heap
-      evidence_hint: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the visited path or checked parent-child pair, ending at the answer node
+      evidence_hint_bst_search_terminal_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the visited binary-search path from the root through the answer node
+      evidence_hint_bst_insert_parent_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the visited insertion path from the root through the parent node where the new key would attach
       answer_hint: set "answer" to the answer node label as a string exactly as shown
+      json_example: '{"evidence":[[156,124,204,172],[250,250,298,298]],"answer":"42"}'
+      json_example_answer_only: '{"answer":"42"}'
+    task_graph__binary_tree__heap_property_violation_label:
+      scene_key: search_tree_operation
+      task_key: search_tree_operation_label_query
+      object_description: a numeric-key binary tree intended to be a min-heap
+      object_description_heap: a numeric-key binary tree intended to be a min-heap
+      evidence_hint: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the checked parent node followed by the violating child node
+      answer_hint: set "answer" to the violating child node label as a string exactly as shown
       json_example: '{"evidence":[[156,124,204,172],[250,250,298,298]],"answer":"42"}'
       json_example_answer_only: '{"answer":"42"}'
     task_graph__node_link__reachable_node_count:
@@ -516,7 +550,8 @@ prompt:
     graph_node_link_reachable_count_after_edge_edit_internal:
       task_key: reachable_count_after_edge_edit_query
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be reachable from {query_label} after the hypothetical arrow edit, including {query_label}
+      evidence_hint_reachable_count_after_edge_removal: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be reachable from {query_label} after removing the arrow from {edit_label_a} to {edit_label_b}, including {query_label}
+      evidence_hint_reachable_count_after_edge_addition: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be reachable from {query_label} after adding an arrow from {edit_label_a} to {edit_label_b}, including {query_label}
       answer_hint: set "answer" to the count of those nodes as an integer
       json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
@@ -524,7 +559,9 @@ prompt:
       task_key: common_neighbor_count_query
       object_description: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of every node that matches the requested common-neighbor, common-successor, or common-predecessor condition for {query_label_a} and {query_label_b}; use an empty array when the answer is zero
+      evidence_hint_common_neighbor_count: set "evidence" to an array of [x,y] pixel points at the centers of every node directly connected to both {query_label_a} and {query_label_b}; use an empty array when the answer is zero
+      evidence_hint_common_successor_count: set "evidence" to an array of [x,y] pixel points at the centers of every node that both {query_label_a} and {query_label_b} point to directly; use an empty array when the answer is zero
+      evidence_hint_common_predecessor_count: set "evidence" to an array of [x,y] pixel points at the centers of every node that points directly to both {query_label_a} and {query_label_b}; use an empty array when the answer is zero
       answer_hint: set "answer" to the count of those nodes as an integer
       json_example: '{"evidence":[[180,220],[310,180]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -532,7 +569,9 @@ prompt:
       task_key: edge_attribute_label_query
       object_description_undirected: a graph with text labels on its edges
       object_description_directed: a directed graph with text labels on its arrows
-      evidence_hint: set "evidence" to an array containing one [x0,y0,x1,y1] box around the visible text label on the queried edge or arrow
+      evidence_hint_edge_between_nodes_label: set "evidence" to an array containing one [x0,y0,x1,y1] box around the visible text label on the edge between {source_label} and {target_label}
+      evidence_hint_directed_edge_between_nodes_label: set "evidence" to an array containing one [x0,y0,x1,y1] box around the visible text label on the arrow from {source_label} to {target_label}
+      evidence_hint_shortest_path_first_edge_label: set "evidence" to an array containing one [x0,y0,x1,y1] box around the visible text label on the first {path_edge_term} along the unique shortest path from {source_label} to {target_label}{path_follow_clause}
       answer_hint: set "answer" to that edge label as a lowercase string
       json_example: '{"evidence":[[240,190,308,214]],"answer":"feeds"}'
       json_example_answer_only: '{"answer":"feeds"}'
@@ -541,6 +580,10 @@ prompt:
       task_key: structure_match_label_query
       object_description_undirected: a reference or target labeled graph above six labeled graph options
       object_description_directed: a reference or target labeled directed graph above six labeled directed-graph options; arrow directions matter
+      object_description_same_structure_undirected: a Reference labeled graph above six labeled graph options
+      object_description_same_structure_directed: a Reference labeled directed graph above six labeled directed-graph options; arrow directions matter
+      object_description_contained_subgraph_undirected: a Target Graph above six labeled graph options
+      object_description_contained_subgraph_directed: a Target Graph above six labeled directed-graph options; arrow directions matter
       evidence_hint: set "evidence" to an array containing exactly one [x0,y0,x1,y1] pixel box around the selected option panel
       answer_hint: set "answer" to the exact option letter of the correct graph
       json_example: '{"evidence":[[472,520,828,742]],"answer":"D"}'
@@ -549,15 +592,18 @@ prompt:
       task_key: unique_node_label_query
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array containing one [x0,y0,x1,y1] box around the answer node
+      evidence_hint_unique_neighbor_label: set "evidence" to an array containing one [x,y] pixel point at the center of the only node adjacent to {query_label}
+      evidence_hint_unique_successor_label: set "evidence" to an array containing one [x,y] pixel point at the center of the only node reached by an outgoing arrow from {query_label}
+      evidence_hint_unique_predecessor_label: set "evidence" to an array containing one [x,y] pixel point at the center of the only node with an arrow pointing into {query_label}
       answer_hint: set "answer" to the answer node label as a string exactly as shown
-      json_example: '{"evidence":[[280,164,326,210]],"answer":"B"}'
+      json_example: '{"evidence":[[303,187]],"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
     task_graph__automaton__state_after_input_label:
       scene_key: automaton_state_relation
       task_key: automaton_state_simulation_label_query
       object_description: a deterministic state-transition diagram with a start arrow, double-ring accepting states, and transition labels
-      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at the centers of the visited states, starting with the start state and ending at the answer state
+      evidence_hint_final_state_label: set "evidence" to an ordered array of [x,y] pixel points at the centers of the states visited while reading the full input string "{input_string}", starting with the start state and ending at the final answer state
+      evidence_hint_transition_step_state_label: set "evidence" to an ordered array of [x,y] pixel points at the centers of the states visited through transition step {transition_step_count}, starting with the start state and ending at the answer state for that step
       answer_hint: set "answer" to the reached state label as a string
       json_example: '{"evidence":[[150,250],[310,190],[480,230]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
@@ -565,22 +611,24 @@ prompt:
       scene_key: automaton_state_relation
       task_key: automaton_string_acceptance_label_query
       object_description: a state-transition diagram with a start arrow, double-ring accepting states, visible transition labels, and labeled candidate input strings
-      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at the centers of the states on one accepting path for the chosen candidate string, starting with the start state and ending at an accepting state
+      evidence_hint_dfa_accepted_string_label: set "evidence" to an ordered array of [x,y] pixel points at the centers of the states on the accepting DFA path for the returned option label's candidate string, starting with the start state and ending at an accepting state
+      evidence_hint_nfa_accepted_string_label: set "evidence" to an ordered array of [x,y] pixel points at the centers of the states on one accepting NFA path for the returned option label's candidate string, starting with the start state and ending at an accepting state
       answer_hint: set "answer" to the option label of the accepted candidate string as a string
       json_example: '{"evidence":[[150,250],[310,190],[480,230]],"answer":"C"}'
       json_example_answer_only: '{"answer":"C"}'
     graph_node_link_component_size_after_edge_edit_internal:
       task_key: component_size_after_edge_edit_query
       object_description: a labeled undirected graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be in the same connected component as {query_label} after the hypothetical edge edit, including {query_label}
+      evidence_hint_component_size_after_edge_removal: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be in the same connected component as {query_label} after removing the edge between {edit_label_a} and {edit_label_b}, including {query_label}
+      evidence_hint_component_size_after_edge_addition: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would be in the same connected component as {query_label} after adding an edge between {edit_label_a} and {edit_label_b}, including {query_label}
       answer_hint: set "answer" to the count of those nodes as an integer
       json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     task_graph__pipe_network__junction_path_count:
       task_key: junction_path_count_query
       object_description: a labeled pipe-junction network with open pipes and blocked pipes
-      question_text_exact_distance_count: How many junctions are exactly {query_distance} open pipe segments away from junction {query_label}?
-      evidence_hint_exact_distance_count: set "evidence" to an array of [x,y] pixel points at the centers of all junctions exactly {query_distance} open pipe segments away from {query_label}
+      question_text_exact_distance_count: How many junctions have shortest open-pipe distance exactly {query_distance} segments from junction {query_label}?
+      evidence_hint_exact_distance_count: set "evidence" to an array of [x,y] pixel points at the centers of all junctions whose shortest open-pipe distance from {query_label} is exactly {query_distance} segments
       question_text_reachable_count: How many junctions, including junction {query_label} itself, are reachable from {query_label} using only open pipes?
       evidence_hint_reachable_count: set "evidence" to an array of [x,y] pixel points at the centers of all junctions reachable from {query_label} through open pipes, including {query_label} itself
       answer_hint: set "answer" to the count of those junctions as an integer

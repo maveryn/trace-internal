@@ -23,7 +23,7 @@
    - node count is sampled from `5..10`.
 8. Query contract:
    - degree-count branches ask how many nodes have degree, in-degree, or out-degree `k`,
-   - degree-filter branches ask how many nodes would remain after removing nodes with exactly one queried connection,
+   - degree-filter branches ask how many nodes would remain after removing nodes with degree 1, in-degree 1, or out-degree 1,
    - source/sink branches ask how many directed nodes have no incoming arrows or no outgoing arrows,
    - answer is the number of nodes satisfying the concrete branch predicate.
 
@@ -37,9 +37,9 @@
 7. Prompt-facing evidence uses pixel-space node-center points; node labels remain in `witness_symbolic`.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the unordered `point_set` of pixel centers for all nodes whose queried degree equals the requested value.
+1. Prompt-facing evidence is the unordered `point_set` of pixel centers for the active branch: nodes with the requested degree/in-degree/out-degree, remaining nodes after the degree-1 filter, source nodes, or sink nodes.
 2. `answer_gt.value == len(evidence_gt.value)` by construction.
-3. `execution_trace.query_id == "default"` and `execution_trace.query_id` records the concrete branch.
+3. `execution_trace.query_id` records the concrete public branch, such as `undirected_degree_count`, `directed_in_degree_count`, or `directed_source_count`.
 4. Absorbed branch generators can record `internal_task_id` or `internal_query_id` for diagnostic compatibility; public output task id remains `task_graph__node_link__degree_predicate_count`.
 5. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, or `out_degree`.
 6. `scene_ir.entities` stores node labels, degrees, directed degrees, neighbors/successors/predecessors, center points, and node bboxes.

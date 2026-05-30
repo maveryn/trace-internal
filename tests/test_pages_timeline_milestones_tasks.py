@@ -46,9 +46,8 @@ def test_pages_timeline_milestones_contract_matches_trace() -> None:
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
             expected_relation = "between" if str(query_id) == "between_reference_events_count" else "outside"
-            assert out.query_id == "default"
             assert out.query_id == str(query_id)
-            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
             assert str(execution["source_query_id"]) == "interval_membership_count"
             assert str(execution["interval_relation"]) == expected_relation
             assert str(execution["scene_variant"]) == str(scene_variant)

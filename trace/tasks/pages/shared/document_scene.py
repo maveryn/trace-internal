@@ -11,6 +11,7 @@ from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.drawing import draw_rounded_rect
 from ...shared.render_variation import apply_resolved_layout_jitter_to_margins
 from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_legibility import draw_text_traced
 from .document_common import DocumentRenderParams
 
 
@@ -32,6 +33,15 @@ _SCENE_STYLE = {
         "accent_text_rgb": (255, 255, 255),
         "subtitle_text": "Point of sale",
     },
+}
+_DOCUMENT_LAYOUT_FRACTIONS: Dict[str, Tuple[float, float]] = {
+    "centered": (0.50, 0.50),
+    "left_weighted": (0.18, 0.50),
+    "right_weighted": (0.82, 0.50),
+    "upper_left": (0.18, 0.22),
+    "upper_right": (0.82, 0.22),
+    "lower_left": (0.18, 0.78),
+    "lower_right": (0.82, 0.78),
 }
 
 
@@ -134,14 +144,14 @@ def _draw_text_in_box(
     else:
         origin_x = float(left + padding_px - text_left)
     origin_y = float(((top + bottom) * 0.5) - (0.5 * (text_top + text_bottom)))
-    draw.text(
+    draw_text_traced(draw,
         (float(origin_x), float(origin_y)),
         str(text),
         font=font,
         fill=tuple(int(value) for value in fill),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in stroke_fill),
-    )
+     role="readout", required=False,)
     return _round_bbox(
         [
             float(origin_x + text_left),
@@ -456,15 +466,31 @@ def _page_bbox(scene_variant: str, render_params: DocumentRenderParams) -> tuple
     else:
         page_width = float(render_params.sheet_page_width_px)
         page_height = float(render_params.sheet_page_height_px)
-    left = float((canvas_width - page_width) * 0.5)
-    top = float((canvas_height - page_height) * 0.5)
+    min_margin = max(0.0, float(render_params.layout_jitter_meta.get("min_margin_px", 16)))
+    shadow_guard = max(0.0, float(render_params.page_shadow_offset_px))
+    mode = str(render_params.document_layout_mode)
+    fraction_x, fraction_y = _DOCUMENT_LAYOUT_FRACTIONS.get(mode, _DOCUMENT_LAYOUT_FRACTIONS["centered"])
+
+    safe_left_min = float(min_margin)
+    safe_left_max = float(canvas_width - page_width - min_margin - shadow_guard)
+    if safe_left_max < safe_left_min:
+        safe_left_min = max(0.0, float((canvas_width - page_width) * 0.5))
+        safe_left_max = safe_left_min
+    safe_top_min = float(min_margin)
+    safe_top_max = float(canvas_height - page_height - min_margin - shadow_guard)
+    if safe_top_max < safe_top_min:
+        safe_top_min = max(0.0, float((canvas_height - page_height) * 0.5))
+        safe_top_max = safe_top_min
+
+    left = float(safe_left_min + ((safe_left_max - safe_left_min) * float(fraction_x)))
+    top = float(safe_top_min + ((safe_top_max - safe_top_min) * float(fraction_y)))
     right_margin = float(canvas_width - left - page_width)
     bottom_margin = float(canvas_height - top - page_height)
     jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_resolved_layout_jitter_to_margins(
         left_px=float(left),
-        right_px=float(right_margin),
+        right_px=float(max(0.0, right_margin - shadow_guard)),
         top_px=float(top),
-        bottom_px=float(bottom_margin),
+        bottom_px=float(max(0.0, bottom_margin - shadow_guard)),
         jitter=render_params.layout_jitter_meta,
     )
     page_bbox = (
@@ -473,7 +499,21 @@ def _page_bbox(scene_variant: str, render_params: DocumentRenderParams) -> tuple
         float(jitter_left + page_width),
         float(jitter_top + page_height),
     )
-    return page_bbox, dict(layout_jitter_meta)
+    resolved_meta = dict(layout_jitter_meta)
+    resolved_meta.update(
+        {
+            "document_layout_mode": str(mode),
+            "document_layout_mode_meta": dict(render_params.document_layout_mode_meta),
+            "document_layout_fraction": [float(fraction_x), float(fraction_y)],
+            "base_page_bbox_px": _round_bbox((left, top, left + page_width, top + page_height)),
+            "placement_safe_range_px": {
+                "left": [round(float(safe_left_min), 3), round(float(safe_left_max), 3)],
+                "top": [round(float(safe_top_min), 3), round(float(safe_top_max), 3)],
+            },
+            "shadow_guard_px": int(round(float(shadow_guard))),
+        }
+    )
+    return page_bbox, resolved_meta
 
 
 def render_document_scene(
@@ -539,14 +579,14 @@ def render_document_scene(
         float(page_bbox[0] + 32.0),
         float(page_bbox[1] + 0.5 * (84.0 - title_height) - title_bbox[1]),
     )
-    draw.text(
+    draw_text_traced(draw,
         title_origin,
         str(scene_title),
         font=title_font,
         fill=tuple(int(value) for value in style["accent_text_rgb"]),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
-    )
+     role="readout", required=False,)
     title_bbox_px = _round_bbox(
         [
             float(title_origin[0] + title_bbox[0]),
@@ -562,14 +602,14 @@ def render_document_scene(
         float(page_bbox[2] - 32.0 - (subtitle_bbox[2] - subtitle_bbox[0])),
         float(page_bbox[1] + 0.5 * (84.0 - (subtitle_bbox[3] - subtitle_bbox[1])) - subtitle_bbox[1]),
     )
-    draw.text(
+    draw_text_traced(draw,
         subtitle_origin,
         str(style["subtitle_text"]),
         font=subtitle_font,
         fill=tuple(int(value) for value in style["accent_text_rgb"]),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
-    )
+     role="readout", required=False,)
     subtitle_bbox_px = _round_bbox(
         [
             float(subtitle_origin[0] + subtitle_bbox[0]),
@@ -798,14 +838,14 @@ def render_document_selection_scene(
         float(page_bbox[0] + 32.0),
         float(page_bbox[1] + 0.5 * (84.0 - title_height) - title_bbox[1]),
     )
-    draw.text(
+    draw_text_traced(draw,
         title_origin,
         str(scene_title),
         font=title_font,
         fill=tuple(int(value) for value in style["accent_text_rgb"]),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
-    )
+     role="readout", required=False,)
     title_bbox_px = _round_bbox(
         [
             float(title_origin[0] + title_bbox[0]),
@@ -830,14 +870,14 @@ def render_document_selection_scene(
             float(page_bbox[2] - 32.0 - (subtitle_bbox[2] - subtitle_bbox[0])),
             float(page_bbox[1] + 0.5 * (84.0 - (subtitle_bbox[3] - subtitle_bbox[1])) - subtitle_bbox[1]),
         )
-        draw.text(
+        draw_text_traced(draw,
             subtitle_origin,
             subtitle_text,
             font=subtitle_font,
             fill=tuple(int(value) for value in style["accent_text_rgb"]),
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
-        )
+         role="readout", required=False,)
         subtitle_bbox_px = _round_bbox(
             [
                 float(subtitle_origin[0] + subtitle_bbox[0]),

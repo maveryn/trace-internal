@@ -41,10 +41,8 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
         evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_id) == "default"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
         assert str(execution["style_variant"]) == str(style_variants[index])
@@ -60,9 +58,28 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
         assert str(execution["instruction_cue_label"]) in str(execution["instruction_text"])
         assert str(execution["action_label"]).lower() not in str(execution["instruction_text"]).lower()
 
-        assert out.evidence_gt.value == [record["bbox_px"] for record in evidence_supports] + [target["bbox_px"]]
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert len(out.evidence_gt.value) == 4
+        if query_id == "click_target_label":
+            expected_roles = ("instruction_banner", "action_key_guide", "item_card", "target_button")
+        elif query_id == "type_field_label":
+            expected_roles = ("instruction_banner", "field_key_guide", "form_section", "target_input")
+        else:
+            expected_roles = ("instruction_banner", "option_key_guide", "option_group", "target_option")
+        expected_evidence = {
+            expected_roles[0]: evidence_supports[0]["bbox_px"],
+            expected_roles[1]: evidence_supports[1]["bbox_px"],
+            expected_roles[2]: evidence_supports[2]["bbox_px"],
+            expected_roles[3]: target["bbox_px"],
+        }
+        assert out.evidence_gt.value == expected_evidence
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert set(out.evidence_gt.value) == set(expected_roles)
+        assert execution["evidence_role_support_ids"] == {
+            expected_roles[0]: str(execution["instruction_support_id"]),
+            expected_roles[1]: str(execution["guide_support_id"]),
+            expected_roles[2]: str(target["support_id"]),
+            expected_roles[3]: str(target["control_id"]),
+        }
         evidence_support_kinds = [record["support_kind"] for record in evidence_supports]
         assert evidence_support_kinds[0] == "instruction_banner"
         assert evidence_support_kinds[1] in {"action_guide_card", "field_guide_card", "option_guide_card"}
@@ -93,15 +110,26 @@ def test_gui_relation_web_action_target_contract_matches_trace() -> None:
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value for coord in (box[1], box[3]))
+        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value.values() for coord in (box[0], box[2]))
+        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value.values() for coord in (box[1], box[3]))
 
 
 def test_gui_relation_web_action_target_prompt_examples_match_option_contract() -> None:
     task = PagesRelationWebActionTargetLabelTask()
     out = task.generate(99200, params={}, max_attempts=20)
+    expected_roles_by_query = {
+        "click_target_label": ("action_key_guide", "item_card", "target_button"),
+        "type_field_label": ("field_key_guide", "form_section", "target_input"),
+        "select_option_label": ("option_key_guide", "option_group", "target_option"),
+    }
+    guide_role, context_role, target_role = expected_roles_by_query[str(out.query_id)]
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": [[80, 150, 1200, 210], [210, 222, 430, 278], [92, 310, 590, 430], [410, 378, 560, 418]],
+        "evidence": {
+            "instruction_banner": [80, 150, 1200, 210],
+            guide_role: [210, 222, 430, 278],
+            context_role: [92, 310, 590, 430],
+            target_role: [410, 378, 560, 418],
+        },
         "answer": "G",
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "G"}

@@ -34,11 +34,9 @@ def test_pages_map_navigation_label_contract_matches_evidence_bboxes() -> None:
         }
 
         assert out.answer_gt.type == "string"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.evidence_gt.type == "bbox_sequence"
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-        assert str(out.query_id) == "default"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == "campus_map"
         assert str(execution["question_format"]) == "map_navigation_label"
@@ -49,7 +47,7 @@ def test_pages_map_navigation_label_contract_matches_evidence_bboxes() -> None:
         assert len(execution["landmark_specs"]) == int(execution["landmark_count"])
         assert len(render_map["landmark_bboxes_px"]) == int(execution["landmark_count"])
         assert len(render_map["zone_label_bboxes_px"]) == 4
-        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert trace["projected_evidence"]["bbox_sequence"] == evidence_bboxes
 
         expected_bboxes = [[float(value) for value in bbox_source[bbox_id]] for bbox_id in evidence_bbox_ids]
         assert evidence_bboxes == expected_bboxes

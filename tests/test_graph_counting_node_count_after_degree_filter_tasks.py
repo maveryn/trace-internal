@@ -44,7 +44,6 @@ def test_graph_counting_node_count_after_degree_filter_contract_matches_trace() 
 
     assert "task_graph__node_link__degree_predicate_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "directed_in_degree_one_filter_remaining_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"

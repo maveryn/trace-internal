@@ -49,7 +49,7 @@ class _TaskDefaults:
     node_count_max: int = 13
     target_count_min: int = 1
     target_count_max: int = 6
-    internal_count_min: int = 2
+    internal_count_min: int = 3
     internal_count_max: int = 7
     depth_min: int = 1
     depth_max: int = 4
@@ -117,6 +117,8 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 def _support_for_query(query_id: str) -> Tuple[int, ...]:
     lower = int(group_default(_GEN_DEFAULTS, "target_count_min", _DEFAULTS.target_count_min))
     upper = int(group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max))
+    node_count_min = int(group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min))
+    node_count_max = int(group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max))
     if str(query_id) == "leaf_node_count":
         return tuple(range(max(2, lower), int(upper) + 1))
     if str(query_id) == "two_child_node_count":
@@ -124,7 +126,14 @@ def _support_for_query(query_id: str) -> Tuple[int, ...]:
     if str(query_id) == "internal_node_count":
         internal_min = int(group_default(_GEN_DEFAULTS, "internal_count_min", _DEFAULTS.internal_count_min))
         internal_max = int(group_default(_GEN_DEFAULTS, "internal_count_max", _DEFAULTS.internal_count_max))
-        return tuple(range(int(internal_min), int(internal_max) + 1))
+        return tuple(
+            internal_count
+            for internal_count in range(int(internal_min), int(internal_max) + 1)
+            if any(
+                int(node_count_min) <= (int(internal_count) + int(two_child_count) + 1) <= int(node_count_max)
+                for two_child_count in range(1, int(internal_count) + 1)
+            )
+        )
     return tuple(range(max(1, lower), int(upper) + 1))
 
 
@@ -340,6 +349,7 @@ class GraphCountingBinaryTreeNodeCountTask:
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
         depth_text = str(query.target_depth) if query.target_depth is not None else ""
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -353,7 +363,7 @@ class GraphCountingBinaryTreeNodeCountTask:
                 "target_depth": depth_text,
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(target_depth=depth_text),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(target_depth=depth_text),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),

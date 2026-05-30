@@ -156,7 +156,8 @@ prompt:
       scene_key: adjacency_representation_order
       task_key: adjacency_traversal_label_query
       object_description: a directed graph shown as an adjacency list
-      evidence_hint: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited from the source row through the answer row
+      evidence_hint_bfs_kth_visit_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by breadth-first search from the source row through the answer row
+      evidence_hint_dfs_kth_visit_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around the row labels visited by depth-first search from the source row through the answer row
       answer_hint: set "answer" to the node label at the requested visit position as a string
       json_example: '{"evidence":[[70,126,158,158],[70,174,158,206],[70,222,158,254]],"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'
@@ -164,7 +165,10 @@ prompt:
       scene_key: binary_tree_order
       task_key: binary_tree_traversal_label_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
-      evidence_hint: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the traversal nodes from the first visited node through the answer node
+      evidence_hint_preorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the preorder traversal nodes from the first visited node through the answer node
+      evidence_hint_inorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the inorder traversal nodes from the first visited node through the answer node
+      evidence_hint_postorder_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the postorder traversal nodes from the first visited node through the answer node
+      evidence_hint_level_order_kth_node_label: set "evidence" to an ordered JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates for the level-order traversal nodes from the first visited node through the answer node
       answer_hint: set "answer" to the node label at the requested traversal position as a string
       json_example: '{"evidence":[[156,124,204,172],[250,250,298,298],[470,430,520,480]],"answer":"M"}'
       json_example_answer_only: '{"answer":"M"}'

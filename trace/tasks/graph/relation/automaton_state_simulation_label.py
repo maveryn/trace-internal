@@ -26,6 +26,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ...shared.text_legibility import draw_readable_text, resolve_readable_text_style
 from ...shared.text_rendering import load_font
 from ..shared.complexity import (
     build_graph_complexity,
@@ -139,7 +140,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_background_defaults(task_group="relation")
-POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", apply_prob=0.5)
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
@@ -625,6 +626,7 @@ def _decorate_automaton_scene(
     start_label: str,
     accepting_labels: Sequence[str],
     render_params: GraphRenderParams,
+    layout_seed: int,
 ) -> None:
     """Add automaton-specific start and accepting-state glyphs to a rendered graph."""
 
@@ -655,8 +657,27 @@ def _decorate_automaton_scene(
         text_xy = (int(cx + 12), int(start[1]))
     draw.line((start, end), fill=ink, width=3)
     _draw_arrowhead(draw, start=start, end=end, color=ink)
-    font = load_font(14, bold=True)
-    draw.text(text_xy, "start", fill=ink, font=font)
+    font = load_font(14, bold=True, font_family=str(render_params.font_family or ""))
+    start_label_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.automaton.start_label_text",
+        role="automaton_start_label_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params.panel_fill_rgb),
+            tuple(int(value) for value in render_params.background_color_rgb),
+        ),
+        preferred_rgbs=(ink,),
+        min_contrast_ratio=7.0,
+        min_lab_distance=38.0,
+    )
+    draw_readable_text(
+        draw,
+        xy=text_xy,
+        text="start",
+        font=font,
+        style=start_label_style,
+        stroke_width=2,
+    )
 
 
 def _edge_label_bbox_entries(rendered_scene: RenderedGraphScene, edges: Sequence[Tuple[str, str]]) -> Tuple[list[list[int]], Dict[str, list[list[int]]]]:
@@ -770,6 +791,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                     start_label=str(automaton.start_label),
                     accepting_labels=tuple(str(label) for label in automaton.accepting_labels),
                     render_params=render_params,
+                    layout_seed=int(instance_seed + attempt),
                 )
                 transition_bbox_entries, used_transition_bbox_by_edge = _edge_label_bbox_entries(
                     rendered_scene,
@@ -801,7 +823,8 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint",
+                "evidence_hint_final_state_label",
+                "evidence_hint_transition_step_state_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -809,6 +832,7 @@ class GraphRelationAutomatonStateSimulationLabelTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -823,7 +847,10 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                 "transition_step_count": str(automaton.query_step_count),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                    input_string=str(automaton.input_string),
+                    transition_step_count=str(automaton.query_step_count),
+                ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),
@@ -983,6 +1010,11 @@ class GraphRelationAutomatonStateSimulationLabelTask:
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
                     "label_stroke_width_px": int(rendered_scene.resolved_label_stroke_width_px),
+                    "font_family": str(render_params.font_family or ""),
+                    "font_asset": dict(render_params.font_asset) if isinstance(render_params.font_asset, Mapping) else {},
+                    "font_asset_version": str(render_params.font_asset_version or ""),
+                    "font_exclusion_reason": str(render_params.font_exclusion_reason),
+                    "context_text_elements": list(rendered_scene.panel_geometry.get("context_text_elements", [])),
                     "automaton_accepting_state_glyph": "double_inner_ring",
                     "automaton_start_state_glyph": "incoming_start_arrow",
                     "transition_labels_by_edge": list(transition_entries),

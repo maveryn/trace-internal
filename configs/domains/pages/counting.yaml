@@ -55,14 +55,16 @@ generation:
       - Y
       - Z
   task_overrides:
-    task_pages__control_board__filter_count:
+    task_pages__control_board__control_filter_count:
       disabled_controls_in_group_count_state_count_support: [2, 3, 4, 5, 6]
       selected_enabled_controls_in_group_count_state_count_support: [3, 4, 5, 6, 7]
-      enabled_action_for_type_count_row_count_support: [9, 10, 11, 12]
-      enabled_action_for_type_count_answer_count_support: [2, 3, 4, 5, 6]
       query_id_weights:
         disabled_controls_in_group_count: 1.0
         selected_enabled_controls_in_group_count: 1.0
+    task_pages__data_table__row_filter_count:
+      enabled_action_for_type_count_row_count_support: [9, 10, 11, 12]
+      enabled_action_for_type_count_answer_count_support: [2, 3, 4, 5, 6]
+      query_id_weights:
         selected_rows_with_status_count: 1.0
         enabled_action_for_type_count: 1.0
         value_threshold_in_group_count: 1.0
@@ -111,19 +113,17 @@ prompt:
   shared:
     bundle_id: pages_counting_v0
   task_overrides:
-    task_pages__control_board__filter_count:
+    task_pages__control_board__control_filter_count:
       scene_key: gui_control_board
       task_key: control_filter_count_query
-      object_description: grouped controls or a sectioned data table in a desktop application
-      scene_key_control_filter_count: gui_control_board
-      task_key_control_filter_count: control_filter_count_query
-      object_description_control_filter_count: grouped labeled controls in a desktop application
-      evidence_hint_control_filter_count: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for every control counted
-      scene_key_table_row_filter_count: gui_table
-      task_key_table_row_filter_count: table_row_filter_count_query
-      object_description_table_row_filter_count: a sectioned data table in a desktop application
-      evidence_hint_table_row_filter_count: set "evidence" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
-      evidence_hint: set "evidence" to an array containing one full control or table-row bounding box [x0, y0, x1, y1] for every item counted
+      object_description: grouped labeled controls in a desktop application
+      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0, x1, y1] for every control counted
+      answer_hint: set "answer" to the count as an integer value
+    task_pages__data_table__row_filter_count:
+      scene_key: gui_table
+      task_key: table_row_filter_count_query
+      object_description: a sectioned data table in a desktop application
+      evidence_hint: set "evidence" to an array containing one full row bounding box [x0, y0, x1, y1] for every row counted
       answer_hint: set "answer" to the count as an integer value
 
 visual:

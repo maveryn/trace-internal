@@ -92,7 +92,7 @@ generation:
       node_count_max: 13
       target_count_min: 1
       target_count_max: 6
-      internal_count_min: 2
+      internal_count_min: 3
       internal_count_max: 7
       depth_min: 1
       depth_max: 4
@@ -365,11 +365,15 @@ generation:
       node_count_max: 13
       target_count_min: 0
       target_count_max: 5
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
       grid_shape_variant_weights:
         3x4: 1.0
         3x5: 1.0
         4x4: 1.0
         4x5: 1.0
+      balanced_label_variant_sampling: true
       balanced_grid_shape_variant_sampling: true
     task_graph__metro__station_membership_count:
       query_id_weights:
@@ -392,7 +396,7 @@ generation:
       balanced_label_variant_sampling: true
     graph_metro_single_route_station_count_internal:
       target_count_min: 8
-      target_count_max: 11
+      target_count_max: 12
       route_count_min: 2
       route_count_max: 3
       label_variant_weights:
@@ -451,7 +455,9 @@ prompt:
     question_text_degree_count: How many nodes have degree {query_degree}?
     question_text_in_degree: How many nodes have in-degree {query_degree}?
     question_text_out_degree: How many nodes have out-degree {query_degree}?
-    evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that satisfy the requested degree condition
+    evidence_hint_degree_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes with degree {query_degree}; use an empty array when the answer is zero
+    evidence_hint_in_degree_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes with in-degree {query_degree}; use an empty array when the answer is zero
+    evidence_hint_out_degree_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes with out-degree {query_degree}; use an empty array when the answer is zero
     answer_hint: set "answer" to the count of matching nodes as an integer
     json_example: '{"evidence":[[180,220],[310,180]],"answer":2}'
     json_example_answer_only: '{"answer":2}'
@@ -463,7 +469,8 @@ prompt:
       object_description_directed_list: a directed graph shown as an adjacency list
       object_description_undirected_matrix: an undirected graph shown as an adjacency matrix
       object_description_directed_matrix: a directed graph shown as an adjacency matrix
-      evidence_hint: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around one row label from each counted component
+      evidence_hint_undirected_component_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around one row label from each connected component
+      evidence_hint_directed_strong_component_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around one row label from each strongly connected component
       answer_hint: set "answer" to the number of components as an integer
       json_example: '{"evidence":[[70,126,158,158],[70,318,158,350]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -471,7 +478,11 @@ prompt:
       scene_key: binary_tree_counting
       task_key: binary_tree_node_count_query
       object_description: a labeled binary tree with the root at the top and left/right children shown by position
-      evidence_hint: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every counted node
+      evidence_hint_leaf_node_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every leaf node
+      evidence_hint_internal_node_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every internal node, meaning every non-leaf node
+      evidence_hint_single_child_node_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node with exactly one child
+      evidence_hint_two_child_node_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node with both left and right children
+      evidence_hint_depth_level_node_count: set "evidence" to a JSON array of [x0,y0,x1,y1] boxes in image pixel coordinates around every node at depth {target_depth}
       answer_hint: set "answer" to the count of matching nodes as an integer
       json_example: '{"evidence":[[156,124,204,172],[470,430,520,480]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -487,14 +498,18 @@ prompt:
       task_key: named_node_degree_value_query
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one counted edge; for directed graphs, keep each pair in source-to-target order; use an empty array when the answer is zero
+      evidence_hint_named_node_degree_value: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one edge touching node {query_label}; use an empty array when the answer is zero
+      evidence_hint_named_node_in_degree_value: set "evidence" to an array of point-pair arrays for every arrow pointing into node {query_label}; each pair is two [x,y] pixel points in source-to-target order, [[source_x,source_y],[target_x,target_y]]; use an empty array when the answer is zero
+      evidence_hint_named_node_out_degree_value: set "evidence" to an array of point-pair arrays for every arrow leaving node {query_label}; each pair is two [x,y] pixel points in source-to-target order, [[source_x,source_y],[target_x,target_y]]; use an empty array when the answer is zero
+      evidence_hint_named_node_total_degree_value: set "evidence" to an array of point-pair arrays for every arrow touching node {query_label}; each pair is two [x,y] pixel points in image pixel coordinates, kept in source-to-target order; use an empty array when the answer is zero
       answer_hint: set "answer" to the queried node degree as an integer
       json_example: '{"evidence":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     graph_node_link_source_sink_count_internal:
       task_key: source_sink_count_query
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes matching the requested source or sink condition; use an empty array when the answer is zero
+      evidence_hint_source_count: set "evidence" to an array of [x,y] pixel points at the centers of all source nodes, meaning nodes with no incoming arrows; use an empty array when the answer is zero
+      evidence_hint_sink_count: set "evidence" to an array of [x,y] pixel points at the centers of all sink nodes, meaning nodes with no outgoing arrows; use an empty array when the answer is zero
       answer_hint: set "answer" to the count of matching nodes as an integer
       json_example: '{"evidence":[[180,220],[310,180]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -526,7 +541,8 @@ prompt:
       task_key: cross_color_edge_count_query
       object_description_undirected: a labeled undirected graph with colored nodes
       object_description_directed: a labeled directed graph with colored nodes
-      evidence_hint: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one counted edge; for directed graphs, keep each pair in source-to-target order; use an empty array when the answer is zero
+      evidence_hint_cross_color_edge_count: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint nodes of one edge connecting a {source_color_label} node and a {target_color_label} node; use an empty array when the answer is zero
+      evidence_hint_directed_cross_color_edge_count: set "evidence" to an array of point-pair arrays for every arrow from a {source_color_label} node to a {target_color_label} node; each pair is two [x,y] pixel points in source-to-target order, [[source_x,source_y],[target_x,target_y]]; use an empty array when the answer is zero
       answer_hint: set "answer" to the count of matching edges as an integer
       json_example: '{"evidence":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
@@ -542,7 +558,9 @@ prompt:
       task_key: node_count_after_degree_filter_query
       object_description_undirected: a labeled undirected graph
       object_description_directed: a labeled directed graph
-      evidence_hint: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would remain after removing nodes with exactly one queried connection; use an empty array when the answer is zero
+      evidence_hint_undirected_degree_one_filter_remaining_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would remain after removing every node with degree 1; use an empty array when the answer is zero
+      evidence_hint_directed_in_degree_one_filter_remaining_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would remain after removing every node with in-degree 1; use an empty array when the answer is zero
+      evidence_hint_directed_out_degree_one_filter_remaining_count: set "evidence" to an array of [x,y] pixel points at the centers of all nodes that would remain after removing every node with out-degree 1; use an empty array when the answer is zero
       answer_hint: set "answer" to the count of remaining nodes as an integer
       json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
@@ -558,7 +576,7 @@ prompt:
       task_key: bridge_count_query
       object_description: a labeled pipe-junction network with open pipes and blocked pipes
       question_text_bridge_count: How many open pipes are bridges? A bridge is an open pipe whose removal would disconnect part of the open-pipe network.
-      evidence_hint: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint junctions of one bridge pipe
+      evidence_hint: set "evidence" to an array of point-pair arrays, where each pair contains [x,y] pixel points at the centers of the two endpoint junctions of one bridge pipe; endpoint order inside each pair does not matter
       answer_hint: set "answer" to the count of bridge pipes as an integer
       json_example: '{"evidence":[[[180,220],[310,220]],[[310,220],[430,300]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

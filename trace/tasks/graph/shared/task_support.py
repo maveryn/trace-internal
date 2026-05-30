@@ -9,7 +9,9 @@ from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ...shared.color_format import rgb_to_hex
 from ...shared.config_defaults import group_default
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.named_colors import named_color
+from ...shared.text_legibility import resolve_readable_text_style, text_legibility_summary_from_records
 from ...shared.variant_sampling import (
     apply_balanced_variant_sampling,
     has_non_null_param,
@@ -410,18 +412,76 @@ def resolve_graph_render_params(
     if color_theme is not None:
         color_theme = apply_graph_panel_style(color_theme, panel_style_variant=str(panel_style_variant))
     graph_scene_id = infer_graph_scene_id(str(task_id))
+    information_style_params: Dict[str, Any] = dict(render_defaults)
+    information_style_params.update(dict(params))
     information_style, information_style_meta = resolve_graph_information_style(
         instance_seed=int(instance_seed),
-        params=params,
+        params=information_style_params,
         scene_id=str(graph_scene_id),
-        task_group=str(params.get("task_group", "shared")),
+        task_group=str(information_style_params.get("task_group", "shared")),
         protected_colors=(tuple(int(value) for value in named_color(str(node_color_name))),),
         allow_dark=False,
     )
     information_roles = graph_surface_roles_from_information_style(information_style)
 
-    def _render_value(key: str) -> Any:
-        return params.get(key, group_default(render_defaults, key, getattr(fallback_defaults, key)))
+    font_params: Dict[str, Any] = dict(render_defaults)
+    font_params.update(dict(params))
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.render.font_family",
+        params=font_params,
+    )
+    font_record = get_font_family_record(str(font_family))
+
+    def _render_value(key: str, fallback: Any | None = None) -> Any:
+        fallback_value = getattr(fallback_defaults, key, fallback)
+        return params.get(key, group_default(render_defaults, key, fallback_value))
+
+    raw_context_block_position_weights = _render_value("context_block_position_weights", {})
+    context_block_position_weights = (
+        dict(raw_context_block_position_weights)
+        if isinstance(raw_context_block_position_weights, Mapping)
+        else {}
+    )
+    raw_context_block_clutter_level_weights = _render_value("context_block_clutter_level_weights", {})
+    context_block_clutter_level_weights = (
+        dict(raw_context_block_clutter_level_weights)
+        if isinstance(raw_context_block_clutter_level_weights, Mapping)
+        else {}
+    )
+    node_fill_rgb = tuple(
+        int(value) for value in (color_theme.node_fill_rgb if color_theme is not None else _render_value("node_fill_rgb"))
+    )
+    node_border_rgb = tuple(
+        int(value)
+        for value in (color_theme.node_border_rgb if color_theme is not None else _render_value("node_border_rgb"))
+    )
+    node_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{str(task_id)}.render.node_label_text",
+        role="graph_node_label_text",
+        surface_rgbs=(node_fill_rgb,),
+        preferred_rgbs=(
+            tuple(int(value) for value in information_roles["label_text_rgb"]),
+            (255, 255, 255),
+            (10, 14, 22),
+        ),
+        min_contrast_ratio=4.0,
+        min_lab_distance=24.0,
+    )
+    information_records = []
+    if isinstance(information_style_meta, Mapping):
+        information_legibility = information_style_meta.get("text_legibility")
+        if isinstance(information_legibility, Mapping) and isinstance(information_legibility.get("records"), list):
+            information_records = [
+                dict(record)
+                for record in information_legibility["records"]
+                if isinstance(record, Mapping)
+            ]
+    text_legibility = text_legibility_summary_from_records(
+        [*information_records, node_label_style.metadata()]
+    )
 
     return GraphRenderParams(
         canvas_width=int(_render_value("canvas_width")),
@@ -445,16 +505,22 @@ def resolve_graph_render_params(
         panel_border_rgb=tuple(int(value) for value in information_roles["panel_border_rgb"]),
         title_color_rgb=tuple(int(value) for value in information_roles["title_color_rgb"]),
         edge_color_rgb=tuple(int(value) for value in information_roles["edge_color_rgb"]),
-        node_fill_rgb=tuple(
-            int(value) for value in (color_theme.node_fill_rgb if color_theme is not None else _render_value("node_fill_rgb"))
-        ),
-        node_border_rgb=tuple(
-            int(value)
-            for value in (color_theme.node_border_rgb if color_theme is not None else _render_value("node_border_rgb"))
-        ),
-        label_text_rgb=tuple(int(value) for value in information_roles["label_text_rgb"]),
-        label_stroke_rgb=tuple(int(value) for value in information_roles["label_stroke_rgb"]),
+        node_fill_rgb=tuple(int(value) for value in node_fill_rgb),
+        node_border_rgb=tuple(int(value) for value in node_border_rgb),
+        label_text_rgb=tuple(int(value) for value in node_label_style.fill_rgb),
+        label_stroke_rgb=tuple(int(value) for value in node_label_style.stroke_rgb),
         information_scene_style=dict(information_style_meta),
+        text_legibility=dict(text_legibility),
+        font_family=str(font_family),
+        font_asset=dict(font_record.to_trace()),
+        font_asset_version=str(font_asset_version()),
+        content_jitter_max_px=int(_render_value("content_jitter_max_px", 0)),
+        context_text_probability=float(_render_value("context_text_probability", 0.0)),
+        context_text_max_elements=int(_render_value("context_text_max_elements", 0)),
+        context_block_probability=float(_render_value("context_block_probability", 0.0)),
+        context_block_max_elements=int(_render_value("context_block_max_elements", 0)),
+        context_block_position_weights=dict(context_block_position_weights),
+        context_block_clutter_level_weights=dict(context_block_clutter_level_weights),
     )
 
 

@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
+from ...shared.config_defaults import group_default
 from ...shared.render_variation import resolve_layout_jitter, resolve_render_int, resolve_render_rgb
 from .common import resolve_pages_axis_variant
 from .text_generation import (
@@ -27,6 +29,24 @@ SUPPORTED_DOCUMENT_SCENE_VARIANTS: Tuple[str, ...] = (
     "invoice_sheet",
     "receipt_sheet",
 )
+SUPPORTED_DOCUMENT_LAYOUT_MODES: Tuple[str, ...] = (
+    "centered",
+    "left_weighted",
+    "right_weighted",
+    "upper_left",
+    "upper_right",
+    "lower_left",
+    "lower_right",
+)
+DEFAULT_DOCUMENT_LAYOUT_MODE_WEIGHTS: Dict[str, float] = {
+    "centered": 0.22,
+    "left_weighted": 0.22,
+    "right_weighted": 0.22,
+    "upper_left": 0.12,
+    "upper_right": 0.12,
+    "lower_left": 0.05,
+    "lower_right": 0.05,
+}
 DOCUMENT_SCENE_TITLES: Dict[str, str] = {
     "form_sheet": "Application Form",
     "invoice_sheet": "Invoice",
@@ -92,6 +112,8 @@ class DocumentRenderParams:
     label_stroke_rgb: Tuple[int, int, int]
     value_fill_rgb: Tuple[int, int, int]
     divider_rgb: Tuple[int, int, int]
+    document_layout_mode: str
+    document_layout_mode_meta: Dict[str, Any]
     layout_jitter_meta: Dict[str, Any]
 
 
@@ -183,6 +205,61 @@ def resolve_document_scene_variant(
     )
 
 
+def resolve_document_layout_mode(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    instance_seed: int | None = None,
+) -> Tuple[str, Dict[str, Any]]:
+    """Resolve the nonsemantic document placement mode for one rendered page."""
+
+    supported = [str(item) for item in SUPPORTED_DOCUMENT_LAYOUT_MODES]
+    supported_set = set(supported)
+    explicit = params.get(
+        "document_layout_mode",
+        params.get(
+            "page_layout_mode",
+            group_default(
+                render_defaults,
+                "document_layout_mode",
+                group_default(render_defaults, "page_layout_mode", None),
+            ),
+        ),
+    )
+    if explicit is not None:
+        selected = str(explicit).strip()
+        if selected not in supported_set:
+            raise ValueError(f"unsupported document_layout_mode: {selected}")
+        return selected, {
+            "explicit": True,
+            "probabilities": {key: (1.0 if key == selected else 0.0) for key in supported},
+            "supported_modes": list(supported),
+        }
+
+    raw_weights = params.get("document_layout_mode_weights")
+    if raw_weights is None:
+        raw_weights = params.get("page_layout_mode_weights")
+    if raw_weights is None:
+        raw_weights = group_default(render_defaults, "document_layout_mode_weights", None)
+    if raw_weights is None:
+        raw_weights = group_default(render_defaults, "page_layout_mode_weights", DEFAULT_DOCUMENT_LAYOUT_MODE_WEIGHTS)
+    if not isinstance(raw_weights, Mapping):
+        raise ValueError("document_layout_mode_weights must be a mapping when provided")
+    weights = {
+        str(key): float(value)
+        for key, value in raw_weights.items()
+        if str(key) in supported_set
+    }
+    probabilities = normalize_positive_weights(weights, default_keys=supported)
+    rng = spawn_rng(0 if instance_seed is None else int(instance_seed), "pages.document.layout_mode")
+    selected = weighted_choice(rng, probabilities, sort_keys=True)
+    return str(selected), {
+        "explicit": False,
+        "probabilities": {str(key): float(value) for key, value in sorted(probabilities.items())},
+        "supported_modes": list(supported),
+    }
+
+
 def resolve_document_render_params(
     params: Mapping[str, Any],
     *,
@@ -218,6 +295,11 @@ def resolve_document_render_params(
         instance_seed=instance_seed,
         namespace="pages.document.layout",
     )
+    document_layout_mode, document_layout_mode_meta = resolve_document_layout_mode(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=instance_seed,
+    )
 
     return DocumentRenderParams(
         canvas_width=_int("canvas_width", defaults.canvas_width),
@@ -244,6 +326,8 @@ def resolve_document_render_params(
         label_stroke_rgb=_rgb("label_stroke_rgb", defaults.label_stroke_rgb),
         value_fill_rgb=_rgb("value_fill_rgb", defaults.value_fill_rgb),
         divider_rgb=_rgb("divider_rgb", defaults.divider_rgb),
+        document_layout_mode=str(document_layout_mode),
+        document_layout_mode_meta=dict(document_layout_mode_meta),
         layout_jitter_meta=dict(layout_jitter_meta),
     )
 
@@ -319,12 +403,15 @@ def build_document_field_lookup_dataset(
 
 
 __all__ = [
+    "DEFAULT_DOCUMENT_LAYOUT_MODE_WEIGHTS",
     "DOCUMENT_SCENE_TITLES",
     "DocumentDefaults",
     "DocumentRenderParams",
     "SUPPORTED_DOCUMENT_FIELD_QUERY_IDS",
+    "SUPPORTED_DOCUMENT_LAYOUT_MODES",
     "SUPPORTED_DOCUMENT_SCENE_VARIANTS",
     "build_document_field_lookup_dataset",
+    "resolve_document_layout_mode",
     "resolve_document_render_params",
     "resolve_document_scene_variant",
     "resolve_document_query_id",

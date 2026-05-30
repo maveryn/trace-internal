@@ -37,18 +37,33 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
         evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_id) == "default"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert trace["scene_ir"]["scene_kind"] == "gui_navigation_path"
         assert str(out.answer_gt.value) == str(execution["target_label"])
         assert str(target["candidate_label"]) == str(execution["target_label"])
         assert list(target["path_keys"]) == list(execution["path_labels"])
-        assert out.evidence_gt.value == [record["bbox_px"] for record in evidence_supports] + [target["bbox_px"]]
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-        assert len(out.evidence_gt.value) == 3
+        if query_id == "menu_path_target_label":
+            expected_roles = ("menu_root", "menu_group", "target_command")
+        elif query_id == "sidebar_tree_target_label":
+            expected_roles = ("sidebar_section", "sidebar_group", "target_item")
+        else:
+            expected_roles = ("ribbon_tab", "ribbon_group", "target_command")
+        expected_evidence = {
+            expected_roles[0]: evidence_supports[0]["bbox_px"],
+            expected_roles[1]: evidence_supports[1]["bbox_px"],
+            expected_roles[2]: target["bbox_px"],
+        }
+        assert out.evidence_gt.value == expected_evidence
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert set(out.evidence_gt.value) == set(expected_roles)
+        assert execution["evidence_role_support_ids"] == {
+            expected_roles[0]: str(execution["evidence_support_ids"][0]),
+            expected_roles[1]: str(execution["evidence_support_ids"][1]),
+            expected_roles[2]: str(target["control_id"]),
+        }
 
         if query_id == "menu_path_target_label":
             assert list(execution["menu_command_count_range"]) == [3, 4]
@@ -80,15 +95,19 @@ def test_gui_relation_navigation_path_target_label_contract_matches_trace() -> N
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value for coord in (box[1], box[3]))
+        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value.values() for coord in (box[0], box[2]))
+        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value.values() for coord in (box[1], box[3]))
 
 
 def test_gui_relation_navigation_path_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationNavigationPathTargetLabelTask()
     out = task.generate(78200, params={"query_id": "menu_path_target_label"}, max_attempts=20)
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": [[82, 214, 308, 252], [104, 270, 286, 302], [112, 316, 286, 354]],
+        "evidence": {
+            "menu_root": [82, 214, 308, 252],
+            "menu_group": [104, 270, 286, 302],
+            "target_command": [112, 316, 286, 354],
+        },
         "answer": "G",
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "G"}

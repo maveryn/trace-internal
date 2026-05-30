@@ -15,6 +15,7 @@
 5. The image shows labeled junctions connected by open pipes and blocked pipes.
 6. Only open pipes are traversable; blocked pipes are visible distractors.
 7. Evidence is the ordered pixel-point sequence of junction centers along the unique shortest open route, including both endpoints.
+8. Rendering uses compact letter/number junction labels and physical pipe-board styling with cylindrical tubes, flanged junction fittings, sampled board treatments, and clear blocked-pipe valve/X markers.
 
 ## 3) Prompt Contract
 1. Bundle: `graph_path_v0`

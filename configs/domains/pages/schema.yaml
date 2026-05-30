@@ -86,7 +86,7 @@ prompt:
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     integer_answer_hint: set "answer" to the requested integer count
     evidence_hint_field_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted field rows
-    evidence_hint_relationship_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted relationship lines
+    evidence_hint_relationship_count: set "evidence" to an array of pixel point pairs for the counted relationship lines, with each pair formatted as [[x, y], [x, y]]
 
 visual:
   background:

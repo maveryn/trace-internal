@@ -344,54 +344,35 @@ def _sample_item_specs(
     return specs
 
 
-def _supporting_bbox_ids(*, query_id: str, item_specs: Sequence[Mapping[str, Any]]) -> list[str]:
-    """Return ordered bbox ids supporting one reconciliation answer."""
+def _supporting_bbox_ids(*, item_specs: Sequence[Mapping[str, Any]]) -> list[str]:
+    """Return receiving-slip row bbox ids for all mismatched items."""
 
-    if str(query_id) == "total_amount_delta":
-        support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
-        ids = []
-        for spec in support_items:
-            ids.extend(
-                [
-                    str(spec["po_code_bbox_id"]),
-                    str(spec["po_order_qty_bbox_id"]),
-                    str(spec["recv_code_bbox_id"]),
-                    str(spec["recv_received_qty_bbox_id"]),
-                    str(spec["po_unit_value_bbox_id"]),
-                ]
-            )
-        return ids
+    support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
+    return [f"recv:{spec['item_id']}" for spec in support_items]
 
-    if str(query_id) == "shortfall_minus_overage_value":
-        support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
-        ids = []
-        for spec in support_items:
-            ids.extend(
-                [
-                    str(spec["po_code_bbox_id"]),
-                    str(spec["po_order_qty_bbox_id"]),
-                    str(spec["recv_code_bbox_id"]),
-                    str(spec["recv_received_qty_bbox_id"]),
-                    str(spec["po_unit_value_bbox_id"]),
-                ]
-            )
-        return ids
 
-    if str(query_id) == "sum_absolute_quantity_differences":
-        support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
-        ids = []
-        for spec in support_items:
-            ids.extend(
-                [
-                    str(spec["po_code_bbox_id"]),
-                    str(spec["po_order_qty_bbox_id"]),
-                    str(spec["recv_code_bbox_id"]),
-                    str(spec["recv_received_qty_bbox_id"]),
-                ]
-            )
-        return ids
+def _supporting_cell_bbox_ids(*, query_id: str, item_specs: Sequence[Mapping[str, Any]]) -> Dict[str, str]:
+    """Return private role-keyed cell bbox ids for audit/debug traces."""
 
-    raise ValueError(f"unsupported reconciliation query_id '{query_id}'")
+    support_items = [spec for spec in item_specs if int(spec["absolute_quantity_difference"]) > 0]
+    include_unit_value = str(query_id) in {"total_amount_delta", "shortfall_minus_overage_value"}
+    if str(query_id) not in {
+        "total_amount_delta",
+        "shortfall_minus_overage_value",
+        "sum_absolute_quantity_differences",
+    }:
+        raise ValueError(f"unsupported reconciliation query_id '{query_id}'")
+
+    role_bbox_ids: Dict[str, str] = {}
+    for mismatch_index, spec in enumerate(support_items, start=1):
+        prefix = f"mismatch_{int(mismatch_index)}"
+        role_bbox_ids[f"{prefix}_purchase_code"] = str(spec["po_code_bbox_id"])
+        role_bbox_ids[f"{prefix}_ordered_quantity"] = str(spec["po_order_qty_bbox_id"])
+        role_bbox_ids[f"{prefix}_receiving_code"] = str(spec["recv_code_bbox_id"])
+        role_bbox_ids[f"{prefix}_received_quantity"] = str(spec["recv_received_qty_bbox_id"])
+        if bool(include_unit_value):
+            role_bbox_ids[f"{prefix}_unit_value"] = str(spec["po_unit_value_bbox_id"])
+    return role_bbox_ids
 
 
 def _answer_for_variant(*, query_id: str, item_specs: Sequence[Mapping[str, Any]]) -> int:
@@ -534,7 +515,8 @@ def build_cross_form_reconciliation_dataset(
             {"field_id": "dock", "field_label": "Dock", "field_value": str(rng.choice(_DOCK_CODES))},
             {"field_id": "received_date", "field_label": "Received", "field_value": receipt_date.strftime("%Y-%m-%d")},
         ]
-        supporting_bbox_ids = _supporting_bbox_ids(query_id=str(query_id), item_specs=item_specs)
+        supporting_bbox_ids = _supporting_bbox_ids(item_specs=item_specs)
+        supporting_cell_bbox_ids = _supporting_cell_bbox_ids(query_id=str(query_id), item_specs=item_specs)
         return {
             "scene_variant": str(scene_variant),
             "query_id": str(query_id),
@@ -560,6 +542,7 @@ def build_cross_form_reconciliation_dataset(
             "mismatch_item_ids": [str(spec["item_id"]) for spec in mismatch_items],
             "receiving_item_order_ids": [str(spec["item_id"]) for spec in receiving_item_specs],
             "answer_value": int(answer_value),
+            "supporting_cell_bbox_ids": dict(supporting_cell_bbox_ids),
             "supporting_bbox_ids": list(supporting_bbox_ids),
             "evidence_bbox_ids": list(supporting_bbox_ids),
         }

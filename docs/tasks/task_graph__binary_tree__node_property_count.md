@@ -24,3 +24,5 @@
 2. Default node count is `7..13`.
 3. Node labels use graph label variants `letters|numbers|named`.
 4. Query support is balanced by `query_id`; answer support is sampled independently from task-local count ranges.
+5. `internal_node_count` uses feasible targets `3..7` with the default node-count range.
+6. Title and node labels use the role-appropriate shared font pool and readable text styles with recorded contrast metadata.

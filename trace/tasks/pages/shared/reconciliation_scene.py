@@ -11,6 +11,7 @@ from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.drawing import draw_rounded_rect
 from ...shared.render_variation import apply_resolved_layout_jitter_to_margins
 from ...shared.text_rendering import fit_font_to_box
+from ...shared.text_legibility import draw_text_traced
 from .reconciliation_common import ReconciliationRenderParams
 
 
@@ -67,14 +68,14 @@ def _draw_text_in_box(
     else:
         origin_x = float(left + padding_px - text_left)
     origin_y = float(((top + bottom) * 0.5) - (0.5 * (text_top + text_bottom)))
-    draw.text(
+    draw_text_traced(draw,
         (float(origin_x), float(origin_y)),
         str(text),
         font=font,
         fill=tuple(int(value) for value in fill),
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in stroke_fill),
-    )
+     role="readout", required=False,)
     return _round_bbox(
         [
             float(origin_x + text_left),
@@ -90,7 +91,7 @@ def _panel_bboxes(render_params: ReconciliationRenderParams) -> Tuple[BBox, BBox
     height = float(render_params.canvas_height)
     margin = float(render_params.outer_margin_px)
     gap = float(render_params.panel_gap_px)
-    jitter_left, _jitter_right, jitter_top, _jitter_bottom, layout_jitter_meta = apply_resolved_layout_jitter_to_margins(
+    jitter_left, jitter_right, jitter_top, jitter_bottom, layout_jitter_meta = apply_resolved_layout_jitter_to_margins(
         left_px=float(margin),
         right_px=float(margin),
         top_px=float(margin),
@@ -98,9 +99,11 @@ def _panel_bboxes(render_params: ReconciliationRenderParams) -> Tuple[BBox, BBox
         jitter=render_params.layout_jitter_meta,
     )
     left_margin = float(jitter_left)
+    right_margin = float(jitter_right)
     top_margin = float(jitter_top)
-    panel_width = float((width - 2.0 * margin - gap) / 2.0)
-    panel_height = float(height - 2.0 * margin)
+    bottom_margin = float(jitter_bottom)
+    panel_width = float((width - left_margin - right_margin - gap) / 2.0)
+    panel_height = float(height - top_margin - bottom_margin)
     left_panel = (left_margin, top_margin, left_margin + panel_width, top_margin + panel_height)
     right_left = float(left_margin + panel_width + gap)
     right_panel = (right_left, top_margin, right_left + panel_width, top_margin + panel_height)

@@ -49,13 +49,11 @@ def test_graph_counting_cross_color_edge_count_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__cross_color_edge_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "directed_cross_color_edge_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_pair_set"
     assert int(out.answer_gt.value) == 3
     assert trace["scene_ir"]["scene_kind"] == "graph_cross_color_edge_counting"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "directed_cross_color_edge_count"
     assert execution["graph_directionality"] == "directed"
     assert execution["source_color_name"] == "green"

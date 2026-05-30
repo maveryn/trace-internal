@@ -7,9 +7,8 @@ from itertools import combinations
 
 from trace.core.seed import hash64
 from trace.tasks.pages.schedule.day_planner import (
-    PagesScheduleLongerThanReferenceCountTask,
     PagesScheduleMaximumNonOverlappingCountTask,
-    PagesScheduleOverlapCountTask,
+    PagesScheduleReferenceIntervalCountTask,
 )
 from trace.tasks.shared.time_artifact_style import SUPPORTED_TIME_ARTIFACT_COLOR_NAMES, SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS
 from tests.helpers import extract_prompt_json_example
@@ -45,8 +44,8 @@ def _maximum_non_overlapping_subsets(events: list[dict[str, object]]) -> tuple[i
 
 def test_pages_schedule_day_planner_contract_matches_trace() -> None:
     task_cases = (
-        (PagesScheduleOverlapCountTask(), "overlap_count"),
-        (PagesScheduleLongerThanReferenceCountTask(), "longer_than_reference_count"),
+        (PagesScheduleReferenceIntervalCountTask(), "overlap_count"),
+        (PagesScheduleReferenceIntervalCountTask(), "longer_than_reference_count"),
         (PagesScheduleMaximumNonOverlappingCountTask(), "maximum_non_overlapping_count"),
     )
     scene_variants = ("classic", "outline")
@@ -58,6 +57,7 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
             out = task.generate(
                 seed,
                 params={
+                    "query_id": query_id,
                     "scene_variant": scene_variant,
                     "style_variant": style_variants[scene_index],
                     "accent_color_name": accent_colors[scene_index],
@@ -78,9 +78,8 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
 
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
-            assert out.query_id == "default"
             assert out.query_id == str(query_id)
-            assert str(execution["query_id"]) == "default"
+            assert str(execution["query_id"]) == str(query_id)
             assert str(execution["source_query_id"]) == str(query_id)
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["style_variant"]) == str(style_variants[scene_index])
@@ -137,21 +136,21 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
 
 def test_pages_schedule_day_planner_prompt_examples_match_variants() -> None:
     expected = (
-        (PagesScheduleOverlapCountTask(), (
+        (PagesScheduleReferenceIntervalCountTask(), "overlap_count", (
             {
                 "evidence": [[250, 276, 396, 366], [404, 318, 550, 438]],
                 "answer": 2,
             },
             {"answer": 2},
         )),
-        (PagesScheduleLongerThanReferenceCountTask(), (
+        (PagesScheduleReferenceIntervalCountTask(), "longer_than_reference_count", (
             {
                 "evidence": [[250, 240, 396, 408], [404, 430, 550, 634], [558, 352, 704, 568]],
                 "answer": 3,
             },
             {"answer": 3},
         )),
-        (PagesScheduleMaximumNonOverlappingCountTask(), (
+        (PagesScheduleMaximumNonOverlappingCountTask(), "maximum_non_overlapping_count", (
             {
                 "evidence": [
                     [250, 220, 396, 316],
@@ -164,10 +163,10 @@ def test_pages_schedule_day_planner_prompt_examples_match_variants() -> None:
             {"answer": 4},
         )),
     )
-    for index, (task, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected, start=22110):
+    for index, (task, query_id, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected, start=22110):
         out = task.generate(
             index,
-            params={},
+            params={"query_id": query_id},
             max_attempts=20,
         )
         answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -178,8 +177,7 @@ def test_pages_schedule_day_planner_prompt_examples_match_variants() -> None:
 
 def test_pages_schedule_day_planner_balanced_sampling_defaults_cover_axes() -> None:
     tasks = (
-        PagesScheduleOverlapCountTask(),
-        PagesScheduleLongerThanReferenceCountTask(),
+        PagesScheduleReferenceIntervalCountTask(),
         PagesScheduleMaximumNonOverlappingCountTask(),
     )
     query_ids: Counter[str] = Counter()

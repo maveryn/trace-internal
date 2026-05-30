@@ -13,8 +13,9 @@
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `point_pair_set`
 5. Only open pipes can be bridges; blocked pipes are ignored by the graph computation.
-6. Evidence is an unordered set of endpoint-center point pairs, one pair per bridge pipe.
+6. Evidence is an unordered set of endpoint-center point pairs, one pair per bridge pipe; endpoint order inside each pair is semantically unordered.
 7. Default bridge-pipe answer support is `0..5`.
+8. Rendering uses compact letter/number junction labels and physical pipe-board styling with cylindrical tubes, flanged junction fittings, sampled board treatments, and clear blocked-pipe valve/X markers.
 
 ## 3) Prompt Contract
 1. Bundle: `graph_counting_v0`

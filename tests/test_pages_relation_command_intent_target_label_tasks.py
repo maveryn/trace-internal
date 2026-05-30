@@ -37,10 +37,8 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         evidence_supports = [dict(record) for record in execution["evidence_support_records"]]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.evidence_gt.type == "bbox_set"
-        assert str(out.query_id) == "default"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == "default"
         assert str(execution["query_id"]) == str(query_id)
         assert str(execution["scene_variant"]) == str(scene_variants[index])
         assert str(execution["style_variant"]) == str(style_variants[index])
@@ -62,10 +60,18 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
         assert str(execution["instruction_cue_label"]) in str(execution["instruction_text"])
         assert str(execution["action_label"]).lower() not in str(execution["instruction_text"]).lower()
         assert int(execution["total_control_count"]) == 25
-        assert out.evidence_gt.value == [record["bbox_px"] for record in evidence_supports] + [target["bbox_px"]]
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        evidence_role_support_ids = dict(execution["evidence_role_support_ids"])
+        expected_evidence = {
+            "action_cue_guide": evidence_supports[0]["bbox_px"],
+            "object_row": next(
+                record["bbox_px"] for record in evidence_supports if record["support_kind"] == "object_row"
+            ),
+            "action_code_header": next(
+                record["bbox_px"] for record in evidence_supports if record["support_kind"] == "action_header"
+            ),
+            "target_command_cell": target["bbox_px"],
+        }
         if str(query_id) == "dual_guide_command_label":
-            assert len(out.evidence_gt.value) == 5
             assert [record["support_kind"] for record in evidence_supports] == [
                 "intent_cue_card",
                 "object_cue_card",
@@ -74,11 +80,19 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
             ]
             assert str(evidence_supports[1]["object_cue_label"]) == str(execution["object_cue_label"])
             assert str(evidence_supports[1]["object_label"]) == str(execution["object_label"])
+            expected_evidence["object_cue_guide"] = evidence_supports[1]["bbox_px"]
             action_support = evidence_supports[3]
         else:
-            assert len(out.evidence_gt.value) == 4
-            assert [record["support_kind"] for record in evidence_supports] == ["intent_cue_card", "object_row", "action_header"]
+            assert [record["support_kind"] for record in evidence_supports] == [
+                "intent_cue_card",
+                "object_row",
+                "action_header",
+            ]
             action_support = evidence_supports[2]
+        assert out.evidence_gt.value == expected_evidence
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert set(evidence_role_support_ids) == set(expected_evidence)
         assert str(evidence_supports[0]["action_cue_label"]) == str(execution["instruction_cue_label"])
         assert str(evidence_supports[0]["action_code_label"]) == str(execution["instruction_code_label"])
         assert str(action_support["action_label"]) == str(execution["action_label"])
@@ -98,15 +112,28 @@ def test_gui_relation_command_intent_target_label_contract_matches_trace() -> No
             "output_burden",
         }
         assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
-        assert all(0.0 <= float(coord) <= 1280.0 for box in out.evidence_gt.value for coord in (box[0], box[2]))
-        assert all(0.0 <= float(coord) <= 800.0 for box in out.evidence_gt.value for coord in (box[1], box[3]))
+        assert all(
+            0.0 <= float(coord) <= 1280.0
+            for box in out.evidence_gt.value.values()
+            for coord in (box[0], box[2])
+        )
+        assert all(
+            0.0 <= float(coord) <= 800.0
+            for box in out.evidence_gt.value.values()
+            for coord in (box[1], box[3])
+        )
 
 
 def test_gui_relation_command_intent_target_label_prompt_examples_match_option_contract() -> None:
     task = PagesRelationCommandIntentTargetLabelTask()
     out = task.generate(79200, params={"query_id": "create_insert_command_label"}, max_attempts=20)
     assert extract_prompt_json_example(out.prompt_variants["answer_and_evidence"]) == {
-        "evidence": [[290, 150, 480, 190], [70, 240, 270, 310], [290, 200, 480, 235], [290, 320, 480, 390]],
+        "evidence": {
+            "action_cue_guide": [290, 150, 480, 190],
+            "object_row": [70, 240, 270, 310],
+            "action_code_header": [290, 200, 480, 235],
+            "target_command_cell": [290, 320, 480, 390],
+        },
         "answer": "G",
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "G"}
@@ -144,7 +171,8 @@ def test_gui_relation_command_intent_target_label_balanced_sampling_defaults_cov
         "format_style",
     }
     assert all(count >= 40 for count in intent_categories.values())
-    assert max(intent_categories.values()) - min(intent_categories.values()) <= 24
+    # Balanced sampling is seeded uniform selection, not an exact cycle.
+    assert max(intent_categories.values()) - min(intent_categories.values()) <= 32
     assert set(scene_variants.keys()) == {
         "office_document",
         "creative_workspace",

@@ -109,7 +109,7 @@ class MetroRouteGraphTaskBase:
             task_id=self.task_id,
         )
         background_defaults = load_graph_background_defaults(task_group=self.task_group)
-        noise_defaults = load_graph_noise_defaults(task_group=self.task_group, apply_prob=0.0)
+        noise_defaults = load_graph_noise_defaults(task_group=self.task_group, apply_prob=0.5)
         complexity_weights = resolve_graph_complexity_weights(group_defaults, task_id=self.task_id)
         return gen_defaults, render_defaults, prompt_defaults, background_defaults, noise_defaults, complexity_weights
 
@@ -483,6 +483,11 @@ class MetroRouteGraphTaskBase:
                     "transfer_station_radius_px": int(rendered_scene.transfer_station_radius_px),
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
+                    "font_family": str(render_params.font_family or ""),
+                    "font_asset": dict(render_params.font_asset) if isinstance(render_params.font_asset, Mapping) else {},
+                    "font_asset_version": str(render_params.font_asset_version or ""),
+                    "font_exclusion_reason": str(render_params.font_exclusion_reason),
+                    "context_text_elements": list(rendered_scene.panel_geometry.get("context_text_elements", [])),
                     "background_meta": dict(background_meta),
                     "post_image_noise_meta": dict(post_noise_meta),
                 },
@@ -555,6 +560,7 @@ class MetroRouteGraphTaskBase:
             render_params=render_params,
             base_image=background,
             scene_title=self.scene_title,
+            layout_seed=int(instance_seed),
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,

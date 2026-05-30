@@ -18,7 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.diagram.common import projected_diagram_bbox_evidence
+from ..shared.diagram.common import projected_diagram_bbox_evidence, projected_diagram_bbox_sequence_evidence
 from ..shared.diagram.complexity import (
     build_diagrams_complexity,
     clamp_unit_interval,
@@ -39,7 +39,11 @@ from ..shared.diagram.visual_defaults import load_diagrams_background_defaults, 
 from ..shared.public_query_task import rewrite_pages_query_output
 
 
-TASK_ID = "task_pages__hierarchy__tree_count"
+TASK_ID = "pages_hierarchy_tree_count_base"
+SUBTREE_NODE_COUNT_TASK_ID = "task_pages__hierarchy__subtree_node_count"
+PATH_LENGTH_COUNT_TASK_ID = "task_pages__hierarchy__path_length_count"
+SUBTREE_NODE_QUERY_IDS: Tuple[str, ...] = ("subtree_descendant_count", "subtree_leaf_count")
+PATH_LENGTH_QUERY_IDS: Tuple[str, ...] = ("path_length_between_two_nodes",)
 _SUPPORTED_QUERY_IDS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS
 _REASONING_LOAD_BASE_BY_VARIANT = {
@@ -92,16 +96,42 @@ def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
     )
 
 
-@register_task
-class PagesHierarchyTreeCountTask:
+def _scoped_hierarchy_params(
+    params: Mapping[str, Any],
+    *,
+    allowed_query_ids: Tuple[str, ...],
+    task_id: str,
+) -> Dict[str, Any]:
+    """Restrict the shared hierarchy generator to one public task's query set."""
+
+    scoped = dict(params)
+    explicit_query_id = scoped.get("query_id")
+    allowed = tuple(str(query_id) for query_id in allowed_query_ids)
+    allowed_set = set(allowed)
+    if explicit_query_id is not None and str(explicit_query_id) != "default":
+        if str(explicit_query_id) not in allowed_set:
+            raise ValueError(f"query_id={explicit_query_id!r} is not valid for {task_id}")
+    else:
+        scoped.pop("query_id", None)
+        scoped["query_id_weights"] = {str(query_id): 1.0 for query_id in allowed}
+    return scoped
+
+
+class _PagesHierarchyTreeCountBase:
     """Return integer counts over one generic rooted tree diagram."""
 
     task_id = TASK_ID
     domain = "pages"
     task_group = "hierarchy"
+    allowed_query_ids: Tuple[str, ...] = _SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
+        params = _scoped_hierarchy_params(
+            params,
+            allowed_query_ids=tuple(self.allowed_query_ids),
+            task_id=str(self.task_id),
+        )
         query_id, query_id_probabilities = resolve_hierarchy_tree_count_query_id(
             params,
             gen_defaults=_GEN_DEFAULTS,
@@ -185,11 +215,22 @@ class PagesHierarchyTreeCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         evidence_node_bbox_ids = [str(bbox_id) for bbox_id in dataset["evidence_node_bbox_ids"]]
-        evidence_projection = projected_diagram_bbox_evidence(rendered_scene.node_bbox_map, evidence_node_bbox_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
+        if str(evidence_type) == "bbox_sequence":
+            evidence_projection = projected_diagram_bbox_sequence_evidence(rendered_scene.node_bbox_map, evidence_node_bbox_ids)
+            evidence_bboxes = [
+                [round(float(value), 3) for value in bbox]
+                for bbox in evidence_projection["bbox_sequence"]
+            ]
+        else:
+            evidence_projection = projected_diagram_bbox_evidence(rendered_scene.node_bbox_map, evidence_node_bbox_ids)
+            evidence_bboxes = [
+                [round(float(value), 3) for value in bbox]
+                for bbox in evidence_projection["bbox_set"]
+            ]
         answer_value = int(dataset["answer_count"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type=str(evidence_type), value=list(evidence_bboxes))
 
         node_scan = normalize_int_with_bounds(int(dataset["tree_node_count"]), [16, 30])
         depth_scan = normalize_int_with_bounds(int(dataset["tree_depth"]), [4, 8])
@@ -211,7 +252,7 @@ class PagesHierarchyTreeCountTask:
             },
         )
 
-        witness_type = "ordered_id_path" if str(query_id) == "path_length_between_two_nodes" else "id_set"
+        witness_type = "ordered_id_path" if str(evidence_type) == "bbox_sequence" else "id_set"
         trace_payload = {
             "scene_ir": {
                 "scene_kind": f"diagram_hierarchy_{str(scene_variant)}",
@@ -327,4 +368,27 @@ class PagesHierarchyTreeCountTask:
         )
 
 
-__all__ = ["PagesHierarchyTreeCountTask"]
+@register_task
+class PagesHierarchySubtreeNodeCountTask(_PagesHierarchyTreeCountBase):
+    """Count descendant or leaf nodes in one rooted-tree subtree."""
+
+    task_id = SUBTREE_NODE_COUNT_TASK_ID
+    allowed_query_ids = SUBTREE_NODE_QUERY_IDS
+
+
+@register_task
+class PagesHierarchyPathLengthCountTask(_PagesHierarchyTreeCountBase):
+    """Count parent-child hops on the path between two rooted-tree nodes."""
+
+    task_id = PATH_LENGTH_COUNT_TASK_ID
+    allowed_query_ids = PATH_LENGTH_QUERY_IDS
+
+
+__all__ = [
+    "PATH_LENGTH_COUNT_TASK_ID",
+    "SUBTREE_NODE_COUNT_TASK_ID",
+    "PATH_LENGTH_QUERY_IDS",
+    "SUBTREE_NODE_QUERY_IDS",
+    "PagesHierarchyPathLengthCountTask",
+    "PagesHierarchySubtreeNodeCountTask",
+]

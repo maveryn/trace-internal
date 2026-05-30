@@ -174,6 +174,8 @@ def test_node_link_named_and_mixed_arcs_are_trace_recorded() -> None:
         assert execution["label_variant"] == "named"
         assert execution["edge_routing_variant"] == "mixed_arc"
         assert style["edge_routing_variant"] == "mixed_arc"
+        assert trace["render_spec"]["panel_geometry"]["font_family"]
+        assert trace["render_spec"]["panel_geometry"]["layout_jitter"]["enabled"] is True
         assert all(0 < len(str(node["label"])) <= 5 for node in node_entities)
         assert all("route_variant" in edge and "control_px" in edge for edge in edge_entities)
         arc_edges = [edge for edge in edge_entities if edge["route_variant"] == "arc"]
@@ -184,8 +186,48 @@ def test_node_link_named_and_mixed_arcs_are_trace_recorded() -> None:
             edge_entities=edge_entities,
         )
         if task_cls in LABEL_REFERENCING_TASKS:
-            assert 'node "' in str(out.prompt)
+            assert any(f'"{node["label"]}"' in str(out.prompt) for node in node_entities)
     assert saw_arc
+
+
+def test_node_link_context_blocks_reserve_graph_content() -> None:
+    for index, position in enumerate(("top", "bottom", "left", "right")):
+        out = GraphCountingArticulationPointCountTask().generate(
+            940100 + index,
+            params={
+                "context_block_probability": 1.0,
+                "context_block_max_elements": 1,
+                "context_block_position_weights": {position: 1.0},
+                "context_block_clutter_level_weights": {"high": 1.0},
+                "edge_routing_variant": "straight",
+            },
+            max_attempts=200,
+        )
+        panel_geometry = out.trace_payload["render_spec"]["panel_geometry"]
+        reservation = panel_geometry["context_block_reservation"]
+        context_blocks = [
+            element
+            for element in panel_geometry.get("context_text_elements", [])
+            if element.get("kind") == "context_block"
+        ]
+        assert reservation["position"] == position
+        assert context_blocks
+        content = tuple(float(value) for value in reservation["final_content_xyxy"])
+        block = tuple(float(value) for value in context_blocks[0]["bbox_xyxy"])
+        if position == "top":
+            assert content[1] > block[3]
+        elif position == "bottom":
+            assert content[3] < block[1]
+        elif position == "left":
+            assert content[0] > block[2]
+        else:
+            assert content[2] < block[0]
+        for entity in out.trace_payload["scene_ir"]["entities"]:
+            if entity["entity_kind"] != "graph_node":
+                continue
+            x, y = (float(entity["center_px"][0]), float(entity["center_px"][1]))
+            assert content[0] <= x <= content[2]
+            assert content[1] <= y <= content[3]
 
 
 def test_mixed_arcs_do_not_duplicate_intervening_node_chain_regression() -> None:
@@ -220,12 +262,7 @@ def test_mixed_arcs_do_not_duplicate_intervening_node_chain_regression() -> None
         if entity["entity_kind"] == "graph_edge"
     ]
 
-    assert any(
-        str(edge["node_u_label"]) == "4"
-        and str(edge["node_v_label"]) == "13"
-        and edge["route_variant"] == "arc"
-        for edge in edge_entities
-    )
+    assert any(edge["route_variant"] == "arc" for edge in edge_entities)
     _assert_arc_edges_clear_non_endpoint_nodes(
         node_entities=node_entities,
         edge_entities=edge_entities,

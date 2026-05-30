@@ -20,9 +20,9 @@ rendering:
     layout_jitter_min_margin_px: 16
   task_overrides:
     task_pages__cycle__offset_stage_label:
-      canvas_width: 1200
-      canvas_height: 900
-      outer_margin_px: 52
+      canvas_width: 1600
+      canvas_height: 1250
+      outer_margin_px: 220
       panel_padding_px: 28
       panel_corner_radius_px: 30
       title_font_size_px: 32
@@ -148,6 +148,11 @@ rendering:
         - 91
         - 122
 visual:
+  context_text:
+    pages_context_density: two_side_notes
+    pages_context_simple_count: 2
+    pages_context_side_note_count: 2
+    pages_context_text_max_elements: 6
   background:
     enabled: true
     styles:

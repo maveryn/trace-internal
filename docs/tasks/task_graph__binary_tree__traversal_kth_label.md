@@ -22,3 +22,4 @@
 1. The renderer is a top-down ordered binary tree; left and right children are determined by visible position.
 2. Default node count is `7..13`; default requested traversal position is `2..10`.
 3. Node labels use graph label variants `letters|numbers|named`.
+4. Title and node labels use the role-appropriate shared font pool and readable text styles with recorded contrast metadata.

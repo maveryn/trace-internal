@@ -67,6 +67,11 @@ PROMPT_QUERY_KEY_BY_MODE = {
     "directed_common_successor": "common_successor_count",
     "directed_common_predecessor": "common_predecessor_count",
 }
+EVIDENCE_HINT_KEY_BY_PROMPT_QUERY = {
+    "common_neighbor_count": "evidence_hint_common_neighbor_count",
+    "common_successor_count": "evidence_hint_common_successor_count",
+    "common_predecessor_count": "evidence_hint_common_predecessor_count",
+}
 GRAPH_DIRECTIONALITY_BY_MODE = {
     "undirected_common_neighbor": "undirected",
     "directed_common_successor": "directed",
@@ -595,7 +600,9 @@ class GraphRelationCommonNeighborCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_common_neighbor_count",
+                "evidence_hint_common_successor_count",
+                "evidence_hint_common_predecessor_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -612,6 +619,7 @@ class GraphRelationCommonNeighborCountTask:
             label_variant=str(query.label_variant),
         )
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description"
+        evidence_hint_key = EVIDENCE_HINT_KEY_BY_PROMPT_QUERY[str(query.prompt_query_key)]
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -626,7 +634,7 @@ class GraphRelationCommonNeighborCountTask:
                 "query_label_b": str(prompt_query_label_b),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
                     query_label_a=str(prompt_query_label_a),
                     query_label_b=str(prompt_query_label_b),
                 ),

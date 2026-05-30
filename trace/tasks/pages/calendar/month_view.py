@@ -47,6 +47,23 @@ TASK_ID = "pages_calendar_month_view_base"
 WEEKDAY_OCCURRENCE_TASK_ID = "task_pages__calendar__weekday_occurrence_date"
 MARKED_DAY_CLASS_TASK_ID = "task_pages__calendar__marked_day_class_count"
 PUBLIC_SCENE_ID = "calendar"
+SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES: Tuple[str, ...] = (
+  "center_clean",
+  "free_jitter_clean",
+  "left_with_side_note",
+  "right_with_side_note",
+  "top_with_bottom_note",
+)
+SUPPORTED_PAGE_CALENDAR_TITLE_MODES: Tuple[str, ...] = (
+  "none",
+  "generic",
+  "full_month_year",
+)
+_GENERIC_TITLE_TEXTS: Tuple[str, ...] = (
+  "Calendar",
+  "Month View",
+  "Planner",
+)
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
   "date_of_weekday_occurrence",
   "count_marked_day_class",
@@ -123,6 +140,8 @@ class _ResolvedQuery:
   scene_variant: str
   style_variant: str
   accent_color_name: str
+  layout_mode: str
+  title_mode: str
   year: int
   month: int
   month_name: str
@@ -145,6 +164,8 @@ class _ResolvedQuery:
   scene_variant_probabilities: Dict[str, float]
   style_variant_probabilities: Dict[str, float]
   accent_color_name_probabilities: Dict[str, float]
+  layout_mode_probabilities: Dict[str, float]
+  title_mode_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _TaskDefaults()
@@ -288,6 +309,167 @@ def _marked_day_class_phrase(marked_day_class: str) -> str:
   """Return a prompt phrase for one marked-day class."""
 
   return "Saturday or Sunday" if str(marked_day_class) == "weekend" else "Monday through Friday"
+
+
+def _resolve_calendar_title_text(
+  *,
+  instance_seed: int,
+  title_mode: str,
+  month: int,
+  year: int,
+  params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, Any]]:
+  """Resolve visible calendar title text for one sampled title mode."""
+
+  if str(title_mode) == "none":
+    return "", {
+      "title_mode": "none",
+      "title_text_source": "omitted",
+    }
+  if str(title_mode) == "full_month_year":
+    return f"{month_name(int(month))} {int(year)}", {
+      "title_mode": "full_month_year",
+      "title_text_source": "month_year",
+    }
+  if str(title_mode) != "generic":
+    raise ValueError(f"unsupported calendar title_mode: {title_mode}")
+  explicit_title = params.get("calendar_generic_title_text")
+  if explicit_title is not None:
+    title_text = str(explicit_title).strip()
+    if not title_text:
+      raise ValueError("calendar_generic_title_text must not be empty")
+    return title_text, {
+      "title_mode": "generic",
+      "title_text_source": "explicit_param",
+    }
+  title_index = int(
+    resolve_selection_index(
+      params=params,
+      instance_seed=int(instance_seed),
+      namespace=f"{TASK_ID}:generic_title_text",
+    )
+    % len(_GENERIC_TITLE_TEXTS)
+  )
+  return str(_GENERIC_TITLE_TEXTS[int(title_index)]), {
+    "title_mode": "generic",
+    "title_text_source": "generic_pool",
+    "generic_title_index": int(title_index),
+  }
+
+
+def _resolve_calendar_panel_bbox(
+  *,
+  instance_seed: int,
+  params: Mapping[str, Any],
+  render_params: CalendarRenderParams,
+  layout_mode: str,
+) -> Tuple[Tuple[float, float, float, float], Dict[str, Any]]:
+  """Sample a final calendar panel bbox using fractions of the free canvas space."""
+
+  layout = str(layout_mode)
+  if layout not in set(SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES):
+    raise ValueError(f"unsupported calendar layout_mode: {layout_mode}")
+  profile_by_layout = {
+    "center_clean": {
+      "width_frac": (0.80, 0.90),
+      "height_frac": (0.80, 0.90),
+      "x_free_frac": (0.28, 0.72),
+      "y_free_frac": (0.28, 0.72),
+    },
+    "free_jitter_clean": {
+      "width_frac": (0.76, 0.88),
+      "height_frac": (0.76, 0.88),
+      "x_free_frac": (0.08, 0.92),
+      "y_free_frac": (0.08, 0.92),
+    },
+    "left_with_side_note": {
+      "width_frac": (0.64, 0.72),
+      "height_frac": (0.78, 0.90),
+      "x_free_frac": (0.04, 0.18),
+      "y_free_frac": (0.18, 0.82),
+    },
+    "right_with_side_note": {
+      "width_frac": (0.64, 0.72),
+      "height_frac": (0.78, 0.90),
+      "x_free_frac": (0.82, 0.96),
+      "y_free_frac": (0.18, 0.82),
+    },
+    "top_with_bottom_note": {
+      "width_frac": (0.76, 0.88),
+      "height_frac": (0.62, 0.72),
+      "x_free_frac": (0.18, 0.82),
+      "y_free_frac": (0.04, 0.18),
+    },
+  }
+  profile = profile_by_layout[layout]
+  rng = spawn_rng(int(instance_seed), f"{TASK_ID}.calendar_panel_bbox")
+
+  explicit_panel_bbox = params.get("calendar_panel_bbox_px")
+  if explicit_panel_bbox is not None:
+    if not isinstance(explicit_panel_bbox, Sequence) or isinstance(explicit_panel_bbox, (str, bytes)) or len(explicit_panel_bbox) < 4:
+      raise ValueError("calendar_panel_bbox_px must be a four-coordinate sequence")
+    bbox = tuple(float(value) for value in explicit_panel_bbox[:4])
+    return bbox, {
+      "layout_mode": str(layout),
+      "placement_policy": "explicit_calendar_panel_bbox_px",
+      "panel_bbox_px": [round(float(value), 3) for value in bbox],
+    }
+
+  def _resolve_range(name: str, fallback: Tuple[float, float]) -> Tuple[float, float]:
+    explicit = params.get(f"calendar_{layout}_{name}")
+    if explicit is None:
+      explicit = params.get(f"calendar_{name}")
+    if explicit is None:
+      return (float(fallback[0]), float(fallback[1]))
+    if not isinstance(explicit, Sequence) or isinstance(explicit, (str, bytes)) or len(explicit) < 2:
+      raise ValueError(f"calendar {name} range must contain two values")
+    low, high = float(explicit[0]), float(explicit[1])
+    if high < low:
+      raise ValueError(f"calendar {name} range must be ordered")
+    return (float(low), float(high))
+
+  def _sample_range(range_values: Tuple[float, float]) -> float:
+    low, high = float(range_values[0]), float(range_values[1])
+    return float(low + (rng.random() * (high - low)))
+
+  width_frac_range = _resolve_range("width_frac", tuple(profile["width_frac"]))
+  height_frac_range = _resolve_range("height_frac", tuple(profile["height_frac"]))
+  x_free_frac_range = _resolve_range("x_free_frac", tuple(profile["x_free_frac"]))
+  y_free_frac_range = _resolve_range("y_free_frac", tuple(profile["y_free_frac"]))
+  width_frac = max(0.52, min(0.96, _sample_range(width_frac_range)))
+  height_frac = max(0.52, min(0.96, _sample_range(height_frac_range)))
+  canvas_width = float(render_params.canvas_width)
+  canvas_height = float(render_params.canvas_height)
+  panel_width = float(canvas_width * width_frac)
+  panel_height = float(canvas_height * height_frac)
+  free_x = max(0.0, float(canvas_width - panel_width))
+  free_y = max(0.0, float(canvas_height - panel_height))
+  x_free_frac = max(0.0, min(1.0, _sample_range(x_free_frac_range)))
+  y_free_frac = max(0.0, min(1.0, _sample_range(y_free_frac_range)))
+  left = float(free_x * x_free_frac)
+  top = float(free_y * y_free_frac)
+  bbox = (
+    float(left),
+    float(top),
+    float(left + panel_width),
+    float(top + panel_height),
+  )
+  return bbox, {
+    "layout_mode": str(layout),
+    "placement_policy": "panel_size_fraction_and_free_space_fraction",
+    "width_fraction": round(float(width_frac), 6),
+    "height_fraction": round(float(height_frac), 6),
+    "x_free_fraction": round(float(x_free_frac), 6),
+    "y_free_fraction": round(float(y_free_frac), 6),
+    "free_space_px": [round(float(free_x), 3), round(float(free_y), 3)],
+    "panel_bbox_px": [round(float(value), 3) for value in bbox],
+    "range_profile": {
+      "width_frac": [round(float(value), 6) for value in width_frac_range],
+      "height_frac": [round(float(value), 6) for value in height_frac_range],
+      "x_free_frac": [round(float(value), 6) for value in x_free_frac_range],
+      "y_free_frac": [round(float(value), 6) for value in y_free_frac_range],
+    },
+  }
 
 
 def _sample_month(instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, int, int, int]:
@@ -452,6 +634,24 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     supported=SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
     namespace="accent_color_name",
   )
+  layout_mode, layout_mode_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=params,
+    explicit_key="layout_mode",
+    weights_key="layout_mode_weights",
+    balance_flag_key="balanced_layout_mode_sampling",
+    supported=SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES,
+    namespace="layout_mode",
+  )
+  title_mode, title_mode_probabilities = _resolve_named_variant(
+    instance_seed=int(instance_seed),
+    params=params,
+    explicit_key="title_mode",
+    weights_key="title_mode_weights",
+    balance_flag_key="balanced_title_mode_sampling",
+    supported=SUPPORTED_PAGE_CALENDAR_TITLE_MODES,
+    namespace="title_mode",
+  )
 
   year, month, start_weekday_index, days_in_month = _sample_month(int(instance_seed), params)
   month_weeks = calendar.Calendar(firstweekday=0).monthdayscalendar(int(year), int(month))
@@ -535,6 +735,8 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     scene_variant=str(scene_variant),
     style_variant=str(style_variant),
     accent_color_name=str(accent_color_name),
+    layout_mode=str(layout_mode),
+    title_mode=str(title_mode),
     year=int(year),
     month=int(month),
     month_name=str(month_name(int(month))),
@@ -557,6 +759,8 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     scene_variant_probabilities=dict(scene_variant_probabilities),
     style_variant_probabilities=dict(style_variant_probabilities),
     accent_color_name_probabilities=dict(accent_color_name_probabilities),
+    layout_mode_probabilities=dict(layout_mode_probabilities),
+    title_mode_probabilities=dict(title_mode_probabilities),
   )
 
 
@@ -580,6 +784,19 @@ class _PagesCalendarMonthViewBase:
       accent_color_name=str(query.accent_color_name),
       style_variant=str(query.style_variant),
     )
+    panel_bbox, panel_layout_meta = _resolve_calendar_panel_bbox(
+      instance_seed=int(instance_seed),
+      params=params,
+      render_params=render_params,
+      layout_mode=str(query.layout_mode),
+    )
+    title_text, title_meta = _resolve_calendar_title_text(
+      instance_seed=int(instance_seed),
+      title_mode=str(query.title_mode),
+      month=int(query.month),
+      year=int(query.year),
+      params=params,
+    )
 
     background, background_meta = make_background_canvas(
       canvas_width=int(render_params.canvas_width),
@@ -597,6 +814,8 @@ class _PagesCalendarMonthViewBase:
       scene_variant=str(query.scene_variant),
       render_params=render_params,
       visual_theme=calendar_theme,
+      panel_bbox_px=panel_bbox,
+      title_text=str(title_text),
     )
     image, post_noise_meta = apply_post_image_noise(
       image,
@@ -676,6 +895,9 @@ class _PagesCalendarMonthViewBase:
       "scene_variant": str(query.scene_variant),
       "style_variant": str(query.style_variant),
       "accent_color_name": str(query.accent_color_name),
+      "layout_mode": str(query.layout_mode),
+      "title_mode": str(query.title_mode),
+      "visible_title_text": str(rendered_scene.title_text),
       "year": int(query.year),
       "month": int(query.month),
       "month_name": str(query.month_name),
@@ -693,6 +915,8 @@ class _PagesCalendarMonthViewBase:
       "scene_variant_probabilities": dict(query.scene_variant_probabilities),
       "style_variant_probabilities": dict(query.style_variant_probabilities),
       "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
+      "layout_mode_probabilities": dict(query.layout_mode_probabilities),
+      "title_mode_probabilities": dict(query.title_mode_probabilities),
     }
     if query.query_weekday_index is not None:
       query_params["query_weekday_index"] = int(query.query_weekday_index)
@@ -710,6 +934,9 @@ class _PagesCalendarMonthViewBase:
           "scene_variant": str(query.scene_variant),
           "style_variant": str(query.style_variant),
           "accent_color_name": str(query.accent_color_name),
+          "layout_mode": str(query.layout_mode),
+          "title_mode": str(query.title_mode),
+          "visible_title_text": str(rendered_scene.title_text),
           "year": int(query.year),
           "month": int(query.month),
           "month_name": str(query.month_name),
@@ -735,8 +962,17 @@ class _PagesCalendarMonthViewBase:
         "calendar_style": {
           "accent_color_name": str(query.accent_color_name),
           "style_variant": str(query.style_variant),
+          "layout_mode": str(query.layout_mode),
+          "title_mode": str(query.title_mode),
+          "title": dict(title_meta),
+          "panel_layout": dict(panel_layout_meta),
           "row_count": int(query.row_count),
           "title_text": str(rendered_scene.title_text),
+          "title_bbox_px": (
+            [round(float(value), 3) for value in rendered_scene.title_bbox_px]
+            if rendered_scene.title_bbox_px is not None
+            else None
+          ),
           "resolved_colors_rgb": {
             "panel_fill": [int(value) for value in calendar_theme.panel_fill_rgb],
             "panel_outline": [int(value) for value in calendar_theme.panel_outline_rgb],
@@ -754,7 +990,13 @@ class _PagesCalendarMonthViewBase:
       "render_map": {
         "image_id": "img0",
         "scene_bbox_px": [round(float(value), 3) for value in rendered_scene.scene_bbox_px],
+        "calendar_panel_bbox_px": [round(float(value), 3) for value in rendered_scene.panel_bbox_px],
         "calendar_title_text": str(rendered_scene.title_text),
+        "calendar_title_bbox_px": (
+          [round(float(value), 3) for value in rendered_scene.title_bbox_px]
+          if rendered_scene.title_bbox_px is not None
+          else None
+        ),
         "date_cells_by_day": {
           str(day): [round(float(value), 3) for value in bbox]
           for day, bbox in rendered_scene.date_cell_bboxes_by_day.items()
@@ -768,6 +1010,9 @@ class _PagesCalendarMonthViewBase:
         "scene_variant": str(query.scene_variant),
         "style_variant": str(query.style_variant),
         "accent_color_name": str(query.accent_color_name),
+        "layout_mode": str(query.layout_mode),
+        "title_mode": str(query.title_mode),
+        "visible_title_text": str(rendered_scene.title_text),
         "year": int(query.year),
         "month": int(query.month),
         "month_name": str(query.month_name),
@@ -785,6 +1030,8 @@ class _PagesCalendarMonthViewBase:
         "scene_variant_probabilities": dict(query.scene_variant_probabilities),
         "style_variant_probabilities": dict(query.style_variant_probabilities),
         "accent_color_name_probabilities": dict(query.accent_color_name_probabilities),
+        "layout_mode_probabilities": dict(query.layout_mode_probabilities),
+        "title_mode_probabilities": dict(query.title_mode_probabilities),
       },
       "witness_symbolic": {
         "type": "bbox_set",

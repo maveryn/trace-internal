@@ -4,7 +4,7 @@
 1. Domain: `graph`
 2. Task group: `relation`
 3. Task id: `task_graph__node_link__reachable_node_count`
-4. Objective: count how many labeled nodes are reachable from one queried source node in a directed graph, either directly or after one hypothetical arrow edit.
+4. Objective: count how many labeled nodes are reachable from one queried source node in a directed graph, either directly or after adding/removing one specified arrow.
 
 ## 2) Scene + task contract
 1. Branch metadata: `query_id`
@@ -58,7 +58,7 @@
 8. Prompt-facing evidence uses pixel-space node-center points; node labels remain in `witness_symbolic`.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the `point_set` of node-center pixel points for all nodes reachable from the queried source node, including the queried node itself.
+1. Prompt-facing evidence is the `point_set` of node-center pixel points for all nodes reachable from the queried source node under the active branch: directly, after removing the specified arrow, or after adding the specified arrow.
 2. The witness set is unordered semantically; the implementation keeps the corresponding labels in `witness_symbolic` and canonicalizes label order internally for deterministic serialization.
 3. `answer_gt.value == len(evidence_gt.value)` by construction.
 4. `scene_ir.entities` stores one node entity per rendered node with:
@@ -75,8 +75,7 @@
    - `pixel_point_set`
    - `pixel_bbox_set`
 7. `execution_trace` records:
-   - `query_id`
-   - `query_id` (always `default`)
+   - `query_id` (the concrete public query branch)
    - `scene_variant`
    - `target_reachable_count`
    - feasible support distributions for node count / reachable count

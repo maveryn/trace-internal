@@ -23,6 +23,8 @@ generation:
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
+    balanced_layout_mode_sampling: true
+    balanced_title_mode_sampling: true
     year_min: 2022
     year_max: 2030
   task_overrides:
@@ -30,11 +32,23 @@ generation:
       query_id_weights:
         date_of_weekday_occurrence: 1.0
         count_marked_day_class: 1.0
+      layout_mode_weights:
+        center_clean: 1.0
+        free_jitter_clean: 1.0
+        left_with_side_note: 1.0
+        right_with_side_note: 1.0
+        top_with_bottom_note: 1.0
+      title_mode_weights:
+        none: 1.5
+        generic: 1.25
+        full_month_year: 1.0
       marked_day_class_weights:
         weekend: 1.0
         weekday: 1.0
       balanced_query_id_sampling: true
       balanced_marked_day_class_sampling: true
+      balanced_layout_mode_sampling: true
+      balanced_title_mode_sampling: true
       weekend_weekday_indices: [5, 6]
       date_occurrence_support: [1, 2, 3, 4, 5]
       marked_weekend_count_support: [0, 1, 2, 3, 4]
@@ -70,6 +84,16 @@ rendering:
     marker_outline_width_px_min: 2
     marker_outline_width_px_max: 4
 
+visual:
+  shared:
+    context_text:
+      pages_context_density_weights:
+        clean: 0.24
+        light: 0.20
+        one_side_note: 0.38
+        two_side_notes: 0.18
+      pages_context_text_max_elements: 7
+
 complexity:
   shared:
     criteria_weights:
@@ -85,8 +109,8 @@ prompt:
     pages_calendar_month_view_base:
       scene_key: month_calendar
       task_key: calendar_month_query
-      object_description_date_of_weekday_occurrence: one month-view calendar for {month_name_text} {year} with weekday headers and date cells
-      object_description_count_marked_day_class: one month-view calendar for {month_name_text} {year} with weekday headers, date cells, and several marked dates
+      object_description_date_of_weekday_occurrence: one month-view calendar with weekday headers and date cells
+      object_description_count_marked_day_class: one month-view calendar with weekday headers, date cells, and several marked dates
       answer_hint_date_of_weekday_occurrence: set "answer" to the integer date number
       answer_hint_count_marked_day_class: set "answer" to the integer count of marked dates in the requested day class
       evidence_hint_date_of_weekday_occurrence: set "evidence" to an array containing exactly one bounding box [x0, y0, x1, y1] for the target date cell

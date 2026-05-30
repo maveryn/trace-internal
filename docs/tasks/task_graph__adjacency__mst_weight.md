@@ -20,4 +20,5 @@
 2. Default node count is `4..7`; default extra non-tree edge count is `1..3`.
 3. Edge weights are sampled so the intended MST is unique.
 4. Node labels use graph label variants `letters|numbers|named`.
-5. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+5. The weighted matrix panel samples approved font families and readable table styles; non-answer header context chips may appear.
+6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.

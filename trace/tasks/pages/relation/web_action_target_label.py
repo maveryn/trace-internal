@@ -26,6 +26,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_STYLE_VARIANTS,
@@ -59,7 +60,7 @@ _GUIDE_CUE_LABELS: Tuple[str, ...] = (
     "follow-up",
     "priority route",
     "review flag",
-    "stored preference",
+    "saved setting",
     "quick change",
 )
 
@@ -1056,7 +1057,7 @@ def _draw_browser_frame(
         font=load_font(int(render_params.small_font_size_px), bold=True),
         fill=(255, 255, 255),
     )
-    draw.text((page_header[0] + 66.0, page_header[1] + 14.0), str(profile.site_name), fill=theme.text, font=load_font(int(render_params.body_font_size_px), bold=True))
+    draw_text_traced(draw,(page_header[0] + 66.0, page_header[1] + 14.0), str(profile.site_name), fill=theme.text, font=load_font(int(render_params.body_font_size_px), bold=True), role="readout", required=False)
     nav_x = page_header[0] + 238.0
     for idx, nav_label in enumerate(profile.nav_items):
         nav_w = 92.0 if len(str(nav_label)) <= 8 else 118.0
@@ -1093,7 +1094,7 @@ def _draw_instruction(
     x1, y1, x2, _y2 = [float(value) for value in content_bbox]
     instruction = (x1, y1, x2, y1 + float(render_params.instruction_height_px))
     _rounded_rect(draw, instruction, radius=12, fill=theme.instruction_fill, outline=theme.instruction_line, width=2)
-    draw.text((instruction[0] + 20.0, instruction[1] + 10.0), "Action instruction", fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px), bold=True))
+    draw_text_traced(draw,(instruction[0] + 20.0, instruction[1] + 10.0), "Action instruction", fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px), bold=True), role="readout", required=False)
     _draw_text_left(
         draw,
         text=str(query.instruction_text),
@@ -1273,7 +1274,7 @@ def _render_click_scene(
     instruction = _draw_instruction(draw, content_bbox=content_bbox, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     guide = _draw_action_guide(draw, content_bbox=content_bbox, top_y=instruction[3] + 10.0, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     work_y1 = guide[3] + 16.0
-    draw.text((x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True))
+    draw_text_traced(draw,(x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True), role="readout", required=False)
     grid_y1 = work_y1 + 42.0
     controls_by_row: Dict[int, List[_ControlSpec]] = {}
     for control in query.controls:
@@ -1346,7 +1347,7 @@ def _render_type_scene(
     instruction = _draw_instruction(draw, content_bbox=content_bbox, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     guide = _draw_action_guide(draw, content_bbox=content_bbox, top_y=instruction[3] + 10.0, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     work_y1 = guide[3] + 16.0
-    draw.text((x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True))
+    draw_text_traced(draw,(x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True), role="readout", required=False)
     grid_y1 = work_y1 + 42.0
     controls_by_section: Dict[int, List[_ControlSpec]] = {}
     for control in query.controls:
@@ -1405,7 +1406,7 @@ def _render_select_scene(
     instruction = _draw_instruction(draw, content_bbox=content_bbox, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     guide = _draw_action_guide(draw, content_bbox=content_bbox, top_y=instruction[3] + 10.0, query=query, render_params=render_params, theme=theme, support_bboxes=support_bboxes, support_records=support_records)
     work_y1 = guide[3] + 16.0
-    draw.text((x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True))
+    draw_text_traced(draw,(x1 + 2.0, work_y1), str(profile.page_title), fill=theme.text, font=load_font(int(render_params.title_font_size_px), bold=True), role="readout", required=False)
     grid_y1 = work_y1 + 42.0
     controls_by_group: Dict[int, List[_ControlSpec]] = {}
     for control in query.controls:
@@ -1533,9 +1534,25 @@ def _render_web_scene(
     )
 
 
-def _prompt_json_examples() -> Tuple[str, str]:
+def _evidence_roles_for_query(query_id: str) -> Tuple[str, str, str, str]:
+    """Return prompt-facing evidence role names for one web-action query."""
+
+    if str(query_id) == "click_target_label":
+        return ("instruction_banner", "action_key_guide", "item_card", "target_button")
+    if str(query_id) == "type_field_label":
+        return ("instruction_banner", "field_key_guide", "form_section", "target_input")
+    return ("instruction_banner", "option_key_guide", "option_group", "target_option")
+
+
+def _prompt_json_examples(*, query_id: str) -> Tuple[str, str]:
+    instruction_role, guide_role, context_role, target_role = _evidence_roles_for_query(str(query_id))
     answer_and_evidence = {
-        "evidence": [[80, 150, 1200, 210], [210, 222, 430, 278], [92, 310, 590, 430], [410, 378, 560, 418]],
+        "evidence": {
+            str(instruction_role): [80, 150, 1200, 210],
+            str(guide_role): [210, 222, 430, 278],
+            str(context_role): [92, 310, 590, 430],
+            str(target_role): [410, 378, 560, 418],
+        },
         "answer": "G",
     }
     answer_only = {"answer": "G"}
@@ -1614,9 +1631,21 @@ class PagesRelationWebActionTargetLabelTask:
             str(query.guide_support_id),
             str(query.context_support_id),
         )
-        evidence_bboxes = [list(rendered.support_bboxes_by_id[str(support_id)]) for support_id in evidence_support_ids] + [target_bbox]
+        instruction_role, guide_role, context_role, target_role = _evidence_roles_for_query(str(query.query_id))
+        evidence_bbox_map: Dict[str, List[float]] = {
+            str(instruction_role): list(rendered.support_bboxes_by_id[str(query.instruction_support_id)]),
+            str(guide_role): list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
+            str(context_role): list(rendered.support_bboxes_by_id[str(query.context_support_id)]),
+            str(target_role): list(target_bbox),
+        }
+        evidence_role_support_ids: Dict[str, str] = {
+            str(instruction_role): str(query.instruction_support_id),
+            str(guide_role): str(query.guide_support_id),
+            str(context_role): str(query.context_support_id),
+            str(target_role): str(query.target_control_id),
+        }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -1627,12 +1656,12 @@ class PagesRelationWebActionTargetLabelTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                f"evidence_hint_{str(query.query_id)}",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _prompt_json_examples()
+        json_example, json_example_answer_only = _prompt_json_examples(query_id=str(query.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1648,7 +1677,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "action_label": str(query.action_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{str(query.query_id)}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -1708,6 +1737,7 @@ class PagesRelationWebActionTargetLabelTask:
                     "context_support_id": str(query.context_support_id),
                     "context_support_kind": str(query.context_support_kind),
                     "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                    "evidence_role_support_ids": dict(evidence_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1740,6 +1770,7 @@ class PagesRelationWebActionTargetLabelTask:
                     "context_support_id": str(query.context_support_id),
                     "context_support_kind": str(query.context_support_kind),
                     "candidate_label_pool": [str(value) for value in query.candidate_label_pool],
+                    "evidence_role_support_ids": dict(evidence_role_support_ids),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -1774,6 +1805,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "target_control_id": str(query.target_control_id),
                 "guide_entries": [asdict(entry) for entry in query.guide_entries],
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1796,6 +1828,7 @@ class PagesRelationWebActionTargetLabelTask:
                 "context_support_id": str(query.context_support_id),
                 "context_support_kind": str(query.context_support_kind),
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "evidence_support_records": [dict(record) for record in evidence_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
@@ -1807,13 +1840,16 @@ class PagesRelationWebActionTargetLabelTask:
                 "question_format": "gui_web_action_target_label",
             },
             "witness_symbolic": {
-                "type": "bbox_set",
+                "type": "keyed_bbox_map",
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": list(evidence_bboxes),
+                "value": dict(evidence_bbox_map),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_bbox_map),
+                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
             },
         }
 

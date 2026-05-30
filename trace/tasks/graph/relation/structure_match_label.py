@@ -18,10 +18,12 @@ from ...registry import register_task
 from ...shared.bbox_projection import round_bbox as _round_bbox
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ...shared.mcq import option_label_for_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.render_variation import resolve_render_int, resolve_render_rgb
+from ...shared.text_legibility import contrast_ratio, draw_centered_readable_text, resolve_readable_text_style
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ..shared.complexity import (
     build_graph_complexity,
@@ -103,6 +105,10 @@ class _RenderParams:
     text_rgb: Tuple[int, int, int] = (30, 34, 42)
     text_stroke_rgb: Tuple[int, int, int] = (255, 255, 255)
     notebook_line_rgb: Tuple[int, int, int] = (218, 225, 235)
+    font_family: str = ""
+    font_asset: Dict[str, Any] | None = None
+    font_asset_version: str = ""
+    font_exclusion_reason: str = "readout font pool; no scene-local exclusion"
 
 
 _DEFAULTS = _TaskDefaults()
@@ -115,6 +121,19 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", apply_prob=0.5)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_background_defaults(task_group="relation")
+
+
+def _node_fill_with_readable_label(fill_rgb: Sequence[int]) -> Tuple[int, int, int]:
+    """Adjust saturated node fills only when no standard light/dark label can pass."""
+
+    base = tuple(max(0, min(255, int(value))) for value in fill_rgb[:3])
+    if max(float(contrast_ratio((255, 255, 255), base)), float(contrast_ratio((10, 14, 22), base))) >= 7.0:
+        return base
+    for factor in (0.90, 0.82, 0.74, 0.66, 0.58, 0.50, 0.44, 0.38, 0.32):
+        candidate = tuple(max(0, min(255, int(round(float(channel) * float(factor))))) for channel in base)
+        if float(contrast_ratio((255, 255, 255), candidate)) >= 7.0:
+            return candidate
+    return tuple(max(0, min(255, int(round(float(channel) * 0.28)))) for channel in base)
 
 
 def _project_bbox_evidence(bbox_map: Mapping[str, Sequence[float]], entity_ids: Sequence[str]) -> Dict[str, Any]:
@@ -178,6 +197,20 @@ def _all_label_pairs(labels: Sequence[str], *, directed: bool = False) -> List[T
     ]
 
 
+def _would_create_antiparallel_edge(
+    pair: Sequence[str],
+    existing_edges: set[Tuple[str, str]],
+    *,
+    directed: bool,
+) -> bool:
+    """Return whether adding one directed edge would overlap its reverse edge."""
+
+    if not bool(directed):
+        return False
+    source, target = str(pair[0]), str(pair[1])
+    return (target, source) in existing_edges
+
+
 def _is_connected(labels: Sequence[str], edges: Sequence[Sequence[str]]) -> bool:
     label_list = [str(label) for label in labels]
     if not label_list:
@@ -219,13 +252,23 @@ def _make_connected_spec(
             source, target = target, source
         edges.add(_edge_key(source, target, directed=bool(directed)))
 
-    available = [pair for pair in _all_label_pairs(labels, directed=bool(directed)) if pair not in edges]
+    available = [
+        pair
+        for pair in _all_label_pairs(labels, directed=bool(directed))
+        if pair not in edges and not _would_create_antiparallel_edge(pair, edges, directed=bool(directed))
+    ]
     rng.shuffle(available)
     max_extra = min(int(extra_edge_max), len(available))
     min_extra = min(int(extra_edge_min), max_extra)
     extra_count = int(rng.randint(int(min_extra), int(max_extra))) if max_extra >= min_extra else 0
-    for pair in available[:extra_count]:
+    added_extra_count = 0
+    for pair in available:
+        if int(added_extra_count) >= int(extra_count):
+            break
+        if pair in edges or _would_create_antiparallel_edge(pair, edges, directed=bool(directed)):
+            continue
         edges.add(pair)
+        added_extra_count += 1
     return _spec_from(labels, sorted(edges), directed=bool(directed))
 
 
@@ -255,6 +298,8 @@ def _mutate_edges(
                     edges.add(pair)
                     continue
             else:
+                if _would_create_antiparallel_edge(pair, edges, directed=directed):
+                    continue
                 edges.add(pair)
             toggled += 1
         if toggled == int(toggle_count):
@@ -566,7 +611,12 @@ def _build_contained_subgraph_dataset(
         candidate = _subspec_from_labels(base, candidate_labels)
         if _contains_pattern(candidate, base):
             candidate_edges = set(_edge_set(candidate))
-            all_pairs = [pair for pair in _all_label_pairs(candidate["labels"], directed=directed) if pair not in candidate_edges]
+            all_pairs = [
+                pair
+                for pair in _all_label_pairs(candidate["labels"], directed=directed)
+                if pair not in candidate_edges
+                and not _would_create_antiparallel_edge(pair, candidate_edges, directed=directed)
+            ]
             rng.shuffle(all_pairs)
             if all_pairs:
                 candidate_edges.add(all_pairs[0])
@@ -695,14 +745,13 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _draw_centered_text(
+def _draw_readable_centered_text(
     draw: ImageDraw.ImageDraw,
     *,
     text: str,
     center: Tuple[float, float],
     font,
-    fill: Sequence[int],
-    stroke_fill: Sequence[int],
+    style,
     stroke_width: int = 1,
 ) -> List[float]:
     bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
@@ -710,12 +759,12 @@ def _draw_centered_text(
     height = float(bbox[3] - bbox[1])
     x = float(center[0]) - (0.5 * width) - float(bbox[0])
     y = float(center[1]) - (0.5 * height) - float(bbox[1])
-    draw.text(
-        (x, y),
-        str(text),
+    draw_centered_readable_text(
+        draw,
+        center=center,
+        text=str(text),
         font=font,
-        fill=tuple(int(value) for value in fill),
-        stroke_fill=tuple(int(value) for value in stroke_fill),
+        style=style,
         stroke_width=int(stroke_width),
     )
     return _round_bbox((x + bbox[0], y + bbox[1], x + bbox[2], y + bbox[3]))
@@ -746,10 +795,9 @@ def _panel_content_bbox(
     title: str,
     render_params: _RenderParams,
     title_font,
+    text_style,
     panel_fill_rgb: Sequence[int],
     border_rgb: Sequence[int],
-    text_rgb: Sequence[int],
-    text_stroke_rgb: Sequence[int],
 ) -> List[float]:
     left, top, right, bottom = [float(value) for value in panel_bbox]
     draw.rounded_rectangle(
@@ -761,13 +809,12 @@ def _panel_content_bbox(
     )
     title_band = max(50.0, float(render_params.panel_padding_px) + 24.0)
     title_center_y = top + 0.46 * float(title_band)
-    _draw_centered_text(
+    _draw_readable_centered_text(
         draw,
         text=str(title),
         center=(0.5 * (left + right), title_center_y),
         font=title_font,
-        fill=text_rgb,
-        stroke_fill=text_stroke_rgb,
+        style=text_style,
         stroke_width=1,
     )
     pad = float(render_params.panel_padding_px)
@@ -863,6 +910,7 @@ def _draw_structure(
     scene_variant: str,
     render_params: _RenderParams,
     palette_colors: Sequence[Sequence[int]],
+    style_seed: int,
     rng,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]]]:
     layout_variant = str(rng.choice(["circle", "chain", "branch"]))
@@ -914,13 +962,9 @@ def _draw_structure(
     for index, label in enumerate(labels):
         cx, cy = positions[str(label)]
         if str(scene_variant) == "colored_node_graph_options":
-            node_fill = atom_palette[index % len(atom_palette)]
-            label_fill = (255, 255, 255)
-            label_stroke = tuple(int(value) for value in render_params.node_outline_rgb)
+            node_fill = _node_fill_with_readable_label(atom_palette[index % len(atom_palette)])
         else:
-            node_fill = tuple(int(value) for value in render_params.node_fill_rgb)
-            label_fill = tuple(int(value) for value in render_params.text_rgb)
-            label_stroke = tuple(int(value) for value in render_params.text_stroke_rgb)
+            node_fill = _node_fill_with_readable_label(render_params.node_fill_rgb)
         outline = tuple(int(value) for value in render_params.node_outline_rgb)
         node_bbox = [cx - radius, cy - radius, cx + radius, cy + radius]
         draw.ellipse(tuple(node_bbox), fill=node_fill, outline=outline, width=max(2, int(render_params.border_width_px)))
@@ -930,17 +974,28 @@ def _draw_structure(
             max_width=1.35 * radius,
             max_height=1.15 * radius,
             bold=True,
+            font_family=str(render_params.font_family or ""),
             min_size_px=12,
             max_size_px=24,
             fill_ratio=0.95,
         )
-        _draw_centered_text(
+        label_style = resolve_readable_text_style(
+            instance_seed=int(hash64(int(style_seed), f"{panel_id}.node_label_text.{label}", int(index))),
+            namespace=f"{TASK_ID}.render.node_label_text.{panel_id}.{label}",
+            role="graph_structure_node_label_text",
+            surface_rgbs=(tuple(int(value) for value in node_fill),),
+            preferred_rgbs=(
+                tuple(int(value) for value in render_params.text_rgb),
+                (255, 255, 255),
+                (10, 14, 22),
+            ),
+        )
+        _draw_readable_centered_text(
             draw,
             text=str(label),
             center=(cx, cy),
             font=label_font,
-            fill=label_fill,
-            stroke_fill=label_stroke,
+            style=label_style,
             stroke_width=1,
         )
         entity_id = f"{panel_id}_node_{label}"
@@ -1005,8 +1060,31 @@ def _render_scene(
 ) -> _RenderedStructureGraphScene:
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
-    option_font = load_font(int(render_params.option_label_font_size_px), bold=True)
+    title_font = load_font(
+        int(render_params.title_font_size_px),
+        bold=True,
+        font_family=str(render_params.font_family or ""),
+    )
+    option_font = load_font(
+        int(render_params.option_label_font_size_px),
+        bold=True,
+        font_family=str(render_params.font_family or ""),
+    )
+    panel_text_style = resolve_readable_text_style(
+        instance_seed=int(hash64(int(instance_seed), f"{TASK_ID}.render.panel_text")),
+        namespace=f"{TASK_ID}.render.panel_text",
+        role="graph_structure_panel_title_text",
+        surface_rgbs=(
+            tuple(int(value) for value in render_params.panel_fill_rgb),
+            tuple(int(value) for value in render_params.option_fill_rgb),
+        ),
+        preferred_rgbs=(
+            tuple(int(value) for value in render_params.text_rgb),
+            (10, 14, 22),
+            (36, 45, 64),
+            (250, 252, 255),
+        ),
+    )
     entities: List[Dict[str, Any]] = []
     bbox_map: Dict[str, List[float]] = {}
     option_panel_bbox_map: Dict[str, List[float]] = {}
@@ -1022,10 +1100,9 @@ def _render_scene(
         title=str(dataset["query_panel_title"]),
         render_params=render_params,
         title_font=title_font,
+        text_style=panel_text_style,
         panel_fill_rgb=render_params.panel_fill_rgb,
         border_rgb=render_params.border_rgb,
-        text_rgb=render_params.text_rgb,
-        text_stroke_rgb=render_params.text_stroke_rgb,
     )
     ref_entities, ref_bboxes = _draw_structure(
         draw,
@@ -1035,6 +1112,7 @@ def _render_scene(
         scene_variant=str(scene_variant),
         render_params=render_params,
         palette_colors=palette_colors,
+        style_seed=int(hash64(int(instance_seed), f"{TASK_ID}.render.query_structure_style")),
         rng=spawn_rng(int(instance_seed), f"{TASK_ID}.render.query_structure"),
     )
     entities.extend(ref_entities)
@@ -1074,10 +1152,9 @@ def _render_scene(
             title=str(option_spec["option_label"]),
             render_params=render_params,
             title_font=option_font,
+            text_style=panel_text_style,
             panel_fill_rgb=render_params.option_fill_rgb,
             border_rgb=render_params.border_rgb,
-            text_rgb=render_params.text_rgb,
-            text_stroke_rgb=render_params.text_stroke_rgb,
         )
         option_entities, option_bboxes = _draw_structure(
             draw,
@@ -1087,6 +1164,7 @@ def _render_scene(
             scene_variant=str(scene_variant),
             render_params=render_params,
             palette_colors=palette_colors,
+            style_seed=int(hash64(int(instance_seed), f"{TASK_ID}.render.{option_panel_id}_style", int(option_index))),
             rng=spawn_rng(int(instance_seed), f"{TASK_ID}.render.{option_panel_id}", int(option_index)),
         )
         entities.extend(option_entities)
@@ -1200,6 +1278,15 @@ class GraphRelationStructureMatchLabelTask:
             "node_color_name": str(node_color_name),
             "panel_style_variant": str(panel_style),
         }
+        font_params: Dict[str, Any] = dict(_RENDER_DEFAULTS)
+        font_params.update(dict(params))
+        font_family = sample_font_family(
+            role="readout",
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.render.font_family",
+            params=font_params,
+        )
+        font_record = get_font_family_record(str(font_family))
         render_params = _RenderParams(
             **{
                 **base_render_params.__dict__,
@@ -1212,6 +1299,10 @@ class GraphRelationStructureMatchLabelTask:
                 "text_rgb": tuple(int(value) for value in graph_theme.title_color_rgb),
                 "text_stroke_rgb": (255, 255, 255),
                 "notebook_line_rgb": tuple(int(value) for value in graph_theme.panel_border_rgb),
+                "font_family": str(font_family),
+                "font_asset": dict(font_record.to_trace()),
+                "font_asset_version": str(font_asset_version()),
+                "font_exclusion_reason": "readout font pool; no scene-local exclusion",
             }
         )
         background, background_meta = make_background_canvas(
@@ -1248,12 +1339,29 @@ class GraphRelationStructureMatchLabelTask:
                 "answer_hint",
                 "object_description_undirected",
                 "object_description_directed",
+                "object_description_same_structure_undirected",
+                "object_description_same_structure_directed",
+                "object_description_contained_subgraph_undirected",
+                "object_description_contained_subgraph_directed",
                 "evidence_hint",
                 "json_example",
                 "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
+        object_description_fallback_key = "object_description_directed" if str(edge_mode) == "directed" else "object_description_undirected"
+        if str(query_id) == "same_structure_label":
+            object_description_query_key = (
+                "object_description_same_structure_directed"
+                if str(edge_mode) == "directed"
+                else "object_description_same_structure_undirected"
+            )
+        else:
+            object_description_query_key = (
+                "object_description_contained_subgraph_directed"
+                if str(edge_mode) == "directed"
+                else "object_description_contained_subgraph_undirected"
+            )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1264,9 +1372,10 @@ class GraphRelationStructureMatchLabelTask:
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
-                    prompt_defaults[
-                        "object_description_directed" if str(edge_mode) == "directed" else "object_description_undirected"
-                    ]
+                    prompt_defaults.get(
+                        str(object_description_query_key),
+                        prompt_defaults[str(object_description_fallback_key)],
+                    )
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
@@ -1346,6 +1455,10 @@ class GraphRelationStructureMatchLabelTask:
                     "node_radius_px": int(render_params.node_radius_px),
                     "edge_width_px": int(render_params.edge_width_px),
                 },
+                "font_family": str(render_params.font_family or ""),
+                "font_asset": dict(render_params.font_asset) if isinstance(render_params.font_asset, Mapping) else {},
+                "font_asset_version": str(render_params.font_asset_version or font_asset_version()),
+                "font_exclusion_reason": str(render_params.font_exclusion_reason),
             },
             "render_map": {
                 "image_id": "img0",

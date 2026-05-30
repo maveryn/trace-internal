@@ -19,7 +19,7 @@
    - supported grid shapes are `3x4`, `3x5`, `4x4`, and `4x5`.
 6. Query contract:
    - `pipe_reachable_junction_count` asks for all junctions reachable from a named junction through open pipes,
-   - `pipe_exact_distance_count` asks for junctions exactly `query_distance` open-pipe segments away from a named junction.
+   - `pipe_exact_distance_count` asks for junctions whose shortest open-pipe distance from a named junction is exactly `query_distance` segments.
 
 ## 3) Prompt Contract
 1. Bundle: `graph_relation_v0`
@@ -39,8 +39,10 @@
 
 ## 5) Visual Policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
-2. Open and blocked pipes have distinct visual treatments.
-3. Junction labels use one whole-image label format.
+2. Open and blocked pipes have distinct physical tube treatments.
+3. Junctions are rendered as flanged pipe fittings with compact letter/number labels and one whole-image label format.
+4. Sampled board treatments vary between plain panels, seams, perforation dots, and occasional blueprint grid.
+5. Optional non-answer graph context text can appear outside the pipe content region.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.

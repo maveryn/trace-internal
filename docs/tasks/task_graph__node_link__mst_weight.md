@@ -79,8 +79,7 @@
    - `point_pair_set`
    - `point_pair_map`
 6. `execution_trace` records:
-   - `query_id`
-   - `query_id` (always `default`)
+   - `query_id` (the concrete public query branch)
    - `scene_variant`
    - `node_count`
    - `extra_edge_count`

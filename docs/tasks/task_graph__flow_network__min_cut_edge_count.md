@@ -17,7 +17,8 @@
    - node `S` is the source and node `T` is the sink,
    - every arrow has a visible integer capacity,
    - the source-sink minimum cut used for evidence is unique by construction,
-   - default node count is `5..6`.
+   - default node count is `5..6`,
+   - answer support is `1..5`.
 6. Query contract:
    - `minimum_cut_edge_count` asks how many directed edges are in the unique minimum cut.
 
@@ -28,7 +29,7 @@
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+evidence JSON shape: `{"evidence":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-7. Prompt-facing evidence is an array of directed edge point-pairs for the unique minimum cut; each pair is ordered from edge source center to edge target center.
+7. Prompt-facing evidence is an array of directed edge point-pairs for the unique minimum cut; each pair contains the two endpoint node centers of one directed edge.
 
 ## 4) Evidence + Trace Contract
 1. Prompt-facing evidence is a `point_pair_set` over directed minimum-cut edges.
@@ -39,9 +40,12 @@
 6. `projected_evidence` includes the public `point_pair_set`.
 
 ## 5) Visual Policy
-1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
+1. Rendering uses the shared graph light-panel style and role-appropriate shared font pool from `configs/domains/graph/base.yaml`.
 2. Source `S` and sink `T` are visually highlighted.
-3. Flow-network calibration uses a layered left-to-right layout with straight arrows so the source/sink direction remains readable.
+3. Title, node labels, and capacity labels use readable text styles with recorded contrast metadata.
+4. Flow-network calibration uses a layered left-to-right layout with straight arrows so the source/sink direction remains readable.
+5. Optional graph context text can appear as non-answer visual context.
+6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.

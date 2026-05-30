@@ -70,11 +70,11 @@ class _TaskDefaults:
     node_count_min: int = 5
     node_count_max: int = 6
     max_flow_value_min: int = 2
-    max_flow_value_max: int = 5
+    max_flow_value_max: int = 6
     max_flow_cut_edge_count_min: int = 1
     max_flow_cut_edge_count_max: int = 2
     min_cut_edge_count_min: int = 1
-    min_cut_edge_count_max: int = 4
+    min_cut_edge_count_max: int = 5
     cut_capacity_part_max: int = 9
     distractor_edge_min: int = 1
     distractor_edge_max: int = 2
@@ -158,7 +158,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_background_defaults(task_group="optimization")
-POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="optimization", apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="optimization", apply_prob=0.5)
 _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 
 
@@ -1030,6 +1030,11 @@ class _GraphOptimizationFlowNetworkTask:
                     "capacity_label_font_size_px": int(capacity_label_font_size_px),
                     "capacity_label_offset_px": int(capacity_label_offset_px),
                     "capacity_label_padding_px": int(capacity_label_padding_px),
+                    "font_family": str(render_params.font_family or ""),
+                    "font_asset": dict(render_params.font_asset) if isinstance(render_params.font_asset, Mapping) else {},
+                    "font_asset_version": str(render_params.font_asset_version or ""),
+                    "font_exclusion_reason": str(render_params.font_exclusion_reason),
+                    "context_text_elements": list(rendered_scene.panel_geometry.get("context_text_elements", [])),
                     "background_meta": dict(background_meta),
                     "post_image_noise_meta": dict(post_noise_meta),
                 },

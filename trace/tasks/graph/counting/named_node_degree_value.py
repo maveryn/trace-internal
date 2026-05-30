@@ -530,7 +530,10 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_named_node_degree_value",
+                "evidence_hint_named_node_in_degree_value",
+                "evidence_hint_named_node_out_degree_value",
+                "evidence_hint_named_node_total_degree_value",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -542,13 +545,15 @@ class GraphCountingNamedNodeDegreeValueTask:
             str(graph_sample.query_label),
             label_variant=str(query.label_variant),
         )
+        prompt_query_key = _query_key_for(query)
+        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=_query_key_for(query),
+            query_key=str(prompt_query_key),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
@@ -559,7 +564,7 @@ class GraphCountingNamedNodeDegreeValueTask:
                 "query_label": str(query_label_for_prompt),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(query_label=str(query_label_for_prompt)),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

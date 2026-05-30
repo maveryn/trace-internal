@@ -33,6 +33,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import resolve_layout_jitter, resolve_render_int
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_pages_complexity,
     clamp_unit_interval,
@@ -404,14 +405,14 @@ def _draw_text_in_box(
         tb = draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
         tx = float(left + int(padding_px))
         ty = float(top + (0.5 * (bottom - top - (float(tb[3]) - float(tb[1])))) - float(tb[1]))
-        draw.text(
+        draw_text_traced(draw,
             (tx, ty),
             str(text),
             font=font,
             fill=tuple(int(value) for value in fill),
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in stroke_fill),
-        )
+         role="readout", required=False,)
         return [
             round(float(tx + tb[0]), 3),
             round(float(ty + tb[1]), 3),
@@ -450,6 +451,10 @@ def _point_bbox(points: Sequence[tuple[float, float]], *, padding: float = 0.0) 
         round(max(float(point[0]) for point in points) + float(padding), 3),
         round(max(float(point[1]) for point in points) + float(padding), 3),
     ]
+
+
+def _rounded_point(point: Sequence[float]) -> list[float]:
+    return [round(float(value), 3) for value in point[:2]]
 
 
 def _build_tables_and_relationships(
@@ -963,6 +968,8 @@ def _render_scene(
     )
     table_by_id = {str(table["table_id"]): table for table in tables}
     relationship_bboxes: Dict[str, list[float]] = {}
+    relationship_point_pairs: Dict[str, list[list[float]]] = {}
+    relationship_polylines: Dict[str, list[list[float]]] = {}
     relationship_label_bboxes: Dict[str, list[float]] = {}
     marker_bboxes: Dict[str, list[float]] = {}
     edge_width = int(group_default(render_defaults, "relationship_width_px", 3))
@@ -976,7 +983,13 @@ def _render_scene(
             layout_variant=str(layout_variant),
             relationship_index=int(index),
         )
-        relationship["points"] = [(round(x, 3), round(y, 3)) for x, y in points]
+        rounded_points = [_rounded_point((x, y)) for x, y in points]
+        relationship["points"] = [tuple(point) for point in rounded_points]
+        relationship_point_pairs[str(relationship["relationship_id"])] = [
+            list(rounded_points[0]),
+            list(rounded_points[-1]),
+        ]
+        relationship_polylines[str(relationship["relationship_id"])] = [list(point) for point in rounded_points]
         dashed = str(relationship["cardinality_kind"]) == "optional_many"
         edge_bbox = _draw_polyline(
             draw,
@@ -1047,6 +1060,8 @@ def _render_scene(
         "table_bboxes_px": dict(table_bboxes),
         "field_bboxes_px": dict(field_bboxes),
         "relationship_bboxes_px": dict(relationship_bboxes),
+        "relationship_point_pairs_px": dict(relationship_point_pairs),
+        "relationship_polylines_px": dict(relationship_polylines),
         "relationship_label_bboxes_px": dict(relationship_label_bboxes),
         "cardinality_marker_bboxes_px": dict(marker_bboxes),
     }
@@ -1128,9 +1143,16 @@ def _build_query(
     }
 
 
-def _build_prompt_json_examples(*, answer_type: str) -> tuple[str, str]:
+def _build_prompt_json_examples(*, answer_type: str, evidence_kind: str) -> tuple[str, str]:
     answer_only = {"answer": 3}
-    with_evidence = {"evidence": [[90, 120, 220, 146], [240, 168, 390, 194]], "answer": 3}
+    if str(evidence_kind) == "relationship":
+        evidence: Any = [
+            [[150, 180], [330, 260]],
+            [[420, 260], [610, 360]],
+        ]
+    else:
+        evidence = [[90, 120, 220, 146], [240, 168, 390, 194]]
+    with_evidence = {"evidence": evidence, "answer": 3}
     return (
         json.dumps(with_evidence, separators=(",", ":")),
         json.dumps(answer_only, separators=(",", ":")),
@@ -1335,12 +1357,17 @@ def _build_output(
     )
     answer_type = "integer"
     if str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
+        evidence_kind = "relationship"
         answer_hint = str(prompt_defaults["integer_answer_hint"])
         evidence_hint = str(prompt_defaults["evidence_hint_relationship_count"])
     else:
+        evidence_kind = "field"
         answer_hint = str(prompt_defaults["integer_answer_hint"])
         evidence_hint = str(prompt_defaults["evidence_hint_field_count"])
-    json_example, json_example_answer_only = _build_prompt_json_examples(answer_type=answer_type)
+    json_example, json_example_answer_only = _build_prompt_json_examples(
+        answer_type=answer_type,
+        evidence_kind=str(evidence_kind),
+    )
     slots = {
         "object_description": str(prompt_defaults["object_description"]),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -1366,6 +1393,7 @@ def _build_output(
 
     bbox_source_map: Dict[str, Sequence[float]] = {}
     evidence_ids: list[str] = []
+    evidence_point_pairs: list[list[list[float]]] = []
     for field_id in [str(item) for item in query.get("evidence_field_ids", [])]:
         evidence_id = f"field:{field_id}"
         evidence_ids.append(evidence_id)
@@ -1375,17 +1403,35 @@ def _build_output(
         evidence_ids.append(evidence_id)
         bbox_source_map[evidence_id] = render_map["table_bboxes_px"][table_id]
     for relationship_id in [str(item) for item in query.get("evidence_relationship_ids", [])]:
-        evidence_id = f"relationship:{relationship_id}"
+        evidence_id = f"relationship_points:{relationship_id}"
         evidence_ids.append(evidence_id)
-        bbox_source_map[evidence_id] = render_map["relationship_bboxes_px"][relationship_id]
-    evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-    evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_point_pairs.append(
+            [
+                [round(float(value), 3) for value in point]
+                for point in render_map["relationship_point_pairs_px"][relationship_id]
+            ]
+        )
+    if str(task_id) == RELATIONSHIP_COUNT_TASK_ID:
+        evidence_projection = {
+            "type": "point_pair_set",
+            "point_pair_set": list(evidence_point_pairs),
+            "pixel_point_pair_set": list(evidence_point_pairs),
+            "evidence_ids": list(evidence_ids),
+        }
+        evidence_bboxes: list[list[float]] = []
+    else:
+        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
+        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
     answer_gt = (
         TypedValue(type="string", value=str(query["answer"]))
         if answer_type == "string"
         else TypedValue(type="integer", value=int(query["answer"]))
     )
-    evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+    evidence_gt = (
+        TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+        if str(task_id) == RELATIONSHIP_COUNT_TASK_ID
+        else TypedValue(type="bbox_set", value=list(evidence_bboxes))
+    )
 
     field_scan = normalize_int_with_bounds(int(scene["field_count"]), [24, 72])
     table_scan = normalize_int_with_bounds(int(scene["table_count"]), [5, 8])
@@ -1518,11 +1564,13 @@ def _build_output(
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
             "evidence_ids": list(evidence_ids),
-            "supporting_bbox_ids": list(evidence_ids),
+            "supporting_bbox_ids": [] if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else list(evidence_ids),
+            "supporting_point_pair_ids": list(evidence_ids) if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else [],
         },
         "witness_symbolic": {
-            "type": "bbox_id_set",
+            "type": "point_pair_id_set" if str(task_id) == RELATIONSHIP_COUNT_TASK_ID else "bbox_id_set",
             "ids": list(evidence_ids),
+            "point_pairs": list(evidence_point_pairs),
         },
         "projected_evidence": dict(evidence_projection),
         "background": dict(background_meta),

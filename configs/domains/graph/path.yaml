@@ -94,11 +94,15 @@ generation:
       node_count_max: 13
       target_shortest_path_length_min: 2
       target_shortest_path_length_max: 6
+      label_variant_weights:
+        letters: 1.0
+        numbers: 1.0
       grid_shape_variant_weights:
         3x4: 1.0
         3x5: 1.0
         4x4: 1.0
         4x5: 1.0
+      balanced_label_variant_sampling: true
       balanced_grid_shape_variant_sampling: true
     task_graph__metro__shortest_path_length:
       route_count_min: 3
@@ -156,7 +160,8 @@ prompt:
     object_description_directed: a labeled directed graph
     question_text_shortest_path_length: The graph has a unique shortest path from node {source_label} to node {goal_label}. How many edges are in that path?
     question_text_directed_shortest_path_length: There is a unique shortest path from node {source_label} to node {goal_label} when following the direction of the arrows. How many edges are in that path?
-    evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at node centers along that unique shortest path from node {source_label} to node {goal_label}, including both endpoints
+    evidence_hint_shortest_path_length: set "evidence" to an ordered array of [x,y] pixel points at node centers along the unique shortest path from node {source_label} to node {goal_label}, including both endpoints
+    evidence_hint_directed_shortest_path_length: set "evidence" to an ordered array of [x,y] pixel points at node centers along the unique shortest path from node {source_label} to node {goal_label} while following arrow directions, including both endpoints
     answer_hint: set "answer" to the number of edges in that path as an integer
     json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
     json_example_answer_only: '{"answer":2}'
@@ -190,7 +195,7 @@ prompt:
       task_key: metro_transfer_count_query
       object_description: a labeled metro route map with colored routes and stations
       question_text_metro_transfer_count: Travel from station {source_label} to station {goal_label}, stopping at station {via_label}. What is the fewest number of colored-route changes needed?
-      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at station centers along the chosen minimum-transfer path from station {source_label} through station {via_label} to station {goal_label}, including the start, via, and end stations
+      evidence_hint: set "evidence" to an ordered array of [x,y] pixel points at station centers along the selected minimum-transfer path in travel order; the first point is station {source_label}, the sequence includes station {via_label}, and the last point is station {goal_label}
       answer_hint: set "answer" to the fewest route-change count as an integer; travel only along drawn route segments, and one route change means switching from one colored route to another at a station
       json_example: '{"evidence":[[180,220],[310,180],[430,260]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

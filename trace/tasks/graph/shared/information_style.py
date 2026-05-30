@@ -13,6 +13,14 @@ from ...shared.visual_style.information_scene import (
 
 GraphInformationStyle = InformationSceneStyle
 
+NODE_LINK_INFORMATION_SCENE_TREATMENTS: tuple[str, ...] = (
+    "clean_default",
+    "report_card",
+    "academic_figure",
+    "journal_appendix",
+    "print_scan_sheet",
+)
+
 
 def resolve_graph_information_style(
     *,
@@ -26,10 +34,13 @@ def resolve_graph_information_style(
     """Resolve one graph presentation style without changing topology."""
 
     resolved_params = params or {}
+    default_treatments: tuple[str, ...] | None = None
+    if str(scene_id) == "node_link":
+        default_treatments = NODE_LINK_INFORMATION_SCENE_TREATMENTS
     return resolve_information_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"graph.{str(task_group)}.{str(scene_id)}.information_scene_style",
-        treatments=resolved_params.get("information_scene_treatments"),
+        treatments=resolved_params.get("information_scene_treatments", default_treatments),
         treatment_weights=resolved_params.get("information_scene_treatment_weights", {}),
         palettes=resolved_params.get("information_scene_palettes"),
         palette_weights=resolved_params.get("information_scene_palette_weights", {}),
@@ -73,6 +84,7 @@ def graph_surface_roles_from_information_style(style: GraphInformationStyle) -> 
 
 __all__ = [
     "GraphInformationStyle",
+    "NODE_LINK_INFORMATION_SCENE_TREATMENTS",
     "graph_surface_roles_from_information_style",
     "infer_graph_scene_id",
     "resolve_graph_information_style",

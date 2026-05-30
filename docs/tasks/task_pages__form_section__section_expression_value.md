@@ -16,7 +16,7 @@
    - `invoice_sheet`
    - `receipt_sheet`
 3. `answer_gt.type`: `string`
-4. `evidence_gt.type`: `bbox_set`
+4. `evidence_gt.type`: `keyed_bbox_map`
 5. Scene contract:
    - one structured document page is shown on a light background,
    - the page contains visible named sections with labeled fields and values,
@@ -46,10 +46,10 @@
    - deterministic bundle selection from `prompts/pages/arithmetic/pages_arithmetic_v0.json`,
    - dynamic task-local JSON examples keyed by the active expression variant.
 7. Modes: `answer_only`, `answer_and_evidence`
-8. Prompt-facing answer is the computed amount string; prompt-facing evidence is the ordered operand value boxes only.
+8. Prompt-facing answer is the computed amount string; prompt-facing evidence is a role-keyed map of operand value boxes.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is a `bbox_set` containing one box for each operand value named in the prompt, in expression order.
+1. Prompt-facing evidence is a `keyed_bbox_map` containing one value box for each operand named in the prompt. Keys bind the boxes to expression roles: `first_operand`, `second_operand`, and `third_operand` when a third operand is present.
 2. `scene_ir.entities` stores:
    - `document_page`
    - `document_title`
@@ -88,7 +88,7 @@
    - `expression_operand_cents`
    - `result_cents`
    - `result_value`
-5. `witness_symbolic` stores the ordered operand field ids plus their ordered operand value bbox ids.
+5. `witness_symbolic` stores operand role keys plus the corresponding ordered operand field ids and operand value bbox ids.
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged pages-domain visual defaults from `configs/domains/pages/base.yaml`.

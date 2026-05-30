@@ -10,6 +10,7 @@ from PIL import ImageDraw, ImageFont
 from ....core.task_group_config import get_task_group_defaults
 from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.text_legibility import draw_text_traced
 
 
 BBox = Tuple[float, float, float, float]
@@ -111,7 +112,7 @@ def _draw_text_left(
     )
     _width, height = _measure_text(draw, str(text), font)
     y = float(y1) + max(0.0, (float(y2 - y1) - float(height)) / 2.0) - 1.0
-    draw.text((float(x1), float(y)), str(text), fill=fill, font=font)
+    draw_text_traced(draw,(float(x1), float(y)), str(text), fill=fill, font=font, role="readout", required=False)
 
 
 def _draw_text_center_fit(
@@ -327,9 +328,9 @@ def _draw_app_chrome(
     )
 
     title_font = load_font(int(render_params.title_font_size_px), bold=True)
-    draw.text((window[0] + 64.0, header[1] + 11.0), str(profile.app_title), fill=theme.control_text, font=title_font)
+    draw_text_traced(draw,(window[0] + 64.0, header[1] + 11.0), str(profile.app_title), fill=theme.control_text, font=title_font, role="readout", required=False)
     small_font = load_font(int(render_params.small_font_size_px), bold=False)
-    draw.text((window[0] + 66.0, header[1] + 39.0), str(profile.window_title), fill=theme.muted_text, font=small_font)
+    draw_text_traced(draw,(window[0] + 66.0, header[1] + 39.0), str(profile.window_title), fill=theme.muted_text, font=small_font, role="readout", required=False)
 
     nav_x = window[0] + 285.0
     for idx, nav_label in enumerate((str(profile.primary_tab), str(profile.secondary_tab), "Reports", "Settings")):
@@ -372,9 +373,9 @@ def _draw_app_chrome(
     draw.rectangle([window[0], menu_y1, window[2], menu_y2], fill=theme.panel_fill, outline=theme.chrome_line)
     tab_font = load_font(int(render_params.small_font_size_px), bold=True)
     breadcrumb_x = window[0] + 26.0
-    draw.text((breadcrumb_x, menu_y1 + 12.0), "Workspace", fill=theme.muted_text, font=tab_font)
-    draw.text((breadcrumb_x + 92.0, menu_y1 + 12.0), "/", fill=theme.muted_text, font=tab_font)
-    draw.text((breadcrumb_x + 112.0, menu_y1 + 12.0), str(profile.window_title), fill=theme.control_text, font=tab_font)
+    draw_text_traced(draw,(breadcrumb_x, menu_y1 + 12.0), "Workspace", fill=theme.muted_text, font=tab_font, role="readout", required=False)
+    draw_text_traced(draw,(breadcrumb_x + 92.0, menu_y1 + 12.0), "/", fill=theme.muted_text, font=tab_font, role="readout", required=False)
+    draw_text_traced(draw,(breadcrumb_x + 112.0, menu_y1 + 12.0), str(profile.window_title), fill=theme.control_text, font=tab_font, role="readout", required=False)
     filter_bbox = (window[2] - 266.0, menu_y1 + 7.0, window[2] - 172.0, menu_y2 - 7.0)
     export_bbox = (window[2] - 154.0, menu_y1 + 7.0, window[2] - 26.0, menu_y2 - 7.0)
     _rounded_rect(draw, filter_bbox, radius=8, fill=theme.control_fill, outline=theme.chrome_line, width=1)

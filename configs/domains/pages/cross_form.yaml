@@ -277,14 +277,12 @@ prompt:
       object_description_purchase_receipt_pair: two side-by-side business forms, a
         purchase order and a receiving slip, with matching item codes and visible
         quantities
-      evidence_hint_total_amount_delta: set "evidence" to [x0, y0, x1, y1] boxes for
-        the mismatched-item cells used; include purchase-order code, ordered quantity,
-        receiving-slip code, received quantity, and purchase-order unit value for
-        each item
-      evidence_hint_shortfall_minus_overage_value: set "evidence" to [x0, y0, x1,
-        y1] boxes for the mismatched-item cells used; include purchase-order code,
-        ordered quantity, receiving-slip code, received quantity, and purchase-order
-        unit value for each item
-      evidence_hint_sum_absolute_quantity_differences: set "evidence" to [x0, y0,
-        x1, y1] boxes for the mismatched-item cells used; include purchase-order code,
-        ordered quantity, receiving-slip code, and received quantity for each item
+      evidence_hint_total_amount_delta: set "evidence" to an array of [x0, y0, x1, y1]
+        boxes for the full receiving-slip rows whose received quantity differs
+        from the matching purchase-order quantity
+      evidence_hint_shortfall_minus_overage_value: set "evidence" to an array
+        of [x0, y0, x1, y1] boxes for the full receiving-slip rows whose received
+        quantity differs from the matching purchase-order quantity
+      evidence_hint_sum_absolute_quantity_differences: set "evidence" to an array
+        of [x0, y0, x1, y1] boxes for the full receiving-slip rows whose received
+        quantity differs from the matching purchase-order quantity

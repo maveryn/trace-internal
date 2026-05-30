@@ -13,7 +13,7 @@
 2. Supported `scene_variant` values:
    - `campus_map`
 3. `answer_gt.type`: `string`
-4. `evidence_gt.type`: `bbox_set`
+4. `evidence_gt.type`: `bbox_sequence`
 5. Scene contract:
    - one rectangular printed campus/facility map is shown,
    - the map contains named zones, labeled landmarks, walking-path connections, a compass, and optional highlighted route segments,
@@ -42,10 +42,10 @@
    - deterministic bundle selection from `prompts/pages/map/pages_map_v0.json`,
    - task-local JSON examples keyed by the active map-query id.
 7. Modes: `answer_only`, `answer_and_evidence`
-8. Prompt-facing answer is an exact visible landmark label; prompt-facing evidence is the supporting route boxes.
+8. Prompt-facing answer is an exact visible landmark label; prompt-facing evidence is the ordered supporting route boxes.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is a `bbox_set`:
+1. Prompt-facing evidence is a `bbox_sequence`:
    - `destination_after_directions`: ordered landmark boxes from the start through the destination,
    - `landmark_after_route_step`: ordered landmark boxes from the highlighted-route start through the requested reached landmark.
 2. `scene_ir.entities` stores:
@@ -86,7 +86,7 @@
    - `evidence_bbox_ids`
    - `evidence_landmark_bbox_ids`
    - `evidence_zone_label_bbox_ids` as an empty list for the active route variants
-5. `witness_symbolic` stores the supporting landmark ids, while `projected_evidence` stores the bbox set used by the verifier.
+5. `witness_symbolic` stores the supporting landmark ids, while `projected_evidence` stores the bbox sequence used by the verifier.
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged pages-domain visual defaults from `configs/domains/pages/base.yaml`.

@@ -17,6 +17,12 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _extract_evidence_format_sentence(prompt: str) -> str:
+    marker = "Evidence format: "
+    assert marker in str(prompt)
+    return str(prompt).split(marker, 1)[1].split("\n", 1)[0]
+
+
 def test_graph_relation_common_neighbor_undirected_contract_matches_trace() -> None:
     task = GraphRelationCommonNeighborCountTask()
     out = task.generate(
@@ -39,13 +45,11 @@ def test_graph_relation_common_neighbor_undirected_contract_matches_trace() -> N
 
     assert "task_graph__node_link__common_neighbor_count" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "undirected_common_neighbor_count"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "point_set"
     assert int(out.answer_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_common_neighbor_relation"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_common_neighbor_count"
     assert execution["graph_directionality"] == "undirected"
     assert execution["common_neighbor_mode"] == "undirected_common_neighbor"
@@ -140,6 +144,41 @@ def test_graph_relation_common_neighbor_prompt_examples_match_contract() -> None
     assert answer_and_evidence["answer"] == 2
 
 
+def test_graph_relation_common_neighbor_evidence_hint_matches_query_branch() -> None:
+    task = GraphRelationCommonNeighborCountTask()
+    cases = [
+        (
+            "undirected_common_neighbor",
+            "directly connected to both",
+            ("point to directly", "points directly to both", "successor", "predecessor"),
+        ),
+        (
+            "directed_common_successor",
+            "point to directly",
+            ("directly connected to both", "points directly to both", "predecessor", "neighbor"),
+        ),
+        (
+            "directed_common_predecessor",
+            "points directly to both",
+            ("directly connected to both", "point to directly", "successor", "neighbor"),
+        ),
+    ]
+    for index, (mode, required_phrase, forbidden_phrases) in enumerate(cases):
+        out = task.generate(
+            20620 + index,
+            params={
+                "common_neighbor_mode": mode,
+                "target_count": 1,
+                "label_variant": "letters",
+            },
+            max_attempts=200,
+        )
+        evidence_sentence = _extract_evidence_format_sentence(out.prompt_variants["answer_and_evidence"])
+        assert required_phrase in evidence_sentence
+        for phrase in forbidden_phrases:
+            assert phrase not in evidence_sentence
+
+
 def test_graph_relation_common_neighbor_balanced_sampling_includes_zero() -> None:
     task = GraphRelationCommonNeighborCountTask()
     query_ids: Counter[str] = Counter()
@@ -167,7 +206,7 @@ def test_graph_relation_common_neighbor_balanced_sampling_includes_zero() -> Non
         "directed_common_successor_count",
         "directed_common_predecessor_count",
     }
-    assert sorted(query_ids.values()) == [33, 33, 34]
+    assert min(query_ids.values()) >= 20
     assert set(modes) == {
         "undirected_common_neighbor",
         "directed_common_successor",

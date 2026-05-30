@@ -656,7 +656,9 @@ class GraphRelationEdgeAttributeLabelTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_edge_between_nodes_label",
+                "evidence_hint_directed_edge_between_nodes_label",
+                "evidence_hint_shortest_path_first_edge_label",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -683,6 +685,7 @@ class GraphRelationEdgeAttributeLabelTask:
         path_edge_term = "arrow" if str(query.graph_directionality) == "directed" else "edge"
         path_follow_clause = ", using arrow directions" if str(query.graph_directionality) == "directed" else " in the graph"
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description_undirected"
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -699,7 +702,12 @@ class GraphRelationEdgeAttributeLabelTask:
                 "path_follow_clause": str(path_follow_clause),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                    source_label=str(source_label),
+                    target_label=str(target_label),
+                    path_edge_term=str(path_edge_term),
+                    path_follow_clause=str(path_follow_clause),
+                ),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

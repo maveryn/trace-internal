@@ -596,7 +596,14 @@ class GraphComparisonExtremeDegreeValueTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_max_degree_value",
+                "evidence_hint_min_degree_value",
+                "evidence_hint_max_in_degree_value",
+                "evidence_hint_min_in_degree_value",
+                "evidence_hint_max_out_degree_value",
+                "evidence_hint_min_out_degree_value",
+                "evidence_hint_max_total_degree_value",
+                "evidence_hint_min_total_degree_value",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -604,13 +611,15 @@ class GraphComparisonExtremeDegreeValueTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples()
+        prompt_query_key = _query_key_for(query)
+        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
-            query_key=_query_key_for(query),
+            query_key=str(prompt_query_key),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(
@@ -620,7 +629,7 @@ class GraphComparisonExtremeDegreeValueTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

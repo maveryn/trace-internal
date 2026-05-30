@@ -61,6 +61,23 @@ def projected_document_bbox_evidence(
     }
 
 
+def projected_document_keyed_bbox_evidence(
+    bbox_map: Mapping[str, Sequence[float]],
+    role_to_item_id: Mapping[str, str],
+) -> Dict[str, Any]:
+    """Project document item ids into role-bound `keyed_bbox_map` evidence."""
+
+    keyed_bboxes = {
+        str(role): list(bbox_map[str(item_id)])
+        for role, item_id in role_to_item_id.items()
+    }
+    return {
+        "type": "keyed_bbox_map",
+        "keyed_bbox_map": dict(keyed_bboxes),
+        "pixel_keyed_bbox_map": dict(keyed_bboxes),
+    }
+
+
 def build_document_field_specs(
     templates: Sequence[Mapping[str, str]],
     *,
@@ -119,5 +136,6 @@ __all__ = [
     "build_document_field_specs",
     "build_document_section_specs",
     "projected_document_bbox_evidence",
+    "projected_document_keyed_bbox_evidence",
     "resolve_pages_axis_variant",
 ]

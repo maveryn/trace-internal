@@ -16,11 +16,13 @@
 
 ## Evidence
 1. Answer type: `string`.
-2. Evidence type: `bbox_set`.
-3. Evidence boxes are `[x0,y0,x1,y1]` pixel boxes around the queried node or nodes and the answer node.
+2. Evidence type: `keyed_bbox_map`.
+3. Evidence values are `[x0,y0,x1,y1]` pixel boxes around role-bound tree nodes.
+4. Role keys are query-specific: `child`/`parent`, `parent`/`left_child`, `parent`/`right_child`, `node`/`sibling`, or `node_a`/`node_b`/`lowest_common_ancestor`.
 
 ## Generation Notes
 1. The renderer is a top-down ordered binary tree; left and right children are determined by visible position.
 2. Default node count is `7..13`.
 3. Node labels use graph label variants `letters|numbers|named`.
 4. Query branches are sampled uniformly unless overridden by task config.
+5. Title and node labels use the role-appropriate shared font pool and readable text styles with recorded contrast metadata.

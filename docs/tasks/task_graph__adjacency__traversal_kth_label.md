@@ -21,4 +21,5 @@
 2. Default node count is `5..8`; default traversal position is `2..8`.
 3. Every node is reachable from the sampled source row by construction.
 4. Node labels use graph label variants `letters|numbers|named`.
-5. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+5. The adjacency-list panel samples approved font families and readable list styles; non-answer header context chips may appear.
+6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.

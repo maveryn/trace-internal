@@ -5,7 +5,7 @@ complexity:
       reasoning_load: 0.34
       scene_variant_load: 0.24
   task_overrides:
-    task_pages__hierarchy__tree_count:
+    pages_hierarchy_tree_count_base:
       criteria_weights:
         visual_scan: 0.38
         reasoning_load: 0.48
@@ -19,7 +19,7 @@ rendering:
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 16
   task_overrides:
-    task_pages__hierarchy__tree_count:
+    pages_hierarchy_tree_count_base:
       canvas_width: 1464
       canvas_height: 848
       outer_margin_px: 36
@@ -225,7 +225,7 @@ visual:
         - 0.035
 generation:
   task_overrides:
-    task_pages__hierarchy__tree_count:
+    pages_hierarchy_tree_count_base:
       balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
       tree_node_count_min: 16
@@ -249,7 +249,7 @@ prompt:
     bundle_id: pages_hierarchy_v0
     answer_hint: set "answer" to the integer count
   task_overrides:
-    task_pages__hierarchy__tree_count:
+    pages_hierarchy_tree_count_base:
       scene_key: hierarchy_diagram
       task_key: tree_count_query
       answer_hint: set "answer" to the integer count
@@ -260,6 +260,6 @@ prompt:
       evidence_hint_subtree_leaf_count: set "evidence" to an array of bounding boxes
         [x0, y0, x1, y1] for every counted leaf node in the queried subtree, in any
         order
-      evidence_hint_path_length_between_two_nodes: set "evidence" to an array of bounding
-        boxes [x0, y0, x1, y1] for the nodes on the path from the first queried node
-        to the second queried node
+      evidence_hint_path_length_between_two_nodes: set "evidence" to an ordered
+        array of bounding boxes [x0, y0, x1, y1] for the nodes on the path from
+        the first queried node to the second queried node

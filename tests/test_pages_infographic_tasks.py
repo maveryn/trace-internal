@@ -8,15 +8,27 @@ import pytest
 
 from trace.tasks.pages.infographic.metric_arithmetic_value import (
     COLUMN_PROFILE_COMPARISON_VARIANTS,
+    FACT_LOOKUP_VARIANTS,
     FILTERED_SECTION_EXTREMUM_VARIANTS,
     FILTERED_METRIC_TOTAL_VARIANTS,
+    SECTION_RANKED_TOTAL_VARIANTS,
     SUPPORTED_QUERY_IDS,
-    PagesInfographicColumnProfileComparisonValueTask,
-    PagesInfographicFilteredMetricTotalValueTask,
-    PagesInfographicFilteredSectionExtremumLabelTask,
-    PagesInfographicMetricArithmeticValueTask,
-    PagesInfographicSectionRankedTotalLabelTask,
+    PagesInfographicFactLookupLabelTask,
+    PagesInfographicMetricArithmeticValuePublicTask,
+    PagesInfographicSectionRankLabelTask,
 )
+
+
+METRIC_VALUE_QUERY_IDS = (
+    *SUPPORTED_QUERY_IDS,
+    *FILTERED_METRIC_TOTAL_VARIANTS,
+    *COLUMN_PROFILE_COMPARISON_VARIANTS,
+)
+SECTION_RANK_QUERY_IDS = (
+    *SECTION_RANKED_TOTAL_VARIANTS,
+    *FILTERED_SECTION_EXTREMUM_VARIANTS,
+)
+FACT_LOOKUP_QUERY_IDS = FACT_LOOKUP_VARIANTS
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -61,6 +73,13 @@ def _expected_answer(trace: dict) -> int | str:
         winners = [section for section, total in totals.items() if int(total) == int(target_total)]
         assert len(winners) == 1
         return str(winners[0])
+    if variant == "value_for_named_item":
+        return str(values_by_label[target_labels[0]])
+    if variant == "item_for_named_value":
+        return str(target_labels[0])
+    if variant == "detail_for_named_item":
+        cards = {str(card["label"]): dict(card) for card in trace["cards"]}
+        return f"Ref {int(cards[target_labels[0]]['caption_number'])}"
     raise AssertionError(f"unsupported variant: {variant}")
 
 
@@ -71,11 +90,11 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= y0 < y1 <= height
 
 
-@pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
+@pytest.mark.parametrize("query_id", METRIC_VALUE_QUERY_IDS)
 def test_pages_infographic_metric_arithmetic_variants_match_contract(query_id: str) -> None:
-    task = PagesInfographicMetricArithmeticValueTask()
+    task = PagesInfographicMetricArithmeticValuePublicTask()
     out = task.generate(
-        97100 + SUPPORTED_QUERY_IDS.index(query_id),
+        97100 + METRIC_VALUE_QUERY_IDS.index(query_id),
         params={"query_id": query_id, "card_count": 20, "section_count": 4, "operand_count": 4},
         max_attempts=10,
     )
@@ -85,7 +104,7 @@ def test_pages_infographic_metric_arithmetic_variants_match_contract(query_id: s
 
     assert out.query_id == query_id
     assert out.answer_gt.type == "integer"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert int(execution["card_count"]) == 20
@@ -99,17 +118,17 @@ def test_pages_infographic_metric_arithmetic_variants_match_contract(query_id: s
     assert int(out.answer_gt.value) == int(expected)
     assert int(execution["answer_value"]) == int(expected)
     assert int(trace["query_spec"]["params"]["target_answer"]) == int(expected)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
 
     target_labels = [str(label) for label in execution["target_labels"]]
-    evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
-    assert len(evidence_bboxes) == 2 * len(target_labels)
+    evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value.values()]
+    assert len(evidence_bboxes) == len(target_labels)
+    assert set(out.evidence_gt.value.keys()) == set(target_labels)
     for bbox in evidence_bboxes:
         _assert_bbox_inside_canvas(bbox, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
 
     for label in target_labels:
-        assert trace["projected_evidence"]["label_bbox_map"][label] in evidence_bboxes
-        assert trace["projected_evidence"]["value_bbox_map"][label] in evidence_bboxes
+        assert trace["projected_evidence"]["card_bbox_map"][label] == out.evidence_gt.value[label]
     for value in execution["target_values"]:
         assert isinstance(int(value), int)
     assert set(execution["target_groups"].keys()).issubset(
@@ -120,17 +139,20 @@ def test_pages_infographic_metric_arithmetic_variants_match_contract(query_id: s
             "excluded",
             "section_a_extremum",
             "section_b_extremum",
+            "filtered_icon_cards",
+            "section_a_filtered_icon_cards",
+            "section_b_filtered_icon_cards",
         }
     )
 
     example = _extract_prompt_json_example(out.prompt)
     assert sorted(example.keys()) == ["answer", "evidence"]
     assert isinstance(example["answer"], int)
-    assert isinstance(example["evidence"], list)
+    assert isinstance(example["evidence"], dict)
 
 
 def test_pages_infographic_metric_arithmetic_is_deterministic() -> None:
-    task = PagesInfographicMetricArithmeticValueTask()
+    task = PagesInfographicMetricArithmeticValuePublicTask()
     params = {"query_id": "sum_named_metrics", "card_count": 22, "section_count": 4, "operand_count": 5}
     out_a = task.generate(98231, params=params, max_attempts=10)
     out_b = task.generate(98231, params=params, max_attempts=10)
@@ -143,7 +165,7 @@ def test_pages_infographic_metric_arithmetic_is_deterministic() -> None:
 
 
 def test_pages_infographic_metric_arithmetic_supports_larger_variable_sections() -> None:
-    task = PagesInfographicMetricArithmeticValueTask()
+    task = PagesInfographicMetricArithmeticValuePublicTask()
     out = task.generate(
         98531,
         params={"query_id": "section_total_except_named", "card_count": 30, "section_count": 6},
@@ -162,7 +184,7 @@ def test_pages_infographic_metric_arithmetic_supports_larger_variable_sections()
 
 
 def test_pages_infographic_metric_arithmetic_complexity_components_are_normalized() -> None:
-    task = PagesInfographicMetricArithmeticValueTask()
+    task = PagesInfographicMetricArithmeticValuePublicTask()
     out = task.generate(99231, params={"query_id": "section_total_except_named"}, max_attempts=10)
 
     complexity = out.complexity.to_dict()
@@ -176,20 +198,26 @@ def test_pages_infographic_metric_arithmetic_complexity_components_are_normalize
 
 
 def test_pages_infographic_section_ranked_total_label_matches_contract() -> None:
-    task = PagesInfographicSectionRankedTotalLabelTask()
+    task = PagesInfographicSectionRankLabelTask()
     out = task.generate(
         99421,
-        params={"card_count": 24, "section_count": 4, "rank_direction": "highest", "rank_position": 2},
+        params={
+            "query_id": "section_ranked_total_label",
+            "card_count": 24,
+            "section_count": 4,
+            "rank_direction": "highest",
+            "rank_position": 2,
+        },
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert out.query_id == "default"
     assert out.query_id == "section_ranked_total_label"
+    assert execution["source_query_id"] == "section_ranked_total_label"
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert execution["question_format"] == "label_open"
     assert execution["answer_type"] == "string"
     assert execution["rank_direction"] == "highest"
@@ -206,38 +234,32 @@ def test_pages_infographic_section_ranked_total_label_matches_contract() -> None
     assert str(trace["query_spec"]["params"]["target_answer"]) == expected_section
 
     target_labels = [str(label) for label in execution["target_groups"]["answer_section"]]
-    evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+    evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value.values()]
     assert len(target_labels) == execution["section_card_counts"][execution["section_titles"].index(expected_section)]
-    assert len(evidence_bboxes) == 2 * len(target_labels)
+    assert len(evidence_bboxes) == len(target_labels)
+    assert set(out.evidence_gt.value.keys()) == set(target_labels)
     for bbox in evidence_bboxes:
         _assert_bbox_inside_canvas(bbox, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
 
     example = _extract_prompt_json_example(out.prompt)
     assert sorted(example.keys()) == ["answer", "evidence"]
     assert isinstance(example["answer"], str)
-    assert isinstance(example["evidence"], list)
+    assert isinstance(example["evidence"], dict)
 
 
-@pytest.mark.parametrize(
-    ("task_cls", "query_id"),
-    [
-        (PagesInfographicFilteredMetricTotalValueTask, FILTERED_METRIC_TOTAL_VARIANTS[0]),
-        (PagesInfographicColumnProfileComparisonValueTask, COLUMN_PROFILE_COMPARISON_VARIANTS[0]),
-        (PagesInfographicFilteredSectionExtremumLabelTask, FILTERED_SECTION_EXTREMUM_VARIANTS[0]),
-    ],
-)
-def test_pages_infographic_new_filtered_tasks_match_contract(task_cls: type, query_id: str) -> None:
-    task = task_cls()
+@pytest.mark.parametrize("query_id", SECTION_RANK_QUERY_IDS)
+def test_pages_infographic_section_rank_label_variants_match_contract(query_id: str) -> None:
+    task = PagesInfographicSectionRankLabelTask()
     out = task.generate(
-        99731 + (17 if "difference" in query_id else 0),
-        params={"card_count": 24, "section_count": 4},
+        99731 + SECTION_RANK_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "card_count": 24, "section_count": 4},
         max_attempts=10,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.query_id == "default"
     assert out.query_id == query_id
+    assert execution["source_query_id"] == query_id
     assert out.scene_id == "infographic"
     if query_id == "section_icon_extremum_label":
         assert execution["answer_type"] == "string"
@@ -248,8 +270,71 @@ def test_pages_infographic_new_filtered_tasks_match_contract(task_cls: type, que
         assert execution["comparison_icon_kind"]
         assert execution["rank_direction"] in {"highest", "lowest"}
     else:
-        assert execution["answer_type"] == "integer"
-        assert execution["question_format"] == "numeric_open"
-        assert int(out.answer_gt.value) == _expected_answer(execution)
-        assert int(trace["query_spec"]["params"]["target_answer"]) == int(out.answer_gt.value)
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert execution["answer_type"] == "string"
+        assert execution["question_format"] == "label_open"
+        ranked = sorted(
+            ((str(section), int(total)) for section, total in execution["section_totals"].items()),
+            key=lambda item: item[1],
+            reverse=str(execution["rank_direction"]) == "highest",
+        )
+        expected = ranked[int(execution["rank_position"]) - 1][0]
+        assert str(out.answer_gt.value) == expected
+        assert str(trace["query_spec"]["params"]["target_answer"]) == expected
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+
+
+@pytest.mark.parametrize("query_id", FACT_LOOKUP_QUERY_IDS)
+def test_pages_infographic_fact_lookup_variants_match_contract(query_id: str) -> None:
+    task = PagesInfographicFactLookupLabelTask()
+    out = task.generate(
+        100731 + FACT_LOOKUP_QUERY_IDS.index(query_id),
+        params={"query_id": query_id, "card_count": 24, "section_count": 4},
+        max_attempts=10,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render = trace["render_spec"]
+
+    assert out.query_id == query_id
+    assert execution["source_query_id"] == query_id
+    assert out.scene_id == "infographic"
+    assert out.answer_gt.type == "string"
+    assert execution["answer_type"] == "string"
+    assert execution["question_format"] == "label_open"
+    assert execution["target_labels"]
+    assert execution["target_sections"]
+
+    expected = _expected_answer(execution)
+    assert str(out.answer_gt.value) == str(expected)
+    assert str(execution["answer_value"]) == str(expected)
+    assert str(trace["query_spec"]["params"]["target_answer"]) == str(expected)
+
+    evidence_targets = [dict(item) for item in execution["evidence_targets"]]
+    assert evidence_targets
+    evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value.values()]
+    assert len(evidence_bboxes) == len(evidence_targets)
+    assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["evidence_targets"] == evidence_targets
+
+    for bbox in evidence_bboxes:
+        _assert_bbox_inside_canvas(bbox, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+
+    target = evidence_targets[0]
+    label = str(target["label"])
+    if query_id == "value_for_named_item":
+        assert evidence_targets == [{"label": label, "bbox_kind": "card"}]
+        assert trace["projected_evidence"]["card_bbox_map"][label] == out.evidence_gt.value[label]
+    elif query_id == "item_for_named_value":
+        assert evidence_targets == [{"label": label, "bbox_kind": "card"}]
+        assert trace["projected_evidence"]["card_bbox_map"][label] == out.evidence_gt.value[label]
+        assert execution["target_value_text"]
+    else:
+        assert query_id == "detail_for_named_item"
+        assert evidence_targets == [{"label": label, "bbox_kind": "card"}]
+        assert trace["projected_evidence"]["card_bbox_map"][label] == out.evidence_gt.value[label]
+        assert str(out.answer_gt.value).startswith("Ref ")
+
+    example = _extract_prompt_json_example(out.prompt)
+    assert sorted(example.keys()) == ["answer", "evidence"]
+    assert isinstance(example["answer"], str)
+    assert isinstance(example["evidence"], dict)

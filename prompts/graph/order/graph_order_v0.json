@@ -118,14 +118,14 @@
     ],
     "bfs_kth_visit_label": [
       "Starting from row {source_label}, run breadth-first search using each row's neighbors from left to right. What label is visited at position {traversal_position}, counting from 1?",
-      "Use BFS from row {source_label}, reading neighbor lists left to right. Which label is the {traversal_position}th visit?",
+      "Use BFS from row {source_label}, reading neighbor lists left to right. Which label is visit number {traversal_position}?",
       "Beginning at row {source_label}, visit nodes by breadth-first search with neighbors in the displayed order. What label appears at position {traversal_position}?",
       "Run breadth-first traversal from row {source_label}. With ties broken by the left-to-right neighbor order, what label is visit number {traversal_position}?",
       "From row {source_label}, perform BFS according to the shown adjacency-list order. What node label is reached at visit position {traversal_position}?"
     ],
     "dfs_kth_visit_label": [
       "Starting from row {source_label}, run depth-first search using each row's neighbors from left to right. What label is visited at position {traversal_position}, counting from 1?",
-      "Use recursive DFS from row {source_label}, reading neighbor lists left to right. Which label is the {traversal_position}th visit?",
+      "Use recursive DFS from row {source_label}, reading neighbor lists left to right. Which label is visit number {traversal_position}?",
       "Beginning at row {source_label}, visit nodes by depth-first search with neighbors in the displayed order. What label appears at position {traversal_position}?",
       "Run depth-first traversal from row {source_label}. With ties broken by the left-to-right neighbor order, what label is visit number {traversal_position}?",
       "From row {source_label}, perform DFS according to the shown adjacency-list order. What node label is reached at visit position {traversal_position}?"

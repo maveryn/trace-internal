@@ -31,13 +31,20 @@ from ..shared.task_support import resolve_graph_named_variant, resolve_graph_ren
 from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
 
 
-TASK_ID = "task_graph__binary_tree__tree_operation_label"
+BST_TASK_ID = "task_graph__binary_tree__bst_path_operation_label"
+HEAP_TASK_ID = "task_graph__binary_tree__heap_property_violation_label"
 SCENE_ID = "binary_tree"
 
-SUPPORTED_SEARCH_TREE_OPERATION_QUERY_IDS: Tuple[str, ...] = (
+SUPPORTED_BST_PATH_OPERATION_QUERY_IDS: Tuple[str, ...] = (
     "bst_search_terminal_label",
     "bst_insert_parent_label",
+)
+SUPPORTED_HEAP_PROPERTY_VIOLATION_QUERY_IDS: Tuple[str, ...] = (
     "heap_property_violation_label",
+)
+SUPPORTED_SEARCH_TREE_OPERATION_QUERY_IDS: Tuple[str, ...] = (
+    *SUPPORTED_BST_PATH_OPERATION_QUERY_IDS,
+    *SUPPORTED_HEAP_PROPERTY_VIOLATION_QUERY_IDS,
 )
 
 
@@ -107,44 +114,56 @@ class _OperationSelection:
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("graph", "relation")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
+_BST_GEN_DEFAULTS, _BST_RENDER_DEFAULTS, _BST_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
+    task_id=BST_TASK_ID,
+)
+_HEAP_GEN_DEFAULTS, _HEAP_RENDER_DEFAULTS, _HEAP_PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+    task_id=HEAP_TASK_ID,
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_background_defaults(task_group="relation")
 POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_BST_COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=BST_TASK_ID)
+_HEAP_COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=HEAP_TASK_ID)
 
 
-def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
-    query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_id")
+def _resolve_query(
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    task_id: str,
+    gen_defaults: Mapping[str, Any],
+    supported_query_ids: Sequence[str],
+) -> _ResolvedQuery:
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_id")
     query_id, query_probs = resolve_graph_named_variant(
         query_rng,
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
+        gen_defaults=gen_defaults,
         explicit_key="query_id",
         weights_key="query_id_weights",
         balance_flag_key="balanced_query_id_sampling",
-        supported=SUPPORTED_SEARCH_TREE_OPERATION_QUERY_IDS,
+        supported=tuple(str(item) for item in supported_query_ids),
         instance_seed=int(instance_seed),
-        task_id=TASK_ID,
+        task_id=str(task_id),
         namespace="query_id",
     )
-    scene_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.scene_variant")
+    scene_rng = spawn_rng(int(instance_seed), f"{task_id}.scene_variant")
     scene_variant, scene_probs = resolve_graph_named_variant(
         scene_rng,
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
+        gen_defaults=gen_defaults,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
         supported=SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
         instance_seed=int(instance_seed),
-        task_id=TASK_ID,
+        task_id=str(task_id),
         namespace="scene_variant",
     )
-    lower = int(group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min))
-    upper = int(group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max))
+    lower = int(group_default(gen_defaults, "node_count_min", _DEFAULTS.node_count_min))
+    upper = int(group_default(gen_defaults, "node_count_max", _DEFAULTS.node_count_max))
     support = tuple(range(int(lower), int(upper) + 1))
     explicit_node_count = params.get("node_count")
     if explicit_node_count is not None:
@@ -155,33 +174,33 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         selection_index = resolve_selection_index(
             params=params,
             instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:node_count",
+            namespace=f"{task_id}:node_count",
         )
         node_count = int(support[int(selection_index % len(support))])
-    shape_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_shape_variant")
+    shape_rng = spawn_rng(int(instance_seed), f"{task_id}.node_shape_variant")
     node_shape_variant, shape_probs = resolve_graph_named_variant(
         shape_rng,
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
+        gen_defaults=gen_defaults,
         explicit_key="node_shape_variant",
         weights_key="node_shape_variant_weights",
         balance_flag_key="balanced_node_shape_variant_sampling",
         supported=SUPPORTED_NODE_SHAPE_VARIANTS,
         instance_seed=int(instance_seed),
-        task_id=TASK_ID,
+        task_id=str(task_id),
         namespace="node_shape_variant",
     )
-    color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.node_color_name")
+    color_rng = spawn_rng(int(instance_seed), f"{task_id}.node_color_name")
     node_color_name, color_probs = resolve_graph_named_variant(
         color_rng,
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
+        gen_defaults=gen_defaults,
         explicit_key="node_color_name",
         weights_key="node_color_name_weights",
         balance_flag_key="balanced_node_color_name_sampling",
         supported=SUPPORTED_NODE_COLOR_NAMES,
         instance_seed=int(instance_seed),
-        task_id=TASK_ID,
+        task_id=str(task_id),
         namespace="node_color_name",
     )
     return _ResolvedQuery(
@@ -242,14 +261,16 @@ def _bst_insert_path(nodes: Dict[str, Dict[str, Any]], key: int, *, max_depth: i
 def _sample_bst_nodes(
     instance_seed: int,
     *,
+    task_id: str,
+    gen_defaults: Mapping[str, Any],
     node_count: int,
     max_depth: int,
     max_attempts: int,
 ) -> Dict[str, Dict[str, Any]]:
-    key_min = int(group_default(_GEN_DEFAULTS, "key_min", _DEFAULTS.key_min))
-    key_max = int(group_default(_GEN_DEFAULTS, "key_max", _DEFAULTS.key_max))
+    key_min = int(group_default(gen_defaults, "key_min", _DEFAULTS.key_min))
+    key_max = int(group_default(gen_defaults, "key_max", _DEFAULTS.key_max))
     for attempt in range(max(1, int(max_attempts))):
-        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.bst.{attempt}")
+        rng = spawn_rng(int(instance_seed), f"{task_id}.bst.{attempt}")
         keys = _sample_unique_keys(rng, node_count=int(node_count), key_min=key_min, key_max=key_max)
         insertion_order = list(keys)
         rng.shuffle(insertion_order)
@@ -272,9 +293,10 @@ def _array_index_to_node_id(index: int) -> str:
 def _sample_heap_nodes(
     instance_seed: int,
     *,
+    task_id: str,
     node_count: int,
 ) -> Tuple[Dict[str, Dict[str, Any]], Tuple[str, str]]:
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.heap")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.heap")
     node_ids = [_array_index_to_node_id(index) for index in range(int(node_count))]
     base_values = {
         node_id: 12 + (len(node_id) * 18) + index
@@ -387,10 +409,10 @@ def _bst_search_path(nodes: Mapping[str, Mapping[str, Any]], target_key: int) ->
     return tuple(path)
 
 
-def _sample_missing_key(rng, *, nodes: Mapping[str, Mapping[str, Any]]) -> int:
+def _sample_missing_key(rng, *, nodes: Mapping[str, Mapping[str, Any]], gen_defaults: Mapping[str, Any]) -> int:
     existing = {int(node["key"]) for node in nodes.values()}
-    key_min = int(group_default(_GEN_DEFAULTS, "key_min", _DEFAULTS.key_min))
-    key_max = int(group_default(_GEN_DEFAULTS, "key_max", _DEFAULTS.key_max))
+    key_min = int(group_default(gen_defaults, "key_min", _DEFAULTS.key_min))
+    key_max = int(group_default(gen_defaults, "key_max", _DEFAULTS.key_max))
     candidates = [key for key in range(key_min, key_max + 1) if key not in existing]
     if not candidates:
         raise ValueError("no missing key candidate")
@@ -400,11 +422,17 @@ def _sample_missing_key(rng, *, nodes: Mapping[str, Mapping[str, Any]]) -> int:
 def _sample_operation(
     instance_seed: int,
     *,
+    task_id: str,
+    gen_defaults: Mapping[str, Any],
     query: _ResolvedQuery,
     max_attempts: int,
 ) -> Tuple[BinaryTreeSample, _OperationSelection]:
     if str(query.query_id) == "heap_property_violation_label":
-        nodes, (parent_id, child_id) = _sample_heap_nodes(int(instance_seed), node_count=int(query.node_count))
+        nodes, (parent_id, child_id) = _sample_heap_nodes(
+            int(instance_seed),
+            task_id=str(task_id),
+            node_count=int(query.node_count),
+        )
         sample = _make_sample(nodes)
         parent_label = str(nodes[str(parent_id)]["key"])
         child_label = str(nodes[str(child_id)]["key"])
@@ -419,15 +447,17 @@ def _sample_operation(
 
     nodes = _sample_bst_nodes(
         int(instance_seed),
+        task_id=str(task_id),
+        gen_defaults=gen_defaults,
         node_count=int(query.node_count),
-        max_depth=int(group_default(_GEN_DEFAULTS, "max_depth", _DEFAULTS.max_depth)),
+        max_depth=int(group_default(gen_defaults, "max_depth", _DEFAULTS.max_depth)),
         max_attempts=max(1, int(max_attempts)),
     )
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.operation.{query.query_id}")
+    rng = spawn_rng(int(instance_seed), f"{task_id}.operation.{query.query_id}")
     if str(query.query_id) == "bst_search_terminal_label" and rng.randrange(2):
         target_key = int(rng.choice([int(node["key"]) for node in nodes.values()]))
     else:
-        target_key = _sample_missing_key(rng, nodes=nodes)
+        target_key = _sample_missing_key(rng, nodes=nodes, gen_defaults=gen_defaults)
     path_ids = _bst_search_path(nodes, int(target_key))
     answer_node_id = str(path_ids[-1])
     sample = _make_sample(nodes)
@@ -449,13 +479,19 @@ def _build_prompt_json_examples() -> Tuple[str, str]:
     )
 
 
-def _build_complexity(*, sample: BinaryTreeSample, operation: _OperationSelection, query_id: str) -> Any:
+def _build_complexity(
+    *,
+    sample: BinaryTreeSample,
+    operation: _OperationSelection,
+    query_id: str,
+    complexity_weights: Mapping[str, float],
+) -> Any:
     node_norm = normalize_int_with_bounds(int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max))
     depth_norm = normalize_int_with_bounds(int(sample.max_depth), (2, _DEFAULTS.max_depth))
     path_norm = normalize_int_with_bounds(len(operation.evidence_labels), (2, _DEFAULTS.max_depth + 1))
     operation_load = 0.58 if str(query_id) == "heap_property_violation_label" else 0.72
     return build_graph_complexity(
-        weights=_COMPLEXITY_WEIGHTS,
+        weights=complexity_weights,
         components={
             "topology_reasoning": (0.45 * operation_load) + (0.35 * path_norm) + (0.20 * depth_norm),
             "visual_scan": (0.70 * node_norm) + (0.30 * path_norm),
@@ -465,21 +501,32 @@ def _build_complexity(*, sample: BinaryTreeSample, operation: _OperationSelectio
     )
 
 
-@register_task
-class GraphRelationSearchTreeOperationLabelTask:
-    """Answer label-valued BST and heap operation queries."""
+class _GraphRelationSearchTreeOperationLabelBaseTask:
+    """Shared implementation for label-valued search-tree operation queries."""
 
-    task_id = TASK_ID
+    task_id: str = ""
     domain = "graph"
     task_group = "relation"
+    supported_query_ids: Tuple[str, ...] = ()
+    _gen_defaults: Mapping[str, Any] = {}
+    _render_defaults: Mapping[str, Any] = {}
+    _prompt_defaults: Mapping[str, Any] = {}
+    _complexity_weights: Mapping[str, float] = {}
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query = _resolve_query(int(instance_seed), params=params)
+        task_id = str(self.task_id)
+        query = _resolve_query(
+            int(instance_seed),
+            params=params,
+            task_id=task_id,
+            gen_defaults=self._gen_defaults,
+            supported_query_ids=self.supported_query_ids,
+        )
         render_params = resolve_graph_render_params(
             params,
             instance_seed=int(instance_seed),
-            task_id=TASK_ID,
-            render_defaults=_RENDER_DEFAULTS,
+            task_id=task_id,
+            render_defaults=self._render_defaults,
             fallback_defaults=_DEFAULTS,
             node_color_name=str(query.node_color_name),
             node_shape_variant=str(query.node_shape_variant),
@@ -494,6 +541,8 @@ class GraphRelationSearchTreeOperationLabelTask:
         )
         sample, operation = _sample_operation(
             int(instance_seed),
+            task_id=task_id,
+            gen_defaults=self._gen_defaults,
             query=query,
             max_attempts=max(1, int(max_attempts)),
         )
@@ -516,10 +565,16 @@ class GraphRelationSearchTreeOperationLabelTask:
         answer_gt = TypedValue(type="string", value=str(operation.answer_label))
         evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
 
-        prompt_defaults = dict(_PROMPT_DEFAULTS)
+        prompt_defaults = dict(self._prompt_defaults)
         json_example, json_example_answer_only = _build_prompt_json_examples()
         target_key = "" if operation.target_key is None else str(operation.target_key)
         object_description_key = "object_description_heap" if str(query.query_id) == "heap_property_violation_label" else "object_description_bst"
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
+        evidence_hint = (
+            str(prompt_defaults[evidence_hint_key])
+            if evidence_hint_key in prompt_defaults
+            else str(prompt_defaults["evidence_hint"])
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -533,7 +588,7 @@ class GraphRelationSearchTreeOperationLabelTask:
                 "target_key": str(target_key),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(evidence_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -576,7 +631,7 @@ class GraphRelationSearchTreeOperationLabelTask:
 
         trace_payload = {
             "scene_ir": {
-                "task_id": TASK_ID,
+                "task_id": task_id,
                 "scene_id": SCENE_ID,
                 "scene_kind": "search_tree_operation_diagram",
                 "entities": [*node_entities, *edge_entities],
@@ -598,7 +653,7 @@ class GraphRelationSearchTreeOperationLabelTask:
                 },
             },
             "query_spec": {
-                "task_id": TASK_ID,
+                "task_id": task_id,
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
@@ -654,7 +709,7 @@ class GraphRelationSearchTreeOperationLabelTask:
             },
             "render_map": {"image_id": "img0", "anchors": {}},
             "execution_trace": {
-                "task_id": TASK_ID,
+                "task_id": task_id,
                 "scene_id": SCENE_ID,
                 "query_id": str(query.query_id),
                 "operation_kind": str(operation.operation_kind),
@@ -688,7 +743,12 @@ class GraphRelationSearchTreeOperationLabelTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=_build_complexity(sample=sample, operation=operation, query_id=str(query.query_id)),
+            complexity=_build_complexity(
+                sample=sample,
+                operation=operation,
+                query_id=str(query.query_id),
+                complexity_weights=self._complexity_weights,
+            ),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(query.query_id),
@@ -696,4 +756,31 @@ class GraphRelationSearchTreeOperationLabelTask:
         )
 
 
-__all__ = ["GraphRelationSearchTreeOperationLabelTask"]
+@register_task
+class GraphRelationBstPathOperationLabelTask(_GraphRelationSearchTreeOperationLabelBaseTask):
+    """Answer BST search and insert path-operation label queries."""
+
+    task_id = BST_TASK_ID
+    supported_query_ids = SUPPORTED_BST_PATH_OPERATION_QUERY_IDS
+    _gen_defaults = _BST_GEN_DEFAULTS
+    _render_defaults = _BST_RENDER_DEFAULTS
+    _prompt_defaults = _BST_PROMPT_DEFAULTS
+    _complexity_weights = _BST_COMPLEXITY_WEIGHTS
+
+
+@register_task
+class GraphRelationHeapPropertyViolationLabelTask(_GraphRelationSearchTreeOperationLabelBaseTask):
+    """Answer min-heap property violation label queries."""
+
+    task_id = HEAP_TASK_ID
+    supported_query_ids = SUPPORTED_HEAP_PROPERTY_VIOLATION_QUERY_IDS
+    _gen_defaults = _HEAP_GEN_DEFAULTS
+    _render_defaults = _HEAP_RENDER_DEFAULTS
+    _prompt_defaults = _HEAP_PROMPT_DEFAULTS
+    _complexity_weights = _HEAP_COMPLEXITY_WEIGHTS
+
+
+__all__ = [
+    "GraphRelationBstPathOperationLabelTask",
+    "GraphRelationHeapPropertyViolationLabelTask",
+]

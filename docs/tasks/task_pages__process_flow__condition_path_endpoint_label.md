@@ -11,7 +11,7 @@
 1. Branch metadata: `query_id`
 2. `query_id`: `condition_path_endpoint_label`
 3. `answer_gt.type`: `string`
-4. `evidence_gt.type`: `bbox_set`
+4. `evidence_gt.type`: `keyed_bbox_map`
 5. Scene contract:
    - the diagram has ordinary process arrows and labeled decision arrows,
    - the prompt gives the decision labels to follow,
@@ -19,11 +19,11 @@
    - the target answer is the exact visible step label after the final requested decision choice.
 
 ## 3) Evidence + trace contract
-1. Evidence is ordered path support: followed step boxes plus the used decision-label boxes.
+1. Evidence is compact keyed path support: `start_step` binds the starting step box, `first_decision_label` and `second_decision_label` bind the two used decision-arrow label boxes, `intermediate_step` binds the step reached after the first choice, and `endpoint_step` binds the final answer step box.
 2. `execution_trace.query.condition_labels` records the visible decision labels used by the prompt.
 3. `execution_trace.query.path_node_labels` records the symbolic path for audit.
 
 ## 4) Visual policy
 1. This is intentionally process-semantics traversal, not a graph shortest-path, reachability, cycle, or degree task.
 2. The renderer varies process domain, lanes, node labels, layout orientation, palette, and arrow-label vocabulary.
-3. All labels are short enough to remain readable in the generated scene review workbook.
+3. All labels are short enough to remain readable in the generated browser-review sidecars.

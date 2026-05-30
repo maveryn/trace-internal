@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.gui_render_params import resolve_gui_window_render_params
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
@@ -618,11 +619,11 @@ def _render_command_matrix_scene(
         max_size_px=int(render_params.body_font_size_px),
         bold=True,
     )
-    draw.text((title_bar[2] - 145.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px)))
+    draw_text_traced(draw,(title_bar[2] - 145.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px)), role="readout", required=False)
 
     workspace = (x1 + 18.0, title_bar[3] + 12.0, x2 - 18.0, y2 - 16.0)
     _rounded_rect(draw, workspace, radius=10, fill=theme.panel_fill, outline=theme.chrome_line)
-    draw.text((workspace[0] + 18.0, workspace[1] + 14.0), "Command Matrix", fill=theme.control_text, font=load_font(int(render_params.body_font_size_px), bold=True))
+    draw_text_traced(draw,(workspace[0] + 18.0, workspace[1] + 14.0), "Command Matrix", fill=theme.control_text, font=load_font(int(render_params.body_font_size_px), bold=True), role="readout", required=False)
 
     objects = sorted({str(control.object_label) for control in query.controls}, key=lambda value: next(control.row_index for control in query.controls if str(control.object_label) == value))
     actions = sorted({str(control.action_label) for control in query.controls}, key=lambda value: next(control.action_index for control in query.controls if str(control.action_label) == value))
@@ -840,11 +841,22 @@ def _render_command_matrix_scene(
     )
 
 
-def _prompt_json_examples() -> Tuple[str, str]:
-    answer_and_evidence = {
-        "evidence": [[290, 150, 480, 190], [70, 240, 270, 310], [290, 200, 480, 235], [290, 320, 480, 390]],
-        "answer": "G",
+def _prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    evidence = {
+        "action_cue_guide": [290, 150, 480, 190],
+        "object_row": [70, 240, 270, 310],
+        "action_code_header": [290, 200, 480, 235],
+        "target_command_cell": [290, 320, 480, 390],
     }
+    if str(query_id) == "dual_guide_command_label":
+        evidence = {
+            "action_cue_guide": [290, 150, 480, 190],
+            "object_cue_guide": [84, 248, 156, 302],
+            "object_row": [70, 240, 270, 310],
+            "action_code_header": [290, 200, 480, 235],
+            "target_command_cell": [290, 320, 480, 390],
+        }
+    answer_and_evidence = {"evidence": evidence, "answer": "G"}
     answer_only = {"answer": "G"}
     return (
         json.dumps(answer_and_evidence, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
@@ -865,7 +877,10 @@ def _build_complexity(query: _ResolvedQuery) -> TaskComplexity:
     if missing:
         raise ValueError(f"GUI command-intent complexity is missing active criteria: {missing}")
     total_weight = sum(float(value) for value in _COMPLEXITY_WEIGHTS.values())
-    score = sum(float(_COMPLEXITY_WEIGHTS[key]) * float(components[key]) for key in _COMPLEXITY_WEIGHTS) / float(total_weight)
+    score = (
+        sum(float(_COMPLEXITY_WEIGHTS[key]) * float(components[key]) for key in _COMPLEXITY_WEIGHTS)
+        / float(total_weight)
+    )
     return TaskComplexity(
         complexity_score=_clamp_unit(score),
         complexity_components={str(key): float(_clamp_unit(components[str(key)])) for key in _COMPLEXITY_WEIGHTS},
@@ -918,9 +933,36 @@ class PagesRelationCommandIntentTargetLabelTask:
             )
             if str(support_id)
         )
-        evidence_bboxes = [list(rendered.support_bboxes_by_id[str(support_id)]) for support_id in evidence_support_ids] + [target_bbox]
+        evidence_bbox_map: Dict[str, List[float]] = {
+            "action_cue_guide": list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
+            "object_row": list(rendered.support_bboxes_by_id[str(query.row_support_id)]),
+            "action_code_header": list(rendered.support_bboxes_by_id[str(query.action_support_id)]),
+            "target_command_cell": list(target_bbox),
+        }
+        if str(query.object_guide_support_id):
+            evidence_bbox_map = {
+                "action_cue_guide": list(rendered.support_bboxes_by_id[str(query.guide_support_id)]),
+                "object_cue_guide": list(rendered.support_bboxes_by_id[str(query.object_guide_support_id)]),
+                "object_row": list(rendered.support_bboxes_by_id[str(query.row_support_id)]),
+                "action_code_header": list(rendered.support_bboxes_by_id[str(query.action_support_id)]),
+                "target_command_cell": list(target_bbox),
+            }
+        evidence_role_support_ids: Dict[str, str] = {
+            "action_cue_guide": str(query.guide_support_id),
+            "object_row": str(query.row_support_id),
+            "action_code_header": str(query.action_support_id),
+            "target_command_cell": str(query.target_control_id),
+        }
+        if str(query.object_guide_support_id):
+            evidence_role_support_ids = {
+                "action_cue_guide": str(query.guide_support_id),
+                "object_cue_guide": str(query.object_guide_support_id),
+                "object_row": str(query.row_support_id),
+                "action_code_header": str(query.action_support_id),
+                "target_command_cell": str(query.target_control_id),
+            }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -931,12 +973,12 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                f"evidence_hint_{query.query_id}",
                 "answer_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = _prompt_json_examples()
+        json_example, json_example_answer_only = _prompt_json_examples(str(query.query_id))
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -954,7 +996,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "instruction_text": str(query.instruction_text),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[f"evidence_hint_{query.query_id}"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -965,7 +1007,9 @@ class PagesRelationCommandIntentTargetLabelTask:
 
         control_records = [dict(record) for record in rendered.control_records]
         support_records = [dict(record) for record in rendered.support_records]
-        target_record = next(record for record in control_records if str(record["control_id"]) == str(query.target_control_id))
+        target_record = next(
+            record for record in control_records if str(record["control_id"]) == str(query.target_control_id)
+        )
         evidence_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
             for support_id in evidence_support_ids
@@ -1010,6 +1054,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                     "guide_support_id": str(query.guide_support_id),
                     "object_guide_support_id": str(query.object_guide_support_id),
                     "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                    "evidence_role_support_ids": dict(evidence_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -1074,6 +1119,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -1094,6 +1140,7 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "object_guide_support_id": str(query.object_guide_support_id),
                 "guide_order": [int(value) for value in query.guide_order],
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "evidence_support_records": [dict(record) for record in evidence_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
@@ -1106,13 +1153,15 @@ class PagesRelationCommandIntentTargetLabelTask:
                 "question_format": "gui_command_intent_target_label",
             },
             "witness_symbolic": {
-                "type": "bbox_set",
+                "type": "keyed_bbox_map",
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": list(evidence_bboxes),
+                "value": dict(evidence_bbox_map),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_bbox_map),
             },
         }
 

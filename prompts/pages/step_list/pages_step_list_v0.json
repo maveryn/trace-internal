@@ -1,0 +1,87 @@
+{
+  "bundle_id": "pages_step_list_v0",
+  "schema_version": "v0",
+  "task_templates": {
+    "step_lookup_query": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "required_slots_by_key": {
+    "scene:step_list": [
+      "object_description"
+    ],
+    "query:nth_step_title": [
+      "step_reference"
+    ],
+    "query:nth_step_detail": [
+      "step_reference"
+    ],
+    "query:step_after_named_step": [
+      "source_step_title"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  },
+  "scene_templates": {
+    "step_list": [
+      "The image shows {object_description}.",
+      "The page shows {object_description}.",
+      "This page shows {object_description}.",
+      "The figure shows {object_description}.",
+      "The visual shows {object_description}."
+    ]
+  },
+  "query_templates": {
+    "nth_step_title": [
+      "What title is shown on the {step_reference} step?",
+      "Read the title on the {step_reference} step.",
+      "What is the visible title for the {step_reference} step?",
+      "Find the {step_reference} step. What title is printed on it?",
+      "Which title appears on the {step_reference} step?"
+    ],
+    "nth_step_detail": [
+      "What detail text is shown in the {step_reference} step?",
+      "Read the detail line on the {step_reference} step.",
+      "What is the visible detail text for the {step_reference} step?",
+      "Find the {step_reference} step. What detail is printed on it?",
+      "Which detail line appears in the {step_reference} step?"
+    ],
+    "step_after_named_step": [
+      "What step title comes immediately after {source_step_title}?",
+      "Find {source_step_title}. What is the title of the next step?",
+      "Which step title appears directly after {source_step_title}?",
+      "Read the title on the step immediately following {source_step_title}.",
+      "After {source_step_title}, what title is printed on the next numbered step?"
+    ]
+  },
+  "allow_empty_task_templates": true
+}

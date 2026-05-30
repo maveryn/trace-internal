@@ -44,10 +44,12 @@
 8. `projected_evidence` includes the public `point_sequence` and supporting transition-label bboxes for auditing.
 
 ## 5) Visual Policy
-1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
+1. Rendering uses the shared graph light-panel style and role-appropriate shared font pool from `configs/domains/graph/base.yaml`.
 2. State layout, whole-image transform, edge routing, and node color are visual variation only.
-3. The start state is haloed and has an incoming start arrow; accepting states have an inner ring but are not queried in this task.
-4. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
+3. Optional shared graph context text can appear as non-answer visual context, with state evidence projected after final layout jitter.
+4. State labels, transition labels, and the start marker use readable text styles with recorded contrast metadata.
+5. The start state is haloed and has an incoming start arrow; accepting states have an inner ring but are not queried in this task.
+6. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.

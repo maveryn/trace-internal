@@ -46,9 +46,7 @@ def test_graph_path_shortest_path_length_contract_matches_trace() -> None:
     assert out.evidence_gt.type == "point_sequence"
     assert trace["scene_ir"]["scene_kind"] == "graph_shortest_path_length"
     assert execution["question_format"] == "count_edges_in_unique_shortest_path"
-    assert out.query_id == "default"
     assert out.query_id == "undirected_shortest_path_length"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_shortest_path_length"
     assert execution["internal_query_id"] == "shortest_path_length"
     assert execution["graph_directionality"] == "undirected"
@@ -115,9 +113,7 @@ def test_graph_path_directed_shortest_path_contract_matches_trace() -> None:
     scene_entities = trace["scene_ir"]["entities"]
     edge_entities = [entity for entity in scene_entities if entity["entity_kind"] == "graph_edge"]
 
-    assert out.query_id == "default"
     assert out.query_id == "directed_shortest_path_length"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "directed_shortest_path_length"
     assert execution["internal_query_id"] == "directed_shortest_path_length"
     assert execution["graph_directionality"] == "directed"
@@ -208,7 +204,6 @@ def test_graph_path_shortest_path_supports_numeric_labels_and_named_colors() -> 
 def test_graph_path_shortest_path_balanced_sampling_defaults() -> None:
     task = GraphPathShortestPathLengthTask()
     query_ids: Counter[str] = Counter()
-    query_ids: Counter[str] = Counter()
     target_lengths: Counter[int] = Counter()
     target_lengths_by_variant: dict[str, Counter[int]] = {}
     layout_variants: Counter[str] = Counter()
@@ -225,7 +220,6 @@ def test_graph_path_shortest_path_balanced_sampling_defaults() -> None:
         )
         execution = out.trace_payload["execution_trace"]
         query_ids[str(execution["query_id"])] += 1
-        query_ids[str(execution["query_id"])] += 1
         target_lengths[int(execution["target_shortest_path_length"])] += 1
         target_lengths_by_variant.setdefault(str(execution["query_id"]), Counter())[
             int(execution["target_shortest_path_length"])
@@ -240,7 +234,6 @@ def test_graph_path_shortest_path_balanced_sampling_defaults() -> None:
         assert 3 <= int(execution["target_shortest_path_length"]) <= 7
         assert int(execution["attachment_count"]) >= 1
         assert int(out.answer_gt.value) == int(execution["target_shortest_path_length"])
-    assert set(query_ids.keys()) == {"default"}
     assert set(query_ids.keys()) == {"undirected_shortest_path_length", "directed_shortest_path_length"}
     assert set(target_lengths.keys()) == {3, 4, 5, 6, 7}
     assert {variant: set(lengths.keys()) for variant, lengths in target_lengths_by_variant.items()} == {

@@ -70,8 +70,7 @@
    - `pixel_point_sequence`
    - `pixel_bbox_set`
 6. `execution_trace` records:
-   - `query_id`
-   - `query_id` (always `default`)
+   - `query_id` (the concrete public query branch)
    - `scene_variant`
    - `query_label`
    - `target_position`

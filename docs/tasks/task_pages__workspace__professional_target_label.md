@@ -6,7 +6,7 @@
 3. Task id: `task_pages__workspace__professional_target_label`
 4. Objective: identify the labeled target control matching a visible cue, context row, and coded header in a professional application workspace.
 5. Answer type: `option_letter`
-6. Evidence type: ordered `bbox_set`
+6. Evidence type: role-keyed `keyed_bbox_map`
 
 ## Variants
 1. `toolbar_palette_control_label`
@@ -24,8 +24,9 @@
 
 ## Answer And Evidence
 1. Answer is the candidate label of the target control.
-2. Evidence contains four boxes in order: guide card, context row, coded header, target control.
-3. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
+2. Evidence contains four query-specific role-keyed boxes: the visible cue card, the matched context row, the coded header, and the target control.
+3. Role keys are derived from the query branch, for example `tool_cue_card`, `tool_context_row`, `tool_code_header`, `target_toolbar_palette_control`; `ide_cue_card`, `code_target_row`, `ide_code_header`, `target_code_workspace_control`; or `dialog_cue_card`, `dialog_location_row`, `dialog_code_header`, `target_file_dialog_control`.
+4. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
 
 ## Prompt
 1. `prompt_bundle_id`: `pages_relation_v0`

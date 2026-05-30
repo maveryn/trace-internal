@@ -19,6 +19,7 @@
 6. Scene contract:
    - one cycle diagram panel is shown on a light background,
    - the panel contains `5..12` labeled stages arranged around a directed ring,
+   - non-answer paragraph-style context notes may appear in safe side margins outside the cycle panel,
    - visible arrows establish the cycle direction, which may be clockwise or counterclockwise,
    - the prompt asks for the exact visible stage that is `k` steps before or after one queried stage,
    - the answer is the exact visible target-stage label.
@@ -90,7 +91,8 @@
    - short visible stage labels,
    - one consistent ring layout,
    - clear arrow direction around the cycle,
-   - no extra direction-label text beyond the panel chrome and visible arrows.
+   - no extra direction-label text beyond the panel chrome and visible arrows,
+   - paragraph-style margin notes are non-semantic distractors and must not overlap the panel, answer stage, or evidence.
 3. The first cycle scene variant is `cycle_ring`, which keeps one reusable circular stage layout for both `before` and `after` queries.
 4. Layout reasoning should stay local:
    - the prompt references one visible stage label and one visible step count,

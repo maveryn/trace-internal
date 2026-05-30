@@ -18,10 +18,22 @@ from trace.tasks.pages.process_flow.diagram_tasks import (
 
 def _assert_bboxes_inside_image(out) -> None:
     width, height = out.image.size
-    for bbox in out.evidence_gt.value:
+    evidence_value = out.evidence_gt.value
+    bboxes = evidence_value.values() if isinstance(evidence_value, dict) else evidence_value
+    for bbox in bboxes:
         x0, y0, x1, y1 = [float(value) for value in bbox]
         assert 0.0 <= x0 <= x1 <= float(width)
         assert 0.0 <= y0 <= y1 <= float(height)
+
+
+def _assert_point_pairs_inside_image(out) -> None:
+    width, height = out.image.size
+    for point_pair in out.evidence_gt.value:
+        assert len(point_pair) == 2
+        for point in point_pair:
+            x, y = [float(value) for value in point]
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
 
 
 def test_pages_process_flow_tasks_are_registered_in_public_taxonomy() -> None:
@@ -42,7 +54,6 @@ def test_pages_process_flow_filtered_node_count_contract() -> None:
         expected = [trace["render_map"]["node_bboxes_px"][node_id] for node_id in evidence_ids]
 
         assert out.scene_id == "process_flow"
-        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
         assert out.evidence_gt.type == "bbox_set"
@@ -59,18 +70,26 @@ def test_pages_process_flow_condition_path_endpoint_contract() -> None:
     trace = out.trace_payload
     query = trace["execution_trace"]["query"]
     render_map = trace["render_map"]
-    expected = []
-    for node_id in query["evidence_node_ids"]:
-        expected.append(render_map["node_bboxes_px"][str(node_id)])
-    for edge_id in query["evidence_edge_label_ids"]:
-        expected.append(render_map["edge_label_bboxes_px"][str(edge_id)])
+    expected = {}
+    for role in query["evidence_roles"]:
+        if str(role["kind"]) == "node":
+            expected[str(role["key"])] = render_map["node_bboxes_px"][str(role["id"])]
+        else:
+            expected[str(role["key"])] = render_map["edge_label_bboxes_px"][str(role["id"])]
 
     assert out.scene_id == "process_flow"
-    assert out.query_id == "default"
     assert out.query_id == "condition_path_endpoint_label"
     assert out.answer_gt.type == "string"
+    assert out.evidence_gt.type == "keyed_bbox_map"
     assert str(out.answer_gt.value) == str(query["answer"])
     assert out.evidence_gt.value == expected
+    assert list(out.evidence_gt.value) == [
+        "start_step",
+        "first_decision_label",
+        "intermediate_step",
+        "second_decision_label",
+        "endpoint_step",
+    ]
     assert len(query["condition_labels"]) == 2
     for label in query["condition_labels"]:
         assert f'"{label}"' in out.prompt
@@ -84,16 +103,16 @@ def test_pages_process_flow_actor_handoff_count_contract() -> None:
         trace = out.trace_payload
         query = trace["execution_trace"]["query"]
         evidence_ids = [str(item) for item in query["evidence_edge_ids"]]
-        expected = [trace["render_map"]["edge_bboxes_px"][edge_id] for edge_id in evidence_ids]
+        expected = [trace["render_map"]["edge_point_pairs_px"][edge_id] for edge_id in evidence_ids]
 
         assert out.scene_id == "process_flow"
-        assert out.query_id == "default"
         assert out.query_id == query_id
         assert out.answer_gt.type == "integer"
+        assert out.evidence_gt.type == "point_pair_set"
         assert int(out.answer_gt.value) == int(query["answer"])
         assert len(out.evidence_gt.value) == int(out.answer_gt.value)
         assert out.evidence_gt.value == expected
-        _assert_bboxes_inside_image(out)
+        _assert_point_pairs_inside_image(out)
 
 
 def test_pages_process_flow_generation_is_deterministic() -> None:

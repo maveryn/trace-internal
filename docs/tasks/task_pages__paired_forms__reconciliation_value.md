@@ -23,11 +23,11 @@
    - item codes are unique within one instance,
    - receiving-slip rows are shuffled relative to purchase-order rows so row matching must use item codes.
 6. Generation guarantees:
-   - `item_count` is always between `8` and `12`,
+   - `item_count` is always between `6` and `9`,
    - quantities are two-digit integers by default,
-   - at least two item rows have a shortfall,
-   - at least two item rows have an overage,
-   - at least four item rows differ between forms,
+   - at least one item row has a shortfall,
+   - at least one item row has an overage,
+   - `3..5` item rows differ between forms,
    - the computed answer is positive and not equal to a visible quantity or unit value.
 
 ## 3) Prompt Contract
@@ -44,18 +44,15 @@
 7. Prompt-facing answer is the computed integer.
 
 ## 4) Evidence + Trace Contract
-1. Prompt-facing evidence is a `bbox_set`:
-   - `total_amount_delta`: for each mismatched row, purchase-order code, ordered quantity, receiving-slip code, received quantity, and purchase-order unit value,
-   - `shortfall_minus_overage_value`: for each mismatched row, purchase-order code, ordered quantity, receiving-slip code, received quantity, and purchase-order unit value,
-   - `sum_absolute_quantity_differences`: for each mismatched row, purchase-order code, ordered quantity, receiving-slip code, and received quantity.
+1. Prompt-facing evidence is a `bbox_set` containing the full receiving-slip row box for each item whose received quantity differs from the matching purchase-order quantity.
 2. `render_map` includes panel, title, header-value, cell-value, and row bboxes.
-3. `execution_trace` records item specs, answer value, item-count and value ranges, shortfall item ids, overage item ids, mismatch item ids, and ordered evidence bbox ids.
-4. `witness_symbolic` stores the ordered cell bbox ids; `projected_evidence` stores the final bbox set used by the verifier.
+3. `execution_trace` records item specs, answer value, item-count and value ranges, shortfall item ids, overage item ids, mismatch item ids, row-level evidence bbox ids, and private supporting cell bbox ids for audit.
+4. `witness_symbolic` stores the receiving row bbox ids; `projected_evidence` stores the final unordered bbox set used by the verifier.
 
 ## 5) Visual Policy
 1. The scaffold is document-like: two separate forms with headers, titles, and matched line-item sections, not a plain row/column data-display table.
 2. Text stays short and typed: item codes, short item names, two-digit quantities, and two-digit unit values.
-3. Evidence stays on the cells needed for matching and computing, not on full forms or row backgrounds.
+3. Evidence stays on the mismatched receiving-slip rows, not on full forms, headers, or individual answer labels.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.

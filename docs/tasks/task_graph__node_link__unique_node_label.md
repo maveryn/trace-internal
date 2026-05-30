@@ -12,7 +12,7 @@
 2. `query_id`: `unique_neighbor_label`, `unique_successor_label`, or `unique_predecessor_label`
 3. Supported `graph_directionality`: `undirected|directed`
 4. `answer_gt.type`: `string`
-5. `evidence_gt.type`: `bbox_set`
+5. `evidence_gt.type`: `point_set`
 6. Scene contract:
    - one single-panel labeled node-link graph,
    - no self-loops or multi-edges,
@@ -31,27 +31,27 @@
 3. `task_key`: `unique_node_label_query`
 4. Modes: `answer_only`, `answer_and_evidence`
 5. Answer-only JSON shape: `{"answer":"B"}`
-6. Answer+evidence JSON shape: `{"evidence":[[280,164,326,210]],"answer":"B"}`
-7. Prompt-facing evidence is one pixel-space bbox around the answer node.
+6. Answer+evidence JSON shape: `{"evidence":[[303,187]],"answer":"B"}`
+7. Prompt-facing evidence is one pixel-space point at the center of the answer node.
 8. When `label_variant=named`, prompt references to queried node labels are quoted.
 
 ## 4) Evidence + Trace Contract
-1. Prompt-facing evidence is a one-item `bbox_set` around the answer node.
+1. Prompt-facing evidence is a one-item `point_set` at the answer-node center.
 2. `answer_gt.value` equals `execution_trace.answer_label`.
 3. `execution_trace.query_label` records the queried node.
 4. `execution_trace.supporting_edge` records the relation edge connecting the query node and answer node.
 5. `scene_ir.entities` stores node geometry, edge geometry, `is_query_node`, `is_answer_node`, and `is_supporting_edge`.
-6. `projected_evidence` includes `bbox_set` and `pixel_bbox_set`.
+6. `projected_evidence` includes `point_set`, `pixel_point_set`, and trace/debug `pixel_bbox_set`.
 
 ## 5) Visual Policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.
 2. Node label format, edge routing, glyph style, named node color, layout transform, and layout are visual variation only.
-3. The queried node is visually haloed and the single supporting relation edge is slightly emphasized; the answer is still the opposite node label, and evidence remains the answer-node bbox.
+3. The queried node is visually haloed and the single supporting relation edge is slightly emphasized; the answer is still the opposite node label, and evidence remains the answer-node center point.
 4. Post-render graph noise follows the graph-domain coordinate-preserving noise policy.
 
 ## 6) Determinism + Constraints
 1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and evidence come from the same finalized topology and rendered node bbox.
+2. Answers and evidence come from the same finalized topology and rendered node center.
 3. No semantic auto-relaxation: failures do not weaken graph directionality, uniqueness, or label constraints.
 
 ## 7) Complexity + Tests

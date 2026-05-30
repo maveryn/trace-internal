@@ -36,9 +36,6 @@ generation:
       branch_count_max: 8
       child_count_min: 5
       child_count_max: 8
-    task_pages__concept_map__filtered_node_count:
-      child_count_min: 4
-      child_count_max: 8
 
 rendering:
   shared:
@@ -87,7 +84,7 @@ prompt:
     integer_answer_hint: set "answer" to the requested integer count
     label_answer_hint: set "answer" to the exact visible child-item label as a string
     evidence_hint_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted child-item nodes
-    evidence_hint_label: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the parent branch and answer child-item node
+    evidence_hint_label: set "evidence" to an object mapping parent_branch and answer_child to [x0,y0,x1,y1] pixel bounding boxes
 
 visual:
   background:

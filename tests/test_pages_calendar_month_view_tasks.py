@@ -8,8 +8,13 @@ from trace.core.seed import hash64
 from trace.tasks.pages.calendar.month_view import (
     PagesCalendarMarkedDayClassCountTask,
     PagesCalendarWeekdayOccurrenceDateTask,
+    SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES,
+    SUPPORTED_PAGE_CALENDAR_TITLE_MODES,
 )
-from trace.tasks.shared.time_artifact_style import SUPPORTED_TIME_ARTIFACT_COLOR_NAMES, SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS
+from trace.tasks.shared.time_artifact_style import (
+    SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
+    SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
+)
 from tests.helpers import extract_prompt_json_example
 
 
@@ -29,6 +34,8 @@ def test_pages_calendar_month_view_contract_matches_trace() -> None:
                 "scene_variant": scene_variant,
                 "style_variant": style_variants[scene_index],
                 "accent_color_name": accent_colors[scene_index],
+                "layout_mode": "left_with_side_note" if scene_index == 0 else "top_with_bottom_note",
+                "title_mode": "none" if scene_index == 0 else "generic",
             }
             if marked_day_class is not None:
                 params["marked_day_class"] = marked_day_class
@@ -42,9 +49,11 @@ def test_pages_calendar_month_view_contract_matches_trace() -> None:
 
             assert out.answer_gt.type == "integer"
             assert out.evidence_gt.type == "bbox_set"
-            expected_source_variant = "count_marked_day_class" if marked_day_class is not None else "date_of_weekday_occurrence"
-            assert out.query_id == "default"
-            assert str(execution["query_id"]) == "default"
+            expected_source_variant = (
+                "count_marked_day_class"
+                if marked_day_class is not None
+                else "date_of_weekday_occurrence"
+            )
             assert str(execution["source_query_id"]) == expected_source_variant
             if marked_day_class is not None:
                 assert out.query_id == f"count_marked_{marked_day_class}_days"
@@ -54,7 +63,14 @@ def test_pages_calendar_month_view_contract_matches_trace() -> None:
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(execution["style_variant"]) == str(style_variants[scene_index])
             assert str(execution["accent_color_name"]) == str(accent_colors[scene_index])
+            assert str(execution["layout_mode"]) == str(params["layout_mode"])
+            assert str(execution["title_mode"]) == str(params["title_mode"])
+            assert str(execution["month_name"]) not in out.prompt
+            assert str(execution["year"]) not in out.prompt
             assert trace["scene_ir"]["scene_kind"] == "pages_month_calendar"
+            panel_bbox = trace["render_map"]["calendar_panel_bbox_px"]
+            assert 0 <= float(panel_bbox[0]) < float(panel_bbox[2]) <= 860
+            assert 0 <= float(panel_bbox[1]) < float(panel_bbox[3]) <= 760
             assert 4 <= int(execution["row_count"]) <= 6
             assert 28 <= int(execution["days_in_month"]) <= 31
             assert set(out.complexity.complexity_components.keys()) == {
@@ -123,6 +139,8 @@ def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> No
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
     accent_color_names: Counter[str] = Counter()
+    layout_modes: Counter[str] = Counter()
+    title_modes: Counter[str] = Counter()
     row_counts: Counter[int] = Counter()
     for task in tasks:
         for index in range(90):
@@ -138,6 +156,8 @@ def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> No
             scene_variants[str(execution["scene_variant"])] += 1
             style_variants[str(execution["style_variant"])] += 1
             accent_color_names[str(execution["accent_color_name"])] += 1
+            layout_modes[str(execution["layout_mode"])] += 1
+            title_modes[str(execution["title_mode"])] += 1
             row_counts[int(execution["row_count"])] += 1
 
     assert set(query_ids.keys()) == {
@@ -148,4 +168,6 @@ def test_pages_calendar_month_view_balanced_sampling_defaults_cover_axes() -> No
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
     assert set(accent_color_names.keys()) == set(SUPPORTED_TIME_ARTIFACT_COLOR_NAMES)
+    assert set(layout_modes.keys()) == set(SUPPORTED_PAGE_CALENDAR_LAYOUT_MODES)
+    assert set(title_modes.keys()) == set(SUPPORTED_PAGE_CALENDAR_TITLE_MODES)
     assert set(row_counts.keys()).issubset({4, 5, 6})

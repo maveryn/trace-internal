@@ -405,6 +405,24 @@ def _direction_between(source: Cell, target: Cell) -> str:
     raise ValueError(f"route cells are not adjacent: {source} -> {target}")
 
 
+def _format_direction_steps(directions: Sequence[str]) -> str:
+    """Return concise direction text while preserving step order."""
+
+    formatted: list[str] = []
+    index = 0
+    while index < len(directions):
+        direction = str(directions[index])
+        count = 1
+        while index + count < len(directions) and str(directions[index + count]) == direction:
+            count += 1
+        if count == 1:
+            formatted.append(direction)
+        else:
+            formatted.append(f"{direction} {count} times")
+        index += count
+    return ", then ".join(formatted)
+
+
 def _ordinal(value: int) -> str:
     if 10 <= int(value) % 100 <= 20:
         suffix = "th"
@@ -543,7 +561,7 @@ def build_map_navigation_dataset(
         directions = [_direction_between(source, target) for source, target in zip(route, route[1:])]
         answer_label = str(route_labels[-1])
         evidence_landmark_bbox_ids = [str(lookup[landmark_id]["landmark_bbox_id"]) for landmark_id in route_landmark_ids]
-        direction_text = ", then ".join(str(direction) for direction in directions)
+        direction_text = _format_direction_steps(directions)
         question_text = (
             f"Starting at \"{route_labels[0]}\", follow the map directions to the next labeled landmark each time: "
             f"{direction_text}. What landmark do you reach? Return the exact landmark label."

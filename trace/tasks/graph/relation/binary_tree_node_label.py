@@ -13,10 +13,17 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.config_defaults import group_default, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import (
+    group_default,
+    split_generation_rendering_prompt_defaults,
+)
 from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
+from ...shared.prompt_variants import (
+    PROMPT_OUTPUT_MODES,
+    build_prompt_trace_artifacts,
+    render_task_prompt_variants,
+)
 from ..shared.binary_tree_scene import (
     SUPPORTED_BINARY_TREE_SCENE_VARIANTS,
     BinaryTreeSample,
@@ -24,13 +31,23 @@ from ..shared.binary_tree_scene import (
     render_binary_tree_scene,
     sample_binary_tree_for_traversal_query,
 )
-from ..shared.complexity import build_graph_complexity, normalize_int_with_bounds, resolve_graph_complexity_weights
+from ..shared.complexity import (
+    build_graph_complexity,
+    normalize_int_with_bounds,
+    resolve_graph_complexity_weights,
+)
 from ..shared.graph_scene import SUPPORTED_NODE_SHAPE_VARIANTS
 from ..shared.graph_sampling import SUPPORTED_NODE_LINK_LABEL_VARIANTS
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
-from ..shared.visual_defaults import load_graph_background_defaults, load_graph_noise_defaults
-
+from ..shared.task_support import (
+    format_graph_prompt_label,
+    resolve_graph_named_variant,
+    resolve_graph_render_params,
+)
+from ..shared.visual_defaults import (
+    load_graph_background_defaults,
+    load_graph_noise_defaults,
+)
 
 TASK_ID = "task_graph__binary_tree__node_relation_label"
 SCENE_ID = "binary_tree"
@@ -42,6 +59,14 @@ SUPPORTED_BINARY_TREE_RELATION_QUERY_IDS: Tuple[str, ...] = (
     "sibling_label",
     "lowest_common_ancestor_label",
 )
+
+BINARY_TREE_RELATION_EVIDENCE_ROLES: Dict[str, Tuple[str, ...]] = {
+    "parent_label": ("child", "parent"),
+    "left_child_label": ("parent", "left_child"),
+    "right_child_label": ("parent", "right_child"),
+    "sibling_label": ("node", "sibling"),
+    "lowest_common_ancestor_label": ("node_a", "node_b", "lowest_common_ancestor"),
+}
 
 
 @dataclass(frozen=True)
@@ -109,13 +134,19 @@ class _RelationSelection:
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("graph", "relation")
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
-    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id=TASK_ID,
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
+    split_generation_rendering_prompt_defaults(
+        _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
+        task_id=TASK_ID,
+    )
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_background_defaults(task_group="relation")
-POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(task_group="relation", apply_prob=0.5)
-_COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_graph_noise_defaults(
+    task_group="relation", apply_prob=0.5
+)
+_COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(
+    _TASK_GROUP_DEFAULTS, task_id=TASK_ID
+)
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -268,7 +299,11 @@ def _choose_relation(
                 continue
             parent = node_by_id[str(node.parent_id)]
             if parent.left_id is not None and parent.right_id is not None:
-                sibling_id = parent.right_id if str(parent.left_id) == str(node.node_id) else parent.left_id
+                sibling_id = (
+                    parent.right_id
+                    if str(parent.left_id) == str(node.node_id)
+                    else parent.left_id
+                )
                 candidates.append((node, node_by_id[str(sibling_id)]))
         if not candidates:
             raise ValueError("no sibling candidates")
@@ -288,7 +323,9 @@ def _choose_relation(
             lca_id = _lowest_common_ancestor(str(node_a.node_id), str(node_b.node_id))
             if lca_id in (str(node_a.node_id), str(node_b.node_id)):
                 continue
-            if len(str(node_a.node_id)) <= len(lca_id) or len(str(node_b.node_id)) <= len(lca_id):
+            if len(str(node_a.node_id)) <= len(lca_id) or len(
+                str(node_b.node_id)
+            ) <= len(lca_id):
                 continue
             candidates_lca.append((node_a, node_b, node_by_id[str(lca_id)]))
     if not candidates_lca:
@@ -314,11 +351,25 @@ def _sample_relation_tree(
         try:
             sample = sample_binary_tree_for_traversal_query(
                 hash64(int(instance_seed), f"{TASK_ID}.tree", int(attempt)),
-                node_count_min=int(group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)),
-                node_count_max=int(group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max)),
-                max_depth=int(group_default(_GEN_DEFAULTS, "max_depth", _DEFAULTS.max_depth)),
+                node_count_min=int(
+                    group_default(
+                        _GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min
+                    )
+                ),
+                node_count_max=int(
+                    group_default(
+                        _GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max
+                    )
+                ),
+                max_depth=int(
+                    group_default(_GEN_DEFAULTS, "max_depth", _DEFAULTS.max_depth)
+                ),
                 label_variant=str(query.label_variant),
-                label_max_chars=int(group_default(_GEN_DEFAULTS, "label_max_chars", _DEFAULTS.label_max_chars)),
+                label_max_chars=int(
+                    group_default(
+                        _GEN_DEFAULTS, "label_max_chars", _DEFAULTS.label_max_chars
+                    )
+                ),
                 max_attempts=max(20, int(max_attempts)),
             )
             relation = _choose_relation(
@@ -333,23 +384,49 @@ def _sample_relation_tree(
     raise ValueError(f"could not sample binary-tree relation instance: {last_error}")
 
 
-def _build_prompt_json_examples() -> Tuple[str, str]:
+def _build_prompt_json_examples(query_id: str) -> Tuple[str, str]:
+    example_boxes = (
+        [156, 124, 204, 172],
+        [470, 430, 520, 480],
+        [250, 250, 298, 298],
+    )
+    evidence = {
+        str(role): list(box)
+        for role, box in zip(
+            BINARY_TREE_RELATION_EVIDENCE_ROLES[str(query_id)],
+            example_boxes,
+        )
+    }
     return (
-        json.dumps({"evidence": [[156, 124, 204, 172], [470, 430, 520, 480]], "answer": "M"}, separators=(",", ":")),
+        json.dumps(
+            {
+                "evidence": evidence,
+                "answer": "M",
+            },
+            separators=(",", ":"),
+        ),
         json.dumps({"answer": "M"}, separators=(",", ":")),
     )
 
 
 def _build_complexity(*, sample: BinaryTreeSample, query_id: str) -> Any:
-    node_norm = normalize_int_with_bounds(int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max))
-    depth_norm = normalize_int_with_bounds(int(sample.max_depth), (2, _DEFAULTS.max_depth))
+    node_norm = normalize_int_with_bounds(
+        int(sample.node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max)
+    )
+    depth_norm = normalize_int_with_bounds(
+        int(sample.max_depth), (2, _DEFAULTS.max_depth)
+    )
     relation_load = 1.0 if str(query_id) == "lowest_common_ancestor_label" else 0.55
     return build_graph_complexity(
         weights=_COMPLEXITY_WEIGHTS,
         components={
-            "topology_reasoning": (0.50 * relation_load) + (0.30 * depth_norm) + (0.20 * node_norm),
+            "topology_reasoning": (0.50 * relation_load)
+            + (0.30 * depth_norm)
+            + (0.20 * node_norm),
             "visual_scan": (0.70 * node_norm) + (0.30 * depth_norm),
-            "ambiguity": 0.62 if str(query_id) == "lowest_common_ancestor_label" else 0.38,
+            "ambiguity": (
+                0.62 if str(query_id) == "lowest_common_ancestor_label" else 0.38
+            ),
             "clutter": (0.65 * node_norm) + (0.35 * depth_norm),
         },
     )
@@ -363,7 +440,9 @@ class GraphRelationBinaryTreeNodeLabelTask:
     domain = "graph"
     task_group = "relation"
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(
+        self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int
+    ) -> TaskOutput:
         query = _resolve_query(int(instance_seed), params=params)
         render_params = resolve_graph_render_params(
             params,
@@ -400,25 +479,61 @@ class GraphRelationBinaryTreeNodeLabelTask:
             params=params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        evidence_projection = projected_binary_tree_bbox_evidence(rendered_scene, relation.evidence_labels)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_roles = BINARY_TREE_RELATION_EVIDENCE_ROLES[str(query.query_id)]
+        evidence_projection = projected_binary_tree_bbox_evidence(
+            rendered_scene, relation.evidence_labels
+        )
+        evidence_bboxes = [
+            [round(float(value), 3) for value in bbox]
+            for bbox in evidence_projection["bbox_set"]
+        ]
+        if len(evidence_roles) != len(evidence_bboxes):
+            raise ValueError(
+                "binary-tree relation evidence role count does not match projected evidence"
+            )
+        evidence_keyed_bboxes = {
+            str(role): list(bbox) for role, bbox in zip(evidence_roles, evidence_bboxes)
+        }
+        evidence_keyed_points = {
+            str(role): list(point)
+            for role, point in zip(
+                evidence_roles, evidence_projection["pixel_point_set"]
+            )
+        }
+        evidence_role_to_label = {
+            str(role): str(label)
+            for role, label in zip(evidence_roles, relation.evidence_labels)
+        }
+        evidence_roles_by_label: Dict[str, List[str]] = {}
+        for role, label in evidence_role_to_label.items():
+            evidence_roles_by_label.setdefault(str(label), []).append(str(role))
         answer_gt = TypedValue(type="string", value=str(relation.answer_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(
+            type="keyed_bbox_map", value=dict(evidence_keyed_bboxes)
+        )
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
-        json_example, json_example_answer_only = _build_prompt_json_examples()
+        json_example, json_example_answer_only = _build_prompt_json_examples(
+            str(query.query_id)
+        )
         prompt_query_labels = tuple(
-            format_graph_prompt_label(str(label), label_variant=str(query.label_variant))
+            format_graph_prompt_label(
+                str(label), label_variant=str(query.label_variant)
+            )
             for label in relation.query_labels
         )
         slots = {
             "object_description": str(prompt_defaults["object_description"]),
             "query_label": str(prompt_query_labels[0]),
             "query_label_a": str(prompt_query_labels[0]),
-            "query_label_b": str(prompt_query_labels[1]) if len(prompt_query_labels) > 1 else "",
+            "query_label_b": (
+                str(prompt_query_labels[1]) if len(prompt_query_labels) > 1 else ""
+            ),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "evidence_hint": str(prompt_defaults["evidence_hint"]),
+            "json_output_contract_answer_only": str(
+                prompt_defaults["json_output_contract_answer_only"]
+            ),
+            "evidence_hint": str(prompt_defaults[f"evidence_hint_{query.query_id}"]),
             "answer_hint": str(prompt_defaults["answer_hint"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
@@ -440,7 +555,11 @@ class GraphRelationBinaryTreeNodeLabelTask:
         rendered_by_label = {str(node.label): node for node in rendered_scene.nodes}
         node_entities = []
         for node in rendered_scene.nodes:
-            sample_node = next(tree_node for tree_node in sample.nodes if str(tree_node.label) == str(node.label))
+            sample_node = next(
+                tree_node
+                for tree_node in sample.nodes
+                if str(tree_node.label) == str(node.label)
+            )
             node_entities.append(
                 {
                     "entity_id": f"node_{node.label}",
@@ -452,9 +571,18 @@ class GraphRelationBinaryTreeNodeLabelTask:
                     "depth": int(node.depth),
                     "center_px": list(node.center_xy),
                     "bbox_xyxy": list(node.bbox_xyxy),
-                    "is_query_node": bool(str(sample_node.node_id) in set(relation.query_node_ids)),
-                    "is_answer_node": bool(str(sample_node.node_id) == str(relation.answer_node_id)),
-                    "is_evidence_node": bool(str(node.label) in set(relation.evidence_labels)),
+                    "is_query_node": bool(
+                        str(sample_node.node_id) in set(relation.query_node_ids)
+                    ),
+                    "is_answer_node": bool(
+                        str(sample_node.node_id) == str(relation.answer_node_id)
+                    ),
+                    "is_evidence_node": bool(
+                        str(node.label) in set(relation.evidence_labels)
+                    ),
+                    "evidence_roles": list(
+                        evidence_roles_by_label.get(str(node.label), [])
+                    ),
                 }
             )
         edge_entities = [
@@ -481,13 +609,18 @@ class GraphRelationBinaryTreeNodeLabelTask:
                     "query_labels": list(relation.query_labels),
                     "answer_label": str(relation.answer_label),
                     "answer_node_id": str(relation.answer_node_id),
+                    "evidence_role_to_label": dict(evidence_role_to_label),
                     "preorder_labels": list(sample.preorder_labels),
                     "inorder_labels": list(sample.inorder_labels),
                     "postorder_labels": list(sample.postorder_labels),
                     "level_order_labels": list(sample.level_order_labels),
                 },
                 "frames": {
-                    "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
+                    "pixel": {
+                        "origin": [0.0, 0.0],
+                        "x_positive": "right",
+                        "y_positive": "down",
+                    },
                     "panels": dict(rendered_scene.panel_geometry),
                 },
             },
@@ -496,26 +629,47 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "query_id": str(query.query_id),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
-                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variant_active_key": str(
+                    prompt_artifacts.prompt_variant_active_key
+                ),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "scene_variant": str(query.scene_variant),
                     "query_id_probabilities": dict(query.query_id_probabilities),
-                    "scene_variant_probabilities": dict(query.scene_variant_probabilities),
+                    "scene_variant_probabilities": dict(
+                        query.scene_variant_probabilities
+                    ),
                     "node_count": int(sample.node_count),
-                    "node_count_probabilities": dict(uniform_probability_map(tuple(range(_DEFAULTS.node_count_min, _DEFAULTS.node_count_max + 1)))),
+                    "node_count_probabilities": dict(
+                        uniform_probability_map(
+                            tuple(
+                                range(
+                                    _DEFAULTS.node_count_min,
+                                    _DEFAULTS.node_count_max + 1,
+                                )
+                            )
+                        )
+                    ),
                     "max_depth": int(sample.max_depth),
                     "label_variant": str(query.label_variant),
-                    "label_variant_probabilities": dict(query.label_variant_probabilities),
+                    "label_variant_probabilities": dict(
+                        query.label_variant_probabilities
+                    ),
                     "node_shape_variant": str(query.node_shape_variant),
-                    "node_shape_variant_probabilities": dict(query.node_shape_variant_probabilities),
+                    "node_shape_variant_probabilities": dict(
+                        query.node_shape_variant_probabilities
+                    ),
                     "node_color_name": str(query.node_color_name),
-                    "node_color_name_probabilities": dict(query.node_color_name_probabilities),
+                    "node_color_name_probabilities": dict(
+                        query.node_color_name_probabilities
+                    ),
                     "label_source_kind": str(sample.label_source_kind),
                     "label_bucket": str(sample.label_bucket),
                     "label_manifest": str(sample.label_manifest),
                     "label_filter": dict(sample.label_filter),
-                    "label_bucket_probabilities": dict(sample.label_bucket_probabilities),
+                    "label_bucket_probabilities": dict(
+                        sample.label_bucket_probabilities
+                    ),
                 },
             },
             "render_spec": {
@@ -541,8 +695,12 @@ class GraphRelationBinaryTreeNodeLabelTask:
                     "edge_width_px": int(render_params.edge_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
                     "label_font_size_px": int(render_params.label_font_size_px),
-                    "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
-                    "label_stroke_width_px": int(rendered_scene.resolved_label_stroke_width_px),
+                    "resolved_label_font_size_px": int(
+                        rendered_scene.resolved_label_font_size_px
+                    ),
+                    "label_stroke_width_px": int(
+                        rendered_scene.resolved_label_stroke_width_px
+                    ),
                     "background_meta": dict(background_meta),
                     "post_image_noise_meta": dict(post_noise_meta),
                 },
@@ -556,6 +714,9 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "answer": str(relation.answer_label),
                 "answer_label": str(relation.answer_label),
                 "answer_node_id": str(relation.answer_node_id),
+                "evidence_roles": list(evidence_roles),
+                "evidence_role_to_label": dict(evidence_role_to_label),
+                "evidence_labels": list(relation.evidence_labels),
                 "node_count": int(sample.node_count),
                 "max_depth": int(sample.max_depth),
                 "label_variant": str(sample.label_variant),
@@ -565,12 +726,17 @@ class GraphRelationBinaryTreeNodeLabelTask:
                 "query_id": str(query.query_id),
                 "query_labels": list(relation.query_labels),
                 "answer_label": str(relation.answer_label),
+                "evidence_role_to_label": dict(evidence_role_to_label),
             },
             "projected_evidence": {
-                "type": "bbox_set",
-                "bbox_set": list(evidence_bboxes),
-                "pixel_bbox_set": list(evidence_bboxes),
-                "pixel_point_set": list(evidence_projection["pixel_point_set"]),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "keyed_point_map": dict(evidence_keyed_points),
+                "pixel_keyed_point_map": dict(evidence_keyed_points),
+                "bbox_sequence": list(evidence_bboxes),
+                "pixel_bbox_sequence": list(evidence_bboxes),
+                "pixel_point_sequence": list(evidence_projection["pixel_point_set"]),
             },
         }
         if str(relation.answer_label) not in rendered_by_label:

@@ -57,7 +57,6 @@ def test_graph_relation_automaton_final_state_contract_matches_trace() -> None:
 
     assert "task_graph__automaton__state_after_input_label" in TASK_REGISTRY
     assert out.scene_id == "automaton"
-    assert out.query_id == "default"
     assert out.query_id == "final_state_label"
     assert out.answer_gt.type == "string"
     assert out.evidence_gt.type == "point_sequence"

@@ -265,6 +265,11 @@ class GraphCountingAdjacencyComponentCountTask:
                 subtitle="Rows point to columns." if bool(directed) else "The matrix is symmetric.",
                 weighted=False,
                 font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+                layout_seed=int(instance_seed),
+                font_family=params.get("font_family"),
+                context_text_probability=float(
+                    params.get("context_text_probability", group_default(_RENDER_DEFAULTS, "context_text_probability", 0.35))
+                ),
             )
         else:
             rendered = render_adjacency_list_panel(
@@ -273,6 +278,11 @@ class GraphCountingAdjacencyComponentCountTask:
                 title=f"{graph_kind} Adjacency List",
                 subtitle="Rows list outgoing neighbors." if bool(directed) else "Rows list adjacent nodes.",
                 font_size_px=int(params.get("label_font_size_px", group_default(_RENDER_DEFAULTS, "label_font_size_px", _DEFAULTS.label_font_size_px))),
+                layout_seed=int(instance_seed),
+                font_family=params.get("font_family"),
+                context_text_probability=float(
+                    params.get("context_text_probability", group_default(_RENDER_DEFAULTS, "context_text_probability", 0.35))
+                ),
             )
         image, post_noise_meta = apply_post_image_noise(
             rendered.image,
@@ -286,6 +296,7 @@ class GraphCountingAdjacencyComponentCountTask:
 
         prompt_defaults = dict(_PROMPT_DEFAULTS)
         json_example, json_example_answer_only = _build_prompt_json_examples()
+        evidence_hint_key = f"evidence_hint_{query.query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -305,7 +316,7 @@ class GraphCountingAdjacencyComponentCountTask:
                 ),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),

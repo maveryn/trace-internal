@@ -12,9 +12,22 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.font_assets import font_asset_version, get_font_family_record
+from ...shared.text_legibility import (
+    draw_centered_readable_text,
+    draw_readable_text,
+    resolve_readable_text_style,
+    text_legibility_summary_from_records,
+)
+from ...shared.text_rendering import fit_font_to_box, load_font
 from .graph_sampling import graph_label_sort_key
-from .graph_scene import BBox, GraphRenderParams, Point
+from .graph_scene import (
+    BBox,
+    GraphRenderParams,
+    Point,
+    apply_graph_content_layout_jitter,
+    draw_graph_context_text_chips,
+)
 from .label_assets import SUPPORTED_GRAPH_LABEL_VARIANTS, resolve_graph_node_labels
 
 
@@ -816,6 +829,7 @@ def _draw_panel(
     panel_geometry: Mapping[str, Any],
     render_params: GraphRenderParams,
     scene_title: str,
+    layout_seed: int,
 ) -> None:
     draw = ImageDraw.Draw(image)
     panel = tuple(int(value) for value in panel_geometry["scene_panel_xyxy"])
@@ -827,13 +841,25 @@ def _draw_panel(
         width=2,
     )
     title_band = tuple(int(value) for value in panel_geometry["title_band_xyxy"])
-    draw_text_centered(
+    title_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.panel_title_text",
+        role="graph_panel_title_text",
+        surface_rgbs=(tuple(int(value) for value in render_params.panel_fill_rgb),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.title_color_rgb),),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
+    draw_centered_readable_text(
         draw,
         text=str(scene_title),
         center=(0.5 * float(title_band[0] + title_band[2]), 0.5 * float(title_band[1] + title_band[3])),
-        font=load_font(int(render_params.panel_title_font_size_px), bold=True),
-        fill=tuple(int(value) for value in render_params.title_color_rgb),
-        stroke_fill=tuple(int(value) for value in render_params.panel_fill_rgb),
+        font=load_font(
+            int(render_params.panel_title_font_size_px),
+            bold=True,
+            font_family=str(render_params.font_family or ""),
+        ),
+        style=title_style,
         stroke_width=2,
     )
 
@@ -843,11 +869,22 @@ def _draw_route_legend(
     *,
     routes: Sequence[MetroRouteTemplate],
     legend_bbox: Sequence[int],
+    render_params: GraphRenderParams,
+    layout_seed: int,
 ) -> None:
     x0, y0, x1, y1 = [int(value) for value in legend_bbox]
     if not routes:
         return
-    font = load_font(13, bold=True)
+    font = load_font(13, bold=True, font_family=str(render_params.font_family or ""))
+    legend_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.route_legend_text",
+        role="metro_route_legend_text",
+        surface_rgbs=(tuple(int(value) for value in render_params.panel_fill_rgb),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.title_color_rgb),),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
     slot_width = max(1, int((x1 - x0) / len(routes)))
     for index, route in enumerate(routes):
         left = x0 + (index * slot_width) + 8
@@ -855,7 +892,13 @@ def _draw_route_legend(
         color = tuple(int(value) for value in route.color_rgb)
         draw.line((left, cy, left + 30, cy), fill=color, width=8)
         draw.rounded_rectangle((left - 2, cy - 7, left + 32, cy + 7), radius=6, outline=color, width=1)
-        draw.text((left + 40, cy - 8), str(route.route_name), font=font, fill=(67, 75, 91))
+        draw_readable_text(
+            draw,
+            xy=(left + 40, cy - 8),
+            text=str(route.route_name),
+            font=font,
+            style=legend_style,
+        )
 
 
 def _label_anchor_for_station(center: Point, content_bbox: Sequence[int]) -> Point:
@@ -866,23 +909,113 @@ def _label_anchor_for_station(center: Point, content_bbox: Sequence[int]) -> Poi
     return (int(cx + horizontal * 18), int(cy + vertical * 17))
 
 
+def _metro_text_legibility_records(
+    render_params: GraphRenderParams,
+    *,
+    layout_seed: int,
+) -> Tuple[Dict[str, Any], ...]:
+    """Return metro-specific required text styles for panel metadata."""
+
+    existing_records: list[Dict[str, Any]] = []
+    if isinstance(render_params.text_legibility, Mapping):
+        raw_records = render_params.text_legibility.get("records")
+        if isinstance(raw_records, list):
+            existing_records = [
+                dict(record)
+                for record in raw_records
+                if isinstance(record, Mapping) and str(record.get("role")) != "graph_node_label_text"
+            ]
+    title_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.panel_title_text",
+        role="graph_panel_title_text",
+        surface_rgbs=(tuple(int(value) for value in render_params.panel_fill_rgb),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.title_color_rgb),),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
+    legend_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.route_legend_text",
+        role="metro_route_legend_text",
+        surface_rgbs=(tuple(int(value) for value in render_params.panel_fill_rgb),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.title_color_rgb),),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
+    station_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.station_label_text",
+        role="metro_station_label_text",
+        surface_rgbs=((255, 255, 255),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.label_text_rgb), (43, 50, 61)),
+        min_contrast_ratio=7.0,
+        min_lab_distance=38.0,
+    )
+    return tuple(
+        [
+            *existing_records,
+            title_style.metadata(),
+            legend_style.metadata(),
+            station_style.metadata(),
+        ]
+    )
+
+
 def render_metro_scene(
     *,
     metro_sample: MetroRouteNetworkSample,
     render_params: GraphRenderParams,
     base_image: Image.Image,
     scene_title: str = "Metro Route Graph",
+    layout_seed: int = 0,
 ) -> RenderedMetroRouteScene:
     """Render one sampled metro-route graph scene."""
 
     image = base_image.convert("RGB")
     draw = ImageDraw.Draw(image)
     panel_geometry = _resolve_metro_panel_geometry(render_params)
-    _draw_panel(image, panel_geometry=panel_geometry, render_params=render_params, scene_title=str(scene_title))
+    if isinstance(render_params.information_scene_style, Mapping):
+        panel_geometry["information_scene_style"] = dict(render_params.information_scene_style)
+    panel_geometry["text_legibility"] = text_legibility_summary_from_records(
+        _metro_text_legibility_records(render_params, layout_seed=int(layout_seed))
+    )
+    panel_geometry["font_family"] = str(render_params.font_family or "")
+    panel_geometry["font_asset"] = (
+        dict(render_params.font_asset)
+        if isinstance(render_params.font_asset, Mapping)
+        else dict(get_font_family_record(str(render_params.font_family)).to_trace())
+        if str(render_params.font_family or "").strip()
+        else {}
+    )
+    panel_geometry["font_asset_version"] = str(render_params.font_asset_version or font_asset_version())
+    panel_geometry["font_exclusion_reason"] = str(render_params.font_exclusion_reason)
+    _draw_panel(
+        image,
+        panel_geometry=panel_geometry,
+        render_params=render_params,
+        scene_title=str(scene_title),
+        layout_seed=int(layout_seed),
+    )
     _draw_route_legend(
         draw,
         routes=metro_sample.route_templates,
         legend_bbox=panel_geometry["legend_band_xyxy"],
+        render_params=render_params,
+        layout_seed=int(layout_seed),
+    )
+    chip_context_elements = draw_graph_context_text_chips(
+        image,
+        panel_geometry=panel_geometry,
+        render_params=render_params,
+        layout_seed=int(layout_seed),
+    )
+    if chip_context_elements:
+        panel_geometry["context_text_elements"] = [dict(element) for element in chip_context_elements]
+    apply_graph_content_layout_jitter(
+        panel_geometry,
+        render_params=render_params,
+        layout_seed=int(layout_seed),
     )
 
     content_bbox = tuple(int(value) for value in panel_geometry["scene_content_xyxy"])
@@ -927,9 +1060,19 @@ def render_metro_scene(
         max_size_px=max(13, int(render_params.label_font_size_px) - 3),
         min_size_px=10,
         bold=True,
+        font_family=str(render_params.font_family or ""),
     )
     label_font_size = int(getattr(label_font, "size", 13))
     label_stroke_width = max(1, int(round(float(label_font_size) * 0.08)))
+    label_style = resolve_readable_text_style(
+        instance_seed=int(layout_seed),
+        namespace="graph.metro.station_label_text",
+        role="metro_station_label_text",
+        surface_rgbs=((255, 255, 255),),
+        preferred_rgbs=(tuple(int(value) for value in render_params.label_text_rgb), (43, 50, 61)),
+        min_contrast_ratio=7.0,
+        min_lab_distance=38.0,
+    )
     rendered_stations: list[RenderedMetroStation] = []
     for coord in sorted(metro_sample.label_by_coord, key=_station_sort_key):
         label = str(metro_sample.label_by_coord[coord])
@@ -968,13 +1111,12 @@ def render_metro_scene(
             anchor[1] + int(math.ceil(text_height / 2.0)) + 4,
         )
         draw.rounded_rectangle(label_box, radius=5, fill=(255, 255, 255), outline=(213, 219, 229), width=1)
-        draw_text_centered(
+        draw_centered_readable_text(
             draw,
             text=label,
             center=(float(anchor[0]), float(anchor[1])),
             font=label_font,
-            fill=(43, 50, 61),
-            stroke_fill=(255, 255, 255),
+            style=label_style,
             stroke_width=label_stroke_width,
         )
         rendered_stations.append(

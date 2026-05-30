@@ -23,7 +23,7 @@ from ..shared.arithmetic_common import (
     resolve_document_arithmetic_scene_variant,
     resolve_document_arithmetic_query_id,
 )
-from ..shared.common import projected_document_bbox_evidence
+from ..shared.common import projected_document_keyed_bbox_evidence
 from ..shared.complexity import (
     build_pages_complexity,
     clamp_unit_interval,
@@ -49,6 +49,7 @@ _SCENE_LOAD_BY_VARIANT = {
     "invoice_sheet": 0.22,
     "receipt_sheet": 0.18,
 }
+_OPERAND_EVIDENCE_KEYS: Tuple[str, ...] = ("first_operand", "second_operand", "third_operand")
 
 _DEFAULTS = DocumentDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "arithmetic")
@@ -67,19 +68,30 @@ def _scene_sampling_params(params: Mapping[str, Any]) -> Mapping[str, Any]:
     return params
 
 
-def _canonical_operand_example_bboxes(*, query_id: str) -> list[list[int]]:
-    """Return stable operand-value bbox examples for prompt JSON snippets."""
+def _operand_evidence_key_map(operand_value_bbox_ids: list[str]) -> Dict[str, str]:
+    """Return the role-keyed evidence mapping for expression operands."""
 
-    if str(query_id) == "sum_minus_amount_in_section":
-        return [
-            [150, 260, 364, 294],
-            [150, 320, 364, 354],
-            [150, 380, 364, 414],
-        ]
-    return [
+    if len(operand_value_bbox_ids) > len(_OPERAND_EVIDENCE_KEYS):
+        raise ValueError("form-section arithmetic supports at most three operand evidence roles")
+    return {
+        str(_OPERAND_EVIDENCE_KEYS[index]): str(bbox_id)
+        for index, bbox_id in enumerate(operand_value_bbox_ids)
+    }
+
+
+def _canonical_operand_example_evidence(*, query_id: str) -> Dict[str, list[int]]:
+    """Return stable role-keyed operand-value bbox examples for prompt JSON snippets."""
+
+    example_bboxes = [
         [150, 260, 364, 294],
         [150, 320, 364, 354],
     ]
+    if str(query_id) == "sum_minus_amount_in_section":
+        example_bboxes.append([150, 380, 364, 414])
+    return {
+        str(_OPERAND_EVIDENCE_KEYS[index]): list(bbox)
+        for index, bbox in enumerate(example_bboxes)
+    }
 
 
 def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
@@ -92,7 +104,7 @@ def _build_prompt_json_examples(*, query_id: str) -> tuple[str, str]:
     }
     answer_value = str(answer_by_variant[str(query_id)])
     answer_and_evidence = {
-        "evidence": _canonical_operand_example_bboxes(query_id=str(query_id)),
+        "evidence": _canonical_operand_example_evidence(query_id=str(query_id)),
         "answer": str(answer_value),
     }
     answer_only = {"answer": str(answer_value)}
@@ -194,13 +206,17 @@ class PagesArithmeticSectionExpressionValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_projection = projected_document_bbox_evidence(
+        evidence_role_to_bbox_id = _operand_evidence_key_map(list(dataset["operand_value_bbox_ids"]))
+        evidence_projection = projected_document_keyed_bbox_evidence(
             dict(rendered_scene.field_value_bbox_map),
-            list(dataset["operand_value_bbox_ids"]),
+            dict(evidence_role_to_bbox_id),
         )
-        evidence_bboxes = [list(bbox) for bbox in evidence_projection["bbox_set"]]
+        evidence_bboxes = {
+            str(key): list(bbox)
+            for key, bbox in dict(evidence_projection["keyed_bbox_map"]).items()
+        }
         answer_gt = TypedValue(type="string", value=str(dataset["result_value"]))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bboxes))
 
         field_scan = normalize_int_with_bounds(int(dataset["field_count"]), list(dataset["field_count_range"]))
         operand_scan = normalize_int_with_bounds(len(list(dataset["operand_field_ids"])), [2, 3])
@@ -255,6 +271,7 @@ class PagesArithmeticSectionExpressionValueTask:
                 "receipt_page_width_px": int(render_params.receipt_page_width_px),
                 "receipt_page_height_px": int(render_params.receipt_page_height_px),
                 "page_shadow_offset_px": int(render_params.page_shadow_offset_px),
+                "document_layout_mode": str(render_params.document_layout_mode),
                 "layout_jitter": dict(rendered_scene.layout_jitter_meta),
                 "information_scene_style": dict(information_style_meta),
                 "background_style": dict(background_meta),
@@ -293,6 +310,13 @@ class PagesArithmeticSectionExpressionValueTask:
                 "result_value": str(dataset["result_value"]),
             },
             "witness_symbolic": {
+                "type": "keyed_bbox_map",
+                "operand_roles": list(evidence_bboxes.keys()),
+                "operand_role_to_field_id": {
+                    str(key): str(field_id)
+                    for key, field_id in zip(evidence_bboxes.keys(), dataset["operand_field_ids"], strict=True)
+                },
+                "operand_role_to_bbox_id": dict(evidence_role_to_bbox_id),
                 "field_id_sequence": list(dataset["operand_field_ids"]),
                 "bbox_id_sequence": list(dataset["operand_value_bbox_ids"]),
             },

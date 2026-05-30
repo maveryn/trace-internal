@@ -38,10 +38,9 @@ def test_graph_relation_unique_node_label_contract_matches_trace() -> None:
 
     assert "task_graph__node_link__unique_node_label" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "unique_successor_label"
     assert out.answer_gt.type == "string"
-    assert out.evidence_gt.type == "bbox_set"
+    assert out.evidence_gt.type == "point_set"
     assert len(out.evidence_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "graph_unique_node_label_relation"
     assert execution["query_id"] == "unique_successor_label"
@@ -57,11 +56,11 @@ def test_graph_relation_unique_node_label_contract_matches_trace() -> None:
     assert tuple(execution["successors_by_label"][query_label]) == (answer_label,)
     assert out.answer_gt.value == answer_label
     assert trace["witness_symbolic"]["answer_label"] == answer_label
-    assert trace["projected_evidence"]["type"] == "bbox_set"
-    assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+    assert trace["projected_evidence"]["type"] == "point_set"
+    assert trace["projected_evidence"]["point_set"] == out.evidence_gt.value
     assert sum(1 for node in node_entities if bool(node["is_answer_node"])) == 1
     answer_entity = [node for node in node_entities if bool(node["is_answer_node"])][0]
-    assert answer_entity["bbox_xyxy"] == out.evidence_gt.value[0]
+    assert answer_entity["center_px"] == out.evidence_gt.value[0]
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
 
 
@@ -100,10 +99,10 @@ def test_graph_relation_unique_node_label_prompt_example_contract() -> None:
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert answer_only == {"answer": "B"}
     assert list(answer_and_evidence.keys()) == ["evidence", "answer"]
-    assert answer_and_evidence["evidence"] == [[280, 164, 326, 210]]
+    assert answer_and_evidence["evidence"] == [[303, 187]]
     assert answer_and_evidence["answer"] == "B"
     assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
-    assert "[x0,y0,x1,y1]" in out.prompt_variants["answer_and_evidence"]
+    assert "[x,y]" in out.prompt_variants["answer_and_evidence"]
 
 
 def test_graph_relation_unique_node_label_balanced_sampling_covers_queries() -> None:

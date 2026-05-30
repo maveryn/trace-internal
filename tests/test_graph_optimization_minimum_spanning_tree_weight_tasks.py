@@ -159,7 +159,7 @@ def test_graph_optimization_minimum_spanning_tree_weight_balanced_sampling_defau
     layout_variants: Counter[str] = Counter()
     topology_profiles: Counter[str] = Counter()
     node_colors: Counter[str] = Counter()
-    for index in range(48):
+    for index in range(60):
         out = task.generate(
             hash64(19605, "graph_optimization_minimum_spanning_tree_weight", index),
             params={},

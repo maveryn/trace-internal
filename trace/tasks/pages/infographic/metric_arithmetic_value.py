@@ -32,6 +32,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 from ...shared.text_rendering import fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.complexity import (
     build_pages_complexity,
     normalize_int_with_bounds,
@@ -61,12 +62,18 @@ COLUMN_PROFILE_COMPARISON_VARIANTS: Tuple[str, ...] = (
 FILTERED_SECTION_EXTREMUM_VARIANTS: Tuple[str, ...] = (
     "section_icon_extremum_label",
 )
+FACT_LOOKUP_VARIANTS: Tuple[str, ...] = (
+    "value_for_named_item",
+    "item_for_named_value",
+    "detail_for_named_item",
+)
 ALL_QUERY_IDS: Tuple[str, ...] = (
     *SUPPORTED_QUERY_IDS,
     *SECTION_RANKED_TOTAL_VARIANTS,
     *FILTERED_METRIC_TOTAL_VARIANTS,
     *COLUMN_PROFILE_COMPARISON_VARIANTS,
     *FILTERED_SECTION_EXTREMUM_VARIANTS,
+    *FACT_LOOKUP_VARIANTS,
 )
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("pages", "infographic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -142,6 +149,9 @@ _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "section_icon_total_value": 0.78,
     "section_icon_total_difference_value": 0.86,
     "section_icon_extremum_label": 0.94,
+    "value_for_named_item": 0.42,
+    "item_for_named_value": 0.52,
+    "detail_for_named_item": 0.46,
 }
 _EXTREMUM_KINDS: Tuple[str, ...] = ("maximum", "minimum")
 _EXTREMA_OPERATIONS: Tuple[str, ...] = ("sum", "absolute_difference")
@@ -366,6 +376,10 @@ def _quoted_label_list(labels: Sequence[str]) -> str:
     return f"{', '.join(quoted[:-1])}, and {quoted[-1]}"
 
 
+def _caption_text(card: _MetricCard) -> str:
+    return f"Ref {int(card.caption_number)}"
+
+
 def _labels_by_section(
     *,
     labels: Sequence[str],
@@ -580,7 +594,7 @@ def _draw_metric_card(
         fill_ratio=0.98,
     )
     label_xy = (text_left, y0 + (20 if str(infographic_style) in {"radial_spokes", "circular_sections"} else 18))
-    draw.text(label_xy, card.label, fill=text_rgb, font=label_font)
+    draw_text_traced(draw,label_xy, card.label, fill=text_rgb, font=label_font, role="readout", required=False)
     label_bbox = _text_bbox(draw, label_xy, card.label, label_font)
 
     value_font = _fit_value_font(
@@ -590,12 +604,12 @@ def _draw_metric_card(
         max_height=max(30.0, min(44.0, card_h - 58.0)),
     )
     value_xy = (text_left, y0 + (47 if str(infographic_style) in {"radial_spokes", "circular_sections"} else 45))
-    draw.text(value_xy, card.display_text, fill=card.color_rgb, font=value_font)
+    draw_text_traced(draw,value_xy, card.display_text, fill=card.color_rgb, font=value_font, role="readout", required=False)
     value_bbox = _text_bbox(draw, value_xy, card.display_text, value_font)
 
     caption = f"Ref {int(card.caption_number)}"
     caption_xy = (x0 + (10 if str(infographic_style) == "circular_sections" else 18), y1 - 25)
-    draw.text(caption_xy, caption, fill=muted_rgb, font=caption_font)
+    draw_text_traced(draw,caption_xy, caption, fill=muted_rgb, font=caption_font, role="readout", required=False)
     caption_bbox = _text_bbox(draw, caption_xy, caption, caption_font)
 
     trace = {
@@ -728,8 +742,8 @@ def _render_infographic(
         str(infographic_style),
         _STYLE_TITLE_COPY["card_wall"],
     )
-    draw.text((title_x, title_y), title_text, fill=text_rgb, font=title_font)
-    draw.text((title_x, title_y + 36), subtitle_text, fill=muted_rgb, font=subtitle_font)
+    draw_text_traced(draw,(title_x, title_y), title_text, fill=text_rgb, font=title_font, role="readout", required=False)
+    draw_text_traced(draw,(title_x, title_y + 36), subtitle_text, fill=muted_rgb, font=subtitle_font, role="readout", required=False)
 
     section_count = len(section_titles)
     layout_mode = "stacked"
@@ -788,7 +802,7 @@ def _render_infographic(
                 (section_bbox[0], section_bbox[1], section_bbox[0] + 8, section_bbox[3]),
                 fill=_PALETTE[section_index % len(_PALETTE)],
             )
-            draw.text((section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font)
+            draw_text_traced(draw,(section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font, role="readout", required=False)
 
             grid_left = section_bbox[0] + section_pad
             grid_top = section_bbox[1] + section_header_h + section_pad
@@ -948,12 +962,12 @@ def _render_infographic(
             title_text_bbox = _text_bbox(draw, (0, 0), str(section_title), title_font_fit)
             title_text_w = float(title_text_bbox[2] - title_text_bbox[0])
             title_text_h = float(title_text_bbox[3] - title_text_bbox[1])
-            draw.text(
+            draw_text_traced(draw,
                 (center_x - (title_text_w * 0.5), center_y - (title_text_h * 0.62)),
                 str(section_title),
                 fill=text_rgb,
                 font=title_font_fit,
-            )
+             role="readout", required=False,)
 
             slot_indices = ring_indices_by_count.get(int(count), ring_indices_by_count[8])
             for local_index in range(count):
@@ -1035,7 +1049,7 @@ def _render_infographic(
             section_bboxes[str(section_title)] = [float(value) for value in section_bbox]
             section_fill_i = _blend_rgb(section_fill, _PALETTE[section_index % len(_PALETTE)], 0.08)
             draw.rounded_rectangle(section_bbox, radius=14, fill=section_fill_i, outline=page_outline, width=1)
-            draw.text((section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font)
+            draw_text_traced(draw,(section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font, role="readout", required=False)
 
             grid_left = section_bbox[0] + section_pad
             grid_top = section_bbox[1] + section_header_h + section_pad
@@ -1102,7 +1116,7 @@ def _render_infographic(
         if str(infographic_style) in {"kpi_dashboard", "staggered_mosaic"}:
             section_fill_i = _blend_rgb(section_fill, _PALETTE[section_index % len(_PALETTE)], 0.06)
         draw.rounded_rectangle(section_bbox, radius=12, fill=section_fill_i, outline=page_outline, width=1)
-        draw.text((section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font)
+        draw_text_traced(draw,(section_bbox[0] + section_pad, section_bbox[1] + 8), str(section_title), fill=text_rgb, font=section_font, role="readout", required=False)
 
         grid_left = section_bbox[0] + section_pad
         grid_top = section_bbox[1] + section_header_h + section_pad
@@ -1514,6 +1528,76 @@ def _sample_section_icon_extremum_query(
     return dict(candidates[int(rng.randrange(len(candidates)))])
 
 
+def _sample_fact_lookup_query(
+    *,
+    query_id: str,
+    cards: Sequence[_MetricCard],
+    instance_seed: int,
+) -> Dict[str, Any]:
+    """Select one direct lookup target from a dense infographic."""
+
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.fact_lookup.{query_id}")
+    ordered_cards = list(cards)
+    if not ordered_cards:
+        raise ValueError("cannot build infographic fact lookup without cards")
+
+    if str(query_id) == "value_for_named_item":
+        card = ordered_cards[int(rng.randrange(len(ordered_cards)))]
+        return {
+            "target_label": str(card.label),
+            "target_section": str(card.section),
+            "target_value_text": str(card.display_text),
+            "answer_value": str(card.display_text),
+            "evidence_targets": [{"label": str(card.label), "bbox_kind": "card"}],
+        }
+
+    if str(query_id) == "item_for_named_value":
+        counts_by_section_value: Dict[Tuple[str, str], int] = {}
+        for card in ordered_cards:
+            key = (str(card.section), str(card.display_text))
+            counts_by_section_value[key] = int(counts_by_section_value.get(key, 0)) + 1
+        candidates = [
+            card
+            for card in ordered_cards
+            if counts_by_section_value[(str(card.section), str(card.display_text))] == 1
+        ]
+        if not candidates:
+            raise ValueError("could not build item lookup with a unique value within its section")
+        card = candidates[int(rng.randrange(len(candidates)))]
+        return {
+            "target_label": str(card.label),
+            "target_section": str(card.section),
+            "target_value_text": str(card.display_text),
+            "answer_value": str(card.label),
+            "evidence_targets": [{"label": str(card.label), "bbox_kind": "card"}],
+        }
+
+    if str(query_id) == "detail_for_named_item":
+        caption_counts: Dict[str, int] = {}
+        for card in ordered_cards:
+            caption = _caption_text(card)
+            caption_counts[caption] = int(caption_counts.get(caption, 0)) + 1
+        candidates = [
+            card
+            for card in ordered_cards
+            if caption_counts[_caption_text(card)] == 1
+        ]
+        if not candidates:
+            raise ValueError("could not build reference-code lookup with a unique visible code")
+        card = candidates[int(rng.randrange(len(candidates)))]
+        answer = _caption_text(card)
+        return {
+            "target_label": str(card.label),
+            "target_section": str(card.section),
+            "target_value_text": str(card.display_text),
+            "target_detail_text": str(answer),
+            "answer_value": str(answer),
+            "evidence_targets": [{"label": str(card.label), "bbox_kind": "card"}],
+        }
+
+    raise ValueError(f"unsupported fact lookup query_id: {query_id}")
+
+
 def _build_dataset(
     *,
     query_id: str,
@@ -1599,6 +1683,9 @@ def _build_dataset(
     comparison_icon_kind = ""
     filtered_section_totals: Dict[str, int] = {}
     prebuilt_cards: List[_MetricCard] | None = None
+    lookup_target_value = ""
+    lookup_target_detail = ""
+    evidence_targets: List[Dict[str, str]] = []
 
     if str(query_id) == "sum_named_metrics":
         operand_count, operand_count_range, operand_count_probabilities = _resolve_int_range(
@@ -1865,6 +1952,38 @@ def _build_dataset(
         rank_direction = str(extremum_query["rank_direction"])
         rank_direction_probabilities = dict(extremum_query["rank_direction_probabilities"])
         arithmetic_expression = f"{rank_direction}_section_total(icon={comparison_icon_kind})"
+    elif str(query_id) in FACT_LOOKUP_VARIANTS:
+        prebuilt_cards = _build_cards(
+            query_id=str(query_id),
+            card_count=int(card_count),
+            section_titles=section_titles,
+            section_card_counts=section_card_counts,
+            values_by_label=values_by_label,
+            percent_mode=bool(percent_mode),
+            instance_seed=int(instance_seed),
+        )
+        lookup_query = _sample_fact_lookup_query(
+            query_id=str(query_id),
+            cards=prebuilt_cards,
+            instance_seed=int(instance_seed),
+        )
+        target_label = str(lookup_query["target_label"])
+        target_sections = [str(lookup_query["target_section"])]
+        target_groups = {"lookup_card": [str(target_label)]}
+        target_labels = [str(target_label)]
+        target_values = [int(values_by_label[str(target_label)])]
+        target_operand_count = 1
+        operand_count_range = (1, 1)
+        operand_count_probabilities = {"1": 1.0}
+        answer_value = str(lookup_query["answer_value"])
+        answer_type = "string"
+        lookup_target_value = str(lookup_query.get("target_value_text", ""))
+        lookup_target_detail = str(lookup_query.get("target_detail_text", ""))
+        evidence_targets = [
+            {"label": str(item["label"]), "bbox_kind": str(item["bbox_kind"])}
+            for item in list(lookup_query["evidence_targets"])
+        ]
+        arithmetic_expression = f"lookup({query_id}, {target_label})"
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
 
@@ -1910,6 +2029,9 @@ def _build_dataset(
         "filter_icon_kind": str(filter_icon_kind),
         "comparison_icon_kind": str(comparison_icon_kind),
         "filtered_section_totals": {str(section): int(total) for section, total in filtered_section_totals.items()},
+        "target_value_text": str(lookup_target_value),
+        "target_detail_text": str(lookup_target_detail),
+        "evidence_targets": [dict(item) for item in evidence_targets],
         "arithmetic_expression": str(arithmetic_expression),
         "percent_mode": bool(percent_mode),
         "value_min": int(value_min),
@@ -1919,24 +2041,53 @@ def _build_dataset(
     }
 
 
-def _evidence_bboxes(
+def _evidence_keyed_card_bboxes(
     *,
     card_traces: Sequence[Mapping[str, Any]],
     target_labels: Sequence[str],
-) -> List[List[float]]:
+    evidence_targets: Sequence[Mapping[str, Any]] | None = None,
+) -> Dict[str, List[float]]:
     by_label = {str(card["label"]): dict(card) for card in card_traces}
-    bboxes: List[List[float]] = []
+    keyed_bboxes: Dict[str, List[float]] = {}
+    if evidence_targets is not None and len(evidence_targets) > 0:
+        for target in evidence_targets:
+            label = str(target["label"])
+            if label not in by_label:
+                raise ValueError(f"unknown infographic evidence label: {label}")
+            keyed_bboxes[str(label)] = [float(value) for value in by_label[label]["card_bbox_px"]]
+        return keyed_bboxes
     for label in target_labels:
         card = by_label[str(label)]
-        bboxes.append([float(value) for value in card["label_bbox_px"]])
-        bboxes.append([float(value) for value in card["value_bbox_px"]])
-    return bboxes
+        keyed_bboxes[str(label)] = [float(value) for value in card["card_bbox_px"]]
+    return keyed_bboxes
 
 
-def _build_prompt_examples(*, answer_type: str) -> Tuple[str, str]:
-    example_answer: int | str = "Program Totals" if str(answer_type) == "string" else 64
+def _build_prompt_examples(*, answer_type: str, query_id: str) -> Tuple[str, str]:
+    example_answer: int | str
+    example_evidence: Dict[str, List[int]]
+    if str(answer_type) != "string":
+        example_answer = 64
+        example_evidence = {
+            "Atlas": [108, 164, 248, 258],
+            "Beacon": [398, 164, 538, 258],
+        }
+    elif str(query_id) == "value_for_named_item":
+        example_answer = "64"
+        example_evidence = {"Atlas": [108, 164, 248, 258]}
+    elif str(query_id) == "item_for_named_value":
+        example_answer = "Atlas"
+        example_evidence = {"Atlas": [108, 164, 248, 258]}
+    elif str(query_id) == "detail_for_named_item":
+        example_answer = "Ref 42"
+        example_evidence = {"Atlas": [108, 164, 248, 258]}
+    else:
+        example_answer = "Program Totals"
+        example_evidence = {
+            "Atlas": [108, 164, 248, 258],
+            "Beacon": [398, 164, 538, 258],
+        }
     answer_and_evidence = {
-        "evidence": [[120, 180, 174, 202], [188, 214, 232, 246], [410, 180, 466, 202], [478, 214, 520, 246]],
+        "evidence": dict(example_evidence),
         "answer": example_answer,
     }
     answer_only = {"answer": example_answer}
@@ -2006,7 +2157,7 @@ class PagesInfographicMetricArithmeticValueTask:
             answer_value_for_trace = str(dataset["answer_value"])
         else:
             answer_value_for_trace = int(dataset["answer_value"])
-        json_example, json_example_answer_only = _build_prompt_examples(answer_type=answer_type)
+        json_example, json_example_answer_only = _build_prompt_examples(answer_type=answer_type, query_id=str(query_id))
         target_labels = [str(label) for label in dataset["target_labels"]]
         target_values = [int(value) for value in dataset["target_values"]]
         target_groups = {
@@ -2052,6 +2203,8 @@ class PagesInfographicMetricArithmeticValueTask:
             "excluded_labels": _quoted_label_list(excluded_labels) if excluded_labels else "",
             "filter_icon_kind": str(dataset.get("filter_icon_kind", "")),
             "comparison_icon_kind": str(dataset.get("comparison_icon_kind", "")),
+            "target_value": _quote_label(str(dataset.get("target_value_text", ""))) if dataset.get("target_value_text") else "",
+            "target_detail": _quote_label(str(dataset.get("target_detail_text", ""))) if dataset.get("target_detail_text") else "",
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "evidence_hint": str(evidence_hint),
@@ -2072,9 +2225,15 @@ class PagesInfographicMetricArithmeticValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_bboxes = _evidence_bboxes(card_traces=rendered.card_traces, target_labels=target_labels)
+        evidence_targets = [dict(item) for item in list(dataset.get("evidence_targets", []))]
+        evidence_keyed_bboxes = _evidence_keyed_card_bboxes(
+            card_traces=rendered.card_traces,
+            target_labels=target_labels,
+            evidence_targets=evidence_targets,
+        )
+        evidence_bboxes = [list(bbox) for bbox in evidence_keyed_bboxes.values()]
         answer_gt = TypedValue(type=answer_type, value=answer_value_for_trace)
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
 
         label_bbox_map = {
             str(card["label"]): [float(value) for value in card["label_bbox_px"]]
@@ -2086,6 +2245,10 @@ class PagesInfographicMetricArithmeticValueTask:
         }
         card_bbox_map = {
             str(card["label"]): [float(value) for value in card["card_bbox_px"]]
+            for card in rendered.card_traces
+        }
+        caption_bbox_map = {
+            str(card["label"]): [float(value) for value in card["caption_bbox_px"]]
             for card in rendered.card_traces
         }
 
@@ -2109,6 +2272,9 @@ class PagesInfographicMetricArithmeticValueTask:
                     "filter_icon_kind": str(dataset.get("filter_icon_kind", "")),
                     "comparison_icon_kind": str(dataset.get("comparison_icon_kind", "")),
                     "filtered_section_totals": dict(dataset.get("filtered_section_totals", {})),
+                    "target_value_text": str(dataset.get("target_value_text", "")),
+                    "target_detail_text": str(dataset.get("target_detail_text", "")),
+                    "evidence_targets": [dict(item) for item in evidence_targets],
                     "answer_value": answer_value_for_trace,
                     "answer_type": str(answer_type),
                     "arithmetic_expression": str(dataset["arithmetic_expression"]),
@@ -2138,6 +2304,9 @@ class PagesInfographicMetricArithmeticValueTask:
                     "filter_icon_kind": str(dataset.get("filter_icon_kind", "")),
                     "comparison_icon_kind": str(dataset.get("comparison_icon_kind", "")),
                     "filtered_section_totals": dict(dataset.get("filtered_section_totals", {})),
+                    "target_value_text": str(dataset.get("target_value_text", "")),
+                    "target_detail_text": str(dataset.get("target_detail_text", "")),
+                    "evidence_targets": [dict(item) for item in evidence_targets],
                     "target_answer": answer_value_for_trace,
                     "answer_type": str(answer_type),
                 },
@@ -2163,6 +2332,7 @@ class PagesInfographicMetricArithmeticValueTask:
                 "card_bboxes_px": dict(card_bbox_map),
                 "label_bboxes_px": dict(label_bbox_map),
                 "value_bboxes_px": dict(value_bbox_map),
+                "caption_bboxes_px": dict(caption_bbox_map),
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -2187,6 +2357,9 @@ class PagesInfographicMetricArithmeticValueTask:
                     str(section): int(total)
                     for section, total in dict(dataset.get("filtered_section_totals", {})).items()
                 },
+                "target_value_text": str(dataset.get("target_value_text", "")),
+                "target_detail_text": str(dataset.get("target_detail_text", "")),
+                "evidence_targets": [dict(item) for item in evidence_targets],
                 "labels": [str(label) for label in dataset["labels"]],
                 "values_by_label": {str(label): int(value) for label, value in dataset["values_by_label"].items()},
                 "cards": [dict(card) for card in rendered.card_traces],
@@ -2211,8 +2384,9 @@ class PagesInfographicMetricArithmeticValueTask:
                 "percent_value_max": int(dataset["percent_value_max"]),
             },
             "witness_symbolic": {
-                "type": "metric_card_set",
+                "type": "metric_card_keyed_set",
                 "labels": list(target_labels),
+                "evidence_keys": list(evidence_keyed_bboxes.keys()),
                 "groups": dict(target_groups),
                 "sections": list(target_sections),
                 "excluded_labels": list(excluded_labels),
@@ -2225,13 +2399,21 @@ class PagesInfographicMetricArithmeticValueTask:
                 "comparison_icon_kind": str(dataset.get("comparison_icon_kind", "")),
                 "values": list(target_values),
                 "expression": str(dataset["arithmetic_expression"]),
+                "evidence_targets": [dict(item) for item in evidence_targets],
             },
             "projected_evidence": {
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_keyed_bboxes),
+                "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
                 "bbox_set": list(evidence_bboxes),
                 "pixel_bbox_set": list(evidence_bboxes),
                 "label_bbox_map": dict(label_bbox_map),
                 "value_bbox_map": dict(value_bbox_map),
+                "card_bbox_map": dict(card_bbox_map),
+                "caption_bbox_map": dict(caption_bbox_map),
                 "target_labels": list(target_labels),
+                "evidence_keys": list(evidence_keyed_bboxes.keys()),
+                "evidence_targets": [dict(item) for item in evidence_targets],
             },
         }
 
@@ -2328,64 +2510,48 @@ class PagesInfographicMetricArithmeticValuePublicTask(
     """Compute one sampled arithmetic value over infographic metric cards."""
 
     task_id = "task_pages__infographic__metric_arithmetic_value"
-    allowed_query_ids = SUPPORTED_QUERY_IDS
+    allowed_query_ids = (
+        *SUPPORTED_QUERY_IDS,
+        *FILTERED_METRIC_TOTAL_VARIANTS,
+        *COLUMN_PROFILE_COMPARISON_VARIANTS,
+    )
 
 
 @register_task
-class PagesInfographicSectionRankedTotalLabelTask(
+class PagesInfographicSectionRankLabelTask(
     _PagesInfographicPublicTaskMixin,
     PagesInfographicMetricArithmeticValueTask,
 ):
-    """Identify a section by ranked aggregate total over infographic metric cards."""
+    """Identify a section by ranked or filtered aggregate total."""
 
-    task_id = "task_pages__infographic__section_ranked_total_label"
-    allowed_query_ids = SECTION_RANKED_TOTAL_VARIANTS
+    task_id = "task_pages__infographic__section_rank_label"
+    allowed_query_ids = (
+        *SECTION_RANKED_TOTAL_VARIANTS,
+        *FILTERED_SECTION_EXTREMUM_VARIANTS,
+    )
 
 
 @register_task
-class PagesInfographicFilteredMetricTotalValueTask(
+class PagesInfographicFactLookupLabelTask(
     _PagesInfographicPublicTaskMixin,
     PagesInfographicMetricArithmeticValueTask,
 ):
-    """Sum visible metric cards matching an icon filter inside one section."""
+    """Look up one visible fact from a dense infographic metric card."""
 
-    task_id = "task_pages__infographic__filtered_metric_total_value"
-    allowed_query_ids = FILTERED_METRIC_TOTAL_VARIANTS
-
-
-@register_task
-class PagesInfographicColumnProfileComparisonValueTask(
-    _PagesInfographicPublicTaskMixin,
-    PagesInfographicMetricArithmeticValueTask,
-):
-    """Compare same-icon metric totals between two infographic sections."""
-
-    task_id = "task_pages__infographic__column_profile_comparison_value"
-    allowed_query_ids = COLUMN_PROFILE_COMPARISON_VARIANTS
-
-
-@register_task
-class PagesInfographicFilteredSectionExtremumLabelTask(
-    _PagesInfographicPublicTaskMixin,
-    PagesInfographicMetricArithmeticValueTask,
-):
-    """Identify the section with an extreme total after filtering by card icon."""
-
-    task_id = "task_pages__infographic__filtered_section_extremum_label"
-    allowed_query_ids = FILTERED_SECTION_EXTREMUM_VARIANTS
+    task_id = "task_pages__infographic__fact_lookup_label"
+    allowed_query_ids = FACT_LOOKUP_VARIANTS
 
 
 __all__ = [
     "ALL_QUERY_IDS",
     "COLUMN_PROFILE_COMPARISON_VARIANTS",
+    "FACT_LOOKUP_VARIANTS",
     "FILTERED_SECTION_EXTREMUM_VARIANTS",
     "FILTERED_METRIC_TOTAL_VARIANTS",
-    "PagesInfographicColumnProfileComparisonValueTask",
-    "PagesInfographicFilteredSectionExtremumLabelTask",
-    "PagesInfographicFilteredMetricTotalValueTask",
+    "PagesInfographicFactLookupLabelTask",
     "PagesInfographicMetricArithmeticValueTask",
     "PagesInfographicMetricArithmeticValuePublicTask",
-    "PagesInfographicSectionRankedTotalLabelTask",
+    "PagesInfographicSectionRankLabelTask",
     "SECTION_RANKED_TOTAL_VARIANTS",
     "SUPPORTED_QUERY_IDS",
 ]

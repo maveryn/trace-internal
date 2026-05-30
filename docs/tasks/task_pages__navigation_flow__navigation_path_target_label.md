@@ -6,7 +6,7 @@
 3. Task id: `task_pages__navigation_flow__navigation_path_target_label`
 4. Objective: identify the labeled target control reached by a visible GUI navigation path.
 5. Answer type: `option_letter`
-6. Evidence type: ordered `bbox_set`
+6. Evidence type: role-keyed `keyed_bbox_map`
 
 ## Variants
 1. `menu_path_target_label`: follow a visible menu root, submenu, and menu group to a final command.
@@ -26,7 +26,10 @@
 
 ## Answer And Evidence
 1. Answer is the candidate label of the final target control.
-2. Evidence contains three boxes in order: the first path context bbox, the second path context bbox, then the target control bbox.
+2. Evidence contains three role-keyed boxes using query-specific visible roles:
+   - `menu_path_target_label`: `menu_root`, `menu_group`, and `target_command`
+   - `sidebar_tree_target_label`: `sidebar_section`, `sidebar_group`, and `target_item`
+   - `ribbon_group_command_label`: `ribbon_tab`, `ribbon_group`, and `target_command`
 3. Candidate-label badge bboxes are trace metadata only; prompt-facing evidence uses full support/control bboxes.
 
 ## Prompt

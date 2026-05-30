@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
 from ...shared.render_variation import resolve_render_int
 from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.text_legibility import draw_text_traced
 from ..shared.public_query_task import rewrite_pages_query_output
 from .gui_relation_common import (
     SUPPORTED_SCENE_VARIANTS,
@@ -553,7 +554,7 @@ def _draw_professional_scene(image: Image.Image, *, query: _ResolvedQuery, rende
         max_size_px=int(render_params.body_font_size_px),
         bold=True,
     )
-    draw.text((title_bar[2] - 150.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px)))
+    draw_text_traced(draw,(title_bar[2] - 150.0, title_bar[1] + 13.0), str(profile.status_text), fill=theme.muted_text, font=load_font(int(render_params.small_font_size_px)), role="readout", required=False)
 
     workspace = (x1 + 18.0, title_bar[3] + 12.0, x2 - 18.0, y2 - 16.0)
     _rounded_rect(draw, workspace, radius=10, fill=theme.panel_fill, outline=theme.chrome_line)
@@ -738,9 +739,25 @@ def _evidence_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str]:
     return (f"guide_{int(target.action_index)}", f"context_{int(target.context_index)}", f"header_{int(target.action_index)}")
 
 
-def _prompt_json_examples() -> Tuple[str, str]:
+def _evidence_roles(query: _ResolvedQuery) -> Tuple[str, str, str, str]:
+    spec = query.variant_spec
+    return (
+        str(spec.guide_kind),
+        f"{str(spec.context_kind)}_row",
+        str(spec.header_kind),
+        f"target_{str(spec.control_role)}",
+    )
+
+
+def _prompt_json_examples(query: _ResolvedQuery) -> Tuple[str, str]:
+    guide_role, context_role, header_role, target_role = _evidence_roles(query)
     answer_and_evidence = {
-        "evidence": [[520, 130, 690, 196], [72, 260, 300, 344], [520, 212, 690, 252], [520, 360, 690, 444]],
+        "evidence": {
+            guide_role: [520, 130, 690, 196],
+            context_role: [72, 260, 300, 344],
+            header_role: [520, 212, 690, 252],
+            target_role: [520, 360, 690, 444],
+        },
         "answer": "G",
     }
     answer_only = {"answer": "G"}
@@ -810,15 +827,28 @@ class ProfessionalGuiRelationTaskBase:
 
         target_record = next(record for record in rendered.control_records if str(record["control_id"]) == str(query.target_control_id))
         evidence_support_ids = _evidence_support_ids(query)
+        guide_role, context_role, header_role, target_role = _evidence_roles(query)
         support_records = [dict(record) for record in rendered.support_records]
         evidence_support_records = [
             next(record for record in support_records if str(record["support_id"]) == str(support_id))
             for support_id in evidence_support_ids
         ]
-        evidence_bboxes = [list(record["bbox_px"]) for record in evidence_support_records] + [list(target_record["bbox_px"])]
+        evidence_bbox_map: Dict[str, List[float]] = {
+            str(guide_role): list(evidence_support_records[0]["bbox_px"]),
+            str(context_role): list(evidence_support_records[1]["bbox_px"]),
+            str(header_role): list(evidence_support_records[2]["bbox_px"]),
+            str(target_role): list(target_record["bbox_px"]),
+        }
+        evidence_role_support_ids: Dict[str, str] = {
+            str(guide_role): str(evidence_support_ids[0]),
+            str(context_role): str(evidence_support_ids[1]),
+            str(header_role): str(evidence_support_ids[2]),
+            str(target_role): str(query.target_control_id),
+        }
         answer_gt = TypedValue(type="option_letter", value=str(query.target_label))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_bbox_map))
 
+        evidence_hint_key = f"evidence_hint_{str(query.query_id)}"
         prompt_defaults_required = required_group_defaults(
             prompt_defaults,
             (
@@ -828,12 +858,12 @@ class ProfessionalGuiRelationTaskBase:
                 "object_description",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "evidence_hint",
+                evidence_hint_key,
                 "answer_hint",
             ),
             context=f"prompt defaults for {task_id}",
         )
-        json_example, json_example_answer_only = _prompt_json_examples()
+        json_example, json_example_answer_only = _prompt_json_examples(query)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -851,7 +881,7 @@ class ProfessionalGuiRelationTaskBase:
                 "code_label": str(query.code_label),
                 "json_output_contract": str(prompt_defaults_required["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults_required["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults_required["evidence_hint"]),
+                "evidence_hint": str(prompt_defaults_required[evidence_hint_key]),
                 "answer_hint": str(prompt_defaults_required["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
@@ -893,6 +923,7 @@ class ProfessionalGuiRelationTaskBase:
                     "instruction_text": str(query.instruction_text),
                     "context_count": int(query.context_count),
                     "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                    "evidence_role_support_ids": dict(evidence_role_support_ids),
                 },
                 "frames": {
                     "pixel": {"origin": [0.0, 0.0], "x_positive": "right", "y_positive": "down"},
@@ -920,6 +951,7 @@ class ProfessionalGuiRelationTaskBase:
                     "context_count": int(query.context_count),
                     "context_count_range": [int(value) for value in query.context_count_range],
                     "action_count": int(len({int(control.action_index) for control in query.controls})),
+                    "evidence_role_support_ids": dict(evidence_role_support_ids),
                     "query_id_probabilities": dict(query.query_id_probabilities),
                     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
                     "style_variant_probabilities": dict(query.style_variant_probabilities),
@@ -953,6 +985,7 @@ class ProfessionalGuiRelationTaskBase:
                 "support_bboxes_by_id": dict(rendered.support_bboxes_by_id),
                 "target_control_id": str(query.target_control_id),
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -967,6 +1000,7 @@ class ProfessionalGuiRelationTaskBase:
                 "instruction_text": str(query.instruction_text),
                 "guide_order": [int(value) for value in query.guide_order],
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "evidence_support_records": [dict(record) for record in evidence_support_records],
                 "target_control": dict(target_record),
                 "controls": list(control_records),
@@ -981,13 +1015,16 @@ class ProfessionalGuiRelationTaskBase:
                 "question_format": str(definition.question_format),
             },
             "witness_symbolic": {
-                "type": "bbox_set",
+                "type": "keyed_bbox_map",
                 "evidence_support_ids": [str(value) for value in evidence_support_ids],
+                "evidence_role_support_ids": dict(evidence_role_support_ids),
                 "target_control_id": str(query.target_control_id),
-                "value": list(evidence_bboxes),
+                "value": dict(evidence_bbox_map),
             },
             "projected_evidence": {
-                "bbox_set": list(evidence_bboxes),
+                "type": "keyed_bbox_map",
+                "keyed_bbox_map": dict(evidence_bbox_map),
+                "pixel_keyed_bbox_map": dict(evidence_bbox_map),
             },
         }
 

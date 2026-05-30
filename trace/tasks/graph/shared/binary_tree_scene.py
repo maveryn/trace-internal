@@ -9,7 +9,9 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ....core.seed import spawn_rng
-from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.font_assets import font_asset_version, get_font_family_record
+from ...shared.text_legibility import draw_centered_readable_text, resolve_readable_text_style
+from ...shared.text_rendering import fit_font_to_box, load_font
 from .graph_scene import GraphRenderParams, SUPPORTED_NODE_SHAPE_VARIANTS
 from .label_assets import default_graph_label_bucket_weights, resolve_graph_node_labels
 
@@ -203,6 +205,7 @@ def _build_tree_for_depth_count(
     node_count_min: int,
     node_count_max: int,
     max_depth: int,
+    compact_selection: bool = False,
 ) -> Tuple[Dict[str, Dict[str, Any]], str]:
     """Construct a tree with an exact number of nodes at a target depth."""
 
@@ -214,8 +217,13 @@ def _build_tree_for_depth_count(
         raise ValueError("target_count is infeasible for the requested depth")
 
     positions = ["".join(bits) for bits in _binary_path_product(depth)]
-    rng.shuffle(positions)
-    selected = set(positions[:count])
+    if bool(compact_selection):
+        max_start = max(0, len(positions) - int(count))
+        start = int(rng.randint(0, int(max_start))) if int(max_start) > 0 else 0
+        selected = set(positions[int(start) : int(start) + int(count)])
+    else:
+        rng.shuffle(positions)
+        selected = set(positions[:count])
     node_ids = {""}
     for path in selected:
         for length in range(1, len(path) + 1):
@@ -418,6 +426,28 @@ def sample_binary_tree_for_count_query(
                 continue
             sample = _assign_labels_to_tree(
                 spawn_rng(int(instance_seed), f"binary_tree_count.labels.{query}.{_attempt}"),
+                nodes=nodes,
+                label_variant=str(label_variant),
+                max_chars=int(label_max_chars),
+            )
+            actual = sum(1 for node in sample.nodes if int(node.depth) == int(target_depth))
+            if int(actual) == int(target):
+                return sample
+        for fallback_attempt in range(32):
+            try:
+                nodes, _root = _build_tree_for_depth_count(
+                    rng,
+                    target_depth=int(target_depth),
+                    target_count=int(target),
+                    node_count_min=int(node_count_min),
+                    node_count_max=int(node_count_max),
+                    max_depth=int(max_depth),
+                    compact_selection=True,
+                )
+            except ValueError:
+                continue
+            sample = _assign_labels_to_tree(
+                spawn_rng(int(instance_seed), f"binary_tree_count.labels.{query}.compact.{fallback_attempt}"),
                 nodes=nodes,
                 label_variant=str(label_variant),
                 max_chars=int(label_max_chars),
@@ -739,6 +769,20 @@ def render_binary_tree_scene(
     )
     draw = ImageDraw.Draw(image)
     panel_geometry = _resolve_panel_geometry(render_params)
+    if isinstance(render_params.information_scene_style, Mapping):
+        panel_geometry["information_scene_style"] = dict(render_params.information_scene_style)
+    if isinstance(render_params.text_legibility, Mapping):
+        panel_geometry["text_legibility"] = dict(render_params.text_legibility)
+    panel_geometry["font_family"] = str(render_params.font_family or "")
+    panel_geometry["font_asset"] = (
+        dict(render_params.font_asset)
+        if isinstance(render_params.font_asset, Mapping)
+        else dict(get_font_family_record(str(render_params.font_family)).to_trace())
+        if str(render_params.font_family or "").strip()
+        else {}
+    )
+    panel_geometry["font_asset_version"] = str(render_params.font_asset_version or font_asset_version())
+    panel_geometry["font_exclusion_reason"] = str(render_params.font_exclusion_reason)
     panel = tuple(int(value) for value in panel_geometry["panel_xyxy"])
     title_band = tuple(int(value) for value in panel_geometry["title_band_xyxy"])
     content = tuple(int(value) for value in panel_geometry["scene_content_xyxy"])
@@ -763,14 +807,26 @@ def render_binary_tree_scene(
             width=1,
         )
 
-    title_font = load_font(int(render_params.panel_title_font_size_px), bold=True)
-    draw_text_centered(
+    title_font = load_font(
+        int(render_params.panel_title_font_size_px),
+        bold=True,
+        font_family=str(render_params.font_family or ""),
+    )
+    title_style = resolve_readable_text_style(
+        instance_seed=int(sum(ord(ch) for ch in str(scene_title)) + int(render_params.canvas_width) + int(render_params.canvas_height)),
+        namespace="graph.binary_tree.panel_title_text",
+        role="graph_panel_title_text",
+        surface_rgbs=(panel_fill,),
+        preferred_rgbs=(tuple(int(value) for value in render_params.title_color_rgb),),
+        min_contrast_ratio=4.5,
+        min_lab_distance=28.0,
+    )
+    draw_centered_readable_text(
         draw,
         text=str(scene_title),
         center=(0.5 * float(title_band[0] + title_band[2]), 0.5 * float(title_band[1] + title_band[3])),
         font=title_font,
-        fill=tuple(int(value) for value in render_params.title_color_rgb),
-        stroke_fill=panel_fill,
+        style=title_style,
         stroke_width=1,
     )
 
@@ -826,18 +882,32 @@ def render_binary_tree_scene(
             max_width=max(8, int(bbox[2] - bbox[0]) - 6),
             max_height=max(8, int(bbox[3] - bbox[1]) - 6),
             bold=True,
+            font_family=str(render_params.font_family or ""),
             min_size_px=8,
             max_size_px=int(render_params.label_font_size_px),
             fill_ratio=0.86,
         )
         resolved_font_size = min(int(resolved_font_size), int(getattr(font, "size", resolved_font_size)))
-        draw_text_centered(
+        label_style = resolve_readable_text_style(
+            instance_seed=int(sum(ord(ch) for ch in str(node.label)) + int(center[0]) + (997 * int(center[1]))),
+            namespace=f"graph.binary_tree.node_label_text.{str(node.label)}",
+            role="graph_node_label_text",
+            surface_rgbs=(tuple(int(value) for value in render_params.node_fill_rgb),),
+            preferred_rgbs=(
+                tuple(int(value) for value in render_params.label_text_rgb),
+                tuple(int(value) for value in render_params.label_stroke_rgb),
+                (255, 255, 255),
+                (10, 14, 22),
+            ),
+            min_contrast_ratio=4.0,
+            min_lab_distance=24.0,
+        )
+        draw_centered_readable_text(
             draw,
             text=str(node.label),
             center=(float(center[0]), float(center[1])),
             font=font,
-            fill=tuple(int(value) for value in render_params.label_text_rgb),
-            stroke_fill=tuple(int(value) for value in render_params.label_stroke_rgb),
+            style=label_style,
             stroke_width=stroke_width,
         )
         parent_label = str(node_by_id[str(node.parent_id)].label) if node.parent_id is not None else None

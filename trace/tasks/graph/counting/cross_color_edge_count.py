@@ -528,7 +528,8 @@ class GraphCountingCrossColorEdgeCountTask:
                 "json_output_contract_answer_only",
                 "object_description_undirected",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_cross_color_edge_count",
+                "evidence_hint_directed_cross_color_edge_count",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -547,6 +548,7 @@ class GraphCountingCrossColorEdgeCountTask:
         directed = str(query.graph_directionality) == "directed"
         query_id = QUERY_ID_DIRECTED if bool(directed) else QUERY_ID_UNDIRECTED
         object_description_key = "object_description_directed" if bool(directed) else "object_description_undirected"
+        evidence_hint_key = f"evidence_hint_{query_id}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -561,7 +563,7 @@ class GraphCountingCrossColorEdgeCountTask:
                 "target_color_label": str(target_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
                     source_color_label=str(source_color_label),
                     target_color_label=str(target_color_label),
                 ),

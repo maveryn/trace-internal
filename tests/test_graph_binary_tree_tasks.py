@@ -3,10 +3,19 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.counting.binary_tree_node_count import GraphCountingBinaryTreeNodeCountTask
-from trace.tasks.graph.order.binary_tree_traversal_label import GraphOrderBinaryTreeTraversalLabelTask
-from trace.tasks.graph.relation.binary_tree_node_label import GraphRelationBinaryTreeNodeLabelTask
-from trace.tasks.graph.relation.search_tree_operation_label import GraphRelationSearchTreeOperationLabelTask
+from trace.tasks.graph.counting.binary_tree_node_count import (
+    GraphCountingBinaryTreeNodeCountTask,
+)
+from trace.tasks.graph.order.binary_tree_traversal_label import (
+    GraphOrderBinaryTreeTraversalLabelTask,
+)
+from trace.tasks.graph.relation.binary_tree_node_label import (
+    GraphRelationBinaryTreeNodeLabelTask,
+)
+from trace.tasks.graph.relation.search_tree_operation_label import (
+    GraphRelationBstPathOperationLabelTask,
+    GraphRelationHeapPropertyViolationLabelTask,
+)
 
 
 def _binary_tree_nodes(trace_payload: dict) -> list[dict]:
@@ -57,12 +66,14 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
         assert int(out.answer_gt.value) == target_count
         assert len(out.evidence_gt.value) == target_count
         assert trace["scene_ir"]["scene_kind"] == "binary_tree"
-        assert trace["execution_trace"]["query_id"] == "default"
         assert trace["execution_trace"]["query_id"] == query_id
         assert trace["execution_trace"]["internal_query_id"] == query_id
         assert len(nodes) == int(trace["execution_trace"]["node_count"])
         assert len(edges) == len(nodes) - 1
-        assert any(node["left_label"] is not None or node["right_label"] is not None for node in nodes)
+        assert any(
+            node["left_label"] is not None or node["right_label"] is not None
+            for node in nodes
+        )
         assert trace["projected_evidence"]["type"] == "bbox_set"
         assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
         assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
@@ -111,16 +122,16 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
 
 def test_graph_relation_binary_tree_node_label_contracts() -> None:
     task = GraphRelationBinaryTreeNodeLabelTask()
-    query_ids = (
-        "parent_label",
-        "left_child_label",
-        "right_child_label",
-        "sibling_label",
-        "lowest_common_ancestor_label",
-    )
+    expected_role_keys = {
+        "parent_label": {"child", "parent"},
+        "left_child_label": {"parent", "left_child"},
+        "right_child_label": {"parent", "right_child"},
+        "sibling_label": {"node", "sibling"},
+        "lowest_common_ancestor_label": {"node_a", "node_b", "lowest_common_ancestor"},
+    }
 
     assert "task_graph__binary_tree__node_relation_label" in TASK_REGISTRY
-    for offset, query_id in enumerate(query_ids):
+    for offset, query_id in enumerate(expected_role_keys):
         out = task.generate(
             23200 + offset,
             params={
@@ -138,27 +149,34 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         assert out.scene_id == "binary_tree"
         assert out.query_id == query_id
         assert out.answer_gt.type == "string"
-        assert out.evidence_gt.type == "bbox_set"
+        assert out.evidence_gt.type == "keyed_bbox_map"
         assert str(out.answer_gt.value) == str(execution["answer_label"])
-        assert len(out.evidence_gt.value) == (3 if query_id == "lowest_common_ancestor_label" else 2)
+        assert set(out.evidence_gt.value) == expected_role_keys[query_id]
+        assert set(execution["evidence_role_to_label"]) == expected_role_keys[query_id]
+        assert len(out.evidence_gt.value) == (
+            3 if query_id == "lowest_common_ancestor_label" else 2
+        )
         assert len(nodes) == int(execution["node_count"])
         assert len(edges) == len(nodes) - 1
-        assert trace["projected_evidence"]["type"] == "bbox_set"
-        assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
+        assert trace["projected_evidence"]["type"] == "keyed_bbox_map"
+        assert trace["projected_evidence"]["keyed_bbox_map"] == out.evidence_gt.value
+        assert (
+            trace["projected_evidence"]["pixel_keyed_bbox_map"] == out.evidence_gt.value
+        )
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
         assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+        assert "JSON object" in out.prompt_variants["answer_and_evidence"]
         assert "[x0,y0,x1,y1]" in out.prompt_variants["answer_and_evidence"]
 
 
-def test_graph_relation_search_tree_operation_label_contracts() -> None:
-    task = GraphRelationSearchTreeOperationLabelTask()
+def test_graph_relation_bst_path_operation_label_contracts() -> None:
+    task = GraphRelationBstPathOperationLabelTask()
     query_ids = (
         "bst_search_terminal_label",
         "bst_insert_parent_label",
-        "heap_property_violation_label",
     )
 
-    assert "task_graph__binary_tree__tree_operation_label" in TASK_REGISTRY
+    assert "task_graph__binary_tree__bst_path_operation_label" in TASK_REGISTRY
     for offset, query_id in enumerate(query_ids):
         out = task.generate(
             23300 + offset,
@@ -186,10 +204,41 @@ def test_graph_relation_search_tree_operation_label_contracts() -> None:
         assert trace["projected_evidence"]["type"] == "bbox_sequence"
         assert trace["projected_evidence"]["bbox_sequence"] == out.evidence_gt.value
         assert sum(1 for node in nodes if node["is_answer_node"]) == 1
-        if query_id.startswith("bst_"):
-            assert execution["target_key"] is not None
-        else:
-            assert execution["target_key"] is None
-            assert len(out.evidence_gt.value) == 2
+        assert execution["target_key"] is not None
         assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
         assert "ordered JSON array" in out.prompt_variants["answer_and_evidence"]
+
+
+def test_graph_relation_heap_property_violation_label_contracts() -> None:
+    task = GraphRelationHeapPropertyViolationLabelTask()
+
+    assert "task_graph__binary_tree__heap_property_violation_label" in TASK_REGISTRY
+    out = task.generate(
+        23350,
+        params={
+            "query_id": "heap_property_violation_label",
+            "node_count": 9,
+            "scene_variant": "classic_tree",
+        },
+        max_attempts=300,
+    )
+    trace = out.trace_payload
+    nodes = _binary_tree_nodes(trace)
+    edges = _binary_tree_edges(trace)
+    execution = trace["execution_trace"]
+
+    assert out.scene_id == "binary_tree"
+    assert out.query_id == "heap_property_violation_label"
+    assert out.answer_gt.type == "string"
+    assert out.evidence_gt.type == "bbox_sequence"
+    assert str(out.answer_gt.value) == str(execution["answer_label"])
+    assert len(out.evidence_gt.value) == 2
+    assert len(nodes) == int(execution["node_count"])
+    assert len(edges) == len(nodes) - 1
+    assert trace["scene_ir"]["scene_kind"] == "search_tree_operation_diagram"
+    assert trace["projected_evidence"]["type"] == "bbox_sequence"
+    assert trace["projected_evidence"]["bbox_sequence"] == out.evidence_gt.value
+    assert sum(1 for node in nodes if node["is_answer_node"]) == 1
+    assert execution["target_key"] is None
+    assert "Evidence format:" in out.prompt_variants["answer_and_evidence"]
+    assert "ordered JSON array" in out.prompt_variants["answer_and_evidence"]

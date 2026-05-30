@@ -518,7 +518,8 @@ class _GraphPathShortestPathLengthBaseTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "object_description_directed",
-                "evidence_hint",
+                "evidence_hint_shortest_path_length",
+                "evidence_hint_directed_shortest_path_length",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -529,6 +530,7 @@ class _GraphPathShortestPathLengthBaseTask:
             label_variant=str(query.label_variant)
         )
         prompt_query_key = "directed_shortest_path_length" if str(query.graph_directionality) == "directed" else "shortest_path_length"
+        evidence_hint_key = f"evidence_hint_{prompt_query_key}"
         object_description_key = "object_description_directed" if str(query.graph_directionality) == "directed" else "object_description"
         prompt_source_label = format_graph_prompt_label(
             str(graph_sample.source_label),
@@ -552,7 +554,7 @@ class _GraphPathShortestPathLengthBaseTask:
                 "goal_label": str(prompt_goal_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
                     source_label=str(prompt_source_label),
                     goal_label=str(prompt_goal_label),
                 ),
@@ -802,7 +804,10 @@ class GraphPathShortestPathLengthTask(_GraphPathShortestPathLengthBaseTask):
     """Count edges in an undirected or directed shortest path."""
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        output = super().generate(int(instance_seed), params=dict(params), max_attempts=int(max_attempts))
+        branch_params = dict(params)
+        if str(branch_params.get("query_id", "")) == "undirected_shortest_path_length":
+            branch_params["query_id"] = "shortest_path_length"
+        output = super().generate(int(instance_seed), params=branch_params, max_attempts=int(max_attempts))
         execution_trace = output.trace_payload.get("execution_trace") if isinstance(output.trace_payload, Mapping) else None
         graph_directionality = ""
         if isinstance(execution_trace, Mapping):

@@ -11,6 +11,15 @@ from trace.tasks.pages.cycle.offset_stage_label import PagesCycleOffsetStageLabe
 from tests.helpers import extract_prompt_json_example
 
 
+def _bboxes_overlap(left, right) -> bool:
+    return not (
+        float(left[2]) <= float(right[0])
+        or float(left[0]) >= float(right[2])
+        or float(left[3]) <= float(right[1])
+        or float(left[1]) >= float(right[3])
+    )
+
+
 def test_pages_cycle_prompt_bundle_does_not_name_direction() -> None:
     bundle_path = Path("prompts/pages/cycle/pages_cycle_v0.json")
     bundle_text = bundle_path.read_text(encoding="utf-8")
@@ -48,9 +57,7 @@ def test_pages_cycle_offset_stage_label_contract_matches_answer_stage_bbox() -> 
             assert out.answer_gt.type == "string"
             assert out.evidence_gt.type == "bbox_set"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
-            assert str(out.query_id) == "default"
             assert str(out.query_id) == f"{query_relationship}_offset_stage_label"
-            assert str(execution["query_id"]) == "default"
             assert str(execution["query_id"]) == f"{query_relationship}_offset_stage_label"
             assert str(execution["query_relationship"]) == str(query_relationship)
             assert str(execution["scene_variant"]) == "cycle_ring"
@@ -91,6 +98,26 @@ def test_pages_cycle_prompt_examples_match_variant_contract() -> None:
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected_answer_and_evidence
         assert answer_only == expected_answer_only
+
+
+def test_pages_cycle_uses_paragraph_context_side_notes() -> None:
+    task = PagesCycleOffsetStageLabelTask()
+    out = task.generate(61400, params={}, max_attempts=10)
+    trace = out.trace_payload
+    context_layer = trace["render_spec"]["context_text_layer"]
+    context_elements = [dict(element) for element in context_layer["elements"]]
+    panel_bbox = trace["render_map"]["panel_bbox_px"]
+
+    assert context_layer["layout_spec"]["density"] == "two_side_notes"
+    assert int(context_layer["layout_spec"]["side_notes_added"]) == 2
+    assert any(str(element["role"]) == "side_note_body" for element in context_elements)
+    assert any(
+        str(element["role"]) == "side_note_body"
+        and str(element["manifest_path"]) == "paragraphs/context_template_blocks.txt"
+        for element in context_elements
+    )
+    assert all(not _bboxes_overlap(element["bbox_xyxy"], panel_bbox) for element in context_elements)
+    assert "context_text_bboxes_px" in trace["render_map"]
 
 
 def test_pages_cycle_offset_stage_label_is_deterministic() -> None:
@@ -183,8 +210,6 @@ def test_pages_cycle_source_before_after_query_id_aliases_query_relationship() -
     out = task.generate(61650, params={"query_id": "before_k_steps", "scene_variant": "cycle_ring"}, max_attempts=10)
     execution = out.trace_payload["execution_trace"]
 
-    assert str(out.query_id) == "default"
     assert str(out.query_id) == "before_offset_stage_label"
-    assert str(execution["query_id"]) == "default"
     assert str(execution["query_id"]) == "before_offset_stage_label"
     assert str(execution["query_relationship"]) == "before"

@@ -35,6 +35,14 @@ rendering:
       field_outline_width_px: 2
       field_outline_width_px_min: 1
       field_outline_width_px_max: 3
+      document_layout_mode_weights:
+        centered: 0.22
+        left_weighted: 0.22
+        right_weighted: 0.22
+        upper_left: 0.12
+        upper_right: 0.12
+        lower_left: 0.05
+        lower_right: 0.05
       title_font_size_px: 42
       section_font_size_px: 24
       label_font_size_px: 22
@@ -221,7 +229,7 @@ generation:
 prompt:
   shared:
     bundle_id: pages_arithmetic_v0
-    answer_hint: set "answer" to the computed amount formatted exactly as $0.00
+    answer_hint: set "answer" to the computed amount formatted as a currency string with exactly two digits after the decimal point
   task_overrides:
     task_pages__form_section__section_expression_value:
       scene_key: structured_document_sections
@@ -232,5 +240,6 @@ prompt:
         header fields, and summary blocks
       object_description_receipt_sheet: a receipt-style document with visible section
         headers and labeled totals rows
-      evidence_hint: set "evidence" to an array containing one bounding box [x0, y0,
-        x1, y1] for each referenced operand value in the expression
+      evidence_hint: set "evidence" to an object mapping operand role keys such
+        as "first_operand", "second_operand", and "third_operand" to the referenced
+        operand value bounding box [x0, y0, x1, y1]

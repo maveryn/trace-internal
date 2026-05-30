@@ -87,18 +87,18 @@ prompt:
     integer_answer_hint: set "answer" to the requested integer count
     label_answer_hint: set "answer" to the exact visible step label as a string
     evidence_hint_node_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted step boxes
-    evidence_hint_path_endpoint: set "evidence" to an ordered array of [x0,y0,x1,y1] pixel bounding boxes for the followed step boxes and the used decision-label boxes
-    evidence_hint_handoff_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted handoff arrows
+    evidence_hint_path_endpoint: set "evidence" to an object mapping start_step, first_decision_label, intermediate_step, second_decision_label, and endpoint_step to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
+    evidence_hint_handoff_count: set "evidence" to an array of pixel point pairs for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
   task_overrides:
     task_pages__process_flow__filtered_node_count:
       integer_answer_hint: set "answer" to the requested integer count
       evidence_hint_node_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted step boxes
     task_pages__process_flow__condition_path_endpoint_label:
       label_answer_hint: set "answer" to the exact visible step label as a string
-      evidence_hint_path_endpoint: set "evidence" to an ordered array of [x0,y0,x1,y1] pixel bounding boxes for the followed step boxes and the used decision-label boxes
+      evidence_hint_path_endpoint: set "evidence" to an object mapping start_step, first_decision_label, intermediate_step, second_decision_label, and endpoint_step to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
     task_pages__process_flow__actor_handoff_count:
       integer_answer_hint: set "answer" to the requested integer count
-      evidence_hint_handoff_count: set "evidence" to an array of [x0,y0,x1,y1] pixel bounding boxes for the counted handoff arrows
+      evidence_hint_handoff_count: set "evidence" to an array of pixel point pairs for the counted handoff arrows, with each pair formatted as [[x, y], [x, y]]
 
 visual:
   background:

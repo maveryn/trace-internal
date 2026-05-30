@@ -14,7 +14,7 @@
 4. `evidence_gt.type`: `point_set`
 5. Distances are computed over adjacent station-to-station route segments.
 6. Evidence is an unordered set of station-center pixel points for all stations at the queried distance.
-7. Current calibrated support uses `route_count=2..3`, letter station labels, `k=2`, and answer values `1..5`.
+7. Current calibrated support uses `route_count=2..3`, letter/number/named station labels, `k=2`, and answer values `1..5`.
 
 ## 3) Prompt Contract
 1. Bundle: `graph_relation_v0`

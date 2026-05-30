@@ -30,15 +30,15 @@ SUPPORTED_DOCUMENT_ARITHMETIC_SCENE_VARIANTS: Tuple[str, ...] = SUPPORTED_SECTIO
 _QUESTION_TEXT_BY_VARIANT = {
     "sum_two_amounts_in_section": (
         "In the {section_label} section, what is {first_label} plus {second_label}? "
-        "Return the amount as $0.00."
+        "Use currency notation with exactly two digits after the decimal point."
     ),
     "difference_two_amounts_in_section": (
         "In the {section_label} section, what is {first_label} minus {second_label}? "
-        "Return the amount as $0.00."
+        "Use currency notation with exactly two digits after the decimal point."
     ),
     "sum_minus_amount_in_section": (
         "In the {section_label} section, what is {first_label} plus {second_label} minus {third_label}? "
-        "Return the amount as $0.00."
+        "Use currency notation with exactly two digits after the decimal point."
     ),
 }
 _OPERAND_COUNT_BY_VARIANT = {

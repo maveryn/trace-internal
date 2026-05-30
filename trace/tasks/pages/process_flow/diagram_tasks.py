@@ -376,6 +376,10 @@ def _rounded_bbox(bbox: Sequence[float]) -> list[float]:
     return [round(float(value), 3) for value in bbox]
 
 
+def _rounded_point(point: Sequence[float]) -> list[float]:
+    return [round(float(value), 3) for value in point[:2]]
+
+
 def _union_bbox(bboxes: Iterable[Sequence[float]], *, padding: float = 0.0) -> list[float]:
     resolved = [[float(value) for value in bbox] for bbox in bboxes if len(bbox) >= 4]
     if not resolved:
@@ -1105,6 +1109,8 @@ def _render_scene(
 
     node_by_id = {str(node["node_id"]): node for node in nodes}
     edge_bbox_map: Dict[str, list[float]] = {}
+    edge_point_pair_map: Dict[str, list[list[float]]] = {}
+    edge_polyline_map: Dict[str, list[list[float]]] = {}
     edge_label_bbox_map: Dict[str, list[float]] = {}
     edge_label_text_bbox_map: Dict[str, list[float]] = {}
     edge_style_rng = spawn_rng(int(instance_seed), f"{task_id}.edge_style")
@@ -1123,7 +1129,10 @@ def _render_scene(
             head_width_px=float(render_defaults.get("arrow_head_width_px", 13)),
             dashed=bool(dashed),
         )
-        edge["points"] = [[round(float(x), 3), round(float(y), 3)] for x, y in points]
+        rounded_points = [_rounded_point((x, y)) for x, y in points]
+        edge_point_pair_map[str(edge["edge_id"])] = [list(rounded_points[0]), list(rounded_points[-1])]
+        edge_polyline_map[str(edge["edge_id"])] = [list(point) for point in rounded_points]
+        edge["points"] = [list(point) for point in rounded_points]
         edge["edge_bbox_id"] = str(edge["edge_id"])
         edge["bbox"] = list(edge_bbox_map[str(edge["edge_id"])])
         if str(edge.get("label", "")).strip():
@@ -1163,6 +1172,8 @@ def _render_scene(
         "node_label_bboxes_px": node_label_bbox_map,
         "node_status_bboxes_px": node_status_bbox_map,
         "edge_bboxes_px": edge_bbox_map,
+        "edge_point_pairs_px": edge_point_pair_map,
+        "edge_polylines_px": edge_polyline_map,
         "edge_label_bboxes_px": edge_label_bbox_map,
         "edge_label_text_bboxes_px": edge_label_text_bbox_map,
     }
@@ -1190,6 +1201,13 @@ def _condition_path_query(
         "task_key": _TASK_KEYS["condition_path_endpoint_label"],
         "answer": str(node_by_id[second_target]["label"]),
         "answer_node_id": str(second_target),
+        "evidence_roles": [
+            {"key": "start_step", "kind": "node", "id": "n0"},
+            {"key": "first_decision_label", "kind": "edge_label", "id": first_edge_id},
+            {"key": "intermediate_step", "kind": "node", "id": first_target},
+            {"key": "second_decision_label", "kind": "edge_label", "id": second_edge_id},
+            {"key": "endpoint_step", "kind": "node", "id": second_target},
+        ],
         "evidence_node_ids": [str(node_id) for node_id in path_node_ids],
         "evidence_edge_label_ids": [first_edge_id, second_edge_id],
         "condition_labels": labels,
@@ -1223,6 +1241,31 @@ def _choose_answer_balanced_candidate(
         by_answer.setdefault(int(candidate["answer"]), []).append(candidate)
     answer_bucket = int(rng.choice(sorted(by_answer)))
     return dict(rng.choice(by_answer[answer_bucket]))
+
+
+def _choose_from_answer_support(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    rng,
+    answer_support: Sequence[int],
+) -> Dict[str, Any]:
+    """Choose a candidate by a seeded target answer, falling back to nearby available answers."""
+
+    by_answer: Dict[int, list[Dict[str, Any]]] = {}
+    for candidate in candidates:
+        by_answer.setdefault(int(candidate["answer"]), []).append(dict(candidate))
+    if not by_answer:
+        raise ValueError("process-flow answer-support selector received no candidates")
+    support = [int(value) for value in answer_support]
+    target = int(support[int(rng.randrange(len(support)))])
+    if target in by_answer:
+        answer_bucket = int(target)
+    else:
+        available = sorted(by_answer)
+        distance = min(abs(int(value) - int(target)) for value in available)
+        tied = [int(value) for value in available if abs(int(value) - int(target)) == int(distance)]
+        answer_bucket = int(max(tied))
+    return dict(rng.choice(by_answer[int(answer_bucket)]))
 
 
 def _select_filtered_query(
@@ -1398,17 +1441,32 @@ def _select_handoff_query(
             )
     preferred = candidates_by_query.get(str(query_id), [])
     if preferred:
+        if str(query_id) == "lane_outgoing_handoff_count":
+            return _choose_from_answer_support(preferred, rng=rng, answer_support=(1, 2, 3, 4, 5, 6, 7))
         return _choose_answer_balanced_candidate(preferred, rng=rng, min_answer=2)
     all_candidates = [candidate for candidates in candidates_by_query.values() for candidate in candidates]
     return _choose_answer_balanced_candidate(all_candidates, rng=rng, min_answer=2)
 
 
 def _build_prompt_json_examples(*, answer_type: str, evidence_kind: str) -> tuple[str, str]:
-    evidence = {
-        "node": [[168, 246, 302, 308], [340, 386, 474, 448]],
-        "path": [[126, 208, 260, 270], [322, 318, 456, 380], [512, 318, 578, 342]],
-        "handoff": [[272, 294, 462, 348], [526, 408, 706, 462]],
-    }.get(str(evidence_kind), [[168, 246, 302, 308]])
+    evidence: Any
+    if str(evidence_kind) == "path":
+        evidence = {
+            "start_step": [126, 208, 260, 270],
+            "first_decision_label": [286, 254, 340, 278],
+            "intermediate_step": [360, 300, 494, 362],
+            "second_decision_label": [512, 412, 570, 436],
+            "endpoint_step": [630, 458, 764, 520],
+        }
+    elif str(evidence_kind) == "handoff":
+        evidence = [
+            [[272, 294], [462, 348]],
+            [[526, 408], [706, 462]],
+        ]
+    else:
+        evidence = {
+            "node": [[168, 246, 302, 308], [340, 386, 474, 448]],
+        }.get(str(evidence_kind), [[168, 246, 302, 308]])
     answer_value: Any = "Publish" if str(answer_type) == "string" else 3
     answer_and_evidence = {"evidence": evidence, "answer": answer_value}
     answer_only = {"answer": answer_value}
@@ -1662,33 +1720,73 @@ def _build_output(
 
     node_bbox_map = dict(render_map["node_bboxes_px"])
     edge_bbox_map = dict(render_map["edge_bboxes_px"])
+    edge_point_pair_map = dict(render_map["edge_point_pairs_px"])
     edge_label_bbox_map = dict(render_map["edge_label_bboxes_px"])
     evidence_ids: list[str] = []
+    evidence_key_to_bbox_id: Dict[str, str] = {}
+    evidence_keyed_bboxes: Dict[str, list[float]] = {}
+    evidence_point_pairs: list[list[list[float]]] = []
     bbox_source_map: Dict[str, Sequence[float]] = {}
     if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
-        node_ids = [str(item) for item in query.get("evidence_node_ids", [])]
-        label_ids = [str(item) for item in query.get("evidence_edge_label_ids", [])]
-        for node_id in node_ids:
-            evidence_ids.append(f"node:{node_id}")
-            bbox_source_map[f"node:{node_id}"] = node_bbox_map[str(node_id)]
-        for label_id in label_ids:
-            evidence_ids.append(f"edge_label:{label_id}")
-            bbox_source_map[f"edge_label:{label_id}"] = edge_label_bbox_map[str(label_id)]
+        for role in query.get("evidence_roles", []):
+            evidence_key = str(role["key"])
+            source_kind = str(role["kind"])
+            source_id = str(role["id"])
+            if source_kind == "node":
+                bbox_id = f"node:{source_id}"
+                bbox = node_bbox_map[str(source_id)]
+            elif source_kind == "edge_label":
+                bbox_id = f"edge_label:{source_id}"
+                bbox = edge_label_bbox_map[str(source_id)]
+            else:
+                raise ValueError(f"unsupported process-flow evidence role kind: {source_kind}")
+            evidence_ids.append(bbox_id)
+            evidence_key_to_bbox_id[evidence_key] = bbox_id
+            evidence_keyed_bboxes[evidence_key] = [round(float(value), 3) for value in bbox]
     elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
         for edge_id in [str(item) for item in query.get("evidence_edge_ids", [])]:
-            evidence_ids.append(f"edge:{edge_id}")
-            bbox_source_map[f"edge:{edge_id}"] = edge_bbox_map[str(edge_id)]
+            evidence_ids.append(f"edge_points:{edge_id}")
+            evidence_point_pairs.append(
+                [
+                    [round(float(value), 3) for value in point]
+                    for point in edge_point_pair_map[str(edge_id)]
+                ]
+            )
     else:
         for node_id in [str(item) for item in query.get("evidence_node_ids", [])]:
             evidence_ids.append(f"node:{node_id}")
             bbox_source_map[f"node:{node_id}"] = node_bbox_map[str(node_id)]
-    evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
-    evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+    if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
+        evidence_bboxes = [list(bbox) for bbox in evidence_keyed_bboxes.values()]
+        evidence_projection = {
+            "type": "keyed_bbox_map",
+            "keyed_bbox_map": dict(evidence_keyed_bboxes),
+            "pixel_keyed_bbox_map": dict(evidence_keyed_bboxes),
+            "bbox_set": list(evidence_bboxes),
+            "evidence_keys": list(evidence_keyed_bboxes.keys()),
+            "evidence_key_to_bbox_id": dict(evidence_key_to_bbox_id),
+        }
+    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
+        evidence_bboxes = []
+        evidence_projection = {
+            "type": "point_pair_set",
+            "point_pair_set": list(evidence_point_pairs),
+            "pixel_point_pair_set": list(evidence_point_pairs),
+            "evidence_ids": list(evidence_ids),
+        }
+    else:
+        evidence_projection = projected_diagram_bbox_evidence(bbox_source_map, evidence_ids)
+        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
     if str(answer_type) == "string":
         answer_gt = TypedValue(type="string", value=str(query["answer"]))
     else:
         answer_gt = TypedValue(type="integer", value=int(query["answer"]))
-    evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+    if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID:
+        evidence_gt = TypedValue(type="keyed_bbox_map", value=dict(evidence_keyed_bboxes))
+    elif str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID:
+        evidence_gt = TypedValue(type="point_pair_set", value=list(evidence_point_pairs))
+    else:
+        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
     node_scan = normalize_int_with_bounds(int(scene["node_count"]), [10, 16])
     lane_scan = normalize_int_with_bounds(int(scene["lane_count"]), [3, 5])
@@ -1804,11 +1902,21 @@ def _build_output(
             "query": {key: value for key, value in query.items() if key not in {"task_key"}},
             "answer": answer_gt.to_dict(),
             "evidence_ids": list(evidence_ids),
-            "supporting_bbox_ids": list(evidence_ids),
+            "evidence_key_to_bbox_id": dict(evidence_key_to_bbox_id),
+            "supporting_bbox_ids": [] if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID else list(evidence_ids),
+            "supporting_point_pair_ids": list(evidence_ids) if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID else [],
         },
         "witness_symbolic": {
-            "type": "ordered_bbox_ids" if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID else "bbox_id_set",
+            "type": (
+                "keyed_path_support"
+                if str(task_id) == CONDITION_PATH_ENDPOINT_TASK_ID
+                else "point_pair_id_set"
+                if str(task_id) == ACTOR_HANDOFF_COUNT_TASK_ID
+                else "bbox_id_set"
+            ),
             "ids": list(evidence_ids),
+            "keys": list(evidence_keyed_bboxes.keys()),
+            "point_pairs": list(evidence_point_pairs),
         },
         "projected_evidence": dict(evidence_projection),
         "background": dict(background_meta),

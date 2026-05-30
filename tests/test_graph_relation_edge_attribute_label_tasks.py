@@ -44,14 +44,12 @@ def test_graph_relation_edge_attribute_label_directed_contract_matches_trace() -
 
     assert "task_graph__node_link__edge_attribute_label" in TASK_REGISTRY
     assert out.scene_id == "node_link"
-    assert out.query_id == "default"
     assert out.query_id == "directed_edge_between_nodes_label"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "feeds"
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
     assert trace["scene_ir"]["scene_kind"] == "graph_edge_attribute_relation"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "directed_edge_between_nodes_label"
     assert execution["graph_directionality"] == "directed"
     assert execution["target_edge_label"] == "feeds"

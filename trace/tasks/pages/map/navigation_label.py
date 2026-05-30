@@ -18,7 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.diagram.common import projected_diagram_bbox_evidence
+from ..shared.diagram.common import projected_diagram_bbox_sequence_evidence
 from ..shared.diagram.complexity import (
     build_diagrams_complexity,
     clamp_unit_interval,
@@ -181,11 +181,14 @@ class PagesMapNavigationLabelTask:
             **dict(rendered_scene.landmark_bbox_map),
             **dict(rendered_scene.zone_label_bbox_map),
         }
-        evidence_projection = projected_diagram_bbox_evidence(evidence_bbox_map, evidence_bbox_ids)
-        evidence_bboxes = [[round(float(value), 3) for value in bbox] for bbox in evidence_projection["bbox_set"]]
+        evidence_projection = projected_diagram_bbox_sequence_evidence(evidence_bbox_map, evidence_bbox_ids)
+        evidence_bboxes = [
+            [round(float(value), 3) for value in bbox]
+            for bbox in evidence_projection["bbox_sequence"]
+        ]
         answer_value = str(dataset["answer_label"])
         answer_gt = TypedValue(type="string", value=str(answer_value))
-        evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
+        evidence_gt = TypedValue(type="bbox_sequence", value=list(evidence_bboxes))
 
         landmark_scan = normalize_int_with_bounds(int(dataset["landmark_count"]), [8, 14])
         route_scan = normalize_int_with_bounds(len(dataset["route_landmark_ids"]), [1, 6])

@@ -44,9 +44,7 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     assert len(out.evidence_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "graph_degree_counting"
     assert execution["question_format"] == "count_nodes_with_degree"
-    assert out.query_id == "default"
     assert out.query_id == "undirected_degree_count"
-    assert execution["query_id"] == "default"
     assert execution["query_id"] == "undirected_degree_count"
     assert execution["internal_query_id"] == "degree_count"
     assert execution["graph_directionality"] == "undirected"
@@ -200,9 +198,7 @@ def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semanti
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
-        assert out.query_id == "default"
         assert out.query_id == f"directed_{degree_mode}_count"
-        assert execution["query_id"] == "default"
         assert execution["query_id"] == f"directed_{degree_mode}_count"
         assert execution["internal_query_id"] == "directed_degree_count"
         assert execution["graph_directionality"] == "directed"
@@ -246,7 +242,6 @@ def test_graph_counting_degree_count_directed_variants_use_full_node_range() -> 
 def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
     task = GraphCountingDegreeCountTask()
     query_ids: Counter[str] = Counter()
-    query_ids: Counter[str] = Counter()
     degree_modes: Counter[str] = Counter()
     target_counts: Counter[int] = Counter()
     targets_by_mode: defaultdict[str, Counter[int]] = defaultdict(Counter)
@@ -265,7 +260,6 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         )
         execution = out.trace_payload["execution_trace"]
         query_ids[str(execution["query_id"])] += 1
-        query_ids[str(execution["query_id"])] += 1
         degree_modes[str(execution["degree_mode"])] += 1
         target_counts[int(execution["target_count"])] += 1
         targets_by_mode[str(execution["degree_mode"])][int(execution["target_count"])] += 1
@@ -281,7 +275,6 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         if "query_degree" in execution:
             assert 0 <= int(execution["query_degree"]) <= 4
         assert 0 <= int(execution["target_count"]) <= 6
-    assert set(query_ids.keys()) == {"default"}
     assert set(query_ids.keys()) == {
         "undirected_degree_count",
         "directed_in_degree_count",

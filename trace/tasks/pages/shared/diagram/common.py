@@ -71,6 +71,22 @@ def projected_diagram_bbox_evidence(
     }
 
 
+def projected_diagram_bbox_sequence_evidence(
+    bbox_map: Mapping[str, Sequence[float]],
+    item_ids: Sequence[str],
+) -> Dict[str, Any]:
+    """Project ordered diagram ids into prompt-facing `bbox_sequence` evidence."""
+
+    return {
+        "type": "bbox_sequence",
+        "bbox_sequence": [
+            list(bbox_map[str(item_id)])
+            for item_id in [str(item) for item in item_ids]
+            if str(item_id) in bbox_map
+        ],
+    }
+
+
 def sample_diagram_short_names(*, count: int, rng) -> list[str]:
     """Sample unique short visible names for diagram labels."""
 
@@ -243,6 +259,7 @@ def draw_diagram_text_in_box(
 __all__ = [
     "draw_diagram_text_in_box",
     "projected_diagram_bbox_evidence",
+    "projected_diagram_bbox_sequence_evidence",
     "resolve_jittered_diagram_panel_geometry",
     "resolve_diagram_panel_geometry",
     "resolve_diagrams_int_param",

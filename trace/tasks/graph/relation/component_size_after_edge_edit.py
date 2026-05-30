@@ -518,7 +518,8 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
-                "evidence_hint",
+                "evidence_hint_component_size_after_edge_removal",
+                "evidence_hint_component_size_after_edge_addition",
                 "answer_hint",
                 "json_example",
                 "json_example_answer_only",
@@ -538,6 +539,7 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
             str(graph_sample.edit_edge[1]),
             label_variant=str(query.label_variant),
         )
+        evidence_hint_key = f"evidence_hint_{query.prompt_query_key}"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -553,7 +555,11 @@ class GraphRelationComponentSizeAfterEdgeEditTask:
                 "edit_label_b": str(prompt_edit_label_b),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(prompt_defaults["evidence_hint"]).format(query_label=str(prompt_query_label)),
+                "evidence_hint": str(prompt_defaults[evidence_hint_key]).format(
+                    query_label=str(prompt_query_label),
+                    edit_label_a=str(prompt_edit_label_a),
+                    edit_label_b=str(prompt_edit_label_b),
+                ),
                 "answer_hint": str(prompt_defaults["answer_hint"]).format(query_label=str(prompt_query_label)),
                 "json_example": str(prompt_json_example),
                 "json_example_answer_only": str(prompt_json_example_answer_only),

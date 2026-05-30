@@ -12,6 +12,8 @@
   "evidence_types": [
     "bbox_sequence",
     "bbox_set",
+    "keyed_bbox_map",
+    "keyed_point_map",
     "point_pair_set",
     "point_sequence",
     "point_set"

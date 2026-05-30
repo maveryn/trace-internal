@@ -1529,18 +1529,22 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_min"]) == 1
     assert int(generation_shared["distractor_count_max"]) == 10
     assert bool(generation_shared["balanced_sampling"]) is True
-    assert "task_icons__reference_canvas__attribute_match_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__reference_canvas__reference_predicate_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__icon_field__type_frequency_count" in cfg["generation"]["task_overrides"]
-    assert "task_icons__reference_canvas__size_relation_count" in cfg["generation"]["task_overrides"]
-    assert "task_icons__named_field__shape_pair_total_count" in cfg["generation"]["task_overrides"]
-    assert "task_icons__named_field__shape_pair_difference_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_field__shape_pair_arithmetic_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__named_field__closer_to_reference_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_grid__row_column_shape_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_grid__row_column_shape_extreme_number" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_grid__line_condition_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_ring__arc_shape_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__venn_field__venn_region_shape_count" in cfg["generation"]["task_overrides"]
-    assert set(cfg["generation"]["task_overrides"]["task_icons__reference_canvas__attribute_match_count"]["query_id_weights"].keys()) == {
+    assert set(cfg["generation"]["task_overrides"]["task_icons__reference_canvas__reference_predicate_count"]["query_id_weights"].keys()) == {
         "match_type",
         "match_color",
         "match_rotation",
         "match_type_color_rotation",
+        "size_smaller",
+        "size_larger",
     }
 
     render_shared = cfg["rendering"]["shared"]
@@ -1576,7 +1580,7 @@ def test_icons_counting_defaults_loaded() -> None:
 
     single_generation, single_rendering, single_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons__reference_canvas__attribute_match_count",
+        task_id="task_icons__reference_canvas__reference_predicate_count",
     )
     assert str(single_generation["variant_generation_params"]["match_type"]["pool_manifest"]).strip() == "all_icons.txt"
     assert str(single_generation["variant_generation_params"]["match_color"]["pool_manifest"]).strip() == "all_icons.txt"
@@ -1591,6 +1595,8 @@ def test_icons_counting_defaults_loaded() -> None:
         "match_color",
         "match_rotation",
         "match_type_color_rotation",
+        "size_smaller",
+        "size_larger",
     }
     assert str(single_prompt["evidence_hint"]).strip()
     assert str(single_prompt["answer_hint"]).strip()
@@ -1603,10 +1609,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(single_rendering["variant_render_params"]["match_type_color_rotation"]["palette_size_min"]) == 3
     assert int(single_rendering["variant_render_params"]["match_type_color_rotation"]["palette_size_max"]) == 4
 
-    size_generation, size_rendering, size_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons__reference_canvas__size_relation_count",
-    )
+    size_generation = single_generation["variant_generation_params"]["size_smaller"]
     assert str(size_generation["pool_manifest"]).strip() == "all_icons.txt"
     assert list(size_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
     assert list(size_generation["size_relation_candidates"]) == ["smaller", "larger"]
@@ -1614,16 +1617,11 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(size_generation["object_count_max"]) == 14
     assert int(size_generation["target_count_max"]) == 5
     assert int(size_generation["distractor_count_max"]) == 6
-    assert int(size_rendering["scene_icon_size_max_px"]) == 120
-    assert int(size_rendering["reference_icon_size_min_px"]) == 64
-    assert int(size_rendering["reference_icon_size_max_px"]) == 96
-    assert str(size_prompt["object_description"]).strip()
-    assert str(size_prompt["question_text_smaller"]).strip()
-    assert str(size_prompt["question_text_larger"]).strip()
-    assert str(size_prompt["evidence_hint"]).strip()
-    assert str(size_prompt["answer_hint"]).strip()
-    assert str(size_prompt["json_example"]).strip()
-    assert str(size_prompt["json_example_answer_only"]).strip()
+    assert int(single_rendering["variant_render_params"]["size_smaller"]["scene_icon_size_max_px"]) == 120
+    assert int(single_rendering["variant_render_params"]["size_smaller"]["reference_icon_size_min_px"]) == 64
+    assert int(single_rendering["variant_render_params"]["size_smaller"]["reference_icon_size_max_px"]) == 96
+    assert str(single_prompt["question_text_by_variant"]["size_smaller"]).strip()
+    assert str(single_prompt["question_text_by_variant"]["size_larger"]).strip()
 
     singleton_generation, singleton_rendering, singleton_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1642,6 +1640,8 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(singleton_params["repeated_type_multiplicity_max"]) == 4
     assert int(singleton_rendering["canvas_width"]) > 0
     assert int(singleton_rendering["canvas_height"]) > 0
+    assert int(singleton_rendering["scene_icon_size_min_px"]) == 64
+    assert int(singleton_rendering["scene_icon_size_max_px"]) == 96
     assert str(singleton_prompt["scene_key"]).strip() == "single_scene_counting"
     assert str(singleton_prompt["object_description"]).strip()
     assert str(singleton_prompt["question_text_by_variant"]["singleton_type_count"]).strip()
@@ -1658,8 +1658,8 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(most_frequent_params["pool_manifest"]).strip() == "all_icons.txt"
     assert int(most_frequent_params["object_count_min"]) == 7
     assert int(most_frequent_params["object_count_max"]) == 12
-    assert int(most_frequent_params["target_count_min"]) == 3
-    assert int(most_frequent_params["target_count_max"]) == 5
+    assert int(most_frequent_params["target_count_min"]) == 2
+    assert int(most_frequent_params["target_count_max"]) == 6
     assert int(most_frequent_params["other_repeated_type_count_max"]) == 3
     assert int(most_frequent_rendering["canvas_width"]) > 0
     assert int(most_frequent_rendering["canvas_height"]) > 0
@@ -1673,7 +1673,7 @@ def test_icons_counting_defaults_loaded() -> None:
 
     pair_generation, pair_rendering, pair_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons__named_field__shape_pair_total_count",
+        task_id="task_icons__named_field__shape_pair_arithmetic_count",
     )
     assert int(pair_generation["operand_count_min"]) == 1
     assert int(pair_generation["operand_count_max"]) == 6
@@ -1682,7 +1682,9 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(pair_generation["difference_answer_min"]) == 0
     assert int(pair_generation["difference_answer_max"]) == 5
     assert sorted(pair_generation["query_weights"].keys()) == [
+        "two_bound_color_difference_count",
         "two_bound_color_total_count",
+        "two_shape_difference_count",
         "two_shape_total_count",
     ]
     assert int(pair_rendering["canvas_width"]) > 0
@@ -1690,22 +1692,146 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(pair_prompt["scene_key"]).strip() == "single_scene_counting"
     assert str(pair_prompt["question_text_two_shape_total_count"]).strip()
     assert str(pair_prompt["question_text_two_bound_color_total_count"]).strip()
+    assert str(pair_prompt["question_text_two_shape_difference_count"]).strip()
+    assert str(pair_prompt["question_text_two_bound_color_difference_count"]).strip()
     assert str(pair_prompt["evidence_hint"]).strip()
     assert str(pair_prompt["answer_hint"]).strip()
     assert str(pair_prompt["json_example"]).strip()
     assert str(pair_prompt["json_example_answer_only"]).strip()
 
-    pair_diff_generation, pair_diff_rendering, pair_diff_prompt = split_generation_rendering_prompt_defaults(
+    grid_generation, grid_rendering, grid_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons__named_field__shape_pair_difference_count",
+        task_id="task_icons__named_grid__row_column_shape_count",
     )
-    assert sorted(pair_diff_generation["query_weights"].keys()) == [
-        "two_bound_color_difference_count",
-        "two_shape_difference_count",
+    assert int(grid_generation["target_count_min"]) == 1
+    assert int(grid_generation["target_count_max"]) == 5
+    assert sorted(grid_generation["query_id_weights"].keys()) == ["column_shape_count", "row_shape_count"]
+    assert [list(value) for value in grid_generation["grid_size_support"]] == [
+        [4, 4],
+        [4, 5],
+        [4, 6],
+        [5, 4],
+        [5, 5],
+        [5, 6],
+        [6, 4],
+        [6, 5],
+        [6, 6],
     ]
-    assert int(pair_diff_rendering["canvas_width"]) > 0
-    assert str(pair_diff_prompt["question_text_two_shape_difference_count"]).strip()
-    assert str(pair_diff_prompt["question_text_two_bound_color_difference_count"]).strip()
+    assert int(grid_rendering["canvas_width"]) == 880
+    assert int(grid_rendering["canvas_height"]) == 680
+    assert int(grid_rendering["grid_cell_max_size_px"]) == 104
+    assert int(grid_rendering["axis_label_font_size_px"]) == 24
+    assert str(grid_prompt["scene_key"]).strip() == "single_scene_counting"
+    assert str(grid_prompt["question_text_row_shape_count"]).strip()
+    assert str(grid_prompt["question_text_column_shape_count"]).strip()
+    assert str(grid_prompt["evidence_hint"]).strip()
+    assert str(grid_prompt["answer_hint"]).strip()
+    assert str(grid_prompt["json_example"]).strip()
+    assert str(grid_prompt["json_example_answer_only"]).strip()
+
+    grid_extreme_generation, grid_extreme_rendering, grid_extreme_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons__named_grid__row_column_shape_extreme_number",
+    )
+    assert int(grid_extreme_generation["answer_line_number_min"]) == 1
+    assert int(grid_extreme_generation["answer_line_number_max"]) == 6
+    assert sorted(grid_extreme_generation["query_id_weights"].keys()) == [
+        "column_fewest_shape_number",
+        "column_most_shape_number",
+        "row_fewest_shape_number",
+        "row_most_shape_number",
+    ]
+    assert [list(value) for value in grid_extreme_generation["grid_size_support"]] == [
+        [4, 4],
+        [4, 5],
+        [4, 6],
+        [5, 4],
+        [5, 5],
+        [5, 6],
+        [6, 4],
+        [6, 5],
+        [6, 6],
+    ]
+    assert int(grid_extreme_rendering["canvas_width"]) == 880
+    assert int(grid_extreme_rendering["canvas_height"]) == 680
+    assert str(grid_extreme_prompt["scene_key"]).strip() == "single_scene_counting"
+    assert str(grid_extreme_prompt["question_text_row_most_shape_number"]).strip()
+    assert str(grid_extreme_prompt["question_text_row_fewest_shape_number"]).strip()
+    assert str(grid_extreme_prompt["question_text_column_most_shape_number"]).strip()
+    assert str(grid_extreme_prompt["question_text_column_fewest_shape_number"]).strip()
+    assert str(grid_extreme_prompt["evidence_hint"]).strip()
+    assert str(grid_extreme_prompt["answer_hint"]).strip()
+    assert str(grid_extreme_prompt["json_example"]).strip()
+    assert str(grid_extreme_prompt["json_example_answer_only"]).strip()
+
+    grid_line_generation, grid_line_rendering, grid_line_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons__named_grid__line_condition_count",
+    )
+    assert int(grid_line_generation["answer_count_min"]) == 0
+    assert int(grid_line_generation["answer_count_max"]) == 5
+    assert int(grid_line_generation["at_least_threshold_min"]) == 2
+    assert int(grid_line_generation["at_least_threshold_max"]) == 3
+    assert int(grid_line_generation["exactly_threshold_min"]) == 1
+    assert int(grid_line_generation["exactly_threshold_max"]) == 3
+    assert sorted(grid_line_generation["query_id_weights"].keys()) == [
+        "column_at_least_shape_count",
+        "column_exactly_shape_count",
+        "column_no_shape_count",
+        "row_at_least_shape_count",
+        "row_exactly_shape_count",
+        "row_no_shape_count",
+    ]
+    assert [list(value) for value in grid_line_generation["grid_size_support"]] == [
+        [4, 4],
+        [4, 5],
+        [4, 6],
+        [5, 4],
+        [5, 5],
+        [5, 6],
+        [6, 4],
+        [6, 5],
+        [6, 6],
+    ]
+    assert int(grid_line_rendering["canvas_width"]) == 880
+    assert int(grid_line_rendering["canvas_height"]) == 680
+    assert str(grid_line_prompt["scene_key"]).strip() == "single_scene_counting"
+    assert str(grid_line_prompt["question_text_row_at_least_shape_count"]).strip()
+    assert str(grid_line_prompt["question_text_column_at_least_shape_count"]).strip()
+    assert str(grid_line_prompt["question_text_row_exactly_shape_count"]).strip()
+    assert str(grid_line_prompt["question_text_column_exactly_shape_count"]).strip()
+    assert str(grid_line_prompt["question_text_row_no_shape_count"]).strip()
+    assert str(grid_line_prompt["question_text_column_no_shape_count"]).strip()
+    assert str(grid_line_prompt["evidence_hint"]).strip()
+    assert str(grid_line_prompt["answer_hint"]).strip()
+    assert str(grid_line_prompt["json_example"]).strip()
+    assert str(grid_line_prompt["json_example_answer_only"]).strip()
+
+    ring_generation, ring_rendering, ring_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons__named_ring__arc_shape_count",
+    )
+    assert int(ring_generation["ring_icon_count_min"]) == 12
+    assert int(ring_generation["ring_icon_count_max"]) == 22
+    assert int(ring_generation["answer_count_min"]) == 0
+    assert int(ring_generation["answer_count_max"]) == 6
+    assert int(ring_generation["arc_span_min"]) == 3
+    assert int(ring_generation["arc_span_max"]) == 12
+    assert sorted(ring_generation["query_id_weights"].keys()) == [
+        "clockwise_arc_shape_count",
+        "counterclockwise_arc_shape_count",
+    ]
+    assert int(ring_rendering["canvas_width"]) == 880
+    assert int(ring_rendering["canvas_height"]) == 680
+    assert int(ring_rendering["ring_margin_px"]) == 86
+    assert int(ring_rendering["marker_label_radius_px"]) == 18
+    assert str(ring_prompt["scene_key"]).strip() == "single_scene_counting"
+    assert str(ring_prompt["question_text_clockwise_arc_shape_count"]).strip()
+    assert str(ring_prompt["question_text_counterclockwise_arc_shape_count"]).strip()
+    assert str(ring_prompt["evidence_hint"]).strip()
+    assert str(ring_prompt["answer_hint"]).strip()
+    assert str(ring_prompt["json_example"]).strip()
+    assert str(ring_prompt["json_example_answer_only"]).strip()
 
     closer_generation, closer_rendering, closer_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1827,7 +1953,9 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(prompt_shared["question_text_degree_count"]).strip()
     assert str(prompt_shared["question_text_in_degree"]).strip()
     assert str(prompt_shared["question_text_out_degree"]).strip()
-    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["evidence_hint_degree_count"]).strip()
+    assert str(prompt_shared["evidence_hint_in_degree_count"]).strip()
+    assert str(prompt_shared["evidence_hint_out_degree_count"]).strip()
     assert str(prompt_shared["answer_hint"]).strip()
     assert str(prompt_shared["json_example"]).strip()
     assert str(prompt_shared["json_example_answer_only"]).strip()
@@ -1900,6 +2028,10 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(named_degree_prompt_defaults["task_key"]).strip() == "named_node_degree_value_query"
     assert str(named_degree_prompt_defaults["object_description_undirected"]).strip()
     assert str(named_degree_prompt_defaults["object_description_directed"]).strip()
+    assert str(named_degree_prompt_defaults["evidence_hint_named_node_degree_value"]).strip()
+    assert str(named_degree_prompt_defaults["evidence_hint_named_node_in_degree_value"]).strip()
+    assert str(named_degree_prompt_defaults["evidence_hint_named_node_out_degree_value"]).strip()
+    assert str(named_degree_prompt_defaults["evidence_hint_named_node_total_degree_value"]).strip()
 
     source_sink_generation_defaults, source_sink_rendering_defaults, source_sink_prompt_defaults = (
         split_generation_rendering_prompt_defaults(
@@ -1921,6 +2053,8 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(source_sink_prompt_defaults["scene_key"]).strip() == "single_graph_counting"
     assert str(source_sink_prompt_defaults["task_key"]).strip() == "source_sink_count_query"
     assert str(source_sink_prompt_defaults["object_description_directed"]).strip()
+    assert str(source_sink_prompt_defaults["evidence_hint_source_count"]).strip()
+    assert str(source_sink_prompt_defaults["evidence_hint_sink_count"]).strip()
 
     node_color_generation_defaults, node_color_rendering_defaults, node_color_prompt_defaults = (
         split_generation_rendering_prompt_defaults(
@@ -2145,7 +2279,11 @@ def test_graph_relation_defaults_loaded() -> None:
         cfg,
         task_id="task_graph__node_link__reachable_node_count",
     )
-    assert sorted(reachable_generation_defaults["query_id_weights"].keys()) == ["reachable_count"]
+    assert sorted(reachable_generation_defaults["query_id_weights"].keys()) == [
+        "reachable_count",
+        "reachable_count_after_edge_addition",
+        "reachable_count_after_edge_removal",
+    ]
     assert set(reachable_generation_defaults["label_variant_weights"].keys()) == {"letters", "numbers", "named"}
     assert set(reachable_generation_defaults["edge_routing_variant_weights"].keys()) == {"straight", "mixed_arc"}
     assert int(reachable_generation_defaults["node_count_min"]) == 5
@@ -2183,7 +2321,8 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(reachable_edge_edit_prompt_defaults["scene_key"]).strip() == "single_graph_relation"
     assert str(reachable_edge_edit_prompt_defaults["task_key"]).strip() == "reachable_count_after_edge_edit_query"
     assert str(reachable_edge_edit_prompt_defaults["object_description_directed"]).strip()
-    assert str(reachable_edge_edit_prompt_defaults["evidence_hint"]).strip()
+    assert str(reachable_edge_edit_prompt_defaults["evidence_hint_reachable_count_after_edge_removal"]).strip()
+    assert str(reachable_edge_edit_prompt_defaults["evidence_hint_reachable_count_after_edge_addition"]).strip()
 
     common_generation_defaults, common_rendering_defaults, common_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
@@ -2210,7 +2349,9 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(common_prompt_defaults["task_key"]).strip() == "common_neighbor_count_query"
     assert str(common_prompt_defaults["object_description"]).strip()
     assert str(common_prompt_defaults["object_description_directed"]).strip()
-    assert str(common_prompt_defaults["evidence_hint"]).strip()
+    assert str(common_prompt_defaults["evidence_hint_common_neighbor_count"]).strip()
+    assert str(common_prompt_defaults["evidence_hint_common_successor_count"]).strip()
+    assert str(common_prompt_defaults["evidence_hint_common_predecessor_count"]).strip()
 
     edge_attribute_generation_defaults, edge_attribute_rendering_defaults, edge_attribute_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
@@ -2239,7 +2380,9 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_attribute_prompt_defaults["task_key"]).strip() == "edge_attribute_label_query"
     assert str(edge_attribute_prompt_defaults["object_description_undirected"]).strip()
     assert str(edge_attribute_prompt_defaults["object_description_directed"]).strip()
-    assert str(edge_attribute_prompt_defaults["evidence_hint"]).strip()
+    assert str(edge_attribute_prompt_defaults["evidence_hint_edge_between_nodes_label"]).strip()
+    assert str(edge_attribute_prompt_defaults["evidence_hint_directed_edge_between_nodes_label"]).strip()
+    assert str(edge_attribute_prompt_defaults["evidence_hint_shortest_path_first_edge_label"]).strip()
 
     edge_edit_generation_defaults, edge_edit_rendering_defaults, edge_edit_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
@@ -2263,7 +2406,8 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(edge_edit_prompt_defaults["scene_key"]).strip() == "single_graph_relation"
     assert str(edge_edit_prompt_defaults["task_key"]).strip() == "component_size_after_edge_edit_query"
     assert str(edge_edit_prompt_defaults["object_description"]).strip()
-    assert str(edge_edit_prompt_defaults["evidence_hint"]).strip()
+    assert str(edge_edit_prompt_defaults["evidence_hint_component_size_after_edge_removal"]).strip()
+    assert str(edge_edit_prompt_defaults["evidence_hint_component_size_after_edge_addition"]).strip()
 
     cycle_generation_defaults, cycle_rendering_defaults, cycle_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
@@ -2390,6 +2534,17 @@ def test_graph_comparison_defaults_loaded() -> None:
     assert str(extreme_prompt_defaults["task_key"]).strip() == "extreme_degree_value_query"
     assert str(extreme_prompt_defaults["object_description_undirected"]).strip()
     assert str(extreme_prompt_defaults["object_description_directed"]).strip()
+    for key in (
+        "evidence_hint_max_degree_value",
+        "evidence_hint_min_degree_value",
+        "evidence_hint_max_in_degree_value",
+        "evidence_hint_min_in_degree_value",
+        "evidence_hint_max_out_degree_value",
+        "evidence_hint_min_out_degree_value",
+        "evidence_hint_max_total_degree_value",
+        "evidence_hint_min_total_degree_value",
+    ):
+        assert str(extreme_prompt_defaults[key]).strip()
 
 
 def test_graph_path_defaults_loaded() -> None:
@@ -2442,7 +2597,8 @@ def test_graph_path_defaults_loaded() -> None:
     assert str(prompt_shared["object_description_directed"]).strip()
     assert str(prompt_shared["question_text_shortest_path_length"]).strip()
     assert str(prompt_shared["question_text_directed_shortest_path_length"]).strip()
-    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["evidence_hint_shortest_path_length"]).strip()
+    assert str(prompt_shared["evidence_hint_directed_shortest_path_length"]).strip()
     assert str(prompt_shared["answer_hint"]).strip()
     assert str(prompt_shared["json_example"]).strip()
     assert str(prompt_shared["json_example_answer_only"]).strip()
@@ -2650,8 +2806,7 @@ def test_icons_transformation_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_min"]) == 1
     assert int(generation_shared["distractor_count_max"]) == 9
     assert bool(generation_shared["balanced_sampling"]) is True
-    assert "task_icons__pair_grid__pair_attribute_rule_count" in cfg["generation"]["task_overrides"]
-    assert "task_icons__pair_grid__pair_geometric_transform_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons__pair_grid__pair_relation_count" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -2680,10 +2835,14 @@ def test_icons_transformation_defaults_loaded() -> None:
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons__pair_grid__pair_geometric_transform_count",
+        task_id="task_icons__pair_grid__pair_relation_count",
     )
-    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(generation["transform_ids"]) == [
+    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(generation["object_count_min"]) == 6
+    assert int(generation["object_count_max"]) == 6
+    transform_params = generation["variant_generation_params"]["same_pair_transform"]
+    assert str(transform_params["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(transform_params["transform_ids"]) == [
         "rot90",
         "rot180",
         "rot270",
@@ -2692,7 +2851,7 @@ def test_icons_transformation_defaults_loaded() -> None:
         "flip_diag_main",
         "flip_diag_anti",
     ]
-    assert int(generation["transform_check_size_px"]) > 0
+    assert int(transform_params["transform_check_size_px"]) > 0
     assert int(rendering["canvas_width"]) > 0
     assert int(rendering["reference_panel_width_px"]) > 0
     assert str(prompt["object_description"]).strip()
@@ -2702,27 +2861,17 @@ def test_icons_transformation_defaults_loaded() -> None:
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
 
-    attribute_generation, attribute_rendering, attribute_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons__pair_grid__pair_attribute_rule_count",
-    )
-    assert str(attribute_generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert sorted(attribute_generation["attribute_rule_weights"].keys()) == [
+    assert sorted(generation["query_id_weights"].keys()) == [
         "color_and_size_change",
         "color_only_change",
+        "same_pair_transform",
         "size_only_change",
     ]
-    assert bool(attribute_generation["balanced_attribute_rule_sampling"]) is True
-    assert float(attribute_generation["size_scale_small"]) < 1.0 < float(attribute_generation["size_scale_large"])
-    assert int(attribute_rendering["reference_icon_size_px"]) > 0
-    assert int(attribute_rendering["palette_size_min"]) >= 2
-    assert int(attribute_rendering["palette_size_max"]) >= int(attribute_rendering["palette_size_min"])
-    assert str(attribute_prompt["object_description"]).strip()
-    assert str(attribute_prompt["question_text"]).strip()
-    assert str(attribute_prompt["evidence_hint"]).strip()
-    assert str(attribute_prompt["answer_hint"]).strip()
-    assert str(attribute_prompt["json_example"]).strip()
-    assert str(attribute_prompt["json_example_answer_only"]).strip()
+    assert bool(generation["balanced_attribute_rule_sampling"]) is True
+    assert float(generation["size_scale_small"]) < 1.0 < float(generation["size_scale_large"])
+    assert int(rendering["reference_icon_size_px"]) > 0
+    assert int(rendering["palette_size_min"]) >= 2
+    assert int(rendering["palette_size_max"]) >= int(rendering["palette_size_min"])
 
 
 def test_icons_relation_defaults_loaded() -> None:
@@ -2746,6 +2895,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert "task_icons__mirror_grid__reflection_match_label" in cfg["generation"]["task_overrides"]
     assert "task_icons__reference_canvas__anchor_position_count" in cfg["generation"]["task_overrides"]
     assert "task_icons__named_field__reference_distance_rank_label" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_path__path_neighbor_label" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -2824,8 +2974,8 @@ def test_icons_relation_defaults_loaded() -> None:
         task_id="task_icons__mirror_grid__reflection_match_label",
     )
     assert str(reflection_generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert int(reflection_generation["object_count_min"]) == 5
-    assert int(reflection_generation["object_count_max"]) == 5
+    assert int(reflection_generation["object_count_min"]) == 6
+    assert int(reflection_generation["object_count_max"]) == 6
     assert bool(reflection_generation["shuffle_scene_labels"]) is True
     assert dict(reflection_generation["reflection_query_weights"]) == {
         "vertical_reflection_match": 1.0,
@@ -2943,6 +3093,46 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(distance_prompt["json_example"]).strip()
     assert str(distance_prompt["json_example_answer_only"]).strip()
 
+    path_generation, path_rendering, path_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons__named_path__path_neighbor_label",
+    )
+    assert int(path_generation["candidate_count"]) == 6
+    assert int(path_generation["distractor_count_min"]) == 4
+    assert int(path_generation["distractor_count_max"]) == 8
+    assert int(path_generation["target_occurrence_count_min"]) == 2
+    assert int(path_generation["target_occurrence_count_max"]) == 4
+    assert dict(path_generation["path_neighbor_query_weights"]) == {
+        "after_first_shape_label": 1.0,
+        "before_first_shape_label": 1.0,
+        "after_last_shape_label": 1.0,
+        "before_last_shape_label": 1.0,
+        "after_second_shape_label": 1.0,
+        "before_second_shape_label": 1.0,
+    }
+    assert list(path_generation["named_icon_fill_style_support"]) == ["solid", "striped", "dotted", "half_filled"]
+    assert int(path_rendering["canvas_width"]) == 1280
+    assert int(path_rendering["canvas_height"]) == 720
+    assert int(path_rendering["scene_icon_size_min_px"]) == 44
+    assert int(path_rendering["scene_icon_size_max_px"]) == 60
+    assert int(path_rendering["path_stroke_width_px"]) == 7
+    assert int(path_rendering["candidate_label_font_size_px"]) == 24
+    assert str(path_prompt["scene_key"]).strip() == "named_path_relation"
+    assert str(path_prompt["object_description"]).strip()
+    for suffix in (
+        "after_first_shape_label",
+        "before_first_shape_label",
+        "after_last_shape_label",
+        "before_last_shape_label",
+        "after_second_shape_label",
+        "before_second_shape_label",
+    ):
+        assert str(path_prompt[f"question_text_{suffix}"]).strip()
+    assert str(path_prompt["evidence_hint"]).strip()
+    assert str(path_prompt["answer_hint"]).strip()
+    assert str(path_prompt["json_example"]).strip()
+    assert str(path_prompt["json_example_answer_only"]).strip()
+
 
 def test_icons_sequence_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "sequence")
@@ -2966,6 +3156,7 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert int(generation_shared["step_abs_max"]) == 3
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons__sequence_strip__missing_count_value" in cfg["generation"]["task_overrides"]
+    assert "task_icons__named_strip__shape_run_length" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 24
@@ -3002,6 +3193,32 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
 
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons__named_strip__shape_run_length",
+    )
+    assert sorted(generation["query_id_weights"].keys()) == [
+        "longest_shape_run_length",
+        "shortest_shape_run_length",
+    ]
+    assert int(generation["strip_length_min"]) == 12
+    assert int(generation["strip_length_max"]) == 16
+    assert int(generation["longest_run_length_min"]) == 2
+    assert int(generation["longest_run_length_max"]) == 6
+    assert int(generation["shortest_run_length_min"]) == 1
+    assert int(generation["shortest_run_length_max"]) == 5
+    assert int(rendering["scene_icon_size_min_px"]) == 42
+    assert int(rendering["scene_icon_size_max_px"]) == 58
+    assert int(rendering["cell_padding_px"]) == 4
+    assert str(prompt["scene_key"]).strip() == "named_strip_run_length"
+    assert str(prompt["task_key"]).strip() == "run_length_query"
+    assert str(prompt["question_text_longest_shape_run_length"]).strip()
+    assert str(prompt["question_text_shortest_shape_run_length"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
+
 
 def test_icons_pattern_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "pattern")
@@ -3022,9 +3239,8 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(generation_shared["answer_index_min"]) == 1
     assert int(generation_shared["answer_index_max"]) == 9
     assert bool(generation_shared["balanced_sampling"]) is True
-    assert "task_icons__pattern_grid__color_pattern_violation_index" in cfg["generation"]["task_overrides"]
+    assert "task_icons__pattern_grid__attribute_pattern_violation_index" in cfg["generation"]["task_overrides"]
     assert "task_icons__sequence_strip__rotation_sequence_violation_index" in cfg["generation"]["task_overrides"]
-    assert "task_icons__pattern_grid__size_pattern_violation_index" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 48
@@ -3060,44 +3276,39 @@ def test_icons_pattern_defaults_loaded() -> None:
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons__pattern_grid__color_pattern_violation_index",
+        task_id="task_icons__pattern_grid__attribute_pattern_violation_index",
     )
-    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert list(generation["color_levels"]) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(generation["base_color_level_candidates"]) == [0, 1, 2, 3, 4, 5, 6, 7]
-    assert list(generation["row_step_color_candidates"]) == [-2, -1, 0, 1, 2]
-    assert list(generation["col_step_color_candidates"]) == [-2, -1, 0, 1, 2]
-    assert list(generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert int(rendering["scene_icon_size_min_px"]) == 66
-    assert int(rendering["scene_icon_size_max_px"]) == 84
-    assert int(rendering["palette_size_min"]) == 8
-    assert int(rendering["palette_size_max"]) == 8
-    assert list(rendering["icon_noise_edit_count_range"]) == [0, 0]
-    assert str(prompt["object_description"]).strip()
-    assert str(prompt["question_text"]).strip()
-    assert str(prompt["evidence_hint"]).strip()
-    assert str(prompt["answer_hint"]).strip()
-    assert str(prompt["json_example"]).strip()
-    assert str(prompt["json_example_answer_only"]).strip()
+    assert sorted(generation["query_id_weights"].keys()) == ["grid_color_violation", "grid_size_violation"]
+    color_generation = generation["variant_generation_params"]["grid_color_violation"]
+    assert str(color_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(color_generation["color_levels"]) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(color_generation["base_color_level_candidates"]) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(color_generation["row_step_color_candidates"]) == [-2, -1, 0, 1, 2]
+    assert list(color_generation["col_step_color_candidates"]) == [-2, -1, 0, 1, 2]
+    assert list(color_generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    color_rendering = rendering["variant_render_params"]["grid_color_violation"]
+    assert int(color_rendering["scene_icon_size_min_px"]) == 66
+    assert int(color_rendering["scene_icon_size_max_px"]) == 84
+    assert int(color_rendering["palette_size_min"]) == 8
+    assert int(color_rendering["palette_size_max"]) == 8
+    assert list(color_rendering["icon_noise_edit_count_range"]) == [0, 0]
 
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons__pattern_grid__size_pattern_violation_index",
-    )
-    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert list(generation["size_levels"]) == [1, 2, 3, 4, 5]
-    assert list(generation["base_level_candidates"]) == [1, 2, 3, 4, 5]
-    assert list(generation["row_step_candidates"]) == [-1, 0, 1]
-    assert list(generation["col_step_candidates"]) == [-1, 0, 1]
-    assert list(generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert int(rendering["scene_icon_size_min_px"]) == 34
-    assert int(rendering["scene_icon_size_max_px"]) == 82
-    assert int(rendering["cell_box_width_min_px"]) == 116
-    assert int(rendering["cell_box_width_max_px"]) == 152
-    assert int(rendering["cell_box_height_min_px"]) == 116
-    assert int(rendering["cell_box_height_max_px"]) == 152
-    assert int(rendering["size_level_gap_px"]) == 10
-    assert list(rendering["icon_noise_edit_count_range"]) == [0, 0]
+    size_generation = generation["variant_generation_params"]["grid_size_violation"]
+    assert str(size_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(size_generation["size_levels"]) == [1, 2, 3, 4, 5]
+    assert list(size_generation["base_level_candidates"]) == [1, 2, 3, 4, 5]
+    assert list(size_generation["row_step_candidates"]) == [-1, 0, 1]
+    assert list(size_generation["col_step_candidates"]) == [-1, 0, 1]
+    assert list(size_generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    size_rendering = rendering["variant_render_params"]["grid_size_violation"]
+    assert int(size_rendering["scene_icon_size_min_px"]) == 34
+    assert int(size_rendering["scene_icon_size_max_px"]) == 82
+    assert int(size_rendering["cell_box_width_min_px"]) == 116
+    assert int(size_rendering["cell_box_width_max_px"]) == 152
+    assert int(size_rendering["cell_box_height_min_px"]) == 116
+    assert int(size_rendering["cell_box_height_max_px"]) == 152
+    assert int(size_rendering["size_level_gap_px"]) == 10
+    assert list(size_rendering["icon_noise_edit_count_range"]) == [0, 0]
     assert str(prompt["object_description"]).strip()
     assert str(prompt["question_text"]).strip()
     assert str(prompt["evidence_hint"]).strip()
@@ -3794,6 +4005,79 @@ def test_pages_timeline_defaults_loaded() -> None:
     assert str(prompt_defaults["task_key"]).strip() == "timeline_milestone_query"
 
 
+def test_pages_step_list_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("pages", "step_list")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_pages__step_list__ordinal_step_detail_label",
+    )
+
+    assert sorted(generation_defaults["query_id_weights"].keys()) == [
+        "nth_step_detail",
+        "nth_step_title",
+        "step_after_named_step",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "horizontal_cards",
+        "two_column_cards",
+        "vertical_cards",
+    ]
+    assert sorted(generation_defaults["ordinal_reference_weights"].keys()) == ["final", "first", "interior"]
+    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
+    assert list(generation_defaults["step_count_support"]) == [5, 6, 7, 8]
+
+    assert int(rendering_defaults["canvas_width"]) == 1000
+    assert int(rendering_defaults["canvas_height"]) == 820
+    assert int(rendering_defaults["number_badge_size_px"]) == 38
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "pages_step_list_v0"
+    assert str(prompt_defaults["scene_key"]).strip() == "step_list"
+    assert str(prompt_defaults["task_key"]).strip() == "step_lookup_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_pages_document_lookup_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("pages", "document_lookup")
+    profile_generation, profile_rendering, profile_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_pages__profile_card_grid__attribute_lookup_label",
+    )
+    ranked_generation, ranked_rendering, ranked_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_pages__ranked_list__ordinal_entry_label",
+    )
+
+    assert sorted(profile_generation["query_id_weights"].keys()) == [
+        "profile_for_field_value",
+        "value_for_named_profile_field",
+    ]
+    assert sorted(profile_generation["scene_variant_weights"].keys()) == ["compact_cards", "directory_grid"]
+    assert list(profile_generation["card_count_support"]) == [6, 9]
+    assert bool(profile_generation["balanced_query_id_sampling"]) is True
+    assert int(profile_rendering["canvas_width"]) == 1120
+    assert int(profile_rendering["canvas_height"]) == 860
+    assert str(profile_prompt["bundle_id"]).strip() == "pages_document_lookup_v0"
+    assert str(profile_prompt["scene_key"]).strip() == "profile_card_grid"
+    assert str(profile_prompt["task_key"]).strip() == "profile_attribute_lookup_query"
+    assert str(profile_prompt["evidence_hint"]).strip()
+
+    assert sorted(ranked_generation["query_id_weights"].keys()) == [
+        "entry_after_named_entry",
+        "from_end_entry_label",
+        "nth_entry_label",
+    ]
+    assert sorted(ranked_generation["scene_variant_weights"].keys()) == ["stacked_lists", "two_column_lists"]
+    assert list(ranked_generation["section_count_support"]) == [2, 3]
+    assert list(ranked_generation["item_count_support"]) == [5, 6, 7]
+    assert sorted(ranked_generation["from_end_reference_weights"].keys()) == ["last", "second_last", "third_last"]
+    assert int(ranked_rendering["canvas_width"]) == 1000
+    assert int(ranked_rendering["canvas_height"]) == 850
+    assert str(ranked_prompt["bundle_id"]).strip() == "pages_document_lookup_v0"
+    assert str(ranked_prompt["scene_key"]).strip() == "ranked_list"
+    assert str(ranked_prompt["task_key"]).strip() == "ranked_list_entry_query"
+    assert str(ranked_prompt["evidence_hint"]).strip()
+
+
 def test_pages_cycle_defaults_loaded() -> None:
     cfg = get_task_group_defaults("pages", "cycle")
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
@@ -3810,10 +4094,16 @@ def test_pages_cycle_defaults_loaded() -> None:
     assert int(generation_defaults["stage_count_min"]) == 5
     assert int(generation_defaults["stage_count_max"]) == 12
 
-    assert int(rendering_defaults["canvas_width"]) == 1200
-    assert int(rendering_defaults["canvas_height"]) == 900
+    assert int(rendering_defaults["canvas_width"]) == 1600
+    assert int(rendering_defaults["canvas_height"]) == 1250
+    assert int(rendering_defaults["outer_margin_px"]) == 220
     assert int(rendering_defaults["node_width_px"]) == 122
     assert int(rendering_defaults["ring_radius_x_px"]) == 360
+    cycle_context_text = cfg["visual"]["context_text"]
+    assert str(cycle_context_text["pages_context_density"]) == "two_side_notes"
+    assert int(cycle_context_text["pages_context_simple_count"]) == 2
+    assert int(cycle_context_text["pages_context_side_note_count"]) == 2
+    assert int(cycle_context_text["pages_context_text_max_elements"]) == 6
 
     assert str(prompt_defaults["bundle_id"]).strip() == "pages_cycle_v0"
     assert str(prompt_defaults["scene_key"]).strip() == "cycle_diagram"
@@ -3898,7 +4188,7 @@ def test_pages_hierarchy_defaults_loaded() -> None:
     cfg = get_task_group_defaults("pages", "hierarchy")
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_pages__hierarchy__tree_count",
+        task_id="pages_hierarchy_tree_count_base",
     )
 
     assert sorted(generation_defaults["query_id_weights"].keys()) == [
@@ -3955,39 +4245,52 @@ def test_gui_counting_defaults_loaded() -> None:
     for section in ("generation", "rendering", "prompt", "complexity", "visual"):
         assert isinstance(cfg.get(section), dict)
 
-    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+    control_generation_defaults, rendering_defaults, control_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_pages__control_board__filter_count",
+        task_id="task_pages__control_board__control_filter_count",
+    )
+    row_generation_defaults, _row_rendering_defaults, row_prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_pages__data_table__row_filter_count",
     )
 
-    assert sorted(generation_defaults["query_id_weights"].keys()) == [
+    assert sorted(control_generation_defaults["query_id_weights"].keys()) == [
         "disabled_controls_in_group_count",
-        "enabled_action_for_type_count",
         "selected_enabled_controls_in_group_count",
+    ]
+    assert sorted(row_generation_defaults["query_id_weights"].keys()) == [
+        "enabled_action_for_type_count",
         "selected_rows_with_status_count",
         "value_threshold_in_group_count",
     ]
-    assert bool(generation_defaults["balanced_query_id_sampling"]) is True
-    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
-    assert bool(generation_defaults["balanced_style_variant_sampling"]) is True
-    assert list(generation_defaults["row_count_support"]) == [9, 10, 11, 12, 13, 14, 15]
-    assert list(generation_defaults["section_count_support"]) == [2, 3]
-    assert list(generation_defaults["answer_count_support"]) == [2, 3, 4, 5, 6, 7]
-    assert list(generation_defaults["enabled_action_for_type_count_row_count_support"]) == [9, 10, 11, 12]
-    assert list(generation_defaults["enabled_action_for_type_count_answer_count_support"]) == [2, 3, 4, 5, 6]
-    assert list(generation_defaults["size_threshold_support"]) == [25, 35, 45, 55, 65]
-    assert len(generation_defaults["candidate_label_pool"]) == 26
+    assert bool(control_generation_defaults["balanced_query_id_sampling"]) is True
+    assert bool(control_generation_defaults["balanced_scene_variant_sampling"]) is True
+    assert bool(control_generation_defaults["balanced_style_variant_sampling"]) is True
+    assert bool(row_generation_defaults["balanced_query_id_sampling"]) is True
+    assert bool(row_generation_defaults["balanced_scene_variant_sampling"]) is True
+    assert bool(row_generation_defaults["balanced_style_variant_sampling"]) is True
+    assert list(row_generation_defaults["row_count_support"]) == [9, 10, 11, 12, 13, 14, 15]
+    assert list(row_generation_defaults["section_count_support"]) == [2, 3]
+    assert list(control_generation_defaults["answer_count_support"]) == [2, 3, 4, 5, 6, 7]
+    assert list(row_generation_defaults["enabled_action_for_type_count_row_count_support"]) == [9, 10, 11, 12]
+    assert list(row_generation_defaults["enabled_action_for_type_count_answer_count_support"]) == [2, 3, 4, 5, 6]
+    assert list(row_generation_defaults["size_threshold_support"]) == [25, 35, 45, 55, 65]
+    assert len(control_generation_defaults["candidate_label_pool"]) == 26
 
     assert int(rendering_defaults["canvas_width"]) == 1280
     assert int(rendering_defaults["canvas_height"]) == 800
     assert int(rendering_defaults["badge_size_px"]) == 28
     assert int(rendering_defaults["row_height_px"]) == 28
 
-    assert str(prompt_defaults["bundle_id"]).strip() == "pages_counting_v0"
-    assert str(prompt_defaults["scene_key"]).strip() == "gui_control_board"
-    assert str(prompt_defaults["task_key"]).strip() == "control_filter_count_query"
-    assert str(prompt_defaults["answer_hint"]).strip()
-    assert str(prompt_defaults["evidence_hint"]).strip()
+    assert str(control_prompt_defaults["bundle_id"]).strip() == "pages_counting_v0"
+    assert str(control_prompt_defaults["scene_key"]).strip() == "gui_control_board"
+    assert str(control_prompt_defaults["task_key"]).strip() == "control_filter_count_query"
+    assert str(control_prompt_defaults["answer_hint"]).strip()
+    assert str(control_prompt_defaults["evidence_hint"]).strip()
+    assert str(row_prompt_defaults["scene_key"]).strip() == "gui_table"
+    assert str(row_prompt_defaults["task_key"]).strip() == "table_row_filter_count_query"
+    assert str(row_prompt_defaults["answer_hint"]).strip()
+    assert str(row_prompt_defaults["evidence_hint"]).strip()
 
 
 def test_gui_relation_defaults_loaded() -> None:
@@ -4028,7 +4331,9 @@ def test_gui_relation_defaults_loaded() -> None:
     assert str(nav_prompt_defaults["scene_key"]).strip() == "gui_navigation_paths"
     assert str(nav_prompt_defaults["task_key"]).strip() == "navigation_path_query"
     assert str(nav_prompt_defaults["answer_hint"]).strip()
-    assert str(nav_prompt_defaults["evidence_hint"]).strip()
+    assert str(nav_prompt_defaults["evidence_hint_menu_path_target_label"]).strip()
+    assert str(nav_prompt_defaults["evidence_hint_sidebar_tree_target_label"]).strip()
+    assert str(nav_prompt_defaults["evidence_hint_ribbon_group_command_label"]).strip()
 
     intent_generation_defaults, intent_rendering_defaults, intent_prompt_defaults = (
         split_generation_rendering_prompt_defaults(
@@ -4062,7 +4367,8 @@ def test_gui_relation_defaults_loaded() -> None:
     assert str(intent_prompt_defaults["scene_key"]).strip() == "gui_command_intents"
     assert str(intent_prompt_defaults["task_key"]).strip() == "command_intent_query"
     assert str(intent_prompt_defaults["answer_hint"]).strip()
-    assert str(intent_prompt_defaults["evidence_hint"]).strip()
+    assert str(intent_prompt_defaults["evidence_hint_command_intent_target_label"]).strip()
+    assert str(intent_prompt_defaults["evidence_hint_dual_guide_command_label"]).strip()
 
     professional_generation_defaults, professional_rendering_defaults, professional_prompt_defaults = (
         split_generation_rendering_prompt_defaults(
@@ -4087,7 +4393,11 @@ def test_gui_relation_defaults_loaded() -> None:
     assert str(professional_prompt_defaults["scene_key"]).strip() == "gui_professional_target_controls"
     assert str(professional_prompt_defaults["task_key"]).strip() == "professional_target_query"
     assert str(professional_prompt_defaults["answer_hint"]).strip()
-    assert str(professional_prompt_defaults["evidence_hint"]).strip()
+    assert str(professional_prompt_defaults["evidence_hint_toolbar_palette_control_label"]).strip()
+    assert str(professional_prompt_defaults["evidence_hint_property_panel_control_label"]).strip()
+    assert str(professional_prompt_defaults["evidence_hint_canvas_workspace_control_label"]).strip()
+    assert str(professional_prompt_defaults["evidence_hint_code_workspace_control_label"]).strip()
+    assert str(professional_prompt_defaults["evidence_hint_file_dialog_control_label"]).strip()
 
     web_generation_defaults, web_rendering_defaults, web_prompt_defaults = (
         split_generation_rendering_prompt_defaults(
@@ -4122,4 +4432,6 @@ def test_gui_relation_defaults_loaded() -> None:
     assert str(web_prompt_defaults["scene_key"]).strip() == "gui_web_action_targets"
     assert str(web_prompt_defaults["task_key"]).strip() == "web_action_query"
     assert str(web_prompt_defaults["answer_hint"]).strip()
-    assert str(web_prompt_defaults["evidence_hint"]).strip()
+    assert str(web_prompt_defaults["evidence_hint_click_target_label"]).strip()
+    assert str(web_prompt_defaults["evidence_hint_type_field_label"]).strip()
+    assert str(web_prompt_defaults["evidence_hint_select_option_label"]).strip()

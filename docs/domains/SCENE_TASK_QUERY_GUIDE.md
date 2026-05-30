@@ -29,6 +29,58 @@ not be copied into skills or planning notes.
 5. Use `query_id` as the canonical metadata field and "query id" as the
    human-facing name.
 
+## Cross-Domain Evidence Shape Policy
+1. Prompt-facing evidence should mark the minimal visible object or primitive a
+   human would circle/highlight before solving. It should not enumerate every
+   graphical primitive used in a derivation.
+2. Choose the lowest-burden image evidence that still unambiguously localizes
+   the witness:
+   - use `point_set` for compact marker-like objects such as pucks, dots,
+     graph nodes, charge markers, and point candidates;
+   - use `bbox_set` for extended regions, panels, cards, object bodies,
+     closed shapes, shaded areas, and text/readout units when the text/readout
+     itself is the queried object;
+   - use `point_pair_set` or `point_sequence` for line-like witnesses such as
+     edges, rays, paths, routes, and ordered construction segments.
+3. Use keyed evidence when role identity is necessary for verification or
+   prompt clarity, and prefer keyed evidence whenever an unordered set would
+   make the requested witnesses ambiguous. The active global homogeneous names
+   are `keyed_point_map` and `keyed_bbox_map`; do not create domain-specific
+   keyed names. Prefer a keyed map whenever the model must bind specific
+   regions or points to their semantic roles, such as `outer_shape` versus
+   `shaded_region`, `source_panel` versus `target_panel`,
+   `reference_item` versus `candidate_item`, or input versus output
+   measurements. The model-facing evidence value is the inner dictionary,
+   for example `{"A": [123, 245], "B": [310, 240]}`. Avoid mixed point/box
+   evidence unless a task genuinely cannot be redesigned around one geometry
+   type.
+4. Use unordered set evidence (`bbox_set`, `point_set`, `point_pair_set`) when
+   witness identity and order do not matter. This is usually correct for
+   counting tasks where evidence cardinality is the answer, and for
+   homogeneous support sets where any permutation has the same meaning. Do not
+   use an unordered set for fixed-role witnesses merely because all witnesses
+   share one geometry type.
+5. Numeric labels, coordinate labels, values, and measurement text should
+   usually stay as visible annotations plus trace/render metadata, not
+   standalone public evidence. Expose them as evidence only when the task is
+   explicitly a text/readout/scale-reading task.
+6. Do not use selected answer options as evidence unless the selected option is
+   a complete visual option image/panel and the scene also contains the
+   source/reference/original image or region that the option matches, completes,
+   transforms from, or belongs to. In that exception, the option image/panel
+   itself may be evidence, and the source/reference region should also be
+   grounded when the task contract needs it. Do not use option bboxes for
+   ordinary MCQ choices, numeric/text answer labels, or lettered candidate
+   objects; ground the underlying source/candidate objects or primitives
+   instead.
+7. Evidence hints should clearly name the witness category, but they must not
+   leak answer cardinality. For counting tasks, say to return evidence for the
+   matching/counted objects rather than stating a fixed number of boxes or
+   points.
+8. Model-facing evidence-format text must be positive-only: state the requested
+   witness category/shape and coordinate format, not exclusions or examples of
+   things to omit.
+
 ## Geometry scene/task rules
 1. `measurement` should use **one primary object per image**.
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
@@ -86,14 +138,14 @@ not be copied into skills or planning notes.
 ## Pages GUI-Like Direction (Current)
 1. GUI-like pages tasks use synthetic web and desktop application screens with visible candidate labels for control grounding.
 2. `task_group=counting` covers multi-control GUI count tasks where evidence is the full bbox set of counted controls.
-3. `task_pages__control_board__filter_count` uses `integer` answers for grouped control-state counts and sectioned table-row filters.
-4. Its five `query_id` values are `disabled_controls_in_group_count`, `selected_enabled_controls_in_group_count`, `selected_rows_with_status_count`, `enabled_action_for_type_count`, and `value_threshold_in_group_count`.
+3. `task_pages__control_board__control_filter_count` uses `integer` answers for grouped control-state counts with `query_id=disabled_controls_in_group_count|selected_enabled_controls_in_group_count`.
+4. `task_pages__data_table__row_filter_count` uses `integer` answers for sectioned table-row filters with `query_id=selected_rows_with_status_count|enabled_action_for_type_count|value_threshold_in_group_count`.
 5. `task_group=relation` covers choosing controls associated with visible context regions.
-6. `task_pages__navigation_flow__navigation_path_target_label` uses `option_letter` answers for menu-path and ribbon-group target variants.
-7. `task_pages__command_matrix__command_intent_target_label` uses `option_letter` answers for command-intent and dual-guide command variants across create/insert, select/choose, view/toggle, edit/transform, and format/style intent categories; prompts use short cue phrases that must be mapped through shuffled guides to object rows and coded action headers.
-8. `task_pages__workspace__professional_target_label` uses `option_letter` answers and ordered guide-card/context-row/coded-header/control evidence for toolbar-palette, property-panel, canvas-workspace, IDE, and file-dialog target variants.
-9. `task_pages__web_action__web_action_target_label` uses `option_letter` answers and ordered instruction-banner/context/control evidence for click-target, type-field, and select-option web action variants.
-10. Candidate-label badge bboxes and table cell bboxes are trace metadata; prompt-facing evidence stays on the context/path/header/instruction bboxes and actionable control bbox.
+6. `task_pages__navigation_flow__navigation_path_target_label` uses `option_letter` answers and query-specific role-keyed navigation evidence: menu-root/group/target-command, sidebar-section/group/target-item, or ribbon-tab/group/target-command.
+7. `task_pages__command_matrix__command_intent_target_label` uses `option_letter` answers and role-keyed action-cue guide/object row/action-code header/target-command-cell evidence for command-intent variants, plus an `object_cue_guide` role for dual-guide command variants across create/insert, select/choose, view/toggle, edit/transform, and format/style intent categories; prompts use short cue phrases that must be mapped through shuffled guides to object rows and coded action headers.
+8. `task_pages__workspace__professional_target_label` uses `option_letter` answers and query-specific role-keyed cue-card/context-row/code-header/target-control evidence for toolbar-palette, property-panel, canvas-workspace, IDE, and file-dialog variants, with keys such as `tool_cue_card`, `inspector_section_row`, `ide_code_header`, and `target_file_dialog_control`.
+9. `task_pages__web_action__web_action_target_label` uses `option_letter` answers and query-specific role-keyed instruction, cue-guide, context-unit, and target web-control evidence such as `item_card`/`target_button`, `form_section`/`target_input`, or `option_group`/`target_option`.
+10. Candidate-label badge bboxes and table cell bboxes are trace metadata; prompt-facing evidence stays on concrete support regions and actionable target units rather than generic placeholders.
 11. Keep app-family and visual-style axes non-semantic: they should change screen context and chrome only, never the command/control mapping.
 12. GUI style/background variation is color-only and may affect light canvas tint, chrome, panels, rows, controls, and badges; it must not change target geometry, badge placement/size, font sizes, row heights, control spacing, or evidence bboxes.
 13. Keep the active pages contract in `PAGES_TASK_SETUP.md` rather than duplicating every command pool in cross-domain notes.
@@ -101,19 +153,26 @@ not be copied into skills or planning notes.
 ## Pages Structured Artifact Direction (Current)
 1. Pages covers page-like structured artifacts, diagrams, static maps, schedules, timelines, schemas, and GUI/web screens.
 2. Concrete page query branches are recorded as `query_id`.
-3. The active structured-artifact families are `arithmetic`, `cross_form`, `cycle`, `hierarchy`, `infographic`, and `map`.
-4. `task_pages__form_section__section_expression_value` uses `query_id` values `sum_two_amounts_in_section`, `difference_two_amounts_in_section`, and `sum_minus_amount_in_section`, with visual `scene_variant` values `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
-5. `task_pages__paired_forms__reconciliation_value` uses `query_id` values `total_amount_delta`, `shortfall_minus_overage_value`, and `sum_absolute_quantity_differences`, with visual `scene_variant` value `purchase_receipt_pair`; receiving-slip rows are shuffled relative to purchase-order rows.
+3. The active structured-artifact families are `arithmetic`, `concept_map`, `cross_form`, `cycle`, `document_lookup`, `hierarchy`, `infographic`, `map`, `process_flow`, `step_list`, `schedule`, `timeline`, and `schema`.
+4. `task_pages__form_section__section_expression_value` uses `query_id` values `sum_two_amounts_in_section`, `difference_two_amounts_in_section`, and `sum_minus_amount_in_section`, with public `scene_id=form_section` and visual `scene_variant` values `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
+5. `task_pages__paired_forms__reconciliation_value` uses `query_id` values `total_amount_delta`, `shortfall_minus_overage_value`, and `sum_absolute_quantity_differences`, with visual `scene_variant` value `purchase_receipt_pair`; receiving-slip rows are shuffled relative to purchase-order rows, and prompt-facing evidence is the unordered set of full receiving-slip rows whose received quantities differ from the matched ordered quantities.
 6. `task_pages__cycle__offset_stage_label` uses `query_id` values `after_offset_stage_label|before_offset_stage_label`, query relationship values `after|before`, visual `scene_variant` value `cycle_ring`, and `cycle_direction` values `clockwise|counterclockwise`.
-7. `task_pages__hierarchy__tree_count` uses `query_id` values `subtree_descendant_count`, `subtree_leaf_count`, and `path_length_between_two_nodes`, with visual `scene_variant` value `rooted_tree`.
-8. `task_pages__map__navigation_label` uses `query_id` values `destination_after_directions` and `landmark_after_route_step`, with visual `scene_variant` value `campus_map`.
-9. `task_pages__infographic__metric_arithmetic_value`, `task_pages__infographic__section_ranked_total_label`, `task_pages__infographic__filtered_metric_total_value`, and `task_pages__infographic__column_profile_comparison_value` share `scene_id=infographic` and use label/value bboxes from the metric cards used in the answer.
-10. Prompt-facing arithmetic evidence should stay as ordered operand value boxes only.
-11. Prompt-facing cross-form evidence should stay on item-code and numeric cells used for matching and computation.
-12. Prompt-facing cycle evidence should stay as one target-stage `bbox_set`.
-13. Prompt-facing hierarchy evidence should stay on node boxes: unordered counted-node sets for subtree counting and ordered node paths for path length.
-14. Prompt-facing map evidence should stay on route landmark boxes.
-13. Page text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in page-like families.
+7. `task_pages__hierarchy__subtree_node_count` uses `query_id` values `subtree_descendant_count|subtree_leaf_count` with counted-node `bbox_set` evidence; `task_pages__hierarchy__path_length_count` uses `query_id=path_length_between_two_nodes` with ordered path-node `bbox_sequence` evidence. Both share visual `scene_variant=rooted_tree`.
+8. `task_pages__map__navigation_label` uses `query_id` values `destination_after_directions` and `landmark_after_route_step`, with visual `scene_variant` value `campus_map` and ordered route-landmark `bbox_sequence` evidence.
+9. `task_pages__concept_map__node_filter_count` uses child-node `bbox_set` evidence for branch and visible-marker counts; `task_pages__concept_map__ordered_child_label` uses role-keyed parent-branch and answer-child evidence for ranked child lookup.
+10. `task_pages__infographic__metric_arithmetic_value`, `task_pages__infographic__section_rank_label`, and `task_pages__infographic__fact_lookup_label` share `scene_id=infographic`. They use `keyed_bbox_map` evidence over supporting metric-card boxes keyed by visible metric-card labels, with label/value/caption text boxes retained in trace metadata.
+11. `task_pages__step_list__ordinal_step_detail_label` uses `query_id` values `nth_step_title|nth_step_detail|step_after_named_step`, with visual `scene_variant` values `vertical_cards|horizontal_cards|two_column_cards` and role-keyed target/source text evidence. It is an ordered instruction-card lookup scene, not a process-flow path scene.
+12. `task_pages__profile_card_grid__attribute_lookup_label` uses `query_id` values `value_for_named_profile_field|profile_for_field_value`, with visual `scene_variant` values `directory_grid|compact_cards` and role-keyed profile-name, field-label, and field-value evidence. It is an entity-card field lookup scene, not a chart/table row-column scene.
+13. `task_pages__ranked_list__ordinal_entry_label` uses `query_id` values `nth_entry_label|from_end_entry_label|entry_after_named_entry`, with visual `scene_variant` values `two_column_lists|stacked_lists` and role-keyed section-title, target-item, and optional source-item evidence. It is an ordered text-list page scene, not a numeric chart ranking scene and not a procedural step-list scene.
+14. `task_pages__process_flow__filtered_node_count`, `task_pages__process_flow__condition_path_endpoint_label`, and `task_pages__process_flow__actor_handoff_count` share `scene_id=process_flow`. They use process lanes, status badges, decision labels, and lane handoff semantics rather than graph-theory reachability, degree, or shortest-path semantics. The endpoint-following task uses compact `keyed_bbox_map` evidence to bind `start_step`, `first_decision_label`, `intermediate_step`, `second_decision_label`, and `endpoint_step` witnesses; the handoff-count task uses `point_pair_set` evidence for counted arrow endpoint pairs.
+15. `task_pages__schema__field_role_count` and `task_pages__schema__relationship_count` share `scene_id=schema`. Field-role counts use counted schema-field row `bbox_set` evidence; relationship counts use `point_pair_set` endpoint-pair evidence for counted relationship lines.
+16. Prompt-facing arithmetic evidence should stay as operand value boxes only, keyed by operand role when expression order affects the computation.
+17. Prompt-facing cross-form evidence should stay on item-code and numeric cells used for matching and computation, with keyed role names that distinguish purchase-order cells from receiving-slip cells.
+18. Prompt-facing cycle evidence should stay as one target-stage `bbox_set`.
+19. Prompt-facing hierarchy evidence should stay on node boxes: unordered counted-node sets for subtree counting and ordered node-path sequences for path length.
+20. Prompt-facing map evidence should stay on ordered route landmark boxes.
+21. Prompt-facing step-list/ranked-list evidence should stay on role-keyed section/source text plus exact target answer text. Profile-card evidence should stay on keyed profile-name, field-label, and field-value text.
+22. Page text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in page-like families.
 
 ## Puzzles direction (current)
 1. Puzzles use `task_group` for hidden-rule reasoning families such as `logic`, `probability`, `spatial`, `topology`, and `visual`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.
@@ -125,9 +184,10 @@ not be copied into skills or planning notes.
 5. The split Raven tasks use visual `scene_variant` values `raven_strip`, `raven_card`, and `raven_outline`.
 5. Nonogram logic is split into `task_puzzles__nonogram__nonogram_line_completion_label` and `task_puzzles__nonogram__nonogram_candidate_solution_label`. Each uses scene `nonogram` and fixed `query_id=line_completion_label|candidate_solution_label`.
 5. The split nonogram tasks use visual `scene_variant` values `nonogram_classic`, `nonogram_card`, and `nonogram_blueprint`; evidence is projected from marked row/option bboxes or clue-rail/candidate bboxes depending on the query.
-5. Arithmetic-constraint logic uses `task_puzzles__arithmetic_constraint__arithmetic_constraint_value`, `task_puzzles__arithmetic_constraint__cryptarithm_digit_value`, `task_puzzles__arithmetic_constraint__number_wall_value`, and `task_puzzles__arithmetic_constraint__operator_grid_value`; each records the internal `query_id` and uses prompt-facing `bbox_set` evidence on the puzzle panel plus marked targets.
+5. Arithmetic-constraint logic uses `task_puzzles__arithmetic_constraint__arithmetic_constraint_value`, `task_puzzles__arithmetic_constraint__cryptarithm_digit_value`, `task_puzzles__arithmetic_constraint__number_wall_value`, and `task_puzzles__arithmetic_constraint__operator_grid_value`; each records the internal `query_id` and uses prompt-facing `bbox_set` evidence on the marked target node/cell or highlighted target-letter box, with the full panel recorded only in trace metadata.
 5. Tents logic is split into `task_puzzles__tents__tents_missing_tent_cell_label` and `task_puzzles__tents__tents_valid_candidate_count`. Each uses scene `tents` and fixed `query_id=missing_tent_cell_label|valid_candidate_count`; evidence is projected from candidate-cell, marked-tree, and clue boxes. The scene also records render-only `palette_variant=garden|autumn|lake|violet|slate`.
-5. Dice probability uses `task_puzzles__dice_probability__dice_single_event_value`, `task_puzzles__dice_probability__dice_pair_event_value`, and `task_puzzles__dice_probability__dice_conditional_event_value` on scene `dice_probability`. The sampled visible-top event branch is recorded as `query_id`, answers are reduced fraction strings, and prompt-facing evidence is tray-level `bbox_set` grounding.
+5. Toggle-grid logic uses `task_puzzles__toggle_grid__toggle_result_label` and `task_puzzles__toggle_grid__toggle_repair_switch_label` on scene `toggle_grid`. Result queries record `query_id=toggle_result_label` and choose a resulting grid option after numbered switch presses; repair queries record `query_id=toggle_repair_switch_label` and choose the one lettered switch that transforms the start grid into the target grid. Evidence is projected from the start/target panels, selected option panel, or selected switch cell.
+5. Dice probability uses `task_puzzles__dice_probability__dice_single_event_value`, `task_puzzles__dice_probability__dice_pair_event_value`, and `task_puzzles__dice_probability__dice_conditional_event_value` on scene `dice_probability`. The sampled visible-top event branch is recorded as `query_id`, answers are reduced fraction strings, and prompt-facing evidence is role-keyed tray `keyed_bbox_map` grounding.
 5. The dice probability tasks use visual `scene_variant` values `dice_tray_clean`, `dice_tray_felt`, and `dice_tray_notebook`; probability is over uniformly selecting from the shown dice, never over rolling unseen dice.
 6. Spinner probability uses `task_puzzles__spinner_probability__spinner_compound_event_value` and `task_puzzles__spinner_probability__spinner_pair_event_value` on scene `spinner_probability`. The sampled event branch is recorded as `query_id`, answers are reduced fraction strings, and prompt-facing evidence is panel-level `bbox_set` grounding.
 6. The spinner probability tasks use visual `scene_variant` values `spinner_clean`, `spinner_card`, and `spinner_notebook`; sectors are equal probability by construction. Single-spinner scenes show color plus shape markers, while pair-spinner scenes are color-only to keep product-space probability readable.
@@ -140,6 +200,7 @@ not be copied into skills or planning notes.
 12. Cube/voxel spatial reasoning uses `scene_id=voxel_cube` and is split into `task_puzzles__voxel_cube__cube_count`, `task_puzzles__voxel_cube__cube_structure_change_count`, `task_puzzles__voxel_cube__cube_painted_face_count`, `task_puzzles__voxel_cube__cube_visible_projection_count`, `task_puzzles__voxel_cube__cube_projection_match_label`, and `task_puzzles__voxel_cube__cube_projection_consistency_label`. Each records `query_id=cube_count|cube_structure_change_count|painted_face_count|visible_cube_count|projection_match_label|projection_consistency_label`.
 13. The split cube tasks use visual `scene_variant` values `stack_strip`, `stack_card`, and `stack_outline` for isometric branches plus `cube_stack` for the projection branch.
 14. The active cube-structure grammar covers fixed-view wall-like isometric stack counts, side-by-side change counts, painted-face counts, orthographic visible-cell counts, projection matching, and projection consistency as separate task units.
+14. Cube-net spatial reasoning uses scene `cube_net` for `task_puzzles__cube_net__cube_net_face_relation_label`, `task_puzzles__cube_net__cube_rolling_result_label`, and `task_puzzles__cube_net__surface_net_path_label`. The folded surface path task records `query_id=folded_path_endpoint_label|folded_path_face_sequence_label` and uses start-face, instruction-panel, and selected-option evidence.
 15. Sliding-block spatial reasoning uses `task_puzzles__sliding_block__sliding_block_blocker_count` and `task_puzzles__sliding_block__sliding_block_move_result_label` on scene `sliding_block`. The fixed branch is recorded as `query_id=blocker_count|move_result_label`, and prompt-facing evidence is `bbox_set` grounding over path blockers or moved-block originals plus the correct result option panel.
 16. The sliding-block tasks use visual `scene_variant` values `wooden_tray`, `cool_grid`, and `paper_board`, with `exit_side=right|left|top|bottom`.
 24. Polyomino spatial reasoning uses `task_puzzles__polyomino_missing__polyomino_missing_region_piece_label` for static missing-region and rectangle-complement piece selection. The task records `query_id=marked_region_piece_label|rectangle_complement_piece`.
@@ -154,21 +215,21 @@ not be copied into skills or planning notes.
 34. The string-topology task uses visual `scene_variant` values `string_strip`, `string_card`, and `string_outline`.
 35. The active topology cyclic-order grammar uses one reference loop above exactly `6` labeled option loops with exactly one equivalent option; equivalent-label queries use `4..5` tokens. Color-bearing token styles should use Lab-separated colors, prompt-facing evidence should be the valid option-image bbox, and the prompt must explicitly say that flipping/reflection is not allowed.
 36. The active string-topology grammar uses one diagram of separate open strings, closed rings, and knots; it samples target answer count `3..10` and distractor count `3..10` independently, keeps total visible groups at `6..20`, uses knotted closed loops as open-rope distractors, and uses component bboxes as prompt-facing evidence for open/closed/knotted component counts.
-37. Color-gradient visual reasoning uses `task_puzzles__color_gradient__color_gradient_violation_cell_label` and `task_puzzles__color_gradient__color_gradient_completion_label` on scene `color_gradient`. Violation uses fixed `query_id=color_gradient_violation_cell_label` with one-box swatch-cell evidence, while completion uses fixed `query_id=linear_gradient_completion_label` with blank-swatch plus correct-option evidence.
+37. Color-gradient visual reasoning uses `task_puzzles__color_gradient__color_gradient_violation_cell_label` and `task_puzzles__color_gradient__color_gradient_completion_label` on scene `color_gradient`. Violation uses fixed `query_id=color_gradient_violation_cell_label` with one-box swatch-cell evidence, while completion uses fixed `query_id=linear_gradient_completion_label` with role-keyed `blank_swatch` and `selected_option` evidence.
 37. Maze topology is split into `task_puzzles__maze__exit_reachability_label` and `task_puzzles__maze__reachable_exit_count`; the label query uses `target_reachability=reachable|unreachable`.
 38. Pipe-flow repair uses `task_puzzles__pipe_flow__pipe_flow_repair_tile_label` on scene `pipe_flow`. It uses fixed `query_id=flow_repair_tile_label` and option-plus-gap `bbox_set` evidence for the labeled 2x2 option that can be rotated to fill the black missing region and restore connectivity from the green start marker to the red triangular finish flag. Offshoot branches are attached to the main path and terminate on a grid side.
 38. The maze tasks use visual `scene_variant` values `classic_wall_maze`, `paper_labyrinth_maze`, and `block_wall_maze`.
 39. The active maze grammar shows a START cell inside an orthogonal wall maze with labeled boundary exits; it samples `6..8` rows, `7..10` columns, and `4..6` exits, constructs reachability from metadata rather than pixels, and projects target or reachable exit label+doorway bboxes.
-40. Voxel-ladder topology uses scene `voxel_ladder` with `task_puzzles__voxel_ladder__voxel_ladder_route_label` and `task_puzzles__voxel_ladder__voxel_ladder_route_count`; both record route/count branches in `query_id`.
-41. The voxel-ladder grammar shows an isometric cube maze with blue START, red GOAL, colored checkpoints sampled from the canonical TRACE named-color palette, and black ladders. Movement is adjacent same-height cube tops plus ladders for height changes, with prompt-facing `bbox_set` evidence projected from route checkpoints, unreachable checkpoints, reachable checkpoint sets, or route ladders.
+40. Voxel-ladder topology uses scene `voxel_ladder` with `task_puzzles__voxel_ladder__checkpoint_sequence_label` and `task_puzzles__voxel_ladder__checkpoint_reachability`; the reachability task records `unreachable_checkpoint_label|reachable_checkpoint_count` in `query_id`.
+41. The voxel-ladder grammar shows an isometric cube maze with blue START, red GOAL, colored checkpoints sampled from the canonical TRACE named-color palette, and black ladders. Movement is adjacent same-height cube tops plus ladders for height changes, with prompt-facing `bbox_set` evidence projected from route checkpoints, unreachable checkpoints, or reachable checkpoint sets.
 
 ## Time Artifact Placement
 1. Time-artifact scenes use the same public `domain -> scene_id -> task_id` taxonomy as the rest of TRACE.
 2. Clock scenes live in `puzzles`: `analog_clock` and `clock_collection`.
 3. Calendar, schedule, and timeline scenes live in `pages`: `calendar`, `schedule`, and `timeline`.
-4. Active task ids are `task_pages__calendar__marked_day_class_count`, `task_pages__calendar__weekday_occurrence_date`, `task_puzzles__clock_collection__compare`, `task_puzzles__analog_clock__offset_readout`, `task_pages__schedule__longer_than_reference_count`, `task_pages__schedule__maximum_non_overlapping_count`, `task_pages__schedule__overlap_count`, and `task_pages__timeline__interval_membership_count`.
+4. Active task ids are `task_pages__calendar__marked_day_class_count`, `task_pages__calendar__weekday_occurrence_date`, `task_puzzles__clock_collection__compare`, `task_puzzles__analog_clock__offset_readout`, `task_pages__schedule__reference_interval_count`, `task_pages__schedule__maximum_non_overlapping_count`, and `task_pages__timeline__interval_membership_count`.
 5. Mirror/query knobs go in `query_id`.
-6. Split task ids are used when the reasoning or evidence contract differs: clock readout vs multi-clock comparison, calendar lookup vs marked-date count, and the three schedule reasoning contracts.
+6. Split task ids are used when the reasoning or evidence contract differs: clock readout vs multi-clock comparison, calendar lookup vs marked-date count, reference-interval schedule counting vs schedule optimization.
 7. Mirror/query knobs remain internal: clock compare `earliest|latest`, clock readout `before|after`, calendar marked class `weekend|weekday`, and timeline interval relation `between|outside`.
 8. The active time-artifact tasks use visual `scene_variant` values `classic`, `minimal`, and `outline`, except the milestone timeline, which uses `classic|roadmap|minimal`.
 9. Non-semantic axes `style_variant=studio|accented|marker`, `accent_color_name`, background style, and mild post-image noise must never change the prompt contract.
@@ -181,28 +242,28 @@ not be copied into skills or planning notes.
 4. `task_physics__pulley__pulley_mechanical_advantage`
    - uses scene variants `open_block|compact_block|tall_block`
    - uses `query_id=force_relation` with `solve_for=effort_force|load_force`
-   - keeps integer answers with unordered `bbox_set` evidence over the full supporting strands plus the marked force label
+   - keeps integer answers with `keyed_bbox_map` evidence over the full supporting strands, shown known-force label, and marked target-force label
    - keeps the pulley arithmetic tied to ideal mechanical advantage from full connecting strands, while cut strands act only as visual distractors
 5. Lever-balance tasks:
    - active ids are `task_physics__lever__side_torque_value` and `task_physics__lever__missing_weight_balance_value`
    - uses scene variants `center_fulcrum|offset_fulcrum|textured_beam`
    - uses `query_id=side_torque|missing_weight_to_balance`, with `torque_side=left|right` as an internal side mirror for side torque
-   - keeps integer answers with unordered `bbox_set` evidence over either the relevant side’s weight blocks (`side_torque`) or the marked `?` weight block (`missing_weight_to_balance`)
+   - keeps integer answers with unordered `bbox_set` evidence over either the relevant side’s weight blocks (`side_torque`) or the known weight blocks plus marked `?` weight block needed for `missing_weight_to_balance`
    - calibrates the public missing-weight task on `textured_beam` only, with answer support `1..6` and lower side clutter
    - samples one non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights while leaving the red `?` weight semantics unchanged
-6. Circuit-resistance tasks:
-   - active ids are `task_physics__resistor__total_resistance_value` and `task_physics__paired_resistor__missing_resistor_value`
-   - uses scene variants `parallel|simple_series_parallel`
-   - uses `query_id=total_resistance|missing_resistor_value`
-   - keeps integer answers with unordered `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor in the left circuit (`missing_resistor_value`)
-   - requires every scene to contain at least one parallel bank; the single-circuit readout uses `3..4` parallel branches or `4..5` total resistors, while the paired missing-resistor variant uses smaller side-by-side circuits with equal total resistance
-   - when `scene_variant` is not fixed for `total_resistance`, samples the target answer from the query-level feasible union support first and then chooses a compatible scene family for that answer
-   - samples one non-semantic `accent_color_name` palette for the wires, terminals, and resistor boxes
+6. Equivalent-circuit tasks:
+   - active ids are `task_physics__circuit_equivalent__total_resistance_value` and `task_physics__circuit_equivalent__total_capacitance_value`
+   - uses scene variant `series_parallel` for both public tasks
+   - uses `query_id=total_resistance|total_capacitance`
+   - every generated circuit contains at least one series component and one or two parallel component blocks
+   - keeps integer answers with input-witness `keyed_bbox_map` evidence over visible component labels (`R1`, `R2`, ... or `C1`, `C2`, ...)
+   - evidence bboxes enclose each engineering symbol plus its value label, not wires or terminal labels separately
+   - samples one non-semantic `accent_color_name` palette for wires, terminals, component labels, and technical-diagram rendering
 7. Electrostatics field-map tasks:
    - active ids are `task_physics__electrostatic_field__field_direction_choice`, `task_physics__electrostatic_field__zero_field_point_label`, and `task_physics__electrostatic_field__potential_value`
    - uses scene variants `clean_grid|paper_grid|dense_grid`
    - uses `query_id=field_direction_choice|zero_field_point_label|potential_value`, with `direction_mode=electric_field_direction|force_on_positive_charge|force_on_negative_charge` as an internal axis for direction-choice queries
-   - keeps option-letter or signed-integer answers with one-box `bbox_set` evidence over the selected arrow, selected point, or compact potential witness region
+   - keeps option-letter or signed-integer answers with input-witness `keyed_point_map` evidence over visible neutral charge keys (`Q1`, `Q2`, `Q3`) and, for point-`P` queries, key `P`; zero-field candidate letters remain answer options rather than evidence targets
    - keeps force-on-negative-charge and similar sign/mode changes inside one public direction task rather than splitting them into separate task ids
 8. Magnetism force-field tasks:
    - active id is `task_physics__magnetic_force__force_direction_choice`
@@ -210,34 +271,35 @@ not be copied into skills or planning notes.
    - uses `query_id=force_direction_choice`
    - keeps `field_orientation=out_of_page|into_page`, velocity direction, charge sign, and candidate-arrow placement as internal axes
    - calibrates the public task on `field_grid`, with correct-answer letters `B|C|D|E|G|H` while all eight options remain visible
-   - keeps option-letter answers with one-box `bbox_set` evidence over the selected candidate force arrow
+   - keeps option-letter answers with input-witness `keyed_bbox_map` evidence over the magnetic-field label, charged particle, and velocity vector; candidate arrows remain answer options rather than evidence targets
 9. Waves interference-tank tasks:
    - active ids are `task_physics__wave_interference__interference_point_choice` and `task_physics__wave_interference__path_difference_value`
    - uses scene variants `clean_tank|grid_tank|lab_sheet`
    - uses `query_id=interference_point_choice|path_difference_value`
    - keeps `phase_relation=in_phase|opposite_phase`, `target_condition=constructive|destructive`, and candidate-point placement as internal axes
-   - uses five candidate labels `A-E` for point choice and path-difference answers `1..4` for the calibrated public mix
-   - keeps option-letter or integer `lambda/2` step-count answers with one-box `bbox_set` evidence over the selected candidate point or labeled source-to-`P` path witness
+   - uses five candidate labels `A-E` for point choice and path-difference answers `1..5` for the calibrated public mix
+   - keeps option-letter answers with `point_set` evidence over the selected candidate-point center, and integer `lambda/2` step-count answers with `keyed_bbox_map` evidence over the labeled `S1P` and `S2P` path witnesses
 10. Optics ray-trace tasks:
    - active ids are `task_physics__ray_optics__ray_bounce_count` and `task_physics__ray_optics__ray_target_hit_count`
    - uses scene variants `single_mirror|double_mirror|triple_mirror|quad_mirror|five_mirror`
    - uses `query_id=bounce_count|target_hit_count`
    - keeps integer answers with unordered pixel `point_set` evidence over either bounce-point centers or hit target-point centers
    - shows only the initial ray direction in the prompt image, keeps the solved full path in trace/debug artifacts, ties mirror count directly to `scene_variant`, and reserves `five_mirror` for calibrated `bounce_count` while the smaller mirror-count scenes feed `target_hit_count`
-   - uses large unlabeled target dots for `target_hit_count` with calibrated answers `1..5`, bounce-count answers `1..5`, no separate bounce circles for `bounce_count`, and one non-semantic `accent_color_name` palette for the board and mirrors while the ray keeps a fixed warm contrast color
+   - uses large unlabeled target dots for `target_hit_count` with calibrated answers `1..5`, bounce-count answers `1..5`, and no separate bounce circles for `bounce_count`
+   - uses shared technical diagram backgrounds/palettes, one readout font family per board, and whole-board layout placement before point-evidence projection
 11. Spring-extension tasks:
    - active ids are `task_physics__spring__spring_missing_value` and `task_physics__spring__spring_extension_difference`
    - uses scene variants `paired_springs|staggered_springs|textured_spring`
    - uses `query_id=missing_value|extension_difference`, with `solve_for=weight|extension` as an internal inverse axis for missing-value queries
-   - keeps integer answers with unordered `bbox_set` evidence over either the two compared value-labeled extension markers (`extension_difference`) or the reference/query weight-marker witness set for the two missing-value variants
+   - keeps integer answers with `keyed_bbox_map` evidence for missing-value role witnesses (`reference_weight`, `reference_extension`, `query_weight`, `query_extension`) and unordered `bbox_set` evidence over the two compared value-labeled extension markers for `extension_difference`
    - keeps the two springs explicitly identical within each instance and encodes the proportionality only through the shown weight/extension pair, not through a printed formula
    - calibrates `extension_difference` with scale factor `2` and answer support `2|4|8|10|12`
-   - uses one non-semantic `accent_color_name` palette for the card chrome / support bars / springs while the missing-value placeholders remain red
+   - uses shared technical-diagram backgrounds/palettes, one readout font family per diagram, and whole-diagram layout placement before evidence projection while the missing-value placeholders remain red
 12. Hydraulic piston task:
    - active id is `task_physics__hydraulic__hydraulic_missing_value`
    - uses scene variants `wide_bench|compact_frame|tall_columns`
    - uses `query_id=missing_output_force|missing_input_force|missing_piston_area`
-   - keeps integer answers with unordered `bbox_set` evidence over all six visible force and piston-area labels in the connected three-piston system, including the red `?` missing label
+   - keeps integer answers with `keyed_bbox_map` evidence over only the known force/area labels needed to compute the missing value; keys bind the visible labels to roles such as `input_force`, `output_force`, `input_area`, and `output_area`
    - ties reasoning to Pascal's law, `F_input / A_input = F_middle / A_middle = F_output / A_output`, with integer mechanical-advantage constructions
    - samples one non-semantic `accent_color_name` palette for the chambers, fluid, and pistons while the missing-value placeholder remains red
 13. Thermodynamics PV-diagram tasks:
@@ -245,7 +307,8 @@ not be copied into skills or planning notes.
    - uses scene variants `clean_grid|paper_grid|bold_grid`
    - uses `query_id=work_value|process_sign_choice`; calibrated `work_value` sampling uses `work_mode=single_process`, while `process_sign_choice` uses `target_sign=positive|negative|zero` as an internal axis
    - keeps signed-integer or option-letter answers with one-box `bbox_set` evidence over the highlighted path/cycle or selected candidate process
-14. Active physics tasks inherit shared light background variants `solid_light|cool_light|warm_light|paper_light|mint_light|lavender_light` from `configs/domains/physics/base.yaml`; these are visual-only and must not change coordinates, object positions, measurement grids, or evidence semantics.
+   - uses shared technical diagram backgrounds/palettes, one readout font family per diagram, and whole-diagram layout placement before evidence projection
+14. Active audited physics tasks use shared `technical_diagram_style` backgrounds/palettes/frame modes plus post-render noise; these are visual-only and must not change coordinates, object positions, measurement grids, or evidence semantics.
 15. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 
 ## Games Direction (Current)
@@ -254,8 +317,9 @@ not be copied into skills or planning notes.
 3. Mirror knobs remain params inside a task: player color, board size, row/column axis, threshold direction, and visual style.
 4. Active scenes and narrow default tasks:
    - `2048`: `task_games__2048__move_result_value`, `task_games__2048__best_move_label`
-   - `bingo`: `task_games__bingo__completed_line_count`, `task_games__bingo__line_sum_extremum_value`
+   - `backgammon`: `task_games__backgammon__destination_count`
    - `battleship`: `task_games__battleship__ship_status_count`
+   - `bingo`: `task_games__bingo__completed_line_count`, `task_games__bingo__line_sum_extremum_value`
    - `bowling`: `task_games__bowling__first_pin_hit_label`, `task_games__bowling__spare_path_label`
    - `brick_breaker`: `task_games__brick_breaker__trajectory_target_label`, `task_games__brick_breaker__hit_row_remaining_count`
    - `bubble_shooter`: `task_games__bubble_shooter__shot_effect_count`, `task_games__bubble_shooter__pop_color_label`
@@ -264,12 +328,15 @@ not be copied into skills or planning notes.
    - `chess`: `task_games__chess__marked_piece_destination_count`, `task_games__chess__player_capture_piece_count`, `task_games__chess__check_attacker_count`, `task_games__chess__king_escape_square_count`
    - `chess_variant`: `task_games__chess_variant__marked_piece_destination_count`
    - `connect_four`: `task_games__connect_four__move_count`
-   - `crossing`: `task_games__crossing__safe_route_label`, `task_games__crossing__collision_time_value`, `task_games__crossing__moving_object_count`
+   - `crossing`: `task_games__crossing__collision_time_value`, `task_games__crossing__moving_object_count`
    - `darts`: `task_games__darts__total_score_option_label`, `task_games__darts__condition_count`
    - `dominoes`: `task_games__dominoes__property_count`, `task_games__dominoes__two_step_extension_label`
    - `dots_and_boxes`: `task_games__dots_and_boxes__three_sided_box_count`, `task_games__dots_and_boxes__capture_move_count`
    - `go`: `task_games__go__group_liberty_count`, `task_games__go__group_adjacent_enemy_count`
    - `hex`: `task_games__hex__winning_move_cell_label`, `task_games__hex__connection_gap_count`
+   - `marble_chain`: `task_games__marble_chain__shot_direction_label`, `task_games__marble_chain__shot_effect_value`
+   - `match3`: `task_games__match3__swap_effect_value`, `task_games__match3__best_swap_label`
+   - `minecraft`: `task_games__minecraft__ore_block_count`, `task_games__minecraft__route_block_count`
    - `minesweeper`: `task_games__minesweeper__forced_cell_count`, `task_games__minesweeper__satisfied_clue_count`
    - `minigolf`: `task_games__minigolf__first_obstacle_label`, `task_games__minigolf__shot_path_label`
    - `nine_mens_morris`: `task_games__nine_mens_morris__pieces_in_mill_count`
@@ -277,11 +344,14 @@ not be copied into skills or planning notes.
    - `platformer`: `task_games__platformer__jump_landing_label`, `task_games__platformer__collectible_count`
    - `pool`: `task_games__pool__pottable_ball_count`, `task_games__pool__blocking_ball_count`
    - `reversi`: `task_games__reversi__legal_destination_count`, `task_games__reversi__marked_move_flip_count`
+   - `rhythm`: `task_games__rhythm__hit_window_count`, `task_games__rhythm__lane_choice_value`
+   - `rule_override_board`: `task_games__rule_override_board__line_result_count`, `task_games__rule_override_board__piece_result_count`
    - `snake`: `task_games__snake__safe_direction_count`, `task_games__snake__path_outcome_option_label`
+   - `snakes_ladders`: `task_games__snakes_ladders__move_outcome_value`, `task_games__snakes_ladders__best_roll_value`
    - `solitaire`: `task_games__solitaire__move_legality_label`, `task_games__solitaire__foundation_ready_count`, `task_games__solitaire__tableau_sequence_count`
    - `space_shooter`: `task_games__space_shooter__clear_shot_count`, `task_games__space_shooter__projectile_intercept_count`, `task_games__space_shooter__highest_threat_label`, `task_games__space_shooter__safe_lane_count`
    - `sudoku`: `task_games__sudoku__marked_cell_value`, `task_games__sudoku__marked_cell_candidate_count`, `task_games__sudoku__unit_missing_digits_count`, `task_games__sudoku__repeated_digit_count`
    - `tetris`: `task_games__tetris__line_clear_count`, `task_games__tetris__drop_result_label`
    - `ultimate_tictactoe`: `task_games__ultimate_tictactoe__small_board_status_count`, `task_games__ultimate_tictactoe__local_tactic_label`
-5. Active games tasks use integer or label-string answers and local pixel-grounded `bbox_set` evidence over the visible witness cells, pieces, cards, dominoes, darts, bricks, catch lanes, crossing start pads/routes/vehicles, hex cells, bubbles, color options, or intersections.
+5. Active games tasks use integer or label-string answers and local pixel-grounded evidence over the visible witnesses: usually `bbox_set` over cells, pieces, cards, dominoes, bricks, catch lanes, crossing vehicles/route cells, hex cells, bubbles, color options, or intersections; `point_set` for compact marker-like witnesses such as darts; and `point_pair_set` for line-like trajectory/path cues.
 6. Shared game renderers and rules should stay under `trace/tasks/games/shared/`; fixed-query public task wrappers should use `trace/tasks/games/shared/fixed_query_task.py`, which delegates shared metadata rewriting to `trace/tasks/shared/fixed_query.py`, instead of duplicating renderer or wrapper logic.
